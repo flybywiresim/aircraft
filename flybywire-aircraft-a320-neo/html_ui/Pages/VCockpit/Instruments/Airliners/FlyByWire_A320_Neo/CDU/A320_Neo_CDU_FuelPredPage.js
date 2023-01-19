@@ -28,12 +28,15 @@ class CDUFuelPredPage {
         mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === "") {
                 mcdu.setScratchpadText(
-                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
+                    (isFinite(getZfw()) ? (getZfw() / 1000).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {
                 if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                     CDUFuelPredPage.ShowPage(mcdu);
+                    mcdu.removeMessageFromQueue(NXSystemMessages.initializeWeightOrCg.text);
+                    mcdu.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
+                    mcdu._checkWeightSettable = true;
                 } else {
                     scratchpadCallback();
                 }
@@ -86,7 +89,7 @@ class CDUFuelPredPage {
                 destIdentCell = dest.ident;
             }
 
-            gwCell = "{small}" + NXUnits.kgToUser(mcdu.getGW()).toFixed(1);
+            gwCell = "{small}" + (NXUnits.kgToUser(mcdu.getGW()).toFixed(1));
             cgCell = mcdu.getCG().toFixed(1) + "{end}";
             gwCgCellColor = "[color]green";
 

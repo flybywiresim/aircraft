@@ -4,10 +4,33 @@ class CDUInitPage {
         mcdu.page.Current = mcdu.page.InitPageA;
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
         mcdu.activeSystem = 'FMGC';
+        mcdu.coRoute.routes = [];
 
-        let fromTo = "____|____[color]amber";
-        let coRoute = "__________[color]amber";
-        const flightNo = new CDU_SingleValueField(mcdu,
+        const haveFlightPlan = mcdu.flightPlanManager.getPersistentOrigin()
+            && mcdu.flightPlanManager.getDestination();
+
+        const fromTo = new Column(23, "____|____", Column.amber, Column.right);
+        const [coRouteAction, coRouteText, coRouteColor] = new CDU_SingleValueField(
+            mcdu,
+            "string",
+            mcdu.coRoute.routeNumber,
+            {
+                emptyValue: haveFlightPlan ? "" : "__________[color]amber",
+                suffix: "[color]cyan",
+                maxLength: 10,
+            },
+            async (value) => {
+                await mcdu.updateCoRoute(value, (result) => {
+                    if (result) {
+                        CDUInitPage.ShowPage1(mcdu);
+                    } else {
+                        scratchpadCallback();
+                    }
+                });
+            }
+        ).getFieldAsColumnParameters();
+
+        const [flightNoAction, flightNoText, flightNoColor] = new CDU_SingleValueField(mcdu,
             "string",
             mcdu.flightNumber,
             {
@@ -24,29 +47,32 @@ class CDUInitPage {
                     }
                 });
             }
-        );
+        ).getFieldAsColumnParameters();
 
         //;
-        let altDest = "----|----------";
-        let costIndex = "---";
-        let cruiseFlTemp = "-----\xa0|---°";
+        const altDest = new Column(0, "----|----------");
+        let costIndexText = "---";
+        let costIndexAction;
+        let costIndexColor = Column.white;
+
+        const cruiseFl = new Column(0, "-----");
+        const cruiseTemp = new Column (10, "---°", Column.right);
+        const cruiseFlTempSeparator = new Column(6, "/");
+
         let alignOption;
-        let tropo = "{small}36090{end}[color]cyan";
-        let requestButton = "REQUEST*[color]amber";
-        let requestButtonLabel = "INIT [color]amber";
+        const tropo = new Column(23, "36090", Column.small, Column.cyan, Column.right);
+        let requestButton = "REQUEST*";
+        let requestButtonLabel = "INIT";
         let requestEnable = true;
 
         if (mcdu.simbrief.sendStatus === "REQUESTING") {
             requestEnable = false;
-            requestButton = "REQUEST [color]amber";
+            requestButton = "REQUEST ";
         }
 
         if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                fromTo = mcdu.flightPlanManager.getPersistentOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
-                if (coRoute.includes("__________[color]amber")) {
-                    coRoute = "";
-                }
+                fromTo.update(mcdu.flightPlanManager.getPersistentOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident, Column.cyan);
 
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
@@ -58,7 +84,7 @@ class CDUInitPage {
                 }
 
                 // Cost index
-                costIndex = new CDU_SingleValueField(mcdu,
+                [costIndexAction, costIndexText, costIndexColor] = new CDU_SingleValueField(mcdu,
                     "int",
                     mcdu.costIndexSet ? mcdu.costIndex : null,
                     {
@@ -78,15 +104,24 @@ class CDUInitPage {
                         }
                         CDUInitPage.ShowPage1(mcdu);
                     }
-                );
+                ).getFieldAsColumnParameters();
 
-                cruiseFlTemp = "_____\xa0|___°[color]amber";
+                mcdu.onLeftInput[4] = costIndexAction;
+
+                cruiseFl.update("_____", Column.amber);
+                cruiseTemp.update("|___°", Column.amber);
+                cruiseFlTempSeparator.updateAttributes(Column.amber);
+
                 //This is done so pilot enters a FL first, rather than using the computed one
                 if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
-                    cruiseFlTemp =
-                        "{cyan}FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "\xa0" +
-                        (mcdu.cruiseTemperature ? "/" + mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}/" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
-                        "{end}";
+                    cruiseFl.update("FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0"), Column.cyan);
+                    if (mcdu.cruiseTemperature) {
+                        cruiseTemp.update(mcdu.cruiseTemperature.toFixed(0) + "°", Column.cyan);
+                        cruiseFlTempSeparator.updateAttributes(Column.cyan);
+                    } else {
+                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°", Column.cyan, Column.small);
+                        cruiseFlTempSeparator.updateAttributes(Column.cyan, Column.small);
+                    }
                 }
 
                 // CRZ FL / FLX TEMP
@@ -103,14 +138,10 @@ class CDUInitPage {
                 }
 
                 // Since CoRte isn't implemented, AltDest defaults to None Ref: Ares's documents
-                altDest = "NONE[color]cyan";
-                if (mcdu.altDestination) {
-                    altDest = mcdu.altDestination.ident + "[color]cyan";
-                } else {
-                    altDest = "NONE" + "[color]cyan";
-                }
+                altDest.update(mcdu.altDestination ? mcdu.altDestination.ident : "NONE", Column.cyan);
+
                 mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
-                    switch (altDest) {
+                    switch (altDest.raw) {
                         case "NONE":
                             if (value === "") {
                                 CDUAvailableFlightPlanPage.ShowPage(mcdu);
@@ -138,21 +169,10 @@ class CDUInitPage {
             }
         }
 
-        if (mcdu.coRoute) {
-            coRoute = mcdu.coRoute + "[color]cyan";
-        }
-        mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-            mcdu.updateCoRoute(value, (result) => {
-                if (result) {
-                    CDUInitPage.ShowPage1(mcdu);
-                } else {
-                    scratchpadCallback();
-                }
-            });
-        };
+        mcdu.onLeftInput[0] = coRouteAction;
 
         if (mcdu.tropo) {
-            tropo = `{cyan}${mcdu.tropo.toFixed(0).padStart(5, "\xa0")}`;
+            tropo.update("" + mcdu.tropo, Column.big);
         }
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
             if (mcdu.tryUpdateTropo(value)) {
@@ -181,7 +201,9 @@ class CDUInitPage {
                 });
             } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    mcdu.getCoRouteList(mcdu).then(() => {
+                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    });
                 }
             }
         };
@@ -206,9 +228,9 @@ class CDUInitPage {
             }
         };
 
-        let groundTemp = '---';
+        const groundTemp = new Column(23, "---°", Column.right);
         if (mcdu.groundTemp !== undefined) {
-            groundTemp = `{${mcdu.groundTempPilot !== undefined ? 'big' : 'small'}}${mcdu.groundTemp.toFixed(0)}{end}`;
+            groundTemp.update(mcdu.groundTemp.toFixed(0) + "°", Column.cyan, (mcdu.groundTempPilot !== undefined ? Column.big : Column.small));
         }
 
         mcdu.onRightInput[5] = (scratchpadValue, scratchpadCallback) => {
@@ -225,23 +247,60 @@ class CDUInitPage {
             }
         };
 
+        mcdu.onLeftInput[2] = flightNoAction;
+
         mcdu.setArrows(false, false, true, true);
 
-        mcdu.setTemplate([
-            ["INIT"],
-            ["\xa0CO RTE", "FROM/TO\xa0\xa0"],
-            [coRoute, fromTo],
-            ["ALTN/CO RTE", requestButtonLabel],
-            [altDest, requestButton],
-            ["FLT NBR"],
-            [flightNo, alignOption],
+        mcdu.setTemplate(FormatTemplate([
+            [
+                new Column(10, "INIT")
+            ],
+            [
+                new Column(1, "CO RTE"),
+                new Column(21, "FROM/TO", Column.right)
+            ],
+            [
+                new Column(0, coRouteText, coRouteColor),
+                fromTo
+            ],
+            [
+                new Column(0, "ALTN/CO RTE"),
+                new Column(22, requestButtonLabel, Column.amber, Column.right)
+            ],
+            [
+                altDest,
+                new Column(23, requestButton, Column.amber, Column.right)
+            ],
+            [
+                new Column(0, "FLT NBR")
+            ],
+            [
+                new Column(0, flightNoText, flightNoColor),
+                new Column(23, alignOption || "", Column.right)
+            ],
             [""],
-            ["", "WIND/TEMP>"],
-            ["COST INDEX", "TROPO"],
-            [costIndex, tropo],
-            ["CRZ FL/TEMP", "GND TEMP"],
-            [cruiseFlTemp, `{cyan}${groundTemp}°{end}`],
-        ]);
+            [
+                new Column(23, "WIND/TEMP>", Column.right)
+            ],
+            [
+                new Column(0, "COST INDEX"),
+                new Column(23, "TROPO", Column.right)
+            ],
+            [
+                new Column(0, costIndexText, costIndexColor),
+                tropo
+            ],
+            [
+                new Column(0, "CRZ FL/TEMP"),
+                new Column(23, "GND TEMP", Column.right)
+            ],
+            [
+                cruiseFl,
+                cruiseFlTempSeparator,
+                cruiseTemp,
+                groundTemp
+            ]
+        ]));
 
         mcdu.onPrevPage = () => {
             mcdu.goToFuelPredPage();
@@ -299,25 +358,25 @@ class CDUInitPage {
         mcdu.activeSystem = 'FMGC';
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
 
-        let zfwColor = "[color]amber";
-        let zfwCell = "___._";
-        let zfwCgCell = "__._";
+        const zfwCell = new Column(17, "___._", Column.amber, Column.right);
+        const zfwCgCell = new Column(22, "__._", Column.amber, Column.right);
+        const zfwCgCellDivider = new Column(18, "|", Column.amber, Column.right);
+
         if (mcdu._zeroFuelWeightZFWCGEntered) {
             if (isFinite(mcdu.zeroFuelWeight)) {
-                zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
-                zfwColor = "[color]cyan";
+                zfwCell.update(NXUnits.kgToUser(mcdu.zeroFuelWeight).toFixed(1), Column.cyan);
             }
-            if (isFinite(getZfwcg())) {
-                zfwCgCell = getZfwcg().toFixed(1);
+            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
+                zfwCgCell.update(mcdu.zeroFuelWeightMassCenter.toFixed(1), Column.cyan);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
-                zfwColor = "[color]cyan";
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
+                zfwCgCellDivider.updateAttributes(Column.cyan);
             }
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
             if (value === "") {
                 mcdu.setScratchpadText(
-                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
+                    (isFinite(getZfw()) ? (getZfw() / 1000).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {
@@ -331,12 +390,10 @@ class CDUInitPage {
             }
         };
 
-        let blockFuel = "__._";
-        let blockFuelColor = "[color]amber";
+        const blockFuel = new Column(23, "__._", Column.amber, Column.right);
         if (mcdu._blockFuelEntered || mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
             if (isFinite(mcdu.blockFuel)) {
-                blockFuel = (NXUnits.kgToUser(mcdu.blockFuel)).toFixed(1);
-                blockFuelColor = "[color]cyan";
+                blockFuel.update(NXUnits.kgToUser(mcdu.blockFuel).toFixed(1), Column.cyan);
             }
         }
         mcdu.onRightInput[1] = async (value, scratchpadCallback) => {
@@ -359,12 +416,11 @@ class CDUInitPage {
 
         };
 
-        let fuelPlanTopTitle = "";
-        let fuelPlanBottomTitle = "";
-        let fuelPlanColor = "[color]amber";
+        const fuelPlanTopTitle = new Column(23, "", Column.amber, Column.right);
+        const fuelPlanBottomTitle = new Column(23, "", Column.amber, Column.right);
         if (mcdu._zeroFuelWeightZFWCGEntered && !mcdu._blockFuelEntered) {
-            fuelPlanTopTitle = "FUEL ";
-            fuelPlanBottomTitle = "PLANNING }";
+            fuelPlanTopTitle.text = "FUEL ";
+            fuelPlanBottomTitle.text = "PLANNING }";
             mcdu.onRightInput[2] = async () => {
                 if (await mcdu.tryFuelPlanning()) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
@@ -373,9 +429,8 @@ class CDUInitPage {
             };
         }
         if (mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
-            fuelPlanTopTitle = "BLOCK ";
-            fuelPlanBottomTitle = "CONFIRM";
-            fuelPlanColor = "[color]green";
+            fuelPlanTopTitle.update("BLOCK ", Column.green);
+            fuelPlanBottomTitle.update("CONFIRM", Column.green);
             mcdu.onRightInput[2] = async () => {
                 if (await mcdu.tryFuelPlanning()) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
@@ -385,16 +440,16 @@ class CDUInitPage {
             };
         }
 
-        let towCell = "---.-";
-        let lwCell = "---.-";
-        let towLwColor = "[color]white";
+        const towCell = new Column(17, "---.-", Column.right);
+        const lwCell = new Column(23, "---.-", Column.right);
+        const towLwCellDivider = new Column(18, "/");
+        const taxiFuelCell = new Column(0, "0.4", Column.cyan, Column.small);
 
-        let taxiFuelCell = "{small}0.4{end}";
         if (isFinite(mcdu.taxiFuelWeight)) {
             if (mcdu._taxiEntered) {
-                taxiFuelCell = (NXUnits.kgToUser(mcdu.taxiFuelWeight)).toFixed(1);
+                taxiFuelCell.update(NXUnits.kgToUser(mcdu.taxiFuelWeight).toFixed(1), Column.big);
             } else {
-                taxiFuelCell = "{small}" + (NXUnits.kgToUser(mcdu.taxiFuelWeight)).toFixed(1) + "{end}";
+                taxiFuelCell.text = NXUnits.kgToUser(mcdu.taxiFuelWeight).toFixed(1);
             }
         }
         mcdu.onLeftInput[0] = async (value, scratchpadCallback) => {
@@ -419,17 +474,15 @@ class CDUInitPage {
             }
         };
 
-        let tripWeightCell = "---.-";
-        let tripTimeCell = "----";
-        let tripColor = "[color]white";
+        const tripWeightCell = new Column(4, "---.-", Column.right);
+        const tripTimeCell = new Column(9, "----", Column.right);
+        const tripCellDivider = new Column(5, "/");
+        const rteRsvWeightCell = new Column(4, "---.-", Column.right);
+        const rteRsvPercentCell = new Column(6, "5.0", Column.cyan);
+        const rteRsvCellDivider = new Column(5, "/", Column.cyan);
 
-        let rteRsvWeightCell = "---.-";
-        let rteRsvPercentCell = "5.0";
-        let rteRsvColor = "[color]white";
-        let rteRsvPctColor = "{cyan}";
         if (isFinite(mcdu.getRouteReservedPercent())) {
-            rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
-            rteRsvPctColor = "{cyan}";
+            rteRsvPercentCell.text = mcdu.getRouteReservedPercent().toFixed(1);
         }
         mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
             if (await mcdu.trySetRouteReservedPercent(value)) {
@@ -439,16 +492,16 @@ class CDUInitPage {
             }
         };
 
-        let altnWeightCell = "---.-";
-        let altnTimeCell = "----";
-        let altnColor = "[color]white";
-        let altnTimeColor = "{white}";
+        const altnWeightCell = new Column(4, "---.-", Column.right);
+        const altnTimeCell = new Column(9, "----", Column.right);
+        const altnCellDivider = new Column(5, "/");
+        const finalWeightCell = new Column(4, "---.-", Column.right);
+        const finalTimeCell = new Column(9, "----", Column.right);
+        const finalCellDivider = new Column(5, "/");
 
-        let finalWeightCell = "---.-";
-        let finalTimeCell = "----";
-        let finalColor = "[color]white";
         if (mcdu.getRouteFinalFuelTime() > 0) {
-            finalTimeCell = "{cyan}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
+            finalTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan);
+            finalCellDivider.updateAttributes(Column.cyan);
         }
         mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
             if (await mcdu.trySetRouteFinalTime(value)) {
@@ -458,31 +511,36 @@ class CDUInitPage {
             }
         };
 
-        let extraWeightCell = "---.-";
-        let extraTimeCell = "----";
-        let extraColor = "[color]white";
-        let extraTimeColor = "{white}";
+        const extraWeightCell = new Column(18, "---.-", Column.right);
+        const extraTimeCell = new Column(23, "----", Column.right);
+        const extraCellDivider = new Column(19, "/");
+        const minDestFob = new Column(4, "---.-", Column.right);
+        const tripWindDirCell = new Column(19, "--");
+        const tripWindAvgCell = new Column(21, "---");
 
-        let minDestFob = "---.-";
-        let minDestFobColor = "[color]white";
+        if (
+            mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident
+            && mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident
+        ) {
+            tripWindDirCell.update(mcdu._windDir, Column.cyan, Column.small);
+            tripWindAvgCell.update(mcdu.averageWind.toFixed(0).padStart(3, "0"), Column.cyan);
 
-        let tripWindCell = `{small}${mcdu._windDir}{end}{big}${mcdu.averageWind.toFixed(0).padStart(3, "0")}{end}`;
-        mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
-            if (await mcdu.trySetAverageWind(value)) {
-                CDUInitPage.ShowPage2(mcdu);
-            } else {
-                scratchpadCallback();
-            }
-        };
+            mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
+                if (await mcdu.trySetAverageWind(value)) {
+                    CDUInitPage.ShowPage2(mcdu);
+                } else {
+                    scratchpadCallback();
+                }
+            };
+        }
 
         if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
-            fuelPlanTopTitle = "";
-            fuelPlanBottomTitle = "";
+            fuelPlanTopTitle.text = "";
+            fuelPlanBottomTitle.text = "";
 
             mcdu.tryUpdateTOW();
             if (isFinite(mcdu.takeOffWeight)) {
-                towCell = "{small}" + (NXUnits.kgToUser(mcdu.takeOffWeight)).toFixed(1);
-                towLwColor = "[color]green";
+                towCell.update(NXUnits.kgToUser(mcdu.takeOffWeight).toFixed(1), Column.green, Column.small);
             }
 
             if (mcdu._fuelPredDone) {
@@ -491,16 +549,17 @@ class CDUInitPage {
                 }
                 if (isFinite(mcdu.getRouteFinalFuelWeight()) && isFinite(mcdu.getRouteFinalFuelTime())) {
                     if (mcdu._rteFinalWeightEntered) {
-                        finalWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight())).toFixed(1);
+                        finalWeightCell.update(NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight()).toFixed(1), Column.cyan);
                     } else {
-                        finalWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight())).toFixed(1) + "{end}";
+                        finalWeightCell.update(NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight()).toFixed(1), Column.cyan, Column.small);
                     }
                     if (mcdu._rteFinalTimeEntered || !mcdu.routeFinalEntered()) {
-                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan);
                     } else {
-                        finalTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
+                        finalTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan, Column.small);
+                        finalCellDivider.updateAttributes(Column.small);
                     }
-                    finalColor = "[color]cyan";
+                    finalCellDivider.updateAttributes(Column.cyan);
                 }
                 mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
                     setTimeout(async () => {
@@ -517,25 +576,19 @@ class CDUInitPage {
                 if (mcdu.altDestination) {
                     if (mcdu._routeAltFuelEntered) {
                         if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altnWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altnTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
-                            altnTimeColor = "{green}";
-                            altnColor = "[color]cyan";
+                            altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan);
+                            altnTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
                         }
                     } else {
                         mcdu.tryUpdateRouteAlternate();
                         if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altnWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altnTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
-                            altnTimeColor = "{green}";
-                            altnColor = "[color]cyan";
+                            altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan, Column.small);
+                            altnTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
                         }
                     }
+                    altnCellDivider.updateAttributes(Column.green, Column.small);
                 } else {
-                    altnWeightCell = "{sp}{sp}{small}0.0{end}";
-                    altnTimeCell = "----";
-                    altnColor = "[color]green";
-                    altnTimeColor = "{white}";
+                    altnWeightCell.update("0.0", Column.green, Column.small);
                 }
 
                 mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
@@ -552,31 +605,29 @@ class CDUInitPage {
 
                 mcdu.tryUpdateRouteTrip();
                 if (isFinite(mcdu.getTotalTripFuelCons()) && isFinite(mcdu.getTotalTripTime())) {
-                    tripWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getTotalTripFuelCons())).toFixed(1);
-                    tripTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
-                    tripColor = "[color]green";
+                    tripWeightCell.update(NXUnits.kgToUser(mcdu.getTotalTripFuelCons()).toFixed(1), Column.green, Column.small);
+                    tripTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime), Column.green, Column.small);
+                    tripCellDivider.updateAttributes(Column.green, Column.small);
                 }
 
                 if (isFinite(mcdu.getRouteReservedWeight())) {
                     if (mcdu._rteReservedWeightEntered) {
-                        rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
+                        rteRsvWeightCell.update(NXUnits.kgToUser(mcdu.getRouteReservedWeight()).toFixed(1), Column.cyan);
                     } else {
-                        rteRsvWeightCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1) + "{end}";
+                        rteRsvWeightCell.update(NXUnits.kgToUser(mcdu.getRouteReservedWeight()).toFixed(1), Column.cyan, Column.small);
                     }
-                    rteRsvColor = "[color]cyan";
                 }
 
                 if (mcdu._rteRsvPercentOOR) {
-                    rteRsvPercentCell = "--.-";
-                    rteRsvPctColor = "{white}";
+                    rteRsvPercentCell.update("--.-", Column.white);
+                    rteRsvCellDivider.updateAttributes(Column.white);
                 } else if (isFinite(mcdu.getRouteReservedPercent())) {
                     if (mcdu._rteReservedPctEntered || !mcdu.routeReservedEntered()) {
-                        rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
+                        rteRsvPercentCell.update(mcdu.getRouteReservedPercent().toFixed(1), Column.cyan);
                     } else {
-                        rteRsvPercentCell = "{small}" + mcdu.getRouteReservedPercent().toFixed(1) + "{end}";
+                        rteRsvPercentCell.update(mcdu.getRouteReservedPercent().toFixed(1), Column.cyan, Column.small);
+                        rteRsvCellDivider.updateAttributes(Column.small);
                     }
-                    rteRsvColor = "[color]cyan";
-                    rteRsvPctColor = "{cyan}";
                 }
 
                 mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
@@ -592,12 +643,15 @@ class CDUInitPage {
                 };
 
                 mcdu.tryUpdateLW();
-                lwCell = (NXUnits.kgToUser(mcdu.landingWeight)).toFixed(1);
-                lwCell = lwCell.length <= 4 ? "{sp}" + lwCell : lwCell;
+                lwCell.update(NXUnits.kgToUser(mcdu.landingWeight).toFixed(1), Column.green, Column.small);
+                towLwCellDivider.updateAttributes(Column.green, Column.small);
 
-                tripWindCell = "{small}" + mcdu._windDir + "000" + "{end}";
+                tripWindDirCell.update(mcdu._windDir, Column.small);
+                tripWindAvgCell.update("000", Column.small);
+
                 if (isFinite(mcdu.averageWind)) {
-                    tripWindCell = `{small}${mcdu._windDir}{end}{big}${mcdu.averageWind.toFixed(0).padStart(3, "0")}{end}`;
+                    tripWindDirCell.update(mcdu._windDir, Column.small);
+                    tripWindAvgCell.update(mcdu.averageWind.toFixed(0).padStart(3, "0"), Column.big);
                 }
                 mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
                     setTimeout(async () => {
@@ -612,12 +666,10 @@ class CDUInitPage {
                 };
 
                 if (mcdu._minDestFobEntered) {
-                    minDestFob = "{sp}{sp}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1);
-                    minDestFobColor = "[color]cyan";
+                    minDestFob.update(NXUnits.kgToUser(mcdu._minDestFob).toFixed(1), Column.cyan);
                 } else {
                     mcdu.tryUpdateMinDestFob();
-                    minDestFob = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1) + "{end}";
-                    minDestFobColor = "[color]cyan";
+                    minDestFob.update(NXUnits.kgToUser(mcdu._minDestFob).toFixed(1), Column.cyan, Column.small);
                 }
                 mcdu.onLeftInput[5] = async (value, scratchpadCallback) => {
                     setTimeout(async () => {
@@ -632,35 +684,87 @@ class CDUInitPage {
                 };
                 mcdu.checkEFOBBelowMin();
 
-                extraWeightCell = "{small}" + (NXUnits.kgToUser(mcdu.tryGetExtraFuel())).toFixed(1);
-                if (mcdu.tryGetExtraFuel() < 0) {
-                    extraTimeCell = "----{end}";
-                    extraTimeColor = "{white}";
-                } else {
-                    extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
-                    extraTimeColor = "{green}";
+                extraWeightCell.update(NXUnits.kgToUser(mcdu.tryGetExtraFuel()).toFixed(1), Column.green, Column.small);
+                if (mcdu.tryGetExtraFuel() >= 0) {
+                    extraTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()), Column.green, Column.small);
+                    extraCellDivider.updateAttributes(Column.green, Column.small);
                 }
-                extraColor = "[color]green";
             }
         }
 
         mcdu.setArrows(false, false, true, true);
 
-        mcdu.setTemplate([
-            ["INIT FUEL PRED"],
-            ["TAXI", "ZFW/ZFWCG"],
-            [taxiFuelCell + "[color]cyan", zfwCell + "|" + zfwCgCell + zfwColor],
-            ["TRIP\xa0\xa0/TIME", "BLOCK"],
-            [tripWeightCell + "/" + tripTimeCell + tripColor, blockFuel + blockFuelColor],
-            ["RTE RSV/%", fuelPlanTopTitle + fuelPlanColor],
-            [rteRsvWeightCell + rteRsvPctColor + "/" + rteRsvPercentCell + "{end}" + rteRsvColor, fuelPlanBottomTitle + fuelPlanColor],
-            ["ALTN\xa0\xa0/TIME", "TOW/\xa0\xa0\xa0\xa0LW"],
-            [altnWeightCell + altnTimeColor + "/" + altnTimeCell + "{end}" + altnColor, towCell + "/" + lwCell + towLwColor],
-            ["FINAL\xa0/TIME", "TRIP WIND"],
-            [finalWeightCell + "/" + finalTimeCell + finalColor, `{cyan}${tripWindCell}{end}`],
-            ["MIN DEST FOB", "EXTRA/\xa0TIME"],
-            [minDestFob + minDestFobColor, extraWeightCell + extraTimeColor + "/" + extraTimeCell + "{end}" + extraColor],
-        ]);
+        mcdu.setTemplate(FormatTemplate([
+            [
+                new Column(5, "INIT FUEL PRED")
+            ],
+            [
+                new Column(0, "TAXI"),
+                new Column(15, "ZFW/ZFWCG")
+            ],
+            [
+                taxiFuelCell,
+                zfwCell,
+                zfwCgCellDivider,
+                zfwCgCell
+            ],
+            [
+                new Column(0, "TRIP"),
+                new Column(5, "/TIME"),
+                new Column(19, "BLOCK")
+            ],
+            [
+                tripWeightCell,
+                tripCellDivider,
+                tripTimeCell,
+                blockFuel
+            ],
+            [
+                new Column(0, "RTE RSV/%"),
+                fuelPlanTopTitle
+            ],
+            [
+                rteRsvWeightCell,
+                rteRsvCellDivider,
+                rteRsvPercentCell,
+                fuelPlanBottomTitle
+            ],
+            [
+                new Column(0, "ALTN"),
+                new Column(5, "/TIME"),
+                new Column(15, "TOW/"),
+                new Column(22, "LW")
+            ],
+            [
+                altnWeightCell,
+                altnCellDivider,
+                altnTimeCell,
+                towCell,
+                towLwCellDivider,
+                lwCell
+            ],
+            [
+                new Column(0, "FINAL/TIME"),
+                new Column(15, "TRIP WIND")
+            ],
+            [
+                finalWeightCell,
+                finalCellDivider,
+                finalTimeCell,
+                tripWindDirCell,
+                tripWindAvgCell
+            ],
+            [
+                new Column(0, "MIN DEST FOB"),
+                new Column(14, "EXTRA/TIME")
+            ],
+            [
+                minDestFob,
+                extraWeightCell,
+                extraCellDivider,
+                extraTimeCell
+            ]
+        ]));
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage1(mcdu);

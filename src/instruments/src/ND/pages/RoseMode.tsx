@@ -5,14 +5,16 @@ import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
 import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { TopMessages } from '../elements/TopMessages';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
-import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
+import { TerrainMap } from '../elements/TerrainMap';
 
 export interface RoseModeProps {
     symbols: NdSymbol[],
@@ -22,42 +24,39 @@ export interface RoseModeProps {
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
+    trueRef: boolean,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden }) => {
-    const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
-    const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
-    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
+export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden, trueRef }) => {
+    const magHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_HEADING');
+    const magTrack = useArinc429Var('L:A32NX_ADIRS_IR_1_TRACK');
+    const trueHeading = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_HEADING');
+    const trueTrack = useArinc429Var('L:A32NX_ADIRS_IR_1_TRUE_TRACK');
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
-    const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
+    const [selectedHeading] = useSimVar('L:A32NX_FCU_HEADING_SELECTED', 'degrees');
     const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
-    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
-    const heading = Math.round(Number(MathUtils.fastToFixed(magHeading, 1)) * 1000) / 1000;
-    let track = Math.round(Number(MathUtils.fastToFixed(magTrack, 1)) * 1000) / 1000;
-
-    // Workaround for bug with gps ground track simvar
-    if (groundSpeed < 40) {
-        track = (0.025 * groundSpeed + 0.00005) * track + (1 - (0.025 * groundSpeed + 0.00005)) * heading;
-    }
+    const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
+    const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting / 2, 250, trueHeading);
+        params.compute(ppos, rangeSetting / 2, 250, trueHeading.value);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading);
-    }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+        mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading.value);
+    }, [ppos.lat, ppos.long, trueHeading.value, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
         return (
             <>
+                <TerrainMap x={0} y={134} width={768} height={250} side={side} potentiometerIndex={side === 'L' ? 94 : 95} clipName="rose-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}
@@ -83,25 +82,25 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                             )}
                         </g>
                     )}
-                    <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
-                    <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
+                    <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} trueRef={trueRef} />
+                    <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} trueRef={trueRef} />
                 </g>
 
-                { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
+                { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={heading} side={side} /> }
 
-                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} _side={side} /> }
+                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={heading} _side={side} /> }
 
-                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} /> }
+                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} trueRef={trueRef} /> }
                 { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
                 { mode === Mode.ROSE_ILS && <IlsInfo /> }
 
-                <ApproachMessage side={side} />
+                <TopMessages side={side} ppos={ppos} trueTrack={trueTrack} trueRef={trueRef} />
                 <TrackBug heading={heading} track={track} />
                 { mode === Mode.ROSE_NAV && lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
                 { mode === Mode.ROSE_ILS && <GlideSlope /> }
                 <Plane />
-                {mode === Mode.ROSE_NAV && <CrossTrack x={390} y={407} />}
+                {mode === Mode.ROSE_NAV && <CrossTrack x={390} y={407} side={side} />}
                 <g clipPath="url(#rose-mode-tcas-clip)">
                     <Traffic mode={mode} mapParams={mapParams} />
                 </g>
@@ -148,18 +147,18 @@ const Overlay: FC<OverlayProps> = ({ heading, rangeSetting, tcasMode }) => (
             { (tcasMode > 0 && rangeSetting === 10)
                     && (
                         <g>
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(0 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(30 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(60 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(90 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(120 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(150 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(180 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(210 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(240 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(270 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(300 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="White rounded" transform="rotate(330 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(0 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(30 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(60 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(90 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(120 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(150 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(180 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(210 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(240 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(270 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(300 384 384)" />
+                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(330 384 384)" />
                         </g>
                     )}
 
@@ -167,18 +166,18 @@ const Overlay: FC<OverlayProps> = ({ heading, rangeSetting, tcasMode }) => (
             { (tcasMode > 0 && rangeSetting === 20)
                     && (
                         <g>
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(0 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(30 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(60 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(90 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(120 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(150 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(180 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(210 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(240 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(270 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(300 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="White rounded" transform="rotate(330 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(0 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(30 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(60 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(90 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(120 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(150 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(180 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(210 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(240 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(270 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(300 384 384)" />
+                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(330 384 384)" />
                         </g>
                     )}
 
@@ -546,6 +545,7 @@ const MapFailOverlay: FC<Pick<OverlayProps, 'rangeSetting'>> = memo(({ rangeSett
     </>
 ));
 
+// TODO true ref
 const VorCaptureOverlay: React.FC<{
     heading: number,
     side: EfisSide,
@@ -579,13 +579,13 @@ const VorCaptureOverlay: React.FC<{
             </g>
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="shadow rounded"
+                className="rounded shadow"
                 id="vor-course-pointer-shadow"
                 strokeWidth={4.5}
             />
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="Cyan rounded"
+                className="rounded Cyan"
                 id="vor-course-pointer"
                 strokeWidth={4}
             />
@@ -594,28 +594,28 @@ const VorCaptureOverlay: React.FC<{
                     <>
                         <path
                             d="M372,322 L384,304 L396,322"
-                            className="shadow rounded"
+                            className="rounded shadow"
                             transform={`translate(${cdiPx}, ${toward ? 0 : 160}) rotate(${toward ? 0 : 180} 384 304)`}
                             id="vor-deviation-direction-shadow"
                             strokeWidth={4.5}
                         />
                         <path
                             d="M384,304 L384,464"
-                            className="shadow rounded"
+                            className="rounded shadow"
                             transform={`translate(${cdiPx}, 0)`}
                             id="vor-deviation-shadow"
                             strokeWidth={4.5}
                         />
                         <path
                             d="M372,322 L384,304 L396,322"
-                            className="Cyan rounded"
+                            className="rounded Cyan"
                             transform={`translate(${cdiPx}, ${toward ? 0 : 160}) rotate(${toward ? 0 : 180} 384 304)`}
                             id="vor-deviation-direction"
                             strokeWidth={4}
                         />
                         <path
                             d="M384,304 L384,464"
-                            className="Cyan rounded"
+                            className="rounded Cyan"
                             transform={`translate(${cdiPx}, 0)`}
                             id="vor-deviation"
                             strokeWidth={4}
@@ -626,6 +626,7 @@ const VorCaptureOverlay: React.FC<{
     );
 };
 
+// TODO true ref
 const IlsCaptureOverlay: React.FC<{
     heading: number,
     _side: EfisSide,
@@ -650,13 +651,13 @@ const IlsCaptureOverlay: React.FC<{
             </g>
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="shadow rounded"
+                className="rounded shadow"
                 id="ils-course-pointer-shadow"
                 strokeWidth={4.5}
             />
             <path
                 d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="Magenta rounded"
+                className="rounded Magenta"
                 id="ils-course-pointer"
                 strokeWidth={4}
             />
@@ -665,14 +666,14 @@ const IlsCaptureOverlay: React.FC<{
                     <>
                         <path
                             d="M384,304 L384,464"
-                            className="shadow rounded"
+                            className="rounded shadow"
                             transform={`translate(${cdiPx}, 0)`}
                             id="ils-deviation-shadow"
                             strokeWidth={4.5}
                         />
                         <path
                             d="M384,304 L384,464"
-                            className="Magenta rounded"
+                            className="rounded Magenta"
                             transform={`translate(${cdiPx}, 0)`}
                             id="ils-deviation"
                             strokeWidth={4}
@@ -698,19 +699,20 @@ const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, tr
             <path
                 d="M384,134 L379,143 L384,152 L389,143 L384,134"
                 transform={`rotate(${diff} 384 384)`}
-                className="shadow rounded"
+                className="rounded shadow"
                 strokeWidth={3.5}
             />
             <path
                 d="M384,134 L379,143 L384,152 L389,143 L384,134"
                 transform={`rotate(${diff} 384 384)`}
-                className="Green rounded"
+                className="rounded Green"
                 strokeWidth={3}
             />
         </>
     );
 });
 
+// TODO true ref
 const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, lsCourse }) => {
     if (lsCourse < 0) {
         return null;
@@ -722,13 +724,13 @@ const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, l
             <path
                 d="M384,128 L384,96 M376,120 L392,120"
                 transform={`rotate(${diff} 384 384)`}
-                className="shadow rounded"
+                className="rounded shadow"
                 strokeWidth={2.5}
             />
             <path
                 d="M384,128 L384,96 M376,120 L392,120"
                 transform={`rotate(${diff} 384 384)`}
-                className="Magenta rounded"
+                className="rounded Magenta"
                 strokeWidth={2}
             />
         </>
@@ -746,13 +748,13 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
             <path
                 d="M380,132 L372,114 L396,114 L388,132"
                 transform={`rotate(${diff} 384 384)`}
-                className="shadow rounded"
+                className="rounded shadow"
                 strokeWidth={3.5}
             />
             <path
                 d="M380,132 L372,114 L396,114 L388,132"
                 transform={`rotate(${diff} 384 384)`}
-                className="Cyan rounded"
+                className="rounded Cyan"
                 strokeWidth={3}
             />
         </>
@@ -776,7 +778,7 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
     const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [vorCourse] = useSimVar(`NAV OBS:${index}`, 'degrees');
-    const [tuningMode] = useSimVar(`L:A32NX_FMGC_RADIONAV_${index}_TUNING_MODE`, 'enum');
+    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
     const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
 
     const [freqInt, freqDecimal] = vorFrequency.toFixed(2).split('.', 2);
@@ -806,7 +808,7 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
                 {vorCourse >= 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            { vorFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text> }
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
             <text x={0} y={60} fontSize={25} className="White" textAnchor="end">{vorIdent}</text>
         </Layer>
     );
@@ -816,7 +818,7 @@ const IlsInfo: FC = memo(() => {
     const [ilsIdent] = useSimVar('NAV IDENT:3', 'string');
     const [ilsFrequency] = useSimVar('NAV ACTIVE FREQUENCY:3', 'megahertz');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
-    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'enum');
+    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
     const [locAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
 
     const [freqInt, freqDecimal] = ilsFrequency.toFixed(2).split('.', 2);
@@ -843,7 +845,7 @@ const IlsInfo: FC = memo(() => {
                 {locAvailable ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            { ilsFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text> }
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
             <text x={0} y={60} fontSize={25} className="Magenta" textAnchor="end">{ilsIdent}</text>
         </Layer>
     );
@@ -869,14 +871,14 @@ const GlideSlope: FC = () => {
                 <path
                     d="M10,0 L0,-16 L-10,0"
                     transform={`translate(0 ${Math.max(-128, deviationPx)})`}
-                    className="Magenta rounded"
+                    className="rounded Magenta"
                     strokeWidth={2.5}
                     visibility={(gsAvailable && deviationPx < 128) ? 'visible' : 'hidden'}
                 />
                 <path
                     d="M-10,0 L0,16 L10,0"
                     transform={`translate(0 ${Math.min(128, deviationPx)})`}
-                    className="Magenta rounded"
+                    className="rounded Magenta"
                     strokeWidth={2.5}
                     visibility={(gsAvailable && deviationPx > -128) ? 'visible' : 'hidden'}
                 />

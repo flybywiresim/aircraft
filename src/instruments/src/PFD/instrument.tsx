@@ -1,3 +1,4 @@
+import { DisplayManagementComputer } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
@@ -22,6 +23,8 @@ class A32NX_PFD extends BaseInstrument {
 
     private readonly adirsValueProvider: AdirsValueProvider;
 
+    private readonly displayManagementComputer: DisplayManagementComputer;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -39,6 +42,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
         this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
+        this.displayManagementComputer = new DisplayManagementComputer(this.bus);
     }
 
     get templateID(): string {
@@ -58,6 +62,7 @@ class A32NX_PFD extends BaseInstrument {
 
         this.arincProvider.init();
         this.clock.init();
+        this.displayManagementComputer.init();
 
         this.simVarPublisher.subscribe('elec');
         this.simVarPublisher.subscribe('elecFo');
@@ -67,10 +72,9 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('potentiometerFo');
         this.simVarPublisher.subscribe('pitch');
         this.simVarPublisher.subscribe('roll');
-        this.simVarPublisher.subscribe('heading');
+        this.simVarPublisher.subscribe('magHeadingRaw');
         this.simVarPublisher.subscribe('altitude');
         this.simVarPublisher.subscribe('speed');
-        this.simVarPublisher.subscribe('alphaProt');
         this.simVarPublisher.subscribe('noseGearCompressed');
         this.simVarPublisher.subscribe('leftMainGearCompressed');
         this.simVarPublisher.subscribe('rightMainGearCompressed');
@@ -97,8 +101,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('airKnob');
         this.simVarPublisher.subscribe('vsBaro');
         this.simVarPublisher.subscribe('vsInert');
-        this.simVarPublisher.subscribe('sideStickY');
-        this.simVarPublisher.subscribe('sideStickX');
         this.simVarPublisher.subscribe('fdYawCommand');
         this.simVarPublisher.subscribe('fdBank');
         this.simVarPublisher.subscribe('fdPitch');
@@ -117,33 +119,25 @@ class A32NX_PFD extends BaseInstrument {
 
         this.simVarPublisher.subscribe('vr');
 
-        this.simVarPublisher.subscribe('vMax');
-
         this.simVarPublisher.subscribe('isAltManaged');
 
         this.simVarPublisher.subscribe('mach');
         this.simVarPublisher.subscribe('flapHandleIndex');
 
-        this.simVarPublisher.subscribe('greenDotSpeed');
-
-        this.simVarPublisher.subscribe('slatSpeed');
-
-        this.simVarPublisher.subscribe('fSpeed');
         this.simVarPublisher.subscribe('transAlt');
         this.simVarPublisher.subscribe('transAltAppr');
 
-        this.simVarPublisher.subscribe('groundTrack');
+        this.simVarPublisher.subscribe('magTrackRaw');
+        this.simVarPublisher.subscribe('selectedHeading');
         this.simVarPublisher.subscribe('showSelectedHeading');
         this.simVarPublisher.subscribe('altConstraint');
         this.simVarPublisher.subscribe('trkFpaActive');
         this.simVarPublisher.subscribe('aoa');
-        this.simVarPublisher.subscribe('groundHeadingTrue');
-        this.simVarPublisher.subscribe('groundTrackTrue');
 
         this.simVarPublisher.subscribe('selectedFpa');
         this.simVarPublisher.subscribe('targetSpeedManaged');
-        this.simVarPublisher.subscribe('vfeNext');
         this.simVarPublisher.subscribe('ilsCourse');
+        this.simVarPublisher.subscribe('ilsRMPTuned');
         this.simVarPublisher.subscribe('tla1');
         this.simVarPublisher.subscribe('tla2');
         this.simVarPublisher.subscribe('metricAltToggle');
@@ -160,18 +154,12 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('engTwoRunning');
         this.simVarPublisher.subscribe('expediteMode');
         this.simVarPublisher.subscribe('setHoldSpeed');
-        this.simVarPublisher.subscribe('vls');
-        this.simVarPublisher.subscribe('alphaLim');
         this.simVarPublisher.subscribe('trkFpaDeselectedTCAS');
         this.simVarPublisher.subscribe('tcasRaInhibited');
         this.simVarPublisher.subscribe('groundSpeed');
         this.simVarPublisher.subscribe('radioAltitude1');
         this.simVarPublisher.subscribe('radioAltitude2');
 
-        this.simVarPublisher.subscribe('beta');
-        this.simVarPublisher.subscribe('betaTargetActive');
-        this.simVarPublisher.subscribe('betaTarget');
-        this.simVarPublisher.subscribe('latAcc');
         this.simVarPublisher.subscribe('crzAltMode');
         this.simVarPublisher.subscribe('tcasModeDisarmed');
         this.simVarPublisher.subscribe('flexTemp');
@@ -180,8 +168,62 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('autoBrakeDecel');
         this.simVarPublisher.subscribe('fpaRaw');
         this.simVarPublisher.subscribe('daRaw');
+        this.simVarPublisher.subscribe('latAccRaw');
         this.simVarPublisher.subscribe('ls1Button');
         this.simVarPublisher.subscribe('ls2Button');
+        this.simVarPublisher.subscribe('xtk');
+        this.simVarPublisher.subscribe('ldevRequestLeft');
+        this.simVarPublisher.subscribe('ldevRequestRight');
+        this.simVarPublisher.subscribe('landingElevation1');
+        this.simVarPublisher.subscribe('landingElevation1Ssm');
+        this.simVarPublisher.subscribe('landingElevation2');
+        this.simVarPublisher.subscribe('landingElevation2Ssm');
+
+        this.simVarPublisher.subscribe('fcdc1DiscreteWord1Raw');
+        this.simVarPublisher.subscribe('fcdc2DiscreteWord1Raw');
+        this.simVarPublisher.subscribe('fcdc1DiscreteWord2Raw');
+        this.simVarPublisher.subscribe('fcdc2DiscreteWord2Raw');
+
+        this.simVarPublisher.subscribe('fcdc1CaptPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2CaptPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc1FoPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2FoPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc1CaptRollCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2CaptRollCommandRaw');
+        this.simVarPublisher.subscribe('fcdc1FoRollCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2FoRollCommandRaw');
+
+        this.simVarPublisher.subscribe('fac1Healthy');
+        this.simVarPublisher.subscribe('fac2Healthy');
+        this.simVarPublisher.subscribe('fac1VAlphaProtRaw');
+        this.simVarPublisher.subscribe('fac2VAlphaProtRaw');
+        this.simVarPublisher.subscribe('fac1VAlphaMaxRaw');
+        this.simVarPublisher.subscribe('fac2VAlphaMaxRaw');
+        this.simVarPublisher.subscribe('fac1VStallWarnRaw');
+        this.simVarPublisher.subscribe('fac2VStallWarnRaw');
+        this.simVarPublisher.subscribe('fac1VMaxRaw');
+        this.simVarPublisher.subscribe('fac2VMaxRaw');
+        this.simVarPublisher.subscribe('fac1VFeNextRaw');
+        this.simVarPublisher.subscribe('fac2VFeNextRaw');
+        this.simVarPublisher.subscribe('fac1VCTrendRaw');
+        this.simVarPublisher.subscribe('fac2VCTrendRaw');
+        this.simVarPublisher.subscribe('fac1VManRaw');
+        this.simVarPublisher.subscribe('fac2VManRaw');
+        this.simVarPublisher.subscribe('fac1V4Raw');
+        this.simVarPublisher.subscribe('fac2V4Raw');
+        this.simVarPublisher.subscribe('fac1V3Raw');
+        this.simVarPublisher.subscribe('fac2V3Raw');
+        this.simVarPublisher.subscribe('fac1VLsRaw');
+        this.simVarPublisher.subscribe('fac2VLsRaw');
+        this.simVarPublisher.subscribe('fac1EstimatedBetaRaw');
+        this.simVarPublisher.subscribe('fac2EstimatedBetaRaw');
+        this.simVarPublisher.subscribe('fac1BetaTargetRaw');
+        this.simVarPublisher.subscribe('fac2BetaTargetRaw');
+        this.simVarPublisher.subscribe('trueRefPushbutton');
+        this.simVarPublisher.subscribe('irMaintWordRaw');
+        this.simVarPublisher.subscribe('trueHeadingRaw');
+        this.simVarPublisher.subscribe('trueTrackRaw');
+        this.simVarPublisher.subscribe('slatPosLeft');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }

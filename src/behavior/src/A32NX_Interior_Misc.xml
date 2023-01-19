@@ -176,16 +176,18 @@
         <DefaultTemplateParameters>
             <NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
             <PART_ID>LANDING_GEAR_Light</PART_ID>
-            <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+            <SIMVAR_UNLOCK>A32NX_LGCIU_1_#GEAR_ID#_GEAR_UNLOCKED</SIMVAR_UNLOCK>
+            <SIMVAR_DOWNLOCK>A32NX_LGCIU_1_#GEAR_ID#_GEAR_DOWNLOCKED</SIMVAR_DOWNLOCK>
             <SEQ_POWERED>1</SEQ_POWERED>
             <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE> (L:#SIMVAR_UNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE> (L:#SIMVAR_DOWNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
+
 
     <Template Name="FBW_Airbus_Fuel_Pump">
         <UseTemplate Name="FBW_Push_Toggle">
@@ -223,7 +225,8 @@
     <Template Name="FBW_Airbus_AntiIce_Wing">
         <UseTemplate Name="FBW_Push_Toggle">
             <TOOLTIPID>%((A:STRUCTURAL DEICE SWITCH, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_ON%{else}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_OFF%{end}</TOOLTIPID>
-            <SEQ2_CODE>(A:STRUCTURAL DEICE SWITCH, Bool)</SEQ2_CODE>
+            <SEQ1_CODE>(L:A32NX_PNEU_WING_ANTI_ICE_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED, Bool)</SEQ2_CODE>
             <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_STRUCTURAL_DEICE)</LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>
@@ -463,12 +466,12 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
-                <LEFT_SINGLE_CODE>
+               <!--  <LEFT_SINGLE_CODE>
                     #GROUP_INDEX# -1 &gt; if{
                         (&gt;H:A32NX_SD_PAGE_CHANGED)
                         #GROUP_INDEX# (&gt;L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX)
                     }
-                </LEFT_SINGLE_CODE>
+                </LEFT_SINGLE_CODE> -->
             </UseTemplate>
         </Component>
 

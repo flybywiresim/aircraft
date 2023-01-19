@@ -1,11 +1,10 @@
 import { NXDataStore } from '@shared/persistence';
-import { setSimVar } from '../../util.js';
 
 type SimVar = [name: string, type: string, defaultValue: string];
 
 function syncSetting(simVar: SimVar, propertyName: string) {
     NXDataStore.getAndSubscribe(propertyName, (prop, value) => {
-        setSimVar(simVar[0], parseInt(value), simVar[1]).catch((e) => console.log(propertyName, e));
+        SimVar.SetSimVarValue(simVar[0], simVar[1], parseInt(value)).catch((e) => console.log(propertyName, e));
     }, simVar[2]);
 }
 
@@ -26,6 +25,12 @@ const settingsToSync: Map<string, SimVar> = new Map([
     ['SOUND_ANNOUNCEMENTS_ENABLED', ['L:A32NX_SOUND_ANNOUNCEMENTS_ENABLED', 'number', '1']],
     ['SOUND_BOARDING_MUSIC_ENABLED', ['L:A32NX_SOUND_BOARDING_MUSIC_ENABLED', 'number', '1']],
     ['RADIO_RECEIVER_USAGE_ENABLED', ['L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', '0']],
+    ['MODEL_WHEELCHOCKS_ENABLED', ['L:A32NX_MODEL_WHEELCHOCKS_ENABLED', 'bool', '1']],
+    ['MODEL_CONES_ENABLED', ['L:A32NX_MODEL_CONES_ENABLED', 'bool', '1']],
+    ['FO_SYNC_EFIS_ENABLED', ['L:A32NX_FO_SYNC_EFIS_ENABLED', 'bool', '0']],
+    ['MODEL_SATCOM_ENABLED', ['L:A32NX_SATCOM_ENABLED', 'bool', '0']],
+    ['CONFIG_PILOT_AVATAR_VISIBLE', ['L:A32NX_PILOT_AVATAR_VISIBLE_0', 'bool', '0']],
+    ['CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', ['L:A32NX_PILOT_AVATAR_VISIBLE_1', 'bool', '0']],
 ]);
 
 export function readSettingsFromPersistentStorage() {

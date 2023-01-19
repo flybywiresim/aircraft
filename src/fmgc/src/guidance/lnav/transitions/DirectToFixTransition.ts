@@ -8,7 +8,6 @@ import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
@@ -31,7 +30,7 @@ import {
 } from '../CommonGeometry';
 import { CRLeg } from '../legs/CR';
 
-type PrevLeg = CALeg | /* CDLeg | */ CFLeg | CILeg | CRLeg | DFLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | IFLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
+type PrevLeg = CALeg | /* CDLeg | */ CFLeg | CILeg | CRLeg | DFLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
 type NextLeg = CFLeg | DFLeg /* | FALeg | FMLeg */
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));

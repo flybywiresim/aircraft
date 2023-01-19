@@ -4,6 +4,7 @@ use crate::{
     simulation::UpdateContext,
 };
 
+use nalgebra::Vector3;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
@@ -74,11 +75,6 @@ pub trait FeedbackPositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
-pub trait LandingGearRealPosition {
-    fn is_up_and_locked(&self) -> bool;
-    fn is_down_and_locked(&self) -> bool;
-}
-
 pub trait LgciuWeightOnWheels {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
     fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
@@ -97,7 +93,77 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuDoorPosition {
+    fn all_fully_opened(&self) -> bool;
+    fn all_closed_and_locked(&self) -> bool;
+}
+
+pub trait LgciuGearControl {
+    fn should_open_doors(&self) -> bool;
+    fn should_extend_gears(&self) -> bool;
+    fn control_active(&self) -> bool;
+}
+
+pub trait LandingGearHandle {
+    fn gear_handle_is_down(&self) -> bool;
+    fn gear_handle_baulk_locked(&self) -> bool;
+}
+
+pub trait TrimmableHorizontalStabilizer {
+    fn trim_angle(&self) -> Angle;
+}
+
+pub trait LgciuInterface:
+    LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition + LgciuGearControl + LandingGearHandle
+{
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[repr(usize)]
+pub enum LgciuId {
+    Lgciu1 = 0,
+    Lgciu2 = 1,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ProximityDetectorId {
+    UplockGearNose1,
+    UplockGearNose2,
+    UplockGearLeft1,
+    UplockGearLeft2,
+    UplockGearRight1,
+    UplockGearRight2,
+    DownlockGearNose1,
+    DownlockGearNose2,
+    DownlockGearLeft1,
+    DownlockGearLeft2,
+    DownlockGearRight1,
+    DownlockGearRight2,
+
+    UplockDoorNose1,
+    UplockDoorNose2,
+    UplockDoorLeft1,
+    UplockDoorLeft2,
+    UplockDoorRight1,
+    UplockDoorRight2,
+    DownlockDoorNose1,
+    DownlockDoorNose2,
+    DownlockDoorLeft1,
+    DownlockDoorLeft2,
+    DownlockDoorRight1,
+    DownlockDoorRight2,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum GearActuatorId {
+    GearNose,
+    GearDoorNose,
+    GearLeft,
+    GearDoorLeft,
+    GearRight,
+    GearDoorRight,
+}
+
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
@@ -127,12 +193,30 @@ pub trait EngineStartState {
 }
 
 pub trait EngineBleedPushbutton {
-    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool;
-    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool;
+    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2];
+}
+
+pub trait PackFlowValveState {
+    // Pack id is 1 or 2
+    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio;
+    fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
 }
 
 pub trait GroundSpeed {
     fn ground_speed(&self) -> Velocity;
+}
+
+pub trait AdirsDiscreteOutputs {
+    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+}
+
+pub enum GearWheel {
+    NOSE = 0,
+    LEFT = 1,
+    RIGHT = 2,
 }
 
 pub trait SectionPressure {
@@ -141,7 +225,7 @@ pub trait SectionPressure {
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HydraulicColor {
     Green,
     Blue,
@@ -153,6 +237,60 @@ impl Display for HydraulicColor {
             Self::Green => write!(f, "GREEN"),
             Self::Blue => write!(f, "BLUE"),
             Self::Yellow => write!(f, "YELLOW"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum AirbusEngineDrivenPumpId {
+    Edp1a,
+    Edp1b,
+    Edp2a,
+    Edp2b,
+    Edp3a,
+    Edp3b,
+    Edp4a,
+    Edp4b,
+    Green,
+    Yellow,
+}
+impl Display for AirbusEngineDrivenPumpId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AirbusEngineDrivenPumpId::Edp1a => write!(f, "GREEN_1A"),
+            AirbusEngineDrivenPumpId::Edp1b => write!(f, "GREEN_1B"),
+            AirbusEngineDrivenPumpId::Edp2a => write!(f, "GREEN_2A"),
+            AirbusEngineDrivenPumpId::Edp2b => write!(f, "GREEN_2B"),
+            AirbusEngineDrivenPumpId::Edp3a => write!(f, "YELLOW_3A"),
+            AirbusEngineDrivenPumpId::Edp3b => write!(f, "YELLOW_3B"),
+            AirbusEngineDrivenPumpId::Edp4a => write!(f, "YELLOW_4A"),
+            AirbusEngineDrivenPumpId::Edp4b => write!(f, "YELLOW_4B"),
+            AirbusEngineDrivenPumpId::Green => write!(f, "GREEN"),
+            AirbusEngineDrivenPumpId::Yellow => write!(f, "YELLOW"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum AirbusElectricPumpId {
+    GreenA,
+    GreenB,
+    YellowA,
+    YellowB,
+    Green,
+    Blue,
+    Yellow,
+}
+impl Display for AirbusElectricPumpId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AirbusElectricPumpId::GreenA => write!(f, "GA"),
+            AirbusElectricPumpId::YellowA => write!(f, "YA"),
+            AirbusElectricPumpId::GreenB => write!(f, "GB"),
+            AirbusElectricPumpId::YellowB => write!(f, "YB"),
+            AirbusElectricPumpId::Green => write!(f, "GREEN"),
+            AirbusElectricPumpId::Blue => write!(f, "BLUE"),
+            AirbusElectricPumpId::Yellow => write!(f, "YELLOW"),
         }
     }
 }
@@ -485,6 +623,21 @@ pub fn from_bool(value: bool) -> f64 {
 
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
+}
+
+/// Returns the height over the ground of any point of the plane considering its current attitude
+/// Offset parameter is the position of the point in plane reference with respect to datum reference point
+/// X positive from left to right
+/// Y positive from down to up
+/// Z positive from aft to front
+pub fn height_over_ground(
+    context: &UpdateContext,
+    offset_from_plane_reference: Vector3<f64>,
+) -> Length {
+    let offset_including_plane_rotation = context.attitude().pitch_rotation_transform()
+        * (context.attitude().bank_rotation_transform().inverse() * offset_from_plane_reference);
+
+    Length::new::<meter>(offset_including_plane_rotation[1]) + context.plane_height_over_ground()
 }
 
 pub struct InternationalStandardAtmosphere;
@@ -991,6 +1144,7 @@ mod delayed_pulse_true_logic_gate_tests {
         assert!(!test_bed.query(|a| a.gate_output()));
     }
 }
+
 #[cfg(test)]
 mod interpolation_tests {
     use super::*;
@@ -1174,5 +1328,197 @@ mod average_tests {
 
         let average: Pressure = iterator.iter().average();
         assert_eq!(average, Pressure::new::<hectopascal>(200.));
+    }
+}
+
+#[cfg(test)]
+mod height_over_ground {
+    use super::*;
+
+    use crate::simulation::{
+        test::{ElementCtorFn, SimulationTestBed, WriteByName},
+        SimulationElement,
+    };
+    use uom::si::angle::degree;
+
+    use ntest::assert_about_eq;
+
+    #[derive(Default)]
+    struct DummyObject {}
+    impl DummyObject {}
+    impl SimulationElement for DummyObject {}
+
+    #[test]
+    fn at_zero_altitude_zero_reference_default_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert!(height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>() == 0.);
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 10., 0.)).get::<meter>() == 10.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., -10., 0.)).get::<meter>() == -10.
+                );
+
+                assert!(
+                    height_over_ground(context, Vector3::new(-10., 0., 0.)).get::<meter>() == 0.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(10., -10., 0.)).get::<meter>() == -10.
+                );
+
+                assert!(
+                    height_over_ground(context, Vector3::new(-10., 0., 10.)).get::<meter>() == 0.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(10., -10., -10.)).get::<meter>()
+                        == -10.
+                );
+            });
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_default_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 10., 0.)).get::<meter>(),
+                    20.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., -10., 0.)).get::<meter>(),
+                    0.
+                );
+            });
+
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_right_bank_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>() < 8.);
+                assert!(
+                    height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>() > 12.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE BANK DEGREES", Angle::new::<degree>(-45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_left_bank_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>() > 12.);
+                assert!(height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>() < 8.);
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>(),
+                    10.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE BANK DEGREES", Angle::new::<degree>(45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_up_pitch_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>() < 8.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>() > 12.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE PITCH DEGREES", Angle::new::<degree>(-45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+    }
+
+    #[test]
+    fn at_10_altitude_with_45_down_pitch_attitude() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| DummyObject::default()))
+            .with_update_after_power_distribution(|_, context| {
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(0., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert_about_eq!(
+                    height_over_ground(context, Vector3::new(-5., 0., 0.)).get::<meter>(),
+                    10.
+                );
+                assert!(
+                    height_over_ground(context, Vector3::new(0., 0., -10.)).get::<meter>() > 12.
+                );
+                assert!(height_over_ground(context, Vector3::new(0., 0., 10.)).get::<meter>() < 8.);
+                assert!(height_over_ground(context, Vector3::new(0., 5., 0.)).get::<meter>() < 15.);
+            });
+
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE PITCH DEGREES", Angle::new::<degree>(45.));
+        test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
     }
 }

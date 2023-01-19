@@ -1,7 +1,5 @@
 import React, { FC } from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import EngineBleed from './elements/EngineBleed';
@@ -10,8 +8,6 @@ import APUValve from './elements/APUValve';
 import { Triangle } from '../../Common/Shapes';
 
 import './Bleed.scss';
-
-setIsEcamPage('bleed_page');
 
 export const BleedPage: FC = () => {
     const sdacDatum = true;
@@ -34,7 +30,8 @@ export const BleedPage: FC = () => {
     const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 1000);
     const aircraftOnGround: boolean = left1LandingGear === 1 || right1LandingGear === 1;
 
-    const [wingAntiIceOn] = useSimVar('STRUCTURAL DEICE SWITCH', 'bool', 500);
+    const [wingAntiIceOn] = useSimVar('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON', 'bool', 500);
+    const [wingAntiIceTimer] = useSimVar('L:A32NX_PNEU_WING_ANTI_ICE_GROUND_TIMER', 'number', 1000);
 
     const groundAirSupplied = false;
 
@@ -78,6 +75,7 @@ export const BleedPage: FC = () => {
                 packFlowValveOpen={packFlowValve1Open}
                 onGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
+                wingAntiIceTimer={wingAntiIceTimer}
             />
             <EngineBleed
                 x={464}
@@ -88,6 +86,7 @@ export const BleedPage: FC = () => {
                 packFlowValveOpen={packFlowValve2Open}
                 onGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
+                wingAntiIceTimer={wingAntiIceTimer}
             />
 
             {/* Ground Supply of Compressed Air */}
@@ -99,5 +98,3 @@ export const BleedPage: FC = () => {
         </EcamPage>
     );
 };
-
-render(<BleedPage />);

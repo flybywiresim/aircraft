@@ -2,14 +2,14 @@
 name = "a320_systems_wasm"
 version = "0.1.0"
 authors = ["FlyByWire Simulations"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
 test = false
 
 [dependencies]
-uom = "0.32.0"
+uom = "0.33.0"
 a320_systems = { path = "../a320_systems" }
 systems = { path = "../systems" }
 systems_wasm = { path = "../systems_wasm" }

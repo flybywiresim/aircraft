@@ -3,6 +3,7 @@ use rand::Rng;
 use std::{cell::Ref, time::Duration};
 use uom::si::{
     acceleration::foot_per_second_squared,
+    angle::degree,
     f64::*,
     length::foot,
     pressure::inch_of_mercury,
@@ -88,6 +89,10 @@ pub trait TestBed {
 
     fn set_lat_acc(&mut self, acc: Acceleration) {
         self.test_bed_mut().set_lat_acceleration(acc);
+    }
+
+    fn set_latitude(&mut self, lat: Angle) {
+        self.test_bed_mut().set_latitude(lat);
     }
 
     fn set_norm_acc(&mut self, acc: Acceleration) {
@@ -404,6 +409,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
         );
     }
 
+    pub fn set_latitude(&mut self, lat: Angle) {
+        self.write_by_name(UpdateContext::LATITUDE_KEY, lat.get::<degree>());
+    }
+
     pub fn set_normal_acceleration(&mut self, accel: Acceleration) {
         self.write_by_name(
             UpdateContext::ACCEL_BODY_Y_KEY,
@@ -511,11 +520,14 @@ impl<T: SimulationElement> From<T> for SimulationTestBed<TestAircraft<T>> {
     }
 }
 
+type UpdateBeforePowerDistributionFn<T> =
+    dyn Fn(&mut T, &UpdateContext, &mut Electricity) + 'static;
+type UpdateAfterPowerDistributionFn<T> = dyn Fn(&mut T, &UpdateContext) + 'static;
+
 pub struct TestAircraft<T: SimulationElement> {
     element: T,
-    update_before_power_distribution_fn:
-        Box<dyn Fn(&mut T, &UpdateContext, &mut Electricity) + 'static>,
-    update_after_power_distribution_fn: Box<dyn Fn(&mut T, &UpdateContext) + 'static>,
+    update_before_power_distribution_fn: Box<UpdateBeforePowerDistributionFn<T>>,
+    update_after_power_distribution_fn: Box<UpdateAfterPowerDistributionFn<T>>,
 }
 impl<T: SimulationElement> TestAircraft<T> {
     pub fn new(element: T) -> Self {

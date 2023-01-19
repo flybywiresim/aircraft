@@ -53,16 +53,28 @@ export class RawDataMapper {
 
             info.approaches = facility.approaches;
             info.approaches.forEach((approach) => approach.name = normaliseApproachName(approach.name));
-            info.approaches.forEach((approach) => approach.transitions.forEach((trans) => trans.name = trans.legs[0].fixIcao.substring(7, 12).trim()));
+            info.approaches.forEach(
+                (approach) => approach.transitions.forEach(
+                    (trans) => trans.name.trim().length === 0 && (trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao)),
+                ),
+            );
             info.approaches.forEach((approach) => approach.runway = approach.runway.trim());
 
             info.departures = facility.departures;
             info.departures.forEach((departure) => departure.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
-            info.departures.forEach((departure) => departure.enRouteTransitions.forEach((trans) => trans.name = RawDataMapper.generateDepartureEnRouteTransitionName(trans)));
+            info.departures.forEach(
+                (departure) => departure.enRouteTransitions.forEach(
+                    (trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateDepartureEnRouteTransitionName(trans)),
+                ),
+            );
 
             info.arrivals = facility.arrivals;
             info.arrivals.forEach((arrival) => arrival.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
-            info.arrivals.forEach((arrival) => arrival.enRouteTransitions.forEach((trans) => trans.name = RawDataMapper.generateArrivalTransitionName(trans)));
+            info.arrivals.forEach(
+                (arrival) => arrival.enRouteTransitions.forEach(
+                    (trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateArrivalTransitionName(trans)),
+                ),
+            );
 
             info.runways = facility.runways;
 
@@ -130,7 +142,7 @@ export class RawDataMapper {
      * @param runwayTransition The runway transition to generate the name for.
      * @returns The runway transition name.
      */
-    public static generateRunwayTransitionName(runwayTransition: RunwayTransition): string {
+    public static generateRunwayTransitionName(runwayTransition: RawRunwayTransition): string {
         let name = `RW${runwayTransition.runwayNumber}`;
 
         switch (runwayTransition.runwayDesignation) {
@@ -143,6 +155,8 @@ export class RawDataMapper {
         case 3:
             name += 'C';
             break;
+        default:
+            break;
         }
 
         return name;
@@ -153,8 +167,8 @@ export class RawDataMapper {
      * @param enrouteTransition The enroute transition to generate a name for.
      * @returns The generated transition name.
      */
-    public static generateArrivalTransitionName(enrouteTransition: EnrouteTransition): string {
-        return enrouteTransition.legs[0].fixIcao.substring(7, 12).trim();
+    public static generateArrivalTransitionName(enrouteTransition: RawEnRouteTransition): string {
+        return WayPoint.formatIdentFromIcao(enrouteTransition.legs[0].fixIcao);
     }
 
     /**
@@ -162,7 +176,7 @@ export class RawDataMapper {
      * @param enrouteTransition The enroute transition to generate a name for.
      * @returns The generated transition name.
      */
-    public static generateDepartureEnRouteTransitionName(enrouteTransition: EnrouteTransition): string {
-        return enrouteTransition.legs[enrouteTransition.legs.length - 1].fixIcao.substring(7, 12).trim();
+    public static generateDepartureEnRouteTransitionName(enrouteTransition: RawEnRouteTransition): string {
+        return WayPoint.formatIdentFromIcao(enrouteTransition.legs[enrouteTransition.legs.length - 1].fixIcao);
     }
 }

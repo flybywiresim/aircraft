@@ -8,7 +8,7 @@ import { getInputs } from './igniter/tasks.mjs';
 process.chdir(Directories.src);
 
 export default getInputs()
-    .map(({ path, name, isInstrument }) => {
+    .map(({ path, name }) => {
         const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));
 
         const additionalImports = config.additionalImports ? config.additionalImports : [];
@@ -36,7 +36,6 @@ export default getInputs()
                         ...additionalImports,
                     ],
                     config,
-                    isInstrument,
                 }),
             ],
         };

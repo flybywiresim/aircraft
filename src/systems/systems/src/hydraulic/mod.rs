@@ -1,20 +1,26 @@
 use self::linear_actuator::Actuator;
 use crate::failures::{Failure, FailureType};
-use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
+use crate::hydraulic::{
+    electrical_pump_physics::ElectricalPumpPhysics, pumps::PumpCharacteristics,
+};
 use crate::pneumatic::PressurizeableReservoir;
+
 use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, random_from_range, DelayedTrueLogicGate,
+    interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
+    random_from_range, AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedTrueLogicGate,
     ElectricalBusType, ElectricalBuses, HydraulicColor, SectionPressure,
 };
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
+use nalgebra::Vector3;
 
 use std::time::Duration;
 use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
+    mass::kilogram,
     pressure::{pascal, psi},
     ratio::ratio,
     torque::newton_meter,
@@ -28,8 +34,12 @@ pub mod brake_circuit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;
+pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
+pub mod pumps;
+pub mod rudder_control;
+pub mod trimmable_horizontal_stabilizer;
 
 /// Indicates the pressure sensors info of an hydraulic circuit at different locations
 /// Information can be wrong in case of sensor failure -> do not use for physical pressure
@@ -66,18 +76,51 @@ pub trait PressureSource {
 
 pub struct Fluid {
     current_bulk: Pressure,
+    heat_state: HeatingProperties,
 }
 impl Fluid {
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 40.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 10.;
+
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+
     pub fn new(bulk: Pressure) -> Self {
-        Self { current_bulk: bulk }
+        Self {
+            current_bulk: bulk,
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
+        }
     }
 
     pub fn bulk_mod(&self) -> Pressure {
         self.current_bulk
     }
+
+    fn update(&mut self, context: &UpdateContext, is_heating: bool) {
+        self.heat_state.update(context, is_heating);
+    }
+}
+impl HeatingElement for Fluid {
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum PressureSwitchState {
     Pressurised,
     NotPressurised,
@@ -95,9 +138,13 @@ pub struct PressureSwitch {
     high_hysteresis_threshold: Pressure,
     low_hysteresis_threshold: Pressure,
 
+    current_pressure_filtered: LowPassFilter<Pressure>,
+
     sensor_type: PressureSwitchType,
 }
 impl PressureSwitch {
+    const PRESSURE_DYNAMIC_TIME_CONSTANT: Duration = Duration::from_millis(200);
+
     pub fn new(
         high_threshold: Pressure,
         low_threshold: Pressure,
@@ -107,6 +154,7 @@ impl PressureSwitch {
             state_is_pressurised: false,
             high_hysteresis_threshold: high_threshold,
             low_hysteresis_threshold: low_threshold,
+            current_pressure_filtered: LowPassFilter::new(Self::PRESSURE_DYNAMIC_TIME_CONSTANT),
             sensor_type,
         }
     }
@@ -116,10 +164,12 @@ impl PressureSwitch {
             PressureSwitchType::Relative => current_pressure - context.ambient_pressure(),
             PressureSwitchType::Absolute => current_pressure,
         };
+        self.current_pressure_filtered
+            .update(context.delta(), pressure_measured);
 
-        if pressure_measured <= self.low_hysteresis_threshold {
+        if self.current_pressure_filtered.output() <= self.low_hysteresis_threshold {
             self.state_is_pressurised = false;
-        } else if pressure_measured >= self.high_hysteresis_threshold {
+        } else if self.current_pressure_filtered.output() >= self.high_hysteresis_threshold {
             self.state_is_pressurised = true;
         }
     }
@@ -152,16 +202,90 @@ impl LevelSwitch {
         }
     }
 
-    pub fn update(&mut self, current_volume: Volume) {
-        if current_volume <= self.low_hysteresis_threshold {
+    pub fn update(&mut self, current_volume: Volume, is_upside_down: bool) {
+        if current_volume <= self.low_hysteresis_threshold && !is_upside_down {
             self.state_is_low = true;
-        } else if current_volume >= self.high_hysteresis_threshold {
+        } else if current_volume >= self.high_hysteresis_threshold || is_upside_down {
             self.state_is_low = false;
         }
     }
 
     pub fn is_low_level(&self) -> bool {
         self.state_is_low
+    }
+}
+
+pub trait HeatingElement {
+    fn is_overheating(&self) -> bool {
+        false
+    }
+    fn is_damaged(&self) -> bool {
+        false
+    }
+}
+
+pub trait HeatingPressureSource: PressureSource + HeatingElement {}
+
+pub struct HeatingProperties {
+    is_overheating: bool,
+    is_damaged_by_heat: bool,
+
+    damaging_time: DelayedTrueLogicGate,
+
+    heat_factor: LowPassFilter<Ratio>,
+    heat_time: Duration,
+    cool_time: Duration,
+}
+impl HeatingProperties {
+    const OVERHEATING_THRESHOLD: f64 = 0.5;
+
+    fn new(heat_time: Duration, cool_time: Duration, damage_time: Duration) -> Self {
+        Self {
+            is_overheating: false,
+            is_damaged_by_heat: false,
+            damaging_time: DelayedTrueLogicGate::new(damage_time),
+            heat_factor: LowPassFilter::new(heat_time),
+            heat_time,
+            cool_time,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, is_heating: bool) {
+        if is_heating {
+            self.heat_factor.set_time_constant(self.heat_time);
+            self.heat_factor
+                .update(context.delta(), Ratio::new::<ratio>(1.));
+        } else {
+            self.heat_factor.set_time_constant(self.cool_time);
+            self.heat_factor
+                .update(context.delta(), Ratio::new::<ratio>(0.));
+        };
+
+        self.is_overheating =
+            self.heat_factor.output().get::<ratio>() > Self::OVERHEATING_THRESHOLD;
+
+        self.damaging_time.update(context, self.is_overheating);
+        self.is_damaged_by_heat = self.is_damaged_by_heat || self.damaging_time.output();
+    }
+
+    /// When overheating, provides a ratio of the heating severity
+    /// Above OVERHEATING_THRESHOLD it will rise from 0 to 1, while always 0 under the threshold
+    fn overheat_ratio(&self) -> Ratio {
+        Ratio::new::<ratio>(
+            ((self.heat_factor.output().get::<ratio>() - Self::OVERHEATING_THRESHOLD)
+                / (1. - Self::OVERHEATING_THRESHOLD))
+                .max(0.)
+                .min(1.),
+        )
+    }
+}
+impl HeatingElement for HeatingProperties {
+    fn is_overheating(&self) -> bool {
+        self.is_overheating
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.is_damaged_by_heat
     }
 }
 
@@ -215,6 +339,8 @@ pub struct PowerTransferUnit {
     has_stopped_since_last_write: bool,
 
     efficiency: Ratio,
+
+    heat_state: HeatingProperties,
 }
 impl PowerTransferUnit {
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
@@ -248,6 +374,16 @@ impl PowerTransferUnit {
     const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1500);
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
     const DURATION_BEFORE_CAPTURING_BARK_STRENGTH_SPEED: Duration = Duration::from_millis(133);
+
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 20.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+
+    const MAX_SPEED_BEFORE_HEATING_UP_RPM: f64 = 2000.;
+
+    // We consider that ptu can't overheat if there's enough pressure on both side (it's cooled by hyd fluid)
+    const MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM: f64 = 500.;
 
     pub fn new(
         context: &mut InitContext,
@@ -295,6 +431,18 @@ impl PowerTransferUnit {
             has_stopped_since_last_write: false,
 
             efficiency: characteristics.efficiency(),
+
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
         }
     }
 
@@ -329,6 +477,16 @@ impl PowerTransferUnit {
         self.update_continuous_state(context);
         self.capture_bark_strength();
         self.update_flows();
+
+        self.heat_state.update(
+            context,
+            self.shaft_speed.get::<revolution_per_minute>().abs()
+                > Self::MAX_SPEED_BEFORE_HEATING_UP_RPM
+                && (loop_left_section.pressure().get::<psi>()
+                    < Self::MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM
+                    || loop_right_section.pressure().get::<psi>()
+                        < Self::MIN_PRESSURE_ALLOWING_PTU_HEATING_UP_RPM),
+        );
     }
 
     fn update_displacement(
@@ -423,12 +581,16 @@ impl PowerTransferUnit {
         let left_side_torque = -Self::calc_generated_torque(left_pressure, self.left_displacement);
         let right_side_torque =
             Self::calc_generated_torque(right_pressure, self.right_displacement.output());
+
         let friction_torque = Torque::new::<newton_meter>(
             Self::SHAFT_FRICTION * -self.shaft_speed.get::<radian_per_second>(),
         );
+
         let total_torque = friction_torque + left_side_torque + right_side_torque;
 
-        if self.is_rotating() || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM
+        if !self.heat_state.is_damaged()
+            && (self.is_rotating()
+                || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM)
         {
             let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
             self.shaft_speed +=
@@ -585,10 +747,22 @@ impl SimulationElement for PowerTransferUnit {
         self.has_stopped_since_last_write = false;
     }
 }
+impl HeatingElement for PowerTransferUnit {
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+}
 
 pub trait HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool;
     fn should_open_leak_measurement_valve(&self) -> bool;
+    fn should_route_pump_to_auxiliary(&self, _pump_index: usize) -> bool {
+        false
+    }
 }
 
 pub struct Accumulator {
@@ -600,6 +774,8 @@ pub struct Accumulator {
     current_flow: VolumeRate,
     current_delta_vol: Volume,
     has_control_valve: bool,
+
+    circuit_target_pressure: Pressure,
 }
 impl Accumulator {
     const FLOW_DYNAMIC_LOW_PASS: f64 = 0.7;
@@ -613,6 +789,7 @@ impl Accumulator {
         total_volume: Volume,
         fluid_vol_at_init: Volume,
         has_control_valve: bool,
+        circuit_target_pressure: Pressure,
     ) -> Self {
         // Taking care of case where init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
         let limited_volume = fluid_vol_at_init.min(total_volume * 0.9);
@@ -629,6 +806,7 @@ impl Accumulator {
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
             current_delta_vol: Volume::new::<gallon>(0.),
             has_control_valve,
+            circuit_target_pressure,
         }
     }
 
@@ -661,10 +839,8 @@ impl Accumulator {
             *delta_vol += volume_from_acc;
         } else if accumulator_delta_press.get::<psi>() < 0.0 {
             let fluid_volume_to_reach_equilibrium = self.total_volume
-                - Volume::new::<gallon>(
-                    (self.gas_init_precharge.get::<psi>() * self.total_volume.get::<gallon>())
-                        / 3000.,
-                );
+                - ((self.gas_init_precharge * self.total_volume) / self.circuit_target_pressure);
+
             let max_delta_vol = fluid_volume_to_reach_equilibrium - self.fluid_volume;
             let volume_to_acc = delta_vol
                 .max(Volume::new::<gallon>(0.0))
@@ -714,24 +890,28 @@ impl Accumulator {
 pub struct HydraulicCircuit {
     pump_sections: Vec<Section>,
     system_section: Section,
-    pump_to_system_check_valves: Vec<CheckValve>,
+    auxiliary_section: Option<Section>,
+
+    pump_sections_check_valves: Vec<CheckValve>,
+
+    // True routed to auxiliary False routed to system section
+    pump_section_routed_to_auxiliary_section: Vec<bool>,
 
     fluid: Fluid,
     reservoir: Reservoir,
+
+    circuit_target_pressure: Pressure,
 }
 impl HydraulicCircuit {
     const PUMP_SECTION_MAX_VOLUME_GAL: f64 = 0.8;
     const PUMP_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.005;
 
+    // Size of auxiliary section vs system section. 0.5 means auxiliary is half the size of system section
+    const AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO: f64 = 0.5;
+
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
-    const TARGET_PRESSURE_PSI: f64 = 3000.;
-
-    // Nitrogen PSI precharge pressure
-    const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
-
-    const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.264;
 
     // TODO firevalves are actually powered by a sub-bus (401PP DC ESS)
     const DEFAULT_FIRE_VALVE_POWERING_BUS: ElectricalBusType =
@@ -756,11 +936,18 @@ impl HydraulicCircuit {
         pump_pressure_switch_hi_hyst: Pressure,
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
+        has_auxiliary_section: bool,
+
+        circuit_target_pressure: Pressure,
+        system_accumulator_precharge: Pressure,
+        system_accumulator_volume: Volume,
     ) -> Self {
         assert!(number_of_pump_sections > 0);
 
         let mut pump_sections: Vec<Section> = Vec::new();
         let mut pump_to_system_check_valves: Vec<CheckValve> = Vec::new();
+
+        let mut pump_section_to_auxiliary: Vec<bool> = Vec::new();
 
         for pump_id in 1..=number_of_pump_sections {
             let fire_valve = Some(FireValve::new(
@@ -790,6 +977,8 @@ impl HydraulicCircuit {
             ));
 
             pump_to_system_check_valves.push(CheckValve::new());
+
+            pump_section_to_auxiliary.push(false);
         }
 
         let system_section_volume = high_pressure_max_volume
@@ -807,10 +996,11 @@ impl HydraulicCircuit {
                 system_section_volume * priming_volume,
                 system_section_volume,
                 Some(Accumulator::new(
-                    Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
-                    Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
+                    system_accumulator_precharge,
+                    system_accumulator_volume,
                     Volume::new::<gallon>(0.),
                     false,
+                    circuit_target_pressure,
                 )),
                 system_pressure_switch_lo_hyst,
                 system_pressure_switch_hi_hyst,
@@ -821,9 +1011,33 @@ impl HydraulicCircuit {
                     Self::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
                 )),
             ),
-            pump_to_system_check_valves,
+            auxiliary_section: if has_auxiliary_section {
+                Some(Section::new(
+                    context,
+                    id,
+                    "AUXILIARY",
+                    1,
+                    VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
+                    system_section_volume
+                        * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO
+                        * priming_volume,
+                    system_section_volume * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO,
+                    None,
+                    system_pressure_switch_lo_hyst,
+                    system_pressure_switch_hi_hyst,
+                    None,
+                    false,
+                    false,
+                    None,
+                ))
+            } else {
+                None
+            },
+            pump_sections_check_valves: pump_to_system_check_valves,
+            pump_section_routed_to_auxiliary_section: pump_section_to_auxiliary,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
             reservoir,
+            circuit_target_pressure,
         }
     }
 
@@ -831,23 +1045,58 @@ impl HydraulicCircuit {
         self.pump_sections[pump_id].fire_valve_is_open()
     }
 
-    pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
+    pub fn update_system_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.system_section.update_actuator_volumes(actuator);
+    }
+
+    pub fn update_auxiliary_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.update_actuator_volumes(actuator);
+        } else {
+            panic!("No auxiliary section available but an actuator was provided")
+        }
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: Option<&mut impl PressureSource>,
+        main_section_pumps: &mut [&mut dyn HeatingPressureSource],
+        system_section_pump: Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: Option<&mut impl HeatingPressureSource>,
         ptu: Option<&PowerTransferUnit>,
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
-        self.reservoir.update(context, reservoir_pressure);
+        let mut any_pump_is_overheating = false;
+        for pump in main_section_pumps.iter() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
+        if let Some(pump) = system_section_pump.as_ref() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
+        if let Some(pump) = auxiliary_section_pump.as_ref() {
+            if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
+                any_pump_is_overheating = true;
+            }
+        }
+
+        let ptu_overheats_fluid = ptu.map_or(false, |p| p.is_overheating() && p.is_rotating());
+
+        self.fluid
+            .update(context, ptu_overheats_fluid || any_pump_is_overheating);
+
+        self.reservoir
+            .update(context, reservoir_pressure, &self.fluid);
 
         self.update_shutoff_valves(controller);
         self.update_leak_measurement_valves(context, controller);
+        self.update_auxiliary_selector_valve(controller);
 
         // Taking care of leaks / consumers / actuators volumes
         self.update_flows(context, ptu);
@@ -857,37 +1106,63 @@ impl HydraulicCircuit {
 
         // Updating for each section its total maximum theoretical pumping capacity
         // "what max volume it could pump considering current reservoir state and pump rpm"
-        self.update_maximum_pumping_capacities(main_section_pumps, &system_section_pump);
+        self.update_maximum_pumping_capacities(
+            main_section_pumps,
+            &system_section_pump,
+            &auxiliary_section_pump,
+        );
 
         // What flow can come through each valve considering what is consumed downstream
         self.update_maximum_valve_flows(context);
 
         // Update final flow that will go through each valve (spliting flow between multiple valves)
-        self.update_final_valves_flows();
+        self.update_system_final_valves_flows();
+        self.update_auxiliary_final_valves_flows();
 
         self.update_delta_vol_from_valves();
 
         // We have all flow information, now we set pump parameters (displacement) to where it
         // should be so we reach target pressure
-        self.update_pumps(context, main_section_pumps, system_section_pump);
+        self.update_pumps(
+            context,
+            main_section_pumps,
+            system_section_pump,
+            auxiliary_section_pump,
+        );
 
         self.update_final_delta_vol_and_pressure(context);
     }
 
     fn update_delta_vol_from_valves(&mut self) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_downstream_delta_vol(&self.pump_to_system_check_valves[pump_index]);
+            section.update_downstream_delta_vol(&self.pump_sections_check_valves[pump_index]);
         }
 
-        self.system_section
-            .update_upstream_delta_vol(&self.pump_to_system_check_valves);
+        for (pump_index, _) in self.pump_sections.iter_mut().enumerate() {
+            if self.auxiliary_section.is_some()
+                && self.pump_section_routed_to_auxiliary_section[pump_index]
+            {
+                self.auxiliary_section
+                    .as_mut()
+                    .unwrap()
+                    .update_upstream_delta_vol(std::slice::from_ref(
+                        &self.pump_sections_check_valves[pump_index],
+                    ));
+            } else {
+                self.system_section
+                    .update_upstream_delta_vol(std::slice::from_ref(
+                        &self.pump_sections_check_valves[pump_index],
+                    ));
+            }
+        }
     }
 
     fn update_pumps(
         &mut self,
         context: &UpdateContext,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: Option<&mut impl PressureSource>,
+        main_section_pumps: &mut [&mut dyn HeatingPressureSource],
+        system_section_pump: Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: Option<&mut impl HeatingPressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_pump_state(context, main_section_pumps[pump_index], &mut self.reservoir);
@@ -896,6 +1171,12 @@ impl HydraulicCircuit {
         if let Some(pump) = system_section_pump {
             self.system_section
                 .update_pump_state(context, pump, &mut self.reservoir);
+        }
+
+        if let Some(pump) = auxiliary_section_pump {
+            if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+                auxiliary_section.update_pump_state(context, pump, &mut self.reservoir);
+            }
         }
     }
 
@@ -906,14 +1187,24 @@ impl HydraulicCircuit {
 
         self.system_section
             .update_final_delta_vol_and_pressure(context, &self.fluid);
+
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.update_final_delta_vol_and_pressure(context, &self.fluid);
+        }
     }
 
     fn update_maximum_valve_flows(&mut self, context: &UpdateContext) {
-        for (pump_section_idx, valve) in self.pump_to_system_check_valves.iter_mut().enumerate() {
+        for (pump_section_idx, valve) in self.pump_sections_check_valves.iter_mut().enumerate() {
             valve.update_flow_forecast(
                 context,
                 &self.pump_sections[pump_section_idx],
-                &self.system_section,
+                if self.auxiliary_section.is_some()
+                    && self.pump_section_routed_to_auxiliary_section[pump_section_idx]
+                {
+                    self.auxiliary_section.as_mut().unwrap()
+                } else {
+                    &self.system_section
+                },
                 &self.fluid,
             );
         }
@@ -921,8 +1212,9 @@ impl HydraulicCircuit {
 
     fn update_maximum_pumping_capacities(
         &mut self,
-        main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &Option<&mut impl PressureSource>,
+        main_section_pumps: &mut [&mut dyn HeatingPressureSource],
+        system_section_pump: &Option<&mut impl HeatingPressureSource>,
+        auxiliary_section_pump: &Option<&mut impl HeatingPressureSource>,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_maximum_pumping_capacity(main_section_pumps[pump_index]);
@@ -931,27 +1223,52 @@ impl HydraulicCircuit {
         if let Some(pump) = system_section_pump {
             self.system_section.update_maximum_pumping_capacity(*pump);
         }
+
+        if let Some(pump) = auxiliary_section_pump {
+            if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+                auxiliary_section.update_maximum_pumping_capacity(*pump);
+            }
+        }
     }
 
     fn update_target_volumes_after_flow(&mut self) {
         for section in &mut self.pump_sections {
-            section.update_target_volume_after_flow_update(
-                Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-                &self.fluid,
-            );
+            section
+                .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
         }
-        self.system_section.update_target_volume_after_flow_update(
-            Pressure::new::<psi>(Self::TARGET_PRESSURE_PSI),
-            &self.fluid,
-        );
+        self.system_section
+            .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
+
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section
+                .update_target_volume_after_flow_update(self.circuit_target_pressure, &self.fluid);
+        }
     }
 
     fn update_flows(&mut self, context: &UpdateContext, ptu: Option<&PowerTransferUnit>) {
         for section in &mut self.pump_sections {
-            section.update_flow(context, &mut self.reservoir, ptu);
+            section.update_flow(
+                context,
+                &mut self.reservoir,
+                ptu,
+                self.circuit_target_pressure,
+            );
         }
-        self.system_section
-            .update_flow(context, &mut self.reservoir, ptu);
+        self.system_section.update_flow(
+            context,
+            &mut self.reservoir,
+            ptu,
+            self.circuit_target_pressure,
+        );
+
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.update_flow(
+                context,
+                &mut self.reservoir,
+                ptu,
+                self.circuit_target_pressure,
+            );
+        }
     }
 
     fn update_shutoff_valves(&mut self, controller: &impl HydraulicCircuitController) {
@@ -969,29 +1286,57 @@ impl HydraulicCircuit {
             .update_leak_measurement_valve(context, controller);
     }
 
-    fn update_final_valves_flows(&mut self) {
+    fn update_auxiliary_selector_valve(&mut self, controller: &impl HydraulicCircuitController) {
+        for (pump_section_index, _) in self.pump_sections_check_valves.iter().enumerate() {
+            self.pump_section_routed_to_auxiliary_section[pump_section_index] =
+                controller.should_route_pump_to_auxiliary(pump_section_index);
+        }
+    }
+
+    fn update_final_valves_flows(&mut self, to_auxiliary: bool) {
         let mut total_max_valves_volume = Volume::new::<gallon>(0.);
 
-        for valve in &mut self.pump_to_system_check_valves {
-            total_max_valves_volume += valve.max_virtual_volume;
+        for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+            if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
+                total_max_valves_volume += valve.max_virtual_volume;
+            }
         }
 
-        let used_system_volume = self
-            .system_section
+        let downstream_section = if to_auxiliary {
+            self.auxiliary_section.as_ref().unwrap()
+        } else {
+            &self.system_section
+        };
+
+        let used_downstream_volume = downstream_section
             .volume_target
             .max(Volume::new::<gallon>(0.));
 
-        if used_system_volume >= total_max_valves_volume {
-            // If all the volume upstream is used by system section, each valve will provide its max volume available
-            for valve in &mut self.pump_to_system_check_valves {
-                valve.current_volume = valve.max_virtual_volume;
+        if used_downstream_volume >= total_max_valves_volume {
+            // If all the volume upstream is used by downstream section, each valve will provide its max volume available
+            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+                if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
+                    valve.current_volume = valve.max_virtual_volume;
+                }
             }
         } else if total_max_valves_volume > Volume::new::<gallon>(0.) {
-            let needed_ratio = used_system_volume / total_max_valves_volume;
+            let needed_ratio = used_downstream_volume / total_max_valves_volume;
 
-            for valve in &mut self.pump_to_system_check_valves {
-                valve.current_volume = valve.max_virtual_volume * needed_ratio;
+            for (idx, valve) in &mut self.pump_sections_check_valves.iter_mut().enumerate() {
+                if self.pump_section_routed_to_auxiliary_section[idx] == to_auxiliary {
+                    valve.current_volume = valve.max_virtual_volume * needed_ratio;
+                }
             }
+        }
+    }
+
+    fn update_system_final_valves_flows(&mut self) {
+        self.update_final_valves_flows(false);
+    }
+
+    fn update_auxiliary_final_valves_flows(&mut self) {
+        if self.auxiliary_section.is_some() {
+            self.update_final_valves_flows(true);
         }
     }
 
@@ -1027,6 +1372,14 @@ impl HydraulicCircuit {
         &self.system_section
     }
 
+    pub fn auxiliary_section(&self) -> &impl SectionPressure {
+        if self.auxiliary_section.is_some() {
+            self.auxiliary_section.as_ref().unwrap()
+        } else {
+            &self.system_section
+        }
+    }
+
     pub fn pump_section(&self, pump_index: usize) -> &impl SectionPressure {
         &self.pump_sections[pump_index]
     }
@@ -1040,6 +1393,10 @@ impl SimulationElement for HydraulicCircuit {
         }
 
         self.system_section.accept(visitor);
+
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            auxiliary_section.accept(visitor);
+        }
 
         visitor.visit(self);
     }
@@ -1196,11 +1553,11 @@ impl Section {
         self.volume_target -= self.delta_volume_flow_pass;
     }
 
-    fn static_leak(&self, context: &UpdateContext) -> Volume {
+    fn static_leak(&self, context: &UpdateContext, target_pressure: Pressure) -> Volume {
         self.static_leak_at_max_press
             * context.delta_as_time()
             * (self.current_pressure - Pressure::new::<psi>(14.7))
-            / Pressure::new::<psi>(3000.)
+            / target_pressure
     }
 
     /// Updates hydraulic flow from consumers like accumulator / ptu / any actuator
@@ -1209,8 +1566,9 @@ impl Section {
         context: &UpdateContext,
         reservoir: &mut Reservoir,
         ptu: Option<&PowerTransferUnit>,
+        target_pressure: Pressure,
     ) {
-        let static_leak = self.static_leak(context);
+        let static_leak = self.static_leak(context, target_pressure);
         let mut delta_volume_flow_pass = -static_leak;
 
         reservoir.add_return_volume(static_leak);
@@ -1247,7 +1605,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_maximum_pumping_capacity(&mut self, pump: &impl PressureSource) {
+    pub fn update_maximum_pumping_capacity(&mut self, pump: &dyn HeatingPressureSource) {
         self.max_pumpable_volume = if self.fire_valve_is_open() {
             pump.delta_vol_max()
         } else {
@@ -1268,7 +1626,7 @@ impl Section {
     pub fn update_pump_state(
         &mut self,
         context: &UpdateContext,
-        pump: &mut impl PressureSource,
+        pump: &mut dyn HeatingPressureSource,
         reservoir: &mut Reservoir,
     ) {
         // Final volume target to reach target pressure is:
@@ -1383,12 +1741,10 @@ impl SimulationElement for Section {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pressure_id, self.pressure());
 
-        if self.leak_measurement_valve.is_some() {
-            writer.write(
-                &self.pressure_switch_id,
-                self.pressure_switch_state() == PressureSwitchState::Pressurised,
-            );
-        }
+        writer.write(
+            &self.pressure_switch_id,
+            self.pressure_switch_state() == PressureSwitchState::Pressurised,
+        );
     }
 }
 impl SectionPressure for Section {
@@ -1545,7 +1901,7 @@ pub struct LeakMeasurementValve {
     downstream_pressure: Pressure,
 }
 impl LeakMeasurementValve {
-    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(500);
 
     fn new(powered_by: ElectricalBusType) -> Self {
         Self {
@@ -1604,15 +1960,178 @@ impl SimulationElement for LeakMeasurementValve {
     }
 }
 
+struct SpringPhysics {
+    last_length: f64,
+}
+impl SpringPhysics {
+    const SPRING_K_CONSTANT: f64 = 5000.;
+    const SPRING_DAMPING_CONSTANT: f64 = 500.;
+
+    fn default() -> Self {
+        Self { last_length: 0. }
+    }
+
+    fn update_force(
+        &mut self,
+        context: &UpdateContext,
+        position1: Vector3<f64>,
+        position2: Vector3<f64>,
+    ) -> Vector3<f64> {
+        let spring_vector = position1 - position2;
+        let spring_length = spring_vector.norm();
+
+        if spring_length.abs() < 0.001 {
+            self.last_length = spring_length;
+
+            return Vector3::default();
+        }
+
+        let spring_vector_normalized = spring_vector.normalize();
+        let velocity = (spring_length - self.last_length) / context.delta_as_secs_f64();
+
+        let k_force = spring_length * Self::SPRING_K_CONSTANT;
+        let damping_force = velocity * Self::SPRING_DAMPING_CONSTANT;
+
+        self.last_length = spring_length;
+
+        (k_force + damping_force) * spring_vector_normalized
+    }
+}
+
+struct FluidPhysics {
+    reference_point_cg: Vector3<f64>,
+    fluid_cg_position: Vector3<f64>,
+    fluid_cg_speed: Vector3<f64>,
+
+    virtual_mass: Mass,
+    spring: SpringPhysics,
+    anisotropic_damping_constant: Vector3<f64>,
+
+    g_trap_is_empty: DelayedTrueLogicGate,
+}
+impl FluidPhysics {
+    const MEAN_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 20.;
+    const STD_DEV_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 4.;
+
+    fn new() -> Self {
+        Self {
+            reference_point_cg: Vector3::default(),
+            fluid_cg_position: Vector3::new(0., -0.2, 0.),
+            fluid_cg_speed: Vector3::default(),
+
+            virtual_mass: Mass::new::<kilogram>(100.),
+            spring: SpringPhysics::default(),
+            anisotropic_damping_constant: Vector3::new(25., 20., 25.),
+
+            g_trap_is_empty: DelayedTrueLogicGate::new(Duration::from_secs_f64(
+                random_from_normal_distribution(
+                    Self::MEAN_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
+                    Self::STD_DEV_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
+                ),
+            )),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        self.update_speed_position(context);
+
+        self.g_trap_is_empty
+            .update(context, self.is_fluid_going_up());
+    }
+
+    fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
+        let gravity_force = context.acceleration_plane_reference_filtered_ms2_vector()
+            * self.virtual_mass.get::<kilogram>();
+
+        let spring_force =
+            self.spring
+                .update_force(context, self.reference_point_cg, self.fluid_cg_position);
+
+        let viscosity_damping = -self
+            .fluid_cg_speed
+            .component_mul(&self.anisotropic_damping_constant);
+
+        gravity_force + spring_force + viscosity_damping
+    }
+
+    fn update_speed_position(&mut self, context: &UpdateContext) {
+        let acceleration = self.update_forces(context) / self.virtual_mass.get::<kilogram>();
+
+        self.fluid_cg_speed += acceleration * context.delta_as_secs_f64();
+
+        self.fluid_cg_position += self.fluid_cg_speed * context.delta_as_secs_f64();
+    }
+
+    // Returns a coefficient of the actual level that will be seen by the gauge.
+    // Example: 0.5 means gauge reads half the actual level of the reservoir
+    fn gauge_modifier(&self) -> Ratio {
+        const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
+        const LATERAL_MAP: [f64; 6] = [0.2, 0.95, 1., 1.05, 1.2, 1.3];
+        let lateral_ratio = interpolation(
+            &LATERAL_BREAKPOINTS,
+            &LATERAL_MAP,
+            self.fluid_cg_position[0],
+        );
+
+        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
+        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 0.98, 1., 0.98, 0.2, 0.2];
+        let longitudinal_ratio = interpolation(
+            &LONGITUDINAL_BREAKPOINTS,
+            &LONGITUDINAL_MAP,
+            self.fluid_cg_position[2],
+        );
+
+        const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
+        const VERTICAL_MAP: [f64; 6] = [1., 1., 0.7, 0.9, 1.2, 1.5];
+        let vertical_ratio = interpolation(
+            &VERTICAL_BREAKPOINTS,
+            &VERTICAL_MAP,
+            self.fluid_cg_position[1],
+        );
+
+        Ratio::new::<ratio>(lateral_ratio * vertical_ratio * longitudinal_ratio)
+    }
+
+    // Returns a coefficient of the actual level that will be available for pumps.
+    // Example: 0.5 means from pumps point of view half the actual level of the reservoir is available
+    fn usable_level_modifier(&self) -> Ratio {
+        const LATERAL_BREAKPOINTS: [f64; 6] = [-1., -0.2, 0., 0.2, 0.4, 1.];
+        const LATERAL_MAP: [f64; 6] = [0.2, 0.8, 1., 1., 1., 1.];
+        let lateral_ratio = interpolation(
+            &LATERAL_BREAKPOINTS,
+            &LATERAL_MAP,
+            self.fluid_cg_position[0],
+        );
+
+        const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
+        const LONGITUDINAL_MAP: [f64; 6] = [0.2, 1., 1., 1., 0.2, 0.2];
+        let longitudinal_ratio = interpolation(
+            &LONGITUDINAL_BREAKPOINTS,
+            &LONGITUDINAL_MAP,
+            self.fluid_cg_position[2],
+        );
+
+        if self.g_trap_is_empty.output() {
+            Ratio::new::<ratio>(0.)
+        } else {
+            Ratio::new::<ratio>(longitudinal_ratio * lateral_ratio)
+        }
+    }
+
+    fn is_fluid_going_up(&self) -> bool {
+        self.fluid_cg_position[1] > 0.
+    }
+}
+
 pub struct Reservoir {
     level_id: VariableIdentifier,
     low_level_id: VariableIdentifier,
     low_air_press_id: VariableIdentifier,
+    overheating_id: VariableIdentifier,
 
     max_capacity: Volume,
     max_gaugeable: Volume,
     current_level: Volume,
-    min_usable: Volume,
 
     air_pressure: Pressure,
 
@@ -1622,6 +2141,13 @@ pub struct Reservoir {
 
     leak_failure: Failure,
     return_failure: Failure,
+
+    fluid_physics: FluidPhysics,
+
+    heat_state: HeatingProperties,
+
+    total_return_flow: VolumeRate,
+    total_return_volume: Volume,
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
@@ -1630,6 +2156,11 @@ impl Reservoir {
 
     // Part of the fluid lost instead of returning to reservoir
     const RETURN_FAILURE_LEAK_RATIO: f64 = 0.1;
+
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 3);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 5);
 
     pub fn new(
         context: &mut InitContext,
@@ -1646,27 +2177,67 @@ impl Reservoir {
                 .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL_IS_LOW", hyd_loop_id)),
             low_air_press_id: context
                 .get_identifier(format!("HYD_{}_RESERVOIR_AIR_PRESSURE_IS_LOW", hyd_loop_id)),
+            overheating_id: context.get_identifier(format!("HYD_{}_RESERVOIR_OVHT", hyd_loop_id)),
 
             max_capacity,
             max_gaugeable,
             current_level,
-            min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
+
             air_pressure: Pressure::new::<psi>(50.),
             leak_failure: Failure::new(FailureType::ReservoirLeak(hyd_loop_id)),
             return_failure: Failure::new(FailureType::ReservoirReturnLeak(hyd_loop_id)),
             air_pressure_switches,
             level_switch: LevelSwitch::new(low_level_threshold),
+            fluid_physics: FluidPhysics::new(),
+
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
+            total_return_flow: VolumeRate::default(),
+            total_return_volume: Volume::default(),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        air_pressure: Pressure,
+        fluid: &impl HeatingElement,
+    ) {
         self.air_pressure = air_pressure;
 
-        self.level_switch.update(self.current_level);
+        self.update_return_flow(context);
+        self.update_heat(context, fluid);
+
+        self.fluid_physics.update(context);
+
+        self.level_switch.update(
+            self.fluid_level_from_gauge(),
+            self.fluid_physics.is_fluid_going_up(),
+        );
 
         self.update_pressure_switches(context);
 
         self.update_leak_failure(context);
+    }
+
+    fn update_return_flow(&mut self, context: &UpdateContext) {
+        self.total_return_flow = self.total_return_volume / context.delta_as_time();
+        self.total_return_volume = Volume::default();
+    }
+
+    fn update_heat(&mut self, context: &UpdateContext, fluid: &impl HeatingElement) {
+        let has_fluid_return = self.total_return_flow.get::<gallon_per_second>() > 0.01;
+        self.heat_state
+            .update(context, has_fluid_return && fluid.is_overheating())
     }
 
     fn update_leak_failure(&mut self, context: &UpdateContext) {
@@ -1687,12 +2258,11 @@ impl Reservoir {
 
     // Try to take volume from reservoir. Will return only what's currently available
     fn try_take_volume(&mut self, volume: Volume) -> Volume {
-        let volume_taken = if self.current_level > self.min_usable {
-            let volume_available = self.current_level - self.min_usable;
-            volume_available.min(volume).max(Volume::new::<gallon>(0.))
-        } else {
-            Volume::new::<gallon>(0.)
-        };
+        let volume_taken = self
+            .fluid_level_reachable_by_pumps()
+            .min(volume)
+            .max(Volume::new::<gallon>(0.));
+
         self.current_level -= volume_taken;
 
         volume_taken
@@ -1708,8 +2278,7 @@ impl Reservoir {
     // What's current flow available
     fn request_flow_availability(&self, context: &UpdateContext, flow: VolumeRate) -> VolumeRate {
         let desired_volume = flow * context.delta_as_time();
-        let max_volume_available = self.current_level - self.min_usable;
-        max_volume_available.min(desired_volume) / context.delta_as_time()
+        self.fluid_level_reachable_by_pumps().min(desired_volume) / context.delta_as_time()
     }
 
     fn add_return_volume(&mut self, volume: Volume) {
@@ -1720,14 +2289,22 @@ impl Reservoir {
         };
 
         self.current_level = (self.current_level + volume_actually_returned).min(self.max_capacity);
+
+        self.total_return_volume += volume_actually_returned;
     }
 
     fn fluid_level_real(&self) -> Volume {
         self.current_level
     }
 
+    fn fluid_level_reachable_by_pumps(&self) -> Volume {
+        (self.current_level * self.fluid_physics.usable_level_modifier()
+            - Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL))
+        .max(Volume::new::<gallon>(0.))
+    }
+
     fn fluid_level_from_gauge(&self) -> Volume {
-        self.current_level.min(self.max_gaugeable)
+        self.current_level.min(self.max_gaugeable) * self.fluid_physics.gauge_modifier()
     }
 
     pub fn air_pressure(&self) -> Pressure {
@@ -1735,7 +2312,7 @@ impl Reservoir {
     }
 
     fn is_empty(&self) -> bool {
-        self.fluid_level_real() <= Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL)
+        self.fluid_level_reachable_by_pumps() <= Volume::new::<gallon>(0.01)
     }
 
     pub fn is_low_air_pressure(&self) -> bool {
@@ -1760,11 +2337,21 @@ impl SimulationElement for Reservoir {
         writer.write(&self.level_id, self.fluid_level_from_gauge());
         writer.write(&self.low_level_id, self.is_low_level());
         writer.write(&self.low_air_press_id, self.is_low_air_pressure());
+        writer.write(&self.overheating_id, self.is_overheating());
     }
 }
 impl PressurizeableReservoir for Reservoir {
     fn available_volume(&self) -> Volume {
         self.max_capacity - self.fluid_level_real()
+    }
+}
+impl HeatingElement for Reservoir {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
     }
 }
 
@@ -1777,8 +2364,8 @@ pub struct Pump {
     current_displacement: Volume,
     current_flow: VolumeRate,
     current_max_displacement: LowPassFilter<Volume>,
-    press_breakpoints: [f64; 9],
-    displacement_carac: [f64; 9],
+
+    pump_characteristics: PumpCharacteristics,
 
     speed: AngularVelocity,
 
@@ -1787,12 +2374,10 @@ pub struct Pump {
 impl Pump {
     const SECONDS_PER_MINUTES: f64 = 60.;
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
-    const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
-    const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
 
     const MAX_DISPLACEMENT_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
-    fn new(press_breakpoints: [f64; 9], displacement_carac: [f64; 9]) -> Self {
+    fn new(pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             delta_vol_max: Volume::new::<gallon>(0.),
             current_displacement: Volume::new::<gallon>(0.),
@@ -1800,8 +2385,7 @@ impl Pump {
             current_max_displacement: LowPassFilter::<Volume>::new(
                 Self::MAX_DISPLACEMENT_FILTER_TIME_CONSTANT,
             ),
-            press_breakpoints,
-            displacement_carac,
+            pump_characteristics,
 
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
 
@@ -1838,15 +2422,14 @@ impl Pump {
     }
 
     fn update_cavitation(&mut self, reservoir: &Reservoir) {
-        self.cavitation_efficiency = Ratio::new::<ratio>(interpolation(
-            &Self::AIR_PRESSURE_BREAKPTS_PSI,
-            &Self::AIR_PRESSURE_CARAC_RATIO,
-            reservoir.air_pressure().get::<psi>(),
-        ));
-
-        if reservoir.is_empty() {
-            self.cavitation_efficiency = Ratio::new::<ratio>(0.);
-        }
+        self.cavitation_efficiency = if !reservoir.is_empty() {
+            self.pump_characteristics.cavitation_efficiency(
+                reservoir.air_pressure(),
+                reservoir.heat_state.overheat_ratio(),
+            )
+        } else {
+            Ratio::new::<ratio>(0.)
+        };
     }
 
     fn calculate_displacement<T: PumpController>(
@@ -1855,11 +2438,8 @@ impl Pump {
         controller: &T,
     ) -> Volume {
         if controller.should_pressurise() {
-            Volume::new::<cubic_inch>(interpolation(
-                &self.press_breakpoints,
-                &self.displacement_carac,
-                section.pressure().get::<psi>(),
-            ))
+            self.pump_characteristics
+                .current_displacement(section.pressure())
         } else {
             Volume::new::<cubic_inch>(0.)
         }
@@ -1944,32 +2524,29 @@ impl PressureSource for Pump {
 
 pub struct ElectricPump {
     cavitation_id: VariableIdentifier,
+    overheat_id: VariableIdentifier,
     pump: Pump,
     pump_physics: ElectricalPumpPhysics,
 }
 impl ElectricPump {
-    const NOMINAL_SPEED: f64 = 7600.0;
-
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.2, 0.0, 0.0, 0.0];
-
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: AirbusElectricPumpId,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
+        pump_characteristics: PumpCharacteristics,
     ) -> Self {
+        let regulated_speed = pump_characteristics.regulated_speed();
         Self {
             cavitation_id: context.get_identifier(format!("HYD_{}_EPUMP_CAVITATION", id)),
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            overheat_id: context.get_identifier(format!("HYD_{}_EPUMP_OVHT", id)),
+            pump: Pump::new(pump_characteristics),
             pump_physics: ElectricalPumpPhysics::new(
                 context,
                 id,
                 bus_type,
                 max_current,
-                AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED),
+                regulated_speed,
             ),
         }
     }
@@ -2046,8 +2623,19 @@ impl SimulationElement for ElectricPump {
             &self.cavitation_id,
             self.cavitation_efficiency().get::<ratio>(),
         );
+        writer.write(&self.overheat_id, self.is_overheating());
     }
 }
+impl HeatingElement for ElectricPump {
+    fn is_damaged(&self) -> bool {
+        self.pump_physics.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.pump_physics.is_overheating()
+    }
+}
+impl HeatingPressureSource for ElectricPump {}
 
 pub struct EngineDrivenPump {
     active_id: VariableIdentifier,
@@ -2055,19 +2643,41 @@ pub struct EngineDrivenPump {
     is_active: bool,
     speed: AngularVelocity,
     pump: Pump,
+
+    overheat_failure: Failure,
+    heat_state: HeatingProperties,
 }
 impl EngineDrivenPump {
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2910.0, 3025.0, 3050.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 0.0, 0.0, 0.0];
+    const HEATING_TIME_CONSTANT_MEAN_S: f64 = 30.;
+    const HEATING_TIME_CONSTANT_STD_S: f64 = 5.;
 
-    pub fn new(context: &mut InitContext, id: &str) -> Self {
+    const COOLING_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+    const DAMAGE_TIME_CONSTANT: Duration = Duration::from_secs(60 * 2);
+
+    const MIN_SPEED_TO_REPORT_HEATING_RPM: f64 = 200.;
+
+    pub fn new(
+        context: &mut InitContext,
+        id: AirbusEngineDrivenPumpId,
+        pump_characteristics: PumpCharacteristics,
+    ) -> Self {
         Self {
             active_id: context.get_identifier(format!("HYD_{}_EDPUMP_ACTIVE", id)),
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
+            overheat_failure: Failure::new(FailureType::EnginePumpOverheat(id)),
+            heat_state: HeatingProperties::new(
+                Duration::from_secs_f64(
+                    random_from_normal_distribution(
+                        Self::HEATING_TIME_CONSTANT_MEAN_S,
+                        Self::HEATING_TIME_CONSTANT_STD_S,
+                    )
+                    .max(10.),
+                ),
+                Self::COOLING_TIME_CONSTANT,
+                Self::DAMAGE_TIME_CONSTANT,
+            ),
         }
     }
 
@@ -2079,9 +2689,22 @@ impl EngineDrivenPump {
         pump_speed: AngularVelocity,
         controller: &impl PumpController,
     ) {
-        self.speed = pump_speed;
+        self.heat_state.update(
+            context,
+            self.overheat_failure.is_active()
+                && pump_speed.get::<revolution_per_minute>()
+                    > Self::MIN_SPEED_TO_REPORT_HEATING_RPM,
+        );
+
+        self.speed = if !self.is_damaged() {
+            pump_speed
+        } else {
+            AngularVelocity::default()
+        };
+
         self.pump
-            .update(context, section, reservoir, pump_speed, controller);
+            .update(context, section, reservoir, self.speed, controller);
+
         self.is_active = controller.should_pressurise();
     }
 }
@@ -2114,10 +2737,25 @@ impl PressureSource for EngineDrivenPump {
     }
 }
 impl SimulationElement for EngineDrivenPump {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.overheat_failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
     }
 }
+impl HeatingElement for EngineDrivenPump {
+    fn is_damaged(&self) -> bool {
+        self.heat_state.is_damaged()
+    }
+
+    fn is_overheating(&self) -> bool {
+        self.heat_state.is_overheating()
+    }
+}
+impl HeatingPressureSource for EngineDrivenPump {}
 
 struct WindTurbine {
     rpm_id: VariableIdentifier,
@@ -2252,20 +2890,15 @@ pub struct RamAirTurbine {
     position: f64,
 }
 impl RamAirTurbine {
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 2700.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.5, 0.8, 1.15, 1.15, 1.15, 0.8, 0.3, 0.0, 0.0];
-
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
-            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
+            pump: Pump::new(pump_characteristics),
             pump_controller: AlwaysPressurisePumpController::new(),
             wind_turbine: WindTurbine::new(context),
             position: 0.,
@@ -2358,16 +2991,38 @@ impl SimulationElement for RamAirTurbine {
         writer.write(&self.stow_position_id, self.position);
     }
 }
+impl HeatingElement for RamAirTurbine {}
+impl HeatingPressureSource for RamAirTurbine {}
 
 #[cfg(test)]
 mod tests {
-    use crate::simulation::test::{ElementCtorFn, ReadByName, SimulationTestBed, TestBed};
+    use crate::simulation::test::{
+        ElementCtorFn, ReadByName, SimulationTestBed, TestBed, WriteByName,
+    };
     use crate::simulation::InitContext;
     use ntest::assert_about_eq;
 
     use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
 
     use super::*;
+
+    struct TestFluid {
+        is_hot: bool,
+    }
+    impl TestFluid {
+        fn overheat() -> Self {
+            Self { is_hot: true }
+        }
+
+        fn nominal() -> Self {
+            Self { is_hot: false }
+        }
+    }
+    impl HeatingElement for TestFluid {
+        fn is_overheating(&self) -> bool {
+            self.is_hot
+        }
+    }
 
     #[test]
     fn section_writes_its_state() {
@@ -2494,7 +3149,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
@@ -2517,7 +3172,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
@@ -2540,7 +3195,7 @@ mod tests {
         }));
 
         test_bed.set_update_after_power_distribution(|reservoir, context| {
-            reservoir.update(context, Pressure::new::<psi>(50.))
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
         });
 
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
@@ -2551,6 +3206,141 @@ mod tests {
 
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
         assert!(is_low);
+    }
+
+    #[test]
+    fn reservoir_empty_but_inverted_has_level_switch_reporting_ok() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.01),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs(2));
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(is_low);
+
+        test_bed.write_by_name("PLANE BANK DEGREES", 180.);
+        test_bed.run_multiple_frames(Duration::from_secs(2));
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(!is_low);
+    }
+
+    #[test]
+    fn reservoir_inverted_has_around_20s_fluid_reserve() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Yellow,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(5.),
+            )
+        }))
+        .with_update_after_power_distribution(|el, context| {
+            el.update(context, Pressure::new::<psi>(50.), &TestFluid::nominal())
+        });
+
+        test_bed.write_by_name("PLANE BANK DEGREES", 180.);
+
+        // 100*100ms = 10s run
+        for _ in 0..100 {
+            test_bed.run_with_delta(Duration::from_millis(100));
+        }
+        assert_about_eq!(
+            test_bed
+                .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
+            1.
+        );
+
+        // After 15s more, no more fluid available
+        // 200*100ms = 20s run
+        for _ in 0..200 {
+            test_bed.run_with_delta(Duration::from_millis(100));
+        }
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
+            0.
+        );
+
+        // Can reach fluid after plane returning normal flight
+        test_bed.write_by_name("PLANE BANK DEGREES", 0.);
+
+        // After 1s
+        // 10*100ms = 1s run
+        for _ in 0..10 {
+            test_bed.run_with_delta(Duration::from_millis(100));
+        }
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
+            1.
+        );
+    }
+
+    #[test]
+    fn reservoir_receiving_heating_fluid_overheats() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::overheat());
+
+            reservoir.try_take_volume(Volume::new::<gallon>(0.10));
+
+            reservoir.add_return_volume(Volume::new::<gallon>(0.10));
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs_f64(
+            Reservoir::HEATING_TIME_CONSTANT_MEAN_S + 4. * Reservoir::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        let is_overheating: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_OVHT");
+        assert!(is_overheating);
+    }
+
+    #[test]
+    fn reservoir_receiving_zero_flow_of_heating_fluid_do_not_overheat() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.), &TestFluid::overheat());
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs_f64(
+            Reservoir::HEATING_TIME_CONSTANT_MEAN_S + 4. * Reservoir::HEATING_TIME_CONSTANT_STD_S,
+        ));
+
+        let is_overheating: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_OVHT");
+        assert!(!is_overheating);
     }
 
     fn section(
@@ -2634,11 +3424,19 @@ mod tests {
             Pressure::new::<psi>(1800.),
             true,
             false,
+            false,
+            Pressure::new::<psi>(3000.),
+            Pressure::new::<psi>(1885.),
+            Volume::new::<gallon>(0.264),
         )
     }
 
     fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-        EngineDrivenPump::new(context, "DEFAULT")
+        EngineDrivenPump::new(
+            context,
+            AirbusEngineDrivenPumpId::Green,
+            PumpCharacteristics::a320_edp(),
+        )
     }
 
     #[cfg(test)]

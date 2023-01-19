@@ -3,7 +3,7 @@ use std::ops::Mul;
 use std::ops::Sub;
 use std::time::Duration;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 /// First order low pass filter
 /// y(k) = y(k-1)  +  (1-a)*( x(k) - y(k-1) ) with a = exp (-T/tau)
 /// See <https://gregstanleyandassociates.com/whitepapers/FaultDiagnosis/Filtering/Exponential-Filter/exponential-filter.htm>
@@ -25,6 +25,13 @@ where
         }
     }
 
+    pub fn new_with_init_value(time_constant: Duration, init_value: T) -> Self {
+        Self {
+            time_constant,
+            filtered_output: init_value,
+        }
+    }
+
     pub fn update(&mut self, time_delta: Duration, new_input: T) -> T {
         self.filtered_output += (new_input - self.filtered_output)
             * (1.
@@ -36,6 +43,10 @@ where
 
     pub fn output(&self) -> T {
         self.filtered_output
+    }
+
+    pub fn set_time_constant(&mut self, time_constant: Duration) {
+        self.time_constant = time_constant;
     }
 
     pub fn reset(&mut self, reset_value: T) {

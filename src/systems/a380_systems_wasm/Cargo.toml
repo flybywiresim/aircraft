@@ -1,0 +1,16 @@
+[package]
+name = "a380_systems_wasm"
+version = "0.1.0"
+authors = ["FlyByWire Simulations"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+test = false
+
+[dependencies]
+uom = "0.33.0"
+a380_systems = { path = "../a380_systems" }
+systems = { path = "../systems" }
+systems_wasm = { path = "../systems_wasm" }
+msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }

@@ -2,6 +2,7 @@
 /* eslint-disable no-empty-function */
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable no-console */
 import { UpdateThrottler } from '@shared/UpdateThrottler';
 import { MathUtils } from '@shared/MathUtils';
 import { Arinc429Word } from '@shared/arinc429';
@@ -13,7 +14,7 @@ import { FlowEventSync } from '@shared/FlowEventSync';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
     TcasState, TcasMode, XpdrMode, TcasThreat,
-    RaParams, RaSense, RaType, TaRaIndex, TaRaIntrusion, Intrude,
+    RaParams, RaSense, RaType, TaRaIndex, TaRaIntrusion,
     Inhibit, Limits,
 } from '../lib/TcasConstants';
 import { TcasSoundManager } from './TcasSoundManager';
@@ -27,6 +28,10 @@ export class NDTcasTraffic {
 
     relativeAlt: number;
 
+    intrusionLevel: number;
+
+    vertSpeed: number;
+
     bitfield: number;
 
     constructor(traffic: TcasTraffic) {
@@ -34,8 +39,8 @@ export class NDTcasTraffic {
         this.lat = traffic.lat;
         this.lon = traffic.lon;
         this.relativeAlt = Math.round((traffic.relativeAlt) / 100);
-        this.bitfield = (traffic.intrusionLevel + (Math.round(Math.abs(traffic.vertSpeed)) * 10))
-                        * Math.sign(traffic.vertSpeed);
+        this.intrusionLevel = traffic.intrusionLevel;
+        this.vertSpeed = traffic.vertSpeed;
     }
 }
 
@@ -107,14 +112,12 @@ export class TcasTraffic {
 
     vTau: number;
 
-    taExpiring: boolean;
-
     secondsSinceLastTa: number;
 
     constructor(tf: JS_NPCPlane, ppos: LatLongData, alt: number) {
         this.alive = true;
         this.seen = 0;
-        this.ID = tf.uId.toFixed(0);
+        this.ID = tf.uId.toFixed(0); // 7 Digit = NPC; 20 digit = player
         this.lat = tf.lat;
         this.lon = tf.lon;
         this.alt = tf.alt * 3.281;
@@ -122,7 +125,6 @@ export class TcasTraffic {
         this.heading = tf.heading;
         this.slantDistance = MathUtils.computeDistance3D(tf.lat, tf.lon, tf.alt * 3.281, ppos.lat, ppos.long, alt);
         this.hrzDistance = MathUtils.computeGreatCircleDistance(ppos.lat, ppos.long, tf.lat, tf.lon);
-        this.onGround = false;
         this.groundSpeed = 0;
         this.isDisplayed = false;
         this.vertSpeed = 0;
@@ -131,7 +133,6 @@ export class TcasTraffic {
         this.taTau = Infinity;
         this.raTau = Infinity;
         this.vTau = Infinity;
-        this.taExpiring = false;
         this.secondsSinceLastTa = 0;
     }
 }
@@ -303,20 +304,18 @@ export class TcasComputer implements TcasComponent {
     private updateInhibitions(): void {
         // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
         // TODO FIXME: Less magic numbers, Use constants defined in TcasConstants
-        const raValue = this.radioAlt.value;
-        const raNCD = this.radioAlt.isNoComputedData();
         if (
             this.radioAlt.isFailureWarning()
-            || !raNCD && this.radioAlt.value < 500
+            || !this.radioAlt.isNoComputedData() && this.radioAlt.value < 500
             || this.gpwsWarning
             || this.tcasMode.getVar() === TcasMode.STBY
         ) {
             this.inhibitions = Inhibit.ALL_RA_AURAL_TA;
-        } else if ((!raNCD && raValue < 1000) || this.tcasMode.getVar() === TcasMode.TA) {
+        } else if ((!this.radioAlt.isNoComputedData() && this.radioAlt.value < 1000) || this.tcasMode.getVar() === TcasMode.TA) {
             this.inhibitions = Inhibit.ALL_RA;
-        } else if (!raNCD && raValue < 1100) {
+        } else if (!this.radioAlt.isNoComputedData() && this.radioAlt.value < 1100) {
             this.inhibitions = Inhibit.ALL_DESC_RA;
-        } else if (!raNCD && raValue < 1550) {
+        } else if (!this.radioAlt.isNoComputedData() && this.radioAlt.value < 1550) {
             this.inhibitions = Inhibit.ALL_INCR_DESC_RA;
         } else if (this.pressureAlt > 39000) {
             this.inhibitions = Inhibit.ALL_CLIMB_RA;
@@ -329,11 +328,21 @@ export class TcasComputer implements TcasComponent {
      * Set TCAS status
      */
     private updateStatusFaults(): void {
-        // If in STBY, inhibit all, set sens to 1
+        // If in STBY, inhibit all, set sens to 1, clear all existing RAs
         if (this.tcasMode.getVar() === TcasMode.STBY) {
             this.taOnly.setVar(false);
             this.tcasFault.setVar(false);
             this.sensitivity.setVar(1);
+
+            this.activeRa.info = null;
+            this.activeRa.isReversal = false;
+            this.activeRa.secondsSinceStart = 0;
+            this.activeRa.hasBeenAnnounced = false;
+
+            this._newRa.info = null;
+            this._newRa.isReversal = false;
+            this._newRa.secondsSinceStart = 0;
+            this._newRa.hasBeenAnnounced = false;
             return;
         }
 
@@ -356,10 +365,10 @@ export class TcasComputer implements TcasComponent {
 
         // Update sensitivity
         if (this.activeRa.info === null) {
-            const raValid = !this.radioAlt.isFailureWarning() && !this.radioAlt.isNoComputedData();
             if (this.inhibitions === Inhibit.ALL_RA || this.inhibitions === Inhibit.ALL_RA_AURAL_TA) {
                 this.sensitivity.setVar(2);
-            } else if (raValid && this.radioAlt.value > TCAS.SENSE[3][Limits.MIN] && this.radioAlt.value <= TCAS.SENSE[3][Limits.MAX]) {
+            } else if ((!this.radioAlt.isFailureWarning() && !this.radioAlt.isNoComputedData())
+                && this.radioAlt.value > TCAS.SENSE[3][Limits.MIN] && this.radioAlt.value <= TCAS.SENSE[3][Limits.MAX]) {
                 this.sensitivity.setVar(3);
             } else if (this.pressureAlt > TCAS.SENSE[4][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[4][Limits.MAX]) {
                 this.sensitivity.setVar(4);
@@ -387,6 +396,15 @@ export class TcasComputer implements TcasComponent {
             obj.forEach((tf) => {
                 // Junk bad air traffic
                 if (!tf.lat && !tf.lon && !tf.alt && !tf.heading) {
+                    if (this.debug) {
+                        console.log('Removing bugged traffic');
+                        console.log('====================================');
+                        console.log(` id | ${tf.uId}`);
+                        console.log(` alt | ${tf.alt * 3.281}`);
+                        console.log(` bearing | ${MathUtils.computeGreatCircleHeading(this.ppos.lat, this.ppos.long, tf.lat, tf.lon)}`);
+                        console.log(` hDist | ${MathUtils.computeGreatCircleDistance(this.ppos.lat, this.ppos.long, tf.lat, tf.lon)}`);
+                        console.log(' ================================ ');
+                    }
                     return;
                 }
                 let traffic: TcasTraffic | undefined = this.airTraffic.find((p) => p && p.ID === tf.uId.toFixed(0));
@@ -425,9 +443,6 @@ export class TcasComputer implements TcasComponent {
                 traffic.taTau = taTau;
                 traffic.raTau = raTau;
                 traffic.vTau = vTau;
-                if (traffic.intrusionLevel === TaRaIntrusion.TA && traffic.secondsSinceLastTa < 10 && traffic.taExpiring) {
-                    traffic.secondsSinceLastTa += _deltaTime / 1000;
-                }
             });
 
             if (this.airTraffic.length > TCAS.MEMORY_MAX) {
@@ -442,11 +457,10 @@ export class TcasComputer implements TcasComponent {
     /**
      * Update all traffic elements. Detect and discount bugged traffic, out of range traffic, calculate intrusion level.
      */
-    private updateTraffic(): void {
+    private updateTraffic(_deltaTime: number): void {
         this.airTraffic.forEach((traffic: TcasTraffic) => {
             // Remove bugged traffic
             if (Math.abs(traffic.vertSpeed) >= 6000 || traffic.groundSpeed >= 600) {
-                traffic.taExpiring = false;
                 traffic.secondsSinceLastTa = 0;
                 traffic.intrusionLevel = TaRaIntrusion.TRAFFIC;
                 if (this.debug) {
@@ -467,9 +481,9 @@ export class TcasComputer implements TcasComponent {
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
             // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
-            const groundAlt = this.planeAlt - this.radioAlt.value; // altitude of the terrain
+            // SU X: traffic.isOnGround is currently broken for injected traffic, still using fallback method
+            const groundAlt = this.planeAlt - SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet'); // altitude of the terrain
             const onGround = traffic.alt < (groundAlt + 360) || traffic.groundSpeed < 30;
-            traffic.onGround = onGround;
             let isDisplayed = false;
             if (!onGround) {
                 if (traffic.groundSpeed >= 30) { // Workaround for MSFS live traffic, TODO: add option to disable
@@ -486,6 +500,8 @@ export class TcasComputer implements TcasComponent {
                         }
                     }
                 }
+            } else if (this.debug) {
+                console.log(`traffic ${traffic.ID} on ground, not displayed`);
             }
 
             // Remove traffic that is out of range
@@ -501,73 +517,91 @@ export class TcasComputer implements TcasComponent {
                     isDisplayed = false;
                     traffic.taTau = Infinity;
                     traffic.raTau = Infinity;
+                    if (this.debug) {
+                        console.log(`traffic ${traffic.ID} out of range - not displayed`);
+                    }
                 }
             }
             traffic.isDisplayed = isDisplayed;
 
-            const intrusionLevel: TaRaIntrusion[] = [0, 0, 0];
+            let rangeTest = 0;
+            let altTest = 0;
+            let accelTest = 0;
 
             // Perform range test
             if (traffic.raTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA]
                     || traffic.slantDistance < TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.RA]) {
-                intrusionLevel[Intrude.RANGE] = TaRaIntrusion.RA;
+                rangeTest = TaRaIntrusion.RA;
             } else if (traffic.taTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA]
                     || traffic.slantDistance < TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.TA]) {
-                intrusionLevel[Intrude.RANGE] = TaRaIntrusion.TA;
+                rangeTest = TaRaIntrusion.TA;
             } else if (traffic.hrzDistance < 6) {
-                intrusionLevel[Intrude.RANGE] = TaRaIntrusion.PROXIMITY;
+                rangeTest = TaRaIntrusion.PROXIMITY;
             }
 
             // Perform altitude test
             if (traffic.vTau < ((Math.abs(this.verticalSpeed) <= 600) ? TCAS.TVTHR[this.sensitivity.getVar()] : TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA])
             || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.RA]) {
-                intrusionLevel[Intrude.ALT] = TaRaIntrusion.RA;
+                altTest = TaRaIntrusion.RA;
             } else if (traffic.vTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA] || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.TA]) {
-                intrusionLevel[Intrude.ALT] = TaRaIntrusion.TA;
+                altTest = TaRaIntrusion.TA;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
-                intrusionLevel[Intrude.ALT] = TaRaIntrusion.PROXIMITY;
+                altTest = TaRaIntrusion.PROXIMITY;
             }
 
             // Perform acceleration test
             // TODO FIXME: Proper HMD based true-to-life filtering
             if (Math.abs(traffic.closureAccel) <= TCAS.ACCEL[this.sensitivity.getVar()][TaRaIndex.RA]) {
-                intrusionLevel[Intrude.SPEED] = TaRaIntrusion.RA;
+                accelTest = TaRaIntrusion.RA;
             } else if (Math.abs(traffic.closureAccel) <= TCAS.ACCEL[this.sensitivity.getVar()][TaRaIndex.TA]) {
-                intrusionLevel[Intrude.SPEED] = TaRaIntrusion.TA;
+                accelTest = TaRaIntrusion.TA;
             } else {
-                intrusionLevel[Intrude.SPEED] = TaRaIntrusion.PROXIMITY;
+                accelTest = TaRaIntrusion.PROXIMITY;
             }
 
-            const desiredIntrusionLevel: TaRaIntrusion = Math.min(...intrusionLevel);
-            if (traffic.intrusionLevel === TaRaIntrusion.TA
-                    && desiredIntrusionLevel < TaRaIntrusion.TA
-                    && traffic.secondsSinceLastTa >= TCAS.TA_EXPIRATION_DELAY) {
-                traffic.taExpiring = false;
-                traffic.secondsSinceLastTa = 0;
-                traffic.intrusionLevel = desiredIntrusionLevel;
-            // Don't allow TA to resolve if less than 4s
-            } else if (traffic.intrusionLevel === TaRaIntrusion.TA
-                    && desiredIntrusionLevel < TaRaIntrusion.TA
-                    && traffic.secondsSinceLastTa < TCAS.TA_EXPIRATION_DELAY) {
-                traffic.taExpiring = true;
-                traffic.intrusionLevel = TaRaIntrusion.TA;
-            // Don't allow RA to resolve if duration is less than 5s
-            } else if (this.activeRa.info !== null
-                    && traffic.intrusionLevel === TaRaIntrusion.RA
-                    && desiredIntrusionLevel < TaRaIntrusion.RA
-                    && this.activeRa.secondsSinceStart < TCAS.MIN_RA_DURATION) {
-                traffic.intrusionLevel = TaRaIntrusion.RA;
-            } else if (this.activeRa.info !== null
-                    && traffic.intrusionLevel === TaRaIntrusion.RA
-                    && desiredIntrusionLevel < TaRaIntrusion.RA
-                    && (traffic.taTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST
-                        || traffic.slantDistance < TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST)
-                    && (traffic.vTau < TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST
-                        || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST)
-                    && traffic.closureRate >= TCAS.CLOSURE_RATE_THRESH) {
-                traffic.intrusionLevel = TaRaIntrusion.RA;
-            } else if (!this.isSlewActive) {
-                traffic.intrusionLevel = desiredIntrusionLevel;
+            const desiredIntrusionLevel: TaRaIntrusion = Math.min(rangeTest, altTest, accelTest);
+            switch (traffic.intrusionLevel) {
+            case TaRaIntrusion.RA:
+                if (this.activeRa.info === null
+                    || this.activeRa.secondsSinceStart < TCAS.MIN_RA_DURATION
+                    || (traffic.taTau > TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST
+                        && traffic.slantDistance > TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST)
+                    || (traffic.vTau > TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST
+                        && Math.abs(traffic.relativeAlt) > TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.TA] * TCAS.VOL_BOOST)
+                    || traffic.closureRate < TCAS.CLOSURE_RATE_THRESH) {
+                    traffic.intrusionLevel = desiredIntrusionLevel;
+                }
+                break;
+            case TaRaIntrusion.TA:
+                switch (desiredIntrusionLevel) {
+                case TaRaIntrusion.RA:
+                    if (!this.isSlewActive) {
+                        traffic.intrusionLevel = desiredIntrusionLevel;
+                        if (this.debug) console.log(`${traffic.ID} new intrusion level is ${desiredIntrusionLevel}`);
+                    }
+                    break;
+                case TaRaIntrusion.TA:
+                    if (this.debug) console.log(`${traffic.ID} resetting seconds since last TA to 0`);
+                    traffic.secondsSinceLastTa = 0;
+                    break;
+                default:
+                    if (traffic.secondsSinceLastTa >= TCAS.TA_EXPIRATION_DELAY) {
+                        traffic.secondsSinceLastTa = 0;
+                        traffic.intrusionLevel = desiredIntrusionLevel;
+                        if (this.debug) console.log(`${traffic.ID} resetting seconds since last TA to ${traffic.secondsSinceLastTa} - new intrusion level is ${desiredIntrusionLevel}`);
+                    } else if (traffic.secondsSinceLastTa < 10) {
+                        traffic.secondsSinceLastTa += _deltaTime / 1000;
+                        if (this.debug) console.log(`${traffic.ID} seconds since last TA is ${traffic.secondsSinceLastTa}`);
+                    }
+                    break;
+                }
+                break;
+            default:
+                if (!this.isSlewActive) {
+                    if (this.debug && desiredIntrusionLevel > TaRaIntrusion.TRAFFIC) console.log(`${traffic.ID} new intrusion level is ${desiredIntrusionLevel}`);
+                    traffic.intrusionLevel = desiredIntrusionLevel;
+                }
+                break;
             }
         });
     }
@@ -998,7 +1032,10 @@ export class TcasComputer implements TcasComponent {
      * @param _deltaTime time of this frame
      */
     private updateAdvisoryState(_deltaTime) {
-        const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
+        const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.isDisplayed && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
+        if (taThreatCount > 0 && this.debug) {
+            console.log(`TA THREAT COUNT IS ${taThreatCount}`);
+        }
         const raThreatCount = this.raTraffic.length;
 
         switch (this.advisoryState) {
@@ -1152,7 +1189,7 @@ export class TcasComputer implements TcasComponent {
             return;
         }
         this.fetchRawTraffic(deltaTime);
-        this.updateTraffic();
+        this.updateTraffic(deltaTime);
         this.updateRa(deltaTime);
         this.emitDisplay();
     }

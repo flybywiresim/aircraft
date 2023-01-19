@@ -1,28 +1,18 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
 type OutputButtonsProps = {
     message: CpdlcMessage,
-    setStatus: (sender: string, message: string) => void,
-    isStatusAvailable: (sender: string) => boolean,
+    reachedEndOfMessage: boolean,
     sendMessage: (message: number) => void,
     deleteMessage: (message: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus, isStatusAvailable, sendMessage, deleteMessage, closeMessage }) => {
-    const buttonsBlocked = message.ComStatus === AtsuMessageComStatus.Sending;
-
-    useUpdate(() => {
-        if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons') === true) {
-                setStatus('Buttons', 'SENDING');
-            }
-        }
-    });
+export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, reachedEndOfMessage, sendMessage, deleteMessage, closeMessage }) => {
+    const buttonsBlocked = message.ComStatus === AtsuMessageComStatus.Sending || reachedEndOfMessage === false;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
@@ -32,7 +22,7 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined) {
+        if (message.UniqueMessageID === -1) {
             return;
         }
 

@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { render } from '../../../Common';
-import { setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
-
-setIsEcamPage('crz_page');
 
 export const CrzPage = () => (
     <>
@@ -120,6 +116,7 @@ export const OilComponent = () => {
 
 export const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
+    // FIXME Use CPC landing elev ARINC vars when made and get them via SDACs when made
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
@@ -231,5 +228,3 @@ export const CondComponent = () => {
         </>
     );
 };
-
-render(<SimVarProvider><CrzPage /></SimVarProvider>);

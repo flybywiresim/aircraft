@@ -17,10 +17,11 @@ set -ex
 mkdir -p "${DIR}/obj"
 pushd "${DIR}/obj"
 
-# compile c++ code
+# compile c++ code for the A32NX
 clang++ \
   -c \
   ${CLANG_ARGS} \
+  -std=c++20 \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
@@ -36,11 +37,12 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -O3 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
-  -I "${DIR}/src" \
-  "${DIR}/src/FadecGauge.cpp" \
-  -o fadec.o
+  -I "${DIR}/../fbw_common/src/inih" \
+  -I "${DIR}/common" \
+  "${DIR}/a320_fadec/src/FadecGauge.cpp"
 
 # restore directory
 popd

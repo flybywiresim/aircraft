@@ -1,7 +1,5 @@
 import React, { FC, useState, useEffect, memo } from 'react';
-import { render } from '@instruments/common/index';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -9,8 +7,6 @@ import { useSimVar } from '../../../Common/simVars';
 import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Press.scss';
-
-setIsEcamPage('press_page');
 
 export const PressPage: FC = () => {
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
@@ -282,6 +278,7 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx,
 
 const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 100);
+    // FIXME Use CPC landing elev ARINC vars when made and get them via SDACs when made
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
     const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
@@ -560,5 +557,3 @@ const OverboardOutletComponent: FC<OverboardOutletComponentType> = ({ validSDAC,
         </>
     );
 };
-
-render(<PressPage />);

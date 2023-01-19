@@ -1,3 +1,4 @@
+import { FcuSync } from '@fmgc/components/FcuSync';
 import { ReadySignal } from '@fmgc/components/ReadySignal';
 import { FlightPlanManager } from '@fmgc/wtsdk';
 import { EfisLabels } from './EfisLabels';
@@ -10,6 +11,7 @@ const components: FmgcComponent[] = [
     fmsMessages,
     new EfisLabels(),
     new ReadySignal(),
+    new FcuSync(),
 ];
 
 export function initComponents(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {

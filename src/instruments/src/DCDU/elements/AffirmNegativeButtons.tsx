@@ -1,42 +1,38 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { useUpdate } from '@instruments/common/hooks.js';
+import { UplinkMonitor } from '@atsu/components/UplinkMessageMonitoring';
 import { Button } from './Button';
 
 type AffirmNegativeButtonsProps = {
     message: CpdlcMessage,
+    reachedEndOfMessage: boolean,
     selectedResponse: number,
     setMessageStatus(message: number, response: number),
-    setStatus: (sender: string, message: string) => void,
-    isStatusAvailable: (sender: string) => boolean,
     sendResponse: (message: number, response: number) => void,
-    closeMessage: (message: number) => void
+    closeMessage: (message: number) => void,
+    monitorMessage: (message: number) => void,
+    cancelMessageMonitoring: (message: number) => void,
 }
 
-export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, sendResponse, closeMessage }) => {
-    const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
-
-    useUpdate(() => {
-        if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons') === true) {
-                setStatus('Buttons', 'SENDING');
-            }
-        }
-    });
+export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({
+    message, reachedEndOfMessage, selectedResponse, setMessageStatus, sendResponse, closeMessage,
+    monitorMessage, cancelMessageMonitoring,
+}) => {
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || reachedEndOfMessage === false;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
     let showSend = false;
 
-    if (selectedResponse === -1 && message.Response === undefined) {
+    if (selectedResponse === -1 && !message.Response) {
         showAnswers = true;
-    } else if (message.Response === undefined) {
+    } else if (!message.Response) {
         showSend = true;
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined || buttonsBlocked) {
+        if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
 
@@ -45,9 +41,15 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                 setMessageStatus(message.UniqueMessageID, 5);
             } else if (index === 'R2') {
                 setMessageStatus(message.UniqueMessageID, 4);
+                if (UplinkMonitor.relevantMessage(message)) {
+                    monitorMessage(message.UniqueMessageID);
+                }
             }
         } else if (showSend) {
             if (index === 'L1') {
+                if (UplinkMonitor.relevantMessage(message)) {
+                    cancelMessageMonitoring(message.UniqueMessageID);
+                }
                 setMessageStatus(message.UniqueMessageID, -1);
             } else if (index === 'R2') {
                 sendResponse(message.UniqueMessageID, selectedResponse);

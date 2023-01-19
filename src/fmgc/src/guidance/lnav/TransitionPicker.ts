@@ -21,7 +21,7 @@ import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
-import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
+import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 
 export class TransitionPicker {
     static forLegs(from: Leg, to: Leg): Transition | null {
@@ -40,8 +40,8 @@ export class TransitionPicker {
         if (from instanceof HALeg || from instanceof HFLeg || from instanceof HMLeg) {
             return TransitionPicker.fromHX(from, to);
         }
-        if (from instanceof IFLeg) {
-            return TransitionPicker.fromIF(from, to);
+        if (from instanceof PILeg) {
+            return TransitionPicker.fromPI(from, to);
         }
         if (from instanceof RFLeg) {
             return TransitionPicker.fromRF(from, to);
@@ -144,6 +144,9 @@ export class TransitionPicker {
         if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
             return new HoldEntryTransition(from, to);
         }
+        if (to instanceof PILeg) {
+            return new FixedRadiusTransition(from, to);
+        }
         if (to instanceof TFLeg) {
             return new FixedRadiusTransition(from, to);
         }
@@ -194,6 +197,9 @@ export class TransitionPicker {
         }
         if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
             return new HoldEntryTransition(from, to);
+        }
+        if (to instanceof PILeg) {
+            return new FixedRadiusTransition(from, to);
         }
         if (to instanceof CILeg) {
             return new CourseCaptureTransition(from, to);
@@ -248,9 +254,9 @@ export class TransitionPicker {
         return null;
     }
 
-    private static fromIF(from: IFLeg, to: Leg): Transition | null {
-        if (to instanceof DFLeg) {
-            return new DirectToFixTransition(from, to);
+    private static fromPI(from: PILeg, to: Leg): Transition | null {
+        if (!(to instanceof CFLeg)) {
+            console.error('PI -> !CF', from, to);
         }
 
         return null;
@@ -290,6 +296,9 @@ export class TransitionPicker {
         }
         if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
             return new HoldEntryTransition(from, to);
+        }
+        if (to instanceof PILeg) {
+            return new FixedRadiusTransition(from, to);
         }
         if (to instanceof TFLeg) {
             return new FixedRadiusTransition(from, to);

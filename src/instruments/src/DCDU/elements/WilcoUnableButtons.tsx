@@ -1,29 +1,25 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { useUpdate } from '@instruments/common/hooks.js';
+import { UplinkMonitor } from '@atsu/components/UplinkMessageMonitoring';
 import { Button } from './Button';
 
 type WilcoUnableButtonsProps = {
     message: CpdlcMessage,
+    reachedEndOfMessage: boolean,
     selectedResponse: number,
     setMessageStatus(message: number, response: number),
-    setStatus: (sender: string, message: string) => void,
-    isStatusAvailable: (sender: string) => boolean,
     sendResponse: (message: number, response: number) => void,
-    closeMessage: (message: number) => void
+    closeMessage: (message: number) => void,
+    monitorMessage: (message: number) => void,
+    cancelMessageMonitoring: (message: number) => void,
 }
 
-export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, sendResponse, closeMessage }) => {
-    const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
-
-    useUpdate(() => {
-        if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons')) {
-                setStatus('Buttons', 'SENDING');
-            }
-        }
-    });
+export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
+    message, reachedEndOfMessage, selectedResponse, setMessageStatus, sendResponse, closeMessage,
+    monitorMessage, cancelMessageMonitoring,
+}) => {
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || reachedEndOfMessage === false;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
@@ -32,10 +28,10 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
 
     // new message or a message update
     if (selectedResponse === -1) {
-        if (message.Response === undefined) {
+        if (!message.Response) {
             showStandby = true;
             showAnswers = true;
-        } else if (message.Response.Content?.TypeId === 'DM2') {
+        } else if (message.Response.Content[0].TypeId === 'DM2') {
             showAnswers = true;
         }
     } else if (selectedResponse !== -1) {
@@ -43,7 +39,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined || buttonsBlocked) {
+        if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
 
@@ -54,10 +50,16 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                 setMessageStatus(message.UniqueMessageID, 2);
             } else if (index === 'R2') {
                 setMessageStatus(message.UniqueMessageID, 0);
+                if (UplinkMonitor.relevantMessage(message)) {
+                    monitorMessage(message.UniqueMessageID);
+                }
             }
         } else if (showSend) {
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, -1);
+                if (UplinkMonitor.relevantMessage(message)) {
+                    cancelMessageMonitoring(message.UniqueMessageID);
+                }
             } else {
                 sendResponse(message.UniqueMessageID, selectedResponse);
             }

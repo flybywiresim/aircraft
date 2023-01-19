@@ -1,6 +1,4 @@
 import React, { FC, useState, useEffect } from 'react';
-import { render } from '@instruments/common/index';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { Arc, Needle } from '@instruments/common/gauges';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
@@ -9,8 +7,6 @@ import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Eng.scss';
-
-setIsEcamPage('eng_page');
 
 export const EngPage: FC = () => {
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
@@ -270,7 +266,7 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
     // Fuel used has a step of 10 when in Kilograms and 20 when in imperial pounds
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [fuelUsed] = useSimVar(`L:A32NX_FUEL_USED:${engineNumber}`, 'number', 500);
-    const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed * 2.20462 / 20) * 20;
+    const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed / 0.4535934 / 20) * 20;
 
     const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
     const OIL_TEMP_LOW_TAKEOFF = 38;
@@ -351,5 +347,3 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
         </SvgGroup>
     );
 };
-
-render(<EngPage />);

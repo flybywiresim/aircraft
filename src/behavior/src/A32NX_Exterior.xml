@@ -183,7 +183,7 @@
     <Template Name="FBW_HANDLING_Rudder_Template">
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>rudder_percent_key</ANIM_NAME>
-            <ANIM_CODE>(A:RUDDER TRIM PCT, percent) 0.25 * (L:A32NX_HYD_RUDDER_DEFLECTION, percent) 0.75 * + 0.5 * 50 +</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_HYD_RUDDER_DEFLECTION, percent) 100 + 2 / </ANIM_CODE>
         </UseTemplate>
     </Template>
 
@@ -196,6 +196,44 @@
             <ANIM_NAME>r_spoiler_key</ANIM_NAME>
             <ANIM_CODE>(L:A32NX_HYD_SPOILERS_RIGHT_DEFLECTION, number) 100 *</ANIM_CODE>
         </UseTemplate>
+    </Template>
+
+    <!--
+    Template for displayng GND equipment given different conditions
+    and preferences/overrides set in EFB.
+
+    Main Parameters:
+            - NODE_ID               <no default>        .gltf node to hide or show.
+            - GND_ENABLE_OVRD       <no default>        Simvar to toggle logic, where true is enabled.
+            - GND_EQUIPMENT_LOGIC   <current impl>      Logic for when to nodes can appear.
+    -->
+    <Template Name="FBW_Gnd_Equipment">
+        <DefaultTemplateParameters>
+            <GND_ENABLE_OVRD></GND_ENABLE_OVRD>
+            <GND_EQUIPMENT_LOGIC>
+                (A:SIM ON GROUND, bool) (L:A32NX_ENGINE_N1:1, Number) 3.5 &lt; and (L:A32NX_ENGINE_N1:2, Number) 3.5 &lt; and (L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO, bool) 0 == and (A:LIGHT BEACON, bool) 0 == and
+            </GND_EQUIPMENT_LOGIC>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>
+                    #GND_ENABLE_OVRD# if{
+                        #GND_EQUIPMENT_LOGIC#
+                    }
+                </VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Satcom">
+        <DefaultTemplateParameters>
+            <SAT_ENABLE></SAT_ENABLE>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>#SAT_ENABLE#</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 
 </ModelBehaviors>

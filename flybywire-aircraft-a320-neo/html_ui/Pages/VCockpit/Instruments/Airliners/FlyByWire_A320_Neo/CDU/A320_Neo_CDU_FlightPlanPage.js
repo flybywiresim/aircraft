@@ -209,7 +209,7 @@ class CDUFlightPlanPage {
                     // ARINC Leg Types - R1A 610
                     switch (wp.additionalData.legType) {
                         case 1: // AF
-                            fixAnnotation = `${Math.round(wp.additionalData.rho).toString().substring(0, 2).padStart(2, '0')} ${wp.additionalData.navaidIdent.substring(0, 3)}`;
+                            fixAnnotation = `${Math.round(wp.additionalData.rho).toString().substring(0, 2).padStart(2, '\xa0')} ${WayPoint.formatIdentFromIcao(wp.additionalData.recommendedIcao).substring(0, 3)}`;
                             break;
                         case 2: // CA
                         case 3: // CD
@@ -239,9 +239,10 @@ class CDUFlightPlanPage {
                             break;
                         case 16: // PI
                             fixAnnotation = `PROC ${wp.turnDirection === 1 ? 'L' : 'R'}`;
+                            ident = "INTCPT";
                             break;
                         case 17: // RF
-                            fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "0")}\xa0ARC`;
+                            fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "\xa0")}\xa0ARC`;
                             break;
                         case 19: // VA
                         case 20: // VD
@@ -269,6 +270,8 @@ class CDUFlightPlanPage {
                     distance = 9999;
                 }
                 distance = distance.toString();
+
+                const gp = wp.additionalData.verticalAngle ? `${wp.additionalData.verticalAngle.toFixed(1)}°` : undefined;
 
                 let speedConstraint = "---";
                 if (wp.speedConstraint > 10 && ident !== "MANUAL") {
@@ -418,6 +421,7 @@ class CDUFlightPlanPage {
                     ident: ident,
                     color: color,
                     distance: distance,
+                    gp,
                     spdColor: spdColor,
                     speedConstraint: speedConstraint,
                     altColor: altColor,
@@ -781,10 +785,11 @@ function renderFixTableHeader(isFlying) {
 }
 
 function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true) {
-    const { fixAnnotation, color, distance, bearingTrack } = rowObj;
+    const { fixAnnotation, color, distance, gp, bearingTrack } = rowObj;
+    const distUnit = showNm && !gp;
     return [
         `${(showFix) ? fixAnnotation.padEnd(7, "\xa0").padStart(8, "\xa0") : ""}`,
-        `${ showDist ? (showNm ? distance + "NM" : distance) : ''}${'\xa0'.repeat(showNm ? 3 : 5)}[color]${color}`,
+        `${ showDist ? (distUnit ? distance + "NM" : distance) : ''}{white}${(gp ? gp : '').padStart(distUnit ? 3 : 5, '\xa0')}{end}[color]${color}`,
         `{${color}}${bearingTrack}{end}\xa0`,
     ];
 }
@@ -829,6 +834,8 @@ function legTypeIsCourseReversal(wp) {
 }
 
 function legTurnIsForced(wp) {
-    // left || right
-    return wp.turnDirection === 1 || wp.turnDirection === 2;
+    // forced turns are only for straight legs
+    return (wp.turnDirection === 1 /* Left */ || wp.turnDirection === 2 /* Right */)
+        // eslint-disable-next-line semi-spacing
+        && wp.additionalData.legType !== 1 /* AF */ && wp.additionalData.legType !== 17 /* RF */;
 }

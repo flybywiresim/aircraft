@@ -30,7 +30,7 @@ use systems::{
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
-    landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
+    landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
@@ -52,12 +52,11 @@ pub struct A320 {
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
-    engine_fire_overhead: EngineFireOverheadPanel,
+    engine_fire_overhead: EngineFireOverheadPanel<2>,
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
-    lgciu1: LandingGearControlInterfaceUnit,
-    lgciu2: LandingGearControlInterfaceUnit,
+    lgcius: LandingGearControlInterfaceUnitSet,
     hydraulic: A320Hydraulic,
     hydraulic_overhead: A320HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
@@ -92,15 +91,10 @@ impl A320 {
             electrical: A320Electrical::new(context),
             power_consumption: A320PowerConsumption::new(context),
             ext_pwr: ExternalPowerSource::new(context),
-            lgciu1: LandingGearControlInterfaceUnit::new(
+            lgcius: LandingGearControlInterfaceUnitSet::new(
                 context,
-                1,
                 ElectricalBusType::DirectCurrentEssential,
-            ),
-            lgciu2: LandingGearControlInterfaceUnit::new(
-                context,
-                2,
-                ElectricalBusType::DirectCurrent(2),
+                ElectricalBusType::DirectCurrentGndFltService,
             ),
             hydraulic: A320Hydraulic::new(context),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
@@ -145,7 +139,7 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
             [&self.engine_1, &self.engine_2],
             &self.hydraulic,
-            &self.landing_gear,
+            self.lgcius.lgciu1(),
         );
 
         self.electrical_overhead
@@ -158,12 +152,10 @@ impl Aircraft for A320 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
-        self.lgciu1.update(
+        self.lgcius.update(
+            context,
             &self.landing_gear,
-            self.ext_pwr.output_potential().is_powered(),
-        );
-        self.lgciu2.update(
-            &self.landing_gear,
+            self.hydraulic.gear_system(),
             self.ext_pwr.output_potential().is_powered(),
         );
 
@@ -173,7 +165,7 @@ impl Aircraft for A320 {
             context,
             &self.pressurization_overhead,
             [&self.engine_1, &self.engine_2],
-            [&self.lgciu1, &self.lgciu2],
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
 
         self.hydraulic.update(
@@ -183,11 +175,11 @@ impl Aircraft for A320 {
             &self.hydraulic_overhead,
             &self.autobrake_panel,
             &self.engine_fire_overhead,
-            &self.lgciu1,
-            &self.lgciu2,
+            &self.lgcius,
             &self.emergency_electrical_overhead,
             &self.electrical,
             &self.pneumatic,
+            &self.adirs,
         );
 
         self.pneumatic.update_hydraulic_reservoir_spatial_volumes(
@@ -209,6 +201,8 @@ impl Aircraft for A320 {
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.apu,
+            &self.air_conditioning,
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
         self.air_conditioning.update(
             context,
@@ -219,7 +213,7 @@ impl Aircraft for A320 {
             &self.pneumatic_overhead,
             &self.pressurization,
             &self.pressurization_overhead,
-            [&self.lgciu1, &self.lgciu2],
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
     }
 }
@@ -241,8 +235,7 @@ impl SimulationElement for A320 {
         self.electrical.accept(visitor);
         self.power_consumption.accept(visitor);
         self.ext_pwr.accept(visitor);
-        self.lgciu1.accept(visitor);
-        self.lgciu2.accept(visitor);
+        self.lgcius.accept(visitor);
         self.radio_altimeters.accept(visitor);
         self.autobrake_panel.accept(visitor);
         self.hydraulic.accept(visitor);

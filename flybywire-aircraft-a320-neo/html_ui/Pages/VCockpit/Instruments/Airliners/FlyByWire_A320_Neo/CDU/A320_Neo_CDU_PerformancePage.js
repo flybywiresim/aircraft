@@ -67,7 +67,9 @@ class CDUPerformancePage {
                 if (value === "") {
                     if (mcdu._v1Checked) {
                         // not real: v-speed helper
-                        if (mcdu.flaps) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV1Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -98,7 +100,9 @@ class CDUPerformancePage {
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (value === "") {
                     if (mcdu._vRChecked) {
-                        if (mcdu.flaps) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -129,7 +133,9 @@ class CDUPerformancePage {
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
                 if (value === "") {
                     if (mcdu._v2Checked) {
-                        if (mcdu.flaps) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV2Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -254,19 +260,20 @@ class CDUPerformancePage {
         let flpRetrCell = "---";
         let sltRetrCell = "---";
         let cleanCell = "---";
-        const flapSpeed = mcdu.computedVfs;
-        if (flapSpeed !== 0) {
-            flpRetrCell = `{green}${flapSpeed.toFixed(0)}{end}`;
+        if (isFinite(mcdu.zeroFuelWeight)) {
+            const flapSpeed = mcdu.computedVfs;
+            if (flapSpeed !== 0) {
+                flpRetrCell = `{green}${flapSpeed.toFixed(0)}{end}`;
+            }
+            const slatSpeed = mcdu.computedVss;
+            if (slatSpeed !== 0) {
+                sltRetrCell = `{green}${slatSpeed.toFixed(0)}{end}`;
+            }
+            const cleanSpeed = mcdu.computedVgd;
+            if (cleanSpeed !== 0) {
+                cleanCell = `{green}${cleanSpeed.toFixed(0)}{end}`;
+            }
         }
-        const slatSpeed = mcdu.computedVss;
-        if (slatSpeed !== 0) {
-            sltRetrCell = `{green}${slatSpeed.toFixed(0)}{end}`;
-        }
-        const cleanSpeed = mcdu.computedVgd;
-        if (cleanSpeed !== 0) {
-            cleanCell = `{green}${cleanSpeed.toFixed(0)}{end}`;
-        }
-
         // takeoff shift
         let toShiftCell = "{inop}----{end}\xa0";
         if (hasOrigin && hasRunway) {
@@ -757,7 +764,7 @@ class CDUPerformancePage {
             }
         };
 
-        let transAltCell = "";
+        let transAltCell = "\xa0".repeat(5);
         const hasDestination = !!mcdu.flightPlanManager.getDestination();
         if (hasDestination) {
             if (mcdu.flightPlanManager.destinationTransitionLevel !== undefined) {
@@ -782,7 +789,7 @@ class CDUPerformancePage {
         let flpRetrCell = "---";
         let sltRetrCell = "---";
         let cleanCell = "---";
-        if (mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
+        if (isFinite(mcdu.zeroFuelWeight) && mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
             vappCell = `{cyan}{small}${mcdu.approachSpeeds.vapp.toFixed(0)}{end}{end}`;
             vlsCell = `{green}${mcdu.approachSpeeds.vls.toFixed(0)}{end}`;
             flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0)}{end}`;
@@ -957,21 +964,22 @@ class CDUPerformancePage {
             }
         };
         let flpRetrCell = "---";
-        const flapSpeed = mcdu.computedVfs;
-        if (isFinite(flapSpeed)) {
-            flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
-        }
         let sltRetrCell = "---";
-        const slatSpeed = mcdu.computedVss;
-        if (isFinite(slatSpeed)) {
-            sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
-        }
         let cleanCell = "---";
-        const cleanSpeed = mcdu.computedVgd;
-        if (isFinite(cleanSpeed)) {
-            cleanCell = cleanSpeed.toFixed(0) + "[color]green";
+        if (isFinite(mcdu.zeroFuelWeight)) {
+            const flapSpeed = mcdu.computedVfs;
+            if (isFinite(flapSpeed)) {
+                flpRetrCell = `{green}${flapSpeed.toFixed(0)}{end}`;
+            }
+            const slatSpeed = mcdu.computedVss;
+            if (isFinite(slatSpeed)) {
+                sltRetrCell = `{green}${slatSpeed.toFixed(0)}{end}`;
+            }
+            const cleanSpeed = mcdu.computedVgd;
+            if (isFinite(cleanSpeed)) {
+                cleanCell = `{green}${cleanSpeed.toFixed(0)}{end}`;
+            }
         }
-
         const bottomRowLabels = ["", ""];
         const bottomRowCells = ["", ""];
         if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {
@@ -1017,11 +1025,11 @@ class CDUPerformancePage {
         mcdu.setTemplate([
             ["GO AROUND[color]" + titleColor],
             ["", "", "FLP RETR{sp}"],
-            ["", "", "F=" + flpRetrCell + "[color]green"],
+            ["", "", "F=" + flpRetrCell],
             ["", "", "SLT RETR{sp}"],
-            ["", "", "S=" + sltRetrCell + "[color]green"],
+            ["", "", "S=" + sltRetrCell],
             ["", "", "{sp}{sp}CLEAN"],
-            ["", "", "O=" + cleanCell + "[color]green"],
+            ["", "", "O=" + cleanCell],
             [""],
             [""],
             ["THR RED/ACC", "ENG OUT ACC"],
@@ -1076,20 +1084,20 @@ class CDUPerformancePage {
         mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
         SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", alt);
     }
-    static UpdateThrRedAccFromDestination(mcdu) {
+    // Modified to be async like above
+    // TODO: Implement ability for pilot to enter custom altitudes
+    static async UpdateThrRedAccFromDestination(mcdu) {
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
         const destination = mcdu.flightPlanManager.getDestination();
-        const elevation = destination ? destination.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
-
-        const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
-        const alt = Math.round((elevation + offset) / 10) * 10;
-
+        if (destination) {
+            elevation = await mcdu.facilityLoader.GetAirportFieldElevation(destination.icao);
+        }
+        const alt = Math.round((elevation + 1500) / 10) * 10;
         mcdu.thrustReductionAltitudeGoaround = alt;
         mcdu.accelerationAltitudeGoaround = alt;
-        mcdu.engineOutAccelerationAltitudeGoaround = alt;
-
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", alt);
-        SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", alt);
+
     }
 
     static getSelectedTitleAndValue(_isPhaseActive, _isSelected, _preSel) {

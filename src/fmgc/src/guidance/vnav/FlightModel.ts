@@ -2,11 +2,11 @@ import { MathUtils } from '@shared/MathUtils';
 import { Common, FlapConf } from './common';
 
 export class FlightModel {
-    static Cd0 = 0.0187;
+    static Cd0 = 0.01873;
 
     static wingSpan = 117.454;
 
-    static wingArea = 1319.7;
+    static wingArea = 1317.47;
 
     static wingEffcyFactor = 0.70;
 
@@ -52,26 +52,26 @@ export class FlightModel {
         let baseDrag;
         switch (flapConf) {
         case FlapConf.CLEAN:
-            baseDrag = (-0.1043 * Cl ** 5) + (0.2635 * Cl ** 4) - (0.2319 * Cl ** 3) + (0.1537 * Cl ** 2) - (0.0379 * Cl) + 0.0233;
+            baseDrag = (0.0211 * Cl ** 3) + (0.0412 * Cl ** 2) - (0.015 * Cl) + 0.0215;
             break;
         case FlapConf.CONF_1:
-            baseDrag = (-0.0207 * Cl ** 5) + (0.0764 * Cl ** 4) - (0.0813 * Cl ** 3) + (0.0912 * Cl ** 2) - (0.0285 * Cl) + 0.0337;
+            baseDrag = (0.0303 * Cl ** 4) - (0.064 * Cl ** 3) + (0.1166 * Cl ** 2) - (0.0538 * Cl) + 0.0398;
             break;
         case FlapConf.CONF_2:
-            baseDrag = (0.0066 * Cl ** 5) - (0.0271 * Cl ** 4) + (0.0615 * Cl ** 3) - (0.0187 * Cl ** 2) + (0.0035 * Cl) + 0.0538;
+            baseDrag = (0.0168 * Cl ** 3) - (0.0018 * Cl ** 2) - (0.0037 * Cl) + 0.0729;
             break;
         case FlapConf.CONF_3:
-            baseDrag = (0.0768 * Cl ** 5) - (0.3979 * Cl ** 4) + (0.8252 * Cl ** 3) - (0.7951 * Cl ** 2) + (0.3851 * Cl) - 0.0107;
+            baseDrag = (0.013 * Cl ** 3) - (0.0056 * Cl ** 2) + (0.0005 * Cl) + 0.0902;
             break;
         case FlapConf.CONF_FULL:
-            baseDrag = (0.017 * Cl ** 5) - (0.0978 * Cl ** 4) + (0.2308 * Cl ** 3) - (0.2278 * Cl ** 2) + (0.1157 * Cl) + 0.0682;
+            baseDrag = (0.0077 * Cl ** 3) - (0.0056 * Cl ** 2) - (0.001 * Cl) + 0.1405;
             break;
         default:
             break;
         }
 
-        const spdBrkIncrement = spdBrkDeflected ? 0.01 : 0;
-        const gearIncrement = gearExtended ? 0.03 : 0;
+        const spdBrkIncrement = spdBrkDeflected ? 0.01008 : 0;
+        const gearIncrement = gearExtended ? 0.0372 : 0;
         return baseDrag + spdBrkIncrement + gearIncrement;
     }
 

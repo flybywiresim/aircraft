@@ -21,20 +21,28 @@ export interface ISimbriefData {
 
 interface IAirportInfo {
     icao: string,
-    iata: string
+    runway: string,
+    iata: string,
+    name: string,
+    posLat: number,
+    posLong: number,
+    metar: string,
 }
 
 export interface IWeights {
-    cargo: number,
-    estLandingWeight: number,
-    estTakeOffWeight: number,
-    estZeroFuelWeight: number,
-    maxLandingWeight: number,
-    maxTakeOffWeight: number,
-    maxZeroFuelWeight: number,
-    passengerCount: number,
-    passengerWeight: number,
-    payload: number
+    cargo: string,
+    estLandingWeight: string,
+    estTakeOffWeight: string,
+    estZeroFuelWeight: string,
+    maxLandingWeight: string,
+    maxTakeOffWeight: string,
+    maxZeroFuelWeight: string,
+    passengerCount: string,
+    bagCount: string,
+    passengerWeight: string,
+    bagWeight: string,
+    payload: string,
+    freight: string,
 }
 
 export interface IFuel {

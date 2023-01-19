@@ -8,7 +8,7 @@ class CDUProgressPage {
         mcdu.activeSystem = 'FMGC';
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
-        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
+        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || mcdu.isOnGround())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
         const adirsUsesGpsAsPrimary = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
         const gpsPrimaryStatus = adirsUsesGpsAsPrimary ? "{green}GPS PRIMARY{end}" : "";
         let flCrz = "-----";
@@ -101,6 +101,50 @@ class CDUProgressPage {
                 }
             });
         };
+
+        let rnpCell = '-.-';
+        const rnpSize = mcdu.navigation.requiredPerformance.manualRnp ? 'big' : 'small';
+        const rnp = mcdu.navigation.requiredPerformance.activeRnp;
+        // TODO check 2 decimal cut-off
+        if (rnp > 1) {
+            rnpCell = rnp.toFixed(1).padStart(4);
+        } else if (rnp !== undefined) {
+            rnpCell = rnp.toFixed(2);
+        }
+
+        mcdu.onLeftInput[5] = (input, scratchpadCallback) => {
+            if (input === FMCMainDisplay.clrValue) {
+                mcdu.navigation.requiredPerformance.clearPilotRnp();
+                return CDUProgressPage.ShowPage(mcdu);
+            }
+
+            const match = input.match(/^\d{1,2}(\.\d{1,2})?$/);
+            if (match === null) {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                scratchpadCallback(input);
+                return;
+            }
+
+            const rnp = parseFloat(input);
+            if (rnp < 0.01 || rnp > 20) {
+                mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                scratchpadCallback(input);
+                return;
+            }
+
+            mcdu.navigation.requiredPerformance.setPilotRnp(rnp);
+            CDUProgressPage.ShowPage(mcdu);
+        };
+
+        let anpCell = '-.-';
+        const anp = mcdu.navigation.currentPerformance;
+        // TODO check 2 decimal cut-off
+        if (anp > 1) {
+            anpCell = anp.toFixed(1).padStart(4);
+        } else if (anp !== undefined) {
+            anpCell = anp.toFixed(2);
+        }
+
         mcdu.setTemplate([
             ["{green}" + flightPhase.padStart(15, "\xa0") + "{end}\xa0" + flightNo.padEnd(11, "\xa0")],
             ["\xa0" + "CRZ\xa0", "OPT\xa0\xa0\xa0\xa0REC MAX"],
@@ -114,7 +158,7 @@ class CDUProgressPage {
             ["\xa0PREDICTIVE"],
             ["<GPS", gpsPrimaryStatus],
             ["REQUIRED", "ESTIMATED", "ACCUR{sp}"],
-            ["{small}3.4NM{end}[color]cyan", "{small}0.07NM{end}[color]green", "HIGH[color]green"]
+            [`{cyan}{${rnpSize}}${rnpCell}NM{end}{end}`, `{green}{small}${anpCell}NM{end}{end}`, `{green}${mcdu.navigation.accuracyHigh ? 'HIGH' : 'LOW'}{end}`]
         ]);
 
         // regular update due to showing dynamic data on this page

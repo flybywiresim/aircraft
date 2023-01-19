@@ -1,8 +1,9 @@
 class A32NX_TipsManager {
     constructor() {
-        this.notif = new NXNotif();
+        this.notif = new NXNotifManager();
         this.checkThrottleCalibration();
-        this.updateThrottler = new UpdateThrottler(30000);
+        this.updateThrottler = new UpdateThrottler(15000);
+        this.wasAnyAssistanceActive = false;
     }
 
     update(deltaTime) {
@@ -43,12 +44,26 @@ class A32NX_TipsManager {
     }
 
     checkAssistenceConfiguration() {
-        const assistenceTakeOffEnabled = SimVar.GetSimVarValue("ASSISTANCE TAKEOFF ENABLED", "Bool");
-        const assistenceLandingEnabled = SimVar.GetSimVarValue("ASSISTANCE LANDING ENABLED", "Bool");
-        const assistenceAutotrimActive = SimVar.GetSimVarValue("AI AUTOTRIM ACTIVE", "Bool");
-        if (assistenceTakeOffEnabled || assistenceLandingEnabled || assistenceAutotrimActive) {
-            this.notif.showNotification({message: "Ensure you have turned off all assistance functions:\n\n• AUTO-RUDDER\n• ASSISTED YOKE\n• ASSISTED LANDING\n• ASSISTED TAKEOFF\n• AI ANTI-STALL PROTECTION\n• AI AUTO-TRIM\n• ASSISTED CONTROLLER SENSITIVITY\n\nThey cause serious incompatibility!", timeout: 20000});
+        // only check when actually flying, otherwise return
+        if (SimVar.GetSimVarValue("L:A32NX_IS_READY", "Number") !== 1) {
+            this.wasAnyAssistanceActive = false;
+            return;
         }
+
+        // determine if any assistance is active
+        const assistanceAiControls = SimVar.GetSimVarValue("AI CONTROLS", "Bool");
+        const assistanceTakeOffEnabled = SimVar.GetSimVarValue("ASSISTANCE TAKEOFF ENABLED", "Bool");
+        const assistanceLandingEnabled = SimVar.GetSimVarValue("ASSISTANCE LANDING ENABLED", "Bool");
+        const assistanceAutotrimActive = SimVar.GetSimVarValue("AI AUTOTRIM ACTIVE", "Bool");
+        const isAnyAssistanceActive = (assistanceAiControls || assistanceTakeOffEnabled || assistanceLandingEnabled || assistanceAutotrimActive);
+
+        // show popup when an enabled assistance is detected and it was not active before
+        if (!this.wasAnyAssistanceActive && isAnyAssistanceActive) {
+            this.notif.showNotification({message: "Ensure you have turned off all assistance functions:\n\n• AUTO-RUDDER\n• ASSISTED YOKE\n• ASSISTED LANDING\n• ASSISTED TAKEOFF\n• AI ANTI-STALL PROTECTION\n• AI AUTO-TRIM\n• ASSISTED CONTROLLER SENSITIVITY\n\nThey cause serious incompatibility!", timeout: 15000});
+        }
+
+        // remember if any assistance was active
+        this.wasAnyAssistanceActive = isAnyAssistanceActive;
     }
 
 }

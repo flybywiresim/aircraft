@@ -24,7 +24,7 @@ declare global {
     type PercentOver100 = number;
     type Gallons = number;
     type Kilograms = number;
-    type Celcius = number;
+    type Celsius = number;
     type InchesOfMercury = number;
     type Millibar = number;
     type PressurePerSquareInch = number;
@@ -39,7 +39,7 @@ declare global {
          * `true` if `window.ACE_ENGINE_HANDLE` is present and the instrument is using (but is not necessarily connected to) a remote bridge
          */
         ACE_IS_REMOTE: boolean | undefined
-        
+
         /**
          * `true` if `window.ACE_ENGINE_HANDLE` is present and `window.ACE_IS_REMOTE` is `true` and the instrument is connected to the sim through a remote bridge
          */
@@ -49,6 +49,7 @@ declare global {
     namespace Fmgc {
         const FlightPhaseManager: typeof FlightPhaseManager_
     }
+
 }
 
 export {};

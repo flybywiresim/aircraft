@@ -15,6 +15,7 @@ class CDUVerticalRevisionPage {
 
             const confirmConstraint = confirmSpeed !== undefined || confirmAlt !== undefined;
             const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, waypoint);
+            const isOrigin = wpIndex === 0;
             const isDestination = wpIndex === mcdu.flightPlanManager.getDestinationIndex();
 
             let waypointIdent = "---";
@@ -32,19 +33,26 @@ class CDUVerticalRevisionPage {
                 coordinates = waypointInfo.coordinates.toDegreeString();
             }
 
+            const showSpeedLim = mcdu._fuelPredDone || isOrigin || isDestination || constraintType !== WaypointConstraintType.Unknown;
+            // the conditions other than isDestination are a workaround for no ToC
+            const showDesSpeedLim = showSpeedLim && (isDestination ||
+                constraintType === WaypointConstraintType.DES ||
+                (mcdu.flightPhaseManager.phase > FmgcFlightPhases.CRUISE &&
+                    mcdu.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND));
+
             let speedLimitTitle = "";
             let speedLimitCell = "";
-            if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.CRUISE) {
-                speedLimitTitle = "\xa0CLB SPD LIM";
-                if (mcdu.climbSpeedLimit !== undefined) {
-                    speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.climbSpeedLimitAlt, mcdu.flightPlanManager.originTransitionAltitude)}{end}{end}`;
+            if (showDesSpeedLim) {
+                speedLimitTitle = "\xa0DES SPD LIM";
+                if (mcdu.descentSpeedLimit !== undefined) {
+                    speedLimitCell = `{magenta}{${mcdu.descentSpeedLimitPilot ? 'big' : 'small'}}${mcdu.descentSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, mcdu.flightPlanManager.destinationTransitionLevel * 100)}{end}{end}`;
                 } else {
                     speedLimitCell = "{cyan}*[ ]/[   ]{end}";
                 }
-            } else if (mcdu.flightPhaseManager.phase > FmgcFlightPhases.CRUISE && mcdu.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
-                speedLimitTitle = "\xa0DES SPD LIM";
-                if (mcdu.descentSpeedLimit !== undefined) {
-                    speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, mcdu.flightPlanManager.destinationTransitionLevel * 100)}{end}{end}`;
+            } else if (showSpeedLim) {
+                speedLimitTitle = "\xa0CLB SPD LIM";
+                if (mcdu.climbSpeedLimit !== undefined) {
+                    speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.climbSpeedLimitAlt, mcdu.flightPlanManager.originTransitionAltitude)}{end}{end}`;
                 } else {
                     speedLimitCell = "{cyan}*[ ]/[   ]{end}";
                 }
@@ -151,22 +159,13 @@ class CDUVerticalRevisionPage {
             ]);
 
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-                if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.CRUISE || mcdu.flightPhaseManager.phase > FmgcFlightPhases.APPROACH) {
+                if (!showSpeedLim) {
+                    scratchpadCallback();
                     return;
                 }
 
-                const climb = mcdu.flightPhaseManager.phase < FmgcFlightPhases.CRUISE;
                 if (value === FMCMainDisplay.clrValue) {
-                    if (climb) {
-                        if (mcdu.climbSpeedLimitPilot) {
-                            mcdu.climbSpeedLimit = 250;
-                            mcdu.climbSpeedLimitAlt = 10000;
-                        } else {
-                            mcdu.climbSpeedLimit = undefined;
-                            mcdu.climbSpeedLimitAlt = undefined;
-                        }
-                        mcdu.climbSpeedLimitPilot = false;
-                    } else {
+                    if (showDesSpeedLim) {
                         if (mcdu.descentSpeedLimitPilot) {
                             mcdu.descentSpeedLimit = 250;
                             mcdu.descentSpeedLimitAlt = 10000;
@@ -175,6 +174,15 @@ class CDUVerticalRevisionPage {
                             mcdu.descentSpeedLimitAlt = undefined;
                         }
                         mcdu.descentSpeedLimitPilot = false;
+                    } else {
+                        if (mcdu.climbSpeedLimitPilot) {
+                            mcdu.climbSpeedLimit = 250;
+                            mcdu.climbSpeedLimitAlt = 10000;
+                        } else {
+                            mcdu.climbSpeedLimit = undefined;
+                            mcdu.climbSpeedLimitAlt = undefined;
+                        }
+                        mcdu.climbSpeedLimitPilot = false;
                     }
                     CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
                     return;
@@ -198,14 +206,14 @@ class CDUVerticalRevisionPage {
 
                 alt = Math.round(alt / 10) * 10;
 
-                if (climb) {
-                    mcdu.climbSpeedLimit = speed;
-                    mcdu.climbSpeedLimitAlt = alt;
-                    mcdu.climbSpeedLimitPilot = true;
-                } else {
+                if (showDesSpeedLim) {
                     mcdu.descentSpeedLimit = speed;
                     mcdu.descentSpeedLimitAlt = alt;
                     mcdu.descentSpeedLimitPilot = true;
+                } else {
+                    mcdu.climbSpeedLimit = speed;
+                    mcdu.climbSpeedLimitAlt = alt;
+                    mcdu.climbSpeedLimitPilot = true;
                 }
                 CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
                 return;

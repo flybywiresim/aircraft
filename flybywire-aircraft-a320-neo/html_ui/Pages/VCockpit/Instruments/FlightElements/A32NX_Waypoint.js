@@ -234,6 +234,7 @@ class WayPointInfo {
         this.long = data.lon;
     }
     async UpdateAirway(name) {
+        await this.ensureRouteData();
         if (this.airways.findIndex(airway => airway.name === name) === -1) {
             const airways = await this.instrument.facilityLoader.getAllAirways(this, name);
             if (airways.length === 1) {
@@ -242,18 +243,28 @@ class WayPointInfo {
         }
     }
     async UpdateAirways() {
+        await this.ensureRouteData();
         this.airways = await this.instrument.facilityLoader.getAllAirways(this);
+    }
+    async ensureRouteData() {
+        // only needed for navaids
     }
 }
 class AirportInfo extends WayPointInfo {
     constructor(_instrument) {
         super(_instrument);
+        /** @type {RawFrequency[]} */
         this.frequencies = [];
         this.namedFrequencies = [];
+        /** @type {RawDeparture[]} */
         this.departures = [];
+        /** @type {RawApproach[]} */
         this.approaches = [];
+        /** @type {RawArrival[]} */
         this.arrivals = [];
+        /** @type {RawRunway[]} */
         this.runways = [];
+        /** @type {OneWayRunway[]} */
         this.oneWayRunways = [];
         this.airportClass = 0;
         this.privateType = 0;
@@ -497,7 +508,9 @@ class AirportInfo extends WayPointInfo {
                 approach.transitions = [];
                 for (let i = 0; i < approachData.transitions.length; i++) {
                     const transition = new Transition();
-                    transition.name = approachData.transitions[i].legs[0].fixIcao.substr(7, 5);
+                    transition.name = approachData.transitions[i].name.trim().length > 0
+                        ? approachData.transitions[i].name
+                        : WayPoint.formatIdentFromIcao(approachData.transitions[i].legs[0].fixIcao);
                     transition.waypoints = [];
                     for (let j = 0; j < approachData.transitions[i].legs.length; j++) {
                         const wp = new WayPoint(this.instrument);
@@ -581,7 +594,9 @@ class AirportInfo extends WayPointInfo {
             }
             for (let j = 0; j < this.departures[i].enRouteTransitions.length; j++) {
                 const legsCount = this.departures[i].enRouteTransitions[j].legs.length;
-                this.departures[i].enRouteTransitions[j].name = this.departures[i].enRouteTransitions[j].legs[legsCount - 1].fixIcao.substr(7, 5);
+                this.departures[i].enRouteTransitions[j].name = this.departures[i].enRouteTransitions[j].name.trim().length > 0
+                    ? this.departures[i].enRouteTransitions[j].name
+                    : WayPoint.formatIdentFromIcao(this.departures[i].enRouteTransitions[j].legs[legsCount - 1].fixIcao);
             }
         }
         this.arrivals = data.arrivals;
@@ -601,7 +616,9 @@ class AirportInfo extends WayPointInfo {
                 }
             }
             for (let j = 0; j < this.arrivals[i].enRouteTransitions.length; j++) {
-                this.arrivals[i].enRouteTransitions[j].name = this.arrivals[i].enRouteTransitions[j].legs[0].fixIcao.substr(7, 5);
+                this.arrivals[i].enRouteTransitions[j].name = this.arrivals[i].enRouteTransitions[j].name.trim().length > 0
+                    ? this.arrivals[i].enRouteTransitions[j].name
+                    : WayPoint.formatIdentFromIcao(this.arrivals[i].enRouteTransitions[j].legs[0].fixIcao);
             }
         }
     }
@@ -611,7 +628,21 @@ class AirportInfo extends WayPointInfo {
         }
     }
 }
-class VORInfo extends WayPointInfo {
+
+class NavaidInfo extends WayPointInfo {
+    async ensureRouteData() {
+        if (!this.routes) {
+            const intersection = await this.instrument.facilityLoader.getIntersectionData(this.icao);
+            if (intersection) {
+                this.routes = intersection.routes;
+            } else {
+                this.routes = [];
+            }
+        }
+    }
+}
+
+class VORInfo extends NavaidInfo {
     constructor(_instrument) {
         super(_instrument);
     }
@@ -724,7 +755,7 @@ class VORInfo extends WayPointInfo {
         });
     }
 }
-class NDBInfo extends WayPointInfo {
+class NDBInfo extends NavaidInfo {
     constructor(_instrument) {
         super(_instrument);
     }

@@ -320,7 +320,7 @@ mod air_intake_flap_tests {
 
     #[test]
     fn is_fully_open_returns_false_when_closed() {
-        let test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
+        let test_bed = SimulationTestBed::new(TestAircraft::new);
 
         assert!(!test_bed.query(|a| a.flap_is_fully_open()))
     }

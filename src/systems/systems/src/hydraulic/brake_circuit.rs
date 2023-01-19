@@ -159,6 +159,7 @@ impl BrakeCircuit {
         accumulator_volume: Volume,
         accumulator_fluid_volume_at_init: Volume,
         total_displacement: Volume,
+        circuit_target_pressure: Pressure,
     ) -> BrakeCircuit {
         let mut has_accu = true;
         if accumulator_volume <= Volume::new::<gallon>(0.) {
@@ -185,6 +186,7 @@ impl BrakeCircuit {
                 accumulator_volume,
                 accumulator_fluid_volume_at_init,
                 true,
+                circuit_target_pressure,
             ),
             total_volume_to_actuator: Volume::new::<gallon>(0.),
             total_volume_to_reservoir: Volume::new::<gallon>(0.),
@@ -205,12 +207,12 @@ impl BrakeCircuit {
         self.update_demands(brake_circuit_controller);
 
         // The pressure available in brakes is the one of accumulator only if accumulator has fluid
-        let actual_pressure_available: Pressure;
-        if self.accumulator.fluid_volume() > Volume::new::<gallon>(0.) {
-            actual_pressure_available = self.accumulator.raw_gas_press();
-        } else {
-            actual_pressure_available = section.pressure();
-        }
+        let actual_pressure_available =
+            if self.accumulator.fluid_volume() > Volume::new::<gallon>(0.) {
+                self.accumulator.raw_gas_press()
+            } else {
+                section.pressure()
+            };
 
         self.update_brake_actuators(context, actual_pressure_available);
 
@@ -328,7 +330,7 @@ impl SimulationElement for BrakeCircuit {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum AutobrakeMode {
     NONE = 0,
     LOW = 1,
@@ -418,7 +420,7 @@ impl AutobrakeDecelerationGovernor {
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
-            pid_controller: PidController::new(0.3, 0.25, 0., -1., 0., 0., 1.),
+            pid_controller: PidController::new(0.08, 0.6, 0., -1., 0., 0., 1.),
 
             current_output: 0.,
             acceleration_filter: LowPassFilter::<Acceleration>::new(
@@ -726,6 +728,7 @@ mod tests {
                 init_max_vol,
                 Volume::new::<gallon>(0.0),
                 Volume::new::<gallon>(0.1),
+                Pressure::new::<psi>(3000.),
             )
         }));
 
@@ -750,6 +753,7 @@ mod tests {
                 init_max_vol,
                 init_max_vol / 2.0,
                 Volume::new::<gallon>(0.1),
+                Pressure::new::<psi>(3000.),
             )
         }));
 
@@ -862,6 +866,7 @@ mod tests {
             init_max_vol,
             init_max_vol / 2.0,
             Volume::new::<gallon>(0.1),
+            Pressure::new::<psi>(3000.),
         )
     }
 

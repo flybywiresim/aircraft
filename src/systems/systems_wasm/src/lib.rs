@@ -77,7 +77,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         builder_func: T,
     ) -> Result<Self, Box<dyn Error>> {
         let variable_registry = &mut self.variable_registry.as_mut().unwrap();
-        let mut builder = MsfsAspectBuilder::new(&mut self.sim_connect, variable_registry);
+        let mut builder = MsfsAspectBuilder::new(self.sim_connect, variable_registry);
         (builder_func)(&mut builder)?;
         self.aspects.push(Box::new(builder.build()));
 
@@ -259,7 +259,7 @@ impl SimulatorReaderWriter for MsfsHandler {
             .unwrap_or_else(|| {
                 self.variables
                     .as_ref()
-                    .map(|registry| registry.read(identifier).unwrap_or(0.))
+                    .map(|registry| registry.read(identifier))
                     .unwrap_or(0.)
             })
     }
@@ -382,14 +382,14 @@ pub enum VariableType {
     Aspect = 2,
 }
 
-impl From<VariableType> for u8 {
+impl From<VariableType> for usize {
     fn from(value: VariableType) -> Self {
-        value as u8
+        value as usize
     }
 }
 
-impl From<u8> for VariableType {
-    fn from(value: u8) -> Self {
+impl From<usize> for VariableType {
+    fn from(value: usize) -> Self {
         match value {
             0 => Self::Aircraft,
             1 => Self::Named,
@@ -433,7 +433,7 @@ pub struct MsfsVariableRegistry {
     named_variable_prefix: String,
     name_to_identifier: FxHashMap<String, VariableIdentifier>,
     next_variable_identifier: FxHashMap<VariableType, VariableIdentifier>,
-    variables: FxHashMap<VariableIdentifier, VariableValue>,
+    variables: [Vec<VariableValue>; 3],
 }
 
 impl MsfsVariableRegistry {
@@ -442,7 +442,7 @@ impl MsfsVariableRegistry {
             named_variable_prefix,
             name_to_identifier: FxHashMap::default(),
             next_variable_identifier: FxHashMap::default(),
-            variables: FxHashMap::default(),
+            variables: [vec![], vec![], vec![]],
         }
     }
 
@@ -489,20 +489,19 @@ impl MsfsVariableRegistry {
                 }
 
                 let value: VariableValue = (&variable).into();
-                self.variables.insert(identifier, value);
+                self.variables[identifier.identifier_type()]
+                    .insert(identifier.identifier_index(), value);
 
                 identifier
             }
         }
     }
 
-    fn read(&self, identifier: &VariableIdentifier) -> Option<f64> {
-        self.variables
-            .get(identifier)
-            .map(|variable_value| variable_value.read())
+    fn read(&self, identifier: &VariableIdentifier) -> f64 {
+        self.variables[identifier.identifier_type()][identifier.identifier_index()].read()
     }
 
-    fn read_many(&self, identifiers: &[VariableIdentifier]) -> Vec<Option<f64>> {
+    fn read_many(&self, identifiers: &[VariableIdentifier]) -> Vec<f64> {
         identifiers
             .iter()
             .map(|identifier| self.read(identifier))
@@ -510,9 +509,7 @@ impl MsfsVariableRegistry {
     }
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
-        if let Some(variable_value) = self.variables.get_mut(identifier) {
-            variable_value.write(value);
-        }
+        self.variables[identifier.identifier_type()][identifier.identifier_index()].write(value);
     }
 }
 
@@ -548,7 +545,7 @@ impl Time {
         sim_connect.request_data_on_sim_object::<SimulationTime>(
             SimulationTime::REQUEST_ID,
             SIMCONNECT_OBJECT_ID_USER,
-            Period::SimFrame,
+            Period::VisualFrame,
         )?;
 
         Ok(Self {

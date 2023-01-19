@@ -3,14 +3,15 @@ use plotlib::repr::Plot;
 use plotlib::style::LineStyle;
 use plotlib::view::ContinuousView;
 use std::time::Duration;
+use systems::hydraulic::pumps::PumpCharacteristics;
 
 use systems::hydraulic::*;
 
 use systems::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
     shared::{
-        update_iterator::FixedStepLoop, ElectricalBusType, HydraulicColor, PotentialOrigin,
-        ReservoirAirPressure,
+        update_iterator::FixedStepLoop, AirbusElectricPumpId, AirbusEngineDrivenPumpId,
+        ElectricalBusType, HydraulicColor, PotentialOrigin, ReservoirAirPressure,
     },
     simulation::{
         test::{SimulationTestBed, TestBed},
@@ -48,6 +49,10 @@ impl HydraulicCircuitController for TestHydraulicCircuitController {
 
     fn should_open_leak_measurement_valve(&self) -> bool {
         true
+    }
+
+    fn should_route_pump_to_auxiliary(&self, _: usize) -> bool {
+        false
     }
 }
 
@@ -353,14 +358,19 @@ fn hydraulic_loop(context: &mut InitContext, loop_color: HydraulicColor) -> Hydr
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
     ElectricPump::new(
         context,
-        "DEFAULT",
+        AirbusElectricPumpId::Green,
         ElectricalBusType::AlternatingCurrentGndFltService,
         ElectricCurrent::new::<ampere>(45.),
+        PumpCharacteristics::a320_electric_pump(),
     )
 }
 
 fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-    EngineDrivenPump::new(context, "DEFAULT")
+    EngineDrivenPump::new(
+        context,
+        AirbusEngineDrivenPumpId::Green,
+        PumpCharacteristics::a320_edp(),
+    )
 }
 
 struct A320TestPneumatics {
@@ -493,7 +503,8 @@ impl Aircraft for A320SimpleMainElecHydraulicsTestAircraft {
 
             self.hydraulic_circuit.update(
                 &context.with_delta(cur_time_step),
-                &mut vec![&mut self.elec_pump],
+                &mut [&mut self.elec_pump],
+                None::<&mut ElectricPump>,
                 None::<&mut ElectricPump>,
                 None,
                 &self.circuit_controller,

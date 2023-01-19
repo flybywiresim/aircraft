@@ -187,20 +187,18 @@ declare global {
     }
 
     enum ApproachType {
-        APPROACH_TYPE_UNKNOWN,
-        APPROACH_TYPE_VFR,
-        APPROACH_TYPE_HEL,
-        APPROACH_TYPE_TACAN,
-        APPROACH_TYPE_NDB,
-        APPROACH_TYPE_LORAN,
-        APPROACH_TYPE_RNAV,
-        APPROACH_TYPE_VOR,
+        APPROACH_TYPE_UNKNOWN = 0,
         APPROACH_TYPE_GPS,
+        APPROACH_TYPE_VOR,
+        APPROACH_TYPE_NDB,
+        APPROACH_TYPE_ILS,
+        APPROACH_TYPE_LOCALIZER,
         APPROACH_TYPE_SDF,
         APPROACH_TYPE_LDA,
-        APPROACH_TYPE_LOC,
-        APPROACH_TYPE_MLS,
-        APPROACH_TYPE_ILS
+        APPROACH_TYPE_VORDME,
+        APPROACH_TYPE_NDBDME,
+        APPROACH_TYPE_RNAV,
+        APPROACH_TYPE_LOCALIZER_BACK_COURSE,
     }
 
     enum WorldRegion {
@@ -394,8 +392,8 @@ declare global {
         function getTrimNeutral(): PercentOver100 | null;
         function setTransponderToRegion(): void;
         function setTransponderToZero(): void;
-        function getTotalAirTemperature(): Celcius | null;
-        function getAmbientTemperature(): Celcius | null;
+        function getTotalAirTemperature(): Celsius | null;
+        function getAmbientTemperature(): Celsius | null;
         function getFlexTemperature(): number | null;
         function getFuelPercent(): Percent;
         function getFuelQuantity(): Gallons;

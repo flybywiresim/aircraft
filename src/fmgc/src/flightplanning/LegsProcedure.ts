@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /*
  * MIT License
  *
@@ -59,7 +60,6 @@ export class LegsProcedure {
       (icao) => icao.trim() !== '', // Icao is not empty
       (icao) => icao[0] !== 'R', // Icao is not runway icao, which is not searchable
       (icao) => icao[0] !== 'A', // Icao is not airport icao, which can be skipped
-      (icao) => icao.substr(1, 2) !== '  ', // Icao is not missing a region code
       (icao) => !this._facilitiesToLoad.has(icao), // Icao is not already being loaded
   ];
 
@@ -70,18 +70,25 @@ export class LegsProcedure {
    * @param instrument The instrument that is attached to the flight plan.
    * @param approachType The approach type if this is an approach procedure
    */
-  constructor(private _legs: RawProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument, private approachType?: ApproachType, private legAnnotations?: string[]) {
+  constructor(
+      private _legs: RawProcedureLeg[],
+      private _previousFix: WayPoint,
+      private _instrument: BaseInstrument,
+      private airportMagVar: number,
+      private approachType?: ApproachType,
+      private legAnnotations?: string[],
+  ) {
       for (const leg of this._legs) {
           if (this.isIcaoValid(leg.fixIcao)) {
-              this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000));
+              this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000, true));
           }
 
           if (this.isIcaoValid(leg.originIcao)) {
-              this._facilitiesToLoad.set(leg.originIcao, this._instrument.facilityLoader.getFacilityRaw(leg.originIcao, 2000));
+              this._facilitiesToLoad.set(leg.originIcao, this._instrument.facilityLoader.getFacilityRaw(leg.originIcao, 2000, true));
           }
 
           if (this.isIcaoValid(leg.arcCenterFixIcao)) {
-              this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000));
+              this._facilitiesToLoad.set(leg.arcCenterFixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.arcCenterFixIcao, 2000, true));
           }
       }
   }
@@ -129,7 +136,8 @@ export class LegsProcedure {
               try {
                   switch (currentLeg.type) {
                   case LegType.AF:
-                      mappedLeg = this.mapArcToFix(currentLeg, this._previousFix);
+                  case LegType.PI:
+                      mappedLeg = this.mapExactFix(currentLeg);
                       break;
                   case LegType.CD:
                   case LegType.VD:
@@ -208,6 +216,8 @@ export class LegsProcedure {
               }
 
               if (mappedLeg !== undefined) {
+                  const magCorrection = this.getMagCorrection(currentLeg);
+
                   if (this.approachType === ApproachType.APPROACH_TYPE_ILS && (currentLeg.fixTypeFlags & FixTypeFlags.FAF) > 0) {
                       if (currentLeg.altDesc === AltitudeDescriptor.At) {
                           mappedLeg.legAltitudeDescription = AltitudeDescriptor.G;
@@ -221,14 +231,23 @@ export class LegsProcedure {
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
                   mappedLeg.turnDirection = currentLeg.turnDirection;
+
+                  const recNavaid: RawVor | RawNdb | undefined = this._facilities.get(currentLeg.originIcao) as RawVor | RawNdb | undefined;
+
                   mappedLeg.additionalData.legType = currentLeg.type;
                   mappedLeg.additionalData.overfly = currentLeg.flyOver;
                   mappedLeg.additionalData.fixTypeFlags = currentLeg.fixTypeFlags;
-
                   mappedLeg.additionalData.distance = currentLeg.distanceMinutes ? undefined : currentLeg.distance / 1852;
                   mappedLeg.additionalData.distanceInMinutes = currentLeg.distanceMinutes ? currentLeg.distance : undefined;
-                  mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long));
+                  mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, magCorrection);
+                  mappedLeg.additionalData.recommendedIcao = currentLeg.originIcao.trim().length > 0 ? currentLeg.originIcao : undefined;
+                  mappedLeg.additionalData.recommendedFrequency = recNavaid ? recNavaid.freqMHz : undefined;
+                  mappedLeg.additionalData.recommendedLocation = recNavaid ? { lat: recNavaid.lat, long: recNavaid.lon } : undefined;
+                  mappedLeg.additionalData.rho = currentLeg.rho / 1852;
+                  mappedLeg.additionalData.theta = currentLeg.theta;
+                  mappedLeg.additionalData.thetaTrue = A32NX_Util.magneticToTrue(currentLeg.theta, magCorrection);
                   mappedLeg.additionalData.annotation = currentAnnotation;
+                  mappedLeg.additionalData.verticalAngle = currentLeg.verticalAngle ? currentLeg.verticalAngle - 360 : undefined;
               }
 
               this._currentIndex++;
@@ -243,6 +262,75 @@ export class LegsProcedure {
       return undefined;
   }
 
+  private getMagCorrection(currentLeg: RawProcedureLeg): number {
+      // we try to interpret PANS OPs as accurately as possible within the limits of available data
+
+      // magnetic tracks to/from a VOR always use VOR station declination
+      if (currentLeg.fixIcao.charAt(0) === 'V') {
+          const vor: RawVor = this.getLoadedFacility(currentLeg.fixIcao) as RawVor;
+          if (!vor || vor.magneticVariation === undefined) {
+              console.warn('Leg coded incorrectly (missing vor fix or station declination)', currentLeg, vor);
+              return this.airportMagVar;
+          }
+          return 360 - vor.magneticVariation;
+      }
+
+      // we use station declination for VOR/DME approaches
+      if (this.approachType === ApproachType.APPROACH_TYPE_VORDME) {
+      // find a leg with the reference navaid for the procedure
+          for (let i = this._legs.length - 1; i >= 0; i--) {
+              if (this._legs[i].originIcao.trim().length > 0) {
+                  const recNavaid: RawVor = this.getLoadedFacility(currentLeg.originIcao) as RawVor;
+                  if (recNavaid && recNavaid.magneticVariation !== undefined) {
+                      return 360 - recNavaid.magneticVariation;
+                  }
+              }
+          }
+          console.warn('VOR/DME approach coded incorrectly (missing recommended navaid or station declination)', currentLeg);
+          return this.airportMagVar;
+      }
+
+      // for RNAV procedures use recommended navaid station declination for these leg types
+      let useStationDeclination = (currentLeg.type === LegType.CF || currentLeg.type === LegType.FA || currentLeg.type === LegType.FM);
+
+      // for localiser bearings (i.e. at or beyond FACF), always use airport value
+      if (this.approachType === ApproachType.APPROACH_TYPE_ILS || this.approachType === ApproachType.APPROACH_TYPE_LOCALIZER) {
+          useStationDeclination = useStationDeclination && this._legs.indexOf(currentLeg) < this.getFacfIndex();
+      }
+
+      if (useStationDeclination) {
+          const recNavaid: RawVor = this.getLoadedFacility(currentLeg.originIcao) as RawVor;
+          if (!recNavaid || recNavaid.magneticVariation === undefined) {
+              console.warn('Leg coded incorrectly (missing recommended navaid or station declination)', currentLeg, recNavaid);
+              return this.airportMagVar;
+          }
+          return 360 - recNavaid.magneticVariation;
+      }
+
+      // for all other terminal procedure legs we use airport magnetic variation
+      return this.airportMagVar;
+  }
+
+  private getLoadedFacility(icao: string): RawFacility {
+      const facility = this._facilities.get(icao);
+      if (!facility) {
+          throw new Error(`Failed to load facility: ${icao}`);
+      }
+      return facility;
+  }
+
+  private getFacfIndex(): number {
+      if (this.approachType !== undefined) {
+          for (let i = this._legs.length - 1; i >= 0; i--) {
+              if (this._legs[i].fixTypeFlags & FixTypeFlags.IF) {
+                  return i;
+              }
+          }
+      }
+
+      return undefined;
+  }
+
   /**
    * Maps a heading until distance from origin leg.
    * @param leg The procedure leg to map.
@@ -250,7 +338,7 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapHeadingUntilDistanceFromOrigin(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
-      const origin = this._facilities.get(leg.originIcao);
+      const origin = this.getLoadedFacility(leg.originIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
       const bearingToOrigin = Avionics.Utils.computeGreatCircleHeading(prevLeg.infos.coordinates, new LatLongAlt(origin.lat, origin.lon));
@@ -275,10 +363,7 @@ export class LegsProcedure {
           legDistance * LegsProcedure.distanceNormalFactorNM, prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long,
       );
 
-      const waypoint = this.buildWaypoint(`${originIdent}${Math.trunc(legDistance * LegsProcedure.distanceNormalFactorNM)}`, coordinates);
-
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = course;
+      const waypoint = this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.round(leg.distance / 1852).toString().padStart(2, '0')}`, coordinates);
 
       return waypoint;
   }
@@ -292,37 +377,37 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapBearingAndDistanceFromOrigin(leg: RawProcedureLeg): WayPoint {
-    const origin = this._facilities.get(leg.fixIcao);
-    const originIdent = origin.icao.substring(7, 12).trim();
-    const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, Facilities.getMagVar(origin.lat, origin.lon));
-    // this is the leg length for FC, and the DME distance for FD
-    const refDistance = leg.distance / 1852;
+      const origin = this.getLoadedFacility(leg.fixIcao);
+      const originIdent = origin.icao.substring(7, 12).trim();
+      const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, Facilities.getMagVar(origin.lat, origin.lon));
+      // this is the leg length for FC, and the DME distance for FD
+      const refDistance = leg.distance / 1852;
 
-    let termPoint;
-    let legLength;
-    if (leg.type === LegType.FD) {
-        const recNavaid = this._facilities.get(leg.originIcao);
-        termPoint = firstSmallCircleIntersection(
-            { lat: recNavaid.lat, long: recNavaid.lon },
-            refDistance,
-            { lat: origin.lat, long: origin.lon },
-            course,
-        );
-        legLength = Avionics.Utils.computeGreatCircleDistance(
-            { lat: origin.lat, long: origin.lon },
-            termPoint,
-        );
-    } else { // FC
-        termPoint = Avionics.Utils.bearingDistanceToCoordinates(
-            course,
-            refDistance,
-            origin.lat,
-            origin.lon,
-        );
-        legLength = refDistance;
-    }
+      let termPoint;
+      let legLength;
+      if (leg.type === LegType.FD) {
+          const recNavaid = this.getLoadedFacility(leg.originIcao);
+          termPoint = firstSmallCircleIntersection(
+              { lat: recNavaid.lat, long: recNavaid.lon },
+              refDistance,
+              { lat: origin.lat, long: origin.lon },
+              course,
+          );
+          legLength = Avionics.Utils.computeGreatCircleDistance(
+              { lat: origin.lat, long: origin.lon },
+              termPoint,
+          );
+      } else { // FC
+          termPoint = Avionics.Utils.bearingDistanceToCoordinates(
+              course,
+              refDistance,
+              origin.lat,
+              origin.lon,
+          );
+          legLength = refDistance;
+      }
 
-    return this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.round(legLength).toString().padStart(2, '0')}`, termPoint);
+      return this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.round(legLength).toString().padStart(2, '0')}`, termPoint);
   }
 
   /**
@@ -336,7 +421,7 @@ export class LegsProcedure {
           return this.mapExactFix(leg);
       }
 
-      const origin = this._facilities.get(leg.originIcao);
+      const origin = this.getLoadedFacility(leg.originIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
       const course = leg.course + GeoMath.getMagvar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
@@ -353,16 +438,13 @@ export class LegsProcedure {
    * @param nextLeg The next leg in the procedure to intercept.
    * @returns The mapped leg.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public mapHeadingToInterceptNextLeg(leg: RawProcedureLeg, prevLeg: WayPoint, nextLeg: RawProcedureLeg): WayPoint | null {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
 
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 1, prevLeg.infos.coordinates);
       const waypoint = this.buildWaypoint(FixNamingScheme.courseToIntercept(course), coordinates, prevLeg.infos.magneticVariation);
-
-      waypoint.additionalData.vectorsCourse = course ?? leg.course;
-      waypoint.additionalData.vectorsHeading = heading;
 
       return waypoint;
   }
@@ -374,7 +456,7 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapHeadingUntilRadialCrossing(leg: RawProcedureLeg, prevLeg: WayPoint) {
-      const origin = this._facilities.get(leg.originIcao);
+      const origin = this.getLoadedFacility(leg.originIcao);
       const originCoordinates = new LatLongAlt(origin.lat, origin.lon);
 
       const originToCoordinates = Avionics.Utils.computeGreatCircleHeading(originCoordinates, prevLeg.infos.coordinates);
@@ -389,7 +471,6 @@ export class LegsProcedure {
 
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
 
       const coordinates = Avionics.Utils.bearingDistanceToCoordinates(
           course,
@@ -397,12 +478,6 @@ export class LegsProcedure {
       );
 
       const waypoint = this.buildWaypoint(`${this.getIdent(origin.icao)}${leg.theta}`, coordinates);
-
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = heading;
-      waypoint.additionalData.origin = origin;
-      waypoint.additionalData.theta = leg.theta;
-      waypoint.additionalData.radial = A32NX_Util.magneticToTrue(leg.theta, Facilities.getMagVar(origin.lat, origin.lon));
 
       return waypoint;
   }
@@ -416,15 +491,13 @@ export class LegsProcedure {
   public mapHeadingUntilAltitude(leg: RawProcedureLeg, prevLeg: WayPoint) {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
+      // const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
       const altitudeFeet = (leg.altitude1 * 3.2808399);
       const distanceInNM = altitudeFeet / 500.0;
 
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, prevLeg.infos.coordinates);
       const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
 
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = heading;
       waypoint.additionalData.vectorsAltitude = altitudeFeet;
 
       return waypoint;
@@ -439,16 +512,13 @@ export class LegsProcedure {
   public mapVectors(leg: RawProcedureLeg, prevLeg: WayPoint) {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
+      // const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 1, prevLeg.infos.coordinates);
 
       const waypoint = this.buildWaypoint(FixNamingScheme.vector(), coordinates);
       waypoint.isVectors = true;
       waypoint.endsInDiscontinuity = true;
       waypoint.discontinuityCanBeCleared = false;
-
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = heading;
 
       return waypoint;
   }
@@ -459,43 +529,22 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapExactFix(leg: RawProcedureLeg): WayPoint {
-      const facility = this._facilities.get(leg.fixIcao);
-      if (facility) {
-          return RawDataMapper.toWaypoint(facility, this._instrument);
-      }
-
-      const origin = this._facilities.get(leg.originIcao);
-      const originIdent = origin.icao.substring(7, 12).trim();
-
-      const coordinates = Avionics.Utils.bearingDistanceToCoordinates(leg.theta, leg.rho / 1852, origin.lat, origin.lon);
-      return this.buildWaypoint(`${originIdent}${Math.trunc(leg.rho / 1852)}`, coordinates);
+      const facility = this.getLoadedFacility(leg.fixIcao);
+      return RawDataMapper.toWaypoint(facility, this._instrument);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public mapArcToFix(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
-      const toFix = this._facilities.get(leg.fixIcao);
-      const navaid = this._facilities.get(leg.originIcao);
-
+      const toFix = this.getLoadedFacility(leg.fixIcao);
       const waypoint = RawDataMapper.toWaypoint(toFix, this._instrument);
-
-      const magVar = Facilities.getMagVar(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long);
-
-      const theta = leg.trueDegrees ? leg.theta : A32NX_Util.magneticToTrue(leg.theta, magVar);
-      const vectorsCourse = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-
-      waypoint.additionalData.navaidIdent = navaid.icao.substring(7, 12);
-      waypoint.additionalData.navaid = { lat: navaid.lat, long: navaid.lon };
-      waypoint.additionalData.rho = leg.rho / 1852;
-      waypoint.additionalData.theta = theta;
-      waypoint.additionalData.vectorsCourse = vectorsCourse;
-
       return waypoint;
   }
 
   public mapRadiusToFix(leg: RawProcedureLeg): WayPoint {
-      const arcCentreFix = this._facilities.get(leg.arcCenterFixIcao);
+      const arcCentreFix = this.getLoadedFacility(leg.arcCenterFixIcao);
       const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
 
-      const toFix = this._facilities.get(leg.fixIcao);
+      const toFix = this.getLoadedFacility(leg.fixIcao);
       const toCoordinates = new LatLongAlt(toFix.lat, toFix.lon, 0);
 
       const radius = Avionics.Utils.computeGreatCircleDistance(arcCenterCoordinates, toCoordinates);
@@ -503,13 +552,12 @@ export class LegsProcedure {
 
       waypoint.additionalData.radius = radius;
       waypoint.additionalData.center = arcCenterCoordinates;
-      waypoint.additionalData.turnDirection = leg.turnDirection;
 
       return waypoint;
   }
 
   public mapHold(leg: RawProcedureLeg): WayPoint {
-      const facility = this._facilities.get(leg.fixIcao);
+      const facility = this.getLoadedFacility(leg.fixIcao);
       const waypoint = RawDataMapper.toWaypoint(facility, this._instrument);
 
       const magVar = Facilities.getMagVar(facility.lat, facility.lon);
@@ -581,79 +629,5 @@ export class LegsProcedure {
       waypoint.additionalData = {};
 
       return waypoint;
-  }
-
-  public async calculateApproachData(runway: OneWayRunway): Promise<void> {
-      await this.ensureFacilitiesLoaded();
-
-      // our fallback for threshold crossing altitude is threshold + 50 feet
-      let threshCrossAlt = runway.thresholdElevation + 15.24;
-
-      // see if we have a runway fix, to give us coded TCH
-      // it can either be the MAP, or be before the MAP (MAP must be last leg of final approach)
-      // TCH altitude must be coded in altitude1 according to ARINC
-      for (let i = this._legs.length - 1; i > 0; i--) {
-          const leg = this._legs[i];
-          // TODO check it's the same runway for robustness?
-          if (leg.fixIcao.charAt(0) === 'R') {
-              threshCrossAlt = leg.altitude1;
-              break;
-          }
-      }
-
-      // MSFS does not give the coded descent angle
-      // we do our best to calculate one...
-      let fafAlt;
-      let fafIndex;
-      let fafToTcaDist = 0;
-      let lastLegPoint;
-
-      for (let i = 0; i < this._legs.length; i++) {
-          const leg = this._legs[i];
-          let termPoint;
-          if (leg.fixIcao.charAt(0) === 'R') {
-              termPoint = runway.thresholdCoordinates;
-          } else {
-              const fix = this._facilities.get(leg.fixIcao);
-              termPoint = new LatLongAlt(fix.lat, fix.lon);
-          }
-
-          if (leg.fixTypeFlags & FixTypeFlags.FAF) {
-              if (leg.altDesc === AltitudeDescriptor.Empty) {
-                  // this is illegal by ARINC
-                  break;
-              }
-
-              fafIndex = i;
-              // MSFS codes the wrong altDesc... but the right data...
-              fafAlt = leg.altitude2 > 0 ? leg.altitude2 : leg.altitude1;
-          } else if (fafIndex !== undefined) {
-              if (leg.distance > 0) {
-                  fafToTcaDist += leg.distance;
-              } else {
-                  // assume a straight leg
-                  fafToTcaDist += 1852 * Avionics.Utils.computeGreatCircleDistance(lastLegPoint, termPoint);
-              }
-          }
-
-          if (leg.fixIcao.charAt(0) === 'R') {
-              break;
-          }
-
-          lastLegPoint = termPoint;
-      }
-
-      if (fafIndex !== undefined && fafAlt > 0 && fafToTcaDist > 0) {
-          let glideAngle = Math.atan((fafAlt - threshCrossAlt) / fafToTcaDist) * 180 / Math.PI;
-          // arinc specifics < 3 degrees is rounded up to 3 degrees when calculating glide angle from alt sources
-          // we do the same if we have invalid data..
-          if (!Number.isFinite(glideAngle) || glideAngle < 3 || glideAngle > 10) {
-              glideAngle = 3;
-          }
-
-          for (let i = fafIndex + 1; i < this._legs.length; i++) {
-              this._legs[i].verticalAngle = glideAngle;
-          }
-      }
   }
 }

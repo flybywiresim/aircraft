@@ -3,7 +3,6 @@ use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
-    mass_rate::kilogram_per_second,
     pressure::psi,
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
@@ -12,6 +11,7 @@ use uom::si::{
 
 use systems::{
     accept_iterable,
+    air_conditioning::PackFlowControllers,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
@@ -20,18 +20,22 @@ use systems::{
         EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
         PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureTemperatureSignal, VariableVolumeContainer,
+        WingAntiIcePushButton,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
         ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineCorrectedN2,
-        EngineFirePushButtons, EngineStartState, HydraulicColor, PneumaticBleed, PneumaticValve,
-        ReservoirAirPressure,
+        EngineFirePushButtons, EngineStartState, HydraulicColor, LgciuWeightOnWheels,
+        PackFlowValveState, PneumaticBleed, PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+
+mod wing_anti_ice;
+use wing_anti_ice::*;
 
 macro_rules! valve_signal_implementation {
     ($signal_type: ty) => {
@@ -109,7 +113,6 @@ pub struct A320Pneumatic {
 
     cross_bleed_valve_open_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
-
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
 
@@ -120,6 +123,8 @@ pub struct A320Pneumatic {
 
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
+
+    wing_anti_ice: WingAntiIceComplex,
 
     hydraulic_reservoir_bleed_air_valves: [PurelyPneumaticValve; 2],
     hydraulic_reservoir_bleed_air_pipe: PneumaticPipe,
@@ -162,6 +167,7 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
+            wing_anti_ice: WingAntiIceComplex::new(context),
             hydraulic_reservoir_bleed_air_valves: [
                 PurelyPneumaticValve::new(),
                 PurelyPneumaticValve::new(),
@@ -215,6 +221,8 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.physics_updater.update(context);
 
@@ -225,6 +233,8 @@ impl A320Pneumatic {
                 overhead_panel,
                 engine_fire_push_buttons,
                 apu,
+                pack_flow_valve_signals,
+                lgciu,
             );
         }
     }
@@ -236,6 +246,8 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -294,6 +306,12 @@ impl A320Pneumatic {
             );
         }
 
+        self.wing_anti_ice.update(
+            context,
+            &mut self.engine_systems,
+            overhead_panel.wing_anti_ice.mode(),
+            lgciu,
+        );
         let [left_system, right_system] = &mut self.engine_systems;
         self.apu_bleed_air_valve.update_move_fluid(
             context,
@@ -314,7 +332,9 @@ impl A320Pneumatic {
         self.packs
             .iter_mut()
             .zip(self.engine_systems.iter_mut())
-            .for_each(|(pack, engine_system)| pack.update(context, engine_system));
+            .for_each(|(pack, engine_system)| {
+                pack.update(context, engine_system, pack_flow_valve_signals)
+            });
     }
 
     // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
@@ -359,10 +379,19 @@ impl EngineStartState for A320Pneumatic {
         self.fadec.engine_mode_selector()
     }
 }
+impl PackFlowValveState for A320Pneumatic {
+    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio {
+        self.packs[pack_id].pack_flow_valve_open_amount()
+    }
+    fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
+        self.packs[pack_id].pack_flow_valve_air_flow()
+    }
+}
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.cross_bleed_valve.accept(visitor);
         self.fadec.accept(visitor);
+        self.wing_anti_ice.accept(visitor);
 
         accept_iterable!(self.bleed_monitoring_computers, visitor);
         accept_iterable!(self.engine_systems, visitor);
@@ -820,7 +849,7 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             precooler_outlet_pipe: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.5),
+                Volume::new::<cubic_meter>(2.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -1057,6 +1086,7 @@ pub struct A320PneumaticOverheadPanel {
     cross_bleed: CrossBleedValveSelectorKnob,
     engine_1_bleed: AutoOffFaultPushButton,
     engine_2_bleed: AutoOffFaultPushButton,
+    wing_anti_ice: WingAntiIcePushButton,
 }
 impl A320PneumaticOverheadPanel {
     pub fn new(context: &mut InitContext) -> Self {
@@ -1065,6 +1095,7 @@ impl A320PneumaticOverheadPanel {
             cross_bleed: CrossBleedValveSelectorKnob::new_auto(context),
             engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
             engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
+            wing_anti_ice: WingAntiIcePushButton::new_off(context),
         }
     }
 
@@ -1085,12 +1116,8 @@ impl A320PneumaticOverheadPanel {
     }
 }
 impl EngineBleedPushbutton for A320PneumaticOverheadPanel {
-    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool {
-        self.engine_1_bleed.is_auto()
-    }
-
-    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool {
-        self.engine_2_bleed.is_auto()
+    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
+        [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
     }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {
@@ -1099,6 +1126,7 @@ impl SimulationElement for A320PneumaticOverheadPanel {
         self.cross_bleed.accept(visitor);
         self.engine_1_bleed.accept(visitor);
         self.engine_2_bleed.accept(visitor);
+        self.wing_anti_ice.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1154,40 +1182,57 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 
 /// A struct to hold all the pack related components
 struct PackComplex {
+    engine_number: usize,
+    pack_flow_valve_id: VariableIdentifier,
     pack_flow_valve_flow_rate_id: VariableIdentifier,
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
     pack_flow_valve: DefaultValve,
-    pack_flow_valve_controller: PackFlowValveController,
 }
 impl PackComplex {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
+            engine_number,
+            pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(engine_number)),
             pack_flow_valve_flow_rate_id: context
                 .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
             pack_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(1.),
+                Volume::new::<cubic_meter>(2.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
-            pack_flow_valve_controller: PackFlowValveController::new(context, engine_number),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, from: &mut impl PneumaticContainer) {
-        self.pack_flow_valve_controller
-            .update(context, self.pack_flow_valve.fluid_flow());
+    fn pack_flow_valve_id(number: usize) -> String {
+        format!("COND_PACK_FLOW_VALVE_{}_IS_OPEN", number)
+    }
 
-        self.pack_flow_valve
-            .update_open_amount(&self.pack_flow_valve_controller);
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+    ) {
+        self.pack_flow_valve.update_open_amount(
+            &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
+        );
 
         self.pack_flow_valve
             .update_move_fluid(context, from, &mut self.pack_container);
 
         self.exhaust
             .update_move_fluid(context, &mut self.pack_container);
+    }
+
+    fn pack_flow_valve_open_amount(&self) -> Ratio {
+        self.pack_flow_valve.open_amount()
+    }
+
+    fn pack_flow_valve_air_flow(&self) -> MassRate {
+        self.pack_flow_valve.fluid_flow()
     }
 }
 impl PneumaticContainer for PackComplex {
@@ -1222,55 +1267,15 @@ impl PneumaticContainer for PackComplex {
     }
 }
 impl SimulationElement for PackComplex {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.pack_flow_valve_controller.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.pack_flow_valve_id,
+            self.pack_flow_valve_open_amount() > Ratio::new::<ratio>(0.),
+        );
         writer.write(
             &self.pack_flow_valve_flow_rate_id,
             self.pack_flow_valve.fluid_flow(),
         );
-    }
-}
-
-// In the future, this will be done by the ACSC, hence why I have used an external controller and not the BMC
-struct PackFlowValveController {
-    pack_toggle_pb_id: VariableIdentifier,
-    pack_pb_is_auto: bool,
-    pid: PidController,
-}
-impl PackFlowValveController {
-    fn new(context: &mut InitContext, engine_number: usize) -> Self {
-        Self {
-            pack_toggle_pb_id: context
-                .get_identifier(format!("OVHD_COND_PACK_{}_PB_IS_ON", engine_number)),
-            pack_pb_is_auto: true,
-            pid: PidController::new(0., 0.05, 0., 0., 1., 0.75, 1.),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext, pack_flow_valve_flow_rate: MassRate) {
-        self.pid.next_control_output(
-            pack_flow_valve_flow_rate.get::<kilogram_per_second>(),
-            Some(context.delta()),
-        );
-    }
-}
-impl ControllerSignal<PackFlowValveSignal> for PackFlowValveController {
-    fn signal(&self) -> Option<PackFlowValveSignal> {
-        Some(if self.pack_pb_is_auto {
-            PackFlowValveSignal::new(Ratio::new::<ratio>(self.pid.output()))
-        } else {
-            PackFlowValveSignal::new_closed()
-        })
-    }
-}
-impl SimulationElement for PackFlowValveController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.pack_pb_is_auto = reader.read(&self.pack_toggle_pb_id);
     }
 }
 
@@ -1348,21 +1353,28 @@ impl SimulationElement for CrossBleedValve {
 #[cfg(test)]
 mod tests {
     use systems::{
+        air_conditioning::{
+            acs_controller::{Pack, PackFlowController},
+            AirConditioningSystem, PackFlowControllers, ZoneType,
+        },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
         pneumatic::{
             BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
-            TargetPressureTemperatureSignal,
+            TargetPressureTemperatureSignal, WingAntiIcePushButtonMode,
         },
+        pressurization::PressurizationOverheadPanel,
         shared::{
-            ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineFirePushButtons, HydraulicColor,
-            InternationalStandardAtmosphere, MachNumber, PneumaticValve, PotentialOrigin,
+            ApuBleedAirValveSignal, Cabin, ControllerSignal, ElectricalBusType, ElectricalBuses,
+            EmergencyElectricalState, EngineBleedPushbutton, EngineCorrectedN1,
+            EngineFirePushButtons, EngineStartState, GroundSpeed, HydraulicColor,
+            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
+            PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
-            test::{SimulationTestBed, TestBed, WriteByName},
+            test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
@@ -1370,11 +1382,150 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        f64::*,
+        length::foot,
+        mass_rate::kilogram_per_second,
+        pressure::{pascal, psi},
+        ratio::ratio,
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
     };
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
+
+    struct TestAirConditioning {
+        a320_air_conditioning_system: AirConditioningSystem<3>,
+        adirs: TestAdirs,
+        pressurization: TestPressurization,
+        pressurization_overhead: PressurizationOverheadPanel,
+    }
+    impl TestAirConditioning {
+        fn new(context: &mut InitContext) -> Self {
+            let cabin_zones: [ZoneType; 3] =
+                [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
+
+            Self {
+                a320_air_conditioning_system: AirConditioningSystem::new(
+                    context,
+                    cabin_zones,
+                    vec![ElectricalBusType::DirectCurrent(1)],
+                    vec![ElectricalBusType::DirectCurrent(2)],
+                ),
+                adirs: TestAdirs::new(),
+                pressurization: TestPressurization::new(),
+                pressurization_overhead: PressurizationOverheadPanel::new(context),
+            }
+        }
+        fn update(
+            &mut self,
+            context: &UpdateContext,
+            engines: [&impl EngineCorrectedN1; 2],
+            engine_fire_push_buttons: &impl EngineFirePushButtons,
+            pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
+            pneumatic_overhead: &impl EngineBleedPushbutton,
+            lgciu: [&impl LgciuWeightOnWheels; 2],
+        ) {
+            self.a320_air_conditioning_system.update(
+                context,
+                &self.adirs,
+                engines,
+                engine_fire_push_buttons,
+                pneumatic,
+                pneumatic_overhead,
+                &self.pressurization,
+                &self.pressurization_overhead,
+                lgciu,
+            );
+        }
+    }
+    impl PackFlowControllers<3> for TestAirConditioning {
+        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+            self.a320_air_conditioning_system
+                .pack_flow_controller(pack_id)
+        }
+    }
+    impl SimulationElement for TestAirConditioning {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.a320_air_conditioning_system.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    struct TestAdirs {
+        ground_speed: Velocity,
+    }
+    impl TestAdirs {
+        fn new() -> Self {
+            Self {
+                ground_speed: Velocity::new::<knot>(0.),
+            }
+        }
+    }
+    impl GroundSpeed for TestAdirs {
+        fn ground_speed(&self) -> Velocity {
+            self.ground_speed
+        }
+    }
+
+    struct TestPressurization {
+        cabin_pressure: Pressure,
+    }
+    impl TestPressurization {
+        fn new() -> Self {
+            Self {
+                cabin_pressure: Pressure::new::<pascal>(101315.),
+            }
+        }
+    }
+    impl Cabin for TestPressurization {
+        fn altitude(&self) -> Length {
+            Length::new::<foot>(0.)
+        }
+
+        fn pressure(&self) -> Pressure {
+            self.cabin_pressure
+        }
+    }
+
+    struct TestLgciu {
+        compressed: bool,
+    }
+    impl TestLgciu {
+        fn new(compressed: bool) -> Self {
+            Self { compressed }
+        }
+
+        pub fn set_on_ground(&mut self, is_on_ground: bool) {
+            self.compressed = is_on_ground;
+        }
+    }
+    impl LgciuWeightOnWheels for TestLgciu {
+        fn left_and_right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            !self.compressed
+        }
+        fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            !self.compressed
+        }
+        fn left_and_right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            !self.compressed
+        }
+        fn nose_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            !self.compressed
+        }
+    }
 
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
@@ -1470,6 +1621,8 @@ mod tests {
 
     struct PneumaticTestAircraft {
         pneumatic: A320Pneumatic,
+        air_conditioning: TestAirConditioning,
+        lgciu: TestLgciu,
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
@@ -1491,6 +1644,8 @@ mod tests {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 pneumatic: A320Pneumatic::new(context),
+                air_conditioning: TestAirConditioning::new(context),
+                lgciu: TestLgciu::new(true),
                 apu: TestApu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
@@ -1558,7 +1713,17 @@ mod tests {
                 &self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
                 &self.apu,
+                &self.air_conditioning,
+                [&self.lgciu; 2],
             );
+            self.air_conditioning.update(
+                context,
+                [&self.engine_1, &self.engine_2],
+                &self.fire_pushbuttons,
+                &self.pneumatic,
+                &self.pneumatic_overhead_panel,
+                [&self.lgciu; 2],
+            )
         }
     }
     impl SimulationElement for PneumaticTestAircraft {
@@ -1568,6 +1733,7 @@ mod tests {
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
             self.pneumatic_overhead_panel.accept(visitor);
+            self.air_conditioning.accept(visitor);
 
             visitor.visit(self);
         }
@@ -1588,11 +1754,14 @@ mod tests {
     }
     impl PneumaticTestBed {
         fn new() -> Self {
-            Self {
+            let mut test_bed = Self {
                 test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|context| {
                     PneumaticTestAircraft::new(context)
                 }),
-            }
+            };
+            test_bed.command_pack_flow_selector_position(1);
+
+            test_bed
         }
 
         fn and_run(mut self) -> Self {
@@ -1655,6 +1824,24 @@ mod tests {
             self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
             self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.65));
             self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.99));
+            self.write_by_name("ENGINE_STATE:2", EngineState::On);
+
+            self
+        }
+
+        fn holding_eng1(mut self) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.92));
+            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.5));
+            self.write_by_name("ENGINE_STATE:1", EngineState::On);
+
+            self
+        }
+
+        fn holding_eng2(mut self) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.92));
+            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.5));
             self.write_by_name("ENGINE_STATE:2", EngineState::On);
 
             self
@@ -1968,6 +2155,90 @@ mod tests {
 
         fn cross_bleed_valve_is_powered_for_manual_control(&self) -> bool {
             self.query(|a| a.pneumatic.cross_bleed_valve.is_powered_for_manual_control)
+        }
+
+        fn command_pack_flow_selector_position(&mut self, value: u8) {
+            self.write_by_name("KNOB_OVHD_AIRCOND_PACKFLOW_Position", value);
+        }
+
+        fn set_lgciu_on_ground(&mut self, is_on_ground: bool) {
+            self.set_on_ground(is_on_ground);
+            self.command(|a| a.lgciu.set_on_ground(is_on_ground));
+        }
+
+        fn wing_anti_ice_push_button(mut self, mode: WingAntiIcePushButtonMode) -> Self {
+            match mode {
+                WingAntiIcePushButtonMode::On => {
+                    self.write_by_name("BUTTON_OVHD_ANTI_ICE_WING_POSITION", true)
+                }
+                _ => self.write_by_name("BUTTON_OVHD_ANTI_ICE_WING_POSITION", false),
+            };
+
+            self
+        }
+
+        fn wing_anti_ice_system_on(&mut self) -> bool {
+            self.read_by_name("PNEU_WING_ANTI_ICE_SYSTEM_ON")
+        }
+
+        fn wing_anti_ice_system_selected(&mut self) -> bool {
+            self.read_by_name("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED")
+        }
+
+        fn wing_anti_ice_has_fault(&mut self) -> bool {
+            self.read_by_name("PNEU_WING_ANTI_ICE_HAS_FAULT")
+        }
+
+        fn left_precooler_pressurised(&self) -> bool {
+            self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(0))
+        }
+
+        fn right_precooler_pressurised(&self) -> bool {
+            self.query(|a| a.pneumatic.wing_anti_ice.is_precoooler_pressurised(1))
+        }
+
+        fn left_wai_pressure(&self) -> Pressure {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_consumer_pressure(0))
+        }
+
+        fn right_wai_pressure(&self) -> Pressure {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_consumer_pressure(1))
+        }
+
+        fn left_wai_temperature(&self) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_consumer_temperature(0))
+        }
+
+        fn right_wai_temperature(&self) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_consumer_temperature(1))
+        }
+
+        fn valve_controller_timer(&self) -> Duration {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_timer())
+        }
+
+        fn left_valve_controller_on(&self) -> bool {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_valve_controller_on(0))
+        }
+
+        fn right_valve_controller_on(&self) -> bool {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_valve_controller_on(1))
+        }
+
+        fn left_valve_closed(&self) -> bool {
+            self.query(|a| a.pneumatic.wing_anti_ice.is_wai_valve_closed(0))
+        }
+
+        fn right_valve_closed(&self) -> bool {
+            self.query(|a| a.pneumatic.wing_anti_ice.is_wai_valve_closed(1))
+        }
+
+        fn left_exhaust_flow(&self) -> MassRate {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_mass_flow(0))
+        }
+
+        fn right_exhaust_flow(&self) -> MassRate {
+            self.query(|a| a.pneumatic.wing_anti_ice.wai_mass_flow(1))
         }
     }
 
@@ -2506,6 +2777,28 @@ mod tests {
     }
 
     #[test]
+    fn wing_anti_ice_simvars() {
+        let test_bed = test_bed();
+
+        assert!(test_bed.contains_variable_with_name("BUTTON_OVHD_ANTI_ICE_WING_POSITION"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_ON"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_SYSTEM_SELECTED"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_GROUND_TIMER"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_CONSUMER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_CONSUMER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_CONSUMER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_CONSUMER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_VALVE_CLOSED"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_VALVE_CLOSED"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_HIGH_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_HIGH_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_1_LOW_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_WING_ANTI_ICE_2_LOW_PRESSURE"));
+    }
+
+    #[test]
     fn pressure_regulating_valve_closes_with_ovhd_engine_bleed_off() {
         let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
 
@@ -2634,6 +2927,8 @@ mod tests {
             .stop_eng2()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .set_bleed_air_running()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         assert!(test_bed.cross_bleed_valve_is_open());
@@ -2716,7 +3011,8 @@ mod tests {
             .stop_eng2()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
             .set_bleed_air_running()
-            // .both_packs_auto()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         assert!(!test_bed.pr_valve_is_open(1));
@@ -2724,22 +3020,6 @@ mod tests {
 
         assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
         assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
-    }
-
-    #[test]
-    fn pack_flow_valve_closes_with_pack_pb_off() {
-        let mut test_bed = test_bed_with()
-            .set_pack_flow_pb_is_auto(1, true)
-            .set_pack_flow_pb_is_auto(2, false)
-            .and_run();
-
-        assert!(test_bed.pack_flow_valve_is_open(1));
-        assert!(!test_bed.pack_flow_valve_is_open(2));
-
-        test_bed = test_bed.set_pack_flow_pb_is_auto(1, false).and_run();
-
-        assert!(!test_bed.pack_flow_valve_is_open(1));
-        assert!(!test_bed.pack_flow_valve_is_open(2));
     }
 
     #[test]
@@ -2966,28 +3246,6 @@ mod tests {
     }
 
     #[test]
-    fn pack_flow_drops_when_valve_is_closed() {
-        let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-            .mach_number(MachNumber(0.))
-            .both_packs_auto()
-            .and_stabilize();
-
-        assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
-        assert!(test_bed.pack_flow_valve_flow(2) > flow_rate_tolerance());
-
-        test_bed = test_bed
-            .set_pack_flow_pb_is_auto(1, false)
-            .set_pack_flow_pb_is_auto(2, false)
-            .and_run();
-
-        assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
-        assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
-    }
-
-    #[test]
     fn large_time_step_stability() {
         let mut test_bed = test_bed_with()
             .idle_eng1()
@@ -3003,6 +3261,440 @@ mod tests {
 
         assert!(!test_bed.precooler_inlet_pressure(1).is_nan());
         assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
+    }
+
+    mod wing_anti_ice {
+        use super::*;
+
+        #[test]
+        fn wing_anti_ice_cold_and_dark() {
+            let altitude = Length::new::<foot>(500.);
+            let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+            let ambient_temperature =
+                InternationalStandardAtmosphere::temperature_at_altitude(altitude);
+
+            let temperature_epsilon = ThermodynamicTemperature::new::<degree_celsius>(0.5);
+            let pressure_epsilon = Pressure::new::<psi>(0.1);
+
+            let mut test_bed = test_bed_with()
+                .stop_eng1()
+                .stop_eng2()
+                .in_isa_atmosphere(altitude);
+            test_bed.set_lgciu_on_ground(true);
+            test_bed = test_bed.and_stabilize();
+
+            assert!((test_bed.left_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
+            assert!((test_bed.right_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
+            assert!(
+                (test_bed.left_wai_temperature().get::<degree_celsius>()
+                    - ambient_temperature.get::<degree_celsius>())
+                .abs()
+                    < temperature_epsilon.get::<degree_celsius>()
+            );
+            assert!(
+                (test_bed.right_wai_temperature().get::<degree_celsius>()
+                    - ambient_temperature.get::<degree_celsius>())
+                .abs()
+                    < temperature_epsilon.get::<degree_celsius>()
+            );
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(!test_bed.wing_anti_ice_system_selected());
+        }
+
+        #[test]
+        fn wing_anti_ice_on_and_off() {
+            let altitude = Length::new::<foot>(2000.);
+            let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+            let ambient_temperature =
+                InternationalStandardAtmosphere::temperature_at_altitude(altitude);
+
+            let temperature_epsilon = ThermodynamicTemperature::new::<degree_celsius>(1.);
+            let pressure_epsilon = Pressure::new::<psi>(0.1);
+            let pressure_epsilon_pressurized = Pressure::new::<psi>(20.);
+
+            let mut test_bed = test_bed_with()
+                .holding_eng1()
+                .holding_eng2()
+                .mach_number(MachNumber(0.35))
+                .in_isa_atmosphere(altitude)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(false);
+
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+                .and_stabilize();
+
+            assert!((test_bed.left_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
+            assert!((test_bed.right_wai_pressure() - ambient_pressure).abs() < pressure_epsilon);
+            assert!(
+                (test_bed.left_wai_temperature().get::<degree_celsius>()
+                    - ambient_temperature.get::<degree_celsius>())
+                .abs()
+                    < temperature_epsilon.get::<degree_celsius>()
+            );
+            assert!(
+                (test_bed.right_wai_temperature().get::<degree_celsius>()
+                    - ambient_temperature.get::<degree_celsius>())
+                .abs()
+                    < temperature_epsilon.get::<degree_celsius>()
+            );
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(!test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+            // Wing pressure must be higher than ambient, no abs()
+            assert!(test_bed.left_wai_pressure() - ambient_pressure > pressure_epsilon_pressurized);
+            assert!(
+                test_bed.right_wai_pressure() - ambient_pressure > pressure_epsilon_pressurized
+            );
+
+            assert!(!test_bed.left_valve_closed());
+            assert!(!test_bed.right_valve_closed());
+            assert!(test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+        }
+
+        #[test]
+        fn wing_anti_ice_when_precooler_not_pressurized() {
+            let altitude = Length::new::<foot>(500.);
+
+            let mut test_bed = test_bed_with()
+                .stop_eng1()
+                .stop_eng2()
+                .in_isa_atmosphere(altitude)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+
+            assert!(!test_bed.left_precooler_pressurised());
+            assert!(!test_bed.right_precooler_pressurised());
+            assert!(test_bed.valve_controller_timer() > Duration::from_secs(0));
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(test_bed.wing_anti_ice_system_on());
+        }
+
+        #[test]
+        fn wing_anti_ice_no_fault_after_starting_engine() {
+            let altitude = Length::new::<foot>(500.);
+
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .in_isa_atmosphere(altitude)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(test_bed.wing_anti_ice_system_on());
+        }
+
+        #[test]
+        fn wing_anti_ice_pid() {
+            let altitude = Length::new::<foot>(10.);
+
+            let mut test_bed = test_bed_with()
+                .in_isa_atmosphere(altitude)
+                .idle_eng1()
+                .idle_eng2()
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(false);
+
+            assert!(test_bed.left_valve_controller_on());
+            assert!(test_bed.right_valve_controller_on());
+
+            for _ in 0..1000 {
+                assert!(!test_bed.left_valve_closed());
+                assert!(!test_bed.right_valve_closed());
+                test_bed.run_with_delta(Duration::from_millis(16));
+            }
+
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+                .and_stabilize();
+
+            assert!(!test_bed.left_valve_controller_on());
+            assert!(!test_bed.right_valve_controller_on());
+
+            for _ in 0..1000 {
+                assert!(test_bed.left_valve_closed());
+                assert!(test_bed.right_valve_closed());
+                test_bed.run_with_delta(Duration::from_millis(16));
+            }
+        }
+
+        #[test]
+        fn wing_anti_ice_pressure_regulated() {
+            let altitude = Length::new::<foot>(6000.);
+            let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+            let nominal_wai_pressure: Pressure = Pressure::new::<psi>(22.5);
+            let pressure_epsilon: Pressure = Pressure::new::<psi>(2.5);
+
+            let test_bed = test_bed_with()
+                .in_isa_atmosphere(altitude)
+                .toga_eng1()
+                .toga_eng2()
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+
+            assert!(
+                (test_bed.left_wai_pressure() - ambient_pressure - nominal_wai_pressure).abs()
+                    < pressure_epsilon
+            );
+            assert!(
+                (test_bed.right_wai_pressure() - ambient_pressure - nominal_wai_pressure).abs()
+                    < pressure_epsilon
+            );
+        }
+
+        #[test]
+        fn wing_anti_ice_valve_close_after_30_seconds_on_ground() {
+            let altitude = Length::new::<foot>(10.);
+            // Holding settings give more pressure to the WAI valve
+            // to make it open completely
+            let mut test_bed = test_bed_with()
+                .holding_eng1()
+                .holding_eng2()
+                .in_isa_atmosphere(altitude)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+
+            test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
+            test_bed.run_with_delta(Duration::from_millis(16));
+            assert!(test_bed.wing_anti_ice_system_selected());
+
+            for _ in 0..375 {
+                test_bed.run_with_delta(Duration::from_millis(16));
+            }
+            assert!(test_bed.valve_controller_timer() < Duration::from_secs(7));
+            assert!(!test_bed.left_valve_closed());
+            assert!(!test_bed.right_valve_closed());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.wing_anti_ice_system_on());
+
+            // 30 secs from WAI ON
+            for _ in 0..1625 {
+                test_bed.run_with_delta(Duration::from_millis(16));
+            }
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(30));
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
+        }
+
+        #[test]
+        fn wing_anti_ice_valve_timer_reset_after_landing() {
+            let altitude = Length::new::<foot>(500.);
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .in_isa_atmosphere(altitude)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
+            test_bed.run_with_delta(Duration::from_secs(31));
+
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+
+            test_bed.set_lgciu_on_ground(false);
+            test_bed.run_with_delta(Duration::from_secs(4));
+
+            assert!(test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(!test_bed.left_valve_closed());
+            assert!(!test_bed.right_valve_closed());
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+
+            test_bed.set_lgciu_on_ground(true);
+            test_bed.run_with_delta(Duration::from_millis(500));
+
+            assert!(!test_bed.left_valve_closed());
+            assert!(!test_bed.right_valve_closed());
+            assert!(test_bed.valve_controller_timer() > Duration::from_secs(0));
+
+            test_bed.run_with_delta(Duration::from_secs(30));
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+        }
+
+        #[test]
+        fn wing_anti_ice_valve_timer_reset_after_dc_ess_shed_bus_power_cycle() {
+            let altitude = Length::new::<foot>(500.);
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .in_isa_atmosphere(altitude)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+
+            test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
+            test_bed.run_with_delta(Duration::from_secs(31));
+
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(test_bed.valve_controller_timer() >= Duration::from_secs(30));
+
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+                .set_dc_ess_shed_bus_power(false)
+                .and_stabilize();
+            test_bed = test_bed.set_dc_ess_shed_bus_power(true).and_stabilize();
+
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+        }
+
+        #[test]
+        fn wing_anti_ice_not_working_without_dc_ess_shed_bus() {
+            let altitude = Length::new::<foot>(500.);
+
+            let mut test_bed = test_bed_with()
+                .stop_eng1()
+                .stop_eng2()
+                .set_dc_ess_shed_bus_power(false)
+                .in_isa_atmosphere(altitude)
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(0));
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+        }
+
+        #[test]
+        fn wing_anti_ice_tweak_time_to_open() {
+            let altitude = Length::new::<foot>(2000.);
+            let mut test_bed = test_bed_with()
+                .in_isa_atmosphere(altitude)
+                .holding_eng1()
+                .holding_eng2()
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(false);
+            test_bed = test_bed.wing_anti_ice_push_button(WingAntiIcePushButtonMode::On);
+            test_bed.run_with_delta(Duration::from_millis(16));
+
+            let mut time_to_open_valve = Duration::from_millis(0);
+            for _ in 0..500 {
+                let wai_has_fault = test_bed.wing_anti_ice_has_fault();
+                if wai_has_fault {
+                    time_to_open_valve += Duration::from_millis(16);
+                } else {
+                    break;
+                }
+                test_bed.run_with_delta(Duration::from_millis(16));
+            }
+            println!(
+                "Time to open left valve = {}",
+                time_to_open_valve.as_secs_f32()
+            );
+            assert!(!test_bed.wing_anti_ice_has_fault());
+            assert!(test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(time_to_open_valve.as_secs_f32() >= 2.);
+            assert!(time_to_open_valve.as_secs_f32() <= 3.);
+        }
+
+        #[test]
+        fn wing_anti_ice_tweak_exhaust() {
+            let altitude = Length::new::<foot>(22000.);
+
+            let mut test_bed = test_bed_with()
+                .in_isa_atmosphere(altitude)
+                .toga_eng1()
+                .toga_eng2()
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(false);
+
+            assert!(test_bed.left_valve_controller_on());
+            assert!(!test_bed.left_valve_closed());
+
+            let left_flow_rate =
+                (test_bed.left_exhaust_flow().get::<kilogram_per_second>() * 1000.0).round();
+            let right_flow_rate =
+                (test_bed.right_exhaust_flow().get::<kilogram_per_second>() * 1000.0).round();
+
+            println!("Left flow rate = {}", left_flow_rate);
+            println!("Right flow rate = {}", right_flow_rate);
+
+            // At 22000ft, flow rate is given at 0.327kg/s
+            // Checking between 0.326 and 0.328
+            assert!(left_flow_rate >= 327.0 - 1.);
+            assert!(left_flow_rate <= 327.0 + 1.);
+            assert!(right_flow_rate >= 327.0 - 1.);
+            assert!(right_flow_rate <= 327.0 + 1.);
+        }
+
+        #[test]
+        fn wing_anti_ice_selected_with_bleeds_unpressurised() {
+            let altitude = Length::new::<foot>(500.);
+
+            let mut test_bed = test_bed_with()
+                .in_isa_atmosphere(altitude)
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+                .and_stabilize();
+            test_bed.set_lgciu_on_ground(true);
+
+            assert!(test_bed.left_valve_closed());
+            assert!(test_bed.right_valve_closed());
+            assert!(test_bed.wing_anti_ice_system_selected());
+            assert!(test_bed.wing_anti_ice_system_on());
+            assert!(test_bed.wing_anti_ice_has_fault());
+
+            // 31 secs from WAI ON
+            for _ in 0..1950 {
+                test_bed.run_with_delta(Duration::from_millis(16));
+            }
+            // According to the schematics, the relay starts counting
+            // regardless of the pressurisation
+            assert!(test_bed.valve_controller_timer() == Duration::from_secs(30));
+            test_bed = test_bed
+                .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+                .and_stabilize();
+            assert!(!test_bed.wing_anti_ice_system_selected());
+            assert!(!test_bed.wing_anti_ice_system_on());
+            assert!(!test_bed.wing_anti_ice_has_fault());
+        }
     }
 
     mod overhead {
@@ -3050,6 +3742,75 @@ mod tests {
                 test_bed.cross_bleed_valve_selector(),
                 CrossBleedValveSelectorMode::Shut
             );
+        }
+    }
+
+    mod pack_flow_valve_tests {
+        use super::*;
+
+        #[test]
+        fn pack_flow_valve_starts_closed() {
+            let test_bed = test_bed();
+
+            assert!(!test_bed.pack_flow_valve_is_open(1));
+            assert!(!test_bed.pack_flow_valve_is_open(2));
+        }
+
+        #[test]
+        fn pack_flow_valve_opens_when_conditions_met() {
+            let test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .set_pack_flow_pb_is_auto(1, true)
+                .set_pack_flow_pb_is_auto(2, true)
+                .and_stabilize();
+
+            assert!(test_bed.pack_flow_valve_is_open(1));
+            assert!(test_bed.pack_flow_valve_is_open(2));
+        }
+
+        #[test]
+        fn pack_flow_valve_closes_with_pack_pb_off() {
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .set_pack_flow_pb_is_auto(1, true)
+                .set_pack_flow_pb_is_auto(2, false)
+                .and_stabilize();
+
+            assert!(test_bed.pack_flow_valve_is_open(1));
+            assert!(!test_bed.pack_flow_valve_is_open(2));
+
+            test_bed = test_bed
+                .set_pack_flow_pb_is_auto(1, false)
+                .and_run()
+                .and_run();
+
+            assert!(!test_bed.pack_flow_valve_is_open(1));
+            assert!(!test_bed.pack_flow_valve_is_open(2));
+        }
+
+        #[test]
+        fn pack_flow_drops_when_valve_is_closed() {
+            let mut test_bed = test_bed_with()
+                .idle_eng1()
+                .idle_eng2()
+                .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+                .mach_number(MachNumber(0.))
+                .both_packs_auto()
+                .and_stabilize();
+
+            assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
+            assert!(test_bed.pack_flow_valve_flow(2) > flow_rate_tolerance());
+
+            test_bed = test_bed
+                .set_pack_flow_pb_is_auto(1, false)
+                .set_pack_flow_pb_is_auto(2, false)
+                .and_run()
+                .and_run();
+
+            assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
+            assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
         }
     }
 }

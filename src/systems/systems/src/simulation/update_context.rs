@@ -11,7 +11,7 @@ use uom::si::{
 
 use super::{Read, SimulatorReader};
 use crate::{
-    shared::MachNumber,
+    shared::{low_pass_filter::LowPassFilter, MachNumber},
     simulation::{InitContext, VariableIdentifier},
 };
 use nalgebra::{Rotation3, Vector3};
@@ -93,7 +93,7 @@ impl LocalAcceleration {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Velocity3D {
     velocity: [Velocity; 3],
 }
@@ -132,13 +132,6 @@ impl Velocity3D {
         )
     }
 }
-impl Default for Velocity3D {
-    fn default() -> Self {
-        Self {
-            velocity: [Velocity::default(); 3],
-        }
-    }
-}
 
 /// Provides data unowned by any system in the aircraft system simulation
 /// for the purpose of handling a simulation tick.
@@ -166,6 +159,8 @@ pub struct UpdateContext {
     plane_bank_id: VariableIdentifier,
     plane_true_heading_id: VariableIdentifier,
     mach_number_id: VariableIdentifier,
+    plane_height_id: VariableIdentifier,
+    latitude_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -177,7 +172,10 @@ pub struct UpdateContext {
     ambient_pressure: Pressure,
     is_on_ground: bool,
     vertical_speed: Velocity,
+
     local_acceleration: LocalAcceleration,
+    local_acceleration_plane_reference_filtered: LowPassFilter<Vector3<f64>>,
+
     world_ambient_wind: Velocity3D,
     local_relative_wind: Velocity3D,
     local_velocity: Velocity3D,
@@ -185,6 +183,8 @@ pub struct UpdateContext {
     mach_number: MachNumber,
     air_density: MassDensity,
     true_heading: Angle,
+    plane_height_over_ground: Length,
+    latitude: Angle,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -209,6 +209,12 @@ impl UpdateContext {
     pub(crate) const LOCAL_LATERAL_SPEED_KEY: &'static str = "VELOCITY BODY X";
     pub(crate) const LOCAL_LONGITUDINAL_SPEED_KEY: &'static str = "VELOCITY BODY Z";
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
+    pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
+    pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
+
+    // Plane accelerations can become crazy with msfs collision handling.
+    // Having such filtering limits high frequencies transients in accelerations used for physics
+    const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(400);
 
     #[deprecated(
         note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
@@ -228,6 +234,7 @@ impl UpdateContext {
         pitch: Angle,
         bank: Angle,
         mach_number: MachNumber,
+        latitude: Angle,
     ) -> UpdateContext {
         UpdateContext {
             is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
@@ -256,6 +263,8 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
             plane_true_heading_id: context.get_identifier(Self::TRUE_HEADING_KEY.to_owned()),
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
+            plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
+            latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -272,6 +281,11 @@ impl UpdateContext {
                 vertical_acceleration,
                 longitudinal_acceleration,
             ),
+            local_acceleration_plane_reference_filtered:
+                LowPassFilter::<Vector3<f64>>::new_with_init_value(
+                    Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
+                    Vector3::new(0., -9.8, 0.),
+                ),
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
                 Velocity::default(),
@@ -291,6 +305,8 @@ impl UpdateContext {
             mach_number,
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
+            plane_height_over_ground: Length::default(),
+            latitude,
         }
     }
 
@@ -318,6 +334,8 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
             plane_true_heading_id: context.get_identifier("PLANE HEADING DEGREES TRUE".to_owned()),
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
+            plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
+            latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -330,6 +348,13 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
+
+            local_acceleration_plane_reference_filtered:
+                LowPassFilter::<Vector3<f64>>::new_with_init_value(
+                    Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
+                    Vector3::new(0., -9.8, 0.),
+                ),
+
             world_ambient_wind: Velocity3D::new(
                 Velocity::default(),
                 Velocity::default(),
@@ -349,6 +374,8 @@ impl UpdateContext {
             mach_number: Default::default(),
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
+            plane_height_over_ground: Length::default(),
+            latitude: Default::default(),
         }
     }
 
@@ -402,7 +429,34 @@ impl UpdateContext {
 
         self.true_heading = reader.read(&self.plane_true_heading_id);
 
+        self.plane_height_over_ground = reader.read(&self.plane_height_id);
+
+        self.latitude = reader.read(&self.latitude_id);
+
         self.update_relative_wind();
+
+        self.update_local_acceleration_plane_reference(delta);
+    }
+
+    // Computes local acceleration including world gravity and plane acceleration
+    // Note that this does not compute acceleration due to angular velocity of the plane
+    fn update_local_acceleration_plane_reference(&mut self, delta: Duration) {
+        let plane_acceleration_plane_reference = self.local_acceleration.to_ms2_vector();
+
+        let pitch_rotation = self.attitude().pitch_rotation_transform();
+
+        let bank_rotation = self.attitude().bank_rotation_transform();
+
+        let gravity_acceleration_world_reference = Vector3::new(0., -9.8, 0.);
+
+        // Total acceleration in plane reference is the gravity in world reference rotated to plane reference. To this we substract
+        // the local plane reference to get final local acceleration (if plane falling at 1G final local accel is 1G of gravity - 1G local accel = 0G)
+        let total_acceleration_plane_reference = (pitch_rotation
+            * (bank_rotation * gravity_acceleration_world_reference))
+            - plane_acceleration_plane_reference;
+
+        self.local_acceleration_plane_reference_filtered
+            .update(delta, total_acceleration_plane_reference);
     }
 
     /// Relative wind could be directly read from simvar RELATIVE WIND VELOCITY XYZ.
@@ -522,6 +576,10 @@ impl UpdateContext {
         self.local_acceleration
     }
 
+    pub fn acceleration_plane_reference_filtered_ms2_vector(&self) -> Vector3<f64> {
+        self.local_acceleration_plane_reference_filtered.output()
+    }
+
     pub fn pitch(&self) -> Angle {
         self.attitude.pitch()
     }
@@ -547,6 +605,10 @@ impl UpdateContext {
 
     pub fn true_heading_rotation_transform(&self) -> Rotation3<f64> {
         Rotation3::from_axis_angle(&Vector3::y_axis(), self.true_heading.get::<radian>())
+    }
+
+    pub fn plane_height_over_ground(&self) -> Length {
+        self.plane_height_over_ground
     }
 }
 

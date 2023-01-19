@@ -206,17 +206,18 @@
                             <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
                         </True>
                         <False>
-                            <LEFT_SINGLE_CODE>
-                                #LEFT_SINGLE_CODE#
-
-                                (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
-                            </LEFT_SINGLE_CODE>
                             <Condition Check="DOWN_CODE">
                                 <True>
                                     <DOWN_STATE_CODE>#DOWN_CODE#</DOWN_STATE_CODE>
+                                    <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
                                 </True>
                                 <False>
                                     <DOWN_STATE_CODE>(L:XMLVAR_Momentary_#NODE_ID#_Pressed)</DOWN_STATE_CODE>
+                                    <LEFT_SINGLE_CODE>
+                                        #LEFT_SINGLE_CODE#
+
+                                        (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
+                                    </LEFT_SINGLE_CODE>
                                 </False>
                             </Condition>
                         </False>

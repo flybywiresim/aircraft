@@ -38,17 +38,14 @@ pub trait VariableRegistry {
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
-pub struct VariableIdentifier(u8, usize);
+pub struct VariableIdentifier(usize, usize);
 
 impl VariableIdentifier {
-    pub fn new<T: Into<u8>>(variable_type: T) -> Self {
-        Self {
-            0: variable_type.into(),
-            1: 0,
-        }
+    pub fn new<T: Into<usize>>(variable_type: T) -> Self {
+        Self(variable_type.into(), 0)
     }
 
-    pub fn identifier_type(&self) -> u8 {
+    pub fn identifier_type(&self) -> usize {
         self.0
     }
 
@@ -59,10 +56,7 @@ impl VariableIdentifier {
 
 impl VariableIdentifier {
     pub fn next(&self) -> Self {
-        Self {
-            0: self.0,
-            1: self.1 + 1,
-        }
+        Self(self.0, self.1 + 1)
     }
 }
 
@@ -141,6 +135,10 @@ impl<'a> InitContext<'a> {
 
     pub fn start_state(&self) -> StartState {
         self.start_state
+    }
+
+    pub fn start_gear_down(&self) -> bool {
+        self.is_on_ground() || self.start_state == StartState::Final
     }
 
     pub fn is_in_flight(&self) -> bool {
@@ -528,7 +526,7 @@ impl<'a> SimulatorToSimulationVisitor<'a> {
 }
 impl SimulationElementVisitor for SimulatorToSimulationVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.read(&mut self.reader);
+        visited.read(self.reader);
     }
 }
 
@@ -544,7 +542,7 @@ impl<'a> SimulationToSimulatorVisitor<'a> {
 }
 impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.write(&mut self.writer);
+        visited.write(self.writer);
     }
 }
 
@@ -775,6 +773,30 @@ read_write_uom!(MassDensity, slug_per_cubic_foot);
 
 read_write_into!(MachNumber);
 read_write_into!(StartState);
+
+impl<T: Reader> Read<Arinc429Word<u32>> for T {
+    fn convert(&mut self, value: f64) -> Arinc429Word<u32> {
+        value.into()
+    }
+}
+
+impl<T: Writer> Write<Arinc429Word<u32>> for T {
+    fn convert(&mut self, value: Arinc429Word<u32>) -> f64 {
+        value.into()
+    }
+}
+
+impl<T: Reader> Read<Arinc429Word<f64>> for T {
+    fn convert(&mut self, value: f64) -> Arinc429Word<f64> {
+        value.into()
+    }
+}
+
+impl<T: Writer> Write<Arinc429Word<f64>> for T {
+    fn convert(&mut self, value: Arinc429Word<f64>) -> f64 {
+        value.into()
+    }
+}
 
 impl<T: Reader> Read<f64> for T {
     fn convert(&mut self, value: f64) -> f64 {

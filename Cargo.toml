@@ -3,6 +3,8 @@
 members = [
     "src/systems/a320_systems",
     "src/systems/a320_systems_wasm",
+    "src/systems/a380_systems",
+    "src/systems/a380_systems_wasm",
     "src/systems/systems",
     "src/systems/systems_wasm",
     "src/systems/a320_hydraulic_simulation_graphs",
@@ -10,3 +12,12 @@ members = [
 
 [profile.release]
 lto = true
+strip = true
+
+[profile.test]
+# We enable some basic optimization to prevent stack overflows during testing (flybywiresim/a32nx#7631)
+# However, if this interferes with your ability to debug locally you can disable it here
+opt-level=1
+lto = false
+debug-assertions=true
+debug=true
