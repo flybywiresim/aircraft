@@ -78,7 +78,6 @@ export class DIR1 extends Director {
         /* Update Managers */
         this.flightPhaseManager.update();
 
-
         this.memory.clear();
     }
 
@@ -128,19 +127,19 @@ export class DIR1 extends Director {
 
     private updateActiveState(): void {
         if (this.isActive()) {
-          if (!this.isFaulty()) {
-            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
-          } else if (!this.dir2.isFaulty()) {
-            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
-          } else {
-            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
-          }
+            if (!this.isFaulty()) {
+                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+            } else if (!this.dir2.isFaulty()) {
+                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
+            } else {
+                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+            }
         } else if (this.dir2.isActive()) {
             this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
         } else {
-          this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
         }
-      }
+    }
 
     private decodeAltitude(): number {
         const alt1 = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE', 'number'));
