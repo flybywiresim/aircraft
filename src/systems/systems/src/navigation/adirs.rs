@@ -1144,6 +1144,14 @@ impl InertialReference {
         configured_align_time: AlignTime,
         simulator_data: AdirsSimulatorData,
     ) {
+        // If the  align time setting has been changed to instant during alignment,
+        // then set remaining time to 0. This allows to implement a "Instant Align" button in the EFB
+        // for users who want to align the ADIRS instantly but do not want to change the default
+        // setting and restart the flight.
+        if let AlignTime::Instant = configured_align_time {
+            self.remaining_align_duration = Some(Duration::from_secs_f64(0.));
+        }
+
         self.remaining_align_duration = match overhead.mode_of(self.number) {
             InertialReferenceMode::Navigation => match self.remaining_align_duration {
                 Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),

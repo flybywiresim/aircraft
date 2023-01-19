@@ -37,6 +37,7 @@ import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
+import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -78,8 +79,8 @@ export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
-    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
-    const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 3000);
+    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 5000);
+    const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
@@ -252,11 +253,11 @@ const Efb = () => {
     };
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
-        if (powerState === PowerStates.SHUTOFF) {
+        if (powerState === PowerStates.STANDBY) {
             offToLoaded();
         } else {
             history.push('/');
-            setPowerState(PowerStates.SHUTOFF);
+            setPowerState(PowerStates.STANDBY);
         }
     });
 
@@ -280,11 +281,10 @@ const Efb = () => {
     const { posX, posY, shown, text } = useAppSelector((state) => state.tooltip);
 
     useEffect(() => {
-        if (usingAutobrightness) {
-            const localTime = currentLocalTime / 3600;
-            setBrightness((calculateBrightness(lat, dayOfYear, localTime)));
+        if (usingAutobrightness && powerState === PowerStates.LOADED) {
+            setBrightness(calculateBrightness(lat, dayOfYear, currentLocalTime / 3600));
         }
-    }, [Math.ceil(currentLocalTime / 5), usingAutobrightness]);
+    }, [powerState, currentLocalTime, usingAutobrightness]);
 
     useEffect(() => {
         if (!usingAutobrightness) {
@@ -356,9 +356,10 @@ const Efb = () => {
                                     <Route path="/navigation" component={Navigation} />
                                     <Route path="/atc" component={ATC} />
                                     <Route path="/failures" component={Failures} />
-                                    <Route path="/settings" component={Settings} />
                                     <Route path="/checklists" component={Checklists} />
                                     <Route path="/presets" component={Presets} />
+                                    <Route path="/settings" component={Settings} />
+                                    <Route path="/settings/flypad" component={FlyPadPage} />
                                 </Switch>
                             </div>
                         </div>
