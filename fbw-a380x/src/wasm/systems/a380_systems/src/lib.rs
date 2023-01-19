@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod avionics_data_communication_network;
 mod control_display_system;
 mod electrical;
 mod fuel;
@@ -72,6 +73,7 @@ pub struct A380 {
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     cds: A380ControlDisplaySystem,
+    adcn: AvionicsDataCommunicationNetwork,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -115,6 +117,7 @@ impl A380 {
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             cds: A380ControlDisplaySystem::new(context),
+            adcn: AvionicsDataCommunicationNetwork::new(context),
         }
     }
 }
@@ -237,8 +240,8 @@ impl Aircraft for A380 {
         );
 
         self.engines_flex_physics.update(context);
-
         self.cds.update();
+        self.adcn.update();
     }
 }
 impl SimulationElement for A380 {
@@ -272,6 +275,7 @@ impl SimulationElement for A380 {
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
+        self.adcn.accept(visitor);
 
         visitor.visit(self);
     }
