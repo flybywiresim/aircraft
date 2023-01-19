@@ -16,6 +16,8 @@ pub struct CanBus<const N: usize> {
     transmission_buffers: Vec<VecDeque<Arinc825Word<f64>>>,
     availability_id: VariableIdentifier,
     available: bool,
+    failure_indication_id: VariableIdentifier,
+    failure_indication: bool,
     databus_id: VariableIdentifier,
     last_received_message: Arinc825Word<f64>,
     received_message: Arinc825Word<f64>,
@@ -31,6 +33,8 @@ impl<const N: usize> CanBus<N> {
             transmission_buffers: (1..=N).map(|_| VecDeque::new()).collect(),
             availability_id: context.get_identifier(format!("{}_AVAIL", bus_name)),
             available: false,
+            failure_indication_id: context.get_identifier(format!("{}_FAILURE", bus_name)),
+            failure_indication: false,
             databus_id: context.get_identifier(bus_name.to_owned()),
             last_received_message: Arinc825Word::new(
                 0.0,
@@ -51,7 +55,7 @@ impl<const N: usize> CanBus<N> {
     pub fn update(&mut self) {
         self.next_output_message_valid = false;
 
-        if self.available {
+        if self.available && !self.failure_indication {
             // search the next sendable message
             for x in 0..N {
                 let idx = (self.next_transmitting_system + x) % N;
@@ -113,8 +117,12 @@ impl<const N: usize> SimulationElement for CanBus<N> {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.last_received_message = self.received_message;
         self.received_message = reader.read_arinc825(&self.databus_id);
+
         let availability: f64 = reader.read(&self.availability_id);
         self.available = availability != 0.0;
+
+        let failure: f64 = reader.read(&self.failure_indication_id);
+        self.failure_indication = failure != 0.0;
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -125,6 +133,12 @@ impl<const N: usize> SimulationElement for CanBus<N> {
                 self.next_output_message.status(),
             );
         }
-        writer.write(&self.availability_id, 1.0);
+
+        // set the availability flag
+        if self.failure_indication {
+            writer.write(&self.availability_id, 0.0);
+        } else {
+            writer.write(&self.availability_id, 1.0);
+        }
     }
 }

@@ -23,6 +23,22 @@
   - Bool
   - Indicates if the first CAN bus of the CDS on the first officer's side is available
 
+- A32NX_CDS_CAN_BUS_1_1_FAILURE
+  - Bool
+  - Indicates if the first CAN bus of the CDS on the captain's side simulates a failure
+
+- A32NX_CDS_CAN_BUS_1_2_FAILURE
+  - Bool
+  - Indicates if the first CAN bus of the CDS on the captain's side simulates a failure
+
+- A32NX_CDS_CAN_BUS_2_1_FAILURE
+  - Bool
+  - Indicates if the first CAN bus of the CDS on the first officer's side simulates a failure
+
+- A32NX_CDS_CAN_BUS_2_2_FAILURE
+  - Bool
+  - Indicates if the first CAN bus of the CDS on the first officer's side simulates a failure
+
 - A32NX_CDS_CAN_BUS_1_1
   - ArincWord852<>
   - First CAN bus of the CDS on the captain's side
