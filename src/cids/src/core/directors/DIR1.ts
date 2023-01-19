@@ -42,7 +42,7 @@ export class DIR1 extends Director {
             throw new Error('[CIDS/DIR1] update() was called before initialization!');
         }
 
-        if (!this.isActive() || this.isFaulty()) return;
+        if (this.isFaulty()) return;
 
         this.updateActiveStatus();
 
@@ -78,6 +78,7 @@ export class DIR1 extends Director {
         /* Update Managers */
         this.flightPhaseManager.update();
 
+
         this.memory.clear();
     }
 
@@ -89,9 +90,6 @@ export class DIR1 extends Director {
         return SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool');
     }
 
-    /**
-     * Fails this director.
-     */
     public fail(): void {
         this.output('L:A32NX_CIDS_DIR_1_FAULT', 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'));
         this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false);
@@ -128,9 +126,6 @@ export class DIR1 extends Director {
         this.deboardingInProgress = this.isDeboardingInProgess();
     }
 
-    /**
-     * Checks if this director should be active and sets the flag accordingly.
-     */
     private updateActiveStatus(): void {
         if (this.isActive()) {
             if (!this.isFaulty) {
