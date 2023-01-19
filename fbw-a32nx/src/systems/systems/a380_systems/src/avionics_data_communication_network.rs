@@ -10,6 +10,35 @@ use crate::{
 use std::collections::HashMap;
 use std::vec::Vec;
 
+struct RoutingTableEntry {
+    routing_id: VariableIdentifier,
+    reachable: bool,
+}
+
+/*
+ * The routing table entry describes if two AFDX switches are reachable
+ */
+impl RoutingTableEntry {
+    pub fn new(context: &mut InitContext, lower_id: u8, upper_id: u8) -> Self {
+        Self {
+            routing_id: context.get_identifier(format!("AFDX_{}_{}_REACHABLE", lower_id, upper_id)),
+            reachable: 0,
+        }
+    }
+
+    pub fn set_reachable(&mut self, reachable: bool) {
+        self.reachable = reachable;
+    }
+
+    pub fn publish(&self, writer: &mut SimulatorWriter) {
+        if self.reachable {
+            writer.write(&self.routing_id, 1.0);
+        } else {
+            writer.write(&self.routing_id, 0.0);
+        }
+    }
+}
+
 pub struct AvionicsDataCommunicationNetwork {
     afdx_switches: [AvionicsFullDuplexSwitch; 16],
     afdx_networks: [HashMap<usize, Vec<usize>; 2],
