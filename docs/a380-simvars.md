@@ -39,6 +39,10 @@
   - Bool
   - Indicates if the first CAN bus of the CDS on the first officer's side simulates a failure
 
+- A32NX_CDS_CAN_BUS_1_1_<FUNCTION_ID>_RECEIVED
+  - Bool
+  - Indicates if the system per function ID in the CDS bus received the last sent message
+
 - A32NX_CDS_CAN_BUS_1_1
   - ArincWord852<>
   - First CAN bus of the CDS on the captain's side
