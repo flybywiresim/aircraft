@@ -1,13 +1,15 @@
 use crate::{
     shared::ElectricalBusType,
-    simulation::{InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, Write},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, Write,
+    },
     systems::integrated_modular_avionics::{
         avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
         core_processing_input_output_module::CoreProcessingInputOutputModule,
         input_output_module::InputOutputModule,
     },
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDequeu};
 use std::vec::Vec;
 
 struct RoutingTableEntry {
@@ -22,8 +24,10 @@ struct RoutingTableEntry {
 impl RoutingTableEntry {
     pub fn new(context: &mut InitContext, lower_id: u8, upper_id: u8) -> Self {
         Self {
-            routing_id_1: context.get_identifier(format!("AFDX_{}_{}_REACHABLE", lower_id, upper_id)),
-            routing_id_2: context.get_identifier(format!("AFDX_{}_{}_REACHABLE", upper_id, lower_id)),
+            routing_id_1: context
+                .get_identifier(format!("AFDX_{}_{}_REACHABLE", lower_id, upper_id)),
+            routing_id_2: context
+                .get_identifier(format!("AFDX_{}_{}_REACHABLE", upper_id, lower_id)),
             reachable: 0,
         }
     }
@@ -63,7 +67,7 @@ impl RoutingTableEntry {
  */
 pub struct AvionicsDataCommunicationNetwork {
     afdx_switches: [AvionicsFullDuplexSwitch; 16],
-    afdx_networks: [HashMap<usize, Vec<usize>; 2],
+    afdx_networks: [HashMap<usize, Vec<usize>>; 2],
     cpio_modules: [CoreProcessingInputOutputModule; 22],
     io_modules: [InputOutputModule; 8],
     routing_tables: [[Vec<RoutingTableEntry>; 16]; 2],
@@ -303,114 +307,157 @@ impl AvionicsDataCommunicationNetwork {
                     ElectricalBusType::DirectCurrent(2),
                 ),
             ],
-            routing_tables: [[
-                vec![
-                    RoutingTableEntry::new(context, 1, 1),
-                    RoutingTableEntry::new(context, 1, 2),
-                    RoutingTableEntry::new(context, 1, 3),
-                    RoutingTableEntry::new(context, 1, 4),
-                    RoutingTableEntry::new(context, 1, 5),
-                    RoutingTableEntry::new(context, 1, 6),
-                    RoutingTableEntry::new(context, 1, 7),
-                    RoutingTableEntry::new(context, 1, 9),
+            routing_tables: [
+                [
+                    vec![
+                        RoutingTableEntry::new(context, 1, 1),
+                        RoutingTableEntry::new(context, 1, 2),
+                        RoutingTableEntry::new(context, 1, 3),
+                        RoutingTableEntry::new(context, 1, 4),
+                        RoutingTableEntry::new(context, 1, 5),
+                        RoutingTableEntry::new(context, 1, 6),
+                        RoutingTableEntry::new(context, 1, 7),
+                        RoutingTableEntry::new(context, 1, 9),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 2, 2),
+                        RoutingTableEntry::new(context, 2, 3),
+                        RoutingTableEntry::new(context, 2, 4),
+                        RoutingTableEntry::new(context, 2, 5),
+                        RoutingTableEntry::new(context, 2, 6),
+                        RoutingTableEntry::new(context, 2, 7),
+                        RoutingTableEntry::new(context, 2, 9),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 3, 3),
+                        RoutingTableEntry::new(context, 3, 4),
+                        RoutingTableEntry::new(context, 3, 5),
+                        RoutingTableEntry::new(context, 3, 6),
+                        RoutingTableEntry::new(context, 3, 7),
+                        RoutingTableEntry::new(context, 3, 9),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 4, 4),
+                        RoutingTableEntry::new(context, 4, 5),
+                        RoutingTableEntry::new(context, 4, 6),
+                        RoutingTableEntry::new(context, 4, 7),
+                        RoutingTableEntry::new(context, 4, 9),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 5, 5),
+                        RoutingTableEntry::new(context, 5, 6),
+                        RoutingTableEntry::new(context, 5, 7),
+                        RoutingTableEntry::new(context, 5, 9),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 6, 6),
+                        RoutingTableEntry::new(context, 6, 7),
+                        RoutingTableEntry::new(context, 6, 9),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 7, 7),
+                        RoutingTableEntry::new(context, 7, 9),
+                    ],
+                    vec![RoutingTableEntry::new(context, 9, 9)],
                 ],
-                vec![
-                    RoutingTableEntry::new(context, 2, 2),
-                    RoutingTableEntry::new(context, 2, 3),
-                    RoutingTableEntry::new(context, 2, 4),
-                    RoutingTableEntry::new(context, 2, 5),
-                    RoutingTableEntry::new(context, 2, 6),
-                    RoutingTableEntry::new(context, 2, 7),
-                    RoutingTableEntry::new(context, 2, 9),
+                [
+                    vec![
+                        RoutingTableEntry::new(context, 11, 11),
+                        RoutingTableEntry::new(context, 11, 12),
+                        RoutingTableEntry::new(context, 11, 13),
+                        RoutingTableEntry::new(context, 11, 14),
+                        RoutingTableEntry::new(context, 11, 15),
+                        RoutingTableEntry::new(context, 11, 16),
+                        RoutingTableEntry::new(context, 11, 17),
+                        RoutingTableEntry::new(context, 11, 19),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 12, 12),
+                        RoutingTableEntry::new(context, 12, 13),
+                        RoutingTableEntry::new(context, 12, 14),
+                        RoutingTableEntry::new(context, 12, 15),
+                        RoutingTableEntry::new(context, 12, 16),
+                        RoutingTableEntry::new(context, 12, 17),
+                        RoutingTableEntry::new(context, 12, 19),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 13, 13),
+                        RoutingTableEntry::new(context, 13, 14),
+                        RoutingTableEntry::new(context, 13, 15),
+                        RoutingTableEntry::new(context, 13, 16),
+                        RoutingTableEntry::new(context, 13, 17),
+                        RoutingTableEntry::new(context, 13, 19),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 14, 14),
+                        RoutingTableEntry::new(context, 14, 15),
+                        RoutingTableEntry::new(context, 14, 16),
+                        RoutingTableEntry::new(context, 14, 17),
+                        RoutingTableEntry::new(context, 14, 19),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 15, 15),
+                        RoutingTableEntry::new(context, 15, 16),
+                        RoutingTableEntry::new(context, 15, 17),
+                        RoutingTableEntry::new(context, 15, 19),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 16, 16),
+                        RoutingTableEntry::new(context, 16, 17),
+                        RoutingTableEntry::new(context, 16, 19),
+                    ],
+                    vec![
+                        RoutingTableEntry::new(context, 17, 17),
+                        RoutingTableEntry::new(context, 17, 19),
+                    ],
+                    vec![RoutingTableEntry::new(context, 19, 19)],
                 ],
-                vec![
-                    RoutingTableEntry::new(context, 3, 3),
-                    RoutingTableEntry::new(context, 3, 4),
-                    RoutingTableEntry::new(context, 3, 5),
-                    RoutingTableEntry::new(context, 3, 6),
-                    RoutingTableEntry::new(context, 3, 7),
-                    RoutingTableEntry::new(context, 3, 9),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 4, 4),
-                    RoutingTableEntry::new(context, 4, 5),
-                    RoutingTableEntry::new(context, 4, 6),
-                    RoutingTableEntry::new(context, 4, 7),
-                    RoutingTableEntry::new(context, 4, 9),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 5, 5),
-                    RoutingTableEntry::new(context, 5, 6),
-                    RoutingTableEntry::new(context, 5, 7),
-                    RoutingTableEntry::new(context, 5, 9),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 6, 6),
-                    RoutingTableEntry::new(context, 6, 7),
-                    RoutingTableEntry::new(context, 6, 9),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 7, 7),
-                    RoutingTableEntry::new(context, 7, 9),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 9, 9),
-                ],
-            ], [
-                vec![
-                    RoutingTableEntry::new(context, 11, 11),
-                    RoutingTableEntry::new(context, 11, 12),
-                    RoutingTableEntry::new(context, 11, 13),
-                    RoutingTableEntry::new(context, 11, 14),
-                    RoutingTableEntry::new(context, 11, 15),
-                    RoutingTableEntry::new(context, 11, 16),
-                    RoutingTableEntry::new(context, 11, 17),
-                    RoutingTableEntry::new(context, 11, 19),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 12, 12),
-                    RoutingTableEntry::new(context, 12, 13),
-                    RoutingTableEntry::new(context, 12, 14),
-                    RoutingTableEntry::new(context, 12, 15),
-                    RoutingTableEntry::new(context, 12, 16),
-                    RoutingTableEntry::new(context, 12, 17),
-                    RoutingTableEntry::new(context, 12, 19),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 13, 13),
-                    RoutingTableEntry::new(context, 13, 14),
-                    RoutingTableEntry::new(context, 13, 15),
-                    RoutingTableEntry::new(context, 13, 16),
-                    RoutingTableEntry::new(context, 13, 17),
-                    RoutingTableEntry::new(context, 13, 19),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 14, 14),
-                    RoutingTableEntry::new(context, 14, 15),
-                    RoutingTableEntry::new(context, 14, 16),
-                    RoutingTableEntry::new(context, 14, 17),
-                    RoutingTableEntry::new(context, 14, 19),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 15, 15),
-                    RoutingTableEntry::new(context, 15, 16),
-                    RoutingTableEntry::new(context, 15, 17),
-                    RoutingTableEntry::new(context, 15, 19),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 16, 16),
-                    RoutingTableEntry::new(context, 16, 17),
-                    RoutingTableEntry::new(context, 16, 19),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 17, 17),
-                    RoutingTableEntry::new(context, 17, 19),
-                ],
-                vec![
-                    RoutingTableEntry::new(context, 19, 19),
-                ],
-            ]],
-            publish_routing_table: false,
+            ],
+            publish_routing_table: true,
+        }
+    }
+
+    fn switches_reachable(
+        &self,
+        network: &HashMap<usize, Vec<usize>>,
+        from: usize,
+        to: usize,
+    ) -> bool {
+        let mut frontier: VecDequeu<usize> = VecDequeu::new();
+        let mut visited: Vec<usize> = Vec::new();
+
+        visited.resize(network.len(), 0xffff);
+        frontier.push_front(from);
+        visit[from] = from;
+
+        while !frontier.is_empty() {
+            let node = frontier.pop_front();
+
+            if node.unwrap() == to {
+                return true;
+            }
+
+            let neighbors = &network[node.unwrap()];
+            for neighbor in neighbors {
+                if visited[*neighbor] == 0xffff {
+                    visited[*neighbor] = node.unwrap();
+                    frontier.push_back(*neighbor);
+                }
+            }
+        }
+
+        false
+    }
+
+    fn update_routing_table(
+        routing_table: &mut [Vec<RoutingTableEntry>; 16],
+        network: &HashMap<usize, Vec<usize>>,
+        offset: usize,
+    ) {
+        for (y, row) in routing_table.iter_mut().enumerate() {
+            for (x, entry) in row.iter_mut().enumerate() {
+                entry.set_reachable(self.switches_reachable(network, y + offset, x + offset));
+            }
         }
     }
 
@@ -421,20 +468,20 @@ impl AvionicsDataCommunicationNetwork {
         for (i, afdx) in self.afdx_switches.iter_mut().enumerate() {
             afdx.update();
             if afdx.routing_update_required() {
-                if (i >= 8) {
+                if i >= 8 {
                     update_second_network = true;
                 } else {
                     update_first_network = true;
                 }
             }
-        });
+        }
 
         if update_first_network {
-            // TODO create the AFDX_ROUTING_TABLE
+            self.update_routing_table(&mut self.routing_tables[0], &self.afdx_networks[0], 0);
         }
 
         if update_second_network {
-            // TODO create the AFDX_ROUTING_TABLE
+            self.update_routing_table(&mut self.routing_tables[1], &self.afdx_networks[1], 8);
         }
 
         self.publish_routing_table = update_first_network | update_second_network;
@@ -459,7 +506,9 @@ impl SimulationElement for AvionicsDataCommunicationNetwork {
         if self.publish_routing_table {
             // publish the values of the routing matrix
             self.routing_tables.iter().for_each(|network| {
-                network.iter().for_each(|row| row.iter().for_each(|entry| entry.publish(writer)));
+                network
+                    .iter()
+                    .for_each(|row| row.iter().for_each(|entry| entry.publish(writer)));
             });
         }
     }
