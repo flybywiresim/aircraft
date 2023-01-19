@@ -43,6 +43,24 @@ impl RoutingTableEntry {
     }
 }
 
+/*
+ * The ADCN contains information about the CDIOMs, IOMs and the AFDX networs.
+ * The ADCN networks are defined by two redundant networks with same wirings.
+ * The routing tables per network are defined as upper triangular matrices
+ * that define if two AFDX switches are reachable.
+ *
+ * As soon as the availability (power or failure) of an AFDX switch changes,
+ * the routing table is recalculated and and published.
+ *
+ * Systems attached (direct or indirect via CPIOM or IOM) need to know to which AFDX switches they are directly connected.
+ * Additionally is the direct AFDX switch link of the source or destination of data needed.
+ * Both information define the entry in the triangle matrix for the look up if the AFDX switches can reach each other.
+ *
+ * To ensure that the data can be consumed or transmitted is the availability of the own and the other system required.
+ *
+ * The routing tables define the upper triangular matrix for the two networks.
+ * A breadth-first-search is used to update the routing table per AFDX switch.
+ */
 pub struct AvionicsDataCommunicationNetwork {
     afdx_switches: [AvionicsFullDuplexSwitch; 16],
     afdx_networks: [HashMap<usize, Vec<usize>; 2],
