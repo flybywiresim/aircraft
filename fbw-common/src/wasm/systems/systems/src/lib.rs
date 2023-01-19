@@ -13,7 +13,11 @@ pub mod electrical;
 pub mod engine;
 pub mod failures;
 pub mod hydraulic;
+<<<<<<< HEAD:fbw-common/src/wasm/systems/systems/src/lib.rs
 pub mod indicating_recording;
+=======
+pub mod integrated_modular_avionics;
+>>>>>>> a1bd28d84... introduce the base components for ADCN:src/systems/systems/src/lib.rs
 pub mod landing_gear;
 pub mod navigation;
 pub mod overhead;
