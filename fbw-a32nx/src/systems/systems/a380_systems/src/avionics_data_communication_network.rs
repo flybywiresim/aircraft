@@ -11,7 +11,8 @@ use std::collections::HashMap;
 use std::vec::Vec;
 
 struct RoutingTableEntry {
-    routing_id: VariableIdentifier,
+    routing_id_1: VariableIdentifier,
+    routing_id_2: VariableIdentifier,
     reachable: bool,
 }
 
@@ -21,7 +22,8 @@ struct RoutingTableEntry {
 impl RoutingTableEntry {
     pub fn new(context: &mut InitContext, lower_id: u8, upper_id: u8) -> Self {
         Self {
-            routing_id: context.get_identifier(format!("AFDX_{}_{}_REACHABLE", lower_id, upper_id)),
+            routing_id_1: context.get_identifier(format!("AFDX_{}_{}_REACHABLE", lower_id, upper_id)),
+            routing_id_2: context.get_identifier(format!("AFDX_{}_{}_REACHABLE", upper_id, lower_id)),
             reachable: 0,
         }
     }
@@ -32,9 +34,11 @@ impl RoutingTableEntry {
 
     pub fn publish(&self, writer: &mut SimulatorWriter) {
         if self.reachable {
-            writer.write(&self.routing_id, 1.0);
+            writer.write(&self.routing_id_1, 1.0);
+            writer.write(&self.routing_id_2, 1.0);
         } else {
-            writer.write(&self.routing_id, 0.0);
+            writer.write(&self.routing_id_1, 0.0);
+            writer.write(&self.routing_id_2, 0.0);
         }
     }
 }
