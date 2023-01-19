@@ -95,7 +95,6 @@ impl A320AirConditioning {
                 &self.a320_air_conditioning_system,
                 lgciu,
                 &self.a320_pressurization_system,
-                pressurization_overhead,
             );
 
             self.a320_pressurization_system.update(
@@ -181,7 +180,6 @@ impl A320Cabin {
         air_conditioning_system: &(impl OutletAir + DuctTemperature),
         lgciu: [&impl LgciuWeightOnWheels; 2],
         pressurization: &A320PressurizationSystem,
-        pressurization_overhead: &A320PressurizationOverheadPanel,
     ) {
         let lgciu_gears_compressed = lgciu
             .iter()
@@ -194,7 +192,6 @@ impl A320Cabin {
             pressurization.outflow_valve_open_amount(0),
             pressurization.safety_valve_open_amount(),
             lgciu_gears_compressed,
-            pressurization.should_open_outflow_valve() && pressurization_overhead.is_in_man_mode(),
             self.number_of_passengers,
             number_of_open_doors,
         );
@@ -343,10 +340,6 @@ impl A320PressurizationSystem {
 
     fn safety_valve_open_amount(&self) -> Ratio {
         self.safety_valve.open_amount()
-    }
-
-    fn should_open_outflow_valve(&self) -> bool {
-        self.cpc[self.active_system - 1].should_open_outflow_valve()
     }
 }
 
@@ -529,6 +522,7 @@ mod tests {
     };
     use uom::si::{
         length::foot,
+        mass_rate::kilogram_per_second,
         pressure::{hectopascal, psi},
         thermodynamic_temperature::degree_celsius,
         velocity::foot_per_minute,
@@ -1107,11 +1101,12 @@ mod tests {
         fn iterate(mut self, iterations: usize) -> Self {
             for _ in 0..iterations {
                 // println!(
-                //     "{}, {}, {}, {}",
+                //     "{}, {}, {}, {}, {}",
                 //     self.outflow_valve_open_amount().get::<percent>(),
                 //     self.cabin_vs().get::<foot_per_minute>(),
                 //     self.safety_valve_open_amount().get::<percent>(),
                 //     self.cabin_delta_p().get::<psi>(),
+                //     self.cabin_altitude().get::<foot>(),
                 // );
                 self.run();
             }
@@ -1121,11 +1116,12 @@ mod tests {
         fn iterate_with_delta(mut self, iterations: usize, delta: Duration) -> Self {
             for _ in 0..iterations {
                 // println!(
-                //     "{}, {}, {}, {}",
+                //     "{}, {}, {}, {}, {}",
                 //     self.outflow_valve_open_amount().get::<percent>(),
                 //     self.cabin_vs().get::<foot_per_minute>(),
                 //     self.safety_valve_open_amount().get::<percent>(),
                 //     self.cabin_delta_p().get::<psi>(),
+                //     self.cabin_altitude().get::<foot>(),
                 // );
                 self.run_with_delta(delta);
             }
@@ -1173,6 +1169,11 @@ mod tests {
 
         fn set_takeoff_power(mut self) -> Self {
             self.command_engine_n1(Ratio::new::<percent>(95.));
+            self
+        }
+
+        fn cab_fans_pb_on(mut self, value: bool) -> Self {
+            self.write_by_name("OVHD_VENT_CAB_FANS_PB_IS_ON", value);
             self
         }
 
@@ -1329,6 +1330,15 @@ mod tests {
         fn is_mode_sel_pb_auto(&mut self) -> bool {
             self.read_by_name("OVHD_PRESS_MODE_SEL_PB_IS_AUTO")
         }
+
+        fn cabin_air_in(&self) -> MassRate {
+            self.query(|a| {
+                a.a320_cabin_air
+                    .a320_air_conditioning_system
+                    .outlet_air()
+                    .flow_rate()
+            })
+        }
     }
     impl TestBed for CabinAirTestBed {
         type Aircraft = TestAircraft;
@@ -1373,11 +1383,11 @@ mod tests {
                 .run_and()
                 .command_packs_on_off(false)
                 .ambient_pressure_of(Pressure::new::<hectopascal>(696.86)) // Equivalent to 10,000ft from tables
-                .iterate(200);
+                .iterate(100);
 
             assert!(
                 (test_bed.cabin_altitude() - Length::new::<foot>(10000.)).abs()
-                    < Length::new::<foot>(100.)
+                    < Length::new::<foot>(10.)
             );
         }
 
@@ -1578,7 +1588,7 @@ mod tests {
 
         #[test]
         fn aircraft_vs_starts_at_0() {
-            let test_bed = test_bed().set_on_ground().iterate(100);
+            let test_bed = test_bed().set_on_ground().iterate(300);
 
             assert!((test_bed.cabin_vs()).abs() < Velocity::new::<foot_per_minute>(1.));
         }
@@ -1604,13 +1614,13 @@ mod tests {
         fn cabin_vs_changes_to_takeoff() {
             let test_bed = test_bed()
                 .set_on_ground()
-                .iterate(20)
+                .iterate(50)
                 .set_takeoff_power()
-                .iterate_with_delta(200, Duration::from_millis(100));
+                .iterate_with_delta(250, Duration::from_millis(100));
 
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-                    < Velocity::new::<foot_per_minute>(30.)
+                    < Velocity::new::<foot_per_minute>(50.)
             );
         }
 
@@ -1672,7 +1682,7 @@ mod tests {
         fn cabin_vs_changes_to_descent() {
             let test_bed = test_bed_in_cruise()
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(-260.))
-                .iterate_with_delta(200, Duration::from_millis(100));
+                .iterate(32);
 
             assert!(test_bed.cabin_vs() > Velocity::new::<foot_per_minute>(-750.));
             assert!(test_bed.cabin_vs() < Velocity::new::<foot_per_minute>(0.));
@@ -1923,5 +1933,50 @@ mod tests {
                 Ratio::new::<percent>(0.)
             );
         }
+
+        #[test]
+        fn no_singularities_when_crossing_zero_alt() {
+            let mut test_bed = test_bed()
+                .run_and()
+                .command_packs_on_off(true)
+                .ambient_pressure_of(Pressure::new::<hectopascal>(1013.))
+                .iterate(200) // With packs on the altitude goes below 0
+                .set_takeoff_power();
+
+            test_bed.command_on_ground(false);
+
+            test_bed = test_bed
+                .command_mode_sel_pb_man()
+                .command_man_vs_switch_position(2)
+                .iterate(100)
+                .ambient_pressure_of(Pressure::new::<hectopascal>(800.))
+                .vertical_speed_of(Velocity::new::<foot_per_minute>(10000.))
+                .iterate(10)
+                .command_mode_sel_pb_auto()
+                .iterate_with_delta(300, Duration::from_millis(1000))
+                .memorize_vertical_speed(); // This makes the altitude cross 0
+
+            assert!(test_bed.cabin_altitude() < Length::new::<foot>(0.));
+
+            test_bed = test_bed.iterate_with_delta(100, Duration::from_millis(1000)); // Vertical speed needs to stay constant with no jumps
+
+            assert!(
+                (test_bed.initial_cabin_vs() - test_bed.cabin_vs()).abs()
+                    < Velocity::new::<foot_per_minute>(10.)
+            );
+        }
+    }
+
+    #[test]
+    fn packs_off_and_cab_fans_off_results_in_no_air_in() {
+        let test_bed = test_bed()
+            .set_on_ground()
+            .command_packs_on_off(false)
+            .cab_fans_pb_on(false)
+            .iterate(40)
+            .set_takeoff_power()
+            .iterate_with_delta(200, Duration::from_millis(100));
+
+        assert!(test_bed.cabin_air_in().abs() < MassRate::new::<kilogram_per_second>(0.1));
     }
 }

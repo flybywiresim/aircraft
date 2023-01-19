@@ -541,6 +541,7 @@ struct TrimAirSystem<const ZONES: usize> {
     // These are not a real components of the system, but a tool to simulate the mixing of air
     pack_mixer_container: PneumaticPipe,
     trim_air_mixers: [MixerUnit<1>; ZONES],
+    outlet_air: Air,
 }
 
 impl<const ZONES: usize> TrimAirSystem<ZONES> {
@@ -572,6 +573,7 @@ impl<const ZONES: usize> TrimAirSystem<ZONES> {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             trim_air_mixers: [MixerUnit::new(&[ZoneType::Cabin(1)]); ZONES],
+            outlet_air: Air::new(),
         }
     }
 
@@ -589,6 +591,19 @@ impl<const ZONES: usize> TrimAirSystem<ZONES> {
             );
             self.trim_air_mixers[id].update(vec![tav, &mixer_air.mixer_unit_individual_outlet(id)]);
         }
+        self.outlet_air
+            .set_temperature(self.duct_temperature().iter().average());
+        let flow_vector: Vec<f64> = self
+            .trim_air_mixers
+            .iter()
+            .map(|tam| tam.outlet_air.flow_rate().get::<kilogram_per_second>())
+            .collect();
+        self.outlet_air
+            .set_flow_rate(MassRate::new::<kilogram_per_second>(
+                flow_vector.iter().sum(),
+            ));
+        self.outlet_air
+            .set_pressure(self.trim_air_outlet_pressure());
     }
 
     fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {

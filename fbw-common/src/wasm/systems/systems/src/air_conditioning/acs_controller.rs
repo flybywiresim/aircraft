@@ -687,7 +687,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             should_open_fcv: false,
             pack_flow: MassRate::new::<kilogram_per_second>(0.),
             pack_flow_demand: MassRate::new::<kilogram_per_second>(0.),
-            pid: PidController::new(0.01, 0.8, 0., 0., 1., 0., 1.),
+            pid: PidController::new(0.01, 0.1, 0., 0., 1., 0., 1.),
             operation_mode: ACSCActiveComputer::None,
 
             fcv_timer_open: Duration::from_secs(0),
@@ -1675,7 +1675,6 @@ mod acs_controller_tests {
             outflow_valve_open_amount: Ratio,
             safety_valve_open_amount: Ratio,
             lgciu_gear_compressed: bool,
-            should_open_outflow_valve: bool,
             passengers: [u8; 2],
         ) {
             self.cabin_air_simulation.update(
@@ -1684,7 +1683,6 @@ mod acs_controller_tests {
                 outflow_valve_open_amount,
                 safety_valve_open_amount,
                 lgciu_gear_compressed,
-                should_open_outflow_valve,
                 passengers,
                 0,
             );
@@ -1958,7 +1956,6 @@ mod acs_controller_tests {
                 Ratio::new::<percent>(10.),
                 Ratio::new::<percent>(0.),
                 lgciu_gears_compressed,
-                true,
                 [0, self.number_of_passengers / 2],
             );
 
@@ -3248,7 +3245,7 @@ mod acs_controller_tests {
                 .both_packs_on()
                 .and()
                 .engine_idle()
-                .iterate(20);
+                .iterate(40);
 
             let initial_flow = test_bed.pack_flow();
             test_bed.command_apu_bleed_on();

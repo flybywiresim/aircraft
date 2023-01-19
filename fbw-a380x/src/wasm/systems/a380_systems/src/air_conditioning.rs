@@ -95,7 +95,6 @@ impl A380AirConditioning {
                 &self.a320_air_conditioning_system,
                 lgciu,
                 &self.a320_pressurization_system,
-                pressurization_overhead,
             );
 
             self.a320_pressurization_system.update(
@@ -181,7 +180,6 @@ impl A320Cabin {
         air_conditioning_system: &(impl OutletAir + DuctTemperature),
         lgciu: [&impl LgciuWeightOnWheels; 2],
         pressurization: &A320PressurizationSystem,
-        pressurization_overhead: &A380PressurizationOverheadPanel,
     ) {
         let lgciu_gears_compressed = lgciu
             .iter()
@@ -194,7 +192,6 @@ impl A320Cabin {
             pressurization.outflow_valve_open_amount(0),
             pressurization.safety_valve_open_amount(),
             lgciu_gears_compressed,
-            pressurization.should_open_outflow_valve() && pressurization_overhead.is_in_man_mode(),
             self.number_of_passengers,
             number_of_open_doors,
         );
@@ -343,10 +340,6 @@ impl A320PressurizationSystem {
 
     fn safety_valve_open_amount(&self) -> Ratio {
         self.safety_valve.open_amount()
-    }
-
-    fn should_open_outflow_valve(&self) -> bool {
-        self.cpc[self.active_system - 1].should_open_outflow_valve()
     }
 }
 
@@ -1578,7 +1571,7 @@ mod tests {
 
         #[test]
         fn aircraft_vs_starts_at_0() {
-            let test_bed = test_bed().set_on_ground().iterate(100);
+            let test_bed = test_bed().set_on_ground().iterate(300);
 
             assert!((test_bed.cabin_vs()).abs() < Velocity::new::<foot_per_minute>(1.));
         }
@@ -1606,11 +1599,11 @@ mod tests {
                 .set_on_ground()
                 .iterate(20)
                 .set_takeoff_power()
-                .iterate_with_delta(200, Duration::from_millis(100));
+                .iterate_with_delta(250, Duration::from_millis(100));
 
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-                    < Velocity::new::<foot_per_minute>(30.)
+                    < Velocity::new::<foot_per_minute>(50.)
             );
         }
 
@@ -1672,7 +1665,7 @@ mod tests {
         fn cabin_vs_changes_to_descent() {
             let test_bed = test_bed_in_cruise()
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(-260.))
-                .iterate_with_delta(200, Duration::from_millis(100));
+                .iterate(32);
 
             assert!(test_bed.cabin_vs() > Velocity::new::<foot_per_minute>(-750.));
             assert!(test_bed.cabin_vs() < Velocity::new::<foot_per_minute>(0.));

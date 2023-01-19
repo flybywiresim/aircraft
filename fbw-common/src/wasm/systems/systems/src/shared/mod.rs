@@ -10,6 +10,7 @@ use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
     f64::*,
     length::meter,
+    mass_rate::kilogram_per_second,
     pressure::{hectopascal, pascal},
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
@@ -744,6 +745,27 @@ impl Average for Pressure {
     }
 }
 
+impl Average for MassRate {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = MassRate>,
+    {
+        let mut sum: MassRate = MassRate::new::<kilogram_per_second>(0.);
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v;
+            count += 1;
+        }
+
+        if count > 0 {
+            sum / (count as f64)
+        } else {
+            MassRate::new::<kilogram_per_second>(0.)
+        }
+    }
+}
+
 impl Average for ThermodynamicTemperature {
     fn average<I>(iter: I) -> Self
     where
@@ -769,6 +791,15 @@ impl<'a> Average<&'a Pressure> for Pressure {
     fn average<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Pressure>,
+    {
+        iter.copied().average()
+    }
+}
+
+impl<'a> Average<&'a MassRate> for MassRate {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a MassRate>,
     {
         iter.copied().average()
     }

@@ -1,7 +1,7 @@
 use crate::{
     shared::{
-        pid::PidController, AverageExt, CabinSimulation, ControllerSignal, EngineCorrectedN1,
-        PressurizationOverheadShared,
+        low_pass_filter::LowPassFilter, pid::PidController, AverageExt, CabinSimulation,
+        ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
@@ -54,6 +54,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     cabin_pressure: Pressure,
     cabin_alt: Length,
     cabin_vertical_speed: Velocity,
+    cabin_filtered_vertical_speed: LowPassFilter<Velocity>,
     departure_elev: Length,
     landing_elev: Length,
     cabin_target_vs: Velocity,
@@ -78,6 +79,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     const G: f64 = 9.80665; // Gravity - m/s2
     const T_0: f64 = 288.2; // ISA standard temperature - K
     const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
+
+    const VERTICAL_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
 
     pub fn new(context: &mut InitContext, aircraft: C) -> Self {
         Self {
@@ -107,6 +110,9 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
             cabin_alt: Length::new::<meter>(0.),
             cabin_vertical_speed: Velocity::new::<foot_per_minute>(0.),
+            cabin_filtered_vertical_speed: LowPassFilter::new(
+                Self::VERTICAL_SPEED_FILTER_TIME_CONSTANT,
+            ),
             departure_elev: Length::new::<foot>(-5000.),
             landing_elev: Length::new::<meter>(0.),
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
@@ -154,6 +160,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
         self.cabin_target_vs = self.calculate_cabin_target_vs(context);
         self.cabin_vertical_speed = self.calculate_vertical_speed(context, new_cabin_alt);
+        self.cabin_filtered_vertical_speed
+            .update(context.delta(), self.cabin_vertical_speed);
         self.cabin_alt = new_cabin_alt;
 
         self.outflow_valve_controller.update(
@@ -349,7 +357,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     pub fn cabin_vertical_speed(&self) -> Velocity {
-        self.cabin_vertical_speed
+        self.cabin_filtered_vertical_speed.output()
     }
 
     // FWC warning signals
@@ -422,7 +430,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
         );
         writer.write(
             &self.cabin_vs_id,
-            self.cabin_vertical_speed.get::<foot_per_minute>(),
+            self.cabin_vertical_speed().get::<foot_per_minute>(),
         );
         writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_p());
 
@@ -458,7 +466,7 @@ impl OutflowValveController {
             is_in_man_mode: false,
             open_allowed: true,
             should_open: true,
-            pid: PidController::new(0.0001, 7.5, 0., 0., 100., 0., 1.),
+            pid: PidController::new(0.0001, 6.5, 0., 0., 100., 0., 1.),
         }
     }
 
@@ -1155,7 +1163,6 @@ mod tests {
                 self.outflow_valve.open_amount(),
                 self.safety_valve.open_amount(),
                 lgciu_gears_compressed,
-                self.cpc.should_open_outflow_valve(),
                 [2, 50, 50],
                 0,
             );
