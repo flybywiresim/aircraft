@@ -7,9 +7,12 @@ use crate::{
         input_output_module::InputOutputModule,
     },
 };
+use std::collections::HashMap;
+use std::vec::Vec;
 
 pub struct AvionicsDataCommunicationNetwork {
     afdx_switches: [AvionicsFullDuplexSwitch; 16],
+    afdx_networks: [HashMap<usize, Vec<usize>; 2],
     cpio_modules: [CoreProcessingInputOutputModule; 22],
     io_modules: [InputOutputModule; 8],
 }
@@ -102,6 +105,28 @@ impl AvionicsDataCommunicationNetwork {
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrentEssential,
                 ),
+            ],
+            afdx_networks: [
+                HashMap::from([
+                    (0, vec![1, 2, 7]),
+                    (1, vec![0, 3, 7]),
+                    (2, vec![0, 3, 4, 6, 7]),
+                    (3, vec![1, 2, 5, 6, 7]),
+                    (4, vec![2, 5, 6]),
+                    (5, vec![3, 4, 6]),
+                    (6, vec![2, 3, 4, 5]),
+                    (7, vec![0, 1, 2, 3]),
+                ]),
+                HashMap::from([
+                    (8, vec![9, 10, 15]),
+                    (9, vec![8, 11, 15]),
+                    (10, vec![8, 11, 12, 14, 15]),
+                    (11, vec![9, 10, 13, 14, 15]),
+                    (12, vec![10, 13, 14]),
+                    (13, vec![11, 12, 14]),
+                    (14, vec![10, 11, 12, 13]),
+                    (15, vec![8, 9, 10, 11]),
+                ]),
             ],
             io_modules: [
                 InputOutputModule::new(context, "A1", ElectricalBusType::DirectCurrentEssential),
