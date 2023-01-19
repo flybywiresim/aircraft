@@ -24,7 +24,7 @@ export class AfterDisembarkationPhase extends FlightPhase {
     public shouldActivate(): boolean {
         return (
             this.flightPhaseManager.dir.totalPax === 0
-            && this.flightPhaseManager.dir.groundSpeed < 1
+            && this.flightPhaseManager.dir.memory.groundSpeed < 1
         );
     }
 

@@ -21,8 +21,8 @@ export class ApproachPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.dir.altitude <= 10000
-            && !this.flightPhaseManager.dir.gearDownLocked
+            this.flightPhaseManager.dir.memory.altitude <= 10000
+            && !this.flightPhaseManager.dir.memory.gearDownLocked
         );
     }
 

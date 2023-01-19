@@ -34,7 +34,7 @@ export class CidsOrchestrator {
         const DC_ESS_BUS_POWERED = SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool');
 
         if (GND_FLT_BUS_POWERED && DC_ESS_BUS_POWERED) {
-            if (this.dir1UpdateThrottler.canUpdate(deltaTime) !== -1 && !SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_FAULT', 'Bool')) {
+            if (this.dir1UpdateThrottler.canUpdate(deltaTime) !== -1) {
                 this.dir1.update();
             }
             // if (this.dir2UpdateThrottler.canUpdate(deltaTime) !== -1) {

@@ -1,9 +1,9 @@
 import { Arinc429Word } from '@shared/arinc429';
 import { DIR2 } from './DIR2';
 import { Director } from './Director';
-import { FlightPhase } from '../../flightphases/FlightPhase';
 import { FlightPhaseManager } from '../../flightphases/FlightPhaseManager';
 import { CidsOrchestrator } from '../CidsOrchestrator';
+import { DirectorMemory } from './DirectorMemory';
 
 export class DIR1 extends Director {
     private isInit: boolean;
@@ -12,49 +12,7 @@ export class DIR1 extends Director {
 
     private flightPhaseManager: FlightPhaseManager;
 
-    private isDir2Faulty: boolean;
-
-    private isDir2Active: boolean;
-
-    public isFaulty: boolean;
-
-    public isActive: boolean;
-
-    private fwcFlightPhase: number;
-
-    public flightPhase: FlightPhase;
-
-    public onGround: boolean;
-
-    public allDoorsClosedLocked: boolean;
-
-    public nwStrgPinInserted: boolean;
-
-    public thrustLever1Position: number;
-
-    public thrustLever2Position: number;
-
-    public gpwsFlap3: boolean;
-
-    public flapsConfig: FlapsConfig;
-
-    public altitude: number;
-
-    public fcuSelectedAlt: number;
-
-    public fmaVerticalMode: number;
-
-    public fpaSelected: number;
-
-    public vsSelected: number;
-
-    public cruiseAltitude: number;
-
-    public altCrzActive: boolean;
-
-    public groundSpeed: number;
-
-    public gearDownLocked: boolean;
+    public memory: DirectorMemory;
 
     constructor() {
         super();
@@ -63,8 +21,6 @@ export class DIR1 extends Director {
         this.flightPhaseManager = new FlightPhaseManager(this);
         // new managers here...
 
-        this.isFaulty = false;
-        this.isActive = true;
         this.isInit = false;
     }
 
@@ -72,9 +28,8 @@ export class DIR1 extends Director {
         console.log('[CIDS/DIR1] Initializing...');
         this.dir2 = dir2;
 
-        /* Set simvars */
-        this.output('FAULT', 'Bool', this.isFaulty, null, true);
-        this.output('ACTIVE', 'Bool', this.isActive, null, true);
+        this.output('L:A32NX_CIDS_DIR_1_FAULT', 'Bool', false, null, true);
+        this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
 
         /* Initialize Managers */
         this.flightPhaseManager.init();
@@ -87,90 +42,85 @@ export class DIR1 extends Director {
             throw new Error('[CIDS/DIR1] update() was called before initialization!');
         }
 
+        if (!this.isActive() || this.isFaulty()) return;
+
         this.updateActiveStatus();
 
-        this.readDataInterfaces();
-
-        /* Update Managers */
-        this.flightPhaseManager.update();
+        this.writeMemory();
 
         if (CidsOrchestrator.DEBUG) {
             const set = SimVar.SetSimVarValue;
             const varname = 'L:A32NX_CIDS_DEBUG_DIR_1';
-            set(`${varname}_IS_ACTIVE`, 'Bool', this.isActive);
-            set(`${varname}_FWC_FLIGHT_PHASE`, 'number', this.fwcFlightPhase);
-            set(`${varname}_ON_GROUND`, 'Bool', this.onGround);
-            set(`${varname}_ALL_DOORS_CLOSED_LOCKED`, 'Bool', this.allDoorsClosedLocked);
-            set(`${varname}_NW_STRG_PIN_INSERTED`, 'Bool', this.nwStrgPinInserted);
-            set(`${varname}_THR_LVR_1_POS`, 'number', this.thrustLever1Position);
-            set(`${varname}_THR_LVR_2_POS`, 'number', this.thrustLever2Position);
-            set(`${varname}_GPWS_FLAP_3`, 'Bool', this.gpwsFlap3);
-            set(`${varname}_FLAPS_CONFIG`, 'number', this.flapsConfig);
-            set(`${varname}_ALTITUDE`, 'number', this.altitude);
-            set(`${varname}_FMA_VERTICAL_MODE`, 'number', this.fmaVerticalMode);
-            set(`${varname}_ALT_SELECTED`, 'feet', this.fcuSelectedAlt);
-            set(`${varname}_FPA_SELECTED`, 'degrees', this.fpaSelected);
-            set(`${varname}_VS_SELECTED`, 'feet per minute', this.vsSelected);
-            set(`${varname}_CRUISE_ALTITUDE`, 'number', this.cruiseAltitude);
-            set(`${varname}_ALT_CRZ_ACTIVE`, 'Bool', this.altCrzActive);
-            set(`${varname}_GS`, 'number', this.groundSpeed);
-            set(`${varname}_GEAR_DOWN_LOCKED`, 'Bool', this.gearDownLocked);
+
+            set(`${varname}_FWC_FLIGHT_PHASE`, 'number', this.memory.fwcFlightPhase);
+            set(`${varname}_ALL_DOORS_CLSD_LCKED`, 'Bool', this.memory.allDoorsClosedLocked);
+            set(`${varname}_NW_STRG_DISC`, 'Bool', this.memory.nwStrgPinInserted);
+            set(`${varname}_THR_LVR_1_POS`, 'number', this.memory.thrustLever1Position);
+            set(`${varname}_THR_LVR_2_POS`, 'number', this.memory.thrustLever2Position);
+            set(`${varname}_GPWS_FLAP_3`, 'Bool', this.memory.gpwsFlap3);
+            set(`${varname}_FLAPS_CONF`, 'number', this.memory.flapsConfig);
+            set(`${varname}_ALT`, 'number', this.memory.altitude);
+            set(`${varname}_FCU_SEL_ALT`, 'number', this.memory.fcuSelectedAlt);
+            set(`${varname}_FMA_VERT_MODE`, 'number', this.memory.fmaVerticalMode);
+            set(`${varname}_FPA_SEL`, 'number', this.memory.fpaSelected);
+            set(`${varname}_VS_SEL`, 'number', this.memory.vsSelected);
+            set(`${varname}_CRZ_ALT`, 'number', this.memory.cruiseAltitude);
+            set(`${varname}_ALT_CRZ_ACTIVE`, 'Bool', this.memory.altCrzActive);
+            set(`${varname}_GS`, 'number', this.memory.groundSpeed);
+            set(`${varname}_GEAR_DWN_LCKD`, 'Bool', this.memory.gearDownLocked);
+
             set('L:A32NX_CIDS_DEBUG_BOARDING_IN_PROGRESS', 'Bool', this.boardingInProgress);
             set('L:A32NX_CIDS_DEBUG_DEBOARDING_IN_PROGRESS', 'Bool', this.deboardingInProgress);
             set('L:A32NX_CIDS_DEBUG_TOTAL_PAX', 'number', this.totalPax);
             set('L:A32NX_CIDS_DEBUG_TOTAL_PAX_DESIRED', 'number', this.totalPaxDesired);
         }
+
+        /* Update Managers */
+        this.flightPhaseManager.update();
+
+        this.memory.clear();
     }
 
-    public output(varName: string, unit: SimVar.SimVarUnit, value: any, onComplete?: () => void, force?: boolean): void {
-        if (CidsOrchestrator.DEBUG) {
-            console.log('[CIDS/DIR1] Received output command. Payload:', { varName, unit, value, onComplete });
-        }
+    public isFaulty(): boolean {
+        return SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_FAULT', 'Bool');
+    }
 
-        const completeVarName = `L:A32NX_CIDS_DIR_1_${varName}`;
-        if (this.isActive && !this.isFaulty || force) {
-            SimVar.SetSimVarValue(completeVarName, unit, value)
-                .then(onComplete)
-                .catch((error) => console.error('[CIDS/DIR1] There was an error while writing to output! Error:', error, '\rInput:', { completeVarName, unit, value }));
-        }
+    public isActive(): boolean {
+        return SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool');
     }
 
     /**
      * Fails this director.
      */
     public fail(): void {
-        this.output('FAULT', 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'));
-        this.isFaulty = true;
+        this.output('L:A32NX_CIDS_DIR_1_FAULT', 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'));
+        this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false);
+        this.memory.clear();
     }
 
     /**
      * Reads data from all physically connected systems and writes them to memory.
      */
-    private readDataInterfaces(): void {
-        this.isDir2Faulty = this.dir2.isFaulty; // TODO: use simvar instead of instance method
-        this.isDir2Active = this.dir2.isActive; // TODO: use simvar instead of instance method
-        this.isFaulty = SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_FAULT', 'Bool');
-        this.isActive = SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool');
-        this.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
-        this.flightPhase = this.flightPhaseManager.getFlightPhaseFromId(SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_FLIGHT_PHASE', 'Enum'));
-        this.onGround = this.isOnGround();
-        this.allDoorsClosedLocked = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 20
+    private writeMemory(): void {
+        this.memory.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+        this.memory.onGround = this.isOnGround();
+        this.memory.allDoorsClosedLocked = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 20
                                     && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 20
                                     && SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'Bool');
-        this.nwStrgPinInserted = SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool');
-        this.thrustLever1Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'number');
-        this.thrustLever2Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'number');
-        this.gpwsFlap3 = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool');
-        this.flapsConfig = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number'); // TODO: This should use ARINC429 once both SFCCs are implemented.
-        this.altitude = this.decodeAltitude();
-        this.fcuSelectedAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue(); // TODO: This should use ARINC429 once https://github.com/flybywiresim/a32nx/pull/7587 is merged.
-        this.fmaVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
-        this.fpaSelected = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_FPA_SELECTED', 'degrees');
-        this.vsSelected = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
-        this.cruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
-        this.altCrzActive = SimVar.GetSimVarValue('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool');
-        this.groundSpeed = this.decodeGroundSpeed();
-        this.gearDownLocked = this.isGearDownLocked();
+        this.memory.nwStrgPinInserted = SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool');
+        this.memory.thrustLever1Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'number');
+        this.memory.thrustLever2Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'number');
+        this.memory.gpwsFlap3 = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool');
+        this.memory.flapsConfig = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number'); // TODO: This should use ARINC429 once both SFCCs are implemented.
+        this.memory.altitude = this.decodeAltitude();
+        this.memory.fcuSelectedAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue(); // TODO: This should use ARINC429 once https://github.com/flybywiresim/a32nx/pull/7587 is merged.
+        this.memory.fmaVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
+        this.memory.fpaSelected = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_FPA_SELECTED', 'degrees');
+        this.memory.vsSelected = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
+        this.memory.cruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
+        this.memory.altCrzActive = SimVar.GetSimVarValue('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool');
+        this.memory.groundSpeed = this.decodeGroundSpeed();
+        this.memory.gearDownLocked = this.isGearDownLocked();
 
         this.totalPax = this.getTotalPax();
         this.totalPaxDesired = this.getTotalPaxDesired();
@@ -182,18 +132,18 @@ export class DIR1 extends Director {
      * Checks if this director should be active and sets the flag accordingly.
      */
     private updateActiveStatus(): void {
-        if (this.isActive) {
+        if (this.isActive()) {
             if (!this.isFaulty) {
-                this.isActive = true;
-            } else if (!this.isDir2Faulty) {
-                this.isActive = false;
+                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+            } else if (!this.dir2.isFaulty()) {
+                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
             } else {
-                this.isActive = true;
+                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
             }
-        } else if (this.isDir2Active) {
-            this.isActive = false;
+        } else if (this.dir2.isActive()) {
+            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
         } else {
-            this.isActive = true;
+            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
         }
     }
 
@@ -207,7 +157,7 @@ export class DIR1 extends Director {
         if (alt3.isNormalOperation()) {
             return alt3.value;
         }
-        if (this.fwcFlightPhase === 1 || this.fwcFlightPhase === 10) return 0;
+        if (this.memory.fwcFlightPhase === 1 || this.memory.fwcFlightPhase === 10) return 0;
 
         console.log('decode alt: calling fail');
         this.fail();
@@ -224,7 +174,7 @@ export class DIR1 extends Director {
         if (gs3.isNormalOperation()) {
             return gs3.value;
         }
-        if (gs1.isNoComputedData() && gs3.isNoComputedData() && (this.fwcFlightPhase === 1 || this.fwcFlightPhase === 10)) {
+        if (gs1.isNoComputedData() && gs3.isNoComputedData() && (this.memory.fwcFlightPhase === 1 || this.memory.fwcFlightPhase === 10)) {
             return 0;
         }
 
@@ -239,7 +189,7 @@ export class DIR1 extends Director {
         if (lgciu1Discrete.isNormalOperation()) {
             return lgciu1Discrete.getBitValue(25);
         }
-        if (this.fwcFlightPhase === 1 || this.fwcFlightPhase === 10) return true;
+        if (this.memory.fwcFlightPhase === 1 || this.memory.fwcFlightPhase === 10) return true;
 
         console.log('geardownlocked: calling fail');
         this.fail();
