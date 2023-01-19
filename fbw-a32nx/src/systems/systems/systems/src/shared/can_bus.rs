@@ -62,36 +62,40 @@ impl<const N: usize> CanBus<N> {
         self.next_output_message_valid = false;
 
         if self.available && !self.failure_indication {
+            let mut bus_busy = false;
+
             // check if all stations received the last message
             self.message_received_by_systems
                 .iter()
                 .for_each(|received| {
                     if !received {
-                        return;
+                        bus_busy = true;
                     }
                 });
 
-            // reset the received flags to release the bus for the next transmission
-            self.message_received_by_systems
-                .iter_mut()
-                .for_each(|received| {
-                    *received = false;
-                });
+            if !bus_busy {
+                // reset the received flags to release the bus for the next transmission
+                self.message_received_by_systems
+                    .iter_mut()
+                    .for_each(|received| {
+                        *received = false;
+                    });
 
-            // search the next sendable message
-            for x in 0..N {
-                let idx = (self.next_transmitting_system + x) % N;
-                let message = self.transmission_buffers[idx as usize].get(0);
-                if message.is_some() {
-                    self.next_output_message =
-                        self.transmission_buffers[idx as usize].pop_front().unwrap();
-                    self.next_output_message_valid = true;
-                    break;
+                // search the next sendable message
+                for x in 0..N {
+                    let idx = (self.next_transmitting_system + x) % N;
+                    let message = self.transmission_buffers[idx as usize].get(0);
+                    if message.is_some() {
+                        self.next_output_message =
+                            self.transmission_buffers[idx as usize].pop_front().unwrap();
+                        self.next_output_message_valid = true;
+                        break;
+                    }
                 }
-            }
 
-            // start the next time from the next system
-            self.next_transmitting_system = (self.next_transmitting_system + 1) % N;
+                // start the next time from the next system
+                self.next_transmitting_system = (self.next_transmitting_system + 1) % N;
+            }
         }
     }
 
