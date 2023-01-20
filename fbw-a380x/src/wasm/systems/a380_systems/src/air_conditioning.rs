@@ -3,15 +3,13 @@ use systems::{
     air_conditioning::{
         acs_controller::{Pack, PackFlowController},
         cabin_air::CabinAirSimulation,
-        AirConditioningSystem, DuctTemperature, OutletAir, PackFlowControllers, ZoneType,
+        cabin_pressure_controller::CabinPressureController,
+        pressure_valve::{PressureValve, PressureValveSignal},
+        AirConditioningSystem, DuctTemperature, OutletAir, PackFlowControllers,
+        PressurizationConstants, ZoneType,
     },
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
     pneumatic::PneumaticContainer,
-    pressurization::{
-        cabin_pressure_controller::CabinPressureController,
-        pressure_valve::{PressureValve, PressureValveSignal},
-        PressurizationConstants,
-    },
     shared::{
         random_number, update_iterator::MaxStepLoop, CabinAltitude, CabinSimulation,
         ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,

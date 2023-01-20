@@ -1,6 +1,5 @@
-use super::{Air, DuctTemperature, OutletAir, ZoneType};
+use super::{Air, DuctTemperature, OutletAir, PressurizationConstants, ZoneType};
 use crate::{
-    pressurization::PressurizationConstants,
     shared::{AverageExt, CabinSimulation},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,

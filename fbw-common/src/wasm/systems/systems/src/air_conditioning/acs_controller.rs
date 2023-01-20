@@ -1087,7 +1087,8 @@ mod acs_controller_tests {
     use super::*;
     use crate::{
         air_conditioning::{
-            cabin_air::CabinAirSimulation, Air, AirConditioningPack, CabinFan, MixerUnit, OutletAir,
+            cabin_air::CabinAirSimulation, Air, AirConditioningPack, CabinFan, MixerUnit,
+            OutletAir, PressurizationConstants,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         overhead::{
@@ -1099,7 +1100,6 @@ mod acs_controller_tests {
             ControllablePneumaticValve, EngineModeSelector, PneumaticContainer, PneumaticPipe,
             Precooler,
         },
-        pressurization::PressurizationConstants,
         shared::{AverageExt, EngineBleedPushbutton, PneumaticValve, PotentialOrigin},
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},

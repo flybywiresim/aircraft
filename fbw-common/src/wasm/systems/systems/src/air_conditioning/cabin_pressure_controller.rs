@@ -10,8 +10,8 @@ use crate::{
 };
 
 use super::{
-    OutflowValveActuator, OutflowValveSignal, PressureValve, PressureValveSignal,
-    PressurizationConstants,
+    pressure_valve::{PressureValve, PressureValveSignal},
+    OutflowValveActuator, OutflowValveSignal, PressurizationConstants,
 };
 
 use std::time::Duration;
