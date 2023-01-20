@@ -9,7 +9,7 @@ import { Idle } from './Idle';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { N1 } from './N1';
 import { N2 } from './N2';
-import { N1Idle } from './N1Idle';
+import { N1Limit } from './N1Limit';
 import { PacksNaiWai } from './PacksNaiWai';
 import { Slats } from './Slats';
 
@@ -32,7 +32,7 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
             <>
                 <AFloor bus={this.props.bus} />
                 <Idle bus={this.props.bus} />
-                <N1Idle bus={this.props.bus} />
+                <N1Limit bus={this.props.bus} />
                 <PacksNaiWai bus={this.props.bus} />
 
                 <Layer x={0} y={96}>

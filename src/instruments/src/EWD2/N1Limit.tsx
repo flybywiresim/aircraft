@@ -5,10 +5,10 @@ import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
-interface N1IdleProps {
+interface N1LimitProps {
     bus: EventBus;
 }
-export class N1Idle extends DisplayComponent<N1IdleProps> {
+export class N1Limit extends DisplayComponent<N1LimitProps> {
     private inactiveVisibility = Subject.create('hidden');
 
     private activeVisibility = Subject.create('hidden');
