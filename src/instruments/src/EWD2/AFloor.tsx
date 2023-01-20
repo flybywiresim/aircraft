@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
+import { AutoThrustMode } from '@shared/autopilot';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 
 interface AFloorProps {
@@ -14,7 +15,7 @@ export class AFloor extends DisplayComponent<AFloorProps> {
         const sub = this.props.bus.getSubscriber<EwdSimvars>();
 
         sub.on('autoThrustMode').whenChanged().handle((mode) => {
-            this.visibility.set(mode === 13 ? 'visible' : 'hidden');
+            this.visibility.set(mode === AutoThrustMode.A_FLOOR ? 'visible' : 'hidden');
         });
     }
 

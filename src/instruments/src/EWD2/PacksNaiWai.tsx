@@ -1,11 +1,23 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
+import { AutoThrustMode } from '@shared/autopilot';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 
 interface PacksNaiWaiProps {
     bus: EventBus;
 }
 export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
+    private readonly messageLUT = [
+        '',
+        'WAI',
+        'NAI',
+        'NAI/WAI',
+        'PACKS',
+        'PACKS/WAI',
+        'PACKS/NAI',
+        'PACKS/NAI/WAI',
+    ];
+
     private message = Subject.create('');
 
     private fwcFlightPhase: number = 0;
@@ -98,23 +110,19 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
         });
 
         sub.on('realTime').atFrequency(2).handle((_t) => {
-            const onGround = this.leftLandingGear && this.rightLandingGear;
             const showMessage = [3, 4].includes(this.throttle1Position) || [3, 4].includes(this.throttle2Position)
-            || (onGround && (this.engine1State === 1 || this.engine2State === 1))
-            || (this.autoThrustMode >= 1 && this.autoThrustMode <= 4 && (this.throttle1Position === 2 || this.throttle2Position === 2))
-            || (this.fwcFlightPhase >= 5 && this.fwcFlightPhase <= 7 && this.autoThrustMode === 5);
+            || ((this.leftLandingGear && this.rightLandingGear) && (this.engine1State === 1 || this.engine2State === 1))
+            || (this.autoThrustMode >= AutoThrustMode.MAN_TOGA && this.autoThrustMode <= AutoThrustMode.MAN_DTO && (this.throttle1Position === 2 || this.throttle2Position === 2))
+            || (this.fwcFlightPhase >= 5 && this.fwcFlightPhase <= 7 && this.autoThrustMode === AutoThrustMode.MAN_MCT);
 
-            if (showMessage) {
-                const messageStrings = [
-                    { name: 'PACKS', show: (this.packs1Supplying || this.packs2Supplying) && this.apuBleedPressure === 0 },
-                    { name: 'NAI', show: this.engine1AntiIce || this.engine2AntiIce },
-                    { name: 'WAI', show: this.wingAntiIce },
-                ];
-                this.message.set(messageStrings.filter((item) => item.show).map((item) => item.name).join('/'));
-            } else {
-                this.message.set('');
-            }
+            this.message.set(showMessage ? this.messageLUT[this.messageIndex] : '');
         });
+    }
+
+    get messageIndex(): number {
+        return ((this.packs1Supplying || this.packs2Supplying) && this.apuBleedPressure === 0 ? 4 : 0)
+            + (this.engine1AntiIce || this.engine2AntiIce ? 2 : 0)
+            + (this.wingAntiIce ? 1 : 0);
     }
 
     render(): VNode {
