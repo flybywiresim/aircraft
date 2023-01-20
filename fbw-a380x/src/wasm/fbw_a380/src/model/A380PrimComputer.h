@@ -734,8 +734,8 @@ class A380PrimComputer final
     boolean_T is_unit_3;
     boolean_T capt_priority_takeover_pressed;
     boolean_T fo_priority_takeover_pressed;
-    boolean_T ap_1_puhsbutton_pressed;
-    boolean_T ap_2_puhsbutton_pressed;
+    boolean_T ap_1_pushbutton_pressed;
+    boolean_T ap_2_pushbutton_pressed;
     boolean_T fcu_healthy;
     boolean_T athr_pushbutton;
     boolean_T ir_3_on_capt;
@@ -1178,10 +1178,6 @@ class A380PrimComputer final
     real_T Saturation4_UpperSat;
     real_T Saturation4_LowerSat;
     real_T Gain4_Gain;
-    real_T Saturation5_UpperSat;
-    real_T Saturation5_LowerSat;
-    real_T Saturation6_UpperSat;
-    real_T Saturation6_LowerSat;
     real_T Gain5_Gain;
     real_T Constant8_Value_d;
     real_T Constant_Value_g;

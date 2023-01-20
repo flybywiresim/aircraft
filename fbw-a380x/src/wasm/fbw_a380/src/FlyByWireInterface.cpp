@@ -1345,8 +1345,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.is_unit_3 = primIndex == 2;
   prims[primIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
   prims[primIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.ap_1_puhsbutton_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.ap_2_puhsbutton_pressed = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.fcu_healthy = false;
   prims[primIndex].modelInputs.in.discrete_inputs.athr_pushbutton = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_capt = false;

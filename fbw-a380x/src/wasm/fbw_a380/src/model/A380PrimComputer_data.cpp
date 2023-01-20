@@ -3179,7 +3179,7 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     }
   },
 
-  -35.0,
+  -15.0,
 
   0.0,
 
@@ -3314,14 +3314,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   -30.0,
 
   -1.0,
-
-  20.0,
-
-  -30.0,
-
-  20.0,
-
-  -30.0,
 
   0.7,
 

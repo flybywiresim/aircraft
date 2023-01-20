@@ -27,6 +27,7 @@ class A380LateralNormalLaw final
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_i;
     boolean_T pY_not_empty_a;
+    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_l;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_i;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_dw;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_n;
@@ -46,6 +47,7 @@ class A380LateralNormalLaw final
     real_T RateLimiterVariableTs1_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_m;
     real_T RateLimiterVariableTs2_InitialCondition;
+    real_T RateLimiterVariableTs2_InitialCondition_c;
     real_T RateLimiterVariableTs1_InitialCondition_e;
     real_T RateLimiterVariableTs1_InitialCondition_m;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
@@ -60,12 +62,14 @@ class A380LateralNormalLaw final
     real_T RateLimiterVariableTs1_lo;
     real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs2_lo;
+    real_T RateLimiterVariableTs2_lo_o;
     real_T RateLimiterVariableTs1_lo_k;
     real_T RateLimiterVariableTs1_lo_n;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs1_up;
     real_T RateLimiterVariableTs_up_m;
     real_T RateLimiterVariableTs2_up;
+    real_T RateLimiterVariableTs2_up_g;
     real_T RateLimiterVariableTs1_up_d;
     real_T RateLimiterVariableTs1_up_j;
     real_T BankAngleProtection2_tableData[5];

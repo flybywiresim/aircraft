@@ -68,8 +68,8 @@ struct base_prim_discrete_inputs
   boolean_T is_unit_3;
   boolean_T capt_priority_takeover_pressed;
   boolean_T fo_priority_takeover_pressed;
-  boolean_T ap_1_puhsbutton_pressed;
-  boolean_T ap_2_puhsbutton_pressed;
+  boolean_T ap_1_pushbutton_pressed;
+  boolean_T ap_2_pushbutton_pressed;
   boolean_T fcu_healthy;
   boolean_T athr_pushbutton;
   boolean_T ir_3_on_capt;
