@@ -29,7 +29,7 @@ export class N1Idle extends DisplayComponent<N1IdleProps> {
 
     private autoThrustLimit: number = 0;
 
-    private autoThrustLimitType: number = 0;
+    private thrustLimitType: number = 0;
 
     private flexTemp: number = 0;
 
@@ -52,8 +52,8 @@ export class N1Idle extends DisplayComponent<N1IdleProps> {
             this.autoThrustLimit = l;
         });
 
-        sub.on('autoThrustLimitType').whenChanged().handle((l) => {
-            this.autoThrustLimitType = l;
+        sub.on('thrustLimitType').whenChanged().handle((l) => {
+            this.thrustLimitType = l;
         });
 
         sub.on('flexTemp').whenChanged().handle((c) => {
@@ -71,13 +71,13 @@ export class N1Idle extends DisplayComponent<N1IdleProps> {
                 this.activeVisibility.set('visible');
 
                 const thrustLimitTypes = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
-                this.textThrustLimitType.set(thrustLimitTypes[this.autoThrustLimitType]);
+                this.textThrustLimitType.set(thrustLimitTypes[this.thrustLimitType]);
 
                 const n1Limit = this.autoThrustLimit.toFixed(1).split('.', 2);
                 this.textThrustLimitInt.set(n1Limit[0]);
                 this.textThrustLimitFract.set(n1Limit[1]);
 
-                const showFlex = this.flexTemp !== 0 && this.sat.isNormalOperation() && (this.flexTemp >= (this.sat.value - 10)) && this.autoThrustLimitType === 3;
+                const showFlex = this.flexTemp !== 0 && this.sat.isNormalOperation() && (this.flexTemp >= (this.sat.value - 10)) && this.thrustLimitType === 3;
                 this.flexVisibility.set(showFlex ? 'visible' : 'hidden');
                 this.textFlexTemp.set(Math.round(this.flexTemp).toString());
             } else {

@@ -20,9 +20,7 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
 
     private message = Subject.create('');
 
-    private fwcFlightPhase: number = 0;
-
-    private autoThrustMode: number = 0;
+    private thrustLimitType: number = 0;
 
     private packs1Supplying: boolean = false;
 
@@ -30,35 +28,19 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
 
     private engine1AntiIce: boolean = false;
 
-    private engine1State: number = 0;
-
     private engine2AntiIce: boolean = false;
-
-    private engine2State: number = 0;
 
     private wingAntiIce: boolean = false;
 
     private apuBleedPressure: number = 0;
-
-    private leftLandingGear: boolean = false;
-
-    private rightLandingGear: boolean = false;
-
-    private throttle1Position: number = 0;
-
-    private throttle2Position: number = 0;
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
 
-        sub.on('fwcFlightPhase').whenChanged().handle((p) => {
-            this.fwcFlightPhase = p;
-        });
-
-        sub.on('autoThrustMode').whenChanged().handle((mode) => {
-            this.autoThrustMode = mode;
+        sub.on('thrustLimitType').whenChanged().handle((l) => {
+            this.thrustLimitType = l;
         });
 
         sub.on('packs1Supplying').whenChanged().handle((pack) => {
@@ -73,16 +55,8 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
             this.engine1AntiIce = ai;
         });
 
-        sub.on('engine1State').whenChanged().handle((s) => {
-            this.engine1State = s;
-        });
-
         sub.on('engine2AntiIce').whenChanged().handle((ai) => {
             this.engine2AntiIce = ai;
-        });
-
-        sub.on('engine2State').whenChanged().handle((s) => {
-            this.engine2State = s;
         });
 
         sub.on('wingAntiIce').whenChanged().handle((ai) => {
@@ -93,27 +67,11 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
             this.apuBleedPressure = psi;
         });
 
-        sub.on('left1LandingGear').whenChanged().handle((g) => {
-            this.leftLandingGear = g;
-        });
-
-        sub.on('right1LandingGear').whenChanged().handle((g) => {
-            this.rightLandingGear = g;
-        });
-
-        sub.on('throttle1Position').whenChanged().handle((pos) => {
-            this.throttle1Position = pos;
-        });
-
-        sub.on('throttle2Position').whenChanged().handle((pos) => {
-            this.throttle2Position = pos;
-        });
-
         sub.on('realTime').atFrequency(2).handle((_t) => {
-            const showMessage = [3, 4].includes(this.throttle1Position) || [3, 4].includes(this.throttle2Position)
-            || ((this.leftLandingGear && this.rightLandingGear) && (this.engine1State === 1 || this.engine2State === 1))
-            || (this.autoThrustMode >= AutoThrustMode.MAN_TOGA && this.autoThrustMode <= AutoThrustMode.MAN_DTO && (this.throttle1Position === 2 || this.throttle2Position === 2))
-            || (this.fwcFlightPhase >= 5 && this.fwcFlightPhase <= 7 && this.autoThrustMode === AutoThrustMode.MAN_MCT);
+            // Messages should be shown when thrust limit is TOGA, SOFT GA, FLEX, DTO, or MCT.
+            // Current implementation only has TOGA, FLEX, and MCT.
+            // TODO: The current thrust limit should be read from EECs.
+            const showMessage = this.thrustLimitType >= 2 && this.thrustLimitType <= 4;
 
             this.message.set(showMessage ? this.messageLUT[this.messageIndex] : '');
         });

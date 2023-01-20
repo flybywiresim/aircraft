@@ -23,7 +23,7 @@ export class Egt extends DisplayComponent<EgtProps> {
 
     private activeVisibility = Subject.create('hidden');
 
-    private autoThrustLimitType: number = 0;
+    private thrustLimitType: number = 0;
 
     private autoThrustWarningToga: boolean = false;
 
@@ -49,8 +49,8 @@ export class Egt extends DisplayComponent<EgtProps> {
             this.activeVisibility.set(f ? 'visible' : 'hidden');
         });
 
-        sub.on('autoThrustLimitType').whenChanged().handle((t) => {
-            this.autoThrustLimitType = t;
+        sub.on('thrustLimitType').whenChanged().handle((t) => {
+            this.thrustLimitType = t;
         });
 
         sub.on('autoThrustWarningToga').whenChanged().handle((t) => {
@@ -71,7 +71,7 @@ export class Egt extends DisplayComponent<EgtProps> {
     }
 
     get egtMax(): number {
-        switch (this.autoThrustLimitType) {
+        switch (this.thrustLimitType) {
         case 4:
             return this.autoThrustWarningToga ? 1060 : 1025;
 

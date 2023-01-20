@@ -51,7 +51,7 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('autoThrustCommand2');
         this.simVarPublisher.subscribe('autoThrustLimit');
         this.simVarPublisher.subscribe('autoThrustLimitToga');
-        this.simVarPublisher.subscribe('autoThrustLimitType');
+        this.simVarPublisher.subscribe('thrustLimitType');
         this.simVarPublisher.subscribe('autoThrustMode');
         this.simVarPublisher.subscribe('autoThrustStatus');
         this.simVarPublisher.subscribe('autoThrustTLA1');

@@ -7,7 +7,7 @@ export type EwdSimvars = {
     autoThrustCommand2: number;
     autoThrustLimit: number;
     autoThrustLimitToga: number;
-    autoThrustLimitType: number;
+    thrustLimitType: number;
     autoThrustMode: number;
     autoThrustStatus: number;
     autoThrustTLA1: number;
@@ -70,7 +70,7 @@ export enum EwdVars {
     autoThrustCommand2 = 'L:A32NX_AUTOTHRUST_N1_COMMANDED:2',
     autoThrustLimit = 'L:A32NX_AUTOTHRUST_THRUST_LIMIT',
     autoThrustLimitToga = 'L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA',
-    autoThrustLimitType = 'L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE',
+    thrustLimitType = 'L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE',
     autoThrustMode = 'L:A32NX_AUTOTHRUST_MODE',
     autoThrustStatus = 'L:A32NX_AUTOTHRUST_STATUS',
     autoThrustTLA1 = 'L:A32NX_AUTOTHRUST_TLA_N1:1',
@@ -134,7 +134,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         ['autoThrustCommand2', { name: EwdVars.autoThrustCommand2, type: SimVarValueType.Number }],
         ['autoThrustLimit', { name: EwdVars.autoThrustLimit, type: SimVarValueType.Number }],
         ['autoThrustLimitToga', { name: EwdVars.autoThrustLimitToga, type: SimVarValueType.Number }],
-        ['autoThrustLimitType', { name: EwdVars.autoThrustLimitType, type: SimVarValueType.Enum }],
+        ['thrustLimitType', { name: EwdVars.thrustLimitType, type: SimVarValueType.Enum }],
         ['autoThrustMode', { name: EwdVars.autoThrustMode, type: SimVarValueType.Enum }],
         ['autoThrustStatus', { name: EwdVars.autoThrustStatus, type: SimVarValueType.Enum }],
         ['autoThrustTLA1', { name: EwdVars.autoThrustTLA1, type: SimVarValueType.Number }],
