@@ -61,10 +61,10 @@ export class Clock extends DisplayComponent<ClockProps> {
 
         sub.on('dcHot1IsPowered').whenChanged().handle((dcHot1IsPowered) => this.dcHot1IsPowered.set(dcHot1IsPowered));
 
-        sub.on('currentUTC').atFrequency(5).handle((currentUTC) => this.currentUTC.set(currentUTC));
-        sub.on('dayOfMonth').atFrequency(1).handle((dayOfMonth) => this.currentDate.set({ ...this.currentDate.get(), dayOfMonth }));
-        sub.on('monthOfYear').atFrequency(1).handle((monthOfYear) => this.currentDate.set({ ...this.currentDate.get(), monthOfYear }));
-        sub.on('year').atFrequency(1).handle((year) => this.currentDate.set({ ...this.currentDate.get(), year }));
+        sub.on('currentUTC').withPrecision(0).handle((currentUTC) => this.currentUTC.set(currentUTC));
+        sub.on('dayOfMonth').whenChanged().handle((dayOfMonth) => this.currentDate.set({ ...this.currentDate.get(), dayOfMonth }));
+        sub.on('monthOfYear').whenChanged().handle((monthOfYear) => this.currentDate.set({ ...this.currentDate.get(), monthOfYear }));
+        sub.on('year').whenChanged().handle((year) => this.currentDate.set({ ...this.currentDate.get(), year }));
 
         const hEventsSub = this.props.bus.getSubscriber<HEvent>();
         hEventsSub.on('hEvent').handle((eventName) => {
