@@ -18,10 +18,10 @@
     "ShowTower": "Bokštelis",
     "Standby": "Atsarginis",
     "TT": {
-      "AtcCallSignSearch": "Oro erdvės kontrolės šaukinio paieška",
+      "AtcCallSignSearch": "Skrydžių valdymo centro šaukinio paieška",
       "AtcTypeFilter": "Filtras"
     },
-    "Title": "Oro Erdvės Kontrolė"
+    "Title": "Skrydžių valdymas"
   },
   "Checklists": {
     "AreYouSureYouWantToResetAllChecklists": "Ar tikrai norite atstatyti visus patikrinimo sąrašus?",
@@ -66,7 +66,7 @@
         "Raw": "Neapdorotas",
         "TT": {
           "SwitchToIconView": "Pereiti į ikonų vaizdą",
-          "SwitchToRawMetarView": "Pereiti į neapdorotų METAR peržiūrą"
+          "SwitchToRawMetarView": "Pereiti į neapdorotų METAR duomenų peržiūrą"
         },
         "Temperature": "Temperatūra",
         "Title": "Oras",
@@ -129,7 +129,7 @@
       "CenterTank": "Centrinis kuro bakas",
       "Completed": "Užbaigta",
       "Defueling": "Kuras išpylamas",
-      "EstimatedDuration": "Numatoma trukmė (minutės)",
+      "EstimatedDuration": "Numatoma trukmė (min)",
       "EstimatedTime": "Estimated Time",
       "LeftInnerTank": "Kairysis vidinis kuro bakas",
       "LeftOuterTank": "Kairysis išorinis kuro bakas",
@@ -155,7 +155,7 @@
       "DeboardConfirmationCancel": "Atšaukti",
       "DeboardConfirmationConfirm": "Išlaipinimas",
       "DeboardConfirmationTitle": "Išlaipinti visus keleivius?",
-      "EstimatedDurationUnit": "minutės",
+      "EstimatedDurationUnit": "min",
       "LoadingTime": "Loading Time",
       "Passengers": "Keleiviai",
       "Planned": "Suplanuotas",
@@ -233,7 +233,7 @@
       "Edit": "Redaguoti",
       "NoItemsFound": "Nerasta",
       "SearchPlaceholder": "Paieška",
-      "ShowingChartsFromAllProviders": "Rodomi dokumentai iš visų tiekėjų",
+      "ShowingChartsFromAllProviders": "Rodomi visi dokumentai",
       "SortMethods": {
         "AlphabeticalAZ": "Alfabetiškai - A -> Z",
         "AlphabeticalZA": "Alfabetiškai - Z -> A",
@@ -276,7 +276,7 @@
       "Clear": "Išvalyti",
       "DropDownNo": "Ne",
       "DropDownYes": "Taip",
-      "FillDataFrom": "Įvesti duomenis iš",
+      "FillDataFrom": "Naudoti duomenis iš",
       "FlapsConfiguration": "Posparnių konfiguracija",
       "Low": "Žemas",
       "MaximumManual": "Maksimalus rankinis",
@@ -286,23 +286,23 @@
       "OverweightProcedure": "Antsvorio procedūra",
       "Qnh": "QNH",
       "ReverseThrust": "Atbulinė trauka",
-      "RunwayAltitude": "Pakilimo tako aukštis",
+      "RunwayAltitude": "Tako aukštis",
       "RunwayAltitudeUnit": "pėdos virš jūros lygio",
-      "RunwayCondition": "Pakilimo tako kondicija",
+      "RunwayCondition": "Tako kondicija",
       "RunwayConditions": {
         "Dry": "Sausa (6)",
-        "Good": "Gera (5)",
+        "Good": "Labai gera (5)",
         "GoodMedium": "Gera (4)",
         "Medium": "Vidutiniška (3)",
         "MediumPoor": "Prasta (2)",
         "Poor": "Labai prasta (1)"
       },
-      "RunwayHeading": "Pakilimo tako kryptis",
+      "RunwayHeading": "Tako kryptis",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Galimas nusileidimo tako nuotolis",
       "RunwayLdaUnitFt": "pėdų",
       "RunwayLdaUnitMeter": "m",
-      "RunwaySlope": "Pakilimo tako nuolydis",
+      "RunwaySlope": "Tako nuolydis",
       "TT": {
         "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Turite įvesti ICAO kodą norint prašyti METAR",
         "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Jūs turite įkelti SimBrief duomenis norint automatiškai suvesti duomenis"
@@ -449,26 +449,26 @@
     "UseControllerInput": "Naudoti valdiklį"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Sulygiuoti ADIRS",
+    "FinishBoarding": "Užbaigti laipinimą",
+    "OnScreenKeyboard": "Ekrano klaviatūra",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Prisijungta",
+    "SimBridgeConnecting": "Prisijungiama...",
+    "SimBridgeOff": "Išjungta",
+    "SimBridgeOffline": "Nepasiekiama",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "Iškart sulygiuoti ADIRS",
+      "AutoBrightness": "Įjungti/Išjungti automatinį ryškumą",
+      "Brightness": "Nustatyti flyPad šviesumo lygį",
+      "FinishBoarding": "Iškart užbaigti laipinimą",
+      "OnScreenKeyboard": "Įjungti/Išjungti ekrano klaviatūrą",
+      "PowerButton": "Išjungti",
+      "Settings": "Eiti į flyPad nustatymų puslapį",
+      "SimBridge": "Kontroliuoti SimBridge ryšį",
+      "Sleep": "Atsarginis"
     },
-    "Title": "Quick Controls"
+    "Title": "Greiti valdikliai"
   },
   "Settings": {
     "About": {
@@ -482,7 +482,7 @@
       "LatLonExtendedFormat": "FMGC skrydžio taškų koordinačių formatas",
       "PaxSigns": "Keleivių ženklai",
       "RmpVhfSpacing": "RMP VHF Spacing",
-      "Satcom": "Satcom",
+      "Satcom": "Satcom palydovinė antena",
       "ThrustReductionHeight": "Traukos mažinimo aukštis (pėdos)",
       "Title": "Lėktuvo parinktys",
       "WeightUnit": "Svorio vienetai"
@@ -560,6 +560,7 @@
       "Off": "Išjungta",
       "Save": "Išsaugoti",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "Išorinis SimBridge serverio port",
       "SyncMsfsFlightPlan": "Sinchronizuoti MSFS Skrydžio Planą",
       "ThrottleDetents": "Droselio detentai",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "Naudoti apskaičiuotus ILS signalus",
       "WheelChocksEnabled": "Ratų atrama",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Taikyti",
@@ -635,7 +641,7 @@
       "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Prisijungta prie SimBridge",
       "DisconnectedFromLocalApi": "Atsijungta nuo SimBridge",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "Paspausti norint atidaryti greitus valdiklius",
       "TurnOffOrShutdownEfb": "Išjunkite EFB"
     },
     "Thu": "Ket",
@@ -643,10 +649,13 @@
     "Wed": "Tre"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
-    "Title": "New Version Available"
+    "CurrentVersionText": "Naudojamas $edition leidimas su versija:",
+    "LatestVersionText": "Naujausia $edition versija yra",
+    "RecommendationText": "Prašome atnaujinti lėktuvą į naują versiją naudojant FlyByWire programą.",
+    "StatusBarWarning": "Pasenusi lėktuvo versija",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
+    "Title": "Pasiekiama nauja versija"
   }
 }

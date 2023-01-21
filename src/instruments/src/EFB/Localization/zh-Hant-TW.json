@@ -560,6 +560,7 @@
       "Off": "關",
       "Save": "儲存",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "外部 MCDU 服務器端口",
       "SyncMsfsFlightPlan": "同步 MSFS 飛行計劃",
       "ThrottleDetents": "油門卡位",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "使用經系統計算的 ILS 信號",
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Apply",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
     "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "New Version Available"
   }
 }
