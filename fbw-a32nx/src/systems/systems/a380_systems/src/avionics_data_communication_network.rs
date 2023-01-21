@@ -1,4 +1,5 @@
 use crate::systems::{
+    accept_iterable,
     integrated_modular_avionics::{
         avionics_full_duplex_switch::AvionicsFullDuplexSwitch,
         core_processing_input_output_module::CoreProcessingInputOutputModule,
@@ -486,15 +487,9 @@ impl AvionicsDataCommunicationNetwork {
 
 impl SimulationElement for AvionicsDataCommunicationNetwork {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.afdx_switches
-            .iter_mut()
-            .for_each(|afdx| afdx.accept(visitor));
-        self.cpio_modules
-            .iter_mut()
-            .for_each(|cpiom| cpiom.accept(visitor));
-        self.io_modules
-            .iter_mut()
-            .for_each(|iom| iom.accept(visitor));
+        accept_iterable!(self.afdx_switches, visitor);
+        accept_iterable!(self.cpio_modules, visitor);
+        accept_iterable!(self.io_modules, visitor);
         visitor.visit(self);
     }
 
