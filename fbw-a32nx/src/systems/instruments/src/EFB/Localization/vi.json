@@ -560,7 +560,7 @@
       "Off": "Tắt",
       "Save": "Lưu",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Địa chỉ máy chủ SimBridge",
       "SimBridgePort": "Cổng SimBridge bên ngoài",
       "SyncMsfsFlightPlan": "Đồng bộ hóa Kế hoạch chuyến bay của MSFS",
       "ThrottleDetents": "Chốt cần ga",
@@ -572,7 +572,7 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "Title": "Tùy chọn bên thứ 3"
     },
     "ThrottleConfig": {
       "Apply": "Áp dụng",
@@ -654,7 +654,7 @@
     "RecommendationText": "Vui lòng cập nhật máy bay của bạn bằng cách sử dụng trình cài đặt FlyByWire.",
     "StatusBarWarning": "Phiên bản máy bay cũ",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Vui lòng cập nhật bằng trình cài đặt FlyByWire."
     },
     "Title": "Đã có cập nhật"
   }
