@@ -2,19 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Power, Wifi, WifiOff } from 'react-bootstrap-icons';
+import { Wifi, WifiOff } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { useLongPress } from 'use-long-press';
-import { useHistory } from 'react-router-dom';
 import { useInterval } from '@flybywiresim/react-components';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
-import { PowerStates, usePower } from '../Efb';
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simBrief';
 import { ClientState } from '../../../../simbridge-client/src';
+import { QuickControls } from './QuickControls';
 
 interface StatusBarProps {
     batteryLevel: number;
@@ -29,12 +27,10 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
 
-    const history = useHistory();
-
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
-    const power = usePower();
+    const [outdatedVersionFlag] = useSimVar('L:A32NX_OUTDATED_VERSION', 'boolean', 500);
 
     const dayName = [
         t('StatusBar.Sun'),
@@ -90,40 +86,16 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         const std = new Date(parseInt(schedOut) * 1000);
         schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
     }
-    const [shutoffBarPercent, setShutoffBarPercent] = useState(0);
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
     const [simBridgeConnected, setSimBridgeConnected] = useState(false);
 
     useInterval(() => {
-        setSimBridgeConnected(ClientState.getInstance().isAvailable());
+        setSimBridgeConnected(ClientState.getInstance().isConnected());
     }, 1_000);
 
-    const longPressPowerButton = useLongPress(() => {}, {
-        threshold: 100_000,
-        onCancel: () => {
-            if (shutoffTimerRef.current) {
-                clearInterval(shutoffTimerRef.current);
-            }
-            history.push('/');
-            power.setPowerState(PowerStates.STANDBY);
-        },
-        onStart: () => {
-            shutoffTimerRef.current = setInterval(() => {
-                setShutoffBarPercent((old) => old + 5);
-            }, 100);
-        },
-    });
-
     useEffect(() => {
-        if (shutoffBarPercent >= 120) {
-            history.push('/');
-            power.setPowerState(PowerStates.SHUTOFF);
-        }
-    }, [shutoffBarPercent]);
-
-    useEffect(() => {
-        setSimBridgeConnected(ClientState.getInstance().isAvailable());
+        setSimBridgeConnected(ClientState.getInstance().isConnected());
 
         const interval = setInterval(() => {
             setShowSchedTimes((old) => !old);
@@ -142,13 +114,17 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, []);
 
     return (
-        <div className="flex fixed z-40 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
-            <div
-                className="absolute inset-x-0 bottom-0 h-0.5 bg-theme-highlight"
-                style={{ width: `${shutoffBarPercent}%`, transition: 'width 0.5s ease' }}
-            />
-
+        <div className="flex fixed z-30 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
             <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
+
+            {outdatedVersionFlag ? (
+                <div className="flex overflow-hidden absolute left-48 justify-center items-center w-96 h-10 ">
+                    <TooltipWrapper text={t('VersionCheck.TT.StatusBarWarning')}>
+                        <span className="text-utility-red">{t('VersionCheck.StatusBarWarning').toUpperCase()}</span>
+                    </TooltipWrapper>
+                </div>
+            ) : ''}
+
             <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
                 {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (
                     <p>{getZuluFormattedTime(currentUTC)}</p>
@@ -160,10 +136,11 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     <p>{getLocalFormattedTime(currentLocalTime)}</p>
                 )}
             </div>
-            <div className="flex items-center space-x-8">
+
+            <div className="flex items-center space-x-4">
                 {(!!showStatusBarFlightProgress && (data !== initialState.data)) && (
                     <div
-                        className="flex overflow-hidden flex-row items-center space-x-4 h-10"
+                        className="flex overflow-hidden flex-row items-center pr-10 space-x-4 h-10"
                         onClick={() => setShowSchedTimes((old) => !old)}
                     >
                         <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} transform transition text-right duration-100 flex flex-col space-y-1`}>
@@ -181,6 +158,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     </div>
                 )}
 
+                <QuickControls />
+
                 <TooltipWrapper text={simBridgeConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
                     {simBridgeConnected ? (
                         <Wifi size={26} />
@@ -190,10 +169,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                 </TooltipWrapper>
 
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
-
-                <TooltipWrapper text={t('StatusBar.TT.TurnOffOrShutdownEfb')}>
-                    <Power size={26} {...longPressPowerButton} />
-                </TooltipWrapper>
             </div>
         </div>
     );

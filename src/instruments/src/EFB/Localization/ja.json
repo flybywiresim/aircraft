@@ -466,7 +466,7 @@
       "PowerButton": "電源を切る",
       "Settings": "flyPadの設定ページに移動",
       "SimBridge": "SimBridge接続の制御",
-      "Sleep": "スタンバイ"
+      "Sleep": "スリープ"
     },
     "Title": "クイックコントロール"
   },
@@ -560,6 +560,7 @@
       "Off": "オフ",
       "Save": "保存",
       "Side": "Side",
+      "SimBridgeIp": "外部SimBridgeホストアドレス",
       "SimBridgePort": "外部SimBridgeサーバーポート",
       "SyncMsfsFlightPlan": "MSFSのフライトプランと同期",
       "ThrottleDetents": "スロットルディテント",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "計算されたILS信号を使用",
       "WheelChocksEnabled": "輪止め",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX給油同期",
+      "GsxPayloadEnabled": "GSX積載物同期",
+      "Title": "サードパーティーオプション"
     },
     "ThrottleConfig": {
       "Apply": "適用",
@@ -647,6 +653,9 @@
     "LatestVersionText": "最新の $edition バージョン",
     "RecommendationText": "FlyByWire Installerで機体を更新してください。",
     "StatusBarWarning": "古い機体バージョン",
+    "TT": {
+      "StatusBarWarning": "FlyByWire Installerで機体を更新してください。"
+    },
     "Title": "新しいバージョンが利用可能"
   }
 }
