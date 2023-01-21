@@ -846,7 +846,7 @@ class EngineControl {
         fuelCenterPre = centerQuantity;      // LBS
       }
       //--------------------------------------------
-      //  Left Engine and Wing routine
+      // Left Engine and Wing routine
       //--------------------------------------------
       if (fuelLeftPre > 0) {
         // Cycle Fuel Burn for Engine 1
