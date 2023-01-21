@@ -647,4 +647,39 @@ mod tests {
         });
     }
 
+    #[test]
+    fn network_a_up_and_running() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        test_bed.command(|a| a.set_elec_powered(true));
+        test_bed.run();
+
+        let connection_combinatorics = [
+            vec![1, 2, 3, 4, 5, 6, 7, 9],
+            vec![2, 3, 4, 5, 6, 7, 9],
+            vec![3, 4, 5, 6, 7, 9],
+            vec![4, 5, 6, 7, 9],
+            vec![5, 6, 7, 9],
+            vec![6, 7, 9],
+            vec![7, 9],
+            vec![9],
+        ];
+
+        connection_combinatorics.iter().for_each(|row| {
+            let fixed_id = row[0];
+
+            row.iter().for_each(|switch| {
+                let reachable_first: f64 = test_bed.read_by_name(Box::leak(
+                    format!("AFDX_{}_{}_REACHABLE", fixed_id, switch).into_boxed_str(),
+                ));
+                let reachable_second: f64 = test_bed.read_by_name(Box::leak(
+                    format!("AFDX_{}_{}_REACHABLE", switch, fixed_id).into_boxed_str(),
+                ));
+
+                println!("AFDX switch combination: {} {}", fixed_id, switch);
+                assert_about_eq!(reachable_first, 1.0);
+                assert_about_eq!(reachable_second, 1.0);
+            });
+        });
+    }
 }
