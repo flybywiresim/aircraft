@@ -560,6 +560,7 @@
       "Off": "Av",
       "Save": "Spara",
       "Side": "Side",
+      "SimBridgeIp": "Extern SimBridge host-adress",
       "SimBridgePort": "Extern SimBridge-port",
       "SyncMsfsFlightPlan": "Synkronisera MSFS-färdplan",
       "ThrottleDetents": "Kalibrering av tryckspaken",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "Använd beräknade ILS-signaler",
       "WheelChocksEnabled": "Hjulklossar",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Spara",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Senaste $edition versionen är",
     "RecommendationText": "Vänligen uppdatera ditt flygplan via FlyByWire Installatören.",
     "StatusBarWarning": "Inaktuell Flygplansversion",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "Ny version tillgänglig"
   }
 }

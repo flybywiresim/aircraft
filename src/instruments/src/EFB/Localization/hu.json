@@ -560,6 +560,7 @@
       "Off": "Ki",
       "Save": "Mentés",
       "Side": "Side",
+      "SimBridgeIp": "Külső SimBridge Host címe",
       "SimBridgePort": "Külső SimBridge port",
       "SyncMsfsFlightPlan": "MSFS Repülési terv szinkronizálása",
       "ThrottleDetents": "Gázkar állások",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "Használjon Kiszámított ILS Jeleket",
       "WheelChocksEnabled": "Kerékékek",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX üzemanyag-szinkronizálás",
+      "GsxPayloadEnabled": "GSX hasznos teher szinkronizálás",
+      "Title": "Harmadik fél opciói"
     },
     "ThrottleConfig": {
       "Apply": "Alkalmaz",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Legutolsó $edition kiadás:",
     "RecommendationText": "Frissítse a repülőgépet a FlyByWire telepítő segítségével",
     "StatusBarWarning": "Elavult repülőgép verzió",
+    "TT": {
+      "StatusBarWarning": "Kérjük, frissítse repülőgépét a FlybyWire Installer segítségével."
+    },
     "Title": "Új verzió elérhető"
   }
 }

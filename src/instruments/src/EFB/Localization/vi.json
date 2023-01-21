@@ -152,7 +152,7 @@
       "Cargo": "Hàng hóa",
       "Current": "Hiện tại",
       "DeboardConfirmationBody": "Vui lòng xác nhận cho mọi hành khách xuống tàu",
-      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationCancel": "Huỷ",
       "DeboardConfirmationConfirm": "Cho hành khách xuống máy bay",
       "DeboardConfirmationTitle": "Cho mọi hành khách xuống tàu?",
       "EstimatedDurationUnit": "phút",
@@ -169,7 +169,7 @@
         "PerPaxBagWeight": "Trọng lượng mỗi túi hành khách",
         "PerPaxWeight": "Trọng lượng mỗi hành khách",
         "StartBoarding": "Bắt đầu lên máy bay",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "Bắt đầu cho hkhách xuống tàu bay"
       },
       "Title": "Tải trọng",
       "ZFW": "Trọng lượng máy bay không kể nhiên liệu",
@@ -449,24 +449,24 @@
     "UseControllerInput": "Sử dụng đầu vào từ bộ điều khiển"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Căn chỉnh ADIRS",
+    "FinishBoarding": "Hoàn thành việc cho lên máy bay",
+    "OnScreenKeyboard": "Bàn phím trên màn hình",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Đã kết nối",
     "SimBridgeConnecting": "Đang kết nối...",
-    "SimBridgeOff": "Off",
+    "SimBridgeOff": "Tắt",
     "SimBridgeOffline": "Không khả dụng",
     "TT": {
       "AlignAdirs": "Căn chỉnh ADIRS ngay lập tức",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
+      "AutoBrightness": "Bật/Tắt độ sáng tự động",
+      "Brightness": "Cài đặt độ sáng của flyPad",
+      "FinishBoarding": "Hoàn thành việc cho lên máy bay ngay lập tức",
+      "OnScreenKeyboard": "Bật/Tắt Bàn phím trên Màn hình",
       "PowerButton": "Tắt",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "Settings": "Đi tới cài đặt flyPad",
+      "SimBridge": "Kiểm soát kết nối SimBridge",
+      "Sleep": "Chế độ chờ"
     },
     "Title": "Bảng điều khiển nhanh"
   },
@@ -545,7 +545,7 @@
       "Both": "Đã đồng bộ hóa",
       "Calibrate": "Hiệu chỉnh",
       "Captain": "Cơ trưởng",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "CockpitSeatUsedToControl": "Ghế buồng lái được sử dụng để điều khiển",
       "ConesEnabled": "Chóp nón An toàn",
       "Copilot": "Cơ phó",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
@@ -560,6 +560,7 @@
       "Off": "Tắt",
       "Save": "Lưu",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "Cổng SimBridge bên ngoài",
       "SyncMsfsFlightPlan": "Đồng bộ hóa Kế hoạch chuyến bay của MSFS",
       "ThrottleDetents": "Chốt cần ga",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "Sử dụng tín hiệu ILS được tính",
       "WheelChocksEnabled": "Ốp chặn bánh xe",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Áp dụng",
@@ -643,10 +649,13 @@
     "Wed": "Th 4"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
-    "Title": "New Version Available"
+    "CurrentVersionText": "Bạn đang sử dụng bản $edition với phiên bản:",
+    "LatestVersionText": "Phiên bản $edition mới nhất là",
+    "RecommendationText": "Vui lòng cập nhật máy bay của bạn bằng cách sử dụng trình cài đặt FlyByWire.",
+    "StatusBarWarning": "Phiên bản máy bay cũ",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
+    "Title": "Đã có cập nhật"
   }
 }

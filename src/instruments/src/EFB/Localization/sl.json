@@ -560,6 +560,7 @@
       "Off": "Izklopljeno",
       "Save": "Shrani",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "Zunanji SimBridge Port",
       "SyncMsfsFlightPlan": "Sinhroniziraj z MSFS načrtom leta",
       "ThrottleDetents": "Odkloni plinske ročke",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "Uporaba izračunanih signalov ILS",
       "WheelChocksEnabled": "Kolesne zagozde",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "Potrdi",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
     "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "New Version Available"
   }
 }

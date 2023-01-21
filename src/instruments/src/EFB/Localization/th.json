@@ -560,6 +560,7 @@
       "Off": "ปิด",
       "Save": "บันทึก",
       "Side": "Side",
+      "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "พอร์ต SimBridge ภายนอก",
       "SyncMsfsFlightPlan": "ซิงค์แผนการบิน MSFS",
       "ThrottleDetents": "Throttle Detents",
@@ -567,6 +568,11 @@
       "UseCalculatedIlsSignals": "ใช้สัญญาณ ILS ที่คำนวณได้",
       "WheelChocksEnabled": "ลูกกลิ้งล้อ",
       "inHg": "inHg"
+    },
+    "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
       "Apply": "ใช้",
@@ -647,6 +653,9 @@
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
     "StatusBarWarning": "Outdated Aircraft Version",
+    "TT": {
+      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+    },
     "Title": "New Version Available"
   }
 }
