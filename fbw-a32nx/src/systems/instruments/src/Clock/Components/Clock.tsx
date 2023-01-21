@@ -1,12 +1,18 @@
 import { ComponentProps, DisplayComponent, FSComponent, EventBus, VNode, Subject, HEvent } from 'msfssdk';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';
 
+enum DisplayTime {
+    Hours,
+    Minutes,
+    Seconds
+}
+
 const secondsToDisplay = (seconds: number): number[] => {
     const displayTime = [0, 0, 0];
 
-    displayTime[0] = Math.floor(seconds / 3600);
-    displayTime[1] = Math.floor((seconds % 3600) / 60);
-    displayTime[2] = Math.floor(seconds % 60);
+    displayTime[DisplayTime.Hours] = Math.floor(seconds / Clock.SECONDS_PER_HOUR);
+    displayTime[DisplayTime.Minutes] = Math.floor((seconds % Clock.SECONDS_PER_HOUR) / Clock.SECONDS_PER_MINUTE);
+    displayTime[DisplayTime.Seconds] = Math.floor(seconds % Clock.SECONDS_PER_MINUTE);
 
     return displayTime;
 };
@@ -16,6 +22,10 @@ interface ClockProps extends ComponentProps {
 }
 
 export class Clock extends DisplayComponent<ClockProps> {
+    static readonly SECONDS_PER_MINUTE = 60;
+
+    static readonly SECONDS_PER_HOUR = this.SECONDS_PER_MINUTE * 60;
+
     private readonly clockTextBig = Subject.create('');
 
     private readonly clockTextSmall = Subject.create('');
@@ -45,8 +55,8 @@ export class Clock extends DisplayComponent<ClockProps> {
 
         if (!this.dateMode.get()) {
             const displayTime = secondsToDisplay(this.currentUTC.get());
-            this.clockTextBig.set(`${displayTime[0].toString().padStart(2, '0')}:${displayTime[1].toString().padStart(2, '0')}`);
-            this.clockTextSmall.set(displayTime[2].toString().padStart(2, '0'));
+            this.clockTextBig.set(`${displayTime[DisplayTime.Hours].toString().padStart(2, '0')}:${displayTime[DisplayTime.Minutes].toString().padStart(2, '0')}`);
+            this.clockTextSmall.set(displayTime[DisplayTime.Seconds].toString().padStart(2, '0'));
         } else {
             this.clockTextBig.set(`${this.currentDate.get().monthOfYear.toString().padStart(2, '0')}:${this.currentDate.get().dayOfMonth.toString().padStart(2, '0')}`);
             this.clockTextSmall.set(this.currentDate.get().year.toString().substring(2, 4));
