@@ -10,14 +10,14 @@ export interface NavigraphBoundingBox {
     height: number,
 }
 
-export interface ChartType {
-    code: string,
-    category: string,
-    details: string,
-    precision: string,
-    section: string,
-}
-
+/**
+ * Changes as of new API Version 2:
+ * extId removed
+ * fileName removed
+ * type reduced to category
+ * procedureIdentifier renamed to name
+ * runway renamed to runways
+ */
 export interface NavigraphChart {
     fileDay: string,
     fileNight: string,
@@ -25,12 +25,10 @@ export interface NavigraphChart {
     thumbNight: string,
     icaoAirportIdentifier: string,
     id: string,
-    extId: string,
-    fileName: string,
-    type: ChartType,
+    category: string,
     indexNumber: string,
-    procedureIdentifier: string,
-    runway: string[],
+    name: string,
+    runways: string[],
     boundingBox?: NavigraphBoundingBox,
 }
 
@@ -243,61 +241,47 @@ export default class NavigraphClient {
 
     public async getChartList(icao: string): Promise<NavigraphAirportCharts> {
         if (this.hasToken) {
-            const chartJsonUrl = await this.chartCall(icao, 'charts.json');
+            const newChartJsonResp = await fetch(`https://api.navigraph.com/v2/charts/${icao}?version=CAO`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
 
-            const chartJsonResp = await fetch(chartJsonUrl);
+            if (newChartJsonResp.ok) {
+                const newChartJson = await newChartJsonResp.json();
+                console.log(newChartJson);
 
-            if (chartJsonResp.ok) {
-                const chartJson = await chartJsonResp.json();
-
-                const chartArray: NavigraphChart[] = chartJson.charts.map((chart) => ({
-                    fileDay: chart.file_day,
-                    fileNight: chart.file_night,
+                const chartArray: NavigraphChart[] = newChartJson.charts.map((chart) => ({
+                    fileDay: chart.image_day,
+                    fileNight: chart.image_night,
                     thumbDay: chart.thumb_day,
                     thumbNight: chart.thumb_night,
                     icaoAirportIdentifier: chart.icao_airport_identifier,
                     id: chart.id,
-                    extId: chart.ext_id,
-                    fileName: chart.file_name,
-                    type: {
-                        code: chart.type.code,
-                        category: chart.type.category,
-                        details: chart.type.details,
-                        precision: chart.type.precision,
-                        section: chart.type.section,
-                    },
+                    category: chart.category,
                     indexNumber: chart.index_number,
-                    procedureIdentifier: chart.procedure_identifier,
-                    runway: chart.runway,
+                    name: chart.name,
+                    runways: chart.runways,
                     boundingBox: chart.planview ? {
                         bottomLeft: {
-                            lat: chart.planview.bbox_geo[1],
-                            lon: chart.planview.bbox_geo[0],
-                            xPx: chart.planview.bbox_local[0],
-                            yPx: chart.planview.bbox_local[1],
+                            lat: chart.planview.latlng.lat1,
+                            lon: chart.planview.latlng.lng1,
+                            xPx: chart.planview.pixels.x1,
+                            yPx: chart.planview.pixels.y1,
                         },
                         topRight: {
-                            lat: chart.planview.bbox_geo[3],
-                            lon: chart.planview.bbox_geo[2],
-                            xPx: chart.planview.bbox_local[2],
-                            yPx: chart.planview.bbox_local[3],
+                            lat: chart.planview.latlng.lat2,
+                            lon: chart.planview.latlng.lng2,
+                            xPx: chart.planview.pixels.x2,
+                            yPx: chart.planview.pixels.y2,
                         },
-                        width: chart.bbox_local[2],
-                        height: chart.bbox_local[1],
+                        width: chart.width,
+                        height: chart.height,
                     } : undefined,
                 }));
 
                 return {
-                    arrival: chartArray.filter((chart) => chart.type.category === 'ARRIVAL'),
-                    approach: chartArray.filter((chart) => chart.type.category === 'APPROACH'),
-                    airport: chartArray.filter((chart) => chart.type.category === 'AIRPORT'),
-                    departure: chartArray.filter((chart) => chart.type.category === 'DEPARTURE'),
-                    reference: chartArray.filter((chart) => (
-                        (chart.type.category !== 'ARRIVAL')
-                        && (chart.type.category !== 'APPROACH')
-                        && (chart.type.category !== 'AIRPORT')
-                        && (chart.type.category !== 'DEPARTURE')
-                    )),
+                    arrival: chartArray.filter((chart) => chart.category === 'ARR'),
+                    approach: chartArray.filter((chart) => chart.category === 'APP'),
+                    airport: chartArray.filter((chart) => chart.category === 'APT'),
+                    departure: chartArray.filter((chart) => chart.category === 'DEP'),
+                    reference: chartArray.filter((chart) => chart.category === 'REF'),
                 };
             }
         }
