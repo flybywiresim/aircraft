@@ -419,11 +419,16 @@ impl AvionicsDataCommunicationNetwork {
         }
     }
 
-    fn switches_reachable(network: &HashMap<usize, Vec<usize>>, from: usize, to: usize) -> bool {
+    fn switches_reachable(
+        network: &HashMap<usize, Vec<usize>>,
+        from: usize,
+        to: usize,
+        offset: usize,
+    ) -> bool {
         let mut frontier: VecDeque<usize> = VecDeque::new();
         let mut visited: Vec<usize> = Vec::new();
 
-        visited.resize(network.len(), 0xffff);
+        visited.resize(network.len() * 2, 0xffff);
         frontier.push_front(from);
         visited[from] = from;
 
@@ -434,6 +439,7 @@ impl AvionicsDataCommunicationNetwork {
                 return true;
             }
 
+            // TODO check if the switch is available
             let neighbors = &network[&node.unwrap()];
             for neighbor in neighbors {
                 if visited[*neighbor] == 0xffff {
@@ -450,9 +456,10 @@ impl AvionicsDataCommunicationNetwork {
         for (y, row) in self.routing_tables[network].iter_mut().enumerate() {
             for (x, entry) in row.iter_mut().enumerate() {
                 entry.set_reachable(AvionicsDataCommunicationNetwork::switches_reachable(
-                    &self.afdx_networks[0],
+                    &self.afdx_networks[network],
                     y + offset,
                     x + offset,
+                    offset,
                 ));
             }
         }
