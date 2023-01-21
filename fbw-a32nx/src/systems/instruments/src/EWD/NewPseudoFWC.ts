@@ -1,15 +1,14 @@
 import { Subject, Subscribable, MappedSubject, ArraySubject } from 'msfssdk';
 
 import { Arinc429Word } from '@shared/arinc429';
-import { NXLogicConfirmNode, NXLogicClockNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
-import { isThisExpression } from '@babel/types';
+import { NXLogicConfirmNode } from '@instruments/common/NXLogic';
 
 interface EWDItem {
     flightPhaseInhib: number[],
     simVarIsActive: Subscribable<boolean>,
     whichCodeToReturn: () => any[],
     codesToReturn: string[],
-    memoInhibit: boolean,
+    memoInhibit: () => boolean,
     failure: number,
     sysPage: number,
     side: string
@@ -43,6 +42,12 @@ export class NewPseudoFWC {
     private readonly computedAirSpeed = Subject.create(Arinc429Word.empty());
 
     private readonly computedAirSpeedToNearest2 = this.computedAirSpeed.map((it) => Math.round(it.value / 2) * 2);
+
+    /** ENGINE AND THROTTLE */
+
+    private readonly engine1State = Subject.create(0);
+
+    private readonly engine2State = Subject.create(0);
 
     private readonly N1Eng1 = Subject.create(0);
 
@@ -80,13 +85,29 @@ export class NewPseudoFWC {
 
     private readonly usrStartRefueling = Subject.create(0);
 
-    private spoilersArmed = false;
+    /* FCTL */
 
-    private speedBrakeCommand = false;
+    private spoilersArmed = Subject.create(false);
+
+    private speedBrakeCommand = Subject.create(false);
 
     private showTakeoffInhibit = Subject.create(false);
 
     private showLandingInhibit = Subject.create(false);
+
+    /* ADIRS */
+
+    private readonly adirsRemainingAlignTime = Subject.create(0);
+
+    private readonly adiru1State = Subject.create(0);
+
+    private readonly adiru2State = Subject.create(0);
+
+    private readonly adiru3State = Subject.create(0);
+
+    /* OTHER STUFF */
+
+    private readonly seatBelt = Subject.create(0);
 
     constructor() {
         this.memoMessageLeft.sub((i, t, v) => {
@@ -132,6 +153,70 @@ export class NewPseudoFWC {
         return array;
     }
 
+    private adirsMessage1(adirs, engineRunning) {
+        let rowChoice = 0;
+
+        switch (true) {
+        case (Math.ceil(adirs / 60) >= 7 && !engineRunning):
+            rowChoice = 0;
+            break;
+        case (Math.ceil(adirs / 60) >= 7 && engineRunning):
+            rowChoice = 1;
+            break;
+        case (Math.ceil(adirs / 60) === 6 && !engineRunning):
+            rowChoice = 2;
+            break;
+        case (Math.ceil(adirs / 60) === 6 && engineRunning):
+            rowChoice = 3;
+            break;
+        case (Math.ceil(adirs / 60) === 5 && !engineRunning):
+            rowChoice = 4;
+            break;
+        case (Math.ceil(adirs / 60) === 5 && engineRunning):
+            rowChoice = 5;
+            break;
+        case (Math.ceil(adirs / 60) === 4 && !engineRunning):
+            rowChoice = 6;
+            break;
+        case (Math.ceil(adirs / 60) === 4 && engineRunning):
+            rowChoice = 7;
+            break;
+        default:
+            break;
+        }
+
+        return rowChoice;
+    }
+
+    private adirsMessage2(adirs, engineRunning) {
+        let rowChoice = 0;
+
+        switch (true) {
+        case (Math.ceil(adirs / 60) === 3 && !engineRunning):
+            rowChoice = 0;
+            break;
+        case (Math.ceil(adirs / 60) === 3 && engineRunning):
+            rowChoice = 1;
+            break;
+        case (Math.ceil(adirs / 60) === 2 && !engineRunning):
+            rowChoice = 2;
+            break;
+        case (Math.ceil(adirs / 60) === 2 && engineRunning):
+            rowChoice = 3;
+            break;
+        case (Math.ceil(adirs / 60) === 1 && !engineRunning):
+            rowChoice = 4;
+            break;
+        case (Math.ceil(adirs / 60) === 1 && engineRunning):
+            rowChoice = 5;
+            break;
+        default:
+            break;
+        }
+
+        return rowChoice;
+    }
+
     onUpdate(deltaTime) {
         // Inputs update
 
@@ -168,6 +253,10 @@ export class NewPseudoFWC {
 
         this.computedAirSpeed.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
 
+        /* ENGINE AND THROTTLE */
+
+        this.engine1State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:1', 'Enum'));
+        this.engine1State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum'));
         this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
         this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
         this.N1IdleEng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1:1', 'number'));
@@ -192,6 +281,18 @@ export class NewPseudoFWC {
         this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
         this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
 
+        /* ADIRS */
+
+        this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
+
+        this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
+        this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
+        this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
+
+        /* OTHER STUFF */
+
+        this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
+
         /* F/CTL */
         const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
         const fcdc2DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_1');
@@ -202,8 +303,8 @@ export class NewPseudoFWC {
         const fcdc1DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_4');
         const fcdc2DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_4');
 
-        this.spoilersArmed = fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false);
-        this.speedBrakeCommand = fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false);
+        this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
+        this.speedBrakeCommand.set(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false));
 
         // Output logic
 
@@ -385,7 +486,7 @@ export class NewPseudoFWC {
                 .create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 5 && computedAirSpeedToNearest2 > 181, this.flapsIndex, this.computedAirSpeedToNearest2),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340021001', '340021002'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
@@ -396,41 +497,41 @@ export class NewPseudoFWC {
                 .create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 4 && computedAirSpeedToNearest2 > 189, this.flapsIndex, this.computedAirSpeedToNearest2),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340022001', '340022002'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
         },
-        /*         3400230: { // OVERSPEED FLAPS 2
+        3400230: { // OVERSPEED FLAPS 2
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-            simVarIsActive: MappedSubject.create(this.flapsIndex, this.computedAirSpeedToNearest2).map(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 3 && computedAirSpeedToNearest2 > 203),
+            simVarIsActive: MappedSubject.create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 3 && computedAirSpeedToNearest2 > 203, this.flapsIndex, this.computedAirSpeedToNearest2),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340023001', '340023002'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
         },
         3400235: { // OVERSPEED FLAPS 1+F
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-            simVarIsActive: MappedSubject.create(this.flapsIndex, this.computedAirSpeedToNearest2).map(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 2 && computedAirSpeedToNearest2 > 219),
+            simVarIsActive: MappedSubject.create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 2 && computedAirSpeedToNearest2 > 219, this.flapsIndex, this.computedAirSpeedToNearest2),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340023501', '340023502'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
         },
         3400240: { // OVERSPEED FLAPS 1
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-            simVarIsActive: MappedSubject.create(this.flapsIndex, this.computedAirSpeedToNearest2).map(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 1 && computedAirSpeedToNearest2 > 233),
+            simVarIsActive: MappedSubject.create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 1 && computedAirSpeedToNearest2 > 233, this.flapsIndex, this.computedAirSpeedToNearest2),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340024001', '340024002'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 3,
             sysPage: -1,
             side: 'LEFT',
-        }, */
+        },
         7700027: { // DUAL ENGINE FAILURE
             flightPhaseInhib: [],
             simVarIsActive: this.engDualFault,
@@ -444,7 +545,7 @@ export class NewPseudoFWC {
                 9, 10, 11,
             ],
             codesToReturn: ['770002701', '770002702', '770002703', '770002704', '770002705', '770002706', '770002707', '770002708', '770002709', '770002710', '770002711', '770002712'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 3,
             sysPage: 0,
             side: 'LEFT',
@@ -460,13 +561,13 @@ export class NewPseudoFWC {
                 SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool') === 1
                 && SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1 ? 3 : 2,
                 SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
-                this.spoilersArmed ? 7 : 6,
+                this.spoilersArmed.get() ? 7 : 6,
                 SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') >= 1
                 && SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') <= 3 ? 9 : 8,
                 SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool') ? 11 : 10,
             ],
             codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -479,14 +580,14 @@ export class NewPseudoFWC {
                 SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum') !== 2
                 && SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1 ? 3 : 2,
                 SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
-                this.spoilersArmed ? 7 : 6,
+                this.spoilersArmed.get() ? 7 : 6,
                 !SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') && SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') !== 4 ? 8 : null,
                 !SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') && SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4 ? 9 : null,
                 SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') === 1 && SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') !== 3 ? 10 : null,
                 SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'bool') === 1 && SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3 ? 11 : null,
             ],
             codesToReturn: ['000002001', '000002002', '000002003', '000002004', '000002005', '000002006', '000002007', '000002008', '000002009', '000002010', '000002011', '000002012'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -498,58 +599,72 @@ export class NewPseudoFWC {
 
             whichCodeToReturn: () => [0],
             codesToReturn: ['000005001'],
-            memoInhibit: !!(this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
         },
-        /*
         '0000030': { // IR IN ALIGN
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-            simVarIsActive: !!(adirsRemainingAlignTime >= 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1)),
-            whichCodeToReturn: [
-                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 && engine1State < 4) || (engine2State > 0 && engine2State < 4)),
+            simVarIsActive: MappedSubject.create(([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+                const remainingTimeAbove240 = adirsRemainingAlignTime >= 240;
+                const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
+
+                return remainingTimeAbove240 && allInState1;
+            }, this.adirsRemainingAlignTime, this.adiru1State, this.adiru2State, this.adiru3State),
+            whichCodeToReturn: () => [
+                this.adirsMessage1(
+                    this.adirsRemainingAlignTime.get(),
+                    (this.engine1State.get() > 0 && this.engine1State.get() < 4) || (this.engine2State.get() > 0 && this.engine2State.get() < 4),
+                ),
             ],
             codesToReturn: ['000003001', '000003002', '000003003', '000003004', '000003005', '000003006', '000003007', '000003008'],
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
         },
         '0000031': { // IR IN ALIGN
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-            simVarIsActive: !!(adirsRemainingAlignTime > 0 && adirsRemainingAlignTime < 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1)),
-            whichCodeToReturn: [
-                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 && engine1State < 4) || (engine2State > 0 && engine2State < 4)),
+            simVarIsActive: MappedSubject.create(([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
+                const remainingTimeAbove0 = adirsRemainingAlignTime > 0;
+                const remainingTimeBelow240 = adirsRemainingAlignTime < 240;
+                const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
+
+                return remainingTimeAbove0 && remainingTimeBelow240 && allInState1;
+            }, this.adirsRemainingAlignTime, this.adiru1State, this.adiru2State, this.adiru3State),
+            whichCodeToReturn: () => [
+                this.adirsMessage2(
+                    this.adirsRemainingAlignTime.get(),
+                    (this.engine1State.get() > 0 && this.engine1State.get() < 4) || (this.engine2State.get() > 0 && this.engine2State.get() < 4),
+                ),
             ],
             codesToReturn: ['000003101', '000003102', '000003103', '000003104', '000003105', '000003106', '000003107', '000003108'],
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000055': // SPOILERS ARMED
-        {
+        '0000055': { // SPOILERS ARMED
             flightPhaseInhib: [],
-            simVarIsActive: !!spoilersArmed,
-            whichCodeToReturn: [0],
+            simVarIsActive: this.spoilersArmed,
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000005501'],
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000080': // SEAT BELTS
-        {
+        '0000080': { // SEAT BELTS
             flightPhaseInhib: [],
-            simVarIsActive: !!seatBelt,
-            whichCodeToReturn: [0],
+            simVarIsActive: this.seatBelt.map((v) => !!v),
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000008001'],
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
-        },
+        }, /*
         '0000090': // NO SMOKING
         {
             flightPhaseInhib: [],
@@ -611,7 +726,7 @@ export class NewPseudoFWC {
             simVarIsActive: this.showTakeoffInhibit,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000014001'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
@@ -622,7 +737,7 @@ export class NewPseudoFWC {
             simVarIsActive: this.showLandingInhibit,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000015001'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
@@ -633,7 +748,7 @@ export class NewPseudoFWC {
             simVarIsActive: !!landASAPRed,
             whichCodeToReturn: [0],
             codesToReturn: ['000035001'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
@@ -647,7 +762,7 @@ export class NewPseudoFWC {
             )),
             whichCodeToReturn: [0],
             codesToReturn: ['000036001'],
-            memoInhibit: false,
+            memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
@@ -658,7 +773,7 @@ export class NewPseudoFWC {
         simVarIsActive: speedBrakeCommand && ![1, 8, 9, 10].includes(flightPhase),
         whichCodeToReturn: [![6, 7].includes(flightPhase) ? 1 : 0],
         codesToReturn: ['000006001', '000006002'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -669,7 +784,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!([1, 2, 9, 10].includes(flightPhase) && parkBrake === 1),
         whichCodeToReturn: [0],
         codesToReturn: ['000020001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -680,7 +795,7 @@ export class NewPseudoFWC {
         simVarIsActive: nwSteeringDisc === 1,
         whichCodeToReturn: [engine1State > 0 || engine2State > 1 ? 1 : 0],
         codesToReturn: ['000004001', '000004002'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -691,7 +806,7 @@ export class NewPseudoFWC {
         simVarIsActive: hydPTU === 1,
         whichCodeToReturn: [0],
         codesToReturn: ['000016001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -702,7 +817,7 @@ export class NewPseudoFWC {
         simVarIsActive: ratDeployed > 0,
         whichCodeToReturn: [[1, 2].includes(flightPhase) ? 1 : 0],
         codesToReturn: ['000021001', '000021002'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -713,7 +828,7 @@ export class NewPseudoFWC {
         simVarIsActive: engSelectorPosition === 2,
         whichCodeToReturn: [0],
         codesToReturn: ['000007001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -724,7 +839,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(predWSOn === 0 && ![1, 10].includes(flightPhase)),
         whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
         codesToReturn: ['000054001', '000054002'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -735,7 +850,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(gpwsTerrOff === 1 && ![1, 10].includes(flightPhase)),
         whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
         codesToReturn: ['000054501', '000054502'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -746,7 +861,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(tcasSensitivity === 1 && flightPhase !== 6),
         whichCodeToReturn: [0],
         codesToReturn: ['000032001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -757,7 +872,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(tcasSensitivity === 1 && flightPhase === 6),
         whichCodeToReturn: [0],
         codesToReturn: ['000032501'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -768,7 +883,7 @@ export class NewPseudoFWC {
         simVarIsActive: [1, 2, 6, 9, 10].includes(flightPhase) && compMesgCount > 0,
         whichCodeToReturn: [0],
         codesToReturn: ['000055201'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -779,7 +894,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(eng1AntiIce === 1 || eng2AntiIce === 1),
         whichCodeToReturn: [0],
         codesToReturn: ['000026001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -790,7 +905,7 @@ export class NewPseudoFWC {
         simVarIsActive: wingAntiIce === 1,
         whichCodeToReturn: [0],
         codesToReturn: ['000027001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -801,7 +916,7 @@ export class NewPseudoFWC {
         simVarIsActive: iceNotDetTimer2.read() && !aircraftOnGround,
         whichCodeToReturn: [0],
         codesToReturn: ['000027501'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -812,7 +927,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(apuAvail === 1 && !apuBleedValveOpen),
         whichCodeToReturn: [0],
         codesToReturn: ['000017001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -823,7 +938,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(apuAvail === 1 && apuBleedValveOpen === 1),
         whichCodeToReturn: [0],
         codesToReturn: ['000018001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -834,7 +949,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(!landingLight2Retracted || !landingLight3Retracted),
         whichCodeToReturn: [0],
         codesToReturn: ['000019001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -845,7 +960,7 @@ export class NewPseudoFWC {
         simVarIsActive: brakeFan === 1,
         whichCodeToReturn: [0],
         codesToReturn: ['000022001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -856,7 +971,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(ndXfrKnob !== 1 || dmcSwitchingKnob !== 1),
         whichCodeToReturn: [0],
         codesToReturn: ['000029001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -867,7 +982,7 @@ export class NewPseudoFWC {
         simVarIsActive: gpwsFlaps3 === 1,
         whichCodeToReturn: [0],
         codesToReturn: ['000030001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -878,7 +993,7 @@ export class NewPseudoFWC {
         simVarIsActive: [7, 8].includes(flightPhase),
         whichCodeToReturn: [parseInt(autoBrakesArmedMode) - 1],
         codesToReturn: ['000002201', '000002202', '000002203', '000002204'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -889,7 +1004,7 @@ export class NewPseudoFWC {
         simVarIsActive: manLandingElevation > 0,
         whichCodeToReturn: [0],
         codesToReturn: ['000023001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -900,7 +1015,7 @@ export class NewPseudoFWC {
         simVarIsActive: fuelXFeedPBOn === 1,
         whichCodeToReturn: [[3, 4, 5].includes(flightPhase) ? 1 : 0],
         codesToReturn: ['000025001', '000025002'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -911,7 +1026,7 @@ export class NewPseudoFWC {
         simVarIsActive: !!(ATTKnob !== 1 || AIRKnob !== 1),
         whichCodeToReturn: [0],
         codesToReturn: ['000068001'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
@@ -922,7 +1037,7 @@ export class NewPseudoFWC {
         simVarIsActive: voiceVHF3 !== 0 && [1, 2, 6, 9, 10].includes(flightPhase),
         whichCodeToReturn: [0],
         codesToReturn: ['000056701'],
-        memoInhibit: false,
+        memoInhibit: () => false,
         failure: 0,
         sysPage: -1,
         side: 'RIGHT',
