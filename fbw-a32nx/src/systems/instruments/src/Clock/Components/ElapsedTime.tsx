@@ -8,9 +8,9 @@ const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boo
     }
 
     if (seconds !== null) {
-        return Math.floor(Math.min(seconds, 359940) / 3600).toString().padStart(2, '0')
+        return Math.floor(Math.min(seconds, ElapsedTime.MAX_DISPLAYABLE_TIME_SECONDS) / ElapsedTime.SECONDS_PER_HOUR).toString().padStart(2, '0')
             + (running ? ':' : ' ')
-            + (Math.floor((Math.min(seconds, 359940) % 3600) / 60)).toString().padStart(2, '0');
+            + (Math.floor((Math.min(seconds, ElapsedTime.MAX_DISPLAYABLE_TIME_SECONDS) % ElapsedTime.SECONDS_PER_HOUR) / ElapsedTime.SECONDS_PER_MINUTE)).toString().padStart(2, '0');
     }
     return '';
 };
@@ -20,6 +20,12 @@ interface ElapsedTimeProps extends ComponentProps {
 }
 
 export class ElapsedTime extends DisplayComponent<ElapsedTimeProps> {
+    static readonly SECONDS_PER_MINUTE = 60;
+
+    static readonly SECONDS_PER_HOUR = this.SECONDS_PER_MINUTE * 60;
+
+    static readonly MAX_DISPLAYABLE_TIME_SECONDS = this.SECONDS_PER_HOUR * 99 + this.SECONDS_PER_MINUTE * 59; // 99 hours and 59 minutes in seconds
+
     private readonly timerText = Subject.create('');
 
     private readonly elapsedTime = Subject.create(null);

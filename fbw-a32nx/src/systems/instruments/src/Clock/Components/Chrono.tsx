@@ -12,12 +12,18 @@ const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boo
     }
 
     if (seconds !== null) {
-        return `${Math.floor(Math.min(seconds, 5999) / 60).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor(Math.min(seconds, 5999) % 60)).toString().padStart(2, '0')}`;
+        return Math.floor(Math.min(seconds, Chrono.MAX_DISPLAYABLE_TIME_SECONDS) / Chrono.SECONDS_PER_MINUTE).toString().padStart(2, '0')
+        + (running ? ':' : ' ')
+        + (Math.floor(Math.min(seconds, Chrono.MAX_DISPLAYABLE_TIME_SECONDS) % Chrono.SECONDS_PER_MINUTE)).toString().padStart(2, '0');
     }
     return '';
 };
 
 export class Chrono extends DisplayComponent<ChronoProps> {
+    static readonly SECONDS_PER_MINUTE = 60;
+
+    static readonly MAX_DISPLAYABLE_TIME_SECONDS = 99 * 60 + 59; // "99:59" in seconds
+
     private readonly chronoText = Subject.create('');
 
     private readonly elapsedTime = Subject.create(null);
