@@ -149,6 +149,7 @@ pub struct BrakeCircuit {
 
     leak_failure: Failure,
     accu_gas_precharge_failure: Option<Failure>,
+    accu_gas_precharge_failure_active_previous_state: bool,
 }
 impl BrakeCircuit {
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
@@ -197,6 +198,7 @@ impl BrakeCircuit {
             } else {
                 None
             },
+            accu_gas_precharge_failure_active_previous_state: false,
         }
     }
 
@@ -279,12 +281,17 @@ impl BrakeCircuit {
 
                     accumulator.set_gas_precharge_pressure(new_pressure_after_leak);
                 }
-            } else {
-                // TODO This is more a maintenance action than stoping the leak failure here as we refil gas pressure if failure is off.
+            } else if self.accu_gas_precharge_failure_active_previous_state
+                && !precharge_failure.is_active()
+            {
+                // If failure was active and is now inactive we trigger this "maintenance" action once
+                // This is more a maintenance action than stoping the leak failure here as we refil gas pressure if failure is off.
                 if let Some(accumulator) = &mut self.accumulator {
                     accumulator.reset_gas_precharge_pressure_to_nominal();
                 }
             }
+
+            self.accu_gas_precharge_failure_active_previous_state = precharge_failure.is_active();
         }
 
         if self.leak_failure.is_active() {
