@@ -504,3 +504,147 @@ impl SimulationElement for AvionicsDataCommunicationNetwork {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::systems::{
+        electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+        shared::PotentialOrigin,
+        simulation::{
+            test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+            Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+        },
+    };
+    use ntest::assert_about_eq;
+    use uom::si::{electric_potential::volt, f64::*};
+
+    struct AdcnTestAircraft {
+        adcn: AvionicsDataCommunicationNetwork,
+        powered_source_dc: TestElectricitySource,
+        dc_1_bus: ElectricalBus,
+        dc_2_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
+        is_elec_powered: bool,
+    }
+    impl AdcnTestAircraft {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                adcn: AvionicsDataCommunicationNetwork::new(context),
+                powered_source_dc: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::Battery(2),
+                ),
+                dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
+                dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+                is_elec_powered: false,
+            }
+        }
+
+        fn update(&mut self, _context: &UpdateContext) {
+            self.adcn.update();
+        }
+
+        fn set_elec_powered(&mut self, is_powered: bool) {
+            self.is_elec_powered = is_powered;
+        }
+    }
+    impl Aircraft for AdcnTestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_dc
+                .power_with_potential(ElectricPotential::new::<volt>(24.));
+            electricity.supplied_by(&self.powered_source_dc);
+
+            if self.is_elec_powered {
+                electricity.flow(&self.powered_source_dc, &self.dc_1_bus);
+                electricity.flow(&self.powered_source_dc, &self.dc_2_bus);
+                electricity.flow(&self.powered_source_dc, &self.dc_ess_bus);
+            }
+        }
+
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.update(context);
+        }
+    }
+    impl SimulationElement for AdcnTestAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.adcn.accept(visitor);
+            visitor.visit(self);
+        }
+    }
+
+    #[test]
+    fn network_a_no_power() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        test_bed.run();
+
+        let connection_combinatorics = [
+            vec![1, 2, 3, 4, 5, 6, 7, 9],
+            vec![2, 3, 4, 5, 6, 7, 9],
+            vec![3, 4, 5, 6, 7, 9],
+            vec![4, 5, 6, 7, 9],
+            vec![5, 6, 7, 9],
+            vec![6, 7, 9],
+            vec![7, 9],
+            vec![9],
+        ];
+
+        connection_combinatorics.iter().for_each(|row| {
+            let fixed_id = row[0];
+
+            row.iter().for_each(|switch| {
+                let reachable_first: f64 = test_bed.read_by_name(Box::leak(
+                    format!("AFDX_{}_{}_REACHABLE", fixed_id, switch).into_boxed_str(),
+                ));
+                let reachable_second: f64 = test_bed.read_by_name(Box::leak(
+                    format!("AFDX_{}_{}_REACHABLE", switch, fixed_id).into_boxed_str(),
+                ));
+
+                println!("AFDX switch combination: {} {}", fixed_id, switch);
+                assert_about_eq!(reachable_first, 0.0);
+                assert_about_eq!(reachable_second, 0.0);
+            });
+        });
+    }
+
+    #[test]
+    fn network_b_no_power() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        test_bed.run();
+
+        let connection_combinatorics = [
+            vec![11, 12, 13, 14, 15, 16, 17, 19],
+            vec![12, 13, 14, 15, 16, 17, 19],
+            vec![13, 14, 15, 16, 17, 19],
+            vec![14, 15, 16, 17, 19],
+            vec![15, 16, 17, 19],
+            vec![16, 17, 19],
+            vec![17, 19],
+            vec![19],
+        ];
+
+        connection_combinatorics.iter().for_each(|row| {
+            let fixed_id = row[0];
+
+            row.iter().for_each(|switch| {
+                let reachable_first: f64 = test_bed.read_by_name(Box::leak(
+                    format!("AFDX_{}_{}_REACHABLE", fixed_id, switch).into_boxed_str(),
+                ));
+                let reachable_second: f64 = test_bed.read_by_name(Box::leak(
+                    format!("AFDX_{}_{}_REACHABLE", switch, fixed_id).into_boxed_str(),
+                ));
+
+                assert_about_eq!(reachable_first, 0.0);
+                assert_about_eq!(reachable_second, 0.0);
+            });
+        });
+    }
+
+}
