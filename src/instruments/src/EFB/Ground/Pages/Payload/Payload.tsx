@@ -324,11 +324,17 @@ export const Payload = () => {
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
+        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+            return;
+        }
         const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
         setCargoDesired[cargoStation](Math.round(Units.kilogramToUser(cargoMap[cargoStation].weight) * cargoPercent));
     }, [cargoMap]);
 
     const onClickSeat = useCallback((station: number, seatId: number) => {
+        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+            return;
+        }
         setClicked(true);
         let newPax = totalPaxDesired;
         // TODO FIXME: This calculation does not work correctly if user clicks on many seats in rapid succession
@@ -586,9 +592,11 @@ export const Payload = () => {
         if (gsxPayloadSyncEnabled === 1) {
             if (boardingStarted) {
                 setShowSimbriefButton(false);
+                return;
             }
 
             setShowSimbriefButton(simbriefStatus);
+            return;
         }
         setShowSimbriefButton(simbriefStatus);
     }, [simbriefDataLoaded, boardingStarted, gsxPayloadSyncEnabled]);
