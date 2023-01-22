@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
@@ -10,8 +8,6 @@ import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 
 import './Fuel.scss';
-
-setIsEcamPage('fuel_page');
 
 export const FuelPage = () => {
     const [crossFeedPosition] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'number', 500);
@@ -358,5 +354,3 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: 
         </g>
     );
 };
-
-render(<FuelPage />);

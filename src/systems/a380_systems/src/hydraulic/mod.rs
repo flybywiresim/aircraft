@@ -3919,7 +3919,7 @@ impl A380BrakingForce {
                 .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
 
             enabled_chocks_id: context.get_identifier("MODEL_WHEELCHOCKS_ENABLED".to_owned()),
-            light_beacon_on_id: context.get_identifier("LIGHT BEACON ON".to_owned()),
+            light_beacon_on_id: context.get_identifier("LIGHT BEACON".to_owned()),
 
             left_braking_force: 0.,
             right_braking_force: 0.,
@@ -10236,76 +10236,6 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
 
-        #[test]
-        fn gear_gravity_extension_reverted_has_correct_sequence() {
-            let mut test_bed = test_bed_in_flight_with()
-                .set_cold_dark_inputs()
-                .in_flight()
-                .run_one_tick();
-
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
-
-            test_bed = test_bed
-                .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(35.));
-
-            assert!(test_bed.is_all_doors_really_down());
-            assert!(test_bed.is_all_gears_really_down());
-
-            test_bed = test_bed
-                .stow_emergency_gear_extension()
-                .run_waiting_for(Duration::from_secs_f64(5.));
-
-            // After 5 seconds we expect gear being retracted and doors still down
-            assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
-            assert!(test_bed.is_all_doors_really_down());
-            assert!(!test_bed.is_all_gears_really_down());
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
-
-            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
-            assert!(test_bed.is_all_doors_really_up());
-            assert!(test_bed.is_all_gears_really_up());
-        }
-
-        // #[test]
-        // fn aileron_init_centered_if_spawning_in_air() {
-        //     let mut test_bed = test_bed_in_flight_with()
-        //         .set_cold_dark_inputs()
-        //         .in_flight()
-        //         .run_one_tick();
-
-        //     assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.55);
-        //     assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.55);
-        //     assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.45);
-        //     assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.45);
-        // }
-
-        // #[test]
-        // fn rudder_init_centered_if_spawning_in_air() {
-        //     let mut test_bed = test_bed_in_flight_with()
-        //         .set_cold_dark_inputs()
-        //         .in_flight()
-        //         .run_one_tick();
-
-        //     assert!(test_bed.get_rudder_position().get::<ratio>() > 0.49);
-        //     assert!(test_bed.get_rudder_position().get::<ratio>() < 0.51);
-        // }
-
-        // #[test]
-        // fn elevator_init_centered_if_spawning_in_air() {
-        //     let mut test_bed = test_bed_in_flight_with()
-        //         .set_cold_dark_inputs()
-        //         .in_flight()
-        //         .run_one_tick();
-
-        //     // Elevator deflection is assymetrical so middle is below 0.5
-        //     assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.45);
-        //     assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.45);
-        //     assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
-        //     assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
-        // }
-        //
         #[test]
         fn brakes_on_ground_work_after_emergency_extension() {
             let mut test_bed = test_bed_in_flight_with()

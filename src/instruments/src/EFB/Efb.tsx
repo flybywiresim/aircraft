@@ -3,15 +3,17 @@
 
 import React, { useEffect, useState } from 'react';
 
+import useInterval from '@instruments/common/useInterval';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { Battery } from 'react-bootstrap-icons';
-import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+
+import { Battery } from 'react-bootstrap-icons';
+import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import useInterval from '@instruments/common/useInterval';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
+import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,7 +21,6 @@ import './toast.css';
 
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
-
 import { Dashboard } from './Dashboard/Dashboard';
 import { Dispatch } from './Dispatch/Dispatch';
 import { Ground } from './Ground/Ground';
@@ -31,14 +32,12 @@ import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
-
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
-
-import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
+import { FlyPadPage } from './Settings/Pages/FlyPadPage';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -80,8 +79,8 @@ export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
-    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
-    const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 3000);
+    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 5000);
+    const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
@@ -243,7 +242,6 @@ const Efb = () => {
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF || powerState === PowerStates.EMPTY;
         setPowerState(PowerStates.LOADING);
-
         if (shouldWait) {
             setTimeout(() => {
                 setPowerState(PowerStates.LOADED);
@@ -251,14 +249,15 @@ const Efb = () => {
         } else {
             setPowerState(PowerStates.LOADED);
         }
+        return (<></>);
     };
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
-        if (powerState === PowerStates.SHUTOFF) {
+        if (powerState === PowerStates.STANDBY) {
             offToLoaded();
         } else {
             history.push('/');
-            setPowerState(PowerStates.SHUTOFF);
+            setPowerState(PowerStates.STANDBY);
         }
     });
 
@@ -282,11 +281,10 @@ const Efb = () => {
     const { posX, posY, shown, text } = useAppSelector((state) => state.tooltip);
 
     useEffect(() => {
-        if (usingAutobrightness) {
-            const localTime = currentLocalTime / 3600;
-            setBrightness((calculateBrightness(lat, dayOfYear, localTime)));
+        if (usingAutobrightness && powerState === PowerStates.LOADED) {
+            setBrightness(calculateBrightness(lat, dayOfYear, currentLocalTime / 3600));
         }
-    }, [Math.ceil(currentLocalTime / 5), usingAutobrightness]);
+    }, [powerState, currentLocalTime, usingAutobrightness]);
 
     useEffect(() => {
         if (!usingAutobrightness) {
@@ -358,9 +356,10 @@ const Efb = () => {
                                     <Route path="/navigation" component={Navigation} />
                                     <Route path="/atc" component={ATC} />
                                     <Route path="/failures" component={Failures} />
-                                    <Route path="/settings" component={Settings} />
                                     <Route path="/checklists" component={Checklists} />
                                     <Route path="/presets" component={Presets} />
+                                    <Route path="/settings" component={Settings} />
+                                    <Route path="/settings/flypad" component={FlyPadPage} />
                                 </Switch>
                             </div>
                         </div>

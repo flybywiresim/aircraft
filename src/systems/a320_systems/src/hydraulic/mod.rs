@@ -3863,7 +3863,7 @@ impl A320BrakingForce {
                 .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
 
             enabled_chocks_id: context.get_identifier("MODEL_WHEELCHOCKS_ENABLED".to_owned()),
-            light_beacon_on_id: context.get_identifier("LIGHT BEACON ON".to_owned()),
+            light_beacon_on_id: context.get_identifier("LIGHT BEACON".to_owned()),
 
             left_braking_force: 0.,
             right_braking_force: 0.,
@@ -11103,7 +11103,7 @@ mod tests {
         }
 
         #[test]
-        fn gear_gravity_extension_reverted_has_correct_sequence() {
+        fn gear_gravity_extension_reverted_has_correct_sequence_if_gear_lever_stays_up() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
                 .with_worst_case_ptu()
@@ -11121,9 +11121,68 @@ mod tests {
 
             test_bed = test_bed
                 .stow_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            // Here expecing LGCIU to be unresponsive: everything stays down until gear lever command
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed
+                .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
+
             // After 5 seconds we expect gear being retracted and doors still down
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+            assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(!test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(15.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
+        }
+
+        #[test]
+        fn gear_gravity_extension_reverted_has_correct_sequence_if_gear_lever_down() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(1)
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(3.));
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(35.));
+
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+
+            test_bed = test_bed
+                .stow_emergency_gear_extension()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Doors expected to close
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
+
+            // After 5 seconds we expect gear being retracted and doors still down
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(5.));
             assert!(test_bed.gear_system_state() == GearSystemState::Retracting);
             assert!(test_bed.is_all_doors_really_down());
             assert!(!test_bed.is_all_gears_really_down());
@@ -11353,6 +11412,123 @@ mod tests {
                 .set_yellow_ed_pump(false)
                 .run_waiting_for(Duration::from_secs_f64(120.));
             assert!(!test_bed.yellow_reservoir_has_overheat_fault());
+        }
+
+        #[test]
+        fn gear_stays_uplocked_when_door_sensors_fails() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose2,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
+        }
+
+        #[test]
+        fn gear_stays_uplocked_when_gear_sensors_fails() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose2,
+            ));
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
+        }
+
+        #[test]
+        fn gear_stays_downlocked_when_gear_sensors_fails() {
+            let mut test_bed = test_bed_on_ground_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockGearNose2,
+            ));
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockGearNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
+        }
+
+        #[test]
+        fn gear_stays_downlocked_when_door_sensors_fails() {
+            let mut test_bed = test_bed_on_ground_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::DownlockDoorNose2,
+            ));
+
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose1,
+            ));
+            test_bed.fail(FailureType::GearProxSensorDamage(
+                systems::shared::ProximityDetectorId::UplockDoorNose2,
+            ));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.1));
+
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_down());
         }
     }
 }

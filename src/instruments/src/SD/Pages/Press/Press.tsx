@@ -1,7 +1,5 @@
 import React, { FC, useState, useEffect, memo } from 'react';
-import { render } from '@instruments/common/index';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -9,8 +7,6 @@ import { useSimVar } from '../../../Common/simVars';
 import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Press.scss';
-
-setIsEcamPage('press_page');
 
 export const PressPage: FC = () => {
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
@@ -561,5 +557,3 @@ const OverboardOutletComponent: FC<OverboardOutletComponentType> = ({ validSDAC,
         </>
     );
 };
-
-render(<PressPage />);
