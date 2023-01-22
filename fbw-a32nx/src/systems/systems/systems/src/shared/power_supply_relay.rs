@@ -12,7 +12,7 @@ pub struct PowerSupplyRelay {
     fallback: ElectricalBusType,
     primary_powered: bool,
     fallback_powered: bool,
-    primary_feedback_powered: bool,
+    fallback_feedback_powered: bool,
     switch_connected_to_primary: bool,
 }
 
@@ -23,33 +23,33 @@ impl PowerSupplyRelay {
             fallback,
             primary_powered: false,
             fallback_powered: false,
-            primary_feedback_powered: false,
+            fallback_feedback_powered: false,
             switch_connected_to_primary: true,
         }
     }
 
     pub fn update(&mut self) {
         /*
-         * The relay sends the primary output to an internal input (if the switch sources the primary).
+         * The relay sends the fallback output to an internal input (if the switch sources the fallback).
          * This internal input is used as a source for the connected component.
-         * The fallback source is directly used, if the primary source is disconnected.
+         * The primary source is directly used, if the primary source is disconnected.
          */
-        if self.primary_powered {
+        if !self.primary_powered {
             if self.switch_connected_to_primary {
-                self.primary_feedback_powered = true;
+                self.switch_connected_to_primary = false;
+                self.fallback_feedback_powered = false;
             } else {
-                self.primary_feedback_powered = false;
-                self.switch_connected_to_primary = true;
+                self.fallback_feedback_powered = self.fallback_powered;
             }
         } else {
-            self.switch_connected_to_primary = false;
-            self.primary_feedback_powered = false;
+            self.switch_connected_to_primary = true;
+            self.fallback_feedback_powered = false;
         }
     }
 
     pub fn output_is_powered(&self) -> bool {
-        (self.switch_connected_to_primary && self.primary_feedback_powered)
-            || (!self.switch_connected_to_primary && self.fallback_powered)
+        (self.switch_connected_to_primary && self.primary_powered)
+            || (!self.switch_connected_to_primary && self.fallback_feedback_powered)
     }
 }
 
