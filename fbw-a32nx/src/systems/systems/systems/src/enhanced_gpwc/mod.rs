@@ -1,4 +1,5 @@
 use crate::{
+    accept_iterable,
     enhanced_gpwc::navigation_display::NavigationDisplay,
     landing_gear::LandingGearControlInterfaceUnitSet,
     shared::{
@@ -185,9 +186,7 @@ impl SimulationElement for EnhancedGPWC {
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.navigation_displays
-            .iter_mut()
-            .for_each(|display| display.accept(visitor));
+        accept_iterable!(self.navigation_displays, visitor);
         visitor.visit(self);
     }
 }
