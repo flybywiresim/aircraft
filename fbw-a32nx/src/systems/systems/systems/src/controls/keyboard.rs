@@ -1,10 +1,9 @@
 use crate::{
-    indicating_recording::controls::{
-        keyboard_cursor_control_unit::Button, power_supply_relay::PowerSupplyRelay,
-    },
+    indicating_recording::controls::keyboard_cursor_control_unit::Button,
     shared::{
         arinc825::{Arinc825Word, LogicalCommunicationChannel},
         can_bus::CanBus,
+        power_supply_relay::PowerSupplyRelay,
         ElectricalBusType,
     },
     simulation::{
