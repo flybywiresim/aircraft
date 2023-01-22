@@ -420,13 +420,17 @@ impl AvionicsDataCommunicationNetwork {
     }
 
     fn switches_reachable(
+        afdx_switches: &[AvionicsFullDuplexSwitch; 16],
         network: &HashMap<usize, Vec<usize>>,
         from: usize,
         to: usize,
-        offset: usize,
     ) -> bool {
         let mut frontier: VecDeque<usize> = VecDeque::new();
         let mut visited: Vec<usize> = Vec::new();
+
+        if !afdx_switches[from].is_available() {
+            return false;
+        }
 
         visited.resize(network.len() * 2, 0xffff);
         frontier.push_front(from);
@@ -442,7 +446,7 @@ impl AvionicsDataCommunicationNetwork {
             // TODO check if the switch is available
             let neighbors = &network[&node.unwrap()];
             for neighbor in neighbors {
-                if visited[*neighbor] == 0xffff {
+                if afdx_switches[*neighbor].is_available() && visited[*neighbor] == 0xffff {
                     visited[*neighbor] = node.unwrap();
                     frontier.push_back(*neighbor);
                 }
@@ -456,10 +460,10 @@ impl AvionicsDataCommunicationNetwork {
         for (y, row) in self.routing_tables[network].iter_mut().enumerate() {
             for (x, entry) in row.iter_mut().enumerate() {
                 entry.set_reachable(AvionicsDataCommunicationNetwork::switches_reachable(
+                    &self.afdx_switches,
                     &self.afdx_networks[network],
                     y + offset,
                     x + offset,
-                    offset,
                 ));
             }
         }
