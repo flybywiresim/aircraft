@@ -729,4 +729,32 @@ mod tests {
             });
         });
     }
+
+    #[test]
+    fn network_a_isolate_switch_1() {
+        let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
+
+        test_bed.command(|a| a.set_elec_powered(true));
+        test_bed.write_by_name("AFDX_SWITCH_2_FAILURE", 1.0);
+        test_bed.write_by_name("AFDX_SWITCH_3_FAILURE", 1.0);
+        test_bed.write_by_name("AFDX_SWITCH_9_FAILURE", 1.0);
+        test_bed.run();
+
+        let mut reachable: f64 = test_bed.read_by_name("AFDX_1_1_REACHABLE");
+        assert_about_eq!(reachable, 1.0);
+        reachable = test_bed.read_by_name("AFDX_1_2_REACHABLE");
+        assert_about_eq!(reachable, 0.0);
+        reachable = test_bed.read_by_name("AFDX_1_3_REACHABLE");
+        assert_about_eq!(reachable, 0.0);
+        reachable = test_bed.read_by_name("AFDX_1_4_REACHABLE");
+        assert_about_eq!(reachable, 0.0);
+        reachable = test_bed.read_by_name("AFDX_1_5_REACHABLE");
+        assert_about_eq!(reachable, 0.0);
+        reachable = test_bed.read_by_name("AFDX_1_6_REACHABLE");
+        assert_about_eq!(reachable, 0.0);
+        reachable = test_bed.read_by_name("AFDX_1_7_REACHABLE");
+        assert_about_eq!(reachable, 0.0);
+        reachable = test_bed.read_by_name("AFDX_1_9_REACHABLE");
+        assert_about_eq!(reachable, 0.0);
+    }
 }
