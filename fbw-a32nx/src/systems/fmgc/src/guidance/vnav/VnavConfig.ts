@@ -21,7 +21,7 @@ export const VnavConfig = {
      */
     VNAV_EMIT_CDA_FLAP_PWP: false,
 
-    DEBUG_PROFILE: true,
+    DEBUG_PROFILE: false,
 
     ALLOW_DEBUG_PARAMETER_INJECTION: false,
 
