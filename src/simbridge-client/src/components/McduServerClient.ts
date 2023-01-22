@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { ClientState } from './ClientState';
+import { ClientState, SimBridgeClientState } from './ClientState';
 
 /**
  * Class to communicate with the SimBridge MCDU server
@@ -27,7 +27,7 @@ export class McduServerClient {
      * methods as it will not recognize "this" (will be undefined).
      */
     public connect(eventHandler: (e: Event) => void) {
-        if (this.state.isAvailable()) {
+        if (this.state.getSimBridgeClientState() === SimBridgeClientState.CONNECTED) {
             // first disconnect to clean up any previous connection
             this.disconnect();
 

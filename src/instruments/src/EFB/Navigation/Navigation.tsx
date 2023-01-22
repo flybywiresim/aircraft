@@ -279,7 +279,7 @@ export const ChartViewer = () => {
                             </div>
                         )}
 
-                        <div className="flex overflow-hidden absolute top-6 right-6 bottom-6 z-30 flex-col justify-between rounded-md cursor-pointer">
+                        <div className="flex overflow-hidden absolute top-6 right-6 bottom-6 z-20 flex-col justify-between rounded-md cursor-pointer">
                             <div className="flex overflow-hidden flex-col rounded-md">
                                 <TooltipWrapper text={t('NavigationAndCharts.TT.RotateLeft45Degrees')}>
                                     <button
