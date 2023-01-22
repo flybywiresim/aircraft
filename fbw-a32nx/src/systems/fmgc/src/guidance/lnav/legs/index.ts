@@ -33,6 +33,8 @@ export interface SpeedConstraint {
     speed: Knots,
 }
 
+export type PathAngleConstraint = Degrees;
+
 export abstract class FXLeg extends Leg {
     from: WayPoint;
 }
@@ -44,6 +46,7 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
         ac.altitude2 = undefined;
         switch (wp.legAltitudeDescription) {
         case 1:
+        case 6:
             ac.type = AltitudeConstraintType.at;
             break;
         case 2:
@@ -53,6 +56,7 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
             ac.type = AltitudeConstraintType.atOrBelow;
             break;
         case 4:
+        case 7:
             ac.type = AltitudeConstraintType.range;
             ac.altitude2 = wp.legAltitude2;
             break;
@@ -67,11 +71,16 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
 export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | undefined {
     if (wp.speedConstraint) {
         const sc: Partial<SpeedConstraint> = {};
-        sc.type = SpeedConstraintType.at;
+        sc.type = SpeedConstraintType.atOrBelow;
         sc.speed = wp.speedConstraint;
         return sc as SpeedConstraint;
     }
     return undefined;
+}
+
+export function getPathAngleConstraintFromWaypoint(wp: WayPoint): PathAngleConstraint | undefined {
+    // Check for null and undefined, we do this because 0 is falsy
+    return wp.additionalData.verticalAngle;
 }
 
 export function waypointToLocation(wp: WayPoint): LatLongData {
@@ -111,6 +120,11 @@ export interface LegMetadata {
     speedConstraint?: SpeedConstraint,
 
     /**
+     * Path angle constraint applicable to this leg
+     */
+    pathAngleConstraint?: PathAngleConstraint,
+
+    /**
      * UTC seconds required time of arrival applicable to the leg
      */
     rtaUtcSeconds?: Seconds,
@@ -131,11 +145,13 @@ export interface LegMetadata {
 export function legMetadataFromMsfsWaypoint(waypoint: WayPoint): LegMetadata {
     const altitudeConstraint = getAltitudeConstraintFromWaypoint(waypoint);
     const speedConstraint = getSpeedConstraintFromWaypoint(waypoint);
+    const pathAngleConstraint = getPathAngleConstraintFromWaypoint(waypoint);
 
     return {
         turnDirection: waypoint.turnDirection,
         altitudeConstraint,
         speedConstraint,
+        pathAngleConstraint,
         isOverfly: waypoint.additionalData.overfly,
     };
 }

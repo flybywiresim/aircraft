@@ -125,7 +125,7 @@
 1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
 1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
 1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
-
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 
 ## 0.9.0
 

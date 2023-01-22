@@ -76,7 +76,16 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             || fmaLatMode === LateralMode.HDG
                             || fmaLatMode === LateralMode.TRACK)
                             && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV)) && (
-                            <TrackLine x={384} y={620} heading={heading} track={track} />
+                            <TrackLine
+                                x={384}
+                                y={620}
+                                heading={heading}
+                                track={track}
+                                groundSpeed={Number(MathUtils.fastToFixed(groundSpeed, 2))}
+                                mapParams={mapParams}
+                                symbols={symbols}
+                                ndRange={rangeSetting}
+                            />
                         )}
                     </g>
                     <RadioNeedle index={1} side={side} displayMode={EfisNdMode.ARC} centreHeight={620} trueRef={trueRef} />

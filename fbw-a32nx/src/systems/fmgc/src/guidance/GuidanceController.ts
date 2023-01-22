@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Geometry } from '@fmgc/guidance/Geometry';
-import { PseudoWaypoint } from '@fmgc/guidance/PsuedoWaypoint';
+import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { PseudoWaypoints } from '@fmgc/guidance/lnav/PseudoWaypoints';
 import { EfisVectors } from '@fmgc/efis/EfisVectors';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -15,6 +15,12 @@ import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { SimVarString } from '@shared/simvar';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
+import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
+import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
+import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
+import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { LnavDriver } from './lnav/LnavDriver';
 import { FlightPlanManager, FlightPlans } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
@@ -22,6 +28,39 @@ import { VnavDriver } from './vnav/VnavDriver';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
+
+export interface Fmgc {
+    getZeroFuelWeight(): number;
+    getFOB(): number;
+    getV2Speed(): Knots;
+    getTropoPause(): Feet;
+    getManagedClimbSpeed(): Knots;
+    getManagedClimbSpeedMach(): Mach;
+    getAccelerationAltitude(): Feet,
+    getThrustReductionAltitude(): Feet,
+    getOriginTransitionAltitude(): Feet | undefined,
+    getCruiseAltitude(): Feet,
+    getFlightPhase(): FmgcFlightPhase,
+    getManagedCruiseSpeed(): Knots,
+    getManagedCruiseSpeedMach(): Mach,
+    getClimbSpeedLimit(): SpeedLimit,
+    getDescentSpeedLimit(): SpeedLimit,
+    getPreSelectedClbSpeed(): Knots,
+    getPreSelectedCruiseSpeed(): Knots,
+    getPreSelectedDescentSpeed(): Knots,
+    getTakeoffFlapsSetting(): FlapConf | undefined
+    getManagedDescentSpeed(): Knots,
+    getManagedDescentSpeedMach(): Mach,
+    getApproachSpeed(): Knots,
+    getFlapRetractionSpeed(): Knots,
+    getSlatRetractionSpeed(): Knots,
+    getCleanSpeed(): Knots,
+    getTripWind(): number,
+    getWinds(): FmcWinds,
+    getApproachWind(): FmcWindVector,
+    getApproachQnh(): number,
+    getApproachTemperature(): number,
+}
 
 export class GuidanceController {
     flightPlanManager: FlightPlanManager;
@@ -68,7 +107,13 @@ export class GuidanceController {
 
     taskQueue = new TaskQueue();
 
+    verticalProfileComputationParametersObserver: VerticalProfileComputationParametersObserver;
+
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+
+    private windProfileFactory: WindProfileFactory;
+
+    private atmosphericConditions: AtmosphericConditions;
 
     get hasTemporaryFlightPlan() {
         // eslint-disable-next-line no-underscore-dangle
@@ -161,13 +206,18 @@ export class GuidanceController {
         }
     }
 
-    constructor(flightPlanManager: FlightPlanManager, guidanceManager: GuidanceManager) {
+    constructor(flightPlanManager: FlightPlanManager, guidanceManager: GuidanceManager, fmgc: Fmgc) {
         this.flightPlanManager = flightPlanManager;
         this.guidanceManager = guidanceManager;
 
+        this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc);
+        this.windProfileFactory = new WindProfileFactory(fmgc, 1);
+
+        this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
+
         this.lnavDriver = new LnavDriver(this);
-        this.vnavDriver = new VnavDriver(this);
-        this.pseudoWaypoints = new PseudoWaypoints(this);
+        this.vnavDriver = new VnavDriver(this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, flightPlanManager);
+        this.pseudoWaypoints = new PseudoWaypoints(this, this.atmosphericConditions);
         this.efisVectors = new EfisVectors(this);
     }
 
@@ -222,6 +272,14 @@ export class GuidanceController {
         this.updateEfisState('L', this.leftEfisState);
         this.updateEfisState('R', this.rightEfisState);
 
+        try {
+            this.verticalProfileComputationParametersObserver.update();
+            this.windProfileFactory.updateFmgcInputs();
+        } catch (e) {
+            console.error('[FMS] Error during update of VNAV input parameters. See exception below.');
+            console.error(e);
+        }
+
         // Generate new geometry when flight plan changes
         // TODO also need to do it when FMS perf params change, e.g. speed limit/alt, climb/crz/des speeds
         const newFlightPlanVersion = this.flightPlanManager.currentFlightPlanVersion;
@@ -244,14 +302,21 @@ export class GuidanceController {
                 this.recomputeGeometries();
 
                 if (this.activeGeometry) {
-                    this.vnavDriver.acceptMultipleLegGeometry(this.activeGeometry);
-                    this.pseudoWaypoints.acceptMultipleLegGeometry(this.activeGeometry);
+                    try {
+                        this.vnavDriver.acceptMultipleLegGeometry(this.activeGeometry);
+                        this.pseudoWaypoints.acceptMultipleLegGeometry(this.activeGeometry);
+                    } catch (e) {
+                        console.error('[FMS] Error during active geometry recomputation. See exception below.');
+                        console.error(e);
+                    }
                 }
             } catch (e) {
                 console.error('[FMS] Error during geometry recomputation. See exception below.');
                 console.error(e);
             }
         }
+
+        this.atmosphericConditions.update();
 
         try {
             this.updateMrpState();
