@@ -1614,11 +1614,11 @@ mod tests {
                 .set_on_ground()
                 .iterate(50)
                 .set_takeoff_power()
-                .iterate_with_delta(250, Duration::from_millis(100));
+                .iterate_with_delta(400, Duration::from_millis(10));
 
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-                    < Velocity::new::<foot_per_minute>(50.)
+                    < Velocity::new::<foot_per_minute>(10.)
             );
         }
 
@@ -1976,5 +1976,16 @@ mod tests {
             .iterate_with_delta(200, Duration::from_millis(100));
 
         assert!(test_bed.cabin_air_in().abs() < MassRate::new::<kilogram_per_second>(0.1));
+    }
+
+    #[test]
+    fn vertical_speed_output_doesnt_go_above_limits() {
+        let test_bed = test_bed_in_cruise()
+            .iterate_with_delta(200, Duration::from_millis(100))
+            .command_mode_sel_pb_man()
+            .command_man_vs_switch_position(0)
+            .iterate(20);
+
+        assert_eq!(test_bed.cabin_vs(), Velocity::new::<foot_per_minute>(6400.));
     }
 }

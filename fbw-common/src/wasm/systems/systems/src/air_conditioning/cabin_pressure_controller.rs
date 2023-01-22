@@ -275,9 +275,20 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     fn calculate_vertical_speed(&self, context: &UpdateContext, new_cabin_alt: Length) -> Velocity {
-        // Distance over time :)
-        let speed_meter_second = (new_cabin_alt.get::<meter>() - self.cabin_alt.get::<meter>())
-            / context.delta_as_secs_f64();
+        // When on the ground with outflow valve open V/S is always zero
+        let speed_meter_second = if matches!(
+            self.pressure_schedule_manager,
+            Some(PressureScheduleManager::Ground(_))
+        ) && self.outflow_valve_open_amount
+            == Ratio::new::<percent>(100.)
+        {
+            0.
+        } else {
+            // Distance over time :)
+            (new_cabin_alt.get::<meter>() - self.cabin_alt.get::<meter>())
+                / context.delta_as_secs_f64()
+        };
+
         Velocity::new::<meter_per_second>(speed_meter_second)
     }
 
@@ -357,7 +368,16 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     pub fn cabin_vertical_speed(&self) -> Velocity {
-        self.cabin_filtered_vertical_speed.output()
+        // Vertical speed word range is from -6400 to +6400 fpm (AMM)
+        if self.cabin_filtered_vertical_speed.output() > Velocity::new::<foot_per_minute>(6400.) {
+            Velocity::new::<foot_per_minute>(6400.)
+        } else if self.cabin_filtered_vertical_speed.output()
+            < Velocity::new::<foot_per_minute>(-6400.)
+        {
+            Velocity::new::<foot_per_minute>(-6400.)
+        } else {
+            self.cabin_filtered_vertical_speed.output()
+        }
     }
 
     // FWC warning signals

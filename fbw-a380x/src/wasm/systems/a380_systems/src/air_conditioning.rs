@@ -1595,13 +1595,13 @@ mod tests {
         fn cabin_vs_changes_to_takeoff() {
             let test_bed = test_bed()
                 .set_on_ground()
-                .iterate(20)
+                .iterate(50)
                 .set_takeoff_power()
-                .iterate_with_delta(250, Duration::from_millis(100));
+                .iterate_with_delta(400, Duration::from_millis(10));
 
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-                    < Velocity::new::<foot_per_minute>(50.)
+                    < Velocity::new::<foot_per_minute>(10.)
             );
         }
 
