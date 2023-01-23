@@ -227,7 +227,7 @@ impl BrakeCircuit {
             self.left_brake_actuator.used_volume() + self.right_brake_actuator.used_volume();
 
         if let Some(accumulator) = &mut self.accumulator {
-            let mut volume_into_accumulator = Volume::new::<gallon>(0.);
+            let mut volume_into_accumulator = Volume::default();
             accumulator.update(
                 context,
                 &mut volume_into_accumulator,
