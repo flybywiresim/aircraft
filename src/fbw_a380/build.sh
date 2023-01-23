@@ -7,20 +7,25 @@ COMMON_DIR="${DIR}/../fbw_common"
 OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
 
 if [ "$1" == "--debug" ]; then
+  WASMLD_ARGS=""
   CLANG_ARGS="-g"
 else
-  WASMLD_ARGS="--strip-debug"
+  WASMLD_ARGS="-O2 --lto-O2 --strip-debug"
+  CLANG_ARGS="-flto -O2 -DNDEBUG"
 fi
 
 set -ex
 
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
+# clean old object files out if they exist
+rm -f "${DIR}/obj/*.o"
 pushd "${DIR}/obj"
 
 # compile c code
 clang \
   -c \
+  ${CLANG_ARGS} \
   -Wno-unused-command-line-argument \
   -Wno-implicit-function-declaration \
   -Wno-deprecated-non-prototype \
@@ -36,7 +41,6 @@ clang \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
-  -O3 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${COMMON_DIR}/src/zlib" \
   "${COMMON_DIR}/src/zlib/adler32.c" \
@@ -63,7 +67,6 @@ clang++ \
   -Wno-macro-redefined \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
-  -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
   -D_LIBCPP_HAS_NO_THREADS \
@@ -73,7 +76,6 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
-  -O3 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${COMMON_DIR}/src" \
@@ -145,7 +147,6 @@ wasm-ld \
   --export-table \
   --gc-sections \
   ${WASMLD_ARGS} \
-  -O3 --lto-O3 \
   -lc++ -lc++abi \
   ${DIR}/obj/*.o \
   -o $OUTPUT
