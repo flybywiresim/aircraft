@@ -42,7 +42,11 @@ impl CursorControlDevice {
         }
     }
 
-    pub fn update(&self, can_buses: &mut [CanBus<2>; 2]) {
+    pub fn update(&self, can_buses: &mut [CanBus<5>; 2]) {
+        // mark messages as received
+        can_buses[0].received_message(self.function_id);
+        can_buses[1].received_message(self.function_id);
+
         if self.switch_ccd_value > 0.0 && self.is_powered {
             self.keys.iter().for_each(|key| {
                 if key.button_pressed() {

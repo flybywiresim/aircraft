@@ -84,7 +84,7 @@ impl KeyboardCursorControlUnit {
         }
     }
 
-    pub fn update(&mut self, can_buses: &mut [CanBus<2>; 2]) {
+    pub fn update(&mut self, can_buses: &mut [CanBus<5>; 2]) {
         // update the internal states and send the new key down messages
         self.ccd.update(can_buses);
         self.kbd.update(can_buses);

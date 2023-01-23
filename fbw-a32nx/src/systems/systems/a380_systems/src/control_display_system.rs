@@ -1,4 +1,5 @@
 use crate::systems::{
+    accept_iterable,
     indicating_recording::controls::keyboard_cursor_control_unit::KeyboardCursorControlUnit,
     shared::{can_bus::CanBus, ElectricalBusType},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor},
@@ -8,13 +9,18 @@ use crate::systems::{
 // PFD, ND, MFD, EWD and SD are missing
 enum CanBusFunctionIds {
     KccuKeyboard = 42,
-    KccuCursorControl = 48,
+    KccuCursorControl = 43,
+    // PrimaryFlightDisplay = 44,
+    // NavigationDisplay = 45,
+    MultiFunctionDisplay = 46,
+    EngineWarningDisplay = 47,
+    SystemDisplay = 48,
 }
 
 // implements the system topology of the Control and Display System (CDS)
 pub struct A380ControlDisplaySystem {
-    can_bus_1: [CanBus<2>; 2],
-    can_bus_2: [CanBus<2>; 2],
+    can_bus_1: [CanBus<5>; 2],
+    can_bus_2: [CanBus<5>; 2],
     kccu_capt: KeyboardCursorControlUnit,
     kccu_fo: KeyboardCursorControlUnit,
 }
@@ -29,6 +35,9 @@ impl A380ControlDisplaySystem {
                     [
                         CanBusFunctionIds::KccuKeyboard as u8,
                         CanBusFunctionIds::KccuCursorControl as u8,
+                        CanBusFunctionIds::MultiFunctionDisplay as u8,
+                        CanBusFunctionIds::EngineWarningDisplay as u8,
+                        CanBusFunctionIds::SystemDisplay as u8,
                     ],
                 ),
                 CanBus::new(
@@ -37,6 +46,9 @@ impl A380ControlDisplaySystem {
                     [
                         CanBusFunctionIds::KccuKeyboard as u8,
                         CanBusFunctionIds::KccuCursorControl as u8,
+                        CanBusFunctionIds::MultiFunctionDisplay as u8,
+                        CanBusFunctionIds::EngineWarningDisplay as u8,
+                        CanBusFunctionIds::SystemDisplay as u8,
                     ],
                 ),
             ],
@@ -47,6 +59,9 @@ impl A380ControlDisplaySystem {
                     [
                         CanBusFunctionIds::KccuKeyboard as u8,
                         CanBusFunctionIds::KccuCursorControl as u8,
+                        CanBusFunctionIds::MultiFunctionDisplay as u8,
+                        CanBusFunctionIds::EngineWarningDisplay as u8,
+                        CanBusFunctionIds::SystemDisplay as u8,
                     ],
                 ),
                 CanBus::new(
@@ -55,6 +70,9 @@ impl A380ControlDisplaySystem {
                     [
                         CanBusFunctionIds::KccuKeyboard as u8,
                         CanBusFunctionIds::KccuCursorControl as u8,
+                        CanBusFunctionIds::MultiFunctionDisplay as u8,
+                        CanBusFunctionIds::EngineWarningDisplay as u8,
+                        CanBusFunctionIds::SystemDisplay as u8,
                     ],
                 ),
             ],
@@ -94,12 +112,8 @@ impl A380ControlDisplaySystem {
 
 impl SimulationElement for A380ControlDisplaySystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.can_bus_1
-            .iter_mut()
-            .for_each(|bus| bus.accept(visitor));
-        self.can_bus_2
-            .iter_mut()
-            .for_each(|bus| bus.accept(visitor));
+        accept_iterable!(self.can_bus_1, visitor);
+        accept_iterable!(self.can_bus_2, visitor);
         self.kccu_capt.accept(visitor);
         self.kccu_fo.accept(visitor);
         visitor.visit(self);

@@ -96,7 +96,11 @@ impl Keyboard {
         }
     }
 
-    pub fn update(&mut self, can_buses: &mut [CanBus<2>; 2]) {
+    pub fn update(&mut self, can_buses: &mut [CanBus<5>; 2]) {
+        // mark messages as received
+        can_buses[0].received_message(self.function_id);
+        can_buses[1].received_message(self.function_id);
+
         self.power_supply.update();
 
         if self.switch_kbd_value > 0.0 && self.power_supply.output_is_powered() {
