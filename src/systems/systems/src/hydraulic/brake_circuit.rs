@@ -901,7 +901,7 @@ mod tests {
 
         assert!(test_bed.query_element(|e| e.accumulator_total_volume() == init_max_vol));
         assert!(
-            test_bed.query_element(|e| e.accumulator_fluid_volume() == Volume::new::<gallon>(0.0))
+            test_bed.query_element(|e| e.accumulator_fluid_volume() == Volume::default())
         );
         assert!(test_bed.query_element(|e| e.accumulator_gas_volume() == init_max_vol));
     }
