@@ -1708,6 +1708,7 @@ impl A320Hydraulic {
             ),
 
             emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
+
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
