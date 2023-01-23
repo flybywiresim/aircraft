@@ -33,7 +33,7 @@ impl<const N: usize> CanBus<N> {
             attached_systems: systems,
             next_transmitting_system: 0,
             transmission_buffers: (1..=N).map(|_| VecDeque::new()).collect(),
-            message_received_by_systems_ids: (1..=N)
+            message_received_by_systems_ids: (0..=N - 1)
                 .map(|id| context.get_identifier(format!("{}_{}_RECEIVED", bus_name, systems[id])))
                 .collect(),
             message_received_by_systems: (1..=N).map(|_| true).collect(),
