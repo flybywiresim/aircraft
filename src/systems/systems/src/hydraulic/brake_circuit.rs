@@ -211,7 +211,7 @@ impl BrakeCircuit {
         self.update_demands(brake_circuit_controller);
 
         // The pressure available in brakes is the one of accumulator only if accumulator has fluid
-        let actual_pressure_available = if let Some(accumulator) = &mut self.accumulator {
+        let actual_pressure_available = if let Some(accumulator) = &self.accumulator {
             if accumulator.fluid_volume() > Volume::default() {
                 accumulator.raw_gas_press()
             } else {
@@ -270,29 +270,25 @@ impl BrakeCircuit {
             .zip(self.accumulator.as_mut())
         {
             if precharge_failure.is_active() {
-                if let Some(accumulator) = &mut self.accumulator {
-                    let current_pre_charge_pressure_in_accumulator =
-                        accumulator.gas_precharge_pressure();
+                let current_pre_charge_pressure_in_accumulator =
+                    accumulator.gas_precharge_pressure();
 
-                    let new_pressure_after_leak = (current_pre_charge_pressure_in_accumulator
-                        - Pressure::new::<psi>(
-                            context.delta_as_secs_f64()
-                                * Self::ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S,
-                        ))
-                    .max(Pressure::new::<psi>(
-                        Self::ACCUMULATOR_GAS_FAILURE_MIN_ALLOWED_PRESSURE_PSI,
-                    ));
+                let new_pressure_after_leak = (current_pre_charge_pressure_in_accumulator
+                    - Pressure::new::<psi>(
+                        context.delta_as_secs_f64()
+                            * Self::ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S,
+                    ))
+                .max(Pressure::new::<psi>(
+                    Self::ACCUMULATOR_GAS_FAILURE_MIN_ALLOWED_PRESSURE_PSI,
+                ));
 
-                    accumulator.set_gas_precharge_pressure(new_pressure_after_leak);
-                }
+                accumulator.set_gas_precharge_pressure(new_pressure_after_leak);
             } else if self.accu_gas_precharge_failure_active_previous_state
                 && !precharge_failure.is_active()
             {
                 // If failure was active and is now inactive we trigger this "maintenance" action once
                 // This is more a maintenance action than stoping the leak failure here as we refil gas pressure if failure is off.
-                if let Some(accumulator) = &mut self.accumulator {
-                    accumulator.reset_gas_precharge_pressure_to_nominal();
-                }
+                accumulator.reset_gas_precharge_pressure_to_nominal();
             }
 
             self.accu_gas_precharge_failure_active_previous_state = precharge_failure.is_active();
@@ -369,20 +365,16 @@ impl BrakeCircuit {
 
     #[cfg(test)]
     fn accumulator_total_volume(&self) -> Volume {
-        if let Some(accumulator) = &self.accumulator {
-            accumulator.total_volume()
-        } else {
-            Volume::default()
-        }
+        self.accumulator
+            .as_ref()
+            .map_or(Volume::default(), Accumulator::total_volume)
     }
 
     #[cfg(test)]
     fn accumulator_gas_volume(&self) -> Volume {
-        if let Some(accumulator) = &self.accumulator {
-            accumulator.gas_volume()
-        } else {
-            Volume::default()
-        }
+        self.accumulator
+            .as_ref()
+            .map_or(Volume::default(), Accumulator::gas_volume)
     }
 }
 impl Actuator for BrakeCircuit {
@@ -615,7 +607,7 @@ impl BrakeAccumulatorCharacteristics {
             ));
 
         let init_volume_for_target_pressure =
-            total_volume - (actual_gas_precharge_randomized * total_volume) / target_pressure;
+            total_volume - (actual_gas_precharge_randomized / target_pressure) * total_volume;
 
         // We take a normal distribution with mean as the full volume, and standard deviation a fraction of full volume
         let volume_at_init_randomized = if !is_empty {

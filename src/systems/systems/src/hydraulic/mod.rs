@@ -1,3 +1,4 @@
+use self::brake_circuit::BrakeAccumulatorCharacteristics;
 use self::linear_actuator::Actuator;
 use crate::failures::{Failure, FailureType};
 use crate::hydraulic::{
@@ -785,7 +786,7 @@ impl Accumulator {
     // Higher gain enables faster flow transient but brings instability.
     const DELTA_PRESSURE_CHARACTERISTICS: f64 = 0.009;
 
-    pub fn new(
+    fn new(
         gas_precharge: Pressure,
         total_volume: Volume,
         fluid_vol_at_init: Volume,
@@ -842,8 +843,8 @@ impl Accumulator {
             *delta_vol += volume_from_acc;
         } else if accumulator_delta_press.get::<psi>() < 0.0 {
             let fluid_volume_to_reach_equilibrium = self.total_volume
-                - ((self.current_gas_init_precharge * self.total_volume)
-                    / self.circuit_target_pressure);
+                - ((self.current_gas_init_precharge / self.circuit_target_pressure)
+                    * self.total_volume);
 
             let max_delta_vol = fluid_volume_to_reach_equilibrium - self.fluid_volume;
             let volume_to_acc = delta_vol
@@ -860,6 +861,31 @@ impl Accumulator {
         self.current_flow = self.current_delta_vol / context.delta_as_time();
         self.gas_pressure = (self.current_gas_init_precharge * self.total_volume)
             / (self.total_volume - self.fluid_volume);
+    }
+
+    fn new_system_accumulator(
+        gas_precharge: Pressure,
+        total_volume: Volume,
+        fluid_vol_at_init: Volume,
+        circuit_target_pressure: Pressure,
+    ) -> Self {
+        Accumulator::new(
+            gas_precharge,
+            total_volume,
+            fluid_vol_at_init,
+            false,
+            circuit_target_pressure,
+        )
+    }
+
+    pub fn new_brake_accumulator(characteristics: BrakeAccumulatorCharacteristics) -> Self {
+        Accumulator::new(
+            characteristics.gas_precharge(),
+            characteristics.total_volume(),
+            characteristics.volume_at_init(),
+            true,
+            characteristics.target_pressure(),
+        )
     }
 
     fn get_delta_vol(&mut self, required_delta_vol: Volume) -> Volume {
@@ -1035,11 +1061,10 @@ impl HydraulicCircuit {
                 VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
                 system_section_volume * priming_volume,
                 system_section_volume,
-                Some(Accumulator::new(
+                Some(Accumulator::new_system_accumulator(
                     system_accumulator_precharge,
                     system_accumulator_volume,
                     Volume::new::<gallon>(0.),
-                    false,
                     circuit_target_pressure,
                 )),
                 system_pressure_switch_lo_hyst,

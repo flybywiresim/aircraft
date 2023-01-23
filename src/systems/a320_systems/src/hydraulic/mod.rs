@@ -1665,13 +1665,7 @@ impl A320Hydraulic {
                 context,
                 "ALTN",
                 HydraulicColor::Yellow,
-                Some(Accumulator::new(
-                    brake_accumulator_charac.gas_precharge(),
-                    brake_accumulator_charac.total_volume(),
-                    brake_accumulator_charac.volume_at_init(),
-                    true,
-                    brake_accumulator_charac.target_pressure(),
-                )),
+                Some(Accumulator::new_brake_accumulator(brake_accumulator_charac)),
                 Volume::new::<gallon>(0.13),
             ),
 

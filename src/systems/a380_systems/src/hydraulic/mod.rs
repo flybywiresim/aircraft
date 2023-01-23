@@ -22,8 +22,8 @@ use systems::{
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
         brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
-            BrakeCircuitController,
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
+            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
@@ -1597,6 +1597,13 @@ impl A380Hydraulic {
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub fn new(context: &mut InitContext) -> A380Hydraulic {
+        let brake_accumulator_charac = BrakeAccumulatorCharacteristics::new(
+            Volume::new::<gallon>(1.0),
+            Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Ratio::new::<ratio>(0.01),
+        );
+
         A380Hydraulic {
             nose_steering: SteeringActuator::new(
                 context,
@@ -1776,15 +1783,7 @@ impl A380Hydraulic {
                 context,
                 "ALTN",
                 HydraulicColor::Yellow,
-                Some(Accumulator::new(
-                    Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
-                    Volume::new::<gallon>(1.0),
-                    Volume::new::<gallon>(0.4),
-                    true,
-                    Pressure::new::<psi>(
-                        A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI,
-                    ),
-                )),
+                Some(Accumulator::new_brake_accumulator(brake_accumulator_charac)),
                 Volume::new::<gallon>(0.13),
             ),
 
