@@ -6,15 +6,19 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm"
 
 if [ "$1" == "--debug" ]; then
-  CLANG_ARGS="-g -DDEBUG"
+  WASMLD_ARGS=""
+  CLANG_ARGS="-g"
 else
-  WASMLD_ARGS="--strip-debug"
+  WASMLD_ARGS="-O2 --lto-O2 --strip-debug"
+  CLANG_ARGS="-flto -O2 -DNDEBUG"
 fi
 
 set -ex
 
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
+# clean old object files out if they exist
+rm -f "${DIR}/obj/*.o"
 pushd "${DIR}/obj"
 
 # compile c++ code
@@ -27,7 +31,6 @@ clang++ \
   -Wno-macro-redefined \
   --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
-  -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
   -D_LIBCPP_HAS_NO_THREADS \
@@ -65,7 +68,6 @@ wasm-ld \
   --export __wasm_call_ctors \
   --export-table \
   --gc-sections \
-  -O3 --lto-O3 \
   -lc++ -lc++abi \
   ${DIR}/obj/*.o \
   -o $OUTPUT
