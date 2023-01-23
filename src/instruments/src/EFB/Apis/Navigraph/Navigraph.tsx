@@ -291,14 +291,12 @@ export default class NavigraphClient {
 
     public async getAirportInfo(icao: string): Promise<AirportInfo | null> {
         if (this.hasToken) {
-            const chartJsonUrl = await this.chartCall(icao, 'airport.json');
+            const airportJsonResp = await fetch(`https://api.navigraph.com/v2/airport/${icao}`);
 
-            const chartJsonResp = await fetch(chartJsonUrl);
+            if (airportJsonResp.ok) {
+                const airportJson = await airportJsonResp.json();
 
-            if (chartJsonResp.ok) {
-                const chartJson = await chartJsonResp.json();
-
-                return { name: chartJson.name };
+                return { name: airportJson.name };
             }
         }
 
