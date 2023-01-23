@@ -238,7 +238,7 @@ impl BrakeCircuit {
             // Volume that just came into accumulator is taken from hydraulic loop through volume_to_actuator interface
             self.total_volume_to_actuator += volume_into_accumulator.abs();
 
-            if delta_vol > Volume::new::<gallon>(0.) {
+            if delta_vol > Volume::default() {
                 let volume_from_acc = accumulator.get_delta_vol(delta_vol);
                 let remaining_vol_after_accumulator_empty = delta_vol - volume_from_acc;
                 self.total_volume_to_actuator += remaining_vol_after_accumulator_empty;
