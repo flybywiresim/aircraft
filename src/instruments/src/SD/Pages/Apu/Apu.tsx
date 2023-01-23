@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { render } from '@instruments/common/index';
-import { setIsEcamPage } from '@instruments/common/defaults';
 import { useSimVar } from '@instruments/common/simVars';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
@@ -9,8 +7,6 @@ import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Apu.scss';
-
-setIsEcamPage('apu_page');
 
 export const ApuPage = () => {
     const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool', 1000);
@@ -499,5 +495,3 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
         </>
     );
 };
-
-render(<ApuPage />);

@@ -1,9 +1,9 @@
 /// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
 /**
- * NotiticationParams container for popups to package popup metadata
+ * NotificationParams container for popups to package popup metadata
  */
-export type NotiticationParams = {
+export type NotificationParams = {
     __Type: string;
     buttons: NotificationButton[];
     style: string;
@@ -27,7 +27,7 @@ export type NotiticationParams = {
  * popup.showInformation("CRITICAL MESSAGE", "Your message here", "small", yesFunc);
  */
 export class PopUp {
-    params: NotiticationParams;
+    params: NotificationParams;
 
     popupListener: any;
 

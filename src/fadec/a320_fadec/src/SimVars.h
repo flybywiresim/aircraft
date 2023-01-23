@@ -114,6 +114,7 @@ class SimVars {
   /// Collection of LVars for the A32NX
   /// </summary>
   ID DevVar;
+  ID IsReady;
   ID FlexTemp;
   ID Engine1N2;
   ID Engine2N2;
@@ -184,6 +185,7 @@ class SimVars {
 
   void initializeVars() {
     DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
+    IsReady = register_named_variable("A32NX_IS_READY");
     FlexTemp = register_named_variable("AIRLINER_TO_FLEX_TEMP");
     Engine1N2 = register_named_variable("A32NX_ENGINE_N2:1");
     Engine2N2 = register_named_variable("A32NX_ENGINE_N2:2");
@@ -333,6 +335,7 @@ class SimVars {
 
   // Collection of SimVar/LVar 'get' Functions
   FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
+  FLOAT64 getIsReady() { return get_named_variable_value(IsReady); }
   FLOAT64 getFlexTemp() { return get_named_variable_value(FlexTemp); }
   FLOAT64 getEngine1N2() { return get_named_variable_value(Engine1N2); }
   FLOAT64 getEngine2N2() { return get_named_variable_value(Engine2N2); }

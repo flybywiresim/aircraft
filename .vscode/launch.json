@@ -43,6 +43,18 @@
                 "y:/external/src/": "${workspaceFolder}/src/",
                 "z:/external/src/": "${workspaceFolder}/src/",
             }
+        },
+        {
+            "name": "Rust Test Debugger",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "preLaunchTask": "cargo test build",
         }
     ]
 }
