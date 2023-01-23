@@ -1944,16 +1944,12 @@ impl PriorityValve {
     }
 
     fn update_open_state(&mut self, context: &UpdateContext) {
-        let opening_ratio = if self.upstream_pressure > self.fully_opened_threshold {
-            Ratio::new::<ratio>(1.)
-        } else {
-            Ratio::new::<ratio>(
-                ((self.upstream_pressure - self.fully_closed_threshold).get::<psi>()
-                    / (self.fully_opened_threshold - self.fully_closed_threshold).get::<psi>())
-                .max(0.)
-                .min(1.),
-            )
-        };
+        let opening_ratio = Ratio::new::<ratio>(
+            ((self.upstream_pressure - self.fully_closed_threshold).get::<psi>()
+                / (self.fully_opened_threshold - self.fully_closed_threshold).get::<psi>())
+            .max(0.)
+            .min(1.),
+        );
 
         self.open_ratio.update(context.delta(), opening_ratio);
     }
@@ -1968,7 +1964,6 @@ impl PriorityValve {
         self.downstream_pressure
     }
 }
-impl SimulationElement for PriorityValve {}
 
 pub struct LeakMeasurementValve {
     open_ratio: LowPassFilter<Ratio>,
@@ -3113,6 +3108,8 @@ mod tests {
             self.is_hot
         }
     }
+
+    impl SimulationElement for PriorityValve {}
 
     #[test]
     fn section_writes_its_state() {
