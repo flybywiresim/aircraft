@@ -264,7 +264,11 @@ impl BrakeCircuit {
     }
 
     fn update_failures(&mut self, context: &UpdateContext, section: &impl SectionPressure) {
-        if let Some(precharge_failure) = &mut self.accu_gas_precharge_failure {
+        if let Some((precharge_failure, accumulator)) = self
+            .accu_gas_precharge_failure
+            .as_ref()
+            .zip(self.accumulator.as_mut())
+        {
             if precharge_failure.is_active() {
                 if let Some(accumulator) = &mut self.accumulator {
                     let current_pre_charge_pressure_in_accumulator =
