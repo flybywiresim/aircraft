@@ -1673,15 +1673,11 @@ impl Section {
             + self.delta_pressure_from_delta_volume(fluid_volume_compressed, fluid);
         self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
 
-        if let Some(valve) = &self.leak_measurement_valve {
-            self.pressure_switch
-                .update(context, valve.downstream_pressure());
+        self.pressure_switch
+            .update(context, self.pressure_downstream_leak_valve());
 
-            if let Some(priority_valve) = &mut self.priority_valve {
-                priority_valve.update(context, valve.downstream_pressure())
-            }
-        } else {
-            self.pressure_switch.update(context, self.current_pressure);
+        if let Some(priority_valve) = &mut self.priority_valve {
+            priority_valve.update(context, self.current_pressure)
         }
     }
 

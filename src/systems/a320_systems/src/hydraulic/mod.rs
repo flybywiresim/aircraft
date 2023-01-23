@@ -10844,6 +10844,32 @@ mod tests {
         }
 
         #[test]
+        fn leak_meas_valve_closed_on_ground_ptu_is_working() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_yellow_e_pump(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .green_leak_meas_valve_closed()
+                .blue_leak_meas_valve_closed()
+                .yellow_leak_meas_valve_closed()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
+            assert!(!test_bed.is_blue_leak_meas_valve_commanded_open());
+            assert!(!test_bed.is_green_leak_meas_valve_commanded_open());
+
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+
+            assert!(test_bed.yellow_pressure().get::<psi>() > 2000.);
+            assert!(test_bed.green_pressure().get::<psi>() > 2000.);
+        }
+
+        #[test]
         fn nose_wheel_steers_with_pushback_tug() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
