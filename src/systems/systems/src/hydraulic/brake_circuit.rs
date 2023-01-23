@@ -322,11 +322,9 @@ impl BrakeCircuit {
     }
 
     pub fn accumulator_fluid_volume(&self) -> Volume {
-        if let Some(accumulator) = &self.accumulator {
-            accumulator.fluid_volume()
-        } else {
-            Volume::default()
-        }
+        self.accumulator
+            .as_ref()
+            .map_or(Volume::default(), Accumulator::fluid_volume)
     }
 
     fn update_demands(&mut self, brake_circuit_controller: &impl BrakeCircuitController) {
