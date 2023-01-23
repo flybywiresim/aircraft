@@ -11,6 +11,7 @@ use std::vec::Vec;
 const TRANSMISSION_BUFFER_SIZE: usize = 12;
 
 pub struct CanBus<const N: usize> {
+    initialize: bool,
     attached_systems: [u8; N],
     next_transmitting_system: usize,
     transmission_buffers: Vec<VecDeque<Arinc825Word<f64>>>,
@@ -31,6 +32,7 @@ pub struct CanBus<const N: usize> {
 impl<const N: usize> CanBus<N> {
     pub fn new(context: &mut InitContext, bus_name: &str, systems: [u8; N]) -> Self {
         Self {
+            initialize: true,
             attached_systems: systems,
             next_transmitting_system: 0,
             transmission_buffers: (1..=N).map(|_| VecDeque::new()).collect(),
@@ -106,6 +108,11 @@ impl<const N: usize> CanBus<N> {
                 self.message_received_by_systems[i] = true;
             }
         }
+
+        if self.initialize {
+            self.next_output_message = Arinc825Word::new_with_status(0.0, 0x04000000);
+            self.next_output_message_valid = true;
+            self.initialize = false;
         }
     }
 
