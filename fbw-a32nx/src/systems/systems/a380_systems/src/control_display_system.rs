@@ -6,7 +6,7 @@ use crate::systems::{
 };
 
 // they are not the same values as the real IDs
-// PFD, ND, MFD, EWD and SD are missing
+// PFD and ND are missing
 enum CanBusFunctionIds {
     KccuKeyboard = 42,
     KccuCursorControl = 43,
