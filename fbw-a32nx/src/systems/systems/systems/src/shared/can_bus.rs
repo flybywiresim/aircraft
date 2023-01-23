@@ -16,6 +16,7 @@ pub struct CanBus<const N: usize> {
     transmission_buffers: Vec<VecDeque<Arinc825Word<f64>>>,
     message_received_by_systems_ids: Vec<VariableIdentifier>,
     message_received_by_systems: Vec<bool>,
+    update_message_received_flag: Vec<bool>,
     availability_id: VariableIdentifier,
     available: bool,
     failure_indication_id: VariableIdentifier,
@@ -37,6 +38,7 @@ impl<const N: usize> CanBus<N> {
                 .map(|id| context.get_identifier(format!("{}_{}_RECEIVED", bus_name, systems[id])))
                 .collect(),
             message_received_by_systems: (1..=N).map(|_| true).collect(),
+            update_message_received_flag: (1..=N).map(|_| true).collect(),
             availability_id: context.get_identifier(format!("{}_AVAIL", bus_name)),
             available: false,
             failure_indication_id: context.get_identifier(format!("{}_FAILURE", bus_name)),
@@ -60,6 +62,9 @@ impl<const N: usize> CanBus<N> {
 
     pub fn update(&mut self) {
         self.next_output_message_valid = false;
+        self.update_message_received_flag
+            .iter_mut()
+            .for_each(|update| *update = false);
 
         if self.available && !self.failure_indication {
             let mut bus_busy = false;
@@ -74,13 +79,6 @@ impl<const N: usize> CanBus<N> {
                 });
 
             if !bus_busy {
-                // reset the received flags to release the bus for the next transmission
-                self.message_received_by_systems
-                    .iter_mut()
-                    .for_each(|received| {
-                        *received = false;
-                    });
-
                 // search the next sendable message
                 for x in 0..N {
                     let idx = (self.next_transmitting_system + x) % N;
@@ -94,8 +92,20 @@ impl<const N: usize> CanBus<N> {
                 }
 
                 // start the next time from the next system
+                if self.next_output_message_valid {
+                    // reset the received flags to release the bus for the next transmission
+                    self.message_received_by_systems
+                        .iter_mut()
+                        .for_each(|received| *received = false);
+                }
                 self.next_transmitting_system = (self.next_transmitting_system + 1) % N;
             }
+        } else {
+            for i in 0..N - 1 {
+                self.update_message_received_flag[i] = true;
+                self.message_received_by_systems[i] = true;
+            }
+        }
         }
     }
 
@@ -120,6 +130,7 @@ impl<const N: usize> CanBus<N> {
 
         if system_idx < N {
             self.message_received_by_systems[system_idx] = true;
+            self.update_message_received_flag[system_idx] = true;
         }
 
         self.received_message
@@ -186,10 +197,12 @@ impl<const N: usize> SimulationElement for CanBus<N> {
 
         // write the current status of the message received state per system
         for (i, id) in self.message_received_by_systems_ids.iter().enumerate() {
-            if self.message_received_by_systems[i] {
-                writer.write(id, 1.0);
-            } else {
-                writer.write(id, 0.0);
+            if self.update_message_received_flag[i] {
+                if self.message_received_by_systems[i] {
+                    writer.write(id, 1.0);
+                } else {
+                    writer.write(id, 0.0);
+                }
             }
         }
     }
