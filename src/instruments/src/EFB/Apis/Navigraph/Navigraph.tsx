@@ -291,7 +291,7 @@ export default class NavigraphClient {
 
     public async getAirportInfo(icao: string): Promise<AirportInfo | null> {
         if (this.hasToken) {
-            const airportJsonResp = await fetch(`https://api.navigraph.com/v2/airport/${icao}`);
+            const airportJsonResp = await fetch(`https://api.navigraph.com/v2/airport/${icao}`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
 
             if (airportJsonResp.ok) {
                 const airportJson = await airportJsonResp.json();
