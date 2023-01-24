@@ -89,7 +89,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartId: chart.id }));
 
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartDimensions: { width: undefined, height: undefined } }));
-        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartName: { light: chart.fileDay, dark: chart.fileNight } }));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartName: { light: chart.fileUrlDay, dark: chart.fileUrlNight } }));
 
         dispatch(setBoundingBox(chart.boundingBox));
 
@@ -147,7 +147,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                                     } else {
                                                         dispatch(addPinnedChart({
                                                             chartId: chart.id,
-                                                            chartName: { light: chart.fileDay, dark: chart.fileNight },
+                                                            chartName: { light: chart.fileUrlDay, dark: chart.fileUrlNight },
                                                             title: searchQuery,
                                                             subTitle: chart.name,
                                                             tabIndex: selectedTabIndex,
@@ -203,7 +203,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                             } else {
                                                 dispatch(addPinnedChart({
                                                     chartId: chart.id,
-                                                    chartName: { light: chart.fileDay, dark: chart.fileNight },
+                                                    chartName: { light: chart.fileUrlDay, dark: chart.fileUrlNight },
                                                     title: searchQuery,
                                                     subTitle: chart.name,
                                                     tabIndex: selectedTabIndex,

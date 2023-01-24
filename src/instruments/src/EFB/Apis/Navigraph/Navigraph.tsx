@@ -19,8 +19,8 @@ export interface NavigraphBoundingBox {
  * runway renamed to runways
  */
 export interface NavigraphChart {
-    fileDay: string,
-    fileNight: string,
+    fileUrlDay: string,
+    fileUrlNight: string,
     thumbDay: string,
     thumbNight: string,
     icaoAirportIdentifier: string,
@@ -218,22 +218,18 @@ export default class NavigraphClient {
         }
     }
 
-    public async chartCall(icao: string, item: string): Promise<string> {
-        if (icao.length === 4) {
-            const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`,
-                {
-                    headers: {
-                        Authorization:
-                         `Bearer ${this.accessToken}`,
-                    },
-                });
+    public async getChartImage(url: string): Promise<string> {
+        if (url.length !== 0) {
+            const callResp = await fetch(url, { headers: { Authorization: `Bearer ${this.accessToken}` } });
             if (callResp.ok) {
-                return callResp.text();
+                const blob = await callResp.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                return Promise.resolve(objectUrl);
             }
             // Unauthorized
             if (callResp.status === 401) {
                 await this.getToken();
-                return this.chartCall(icao, item);
+                return this.getChartImage(url);
             }
         }
         return Promise.reject();
@@ -245,11 +241,10 @@ export default class NavigraphClient {
 
             if (newChartJsonResp.ok) {
                 const newChartJson = await newChartJsonResp.json();
-                console.log(newChartJson);
 
                 const chartArray: NavigraphChart[] = newChartJson.charts.map((chart) => ({
-                    fileDay: chart.image_day,
-                    fileNight: chart.image_night,
+                    fileUrlDay: chart.image_day_url,
+                    fileUrlNight: chart.image_night_url,
                     thumbDay: chart.thumb_day,
                     thumbNight: chart.thumb_night,
                     icaoAirportIdentifier: chart.icao_airport_identifier,

@@ -68,8 +68,8 @@ export const NavigraphChartUI = () => {
     useEffect(() => {
         if (chartName && (chartName.light !== '' || chartName.dark !== '')) {
             const fetchCharts = async () => {
-                const light = await navigraph.chartCall(searchQuery, chartName.light);
-                const dark = await navigraph.chartCall(searchQuery, chartName.dark);
+                const light = await navigraph.getChartImage(chartName.light);
+                const dark = await navigraph.getChartImage(chartName.dark);
                 dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
             };
             fetchCharts();
