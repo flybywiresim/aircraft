@@ -394,4 +394,121 @@ mod tests {
         let received: f64 = test_bed.read_by_name("TEST_CAN_BUS_0_RECEIVED");
         assert_about_eq!(received, 1.0);
     }
+
+    #[test]
+    fn send_message_queue_single_source_can_bus() {
+        let mut test_bed = SimulationTestBed::new(CanBusTestAircraft::new);
+
+        let mut first_message = Arinc825Word::<f64>::new_with_status(20.0, 0);
+        let mut second_message = Arinc825Word::<f64>::new_with_status(25.0, 0);
+        first_message.set_client_function_id(1);
+        second_message.set_client_function_id(1);
+        test_bed.command(|a| a.send_message(first_message));
+        test_bed.command(|a| a.send_message(second_message));
+        test_bed.run();
+
+        let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
+        assert!(available == 1.0);
+
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(1);
+            assert!(!new_message_available);
+        });
+
+        // mark all messages as received
+        for i in 0..5 {
+            test_bed.command(|a| {
+                a.received_message(i);
+            });
+        }
+
+        let mut message: f64 = test_bed.read_by_name("TEST_CAN_BUS");
+        let mut value: Arinc825Word<f64> = Arinc825Word::from(message);
+        assert!(value.status() == first_message.status());
+        assert_about_eq!(value.value(), first_message.value());
+
+        test_bed.run();
+
+        message = test_bed.read_by_name("TEST_CAN_BUS");
+        value = Arinc825Word::from(message);
+        assert!(value.status() == second_message.status());
+        assert_about_eq!(value.value(), second_message.value());
+    }
+
+    #[test]
+    fn send_message_queue_multiple_sources_can_bus() {
+        let mut test_bed = SimulationTestBed::new(CanBusTestAircraft::new);
+
+        let mut first_message = Arinc825Word::<f64>::new_with_status(20.0, 0);
+        let mut second_message = Arinc825Word::<f64>::new_with_status(25.0, 0);
+        first_message.set_client_function_id(1);
+        second_message.set_client_function_id(2);
+        test_bed.command(|a| a.send_message(first_message));
+        test_bed.command(|a| a.send_message(second_message));
+        test_bed.run();
+
+        let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
+        assert!(available == 1.0);
+
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(0);
+            assert!(new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(1);
+            assert!(!new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(2);
+            assert!(new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(3);
+            assert!(new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(4);
+            assert!(new_message_available);
+        });
+
+        // mark all messages as received
+        for i in 0..5 {
+            test_bed.command(|a| {
+                a.received_message(i);
+            });
+        }
+
+        let mut message: f64 = test_bed.read_by_name("TEST_CAN_BUS");
+        let mut value: Arinc825Word<f64> = Arinc825Word::from(message);
+        assert!(value.status() == first_message.status());
+        assert_about_eq!(value.value(), first_message.value());
+
+        test_bed.run();
+
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(0);
+            assert!(new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(1);
+            assert!(new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(2);
+            assert!(!new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(3);
+            assert!(new_message_available);
+        });
+        test_bed.command(|a| {
+            let new_message_available = a.message_available(4);
+            assert!(new_message_available);
+        });
+
+        message = test_bed.read_by_name("TEST_CAN_BUS");
+        value = Arinc825Word::from(message);
+        assert!(value.status() == second_message.status());
+        assert_about_eq!(value.value(), second_message.value());
+    }
 }
