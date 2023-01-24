@@ -106,11 +106,11 @@ impl Keyboard {
         if self.switch_kbd_value > 0.0 && self.power_supply.output_is_powered() {
             self.keys.iter().for_each(|key| {
                 if key.button_pressed() {
-                    let code = key.keycode();
+                    let code = key.keycode() & 0x00ff;
 
                     // create the message for the pressed event
                     let mut pressed_message = Arinc825Word::new(
-                        (code & 0x80ff) as f64,
+                        (code | 0x8000) as f64,
                         LogicalCommunicationChannel::NormalOperationChannel,
                     );
                     pressed_message.set_source_function_id(self.function_id);
@@ -118,7 +118,7 @@ impl Keyboard {
 
                     // create the message for the release event
                     let mut released_message = Arinc825Word::new(
-                        (code & 0x00ff) as f64,
+                        code as f64,
                         LogicalCommunicationChannel::NormalOperationChannel,
                     );
                     released_message.set_source_function_id(self.function_id);
