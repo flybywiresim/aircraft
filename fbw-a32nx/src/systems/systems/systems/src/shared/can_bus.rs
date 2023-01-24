@@ -258,7 +258,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert_eq!(available, 1.0);
+        assert!(available == 1.0);
         let mut received: f64 = test_bed.read_by_name("TEST_CAN_BUS_0_RECEIVED");
         assert_about_eq!(received, 1.0);
         received = test_bed.read_by_name("TEST_CAN_BUS_1_RECEIVED");
@@ -281,7 +281,7 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert_eq!(available, 1.0);
+        assert!(available == 1.0);
 
         let mut received: f64 = test_bed.read_by_name("TEST_CAN_BUS_0_RECEIVED");
         assert_about_eq!(received, 0.0);
@@ -297,7 +297,7 @@ mod tests {
         let message: f64 = test_bed.read_by_name("TEST_CAN_BUS");
         let value: Arinc825Word<f64> = Arinc825Word::from(message);
 
-        assert_eq!(value.status(), word.status());
+        assert!(value.status() == word.status());
         assert_about_eq!(value.value(), word.value());
     }
 
@@ -311,27 +311,27 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert_eq!(available, 1.0);
+        assert!(available == 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
-            assert_eq!(true, new_message_available);
+            assert!(new_message_available);
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(1);
-            assert_eq!(false, new_message_available);
+            assert!(!new_message_available);
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(2);
-            assert_eq!(true, new_message_available);
+            assert!(new_message_available);
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(3);
-            assert_eq!(true, new_message_available);
+            assert!(new_message_available);
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(4);
-            assert_eq!(true, new_message_available);
+            assert!(new_message_available);
         });
     }
 
@@ -345,15 +345,15 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert_eq!(available, 1.0);
+        assert!(available == 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
-            assert_eq!(true, new_message_available);
+            assert!(new_message_available);
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(1);
-            assert_eq!(false, new_message_available);
+            assert!(!new_message_available);
         });
 
         test_bed.command(|a| {
@@ -361,7 +361,7 @@ mod tests {
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
-            assert_eq!(false, new_message_available);
+            assert!(!new_message_available);
         });
 
         let received: f64 = test_bed.read_by_name("TEST_CAN_BUS_0_RECEIVED");
@@ -378,15 +378,15 @@ mod tests {
         test_bed.run();
 
         let available: f64 = test_bed.read_by_name("TEST_CAN_BUS_AVAIL");
-        assert_eq!(available, 1.0);
+        assert!(available == 1.0);
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
-            assert_eq!(true, new_message_available);
+            assert!(new_message_available);
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(1);
-            assert_eq!(false, new_message_available);
+            assert!(!new_message_available);
         });
 
         test_bed.command(|a| {
@@ -394,14 +394,14 @@ mod tests {
         });
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
-            assert_eq!(false, new_message_available);
+            assert!(!new_message_available);
         });
 
         test_bed.run();
 
         test_bed.command(|a| {
             let new_message_available = a.message_available(0);
-            assert_eq!(false, new_message_available);
+            assert!(!new_message_available);
         });
         let received: f64 = test_bed.read_by_name("TEST_CAN_BUS_0_RECEIVED");
         assert_about_eq!(received, 1.0);
