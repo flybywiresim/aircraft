@@ -10,14 +10,6 @@ export interface NavigraphBoundingBox {
     height: number,
 }
 
-/**
- * Changes as of new API Version 2:
- * extId removed
- * fileName removed
- * type reduced to category
- * procedureIdentifier renamed to name
- * runway renamed to runways
- */
 export interface NavigraphChart {
     fileUrlDay: string,
     fileUrlNight: string,
