@@ -245,18 +245,18 @@ export default class NavigraphClient {
                     indexNumber: chart.index_number,
                     name: chart.name,
                     runways: chart.runways,
-                    boundingBox: chart.planview ? {
+                    boundingBox: chart.bounding_boxes?.planview ? {
                         bottomLeft: {
-                            lat: chart.planview.latlng.lat1,
-                            lon: chart.planview.latlng.lng1,
-                            xPx: chart.planview.pixels.x1,
-                            yPx: chart.planview.pixels.y1,
+                            lat: chart.bounding_boxes.planview.latlng.lat1,
+                            lon: chart.bounding_boxes.planview.latlng.lng1,
+                            xPx: chart.bounding_boxes.planview.pixels.x1,
+                            yPx: chart.bounding_boxes.planview.pixels.y1,
                         },
                         topRight: {
-                            lat: chart.planview.latlng.lat2,
-                            lon: chart.planview.latlng.lng2,
-                            xPx: chart.planview.pixels.x2,
-                            yPx: chart.planview.pixels.y2,
+                            lat: chart.bounding_boxes.planview.latlng.lat2,
+                            lon: chart.bounding_boxes.planview.latlng.lng2,
+                            xPx: chart.bounding_boxes.planview.pixels.x2,
+                            yPx: chart.bounding_boxes.planview.pixels.y2,
                         },
                         width: chart.width,
                         height: chart.height,
