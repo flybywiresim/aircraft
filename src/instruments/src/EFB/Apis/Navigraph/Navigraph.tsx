@@ -229,12 +229,12 @@ export default class NavigraphClient {
 
     public async getChartList(icao: string): Promise<NavigraphAirportCharts> {
         if (this.hasToken) {
-            const newChartJsonResp = await fetch(`https://api.navigraph.com/v2/charts/${icao}?version=CAO`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
+            const chartJsonResp = await fetch(`https://api.navigraph.com/v2/charts/${icao}?version=CAO`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
 
-            if (newChartJsonResp.ok) {
-                const newChartJson = await newChartJsonResp.json();
+            if (chartJsonResp.ok) {
+                const chartJson = await chartJsonResp.json();
 
-                const chartArray: NavigraphChart[] = newChartJson.charts.map((chart) => ({
+                const chartArray: NavigraphChart[] = chartJson.charts.map((chart) => ({
                     fileUrlDay: chart.image_day_url,
                     fileUrlNight: chart.image_night_url,
                     thumbDay: chart.thumb_day,
