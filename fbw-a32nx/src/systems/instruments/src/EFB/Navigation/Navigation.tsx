@@ -507,6 +507,7 @@ export const ChartViewer = () => {
                                             className="absolute left-0 w-full transition duration-100 select-none"
                                             draggable={false}
                                             src={chartLinks.dark}
+                                            onLoad={() => URL.revokeObjectURL(chartLinks.dark)}
                                             alt="chart"
 
                                         />
@@ -514,6 +515,7 @@ export const ChartViewer = () => {
                                             className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
                                             draggable={false}
                                             src={chartLinks.light}
+                                            onLoad={() => URL.revokeObjectURL(chartLinks.light)}
                                             alt="chart"
                                         />
                                     </div>
