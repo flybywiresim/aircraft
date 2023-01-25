@@ -283,9 +283,7 @@ impl BrakeCircuit {
                 ));
 
                 accumulator.set_gas_precharge_pressure(new_pressure_after_leak);
-            } else if self.accu_gas_precharge_failure_active_previous_state
-                && !precharge_failure.is_active()
-            {
+            } else if self.accu_gas_precharge_failure_active_previous_state {
                 // If failure was active and is now inactive we trigger this "maintenance" action once
                 // This is more a maintenance action than stoping the leak failure here as we refil gas pressure if failure is off.
                 accumulator.reset_gas_precharge_pressure_to_nominal();
