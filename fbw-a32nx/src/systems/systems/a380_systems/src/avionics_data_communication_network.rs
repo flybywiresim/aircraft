@@ -67,7 +67,7 @@ impl RoutingTableEntry {
  * The routing tables define the upper triangular matrix for the two networks.
  * A breadth-first-search is used to update the routing table per AFDX switch.
  */
-pub struct AvionicsDataCommunicationNetwork {
+pub struct A380AvionicsDataCommunicationNetwork {
     afdx_switches: [AvionicsFullDuplexSwitch; 16],
     afdx_networks: [HashMap<usize, Vec<usize>>; 2],
     cpio_modules: [CoreProcessingInputOutputModule; 22],
@@ -76,7 +76,7 @@ pub struct AvionicsDataCommunicationNetwork {
     publish_routing_table: bool,
 }
 
-impl AvionicsDataCommunicationNetwork {
+impl A380AvionicsDataCommunicationNetwork {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             afdx_switches: [
@@ -459,7 +459,7 @@ impl AvionicsDataCommunicationNetwork {
     fn update_routing_table(&mut self, network: usize, offset: usize) {
         for (y, row) in self.routing_tables[network].iter_mut().enumerate() {
             for (x, entry) in row.iter_mut().enumerate() {
-                entry.set_reachable(AvionicsDataCommunicationNetwork::switches_reachable(
+                entry.set_reachable(A380AvionicsDataCommunicationNetwork::switches_reachable(
                     &self.afdx_switches,
                     &self.afdx_networks[network],
                     y + offset,
@@ -496,7 +496,7 @@ impl AvionicsDataCommunicationNetwork {
     }
 }
 
-impl SimulationElement for AvionicsDataCommunicationNetwork {
+impl SimulationElement for A380AvionicsDataCommunicationNetwork {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.afdx_switches, visitor);
         accept_iterable!(self.cpio_modules, visitor);
@@ -531,7 +531,7 @@ mod tests {
     use uom::si::{electric_potential::volt, f64::*};
 
     struct AdcnTestAircraft {
-        adcn: AvionicsDataCommunicationNetwork,
+        adcn: A380AvionicsDataCommunicationNetwork,
         powered_source_dc: TestElectricitySource,
         dc_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
@@ -541,7 +541,7 @@ mod tests {
     impl AdcnTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                adcn: AvionicsDataCommunicationNetwork::new(context),
+                adcn: A380AvionicsDataCommunicationNetwork::new(context),
                 powered_source_dc: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::Battery(2),
