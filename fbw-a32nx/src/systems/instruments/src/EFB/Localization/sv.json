@@ -570,8 +570,8 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "GsxFuelEnabled": "GSX Fueling Synkronisering",
+      "GsxPayloadEnabled": "GSX-nyttolastsynkronisering",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {
@@ -654,7 +654,7 @@
     "RecommendationText": "Vänligen uppdatera ditt flygplan via FlyByWire Installatören.",
     "StatusBarWarning": "Inaktuell Flygplansversion",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Vänligen uppdatera ditt flygplan via FlyByWire Installatören."
     },
     "Title": "Ny version tillgänglig"
   }
