@@ -42,9 +42,9 @@ export class DIR1 extends Director {
             throw new Error('[CIDS/DIR1] update() was called before initialization!');
         }
 
-        if (this.isFaulty()) return;
-
         this.updateActiveState();
+
+        if (this.isFaulty()) return;
 
         this.writeMemory();
 
