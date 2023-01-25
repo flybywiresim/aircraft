@@ -41,7 +41,8 @@ export abstract class Director {
      */
     public output(varName: string, unit: SimVar.SimVarUnit, value: any, onComplete?: () => void, force = false): void {
         if (CidsOrchestrator.DEBUG) {
-            console.log('[CIDS/DIR] Received output command. Payload:', { 'SimVar name': varName, 'Unit': unit, 'Value:': value, 'Force': force });
+            console.log('[CIDS/DIR] Received output command. Payload:');
+            console.dir({ 'SimVar name': varName, 'Unit': unit, 'Value:': value, 'Force': force });
         }
 
         if (this.isActive && !this.isFaulty || force) {
