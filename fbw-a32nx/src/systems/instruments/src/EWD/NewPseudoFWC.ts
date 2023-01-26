@@ -72,6 +72,8 @@ export class NewPseudoFWC {
 
     private readonly apuAvail = Subject.create(0);
 
+    private readonly apuBleedValveOpen = Subject.create(false);
+
     private readonly radioAlt = Subject.create(0);
 
     private readonly fac1Failed = Subject.create(0);
@@ -86,11 +88,25 @@ export class NewPseudoFWC {
 
     private readonly usrStartRefueling = Subject.create(0);
 
+    private readonly engSelectorPosition = Subject.create(0);
+
+    private readonly eng1AntiIce = Subject.create(false);
+
+    private readonly eng2AntiIce = Subject.create(false);
+
     /* FUEL */
 
     private readonly leftOuterInnerValve = Subject.create(0);
 
+    private readonly fuelXFeedPBOn = Subject.create(false);
+
     private readonly rightOuterInnerValve = Subject.create(0);
+
+    /* HYDRAULICS */
+
+    private readonly hydPTU = Subject.create(false);
+
+    private readonly ratDeployed = Subject.create(0);
 
     /* FCTL */
 
@@ -116,17 +132,51 @@ export class NewPseudoFWC {
 
     private readonly aircraftOnGround = Subject.create(0);
 
+    private readonly brakeFan = Subject.create(false);
+
+    private readonly landingLight2Retracted = Subject.create(false);
+
+    private readonly landingLight3Retracted = Subject.create(false);
+
+    private readonly parkBrake = Subject.create(false);
+
+    private readonly nwSteeringDisc = Subject.create(false);
+
     /* OTHER STUFF */
 
-    private readonly seatBelt = Subject.create(0);
+    private readonly airKnob = Subject.create(0);
+
+    private readonly attKnob = Subject.create(0);
+
+    private readonly compMesgCount = Subject.create(0);
+
+    private readonly dmcSwitchingKnob = Subject.create(0);
+
+    private readonly gpwsFlaps3 = Subject.create(false);
+
+    private readonly gpwsFlapMode = Subject.create(0);
+
+    private readonly gpwsTerrOff = Subject.create(false);
+
+    private readonly ndXfrKnob = Subject.create(0);
+
+    private readonly manLandingElevation = Subject.create(0);
 
     private readonly noSmoking = Subject.create(0);
 
     private readonly noSmokingSwitchPosition = Subject.create(0);
 
+    private readonly predWSOn = Subject.create(false);
+
+    private readonly seatBelt = Subject.create(0);
+
     private readonly strobeLightsOn = Subject.create(0);
 
-    private readonly gpwsFlapMode = Subject.create(0);
+    private readonly tcasSensitivity = Subject.create(0);
+
+    private readonly wingAntiIce = Subject.create(false);
+
+    private readonly voiceVhf3 = Subject.create(0);
 
     /* SETTINGS */
 
@@ -290,6 +340,7 @@ export class NewPseudoFWC {
         this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
 
         this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool'));
+        this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
 
         this.radioAlt.set(SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND MINUS CG', 'feet'));
 
@@ -303,6 +354,14 @@ export class NewPseudoFWC {
 
         this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
         this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
+        this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
+        this.eng1AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:1', 'bool'));
+        this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
+
+        /* HYDRAULICS */
+
+        this.hydPTU.set(SimVar.GetSimVarValue('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'Bool'));
+        this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100'));
 
         /* ADIRS */
 
@@ -319,17 +378,35 @@ export class NewPseudoFWC {
         // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
         // FIXME The landing gear triggers the dual engine failure on loading
         this.aircraftOnGround.set(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
+        this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
+        this.landingLight2Retracted.set(SimVar.GetSimVarValue('L:LANDING_2_Retracted', 'bool'));
+        this.landingLight3Retracted.set(SimVar.GetSimVarValue('L:LANDING_3_Retracted', 'bool'));
+        this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
+        this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
         /* OTHER STUFF */
 
+        this.airKnob.set(SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum'));
+        this.attKnob.set(SimVar.GetSimVarValue('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum'));
+        this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
+        this.dmcSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum'));
+        this.manLandingElevation.set(SimVar.GetSimVarValue('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number'));
         this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
+        this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
         this.noSmoking.set(SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool'));
         this.noSmokingSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'Enum'));
         this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
+        this.gpwsFlaps3.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool'));
         this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
+        this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
+        this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
+        this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
+        this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
+        this.voiceVhf3.set(SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', 'number'));
 
         /* FUEL */
         this.leftOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:4', 'Bool'));
+        this.fuelXFeedPBOn.set(SimVar.GetSimVarValue('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool'));
         this.rightOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:5', 'Bool'));
 
         /* F/CTL */
@@ -708,8 +785,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000090': // NO SMOKING
-        {
+        '0000090': { // NO SMOKING
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(([noSmoking, configPortableDevices]) => noSmoking === 1 && !configPortableDevices, this.noSmoking, this.configPortableDevices),
             whichCodeToReturn: () => [0],
@@ -719,8 +795,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000095': // PORTABLE DEVICES
-        {
+        '0000095': { // PORTABLE DEVICES
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(([noSmoking, configPortableDevices]) => noSmoking === 1 && !!configPortableDevices, this.noSmoking, this.configPortableDevices),
             whichCodeToReturn: () => [0],
@@ -730,8 +805,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000100': // STROBE LIGHT OFF
-        {
+        '0000100': { // STROBE LIGHT OFF
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(([aircraftOnGround, strobeLightsOn]) => !!aircraftOnGround && strobeLightsOn === 2, this.aircraftOnGround, this.strobeLightsOn),
             whichCodeToReturn: () => [0],
@@ -741,10 +815,11 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000105': // OUTR TK FUEL XFRD
-        {
+        '0000105': { // OUTR TK FUEL XFRD
             flightPhaseInhib: [], // Plus check that outer tanks not empty
-            simVarIsActive: MappedSubject.create(([leftOuterInnerValve, rightOuterInnerValve]) => !!leftOuterInnerValve || !!rightOuterInnerValve, this.leftOuterInnerValve, this.rightOuterInnerValve),
+            simVarIsActive: MappedSubject.create(
+                ([leftOuterInnerValve, rightOuterInnerValve]) => !!leftOuterInnerValve || !!rightOuterInnerValve, this.leftOuterInnerValve, this.rightOuterInnerValve,
+            ),
             whichCodeToReturn: () => [0],
             codesToReturn: ['000010501'], // config memo
             memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
@@ -752,8 +827,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000305': // GPWS FLAP MODE OFF
-        {
+        '0000305': { // GPWS FLAP MODE OFF
             flightPhaseInhib: [],
             simVarIsActive: this.gpwsFlapMode.map((v) => !!v),
             whichCodeToReturn: () => [0],
@@ -763,8 +837,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000140': // T.O. INHIBIT
-        {
+        '0000140': { // T.O. INHIBIT
             flightPhaseInhib: [],
             simVarIsActive: this.showTakeoffInhibit,
             whichCodeToReturn: () => [0],
@@ -774,8 +847,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000150': // LDG INHIBIT
-        {
+        '0000150': { // LDG INHIBIT
             flightPhaseInhib: [],
             simVarIsActive: this.showLandingInhibit,
             whichCodeToReturn: () => [0],
@@ -809,281 +881,258 @@ export class NewPseudoFWC {
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
+        }, */
+        '0000060': { // SPEED BRK
+            flightPhaseInhib: [1, 8, 9, 10],
+            simVarIsActive: this.speedBrakeCommand,
+            whichCodeToReturn: () => [![6, 7].includes(this.fwcFlightPhase.get()) ? 1 : 0],
+            codesToReturn: ['000006001', '000006002'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
         },
-        '0000060': // SPEED BRK
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: speedBrakeCommand && ![1, 8, 9, 10].includes(flightPhase),
-        whichCodeToReturn: [![6, 7].includes(flightPhase) ? 1 : 0],
-        codesToReturn: ['000006001', '000006002'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000200': // PARK BRK
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!([1, 2, 9, 10].includes(flightPhase) && parkBrake === 1),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000020001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000040': // NW STRG DISC
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: nwSteeringDisc === 1,
-        whichCodeToReturn: [engine1State > 0 || engine2State > 1 ? 1 : 0],
-        codesToReturn: ['000004001', '000004002'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000160': // PTU ON
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: hydPTU === 1,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000016001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000210': // RAT OUT
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: ratDeployed > 0,
-        whichCodeToReturn: [[1, 2].includes(flightPhase) ? 1 : 0],
-        codesToReturn: ['000021001', '000021002'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000070': // IGNITION
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: engSelectorPosition === 2,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000007001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000540': // PRED W/S OFF
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(predWSOn === 0 && ![1, 10].includes(flightPhase)),
-        whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
-        codesToReturn: ['000054001', '000054002'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000545': // TERR OFF
-    {
-        flightPhaseInhib: [1, 10],
-        simVarIsActive: !!(gpwsTerrOff === 1 && ![1, 10].includes(flightPhase)),
-        whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
-        codesToReturn: ['000054501', '000054502'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000320': // TCAS STBY
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(tcasSensitivity === 1 && flightPhase !== 6),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000032001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000325': // TCAS STBY in flight
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(tcasSensitivity === 1 && flightPhase === 6),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000032501'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000552': // COMPANY MESSAGE
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: [1, 2, 6, 9, 10].includes(flightPhase) && compMesgCount > 0,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000055201'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000260': // ENG ANTI ICE
-    {
-        flightPhaseInhib: [3, 4, 5, 7, 8],
-        simVarIsActive: !!(eng1AntiIce === 1 || eng2AntiIce === 1),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000026001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000270': // WING ANTI ICE
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: wingAntiIce === 1,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000027001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000275': // ICE NOT DETECTED
-    {
-        flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
-        simVarIsActive: iceNotDetTimer2.read() && !aircraftOnGround,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000027501'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000170': // APU AVAIL
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(apuAvail === 1 && !apuBleedValveOpen),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000017001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000180': // APU BLEED
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(apuAvail === 1 && apuBleedValveOpen === 1),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000018001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000190': // LDG LT
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(!landingLight2Retracted || !landingLight3Retracted),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000019001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000220': // BRAKE FAN
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: brakeFan === 1,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000022001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000290': // SWITCHING PNL
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(ndXfrKnob !== 1 || dmcSwitchingKnob !== 1),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000029001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000300': // GPWS FLAPS 3
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: gpwsFlaps3 === 1,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000030001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000022': // AUTOBRAKE
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: [7, 8].includes(flightPhase),
-        whichCodeToReturn: [parseInt(autoBrakesArmedMode) - 1],
-        codesToReturn: ['000002201', '000002202', '000002203', '000002204'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000230': // MAN LANDING ELEVATION
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: manLandingElevation > 0,
-        whichCodeToReturn: [0],
-        codesToReturn: ['000023001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000250': // FUEL X FEED
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: fuelXFeedPBOn === 1,
-        whichCodeToReturn: [[3, 4, 5].includes(flightPhase) ? 1 : 0],
-        codesToReturn: ['000025001', '000025002'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000680': // ADIRS SWTG
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: !!(ATTKnob !== 1 || AIRKnob !== 1),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000068001'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    },
-        '0000567': // VHF3 VOICE
-    {
-        flightPhaseInhib: [],
-        simVarIsActive: voiceVHF3 !== 0 && [1, 2, 6, 9, 10].includes(flightPhase),
-        whichCodeToReturn: [0],
-        codesToReturn: ['000056701'],
-        memoInhibit: () => false,
-        failure: 0,
-        sysPage: -1,
-        side: 'RIGHT',
-    }, */
+        '0000200': { // PARK BRK
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8],
+            simVarIsActive: this.parkBrake,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000020001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000040': { // NW STRG DISC
+            flightPhaseInhib: [],
+            simVarIsActive: this.nwSteeringDisc,
+            whichCodeToReturn: () => [this.engine1State.get() > 0 || this.engine2State.get() > 0 ? 1 : 0],
+            codesToReturn: ['000004001', '000004002'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000160': { // PTU ON
+            flightPhaseInhib: [],
+            simVarIsActive: this.hydPTU,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000016001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000210': { // RAT OUT
+            flightPhaseInhib: [],
+            simVarIsActive: this.ratDeployed.map((v) => v > 0),
+            whichCodeToReturn: () => [[1, 2].includes(this.fwcFlightPhase.get()) ? 1 : 0],
+            codesToReturn: ['000021001', '000021002'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000070': { // IGNITION
+            flightPhaseInhib: [],
+            simVarIsActive: this.engSelectorPosition.map((v) => v === 2),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000007001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000540': { // PRED W/S OFF
+            flightPhaseInhib: [1, 10],
+            simVarIsActive: this.predWSOn.map((v) => !v),
+            whichCodeToReturn: () => [[3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool') ? 1 : 0],
+            codesToReturn: ['000054001', '000054002'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000545': { // TERR OFF
+            flightPhaseInhib: [1, 10],
+            simVarIsActive: this.gpwsTerrOff,
+            whichCodeToReturn: () => [[3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool') ? 1 : 0],
+            codesToReturn: ['000054501', '000054502'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000320': { // TCAS STBY
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase !== 6, this.tcasSensitivity, this.fwcFlightPhase),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000032001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000325': { // TCAS STBY in flight
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase === 6, this.tcasSensitivity, this.fwcFlightPhase),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000032501'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000552': { // COMPANY MESSAGE
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.compMesgCount.map((v) => v > 0),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000055201'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000260': { // ENG ANTI ICE
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([eng1AntiIce, eng2AntiIce]) => eng1AntiIce || eng2AntiIce, this.eng1AntiIce, this.eng2AntiIce),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000026001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000270': { // WING ANTI ICE
+            flightPhaseInhib: [],
+            simVarIsActive: this.wingAntiIce,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000027001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        }, /*
+        '0000275': { // ICE NOT DETECTED
+            flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+            simVarIsActive: iceNotDetTimer2.read() && !aircraftOnGround,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000027501'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        }, */
+        '0000170': { // APU AVAIL
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([apuAvail, apuBleedValveOpen]) => apuAvail === 1 && !apuBleedValveOpen, this.apuAvail, this.apuBleedValveOpen),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000017001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000180': { // APU BLEED
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([apuAvail, apuBleedValveOpen]) => apuAvail === 1 && apuBleedValveOpen, this.apuAvail, this.apuBleedValveOpen),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000018001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000190': { // LDG LT
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(
+                ([landingLight2Retracted, landingLight3Retracted]) => !landingLight2Retracted || !landingLight3Retracted, this.landingLight2Retracted, this.landingLight3Retracted,
+            ),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000019001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000220': { // BRAKE FAN
+            flightPhaseInhib: [],
+            simVarIsActive: this.brakeFan,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000022001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000290': { // SWITCHING PNL
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([ndXfrKnob, dmcSwitchingKnob]) => ndXfrKnob !== 1 || dmcSwitchingKnob !== 1, this.ndXfrKnob, this.dmcSwitchingKnob),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000029001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000300': { // GPWS FLAPS 3
+            flightPhaseInhib: [],
+            simVarIsActive: this.gpwsFlaps3,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000030001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000022': { // AUTOBRAKE
+            flightPhaseInhib: [],
+            simVarIsActive: this.fwcFlightPhase.map((v) => v === 7 || v === 8),
+            whichCodeToReturn: () => [this.autoBrake.get() - 1],
+            codesToReturn: ['000002201', '000002202', '000002203', '000002204'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000230': { // MAN LANDING ELEVATION
+            flightPhaseInhib: [],
+            simVarIsActive: this.manLandingElevation.map((v) => v > 0),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000023001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000250': { // FUEL X FEED
+            flightPhaseInhib: [],
+            simVarIsActive: this.fuelXFeedPBOn,
+            whichCodeToReturn: () => [[3, 4, 5].includes(this.fwcFlightPhase.get()) ? 1 : 0],
+            codesToReturn: ['000025001', '000025002'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000680': { // ADIRS SWTG
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([airKnob, attKnob]) => attKnob !== 1 || airKnob !== 1, this.airKnob, this.attKnob),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000068001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000567': { // VHF3 VOICE
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.voiceVhf3.map((v) => v !== 0),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000056701'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
     };
 }
