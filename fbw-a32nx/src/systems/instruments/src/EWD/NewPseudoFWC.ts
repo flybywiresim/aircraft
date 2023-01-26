@@ -346,11 +346,11 @@ export class NewPseudoFWC {
 
         this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
-        this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
+        this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWS_TOMEMO', 'bool'));
 
         this.autoBrake.set(SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum'));
 
-        this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool'));
+        this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWS_LDGMEMO', 'bool'));
 
         this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
         this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
