@@ -2,6 +2,7 @@ import { Subject, Subscribable, MappedSubject, ArraySubject } from 'msfssdk';
 
 import { Arinc429Word } from '@shared/arinc429';
 import { NXLogicConfirmNode } from '@instruments/common/NXLogic';
+import { NXDataStore } from '@shared/persistence';
 
 interface EWDItem {
     flightPhaseInhib: number[],
@@ -85,6 +86,12 @@ export class NewPseudoFWC {
 
     private readonly usrStartRefueling = Subject.create(0);
 
+    /* FUEL */
+
+    private readonly leftOuterInnerValve = Subject.create(0);
+
+    private readonly rightOuterInnerValve = Subject.create(0);
+
     /* FCTL */
 
     private spoilersArmed = Subject.create(false);
@@ -105,9 +112,25 @@ export class NewPseudoFWC {
 
     private readonly adiru3State = Subject.create(0);
 
+    /* LANDING GEAR AND LIGHTS */
+
+    private readonly aircraftOnGround = Subject.create(0);
+
     /* OTHER STUFF */
 
     private readonly seatBelt = Subject.create(0);
+
+    private readonly noSmoking = Subject.create(0);
+
+    private readonly noSmokingSwitchPosition = Subject.create(0);
+
+    private readonly strobeLightsOn = Subject.create(0);
+
+    private readonly gpwsFlapMode = Subject.create(0);
+
+    /* SETTINGS */
+
+    private readonly configPortableDevices = Subject.create('0');
 
     constructor() {
         this.memoMessageLeft.sub((i, t, v) => {
@@ -289,9 +312,25 @@ export class NewPseudoFWC {
         this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
         this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
 
+        /* LANDING GEAR AND LIGHTS */
+
+        // const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
+        // const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
+        // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
+        // FIXME The landing gear triggers the dual engine failure on loading
+        this.aircraftOnGround.set(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
+
         /* OTHER STUFF */
 
         this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
+        this.noSmoking.set(SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool'));
+        this.noSmokingSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'Enum'));
+        this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
+        this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
+
+        /* FUEL */
+        this.leftOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:4', 'Bool'));
+        this.rightOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:5', 'Bool'));
 
         /* F/CTL */
         const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
@@ -305,6 +344,10 @@ export class NewPseudoFWC {
 
         this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
         this.speedBrakeCommand.set(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false));
+
+        /* SETTINGS */
+
+        this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0'));
 
         // Output logic
 
@@ -664,14 +707,14 @@ export class NewPseudoFWC {
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
-        }, /*
+        },
         '0000090': // NO SMOKING
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!(noSmoking === 1 && !configPortableDevices),
-            whichCodeToReturn: [0],
+            simVarIsActive: MappedSubject.create(([noSmoking, configPortableDevices]) => noSmoking === 1 && !configPortableDevices, this.noSmoking, this.configPortableDevices),
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000009001'],
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -679,10 +722,10 @@ export class NewPseudoFWC {
         '0000095': // PORTABLE DEVICES
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!(noSmoking === 1 && configPortableDevices),
-            whichCodeToReturn: [0],
+            simVarIsActive: MappedSubject.create(([noSmoking, configPortableDevices]) => noSmoking === 1 && !!configPortableDevices, this.noSmoking, this.configPortableDevices),
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000009501'],
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -690,10 +733,10 @@ export class NewPseudoFWC {
         '0000100': // STROBE LIGHT OFF
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!(!aircraftOnGround && strobeLightsOn === 2),
-            whichCodeToReturn: [0],
+            simVarIsActive: MappedSubject.create(([aircraftOnGround, strobeLightsOn]) => !!aircraftOnGround && strobeLightsOn === 2, this.aircraftOnGround, this.strobeLightsOn),
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000010001'],
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -701,10 +744,10 @@ export class NewPseudoFWC {
         '0000105': // OUTR TK FUEL XFRD
         {
             flightPhaseInhib: [], // Plus check that outer tanks not empty
-            simVarIsActive: !!(leftOuterInnerValve || rightOuterInnerValve),
-            whichCodeToReturn: [0],
+            simVarIsActive: MappedSubject.create(([leftOuterInnerValve, rightOuterInnerValve]) => !!leftOuterInnerValve || !!rightOuterInnerValve, this.leftOuterInnerValve, this.rightOuterInnerValve),
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000010501'], // config memo
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -712,14 +755,14 @@ export class NewPseudoFWC {
         '0000305': // GPWS FLAP MODE OFF
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!gpwsFlapMode,
-            whichCodeToReturn: [0],
+            simVarIsActive: this.gpwsFlapMode.map((v) => !!V),
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000030501'], // Not inhibited
-            memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
+            memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
-        }, */
+        },
         '0000140': // T.O. INHIBIT
         {
             flightPhaseInhib: [],
