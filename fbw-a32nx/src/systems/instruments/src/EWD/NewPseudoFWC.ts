@@ -807,7 +807,7 @@ export class NewPseudoFWC {
         },
         '0000100': { // STROBE LIGHT OFF
             flightPhaseInhib: [],
-            simVarIsActive: MappedSubject.create(([aircraftOnGround, strobeLightsOn]) => !!aircraftOnGround && strobeLightsOn === 2, this.aircraftOnGround, this.strobeLightsOn),
+            simVarIsActive: MappedSubject.create(([aircraftOnGround, strobeLightsOn]) => !!(!aircraftOnGround && strobeLightsOn === 2), this.aircraftOnGround, this.strobeLightsOn),
             whichCodeToReturn: () => [0],
             codesToReturn: ['000010001'],
             memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
