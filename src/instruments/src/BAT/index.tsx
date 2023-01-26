@@ -1,8 +1,9 @@
 import './style.scss';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { useUpdate } from '@instruments/common/hooks';
+import { RemoteBridgeClient } from './remote-bridge-temp/RemoteBridgeClient';
 
 const BASE_DELAY_MS = 1_000;
 const DIGIT_REFRESH_INTERVAL_MS = 130;
@@ -80,11 +81,21 @@ const BatDisplay = ({ batteryNumber, x, y }) => {
     );
 };
 
-const BatRoot = () => (
-    <svg className="bat-svg" viewBox="0 0 200 100">
-        <BatDisplay batteryNumber={1} x="184" y="45" />
-        <BatDisplay batteryNumber={2} x="184" y="95" />
-    </svg>
-);
+const BatRoot = () => {
+    const [client] = useState(() => new RemoteBridgeClient());
+
+    useEffect(() => {
+        client.connect();
+    }, []);
+
+    useUpdate((deltaTime) => client.update(deltaTime));
+
+    return (
+        <svg className="bat-svg" viewBox="0 0 200 100">
+            <BatDisplay batteryNumber={1} x="184" y="45" />
+            <BatDisplay batteryNumber={2} x="184" y="95" />
+        </svg>
+    );
+};
 
 render(<BatRoot />);
