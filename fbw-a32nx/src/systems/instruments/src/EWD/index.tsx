@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
 import { useUpdate } from '@instruments/common/hooks';
 import { render } from '../Common';

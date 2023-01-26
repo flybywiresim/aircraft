@@ -456,7 +456,7 @@ export class NewPseudoFWC {
         }
 
         for (const [, value] of Object.entries(this.ewdMessageMemos)) {
-            if (value.simVarIsActive.get() && !(value.memoInhibit) && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
+            if (value.simVarIsActive.get() && !(value.memoInhibit()) && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
                 const newCode: string[] = [];
 
                 const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
@@ -755,7 +755,7 @@ export class NewPseudoFWC {
         '0000305': // GPWS FLAP MODE OFF
         {
             flightPhaseInhib: [],
-            simVarIsActive: this.gpwsFlapMode.map((v) => !!V),
+            simVarIsActive: this.gpwsFlapMode.map((v) => !!v),
             whichCodeToReturn: () => [0],
             codesToReturn: ['000030501'], // Not inhibited
             memoInhibit: () => (this.toMemo.get() === 1 || this.ldgMemo.get() === 1),
