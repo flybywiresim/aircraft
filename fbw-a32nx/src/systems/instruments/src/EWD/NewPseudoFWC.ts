@@ -34,6 +34,10 @@ export class NewPseudoFWC {
 
     private agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
 
+    private altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
+
+    private altn2LawConfirmNode = new NXLogicConfirmNode(0.3, true);
+
     private elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
 
     private elac1FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
@@ -71,6 +75,20 @@ export class NewPseudoFWC {
     private sec2FaultLine123Display = Subject.create(false);
 
     private sec3FaultLine123Display = Subject.create(false);
+
+    private fcdc12FaultCondition = Subject.create(false);
+
+    private fcdc1FaultCondition = Subject.create(false);
+
+    private fcdc2FaultCondition = Subject.create(false);
+
+    private altn1LawConfirmNodeOutput = Subject.create(false);
+
+    private altn2LawConfirmNodeOutput = Subject.create(false);
+
+    private directLawCondition = Subject.create(false);
+
+    private lrElevFaultCondition = Subject.create(false);
 
     private agent1Eng1Discharge = Subject.create(0);
 
@@ -122,7 +140,7 @@ export class NewPseudoFWC {
 
     private readonly N2AboveIdle = MappedSubject.create(([n1, idleN1]) => Math.floor(n1) > idleN1, this.N1Eng2, this.N1IdleEng2);
 
-    private readonly engDualFault = Subject.create(false); // TODO
+    private readonly engDualFault = Subject.create(false);
 
     private readonly engine1Generator = Subject.create(false);
 
@@ -498,6 +516,13 @@ export class NewPseudoFWC {
         this.engine1ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:1', 'bool'));
         this.engine2ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:2', 'bool'));
 
+        this.engDualFault.set(!this.aircraftOnGround.get() && (
+            (this.fireButton1.get() && this.fireButton2.get())
+            || (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get())
+            || (this.engine1State.get() === 0 && this.engine2State.get() === 0)
+            || (!this.N1AboveIdle.get() && !this.N2AboveIdle.get())
+        ));
+
         /* HYDRAULICS */
 
         this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
@@ -616,6 +641,37 @@ export class NewPseudoFWC {
         this.sec3FaultCondition.set(!([1, 10].includes(this.fwcFlightPhase.get()) && (fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false)))
             && this.dc2BusPowered.get() && ss3f);
         this.sec3FaultLine123Display.set(!(fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false)));
+
+        // FCDC 1+2 FAULT computation
+        const SFCDC1FT = fcdc1DiscreteWord1.isFailureWarning() && fcdc1DiscreteWord2.isFailureWarning() && fcdc1DiscreteWord3.isFailureWarning();
+        const SFCDC2FT = fcdc2DiscreteWord1.isFailureWarning() && fcdc2DiscreteWord2.isFailureWarning() && fcdc2DiscreteWord3.isFailureWarning();
+        const SFCDC12FT = SFCDC1FT && SFCDC2FT;
+        this.fcdc12FaultCondition.set(SFCDC12FT && this.dc2BusPowered.get());
+        this.fcdc1FaultCondition.set(SFCDC1FT && !SFCDC12FT);
+        this.fcdc2FaultCondition.set(SFCDC2FT && !(SFCDC12FT || !this.dc2BusPowered.get()));
+
+        // ALTN LAW 2 computation
+        const SPA2 = fcdc1DiscreteWord1.getBitValueOr(13, false) || fcdc2DiscreteWord1.getBitValueOr(13, false);
+        this.altn2LawConfirmNodeOutput.set(this.altn2LawConfirmNode.write(SPA2 && ![1, 10].includes(this.fwcFlightPhase.get()), deltaTime));
+
+        // ALTN LAW 1 computation
+        const SPA1 = fcdc1DiscreteWord1.getBitValueOr(12, false) || fcdc2DiscreteWord1.getBitValueOr(12, false);
+        this.altn1LawConfirmNodeOutput.set(this.altn1LawConfirmNode.write(SPA1 && ![1, 10].includes(this.fwcFlightPhase.get()), deltaTime));
+
+        // DIRECT LAW computation
+        const SPBUL = (false && SFCDC12FT) || (fcdc1DiscreteWord1.getBitValueOr(15, false) || fcdc2DiscreteWord1.getBitValueOr(15, false));
+        this.directLawCondition.set(SPBUL && ![1, 10].includes(this.fwcFlightPhase.get()));
+
+        // L+R ELEV FAULT computation
+        const lhElevBlueFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(15, false))
+        || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(15, false));
+        const lhElevGreenFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(16, false))
+        || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(16, false));
+        const rhElevBlueFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(17, false))
+        || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(17, false));
+        const rhElevGreenFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(18, false))
+        || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(18, false));
+        this.lrElevFaultCondition.set(lhElevBlueFail && lhElevGreenFail && rhElevBlueFail && rhElevGreenFail && ![1, 10].includes(this.fwcFlightPhase.get()));
 
         this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
         this.speedBrakeCommand.set(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false));
@@ -1141,6 +1197,87 @@ export class NewPseudoFWC {
             memoInhibit: () => false,
             failure: 2,
             sysPage: 10,
+            side: 'LEFT',
+        },
+        2700360: { // FCDC 1+2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7],
+            simVarIsActive: this.fcdc12FaultCondition,
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['270036001', '270036002'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700365: { // DIRECT LAW
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: this.directLawCondition,
+            whichCodeToReturn: () => [0, 1, 2, 3, 4, null, 6, 7],
+            codesToReturn: ['270036501', '270036502', '270036503', '270036504', '270036505', '270036506', '270036507', '270036508'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700375: { // ALTN 2
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: this.altn2LawConfirmNodeOutput,
+            whichCodeToReturn: () => [0, 1, null, 3, 4, null, 6],
+            codesToReturn: ['270037501', '270037502', '270037503', '270037504', '270037505', '270037506', '270037507'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700390: { // ALTN 1
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: this.altn1LawConfirmNodeOutput,
+            whichCodeToReturn: () => [0, 1, null, 3, 4, null, 6],
+            codesToReturn: ['270039001', '270039002', '270039003', '270039004', '270039005', '270039006', '270039007'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700400: { // L+R ELEV FAULT
+            flightPhaseInhib: [],
+            simVarIsActive: this.lrElevFaultCondition,
+            whichCodeToReturn: () => [0, 1, 2, null, null, 5],
+            codesToReturn: ['270040001', '270040002', '270040003', '270040004', '270040005', '270040006'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700555: { // FCDC 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.fcdc1FaultCondition,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['270055501'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2700557: { // FCDC 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.fcdc2FaultCondition,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['270055701'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3200050: { // PK BRK ON
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: MappedSubject.create(([fwcFlightPhase, parkBrake]) => fwcFlightPhase === 3 && parkBrake, this.fwcFlightPhase, this.parkBrake),
+            // TODO no separate slats indication
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['320005001'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
             side: 'LEFT',
         },
     }
