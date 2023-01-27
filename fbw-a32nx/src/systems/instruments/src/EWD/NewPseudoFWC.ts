@@ -34,15 +34,53 @@ export class NewPseudoFWC {
 
     private agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
 
-    private agent1Eng1Discharge = Subject.create(false);
+    private elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
 
-    private agent2Eng1Discharge = Subject.create(false);
+    private elac1FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
 
-    private agent1Eng2Discharge = Subject.create(false);
+    private elac1HydConfirmNodeOutput = Subject.create(false);
 
-    private agent2Eng2Discharge = Subject.create(false);
+    private elac1FaultConfirmNodeOutput = Subject.create(false);
 
-    private agentAPUDischarge = Subject.create(false);
+    private elac2HydConfirmNode = new NXLogicConfirmNode(3, false);
+
+    private elac2FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
+
+    private elac2HydConfirmNodeOutput = Subject.create(false);
+
+    private elac2FaultConfirmNodeOutput = Subject.create(false);
+
+    private elac1FaultLine123Display = Subject.create(false);
+
+    private elac1FaultLine45Display = Subject.create(false);
+
+    private elac2FaultLine123Display = Subject.create(false);
+
+    private elac2FaultLine45Display = Subject.create(false);
+
+    private sec1FaultCondition = Subject.create(false);
+
+    private sec2FaultCondition = Subject.create(false);
+
+    private sec3FaultCondition = Subject.create(false);
+
+    private sec1FaultLine123Display = Subject.create(false);
+
+    private sec1FaultLine45Display = Subject.create(false);
+
+    private sec2FaultLine123Display = Subject.create(false);
+
+    private sec3FaultLine123Display = Subject.create(false);
+
+    private agent1Eng1Discharge = Subject.create(0);
+
+    private agent2Eng1Discharge = Subject.create(0);
+
+    private agent1Eng2Discharge = Subject.create(0);
+
+    private agent2Eng2Discharge = Subject.create(0);
+
+    private agentAPUDischarge = Subject.create(0);
 
     private readonly failuresLeft: string[] = [];
 
@@ -154,6 +192,16 @@ export class NewPseudoFWC {
 
     /* FCTL */
 
+    private readonly flapsAngle = Subject.create(0);
+
+    private readonly flapsHandle = Subject.create(0);
+
+    private readonly flapsMcdu = Subject.create(0);
+
+    private readonly flapsMcduEntered = Subject.create(false);
+
+    private readonly slatsAngle = Subject.create(0);
+
     private spoilersArmed = Subject.create(false);
 
     private speedBrakeCommand = Subject.create(false);
@@ -185,6 +233,18 @@ export class NewPseudoFWC {
     private readonly parkBrake = Subject.create(false);
 
     private readonly nwSteeringDisc = Subject.create(false);
+
+    /* ELECTRICAL */
+
+    private readonly dcESSBusPowered = Subject.create(false);
+
+    private readonly dc2BusPowered = Subject.create(false);
+
+    private readonly ac1BusPowered = Subject.create(false);
+
+    private readonly ac2BusPowered = Subject.create(false);
+
+    private readonly acESSBusPowered = Subject.create(false);
 
     /* FIRE */
 
@@ -448,6 +508,10 @@ export class NewPseudoFWC {
         this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100'));
         this.yellowLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool'));
 
+        const blueSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
+        const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
+        const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
+
         /* ADIRS */
 
         this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
@@ -468,6 +532,14 @@ export class NewPseudoFWC {
         this.landingLight3Retracted.set(SimVar.GetSimVarValue('L:LANDING_3_Retracted', 'bool'));
         this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
         this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
+
+        /* ELECTRICAL */
+
+        this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
+        this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
+        this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool'));
+        this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
+        this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
 
         /* OTHER STUFF */
 
@@ -504,8 +576,54 @@ export class NewPseudoFWC {
         const fcdc1DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_4');
         const fcdc2DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_4');
 
+        // ELAC 1 FAULT computation
+        const se1f = (fcdc1DiscreteWord1.getBitValueOr(19, false) || fcdc2DiscreteWord1.getBitValueOr(19, false))
+            && (fcdc1DiscreteWord1.getBitValueOr(20, false) || fcdc2DiscreteWord1.getBitValueOr(20, false));
+        const elac1FaultCondition = !([1, 10].includes(this.fwcFlightPhase.get()) && (fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false)))
+            && this.dcESSBusPowered.get()
+            && ((fcdc1DiscreteWord1.getBitValueOr(23, false) || fcdc2DiscreteWord1.getBitValueOr(23, false)) || (!this.elac1HydConfirmNodeOutput.get() && se1f));
+        this.elac1FaultLine123Display.set(!(fcdc1DiscreteWord3.getBitValueOr(19, false) || fcdc2DiscreteWord3.getBitValueOr(19, false))
+            && (fcdc1DiscreteWord1.getBitValueOr(23, false) || fcdc2DiscreteWord1.getBitValueOr(23, false)));
+        this.elac1HydConfirmNodeOutput.set(this.elac1HydConfirmNode.write(!greenSysPressurised && !blueSysPressurised, deltaTime));
+        this.elac1FaultConfirmNodeOutput.set(this.elac1FaultConfirmNode.write(elac1FaultCondition, deltaTime));
+
+        // ELAC 2 FAULT computation
+        const se2f = (fcdc1DiscreteWord1.getBitValueOr(21, false) || fcdc2DiscreteWord1.getBitValueOr(21, false))
+            && (fcdc1DiscreteWord1.getBitValueOr(22, false) || fcdc2DiscreteWord1.getBitValueOr(22, false));
+        const elac2FaultCondition = !([1, 10].includes(this.fwcFlightPhase.get()) && (fcdc1DiscreteWord3.getBitValueOr(20, false) || fcdc2DiscreteWord3.getBitValueOr(20, false)))
+            && this.dc2BusPowered.get()
+            && ((fcdc1DiscreteWord1.getBitValueOr(24, false) || fcdc2DiscreteWord1.getBitValueOr(24, false))
+            || (!this.elac2HydConfirmNodeOutput.get() && se2f));
+        this.elac2FaultLine123Display.set(!(fcdc1DiscreteWord3.getBitValueOr(20, false) || fcdc2DiscreteWord3.getBitValueOr(20, false))
+            && (fcdc1DiscreteWord1.getBitValueOr(24, false) || fcdc2DiscreteWord1.getBitValueOr(24, false)));
+        this.elac2HydConfirmNodeOutput.set(this.elac2HydConfirmNode.write((!greenSysPressurised || !yellowSysPressurised) && !blueSysPressurised, deltaTime));
+        this.elac2FaultConfirmNodeOutput.set(this.elac2FaultConfirmNode.write(elac2FaultCondition, deltaTime));
+
+        // SEC 1 FAULT computation
+        const ss1f = fcdc1DiscreteWord1.getBitValueOr(25, false) || fcdc2DiscreteWord1.getBitValueOr(25, false);
+        this.sec1FaultCondition.set(!([1, 10].includes(this.fwcFlightPhase.get()) && (fcdc1DiscreteWord3.getBitValueOr(27, false) || fcdc2DiscreteWord3.getBitValueOr(27, false)))
+            && this.dcESSBusPowered.get() && ss1f);
+        this.sec1FaultLine123Display.set(!(fcdc1DiscreteWord3.getBitValueOr(27, false) || fcdc2DiscreteWord3.getBitValueOr(27, false)));
+
+        // SEC 2 FAULT computation
+        const ss2f = fcdc1DiscreteWord1.getBitValueOr(26, false) || fcdc2DiscreteWord1.getBitValueOr(26, false);
+        this.sec2FaultCondition.set(!([1, 10].includes(this.fwcFlightPhase.get()) && (fcdc1DiscreteWord3.getBitValueOr(28, false) || fcdc2DiscreteWord3.getBitValueOr(28, false)))
+            && this.dc2BusPowered.get() && ss2f);
+        this.sec2FaultLine123Display.set(!(fcdc1DiscreteWord3.getBitValueOr(28, false) || fcdc2DiscreteWord3.getBitValueOr(28, false)));
+
+        // SEC 3 FAULT computation
+        const ss3f = fcdc1DiscreteWord1.getBitValueOr(29, false) || fcdc2DiscreteWord1.getBitValueOr(29, false);
+        this.sec3FaultCondition.set(!([1, 10].includes(this.fwcFlightPhase.get()) && (fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false)))
+            && this.dc2BusPowered.get() && ss3f);
+        this.sec3FaultLine123Display.set(!(fcdc1DiscreteWord3.getBitValueOr(29, false) || fcdc2DiscreteWord3.getBitValueOr(29, false)));
+
         this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
         this.speedBrakeCommand.set(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false));
+        this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
+        this.flapsMcdu.set(SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS', 'number'));
+        this.flapsMcduEntered.set(SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool'));
+        this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
+        this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
 
         /* FIRE */
 
@@ -571,14 +689,11 @@ export class NewPseudoFWC {
             const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
             const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
             const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
-            const flapsMcdu = SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS', 'number');
-            const flapsMcduEntered = SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool');
-            const flapsHandle = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum');
             const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
 
             const speeds = !!(v1Speed <= vrSpeed && vrSpeed <= v2Speed);
             const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
-            const flapsAgree = !flapsMcduEntered || flapsHandle === flapsMcdu;
+            const flapsAgree = !this.flapsMcduEntered.get() || this.flapsHandle.get() === this.flapsMcdu.get();
             const sb = !this.speedBrakeCommand.get();
 
             if (systemStatus && speeds && !brakesHot && doors && flapsAgree && sb) {
@@ -637,7 +752,7 @@ export class NewPseudoFWC {
                     if (value.failure === 2) {
                         this.masterCaution(1);
                     }
-                } else if (![this.eng1FireTest.get(), this.eng2FireTest.get(), this.apuFireTest.get(), this.cargoFireTest.get()].every((e) => e === 0)) {
+                } else if (![this.eng1FireTest.get(), this.eng2FireTest.get(), this.apuFireTest.get(), this.cargoFireTest.get()].every((e) => !e)) {
                     this.masterWarning(1);
                 }
 
@@ -916,6 +1031,116 @@ export class NewPseudoFWC {
             memoInhibit: () => false,
             failure: 3,
             sysPage: 6,
+            side: 'LEFT',
+        },
+        2700085: { // SLATS NOT IN TO CONFIG
+            flightPhaseInhib: [5, 6, 7, 8],
+            simVarIsActive: MappedSubject.create(
+                ([flapsMcdu, flapsMcduEntered, flapsHandle, fwcFlightPhase, toConfigFail, slatsAngle]) => (
+                    (flapsMcduEntered && flapsHandle !== flapsMcdu && [1, 2, 9].includes(fwcFlightPhase) && toConfigFail)
+                    || ([3, 4, 5].includes(fwcFlightPhase) && (slatsAngle <= 17 || slatsAngle >= 25))
+                ), this.flapsMcdu, this.flapsMcduEntered, this.flapsHandle, this.fwcFlightPhase, this.toConfigFail, this.slatsAngle,
+            ),
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['270008501', '270008502'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2700090: { // FLAPS NOT IN TO CONFIG
+            flightPhaseInhib: [5, 6, 7, 8],
+            simVarIsActive: MappedSubject.create(
+                ([flapsMcdu, flapsMcduEntered, flapsHandle, fwcFlightPhase, toConfigFail, flapsAngle]) => (
+                    (flapsMcduEntered && flapsHandle !== flapsMcdu && [1, 2, 9].includes(fwcFlightPhase) && toConfigFail)
+                    || ([3, 4, 5].includes(fwcFlightPhase) && (flapsAngle <= 2 || flapsAngle >= 24))
+                ), this.flapsMcdu, this.flapsMcduEntered, this.flapsHandle, this.fwcFlightPhase, this.toConfigFail, this.flapsAngle,
+            ),
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['270009001', '270009002'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2700110: { // ELAC 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.elac1FaultConfirmNodeOutput,
+            whichCodeToReturn: () => [
+                0,
+                this.elac1FaultLine123Display.get() ? 1 : null,
+                this.elac1FaultLine123Display.get() ? 2 : null,
+                this.elac1FaultLine123Display.get() ? 3 : null,
+                this.elac1FaultLine45Display.get() ? 4 : null,
+                this.elac1FaultLine45Display.get() ? 5 : null,
+            ],
+            codesToReturn: ['270011001', '270011002', '270011003', '270011004', '270011005', '270011006'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700120: { // ELAC 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.elac2FaultConfirmNodeOutput,
+            whichCodeToReturn: () => [
+                0,
+                this.elac2FaultLine123Display.get() ? 1 : null,
+                this.elac2FaultLine123Display.get() ? 2 : null,
+                this.elac2FaultLine123Display.get() ? 3 : null,
+                this.elac2FaultLine45Display.get() ? 4 : null,
+                this.elac2FaultLine45Display.get() ? 5 : null,
+            ],
+            codesToReturn: ['270012001', '270012002', '270012003', '270012004', '270012005', '270012006'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700210: { // SEC 1 FAULT
+            flightPhaseInhib: [3, 4, 5],
+            simVarIsActive: this.sec1FaultCondition,
+            whichCodeToReturn: () => [
+                0,
+                this.sec1FaultLine123Display.get() ? 1 : null,
+                this.sec1FaultLine123Display.get() ? 2 : null,
+                this.sec1FaultLine123Display.get() ? 3 : null,
+                this.sec1FaultLine45Display.get() ? 4 : null,
+            ],
+            codesToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700220: { // SEC 2 FAULT
+            flightPhaseInhib: [3, 4, 5],
+            simVarIsActive: this.sec2FaultCondition,
+            whichCodeToReturn: () => [
+                0,
+                this.sec2FaultLine123Display.get() ? 1 : null,
+                this.sec2FaultLine123Display.get() ? 2 : null,
+                this.sec2FaultLine123Display.get() ? 3 : null,
+            ],
+            codesToReturn: ['270022001', '270022002', '270022003', '270022004'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700230: { // SEC 3 FAULT
+            flightPhaseInhib: [3, 4, 5],
+            simVarIsActive: this.sec3FaultCondition,
+            whichCodeToReturn: () => [
+                0,
+                this.sec3FaultLine123Display.get() ? 1 : null,
+                this.sec3FaultLine123Display.get() ? 2 : null,
+                this.sec3FaultLine123Display.get() ? 3 : null,
+            ],
+            codesToReturn: ['270023001', '270023002', '270023003', '270023004'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 10,
             side: 'LEFT',
         },
     }
