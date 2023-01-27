@@ -24,6 +24,18 @@ export class NewPseudoFWC {
 
     private ldgInhibitTimer = new NXLogicConfirmNode(3);
 
+    private iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
+
+    private iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
+
+    private iceDetectedTimer2 = new NXLogicConfirmNode(5);
+
+    private iceNotDetTimer1 = new NXLogicConfirmNode(60);
+
+    private iceNotDetTimer2 = new NXLogicConfirmNode(130);
+
+    private iceNotDetTimer2Status = Subject.create(false);
+
     private agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
 
     private agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
@@ -728,6 +740,17 @@ export class NewPseudoFWC {
         this.agent1Eng2Discharge.set(this.agent1Eng2DischargeTimer.write(this.fireButton2.get() && !this.eng1Agent1PB.get(), deltaTime));
         this.agent2Eng2Discharge.set(this.agent2Eng2DischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime));
         this.agentAPUDischarge.set(this.agentAPUDischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime));
+
+        /* ANTI ICE */
+
+        // const iceDetected1 = this.iceDetectedTimer1.write(icePercentage >= 0.1 && tat < 10 && !aircraftOnGround, deltaTime);
+        // const iceDetected2 = this.iceDetectedTimer2.write(iceDetected1 && !(this.eng1AntiIce.get() && this.eng2AntiIce.get()), deltaTime);
+        // const iceSevereDetected = this.iceSevereDetectedTimer.write(icePercentage >= 0.5 && tat < 10 && !this.aircraftOnGround.get(), deltaTime);
+        const icePercentage = SimVar.GetSimVarValue('STRUCTURAL ICE PCT', 'percent over 100');
+        const tat = SimVar.GetSimVarValue('TOTAL AIR TEMPERATURE', 'celsius');
+        const inCloud = SimVar.GetSimVarValue('AMBIENT IN CLOUD', 'boolean');
+        const iceNotDetected1 = this.iceNotDetTimer1.write(this.eng1AntiIce.get() || this.eng2AntiIce.get() || this.wingAntiIce.get(), deltaTime);
+        this.iceNotDetTimer2Status.set(this.iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime));
 
         /* SETTINGS */
 
@@ -1692,17 +1715,20 @@ export class NewPseudoFWC {
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
-        }, /*
+        },
         '0000275': { // ICE NOT DETECTED
             flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
-            simVarIsActive: iceNotDetTimer2.read() && !aircraftOnGround,
+            simVarIsActive: MappedSubject.create(
+                ([iceNotDetTimer2Status, aircraftOnGround]) => iceNotDetTimer2Status && !aircraftOnGround,
+                this.iceNotDetTimer2Status, this.aircraftOnGround,
+            ),
             whichCodeToReturn: () => [0],
             codesToReturn: ['000027501'],
             memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
-        }, */
+        },
         '0000170': { // APU AVAIL
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(([apuAvail, apuBleedValveOpen]) => apuAvail === 1 && !apuBleedValveOpen, this.apuAvail, this.apuBleedValveOpen),
