@@ -24,17 +24,23 @@ export class NewPseudoFWC {
 
     private ldgInhibitTimer = new NXLogicConfirmNode(3);
 
-    private iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
-
-    private iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
-
-    private iceDetectedTimer2 = new NXLogicConfirmNode(5);
-
     private iceNotDetTimer1 = new NXLogicConfirmNode(60);
 
     private iceNotDetTimer2 = new NXLogicConfirmNode(130);
 
     private iceNotDetTimer2Status = Subject.create(false);
+
+    private packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
+
+    private packOffBleedAvailable2 = new NXLogicConfirmNode(5, false);
+
+    private packOffNotFailed1 = new NXLogicConfirmNode(60);
+
+    private packOffNotFailed2 = new NXLogicConfirmNode(60);
+
+    private packOffNotFailed1Status = Subject.create(false);
+
+    private packOffNotFailed2Status = Subject.create(false);
 
     private agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
 
@@ -208,6 +214,12 @@ export class NewPseudoFWC {
 
     private readonly autoThrustStatus = Subject.create(0);
 
+    private readonly autothrustLeverWarningFlex = Subject.create(false);
+
+    private readonly autothrustLeverWarningToga = Subject.create(false);
+
+    private readonly thrustLeverNotSet = Subject.create(false);
+
     /* FUEL */
 
     private readonly leftOuterInnerValve = Subject.create(0);
@@ -266,11 +278,17 @@ export class NewPseudoFWC {
 
     private readonly aircraftOnGround = Subject.create(0);
 
+    private readonly antiskidActive = Subject.create(false);
+
     private readonly brakeFan = Subject.create(false);
 
     private readonly landingLight2Retracted = Subject.create(false);
 
     private readonly landingLight3Retracted = Subject.create(false);
+
+    private readonly lgciu1Fault = Subject.create(false);
+
+    private readonly lgciu2Fault = Subject.create(false);
 
     private readonly parkBrake = Subject.create(false);
 
@@ -542,6 +560,9 @@ export class NewPseudoFWC {
         this.engine1ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:1', 'bool'));
         this.engine2ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:2', 'bool'));
         this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
+        this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
+        this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
+        this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
 
         this.engDualFault.set(!this.aircraftOnGround.get() && (
             (this.fireButton1.get() && this.fireButton2.get())
@@ -580,9 +601,12 @@ export class NewPseudoFWC {
         // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
         // FIXME The landing gear triggers the dual engine failure on loading
         this.aircraftOnGround.set(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
+        this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
         this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
         this.landingLight2Retracted.set(SimVar.GetSimVarValue('L:LANDING_2_Retracted', 'bool'));
         this.landingLight3Retracted.set(SimVar.GetSimVarValue('L:LANDING_3_Retracted', 'bool'));
+        this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
+        this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
         this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
         this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
@@ -596,6 +620,16 @@ export class NewPseudoFWC {
 
         /* AIR CONDITIONING */
 
+        const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
+        const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
+        const eng1BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool');
+        const eng2Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:2', 'bool');
+        const eng2BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool');
+        const pack1Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
+        const pack2Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
+        const pack1On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
+        const pack2On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
+
         this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
         this.cabAltSetResetState1.set(
             this.cabAltSetReset1.write(adirsAlt.value > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
@@ -603,6 +637,10 @@ export class NewPseudoFWC {
         this.cabAltSetResetState2.set(
             this.cabAltSetReset2.write(adirsAlt.value > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
+        this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || crossfeed === 1, deltaTime);
+        this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || crossfeed === 1, deltaTime);
+        this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!pack1On && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
+        this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!pack2On && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
 
         /* OTHER STUFF */
 
@@ -1372,6 +1410,112 @@ export class NewPseudoFWC {
             memoInhibit: () => false,
             failure: 3,
             sysPage: 2,
+            side: 'LEFT',
+        },
+        2600150: { // SMOKE FWD CARGO SMOKE
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: this.cargoFireTest,
+            // TODO no separate slats indication
+            whichCodeToReturn: () => [
+                0,
+                SimVar.GetSimVarValue('L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON', 'bool') === 1 ? 2 : null,
+                [1, 10].includes(this.fwcFlightPhase.get()) && !this.cargoFireAgentDisch.get() ? 3 : null,
+                !this.cargoFireAgentDisch.get() ? 4 : null,
+                !this.aircraftOnGround.get() ? 5 : null,
+                !this.aircraftOnGround.get() ? 6 : null,
+                this.aircraftOnGround.get() ? 7 : null,
+                this.aircraftOnGround.get() ? 8 : null,
+            ],
+            codesToReturn: ['260015001', '260015002', '260015003', '260015004', '260015005', '260015006', '260015007', '260015008', '260015009'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        7700647: { // THR LEVERS NOT SET  (on ground)
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 10],
+            simVarIsActive: MappedSubject.create(
+                ([throttle1Position, throttle2Position, thrustLeverNotSet]) => (throttle1Position !== 35 && thrustLeverNotSet) || (throttle2Position !== 35 && thrustLeverNotSet),
+                this.throttle1Position, this.throttle2Position, this.thrustLeverNotSet,
+            ),
+            whichCodeToReturn: () => [
+                0,
+                this.autothrustLeverWarningFlex.get() ? 1 : null,
+                this.autothrustLeverWarningToga.get() ? 2 : null,
+            ],
+            codesToReturn: ['770064701', '770064702', '770064703'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2161207: { // PACK 1 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.packOffNotFailed1Status,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216120701'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161208: { // PACK 2 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.packOffNotFailed2Status,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216120801'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        3200060: { // NW ANTI SKID INACTIVE
+            flightPhaseInhib: [4, 5],
+            simVarIsActive: this.antiskidActive.map((v) => !v),
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['320006001', '320006002'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        3200180: { // LGCIU 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(
+                ([lgciu1Fault, lgciu2Fault, dcESSBusPowered]) => lgciu1Fault && !(lgciu1Fault && lgciu2Fault) && dcESSBusPowered,
+                this.lgciu1Fault, this.lgciu2Fault, this.dcESSBusPowered,
+            ),
+            whichCodeToReturn: () => [0, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 1 : null],
+            codesToReturn: ['320018001', '320018002'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3200190: { // LGCIU 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(
+                ([lgciu1Fault, lgciu2Fault, dc2BusPowered]) => lgciu2Fault && !(lgciu1Fault && lgciu2Fault) && dc2BusPowered,
+                this.lgciu1Fault, this.lgciu2Fault, this.dc2BusPowered,
+            ),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['320019001'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3200195: { // LGCIU 1+2 FAULT
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(
+                ([lgciu1Fault, lgciu2Fault, dc2BusPowered, dcESSBusPowered]) => lgciu1Fault && lgciu2Fault && dc2BusPowered && dcESSBusPowered,
+                this.lgciu1Fault, this.lgciu2Fault, this.dc2BusPowered, this.dcESSBusPowered,
+            ),
+            whichCodeToReturn: () => [0, 1, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 2 : null],
+            codesToReturn: ['320019501', '320019502', '320019503'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 9,
             side: 'LEFT',
         },
     }
