@@ -1,7 +1,7 @@
 import { Subject, Subscribable, MappedSubject, ArraySubject } from 'msfssdk';
 
 import { Arinc429Word } from '@shared/arinc429';
-import { NXLogicClockNode, NXLogicConfirmNode } from '@instruments/common/NXLogic';
+import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
 import { NXDataStore } from '@shared/persistence';
 
 interface EWDItem {
@@ -37,6 +37,16 @@ export class NewPseudoFWC {
     private altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
 
     private altn2LawConfirmNode = new NXLogicConfirmNode(0.3, true);
+
+    private cabAltSetReset1 = new NXLogicMemoryNode();
+
+    private cabAltSetReset2 = new NXLogicMemoryNode();
+
+    private cabAltSetResetState1 = Subject.create(false);
+
+    private cabAltSetResetState2 = Subject.create(false);
+
+    private excessPressure = Subject.create(false);
 
     private elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
 
@@ -183,6 +193,8 @@ export class NewPseudoFWC {
     private readonly engine1ValueSwitch = Subject.create(false);
 
     private readonly engine2ValueSwitch = Subject.create(false);
+
+    private readonly autoThrustStatus = Subject.create(0);
 
     /* FUEL */
 
@@ -515,6 +527,7 @@ export class NewPseudoFWC {
         this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
         this.engine1ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:1', 'bool'));
         this.engine2ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:2', 'bool'));
+        this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
 
         this.engDualFault.set(!this.aircraftOnGround.get() && (
             (this.fireButton1.get() && this.fireButton2.get())
@@ -541,6 +554,7 @@ export class NewPseudoFWC {
 
         this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
+        const adirsAlt: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
         this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
         this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
         this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
@@ -565,6 +579,16 @@ export class NewPseudoFWC {
         this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool'));
         this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
         this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
+
+        /* AIR CONDITIONING */
+
+        this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
+        this.cabAltSetResetState1.set(
+            this.cabAltSetReset1.write(adirsAlt.value > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
+        );
+        this.cabAltSetResetState2.set(
+            this.cabAltSetReset2.write(adirsAlt.value > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
+        );
 
         /* OTHER STUFF */
 
@@ -1278,6 +1302,36 @@ export class NewPseudoFWC {
             memoInhibit: () => false,
             failure: 3,
             sysPage: -1,
+            side: 'LEFT',
+        },
+        2131221: { // EXCESS CAB ALT
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: MappedSubject.create(([aircraftOnGround, excessPressure]) => !aircraftOnGround && excessPressure, this.aircraftOnGround, this.excessPressure),
+            // TODO no separate slats indication
+            whichCodeToReturn: () => [
+                0,
+                this.cabAltSetResetState1.get() ? 1 : null,
+                this.cabAltSetResetState2.get() && this.seatBelt.get() !== 1 ? 2 : null,
+                this.cabAltSetResetState2.get() ? 3 : null,
+                this.cabAltSetResetState1.get() ? 4 : null,
+                this.cabAltSetResetState2.get() && (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.autoThrustStatus.get() !== 2 ? 5 : null,
+                this.cabAltSetResetState2.get() && !this.speedBrakeCommand.get() ? 6 : null,
+                this.cabAltSetResetState2.get() ? 7 : null,
+                this.cabAltSetResetState2.get() && this.engSelectorPosition.get() !== 2 ? 8 : null,
+                this.cabAltSetResetState2.get() ? 9 : null,
+                this.cabAltSetResetState1.get() && !this.cabAltSetResetState2.get() ? 10 : null,
+                this.cabAltSetResetState2.get() ? 11 : null,
+                this.cabAltSetResetState2.get() ? 12 : null,
+                this.cabAltSetResetState2.get() ? 13 : null,
+                14,
+                15,
+                16,
+            ],
+            codesToReturn: ['213122101', '213122102', '213122103', '213122104', '213122105',
+                '213122106', '213122107', '213122108', '213122109', '213122110', '213122111', '213122112', '213122113', '213122114', '213122115', '213122116'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 2,
             side: 'LEFT',
         },
     }
