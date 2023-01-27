@@ -136,6 +136,8 @@ export class NewPseudoFWC {
 
     private recallFailures: string[] = [];
 
+    private recallReset: boolean = false;
+
     private memoMessageLeft: ArraySubject<string> = ArraySubject.create([]);
 
     private memoMessageRight: ArraySubject<string> = ArraySubject.create([]);
@@ -848,6 +850,29 @@ export class NewPseudoFWC {
             }
         } else {
             this.toConfigFail.set(false);
+        }
+
+        /* CLEAR AND RECALL */
+
+        const clearButtonLeft = SimVar.GetSimVarValue('L:A32NX_BTN_CLR', 'bool');
+        const clearButtonRight = SimVar.GetSimVarValue('L:A32NX_BTN_CLR2', 'bool');
+        const recallButton = SimVar.GetSimVarValue('L:A32NX_BTN_RCL', 'bool');
+
+        if (clearButtonLeft === 1 || clearButtonRight === 1) {
+            this.failuresLeft.shift();
+            this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
+        }
+        this.recallReset = !this.recallReset;
+        SimVar.SetSimVarValue('L:A32NX_BTN_CLR', 'Bool', 0);
+        SimVar.SetSimVarValue('L:A32NX_BTN_CLR2', 'Bool', 0);
+
+        if (recallButton === 1) {
+            if (this.recallFailures.length > 0) {
+                const recall = this.recallFailures[0];
+                this.recallFailures = this.recallFailures.slice(1);
+                this.failuresLeft.push(...recall);
+            }
+            this.recallReset = !this.recallReset;
         }
 
         // Output logic
