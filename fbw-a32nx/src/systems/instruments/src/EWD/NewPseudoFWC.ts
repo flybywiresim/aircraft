@@ -320,6 +320,8 @@ export class NewPseudoFWC {
 
     private readonly gpwsTerrOff = Subject.create(false);
 
+    private readonly landAsapRed = Subject.create(false);
+
     private readonly ndXfrKnob = Subject.create(0);
 
     private readonly manLandingElevation = Subject.create(0);
@@ -788,6 +790,21 @@ export class NewPseudoFWC {
         }
 
         // Output logic
+
+        this.landAsapRed.set(!this.aircraftOnGround.get()
+            && (
+                this.fireButton1.get()
+                || this.eng1FireTest.get()
+                || this.fireButton2.get()
+                || this.eng2FireTest.get()
+                || this.fireButtonAPU.get()
+                || this.apuFireTest.get()
+                || this.emergencyGeneratorOn.get()
+                || (this.engine1State.get() === 0 && this.engine2State.get() === 0)
+                || (this.greenLP.get() && this.yellowLP.get())
+                || (this.yellowLP.get() && this.blueLP.get())
+                || (this.greenLP.get() && this.blueLP.get())
+            ));
 
         const flightPhase = this.fwcFlightPhase.get();
         let tempMemoArrayLeft:string[] = [];
@@ -1520,12 +1537,12 @@ export class NewPseudoFWC {
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
-        }, /*
+        },
         '0000350': // LAND ASAP RED
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!landASAPRed,
-            whichCodeToReturn: [0],
+            simVarIsActive: this.landAsapRed,
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000035001'],
             memoInhibit: () => false,
             failure: 0,
@@ -1535,17 +1552,17 @@ export class NewPseudoFWC {
         '0000360': // LAND ASAP AMBER
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!(!landASAPRed && !aircraftOnGround && (
-                engine1State === 0
-                || engine2State === 0
-            )),
-            whichCodeToReturn: [0],
+            simVarIsActive: MappedSubject.create(
+                ([landAsapRed, aircraftOnGround, engine1State, engine2State]) => (!landAsapRed && !aircraftOnGround && (engine1State === 0 || engine2State === 0)),
+                this.landAsapRed, this.aircraftOnGround, this.engine1State, this.engine2State,
+            ),
+            whichCodeToReturn: () => [0],
             codesToReturn: ['000036001'],
             memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
             side: 'RIGHT',
-        }, */
+        },
         '0000060': { // SPEED BRK
             flightPhaseInhib: [1, 8, 9, 10],
             simVarIsActive: this.speedBrakeCommand,
