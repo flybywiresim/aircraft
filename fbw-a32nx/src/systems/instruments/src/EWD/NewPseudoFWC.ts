@@ -1,7 +1,7 @@
 import { Subject, Subscribable, MappedSubject, ArraySubject } from 'msfssdk';
 
 import { Arinc429Word } from '@shared/arinc429';
-import { NXLogicConfirmNode } from '@instruments/common/NXLogic';
+import { NXLogicClockNode, NXLogicConfirmNode } from '@instruments/common/NXLogic';
 import { NXDataStore } from '@shared/persistence';
 
 interface EWDItem {
@@ -23,6 +23,26 @@ export class NewPseudoFWC {
     private toInhibitTimer = new NXLogicConfirmNode(3);
 
     private ldgInhibitTimer = new NXLogicConfirmNode(3);
+
+    private agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
+
+    private agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
+
+    private agent1Eng2DischargeTimer = new NXLogicClockNode(10, 0);
+
+    private agent2Eng2DischargeTimer = new NXLogicClockNode(30, 0);
+
+    private agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
+
+    private agent1Eng1Discharge = Subject.create(false);
+
+    private agent2Eng1Discharge = Subject.create(false);
+
+    private agent1Eng2Discharge = Subject.create(false);
+
+    private agent2Eng2Discharge = Subject.create(false);
+
+    private agentAPUDischarge = Subject.create(false);
 
     private readonly failuresLeft: string[] = [];
 
@@ -100,6 +120,14 @@ export class NewPseudoFWC {
 
     private readonly eng2AntiIce = Subject.create(false);
 
+    private readonly throttle1Position = Subject.create(0);
+
+    private readonly throttle2Position = Subject.create(0);
+
+    private readonly engine1ValueSwitch = Subject.create(false);
+
+    private readonly engine2ValueSwitch = Subject.create(false);
+
     /* FUEL */
 
     private readonly leftOuterInnerValve = Subject.create(0);
@@ -157,6 +185,34 @@ export class NewPseudoFWC {
     private readonly parkBrake = Subject.create(false);
 
     private readonly nwSteeringDisc = Subject.create(false);
+
+    /* FIRE */
+
+    private readonly fireButton1 = Subject.create(false);
+
+    private readonly fireButton2 = Subject.create(false);
+
+    private readonly fireButtonAPU = Subject.create(false);
+
+    private readonly eng1FireTest = Subject.create(false);
+
+    private readonly eng2FireTest = Subject.create(false);
+
+    private readonly apuFireTest = Subject.create(false);
+
+    private readonly eng1Agent1PB = Subject.create(false);
+
+    private readonly eng1Agent2PB = Subject.create(false);
+
+    private readonly eng2Agent1PB = Subject.create(false);
+
+    private readonly eng2Agent2PB = Subject.create(false);
+
+    private readonly apuAgentPB = Subject.create(false);
+
+    private readonly cargoFireTest = Subject.create(false);
+
+    private readonly cargoFireAgentDisch = Subject.create(false);
 
     /* OTHER STUFF */
 
@@ -377,6 +433,10 @@ export class NewPseudoFWC {
         this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
         this.eng1AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:1', 'bool'));
         this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
+        this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
+        this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
+        this.engine1ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:1', 'bool'));
+        this.engine2ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:2', 'bool'));
 
         /* HYDRAULICS */
 
@@ -446,6 +506,28 @@ export class NewPseudoFWC {
 
         this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
         this.speedBrakeCommand.set(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false));
+
+        /* FIRE */
+
+        this.fireButton1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
+        this.fireButton2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
+        this.fireButtonAPU.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_APU', 'bool'));
+        this.eng1FireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_ENG1', 'bool'));
+        this.eng2FireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_ENG2', 'bool'));
+        this.apuFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_APU', 'bool'));
+        this.eng1Agent1PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG1_AGENT1_Discharge', 'bool'));
+        this.eng1Agent2PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG1_AGENT2_Discharge', 'bool'));
+        this.eng2Agent1PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG2_AGENT1_Discharge', 'bool'));
+        this.eng2Agent2PB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool'));
+        this.apuAgentPB.set(SimVar.GetSimVarValue('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool'));
+        this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
+        this.cargoFireAgentDisch.set(SimVar.GetSimVarValue('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool'));
+
+        this.agent1Eng1Discharge.set(this.agent1Eng1DischargeTimer.write(this.fireButton1.get(), deltaTime));
+        this.agent2Eng1Discharge.set(this.agent2Eng1DischargeTimer.write(this.fireButton1.get() && this.eng1Agent1PB.get() && !this.aircraftOnGround.get(), deltaTime));
+        this.agent1Eng2Discharge.set(this.agent1Eng2DischargeTimer.write(this.fireButton2.get() && !this.eng1Agent1PB.get(), deltaTime));
+        this.agent2Eng2Discharge.set(this.agent2Eng2DischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime));
+        this.agentAPUDischarge.set(this.agentAPUDischargeTimer.write(this.fireButton2.get() && this.eng1Agent1PB.get(), deltaTime));
 
         /* SETTINGS */
 
@@ -555,9 +637,9 @@ export class NewPseudoFWC {
                     if (value.failure === 2) {
                         this.masterCaution(1);
                     }
-                }/*  else if (![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].every((e) => e === 0)) {
+                } else if (![this.eng1FireTest.get(), this.eng2FireTest.get(), this.apuFireTest.get(), this.cargoFireTest.get()].every((e) => e === 0)) {
                     this.masterWarning(1);
-                } */
+                }
 
                 const newCode: string[] = [];
                 if (!recallFailureKeys.includes(key)) {
@@ -758,6 +840,82 @@ export class NewPseudoFWC {
             memoInhibit: () => false,
             failure: 3,
             sysPage: 0,
+            side: 'LEFT',
+        },
+        2600010: { // ENG 1 FIRE
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([eng1FireTest, fireButton1]) => eng1FireTest || fireButton1, this.eng1FireTest, this.fireButton1),
+            whichCodeToReturn: () => [
+                0,
+                this.throttle1Position.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
+                (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get() ? 2 : null,
+                !this.parkBrake.get() && this.aircraftOnGround.get() ? 3 : null,
+                !this.parkBrake.get() && this.aircraftOnGround.get() ? 4 : null,
+                this.aircraftOnGround.get() ? 5 : null,
+                this.aircraftOnGround.get() ? 6 : null,
+                !this.engine1ValueSwitch.get() ? null : 7,
+                !this.fireButton1.get() ? 8 : null,
+                !this.aircraftOnGround.get() && this.agent1Eng1Discharge.get() === 1 && !this.eng1Agent1PB.get() ? 9 : null,
+                this.agent1Eng1Discharge.get() === 2 && !this.aircraftOnGround.get() && !this.eng1Agent1PB.get() ? 10 : null,
+                !this.eng1Agent1PB.get() && this.aircraftOnGround.get() ? 11 : null,
+                !this.eng1Agent2PB.get() && this.aircraftOnGround.get() ? 12 : null,
+                this.aircraftOnGround.get() ? 13 : null,
+                !this.aircraftOnGround.get() ? 14 : null,
+                this.agent2Eng1Discharge.get() === 1 && !this.eng1Agent2PB.get() ? 15 : null,
+                (this.agent2Eng1Discharge.get() === 1 && !this.eng1Agent2PB.get()) || (this.agent2Eng1Discharge.get() === 2 && !this.eng1Agent2PB.get()) ? 16 : null,
+            ],
+            codesToReturn: ['260001001', '260001002', '260001003', '260001004', '260001005',
+                '260001006', '260001007', '260001008', '260001009', '260001010', '260001011',
+                '260001012', '260001013', '260001014', '260001015', '260001016', '260001017'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 0,
+            side: 'LEFT',
+        },
+        2600020: { // ENG 2 FIRE
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([eng2FireTest, fireButton2]) => eng2FireTest || fireButton2, this.eng2FireTest, this.fireButton2),
+            whichCodeToReturn: () => [
+                0,
+                this.throttle2Position.get() !== 0 && !this.aircraftOnGround.get() ? 1 : null,
+                (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get() ? 2 : null,
+                !this.parkBrake.get() && this.aircraftOnGround.get() ? 3 : null,
+                !this.parkBrake.get() && this.aircraftOnGround.get() ? 4 : null,
+                this.aircraftOnGround.get() ? 5 : null,
+                this.aircraftOnGround.get() ? 6 : null,
+                !this.engine2ValueSwitch.get() ? null : 7,
+                !this.fireButton2.get() ? 8 : null,
+                !this.aircraftOnGround.get() && this.agent1Eng2Discharge.get() === 1 && !this.eng2Agent1PB.get() ? 9 : null,
+                this.agent1Eng2Discharge.get() === 2 && !this.aircraftOnGround.get() && !this.eng2Agent1PB.get() ? 10 : null,
+                !this.eng2Agent1PB.get() && this.aircraftOnGround.get() ? 11 : null,
+                !this.eng2Agent2PB.get() && this.aircraftOnGround.get() ? 12 : null,
+                this.aircraftOnGround.get() ? 13 : null,
+                !this.aircraftOnGround.get() ? 14 : null,
+                this.agent2Eng2Discharge.get() === 1 && !this.eng2Agent2PB.get() ? 15 : null,
+                (this.agent2Eng2Discharge.get() === 1 && !this.eng2Agent2PB.get()) || (this.agent2Eng2Discharge.get() === 2 && !this.eng2Agent2PB.get()) ? 16 : null,
+            ],
+            codesToReturn: ['260002001', '260002002', '260002003', '260002004', '260002005',
+                '260002006', '260002007', '260002008', '260002009', '260002010', '260002011',
+                '260002012', '260002013', '260002014', '260002015', '260002016'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 0,
+            side: 'LEFT',
+        },
+        2600030: { // APU FIRE
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([apuFireTest, fireButtonAPU]) => apuFireTest || fireButtonAPU, this.apuFireTest, this.fireButtonAPU),
+            whichCodeToReturn: () => [
+                0,
+                !this.fireButtonAPU.get() ? 1 : null,
+                this.agentAPUDischarge.get() === 1 && !this.apuAgentPB.get() ? 2 : null,
+                this.agentAPUDischarge.get() === 2 && !this.apuAgentPB.get() ? 3 : null,
+                this.apuMasterSwitch.get() === 1 ? 4 : null,
+            ],
+            codesToReturn: ['260003001', '260003002', '260003003', '260003004', '260003005'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 6,
             side: 'LEFT',
         },
     }
