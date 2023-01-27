@@ -44,6 +44,8 @@ export class NewPseudoFWC {
 
     private readonly computedAirSpeedToNearest2 = this.computedAirSpeed.map((it) => Math.round(it.value / 2) * 2);
 
+    private readonly toConfigFail = Subject.create(false);
+
     /** ENGINE AND THROTTLE */
 
     private readonly engine1State = Subject.create(0);
@@ -63,6 +65,10 @@ export class NewPseudoFWC {
     private readonly N2AboveIdle = MappedSubject.create(([n1, idleN1]) => Math.floor(n1) > idleN1, this.N1Eng2, this.N1IdleEng2);
 
     private readonly engDualFault = Subject.create(false); // TODO
+
+    private readonly engine1Generator = Subject.create(false);
+
+    private readonly engine2Generator = Subject.create(false);
 
     private readonly emergencyElectricGeneratorPotential = Subject.create(0);
 
@@ -104,9 +110,19 @@ export class NewPseudoFWC {
 
     /* HYDRAULICS */
 
+    private readonly blueLP = Subject.create(false);
+
+    private readonly eng1pumpPBisAuto = Subject.create(false);
+
+    private readonly eng2pumpPBisAuto = Subject.create(false);
+
+    private readonly greenLP = Subject.create(false);
+
     private readonly hydPTU = Subject.create(false);
 
     private readonly ratDeployed = Subject.create(0);
+
+    private readonly yellowLP = Subject.create(false);
 
     /* FCTL */
 
@@ -183,7 +199,7 @@ export class NewPseudoFWC {
     private readonly configPortableDevices = Subject.create('0');
 
     constructor() {
-        this.memoMessageLeft.sub((i, t, v) => {
+        this.memoMessageLeft.sub((_i, _t, _v) => {
             [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${value}`, 'string', '');
             });
@@ -194,7 +210,7 @@ export class NewPseudoFWC {
             //  }
         });
 
-        this.memoMessageRight.sub((i, t, v) => {
+        this.memoMessageRight.sub((_i, _t, _v) => {
             [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${value}`, 'string', '');
             });
@@ -204,6 +220,8 @@ export class NewPseudoFWC {
             });
             //   }
         });
+
+        SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
     }
 
     masterWarning(toggle: number) {
@@ -335,6 +353,8 @@ export class NewPseudoFWC {
         this.N1IdleEng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1:1', 'number'));
         this.N1IdleEng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1:2', 'number'));
 
+        this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
+        this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
         this.emergencyElectricGeneratorPotential.set(SimVar.GetSimVarValue('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number'));
 
         this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
@@ -360,8 +380,13 @@ export class NewPseudoFWC {
 
         /* HYDRAULICS */
 
+        this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
+        this.eng1pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool'));
+        this.eng2pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool'));
+        this.greenLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool'));
         this.hydPTU.set(SimVar.GetSimVarValue('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'Bool'));
         this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100'));
+        this.yellowLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool'));
 
         /* ADIRS */
 
@@ -425,6 +450,65 @@ export class NewPseudoFWC {
         /* SETTINGS */
 
         this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0'));
+
+        /* CABIN READY */
+
+        const callPushAft = SimVar.GetSimVarValue('L:PUSH_OVHD_CALLS_AFT', 'bool');
+        const callPushAll = SimVar.GetSimVarValue('L:PUSH_OVHD_CALLS_ALL', 'bool');
+        const callPushFwd = SimVar.GetSimVarValue('L:PUSH_OVHD_CALLS_FWD', 'bool');
+        if (callPushAft || callPushAll || callPushFwd) {
+            SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
+        }
+
+        /* MASTER CAUT/WARN BUTTONS */
+
+        const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
+        const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
+        const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
+        const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
+        if (masterCautionButtonLeft || masterCautionButtonRight) {
+            this.masterCaution(0);
+        }
+        if (masterWarningButtonLeft || masterWarningButtonRight) {
+            this.masterWarning(0);
+        }
+
+        /* T.O. CONFIG CHECK */
+
+        const toConfigBtn = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool');
+        if (this.toMemo.get() && toConfigBtn === 1) {
+            // TODO Note that fuel tank low pressure and gravity feed warnings are not included
+            const systemStatus = this.engine1Generator.get() && this.engine2Generator.get()
+                && !this.greenLP.get() && !this.yellowLP.get() && !this.blueLP.get()
+                && this.eng1pumpPBisAuto.get() && this.eng2pumpPBisAuto.get();
+
+            const v1Speed = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
+            const vrSpeed = SimVar.GetSimVarValue('L:AIRLINER_VR_SPEED', 'knots');
+            const v2Speed = SimVar.GetSimVarValue('L:AIRLINER_V2_SPEED', 'knots');
+            const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
+            const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
+            const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
+            const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
+            const flapsMcdu = SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS', 'number');
+            const flapsMcduEntered = SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool');
+            const flapsHandle = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum');
+            const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
+
+            const speeds = !!(v1Speed <= vrSpeed && vrSpeed <= v2Speed);
+            const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
+            const flapsAgree = !flapsMcduEntered || flapsHandle === flapsMcdu;
+            const sb = !this.speedBrakeCommand.get();
+
+            if (systemStatus && speeds && !brakesHot && doors && flapsAgree && sb) {
+                SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 1);
+                this.toConfigFail.set(false);
+            } else {
+                SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 0);
+                this.toConfigFail.set(true);
+            }
+        } else {
+            this.toConfigFail.set(false);
+        }
 
         // Output logic
 
@@ -624,7 +708,9 @@ export class NewPseudoFWC {
         },
         3400230: { // OVERSPEED FLAPS 2
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-            simVarIsActive: MappedSubject.create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 3 && computedAirSpeedToNearest2 > 203, this.flapsIndex, this.computedAirSpeedToNearest2),
+            simVarIsActive: MappedSubject.create(
+                ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 3 && computedAirSpeedToNearest2 > 203, this.flapsIndex, this.computedAirSpeedToNearest2,
+            ),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340023001', '340023002'],
             memoInhibit: () => false,
@@ -634,7 +720,9 @@ export class NewPseudoFWC {
         },
         3400235: { // OVERSPEED FLAPS 1+F
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-            simVarIsActive: MappedSubject.create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 2 && computedAirSpeedToNearest2 > 219, this.flapsIndex, this.computedAirSpeedToNearest2),
+            simVarIsActive: MappedSubject.create(
+                ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 2 && computedAirSpeedToNearest2 > 219, this.flapsIndex, this.computedAirSpeedToNearest2,
+            ),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340023501', '340023502'],
             memoInhibit: () => false,
@@ -644,7 +732,9 @@ export class NewPseudoFWC {
         },
         3400240: { // OVERSPEED FLAPS 1
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
-            simVarIsActive: MappedSubject.create(([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 1 && computedAirSpeedToNearest2 > 233, this.flapsIndex, this.computedAirSpeedToNearest2),
+            simVarIsActive: MappedSubject.create(
+                ([flapsIndex, computedAirSpeedToNearest2]) => flapsIndex === 1 && computedAirSpeedToNearest2 > 233, this.flapsIndex, this.computedAirSpeedToNearest2,
+            ),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['340024001', '340024002'],
             memoInhibit: () => false,
