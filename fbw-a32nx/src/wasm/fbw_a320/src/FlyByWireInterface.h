@@ -87,6 +87,7 @@ class FlyByWireInterface {
   double rudderTravelLimiterPosition = 25;
 
   bool disableXboxCompatibilityRudderAxisPlusMinus = false;
+  bool enableRudder2AxisMode = false;
 
   bool clientDataEnabled = false;
 
