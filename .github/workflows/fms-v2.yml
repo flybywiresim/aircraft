@@ -1,0 +1,42 @@
+name: fms-v2
+on:
+  push:
+    branches:
+      - fms-v2
+
+jobs:
+  build:
+    # Prevent running this on forks
+    if: github.repository_owner == 'flybywiresim'
+    runs-on: ubuntu-latest
+    env:
+      A32NX_PRODUCTION_BUILD: 1
+      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
+      BUILD_DIR_NAME: fms-v2
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Set BUILT_DATE_TIME
+        run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
+      - name: Create .env file
+        run: |
+          echo A32NX_PRODUCTION_BUILD=1 >> .env
+          echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
+          echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
+          echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
+          echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
+          echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+      - name: Build A32NX
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+      - name: Build ZIP files
+        run: |
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+      - name: Upload to CloudFlare CDN
+        env:
+          CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
+          CDN_BUCKET_DESTINATION: addons/a32nx/fms-v2
+        run: |
+          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./build-modules

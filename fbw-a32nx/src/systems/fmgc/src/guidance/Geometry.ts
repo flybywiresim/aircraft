@@ -34,35 +34,46 @@ function isGuidableCapturingPath(guidable: Guidable): boolean {
 }
 
 export class Geometry {
-    /**
-     * The list of transitions between legs.
-     * - entry n: transition after leg n
-     */
-    transitions: Map<number, Transition>;
+    constructor(
+        /**
+         * The list of transitions between legs.
+         * - entry n: transition after leg n
+         */
+        public transitions: Map<number, Transition>,
 
-    /**
-     * The list of legs in this geometry, possibly connected through transitions:
-     * - entry n: nth leg, before transition n
-     */
-    legs: Map<number, Leg>;
+        /**
+         * The list of legs in this geometry, possibly connected through transitions:
+         * - entry n: nth leg, before transition n
+         */
+        public legs: Map<number, Leg>,
+
+        /**
+         * Whether this geometry is for a temporary flight plan
+         */
+        private temp: boolean,
+    ) {
+    }
 
     public version = 0;
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    constructor(transitions: Map<number, Transition>, legs: Map<number, Leg>, private temp: boolean) {
-        this.transitions = transitions;
-        this.legs = legs;
-    }
-
     public isComputed = false;
 
     private cachedVectors = [];
 
+    private missedCachedVectors = [];
+
     public cachedVectorsVersion = 0;
 
-    public getAllPathVectors(activeLegIndex?: number): PathVector[] {
-        if (this.version === this.cachedVectorsVersion) {
+    public missedCachedVectorsVersion = 0;
+
+    public getAllPathVectors(activeLegIndex?: number, missedApproach = false): PathVector[] {
+        if (missedApproach) {
+            if (this.version === this.missedCachedVectorsVersion) {
+                return this.missedCachedVectors;
+            }
+        } else if (this.version === this.cachedVectorsVersion) {
             return this.cachedVectors;
         }
 
@@ -71,12 +82,17 @@ export class Geometry {
         const ret = [];
 
         for (const [index, leg] of this.legs.entries()) {
+            if ((!missedApproach && leg.metadata.isInMissedApproach) || (missedApproach && !leg.metadata.isInMissedApproach)) {
+                continue;
+            }
+
             if (leg.isNull) {
                 continue;
             }
 
             // TODO don't transmit any course reversals when this side range >= 160
             const transmitCourseReversal = LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS || index === activeLegIndex || index === (activeLegIndex + 1);
+
             if (activeLegIndex !== undefined) {
                 if (isCourseReversalLeg(leg) && !transmitCourseReversal) {
                     continue;
@@ -96,8 +112,13 @@ export class Geometry {
             }
         }
 
-        this.cachedVectors = ret;
-        this.cachedVectorsVersion = this.version;
+        if (missedApproach) {
+            this.missedCachedVectors = ret;
+            this.missedCachedVectorsVersion = this.version;
+        } else {
+            this.cachedVectors = ret;
+            this.cachedVectorsVersion = this.version;
+        }
 
         return ret;
     }

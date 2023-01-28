@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-//
+// Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { RwyLsMismatchLeft, RwyLsMismatchRight } from '@fmgc/components/fms-messages/RwyLsMismatch';
@@ -7,7 +6,6 @@ import { SpecifiedNdbUnavailableLeft, SpecifiedNdbUnavailableRight } from '@fmgc
 import { SpecifiedVorUnavailableLeft, SpecifiedVorUnavailableRight } from '@fmgc/components/fms-messages/SpecifiedVorUnavailable';
 import { TuneNavaidLeft, TuneNavaidRight } from '@fmgc/components/fms-messages/TuneNavaid';
 import { TurnAreaExceedanceLeft, TurnAreaExceedanceRight } from '@fmgc/components/fms-messages/TurnAreaExceedance';
-import { FlightPlanManager } from '@shared/flightplan';
 import { TdReached } from '@fmgc/components/fms-messages/TdReached';
 import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
 import { StepAhead } from '@fmgc/components/fms-messages/StepAhead';
@@ -59,7 +57,7 @@ export class FmsMessages implements FmgcComponent {
         new StepDeleted(),
     ];
 
-    init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
+    init(baseInstrument: BaseInstrument): void {
         this.baseInstrument = baseInstrument;
 
         for (const selector of this.messageSelectors) {

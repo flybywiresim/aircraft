@@ -10,8 +10,9 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { distanceTo } from 'msfs-geo';
+import { distanceTo, placeBearingDistance } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { WaypointDescriptor } from 'msfs-navdata';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CALeg extends Leg {
@@ -33,7 +34,7 @@ export class CALeg extends Leg {
 
     private start: Coordinates;
 
-    get terminationWaypoint(): WayPoint | Coordinates | undefined {
+    get terminationWaypoint(): Coordinates | undefined {
         return this.estimatedTermination;
     }
 
@@ -62,8 +63,7 @@ export class CALeg extends Leg {
         ppos: Coordinates,
         _trueTrack: DegreesTrue,
     ) {
-        // FIXME somehow after reloads the isRunway property is gone, so consider airports as runways for now
-        const afterRunway = this.inboundGuidable instanceof IFLeg && (this.inboundGuidable.fix.isRunway || this.inboundGuidable.fix.icao.startsWith('A'));
+        const afterRunway = this.inboundGuidable instanceof IFLeg && this.inboundGuidable.metadata.flightPlanLegDefinition.waypointDescriptor === WaypointDescriptor.Runway;
 
         // We assign / spread properties here to avoid copying references and causing bugs
         if (isActive && !afterRunway) {
@@ -123,10 +123,10 @@ export class CALeg extends Leg {
         const ESTIMATED_KTS = 175; // NM per hour
 
         // FIXME hax!
-        let originAltitude = 0;
-        if (this.inboundGuidable instanceof IFLeg && this.inboundGuidable.fix.icao.startsWith('A')) {
-            originAltitude = (this.inboundGuidable.fix.infos as AirportInfo).oneWayRunways[0].elevation * 3.28084;
-        }
+        const originAltitude = 0;
+        // if (this.inboundGuidable instanceof IFLeg && this.inboundGuidable.fix.icao.startsWith('A')) {
+        //     originAltitude = (this.inboundGuidable.fix.infos as AirportInfo).oneWayRunways[0].elevation * 3.28084;
+        // }
 
         const minutesToAltitude = (this.altitude - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
         let distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
@@ -135,11 +135,10 @@ export class CALeg extends Leg {
             distanceToTermination += this.extraLength;
         }
 
-        this.estimatedTermination = Avionics.Utils.bearingDistanceToCoordinates(
+        this.estimatedTermination = placeBearingDistance(
+            this.start,
             this.course,
             distanceToTermination,
-            this.start.lat,
-            this.start.long,
         );
     }
 

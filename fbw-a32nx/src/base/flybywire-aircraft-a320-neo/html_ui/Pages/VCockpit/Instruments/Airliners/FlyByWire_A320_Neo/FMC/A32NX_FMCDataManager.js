@@ -16,6 +16,7 @@ class FMCDataManager {
     constructor(_fmc) {
         this.fmc = _fmc;
 
+        /** @type {Array.<import('msfs-navdata').Waypoint>} */
         this.storedWaypoints = [];
 
         this.latLonExtendedFormat = false;
@@ -76,6 +77,7 @@ class FMCDataManager {
         });
     }
     async GetAirportByIdent(ident) {
+        return this.curr;
         if (!(await this.IsAirportValid(ident).catch(console.error))) {
             return undefined;
         }
@@ -179,7 +181,7 @@ class FMCDataManager {
     _updateLocalStorage() {
         localStorage.setItem(FMCDataManager.STORED_WP_KEY, JSON.stringify(this.storedWaypoints.map((wp) => wp ? {
             ident: wp.ident,
-            coordinates: { lat: wp.infos.coordinates.lat, long: wp.infos.coordinates.long },
+            coordinates: { lat: wp.location.lat, long: wp.location.long },
             additionalData: wp.additionalData,
         } : undefined)));
     }
@@ -199,7 +201,7 @@ class FMCDataManager {
         if (!this.storedWaypoints[index]) {
             return true;
         }
-        if (this.fmc.isWaypointInUse(this.storedWaypoints[index].icao)) {
+        if (this.fmc.isWaypointInUse(this.storedWaypoints[index])) {
             return false;
         }
         delete this.storedWaypoints[index];
@@ -228,6 +230,7 @@ class FMCDataManager {
             routes: 0,
             runways: 0,
             waypoints: this.numberOfStoredWaypoints(),
+            total: this.numberOfStoredWaypoints(),
         };
     }
 
@@ -282,13 +285,13 @@ class FMCDataManager {
         additionalData.storedIndex = index;
         additionalData.temporary = !stored;
 
-        const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc, additionalData);
+        const wp = Fmgc.WaypointFactory.fromLocation(ident, coordinates);
+        // const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc, additionalData);
 
         if (stored) {
             // we add the index to ensure the icao is unique, so it doesn't get de-duplicated on dup names page etc.
-            const icao = wp.icao + index.toString().padStart(2, '0');
-            wp.icao = icao;
-            wp.infos.icao = icao;
+            const icao = wp.databaseId + index.toString().padStart(2, '0');
+            wp.databaseId = icao;
 
             this.storeWaypoint(wp, index);
         }
@@ -327,12 +330,15 @@ class FMCDataManager {
 
     /**
      *
-     * @param {LatLong|LatLongAlt} coordinates
+     * @param place1 {import('msfs-navdata').Waypoint}
+     * @param bearing1 {DegreesTrue}
+     * @param place2 {import('msfs-navdata').Waypoint}
+     * @param bearing2 {DegreesTrue}
      * @throws {McduMessage}
      * @param {boolean} stored
      */
     createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored = false, ident = undefined) {
-        const coordinates = A32NX_Util.greatCircleIntersection(place1.infos.coordinates, bearing1, place2.infos.coordinates, bearing2);
+        const coordinates = A32NX_Util.greatCircleIntersection(place1.location, bearing1, place2.location, bearing2);
 
         let index = -1;
         if (stored) {
@@ -356,14 +362,14 @@ class FMCDataManager {
 
     /**
      *
-     * @param {WayPoint} origin
+     * @param {import('msfs-navdata').Waypoint} origin
      * @param {number} bearing true bearing
      * @param {number} distance
      * @throws {McduMessage}
      * @param {boolean} stored
      */
     createPlaceBearingDistWaypoint(origin, bearing, distance, stored = false, ident = undefined) {
-        const coordinates = Avionics.Utils.bearingDistanceToCoordinates(bearing, distance, origin.infos.coordinates.lat, origin.infos.coordinates.long);
+        const coordinates = Avionics.Utils.bearingDistanceToCoordinates(bearing, distance, origin.location.lat, origin.location.long);
 
         let index = -1;
         if (stored) {

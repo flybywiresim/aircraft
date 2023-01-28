@@ -102,6 +102,7 @@ const NXSystemMessages = {
 };
 
 const NXFictionalMessages = {
+    internalError:          new TypeIMessage('INTERNAL ERROR'),
     noSimBriefUser:         new TypeIMessage("NO SIMBRIEF USER"),
     noAirportSpecified:     new TypeIMessage("NO AIRPORT SPECIFIED"),
     fltNbrInUse:            new TypeIMessage("FLT NBR IN USE"),

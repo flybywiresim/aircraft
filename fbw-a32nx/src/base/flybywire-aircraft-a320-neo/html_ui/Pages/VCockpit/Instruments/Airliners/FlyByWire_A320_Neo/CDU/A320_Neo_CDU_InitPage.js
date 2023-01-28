@@ -6,8 +6,7 @@ class CDUInitPage {
         mcdu.activeSystem = 'FMGC';
         mcdu.coRoute.routes = [];
 
-        const haveFlightPlan = mcdu.flightPlanManager.getPersistentOrigin()
-            && mcdu.flightPlanManager.getDestination();
+        const haveFlightPlan = mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport;
 
         const fromTo = new Column(23, "____|____", Column.amber, Column.right);
         const [coRouteAction, coRouteText, coRouteColor] = new CDU_SingleValueField(
@@ -49,8 +48,8 @@ class CDUInitPage {
             }
         ).getFieldAsColumnParameters();
 
-        //;
-        const altDest = new Column(0, "----|----------");
+        const altnAirport = mcdu.flightPlanService.active.alternateDestinationAirport;
+        const altDest = new Column(0, `${altnAirport ? altnAirport.ident : '----'}|----------`);
         let costIndexText = "---";
         let costIndexAction;
         let costIndexColor = Column.white;
@@ -70,14 +69,17 @@ class CDUInitPage {
             requestButton = "REQUEST ";
         }
 
-        if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
-            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                fromTo.update(mcdu.flightPlanManager.getPersistentOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident, Column.cyan);
+        const origin = mcdu.flightPlanService.active.originAirport;
+        const dest = mcdu.flightPlanService.active.destinationAirport;
+
+        if (origin) {
+            if (dest) {
+                fromTo.update(origin.ident + "/" + dest.ident, Column.cyan);
 
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
                 if (mcdu.simbrief.sendStatus != "DONE" ||
-                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getPersistentOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
+                    (mcdu.simbrief["originIcao"] === origin.ident && mcdu.simbrief["destinationIcao"] === dest.ident)) {
                     requestEnable = false;
                     requestButtonLabel = "";
                     requestButton = "";
@@ -133,12 +135,9 @@ class CDUInitPage {
                     }
                 };
 
-                if (mcdu.flightPlanManager.getPersistentOrigin()) {
+                if (mcdu.flightPlanService.active.originAirport) {
                     alignOption = "IRS INIT>";
                 }
-
-                // Since CoRte isn't implemented, AltDest defaults to None Ref: Ares's documents
-                altDest.update(mcdu.altDestination ? mcdu.altDestination.ident : "NONE", Column.cyan);
 
                 mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
                     switch (altDest.raw) {
@@ -171,6 +170,12 @@ class CDUInitPage {
 
         mcdu.onLeftInput[0] = coRouteAction;
 
+        mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+            mcdu.flightPlanService.setAlternate(value).then(() => {
+                CDUInitPage.ShowPage1(mcdu);
+            }).catch(() => scratchpadCallback());
+        };
+
         if (mcdu.tropo) {
             tropo.update("" + mcdu.tropo, Column.big);
         }
@@ -196,12 +201,10 @@ class CDUInitPage {
                         scratchpadCallback();
                     }
                 });
-            } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
-                if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    mcdu.getCoRouteList(mcdu).then(() => {
-                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                    });
-                }
+            } else if (mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport) {
+                mcdu.getCoRouteList(mcdu).then(() => {
+                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                });
             }
         };
         mcdu.onRightInput[1] = () => {
@@ -211,8 +214,13 @@ class CDUInitPage {
                         CDUInitPage.ShowPage1(mcdu);
                     }
                 })
-                    .then(() => {
-                        insertUplink(mcdu);
+                    .then((data) => {
+                        Fmgc.SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(data, { doUplinkProcedures: false }).then(() => {
+                            console.log('SimBrief data uplinked.');
+
+                            Fmgc.FlightPlanService.uplinkInsert();
+                        });
+                        // insertUplink(mcdu);
                     });
             }
         };
@@ -332,7 +340,7 @@ class CDUInitPage {
         return isFinite(mcdu.blockFuel) &&
             isFinite(mcdu.zeroFuelWeightMassCenter) &&
             isFinite(mcdu.zeroFuelWeight) &&
-            mcdu.flightPlanManager.getWaypointsCount() > 0 &&
+            mcdu.flightPlanService.active && mcdu.flightPlanService.active.legCount > 0 &&
             mcdu._zeroFuelWeightZFWCGEntered &&
             (mcdu._blockFuelEntered || mcdu.isAnEngineOn());
     }

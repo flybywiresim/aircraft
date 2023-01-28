@@ -176,7 +176,7 @@ export class ManagedFlightPlan {
             const firstDistFromPpos = firstData?.distanceFromPpos ?? 0;
             const activeWpCumulativeDist = this.activeWaypoint?.cumulativeDistanceInFP ?? 0;
             const distPpos = (waypoint.isVectors) ? 1 : waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos;
-            const data = {
+            const data: WaypointStats = {
                 ident: waypoint.ident,
                 bearingInFp: waypoint.bearingInFP,
                 distanceInFP: waypoint.distanceInFP,
@@ -184,6 +184,7 @@ export class ManagedFlightPlan {
                 distanceFromPpos: distPpos,
                 timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
                 etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
+                magneticVariation: 0,
             };
             stats.set(index, data);
         });

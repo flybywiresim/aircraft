@@ -28,21 +28,25 @@ class CDUPerformancePage {
             }
         };
 
+        // TODO SEC F-PLN
+        const targetPlan = mcdu.flightPlanService.active;
+
         let titleColor = "white";
         if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF) {
             titleColor = "green";
         }
 
         // check if we even have an airport
-        const hasOrigin = !!mcdu.flightPlanManager.getOrigin();
+        const hasOrigin = !!targetPlan.originAirport;
 
         // runway
         let runway = "";
         let hasRunway = false;
         if (hasOrigin) {
-            const runwayObj = mcdu.flightPlanManager.getOriginRunway();
+            const runwayObj = targetPlan.originRunway;
+
             if (runwayObj) {
-                runway = Avionics.Utils.formatRunway(runwayObj.designation);
+                runway = runwayObj.ident.substring(2);
                 hasRunway = true;
             }
         }
@@ -183,12 +187,17 @@ class CDUPerformancePage {
         let transAltCell = "";
         if (hasOrigin) {
             transAltCell = "[\xa0".padEnd(4, "\xa0") + "]";
-            if (mcdu.flightPlanManager.originTransitionAltitude !== undefined) {
-                transAltCell = `{cyan}${mcdu.flightPlanManager.originTransitionAltitude}{end}`;
-                if (mcdu.flightPlanManager.originTransitionAltitudeIsFromDb) {
+
+            const transAlt = targetPlan.performanceData.transitionAltitude.get();
+            const transAltitudeIsFromDatabase = targetPlan.performanceData.transitionAltitudeIsFromDatabase;
+
+            if (transAlt !== undefined) {
+                transAltCell = `{cyan}${transAlt}{end}`;
+                if (transAltitudeIsFromDatabase) {
                     transAltCell += "[s-text]";
                 }
             }
+
             mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
                 if (mcdu.trySetTakeOffTransAltitude(value)) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { A320Failure, FailuresConsumer } from '@failures';
+import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';

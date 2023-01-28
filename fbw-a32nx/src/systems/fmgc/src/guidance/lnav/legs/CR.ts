@@ -41,7 +41,7 @@ export class CRLeg extends Leg {
     }
 
     get ident(): string {
-        return this.origin.ident.substring(0, 3) + this.origin.theta.toFixed(0);
+        return this.origin.ident.substring(0, 3) + this.metadata.flightPlanLegDefinition.theta.toFixed(0);
     }
 
     getPathStartPoint(): Coordinates | undefined {

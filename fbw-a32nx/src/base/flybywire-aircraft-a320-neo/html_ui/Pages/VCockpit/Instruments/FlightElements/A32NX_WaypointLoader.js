@@ -62,6 +62,7 @@ class FacilityLoader {
         if (this._isRegistered) {
             return;
         }
+        return;
         this._isRegistered = true;
         RegisterViewListener("JS_LISTENER_FACILITY", () => {
             console.log("JS_LISTENER_FACILITY registered.");
@@ -131,6 +132,8 @@ class FacilityLoader {
      * @param {String} icao The ICAO to get the raw facility data for.
      */
     getFacilityRaw(icao, timeout = 1500, skipIntersectionData = false) {
+
+        return new Promise((resolve) => resolve());
 
         const queueRawLoad = (loadCall, icao, type) => {
             return new Promise((resolve) => {
@@ -238,6 +241,7 @@ class FacilityLoader {
         });
     }
     getFacilityDataCB(icao, callback) {
+        return callback();
         if (this._isCompletelyRegistered) {
             if (!icao) {
                 return callback(undefined);
@@ -381,6 +385,7 @@ class FacilityLoader {
         return airports;
     }
     async getAirportsData(icaos) {
+        return undefined;
         await this.waitRegistration();
         const t0 = performance.now();
         const datas = [];
@@ -1215,6 +1220,7 @@ class FacilityLoader {
      * @param {RawAirport} rawAirport
      */
     addRunwayByItselfApproaches(rawAirport) {
+        return;
         const airportIdent = WayPoint.formatIdentFromIcao(rawAirport.icao);
         const airportRegion = 'XX';
         /** @type {OneWayRunway[]} */

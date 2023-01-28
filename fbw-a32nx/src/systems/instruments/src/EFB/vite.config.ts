@@ -6,7 +6,7 @@ import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '../../../../../../.env' });
+dotenv.config({ path: '../../../../.env' });
 
 const envVarsToReplace = ['CLIENT_ID', 'CLIENT_SECRET', 'SENTRY_DSN'];
 

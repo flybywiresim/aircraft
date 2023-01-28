@@ -1,5 +1,10 @@
-import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FlightPlanManager } from '@fmgc/wtsdk';
+import { FlightLevel } from 'msfs-navdata';
 import { FmgcComponent } from './FmgcComponent';
 
 export class EfisLabels implements FmgcComponent {
@@ -14,8 +19,8 @@ export class EfisLabels implements FmgcComponent {
     }
 
     update(_deltaTime: number): void {
-        const transitionAltitude = this.flightPlanManager.originTransitionAltitude;
-        const transitionLevel = this.flightPlanManager.destinationTransitionLevel;
+        const transitionAltitude = 18_000;
+        const transitionLevel = 180;
 
         // FIXME ARINC429 when the PR adding a TS impl. lands...
         if (transitionAltitude !== this.lastTransitionAltitude) {

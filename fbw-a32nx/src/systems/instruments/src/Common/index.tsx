@@ -4,8 +4,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { FbwAircraftSentryClient } from '@sentry/FbwAircraftSentryClient';
 import { getRenderTarget } from '@flybywiresim/fbw-sdk';
+import { FbwAircraftSentryClient } from '../../../sentry-client/src/FbwAircraftSentryClient';
 
 declare const process: any;
 

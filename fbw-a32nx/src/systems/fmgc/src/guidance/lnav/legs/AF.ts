@@ -15,13 +15,14 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { Waypoint } from 'msfs-navdata';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class AFLeg extends XFLeg {
     predictedPath: PathVector[] = [];
 
     constructor(
-        fix: WayPoint,
+        fix: Waypoint,
         private navaid: Coordinates,
         private rho: NauticalMiles,
         private theta: NauticalMiles,
@@ -34,9 +35,9 @@ export class AFLeg extends XFLeg {
         this.segment = segment;
 
         this.centre = navaid;
-        this.radius = distanceTo(navaid, this.fix.infos.coordinates);
+        this.radius = distanceTo(navaid, this.fix.location);
         this.terminationRadial = this.theta;
-        this.bearing = Avionics.Utils.clampAngle(bearingTo(this.centre, this.fix.infos.coordinates) + 90 * this.turnDirectionSign);
+        this.bearing = MathUtils.clampAngle(bearingTo(this.centre, this.fix.location) + 90 * this.turnDirectionSign);
         this.arcStartPoint = placeBearingDistance(this.centre, this.boundaryRadial, this.radius);
         this.arcEndPoint = placeBearingDistance(this.centre, this.terminationRadial, this.radius);
 
@@ -116,11 +117,11 @@ export class AFLeg extends XFLeg {
     }
 
     public get turnDirectionSign(): 1 | -1 {
-        if (this.fix.turnDirection !== TurnDirection.Right && this.fix.turnDirection !== TurnDirection.Left) {
+        if (this.metadata.turnDirection !== TurnDirection.Right && this.metadata.turnDirection !== TurnDirection.Left) {
             throw new Error('AFLeg found without specific turnDirection');
         }
 
-        return this.fix.turnDirection === TurnDirection.Left ? -1 : 1;
+        return this.constrainedTurnDirection === TurnDirection.Left ? -1 : 1;
     }
 
     get startsInCircularArc(): boolean {
@@ -145,17 +146,17 @@ export class AFLeg extends XFLeg {
     }
 
     isAbeam(ppos: Coordinates): boolean {
-        const bearingPpos = Avionics.Utils.computeGreatCircleHeading(
+        const bearingPpos = bearingTo(
             this.centre,
             ppos,
         );
 
-        const bearingFrom = Avionics.Utils.computeGreatCircleHeading(
+        const bearingFrom = bearingTo(
             this.centre,
             this.getPathStartPoint(),
         );
 
-        const trackAngleError = this.clockwise ? Avionics.Utils.diffAngle(bearingFrom, bearingPpos) : Avionics.Utils.diffAngle(bearingPpos, bearingFrom);
+        const trackAngleError = this.clockwise ? MathUtils.diffAngle(bearingFrom, bearingPpos) : MathUtils.diffAngle(bearingPpos, bearingFrom);
 
         return trackAngleError >= 0;
     }

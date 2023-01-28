@@ -1,5 +1,11 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { arcLength, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
+import { bearingTo, distanceTo } from 'msfs-geo';
 
 export enum PathVectorType {
     Line,
@@ -40,11 +46,11 @@ export type PathVector = LinePathVector | ArcPathVector | DebugPointPathVector
 
 export function pathVectorLength(vector: PathVector) {
     if (vector.type === PathVectorType.Line) {
-        return Avionics.Utils.computeGreatCircleDistance(vector.startPoint, vector.endPoint);
+        return distanceTo(vector.startPoint, vector.endPoint);
     }
 
     if (vector.type === PathVectorType.Arc) {
-        const radius = Avionics.Utils.computeGreatCircleDistance(vector.startPoint, vector.centrePoint);
+        const radius = distanceTo(vector.startPoint, vector.centrePoint);
 
         return arcLength(radius, vector.sweepAngle);
     }
@@ -67,7 +73,7 @@ export function pathVectorValid(vector: PathVector) {
 
 export function pathVectorPoint(vector: PathVector, distanceFromEnd: NauticalMiles): Coordinates | undefined {
     if (vector.type === PathVectorType.Line) {
-        return pointOnCourseToFix(distanceFromEnd, Avionics.Utils.computeGreatCircleHeading(vector.startPoint, vector.endPoint), vector.endPoint);
+        return pointOnCourseToFix(distanceFromEnd, bearingTo(vector.startPoint, vector.endPoint), vector.endPoint);
     }
 
     if (vector.type === PathVectorType.Arc) {
