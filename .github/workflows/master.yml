@@ -1,6 +1,6 @@
 name: master
 on:
-  push:
+# push:
 #    branches:
 #      - master
 
