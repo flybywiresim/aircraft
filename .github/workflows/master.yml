@@ -2,7 +2,7 @@ name: master
 on:
   push:
     branches:
-      - master
+      - master-legacy
 
 jobs:
   build:
