@@ -2,15 +2,6 @@ cmake_minimum_required(VERSION 3.19)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Configure the build as required
-set(AIRCRAFT "A32NX")
-set(EXAMPLES "NO_EXAMPLES") # EXAMPLES, NO_EXAMPLES
-# ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
-set(LOG_LEVEL 4)
-set(LOGGING "LOG_LEVEL=${LOG_LEVEL}")
-
-# Distinction between running on Windows for your IDE and Other for the docker container
-# This is not meant to be used to build on windows - it is just for the IDE (Clion) to understand the code
 if (WIN32)
     message("OS: Windows")
     set(MSFS_SDK "C:\\MSFS SDK")
@@ -24,6 +15,13 @@ else ()
     set(CMAKE_CXX_COMPILER "clang++")
     set(CMAKE_GENERATOR "Ninja")
 endif ()
+
+# Configure the build as required
+set(AIRCRAFT "A32NX")
+set(EXAMPLES "NO_EXAMPLES") # EXAMPLES, NO_EXAMPLES
+# ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
+set(LOG_LEVEL 4)
+set(LOGGING "LOG_LEVEL=${LOG_LEVEL}")
 
 # Prepare the compiler flags
 set(CMAKE_CXX_FLAGS "-c -std=c++17")
@@ -42,7 +40,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D${AIRCRAFT} -D${LOGGING} -D${EXAMPLES}
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MSFS_WASM=1 -D__wasi__ -D_LIBCC_NO_EXCEPTIONS -D_LIBCPP_HAS_NO_THREADS -D_WINDLL -D_MBCS")
 
 # Print some info to be able to check which compiler has been picked
-message("Current source dir: " ${CMAKE_CURRENT_SOURCE_DIR})
+message("Current source dir: " .)
 message("Current build dir: " ${CMAKE_CURRENT_BINARY_DIR})
 message("MSFS SDK: " ${MSFS_SDK})
 message("Build type: " ${CMAKE_BUILD_TYPE})
@@ -103,7 +101,7 @@ set(WASM_LD_FULL_CMD "${WASM_LD_CMD} ${WASM_LD_OUTPUT_FLAG} ${WASM_LD_ARGS} ${WA
 # wasm-opt command to optimize the wasm file
 set(WASM_OPT_CMD "wasm-opt")
 set(WASM_OPT_FLAGS "-O1 -o")
-set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/${PROJECT_NAME}.wasm\"")
+set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../../../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/${PROJECT_NAME}.wasm\"")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(WASM_OPT_FULL_CMD "cp ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.wasm ${OUT_PATH} ")
 else ()

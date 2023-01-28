@@ -2,10 +2,10 @@
 # through the code in an IDE. It is not used for building the project.
 
 cmake_minimum_required(VERSION 3.19)
-project(flybywire-a32nx-fbw)
 
-set(CMAKE_CXX_STANDARD 20)
-set(MSFS_SDK "C:\\MSFS SDK")
+project(flybywire-a380x-fbw)
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "-c -g -DDEBUG -Wno-unused-command-line-argument -Wno-ignored-attributes -Wno-macro-redefined --sysroot \"${MSFS_SDK}/WASM/wasi-sysroot\" -target wasm32-unknown-wasi -flto -D_MSFS_WASM=1 -D__wasi__ -D_LIBCPP_HAS_NO_THREADS -D_WINDLL -D_MBCS -mthread-model single -fno-exceptions -fms-extensions")
 
