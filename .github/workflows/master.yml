@@ -2,7 +2,7 @@ name: master
 on:
  push:
     branches:
-      - this-does-not-exist
+      - master
 
 jobs:
   build:
@@ -36,16 +36,16 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
-      - name: Build ZIP files
-        run: |
-          ./scripts/dev-env/run.sh node ./scripts/fragment.js
-
-          cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
-          ./scripts/dev-env/run.sh node ./scripts/install-source.js
-          mkdir ./${{ env.BUILD_DIR_NAME }}
-          cd ./fbw-a32nx/out/
-          zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
-          cd ../../
+#      - name: Build ZIP files
+#        run: |
+#          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+#
+#          cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
+#          ./scripts/dev-env/run.sh node ./scripts/install-source.js
+#          mkdir ./${{ env.BUILD_DIR_NAME }}
+#          cd ./fbw-a32nx/out/
+#          zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+#          cd ../../
 #      - name: Get and delete vmaster pre-release zip asset
 #        run: |
 #          echo 'checking for first release asset...'
