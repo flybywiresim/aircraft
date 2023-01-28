@@ -9,15 +9,13 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { arcDistanceToGo, arcGuidance, arcLength } from '@fmgc/guidance/lnav/CommonGeometry';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { Waypoint } from 'msfs-navdata';
+import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { bearingTo, distanceTo } from 'msfs-geo';
+import { MathUtils } from '@shared/MathUtils';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class RFLeg extends XFLeg {
-    // termination fix of the previous leg
-    from: WayPoint;
-
-    // to fix for the RF leg, most params referenced off this
-    to: WayPoint;
-
     // location of the centre fix of the arc
     center: LatLongData;
 
@@ -32,8 +30,8 @@ export class RFLeg extends XFLeg {
     private computedPath: PathVector[] = [];
 
     constructor(
-        from: WayPoint,
-        to: WayPoint,
+        private from: Waypoint,
+        public to: Waypoint,
         center: LatLongData,
         public metadata: LegMetadata,
         segment: SegmentType,
@@ -43,25 +41,23 @@ export class RFLeg extends XFLeg {
         this.from = from;
         this.to = to;
         this.center = center;
-        this.radius = Avionics.Utils.computeGreatCircleDistance(this.center, this.to.infos.coordinates);
+        this.radius = distanceTo(this.center, this.to.location);
         this.segment = segment;
 
-        const bearingFrom = Avionics.Utils.computeGreatCircleHeading(this.center, this.from.infos.coordinates); // -90?
-        const bearingTo = Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates); // -90?
+        const fromBearing = bearingTo(this.center, this.from.location); // -90?
+        const toBearing = bearingTo(this.center, this.to.location); // -90?
 
-        switch (to.turnDirection) {
-        case 1: // left
+        switch (this.metadata.turnDirection) {
+        case TurnDirection.Left:
             this.clockwise = false;
-            this.angle = Avionics.Utils.clampAngle(bearingFrom - bearingTo);
+            this.angle = MathUtils.clampAngle(fromBearing - toBearing);
             break;
-        case 2: // right
+        case TurnDirection.Right:
             this.clockwise = true;
-            this.angle = Avionics.Utils.clampAngle(bearingTo - bearingFrom);
+            this.angle = MathUtils.clampAngle(toBearing - fromBearing);
             break;
-        case 0: // unknown
-        case 3: // either
         default:
-            const angle = Avionics.Utils.diffAngle(bearingTo, bearingFrom);
+            const angle = MathUtils.diffAngle(toBearing, fromBearing);
             this.clockwise = angle > 0;
             this.angle = Math.abs(angle);
             break;
@@ -72,9 +68,9 @@ export class RFLeg extends XFLeg {
         this.computedPath = [
             {
                 type: PathVectorType.Arc,
-                startPoint: this.from.infos.coordinates,
+                startPoint: this.from.location,
                 centrePoint: this.center,
-                endPoint: this.to.infos.coordinates,
+                endPoint: this.to.location,
                 sweepAngle: this.clockwise ? this.angle : -this.angle,
             },
         ];
@@ -83,11 +79,11 @@ export class RFLeg extends XFLeg {
     }
 
     getPathStartPoint(): Coordinates | undefined {
-        return this.from.infos.coordinates;
+        return this.from.location;
     }
 
     getPathEndPoint(): Coordinates | undefined {
-        return this.to.infos.coordinates;
+        return this.to.location;
     }
 
     get predictedPath(): PathVector[] {
@@ -103,11 +99,11 @@ export class RFLeg extends XFLeg {
     }
 
     get inboundCourse(): Degrees {
-        return Avionics.Utils.clampAngle(Avionics.Utils.computeGreatCircleHeading(this.center, this.from.infos.coordinates) + (this.clockwise ? 90 : -90));
+        return MathUtils.clampAngle(bearingTo(this.center, this.from.location) + (this.clockwise ? 90 : -90));
     }
 
     get outboundCourse(): Degrees {
-        return Avionics.Utils.clampAngle(Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates) + (this.clockwise ? 90 : -90));
+        return MathUtils.clampAngle(bearingTo(this.center, this.to.location) + (this.clockwise ? 90 : -90));
     }
 
     get distance(): NauticalMiles {
@@ -121,7 +117,7 @@ export class RFLeg extends XFLeg {
     // basically straight from type 1 transition... willl need refinement
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, _tas: Knots): GuidanceParameters | null {
         // FIXME should be defined in terms of to fix
-        return arcGuidance(ppos, trueTrack, this.from.infos.coordinates, this.center, this.clockwise ? this.angle : -this.angle);
+        return arcGuidance(ppos, trueTrack, this.from.location, this.center, this.clockwise ? this.angle : -this.angle);
     }
 
     getNominalRollAngle(gs: Knots): Degrees {
@@ -136,21 +132,21 @@ export class RFLeg extends XFLeg {
      */
     getDistanceToGo(ppos: LatLongData): NauticalMiles {
         // FIXME geometry should be defined in terms of to...
-        return arcDistanceToGo(ppos, this.from.infos.coordinates, this.center, this.clockwise ? this.angle : -this.angle);
+        return arcDistanceToGo(ppos, this.from.location, this.center, this.clockwise ? this.angle : -this.angle);
     }
 
     isAbeam(ppos: LatLongData): boolean {
-        const bearingPpos = Avionics.Utils.computeGreatCircleHeading(
+        const bearingPpos = bearingTo(
             this.center,
             ppos,
         );
 
-        const bearingFrom = Avionics.Utils.computeGreatCircleHeading(
+        const bearingFrom = bearingTo(
             this.center,
-            this.from.infos.coordinates,
+            this.from.location,
         );
 
-        const trackAngleError = this.clockwise ? Avionics.Utils.diffAngle(bearingFrom, bearingPpos) : Avionics.Utils.diffAngle(bearingPpos, bearingFrom);
+        const trackAngleError = this.clockwise ? MathUtils.diffAngle(bearingFrom, bearingPpos) : MathUtils.diffAngle(bearingPpos, bearingFrom);
 
         return trackAngleError >= 0;
     }

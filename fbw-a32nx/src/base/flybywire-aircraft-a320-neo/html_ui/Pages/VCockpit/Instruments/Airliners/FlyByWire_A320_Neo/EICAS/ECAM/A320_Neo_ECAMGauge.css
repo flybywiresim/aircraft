@@ -130,7 +130,7 @@ a320-neo-ecam-gauge #RootSVG #CurrentValue.inactive {
 a320-neo-ecam-gauge #RootSVG #CurrentValueBorder,
 a320-neo-ecam-gauge #RootSVG #CurrentValueBorder.active {
   fill: none;
-  stroke: sky;
+  stroke: lightblue;
   stroke-width: 1px;
 }
 a320-neo-ecam-gauge #RootSVG #CurrentValueBorder.inactive {
@@ -149,7 +149,7 @@ a320-neo-ecam-gauge #RootSVG #ExtraMessage {
 }
 a320-neo-ecam-gauge #RootSVG #ExtraMessage rect {
   fill: var(--displayBackground);
-  stroke: sky;
+  stroke: lightblue;
   stroke-width: 1px;
 }
 a320-neo-ecam-gauge #RootSVG #ExtraMessage text {

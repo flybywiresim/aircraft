@@ -6,15 +6,21 @@
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { courseToFixDistanceToGo, PointSide, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
+import {
+    courseToFixDistanceToGo,
+    PointSide,
+    reciprocal,
+    sideOfPointOnCourseToFix,
+} from '@fmgc/guidance/lnav/CommonGeometry';
 import { Geo } from '@fmgc/utils/Geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
-import { distanceTo } from 'msfs-geo';
+import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
+import { distanceTo, placeBearingIntersection } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { MathUtils } from '@shared/MathUtils';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CILeg extends Leg {
@@ -37,20 +43,14 @@ export class CILeg extends Leg {
         return this.intercept;
     }
 
-    get distanceToTermFix(): NauticalMiles {
-        return Avionics.Utils.computeGreatCircleDistance(this.getPathStartPoint(), this.intercept);
-    }
-
     get ident(): string {
         return 'INTCPT';
     }
 
     getPathStartPoint(): Coordinates | undefined {
         if (this.inboundGuidable instanceof IFLeg) {
-            return this.inboundGuidable.fix.infos.coordinates;
-        }
-
-        if (this.inboundGuidable && this.inboundGuidable.isComputed) {
+            return this.inboundGuidable.fix.location;
+        } if (this.inboundGuidable && this.inboundGuidable.isComputed) {
             return this.inboundGuidable.getPathEndPoint();
         }
 
@@ -87,10 +87,26 @@ export class CILeg extends Leg {
         );
 
         const side = sideOfPointOnCourseToFix(this.intercept, this.outboundCourse, this.getPathStartPoint());
-        const overshot = side === PointSide.After;
+        const flipped = side === PointSide.After;
 
-        if (this.intercept && !Number.isNaN(this.intercept.lat) && !overshot) {
+        if (this.intercept && !Number.isNaN(this.intercept.lat) && !flipped) {
             this.isNull = false;
+
+            const interceptSide = sideOfPointOnCourseToFix(this.nextLeg.getPathEndPoint(), this.nextLeg.outboundCourse, this.intercept);
+
+            if (interceptSide === PointSide.After) {
+                const [one, two] = placeBearingIntersection(
+                    this.intercept,
+                    reciprocal(this.outboundCourse),
+                    this.nextLeg.getPathEndPoint(),
+                    MathUtils.clampAngle(this.nextLeg.outboundCourse + 90),
+                );
+
+                const d1 = distanceTo(this.intercept, one);
+                const d2 = distanceTo(this.intercept, two);
+
+                this.intercept = d1 < d2 ? one : two;
+            }
 
             this.computedPath = [{
                 type: PathVectorType.Line,

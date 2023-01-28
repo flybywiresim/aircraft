@@ -6,7 +6,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
-import { Failure } from '@failures';
+import { Failure } from '@flybywiresim/failures';
 import { t } from '../../../translation';
 import { FailureButton } from '../../FailureButton';
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';

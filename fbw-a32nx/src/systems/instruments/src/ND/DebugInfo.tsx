@@ -5,7 +5,6 @@
 import React from 'react';
 import { Layer, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ControlLaw } from '@fmgc/guidance/ControlLaws';
-import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 
 export const DebugInfo: React.FC = () => {
     const [law] = useSimVar('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number', 1_000);
@@ -45,12 +44,11 @@ export const DebugInfo: React.FC = () => {
     );
 };
 
-const DebugLegs: React.FC = () => {
-    const currentFlightPlan = useCurrentFlightPlan();
+const DebugLegs: React.FC = () =>
+// const currentFlightPlan = useCurrentFlightPlan();
 
-    return (
+    (
         <>
-            {currentFlightPlan.waypoints.map((waypoint: WayPoint, index) => <text x={25} y={150 + (index * 25)} fontSize={26} fill="yellow">{waypoint.ident}</text>)}
+            {/* {currentFlightPlan.waypoints.map((waypoint: WayPoint, index) => <text x={25} y={150 + (index * 25)} fontSize={26} fill="yellow">{waypoint.ident}</text>)} */}
         </>
     );
-};

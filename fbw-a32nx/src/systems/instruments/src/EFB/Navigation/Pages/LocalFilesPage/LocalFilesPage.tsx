@@ -4,8 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { ClientState, Viewer } from '@simbridge/index';
-
+import { ClientState, Viewer } from '../../../../../../simbridge-client/src';
 import { t } from '../../../translation';
 import { LocalFileChartUI } from './LocalFileChartUI';
 

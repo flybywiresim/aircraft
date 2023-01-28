@@ -7,20 +7,22 @@
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
 import { Geometry } from '@fmgc/guidance/Geometry';
-import { AltitudeDescriptor, TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { SegmentType } from '@fmgc/wtsdk';
 import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuidance, maxBank, reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
+import { AltitudeDescriptor, TurnDirection, Waypoint } from 'msfs-navdata';
+import { MathUtils } from '@shared/MathUtils';
+import { placeBearingDistance } from 'msfs-geo';
 import { PathVector, PathVectorType } from '../PathVector';
 
 interface HxGeometry {
-    fixA: LatLongAlt,
-    fixB: LatLongAlt,
-    fixC: LatLongAlt,
-    arcCentreFix1: LatLongAlt,
-    arcCentreFix2: LatLongAlt,
+    fixA: Coordinates,
+    fixB: Coordinates,
+    fixC: Coordinates,
+    arcCentreFix1: Coordinates,
+    arcCentreFix2: Coordinates,
     sweepAngle: Degrees,
     legLength: NauticalMiles,
     radius: NauticalMiles,
@@ -73,7 +75,7 @@ abstract class HXLeg extends XFLeg {
     public geometry: HxGeometry;
 
     constructor(
-        fix: WayPoint,
+        fix: Waypoint,
         public metadata: LegMetadata,
         public segment: SegmentType,
     ) {
@@ -83,7 +85,7 @@ abstract class HXLeg extends XFLeg {
     }
 
     get inboundLegCourse(): DegreesTrue {
-        return this.fix.additionalData.course;
+        return this.metadata.flightPlanLegDefinition.magneticCourse;
     }
 
     get outboundLegCourse(): DegreesTrue {
@@ -91,7 +93,7 @@ abstract class HXLeg extends XFLeg {
     }
 
     get turnDirection(): TurnDirection {
-        return this.fix.turnDirection;
+        return this.metadata.flightPlanLegDefinition.turnDirection;
     }
 
     get ident(): string {
@@ -115,16 +117,16 @@ abstract class HXLeg extends XFLeg {
 
     public computeLegDistance(): NauticalMiles {
         // is distance in NM?
-        if (this.fix.additionalData.distance !== undefined) {
-            return this.fix.additionalData.distance;
+        if (this.metadata.flightPlanLegDefinition.length !== undefined) {
+            return this.metadata.flightPlanLegDefinition.length;
         }
 
-        const alt = this.fix.legAltitude1 ?? SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const alt = this.metadata.flightPlanLegDefinition.altitude1 ?? SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
         // distance is in time then...
         const defaultMinutes = alt < 14000 ? 1 : 1.5;
         const inboundGroundSpeed = (this.currentPredictedTas + (this.inboundWindSpeed ?? 0));
-        return (this.fix.additionalData.distanceInMinutes !== undefined ? this.fix.additionalData.distanceInMinutes : defaultMinutes) * inboundGroundSpeed / 60;
+        return (this.metadata.flightPlanLegDefinition.lengthTime !== undefined ? this.metadata.flightPlanLegDefinition.lengthTime : defaultMinutes) * inboundGroundSpeed / 60;
     }
 
     protected computeGeometry(): HxGeometry {
@@ -143,36 +145,31 @@ abstract class HXLeg extends XFLeg {
         const radius = this.radius;
         const turnSign = this.turnDirection === TurnDirection.Left ? -1 : 1;
 
-        const fixA = Avionics.Utils.bearingDistanceToCoordinates(
+        const fixA = placeBearingDistance(
+            this.fix.location,
             this.inboundLegCourse + turnSign * 90,
             radius * 2,
-            this.fix.infos.coordinates.lat,
-            this.fix.infos.coordinates.long,
         );
-        const fixB = Avionics.Utils.bearingDistanceToCoordinates(
+        const fixB = placeBearingDistance(
+            fixA,
             this.outboundLegCourse,
             legLength,
-            fixA.lat,
-            fixA.long,
         );
-        const fixC = Avionics.Utils.bearingDistanceToCoordinates(
+        const fixC = placeBearingDistance(
+            this.fix.location,
             this.outboundLegCourse,
             legLength,
-            this.fix.infos.coordinates.lat,
-            this.fix.infos.coordinates.long,
         );
 
-        const arcCentreFix1 = Avionics.Utils.bearingDistanceToCoordinates(
+        const arcCentreFix1 = placeBearingDistance(
+            this.fix.location,
             this.inboundLegCourse + turnSign * 90,
             radius,
-            this.fix.infos.coordinates.lat,
-            this.fix.infos.coordinates.long,
         );
-        const arcCentreFix2 = Avionics.Utils.bearingDistanceToCoordinates(
+        const arcCentreFix2 = placeBearingDistance(
+            fixC,
             this.inboundLegCourse + turnSign * 90,
             radius,
-            fixC.lat,
-            fixC.long,
         );
 
         return {
@@ -194,8 +191,8 @@ abstract class HXLeg extends XFLeg {
         return radius;
     }
 
-    get terminationPoint(): LatLongAlt {
-        return this.fix.infos.coordinates;
+    get terminationPoint(): Coordinates {
+        return this.fix.location;
     }
 
     get distance(): NauticalMiles {
@@ -229,14 +226,14 @@ abstract class HXLeg extends XFLeg {
 
         switch (this.state) {
         case HxLegGuidanceState.Inbound:
-            return courseToFixDistanceToGo(ppos, this.inboundLegCourse, this.fix.infos.coordinates);
+            return courseToFixDistanceToGo(ppos, this.inboundLegCourse, this.fix.location);
         case HxLegGuidanceState.Arc1:
-            return arcDistanceToGo(ppos, this.fix.infos.coordinates, arcCentreFix1, sweepAngle) + this.computeLegDistance() * 2 + this.radius * Math.PI;
+            return arcDistanceToGo(ppos, this.fix.location, arcCentreFix1, sweepAngle) + this.computeLegDistance() * 2 + this.radius * Math.PI;
         case HxLegGuidanceState.Outbound:
             return courseToFixDistanceToGo(ppos, this.outboundLegCourse, fixB) + this.computeLegDistance() + this.radius * Math.PI;
         case HxLegGuidanceState.Arc2:
             return arcDistanceToGo(ppos, fixB, arcCentreFix2, sweepAngle) + this.computeLegDistance();
-        // no default
+            // no default
         }
 
         return 1;
@@ -252,7 +249,7 @@ abstract class HXLeg extends XFLeg {
         return [
             {
                 type: PathVectorType.Arc,
-                startPoint: this.fix.infos.coordinates,
+                startPoint: this.fix.location,
                 centrePoint: arcCentreFix1,
                 endPoint: fixA,
                 sweepAngle,
@@ -272,7 +269,7 @@ abstract class HXLeg extends XFLeg {
             {
                 type: PathVectorType.Line,
                 startPoint: fixC,
-                endPoint: this.fix.infos.coordinates,
+                endPoint: this.fix.location,
             },
         ];
     }
@@ -288,11 +285,11 @@ abstract class HXLeg extends XFLeg {
 
         switch (this.state) {
         case HxLegGuidanceState.Inbound: {
-            dtg = courseToFixDistanceToGo(ppos, this.inboundLegCourse, this.fix.infos.coordinates);
+            dtg = courseToFixDistanceToGo(ppos, this.inboundLegCourse, this.fix.location);
             break;
         }
         case HxLegGuidanceState.Arc1: {
-            dtg = arcDistanceToGo(ppos, this.fix.infos.coordinates, geometry.arcCentreFix1, geometry.sweepAngle);
+            dtg = arcDistanceToGo(ppos, this.fix.location, geometry.arcCentreFix1, geometry.sweepAngle);
             break;
         }
         case HxLegGuidanceState.Outbound: {
@@ -331,14 +328,14 @@ abstract class HXLeg extends XFLeg {
 
         switch (this.state) {
         case HxLegGuidanceState.Inbound:
-            params = courseToFixGuidance(ppos, trueTrack, this.inboundLegCourse, this.fix.infos.coordinates);
-            dtg = courseToFixDistanceToGo(ppos, this.inboundLegCourse, this.fix.infos.coordinates);
+            params = courseToFixGuidance(ppos, trueTrack, this.inboundLegCourse, this.fix.location);
+            dtg = courseToFixDistanceToGo(ppos, this.inboundLegCourse, this.fix.location);
             nextPhi = sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
             rad = Geometry.getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
             break;
         case HxLegGuidanceState.Arc1:
-            params = arcGuidance(ppos, trueTrack, this.fix.infos.coordinates, arcCentreFix1, sweepAngle);
-            dtg = arcDistanceToGo(ppos, this.fix.infos.coordinates, arcCentreFix1, sweepAngle);
+            params = arcGuidance(ppos, trueTrack, this.fix.location, arcCentreFix1, sweepAngle);
+            dtg = arcDistanceToGo(ppos, this.fix.location, arcCentreFix1, sweepAngle);
             rad = Geometry.getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
             if (legLength <= rad) {
                 nextPhi = params.phiCommand;
@@ -394,7 +391,7 @@ abstract class HXLeg extends XFLeg {
     updatePrediction() {
         const windDirection = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'Degrees');
         const windSpeed = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots');
-        const windAngleToInbound = Math.abs(Avionics.Utils.diffAngle(reciprocal(windDirection), this.inboundLegCourse));
+        const windAngleToInbound = Math.abs(MathUtils.diffAngle(reciprocal(windDirection), this.inboundLegCourse));
         this.inboundWindSpeed = Math.cos(windAngleToInbound * Math.PI / 180) * windSpeed;
 
         this.currentPredictedTas = this.nextPredictedTas;
@@ -410,12 +407,12 @@ abstract class HXLeg extends XFLeg {
     }
 
     getPathStartPoint(): Coordinates {
-        return this.fix.infos.coordinates;
+        return this.fix.location;
     }
 
     getPathEndPoint(): Coordinates {
         // TODO consider early exit to CF on HF leg
-        return this.fix.infos.coordinates;
+        return this.fix.location;
     }
 }
 
@@ -448,12 +445,13 @@ export class HMLeg extends HXLeg {
                 // keep the normal leg distance as we can't shorten
                 this.immExitLength = legLength;
                 break;
-            // no default
+                // no default
             }
         }
 
         // hack to allow f-pln page to see state
-        this.fix.additionalData.immExit = exit;
+        // this.fix.additionalData.immExit = exit;
+        // TODO port over
 
         this.termConditionMet = exit;
 
@@ -490,17 +488,20 @@ export class HALeg extends HXLeg {
     private readonly targetAltitude: Feet;
 
     constructor(
-        public to: WayPoint,
+        public to: Waypoint,
         public metadata: LegMetadata,
         public segment: SegmentType,
     ) {
         super(to, metadata, segment);
 
         // the term altitude is guaranteed to be at or above, and in field altitude1, by ARINC424 coding rules
-        if (this.fix.legAltitudeDescription !== AltitudeDescriptor.AtOrAbove) {
-            console.warn(`HALeg invalid altitude descriptor ${this.fix.legAltitudeDescription}, must be ${AltitudeDescriptor.AtOrAbove}`);
+        const altitudeDescriptor = this.metadata.flightPlanLegDefinition.altitudeDescriptor;
+
+        if (altitudeDescriptor !== AltitudeDescriptor.AtOrAboveAlt1) {
+            console.warn(`HALeg invalid altitude descriptor ${altitudeDescriptor}, must be ${AltitudeDescriptor.AtOrAboveAlt1}`);
         }
-        this.targetAltitude = this.fix.legAltitude1;
+
+        this.targetAltitude = this.metadata.flightPlanLegDefinition.altitude1;
     }
 
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters {

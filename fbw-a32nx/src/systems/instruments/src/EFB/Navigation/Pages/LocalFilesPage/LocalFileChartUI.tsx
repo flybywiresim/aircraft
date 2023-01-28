@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { Viewer } from '@simbridge/index';
 import { t } from '../../../translation';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
@@ -11,6 +10,7 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
 import { ChartViewer } from '../../Navigation';
+import { Viewer } from '../../../../../../simbridge-client/src';
 
 interface LocalFileCharts {
     images: LocalFileChart[];

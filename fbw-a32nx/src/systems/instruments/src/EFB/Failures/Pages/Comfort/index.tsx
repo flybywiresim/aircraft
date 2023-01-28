@@ -6,7 +6,7 @@ import { AtaChapterNumber, AtaChaptersTitle, AtaChaptersDescription } from '@fly
 import React from 'react';
 import { Route } from 'react-router';
 import { Link } from 'react-router-dom';
-import { Failure } from '@failures';
+import { Failure } from '@flybywiresim/failures';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { t } from '../../../translation';
 import { pathify } from '../../../Utils/routing';

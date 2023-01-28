@@ -20,7 +20,6 @@ declare global {
          * @param args any extra arguments to be passed to the event handlers.
          */
         function trigger(name: string, ...args: any[]): void;
-        // @ts-ignore
         function trigger(name: 'FOCUS_INPUT_FIELD', id: string, title?: string, description?: string, defaultValue?: string, isNumeric: boolean): void;
         function trigger(name: 'UNFOCUS_INPUT_FIELD', id: string);
 

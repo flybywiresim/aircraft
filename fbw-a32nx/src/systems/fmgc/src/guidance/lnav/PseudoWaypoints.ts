@@ -13,6 +13,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { LateralMode } from '@shared/autopilot';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
@@ -98,7 +99,7 @@ export class PseudoWaypoints implements GuidanceComponent {
 
     private recompute() {
         const geometry = this.guidanceController.activeGeometry;
-        const wptCount = this.guidanceController.flightPlanManager.getWaypointsCount();
+        const wptCount = FlightPlanService.active.allLegs.length;
 
         const navGeometryProfile = this.guidanceController.vnavDriver.mcduProfile;
         if (!geometry || geometry.legs.size < 1 || !navGeometryProfile?.isReadyToDisplay) {

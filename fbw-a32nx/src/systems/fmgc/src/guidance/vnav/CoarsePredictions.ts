@@ -1,11 +1,11 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 
 /**
  * This class exists to provide very coarse predictions for
@@ -13,34 +13,36 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
  */
 export class CoarsePredictions {
     static updatePredictions(guidanceController: GuidanceController, atmosphere: AtmosphericConditions) {
-        const flightPlanManager = guidanceController.flightPlanManager;
+        const plan = FlightPlanService.active;
 
-        for (let i = 0; i < flightPlanManager.getWaypointsCount(FlightPlans.Active); i++) {
-            const wp = flightPlanManager.getWaypoint(i, FlightPlans.Active, true);
-            const leg = guidanceController.activeGeometry.legs.get(i);
-            if (!wp || !leg) {
+        for (let i = 0; i < plan.legCount; i++) {
+            const planLeg = plan.elementAt(i);
+            const geomLeg = guidanceController.activeGeometry.legs.get(i);
+
+            if (!planLeg || !geomLeg) {
                 continue;
             }
 
-            if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
-                leg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
-                leg.predictedGs = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_GS', 'knots');
-                continue;
-            }
+            // TODO port over
 
-            const alt = wp.additionalData.predictedAltitude;
-            const cas = wp.additionalData.predictedSpeed;
-            let tas = atmosphere.computeTasFromCas(alt, cas);
-            let gs = tas;
+            // if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
+            //     geomLeg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
+            //     geomLeg.predictedGs = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_GS', 'knots');
+            //     continue;
+
+            // const alt = planLeg.additionalData.predictedAltitude;
+            // const cas = planLeg.additionalData.predictedSpeed;
+            // let tas = atmosphere.computeTasFromCas(alt, cas);
+            // let gs = tas;
 
             // predicted with live data for active and next two legs
-            if (i >= guidanceController.activeLegIndex && i < (guidanceController.activeLegIndex + 3)) {
-                tas = atmosphere.currentTrueAirspeed;
-                gs = tas + atmosphere.currentWindSpeed;
-            }
+            // if (i >= guidanceController.activeLegIndex && i < (guidanceController.activeLegIndex + 3)) {
+            //     tas = atmosphere.currentTrueAirspeed;
+            //     gs = tas + atmosphere.currentWindSpeed;
+            // }
 
-            leg.predictedTas = Number.isFinite(tas) ? tas : undefined;
-            leg.predictedGs = Number.isFinite(gs) ? gs : tas;
+            // geomLeg.predictedTas = Number.isFinite(tas) ? tas : undefined;
+            // geomLeg.predictedGs = Number.isFinite(gs) ? gs : tas;
         }
     }
 }

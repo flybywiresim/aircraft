@@ -107,6 +107,7 @@ const NXSystemMessages = {
 
 const NXFictionalMessages = {
     noNavigraphUser:         new TypeIMessage("NO NAVIGRAPH USER"),
+    internalError:          new TypeIMessage("INTERNAL ERROR"),
     noAirportSpecified:     new TypeIMessage("NO AIRPORT SPECIFIED"),
     fltNbrInUse:            new TypeIMessage("FLT NBR IN USE"),
     fltNbrMissing:          new TypeIMessage("ENTER ATC FLT NBR"),
