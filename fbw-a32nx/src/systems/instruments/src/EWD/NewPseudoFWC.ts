@@ -424,7 +424,7 @@ export class NewPseudoFWC {
 
     /* SETTINGS */
 
-    private readonly configPortableDevices = Subject.create('0');
+    private readonly configPortableDevices = Subject.create(false);
 
     constructor() {
         this.memoMessageLeft.sub((_i, _t, _v) => {
@@ -856,7 +856,7 @@ export class NewPseudoFWC {
 
         /* SETTINGS */
 
-        this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0'));
+        this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0') !== '0');
 
         /* CABIN READY */
 
@@ -1638,7 +1638,7 @@ export class NewPseudoFWC {
         },
         3400507: { // NAV TCAS STBY (in flight)
             flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-            simVarIsActive: this.tcasSensitivity.map((v) => v === 2),
+            simVarIsActive: this.tcasSensitivity.map((v) => v === 1),
             whichCodeToReturn: () => [0],
             codesToReturn: ['340050701'],
             memoInhibit: () => false,
@@ -1975,8 +1975,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000350': // LAND ASAP RED
-        {
+        '0000350': { // LAND ASAP RED
             flightPhaseInhib: [],
             simVarIsActive: this.landAsapRed,
             whichCodeToReturn: () => [0],
@@ -1986,8 +1985,7 @@ export class NewPseudoFWC {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000360': // LAND ASAP AMBER
-        {
+        '0000360': { // LAND ASAP AMBER
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(
                 ([landAsapRed, aircraftOnGround, engine1State, engine2State]) => (!landAsapRed && !aircraftOnGround && (engine1State === 0 || engine2State === 0)),
