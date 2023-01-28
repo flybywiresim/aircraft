@@ -71,4 +71,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: ./**/flybywire-aircraft-a320-neo/
+          path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
