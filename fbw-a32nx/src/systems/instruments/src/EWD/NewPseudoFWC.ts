@@ -20,147 +20,231 @@ interface EWDMessageDict {
 }
 
 export class NewPseudoFWC {
-    private toInhibitTimer = new NXLogicConfirmNode(3);
+    /* PSEUDO FWC VARIABLES */
 
-    private ldgInhibitTimer = new NXLogicConfirmNode(3);
-
-    private iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
-
-    private iceSevereDetectedTimerStatus = Subject.create(false);
-
-    private iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
-
-    private iceDetectedTimer2 = new NXLogicConfirmNode(5);
-
-    private iceDetectedTimer2Status = Subject.create(false);
-
-    private iceNotDetTimer1 = new NXLogicConfirmNode(60);
-
-    private iceNotDetTimer2 = new NXLogicConfirmNode(130);
-
-    private iceNotDetTimer2Status = Subject.create(false);
-
-    private packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
-
-    private packOffBleedAvailable2 = new NXLogicConfirmNode(5, false);
-
-    private packOffNotFailed1 = new NXLogicConfirmNode(60);
-
-    private packOffNotFailed2 = new NXLogicConfirmNode(60);
-
-    private packOffNotFailed1Status = Subject.create(false);
-
-    private packOffNotFailed2Status = Subject.create(false);
-
-    private agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
-
-    private agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
-
-    private agent1Eng2DischargeTimer = new NXLogicClockNode(10, 0);
-
-    private agent2Eng2DischargeTimer = new NXLogicClockNode(30, 0);
-
-    private agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
-
-    private altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
-
-    private altn2LawConfirmNode = new NXLogicConfirmNode(0.3, true);
-
-    private cabAltSetReset1 = new NXLogicMemoryNode();
-
-    private cabAltSetReset2 = new NXLogicMemoryNode();
-
-    private cabAltSetResetState1 = Subject.create(false);
-
-    private cabAltSetResetState2 = Subject.create(false);
-
-    private excessPressure = Subject.create(false);
-
-    private elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
-
-    private elac1FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
-
-    private elac1HydConfirmNodeOutput = Subject.create(false);
-
-    private elac1FaultConfirmNodeOutput = Subject.create(false);
-
-    private elac2HydConfirmNode = new NXLogicConfirmNode(3, false);
-
-    private elac2FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
-
-    private elac2HydConfirmNodeOutput = Subject.create(false);
-
-    private elac2FaultConfirmNodeOutput = Subject.create(false);
-
-    private elac1FaultLine123Display = Subject.create(false);
-
-    private elac1FaultLine45Display = Subject.create(false);
-
-    private elac2FaultLine123Display = Subject.create(false);
-
-    private elac2FaultLine45Display = Subject.create(false);
-
-    private sec1FaultCondition = Subject.create(false);
-
-    private sec2FaultCondition = Subject.create(false);
-
-    private sec3FaultCondition = Subject.create(false);
-
-    private sec1FaultLine123Display = Subject.create(false);
-
-    private sec1FaultLine45Display = Subject.create(false);
-
-    private sec2FaultLine123Display = Subject.create(false);
-
-    private sec3FaultLine123Display = Subject.create(false);
-
-    private fcdc12FaultCondition = Subject.create(false);
-
-    private fcdc1FaultCondition = Subject.create(false);
-
-    private fcdc2FaultCondition = Subject.create(false);
-
-    private altn1LawConfirmNodeOutput = Subject.create(false);
-
-    private altn2LawConfirmNodeOutput = Subject.create(false);
-
-    private directLawCondition = Subject.create(false);
-
-    private lrElevFaultCondition = Subject.create(false);
-
-    private agent1Eng1Discharge = Subject.create(0);
-
-    private agent2Eng1Discharge = Subject.create(0);
-
-    private agent1Eng2Discharge = Subject.create(0);
-
-    private agent2Eng2Discharge = Subject.create(0);
-
-    private agentAPUDischarge = Subject.create(0);
+    private readonly allCurrentFailures: string[] = [];
 
     private readonly failuresLeft: string[] = [];
 
     private readonly failuresRight: string[] = [];
 
-    private readonly allCurrentFailures: string[] = [];
+    private memoMessageLeft: ArraySubject<string> = ArraySubject.create([]);
+
+    private memoMessageRight: ArraySubject<string> = ArraySubject.create([]);
 
     private recallFailures: string[] = [];
 
     private recallReset: boolean = false;
 
-    private memoMessageLeft: ArraySubject<string> = ArraySubject.create([]);
+    /* PRESSURIZATION */
 
-    private memoMessageRight: ArraySubject<string> = ArraySubject.create([]);
+    private readonly apuBleedValveOpen = Subject.create(false);
+
+    private readonly cabAltSetReset1 = new NXLogicMemoryNode();
+
+    private readonly cabAltSetReset2 = new NXLogicMemoryNode();
+
+    private readonly cabAltSetResetState1 = Subject.create(false);
+
+    private readonly cabAltSetResetState2 = Subject.create(false);
+
+    private readonly excessPressure = Subject.create(false);
+
+    private readonly packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
+
+    private readonly packOffBleedAvailable2 = new NXLogicConfirmNode(5, false);
+
+    private readonly packOffNotFailed1 = new NXLogicConfirmNode(60);
+
+    private readonly packOffNotFailed1Status = Subject.create(false);
+
+    private readonly packOffNotFailed2 = new NXLogicConfirmNode(60);
+
+    private readonly packOffNotFailed2Status = Subject.create(false);
+
+    /* ELECTRICAL */
+
+    private readonly ac1BusPowered = Subject.create(false);
+
+    private readonly ac2BusPowered = Subject.create(false);
+
+    private readonly acESSBusPowered = Subject.create(false);
+
+    private readonly dcESSBusPowered = Subject.create(false);
+
+    private readonly dc2BusPowered = Subject.create(false);
+
+    /* FLIGHT CONTROLS */
+
+    private readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
+
+    private readonly altn1LawConfirmNodeOutput = Subject.create(false);
+
+    private readonly altn2LawConfirmNode = new NXLogicConfirmNode(0.3, true);
+
+    private readonly altn2LawConfirmNodeOutput = Subject.create(false);
+
+    private readonly directLawCondition = Subject.create(false);
+
+    private readonly elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
+
+    private readonly elac1FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
+
+    private readonly elac1FaultConfirmNodeOutput = Subject.create(false);
+
+    private readonly elac1FaultLine123Display = Subject.create(false);
+
+    private readonly elac1FaultLine45Display = Subject.create(false);
+
+    private readonly elac1HydConfirmNodeOutput = Subject.create(false);
+
+    private readonly elac2FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
+
+    private readonly elac2FaultConfirmNodeOutput = Subject.create(false);
+
+    private readonly elac2FaultLine123Display = Subject.create(false);
+
+    private readonly elac2FaultLine45Display = Subject.create(false);
+
+    private readonly elac2HydConfirmNode = new NXLogicConfirmNode(3, false);
+
+    private readonly elac2HydConfirmNodeOutput = Subject.create(false);
+
+    private readonly fcdc1FaultCondition = Subject.create(false);
+
+    private readonly fcdc12FaultCondition = Subject.create(false);
+
+    private readonly fcdc2FaultCondition = Subject.create(false);
+
+    private readonly flapsAngle = Subject.create(0);
+
+    private readonly flapsHandle = Subject.create(0);
+
+    private readonly flapsMcdu = Subject.create(0);
+
+    private readonly flapsMcduEntered = Subject.create(false);
+
+    private readonly lrElevFaultCondition = Subject.create(false);
+
+    private readonly sec1FaultCondition = Subject.create(false);
+
+    private readonly sec2FaultCondition = Subject.create(false);
+
+    private readonly sec3FaultCondition = Subject.create(false);
+
+    private readonly sec1FaultLine123Display = Subject.create(false);
+
+    private readonly sec1FaultLine45Display = Subject.create(false);
+
+    private readonly sec2FaultLine123Display = Subject.create(false);
+
+    private readonly sec3FaultLine123Display = Subject.create(false);
+
+    private readonly showLandingInhibit = Subject.create(false);
+
+    private readonly showTakeoffInhibit = Subject.create(false);
+
+    private readonly slatsAngle = Subject.create(0);
+
+    private readonly speedBrakeCommand = Subject.create(false);
+
+    private readonly spoilersArmed = Subject.create(false);
+
+    private readonly toConfigFail = Subject.create(false);
+
+    /* FUEL */
+
+    private readonly fuelXFeedPBOn = Subject.create(false);
+
+    private readonly leftOuterInnerValve = Subject.create(0);
+
+    private readonly rightOuterInnerValve = Subject.create(0);
+
+    /* HYDRAULICS */
+
+    private readonly blueElecPumpPBAuto = Subject.create(false);
+
+    private readonly blueLP = Subject.create(false);
+
+    private readonly blueRvrLow = Subject.create(false);
+
+    private readonly blueRvrOvht = Subject.create(false);
+
+    private readonly eng1pumpPBisAuto = Subject.create(false);
+
+    private readonly eng2pumpPBisAuto = Subject.create(false);
+
+    private readonly greenHydEng1PBAuto = Subject.create(false);
+
+    private readonly greenLP = Subject.create(false);
+
+    private readonly greenRvrOvht = Subject.create(false);
+
+    private readonly hydPTU = Subject.create(false);
+
+    private readonly ptuAuto = Subject.create(false);
+
+    private readonly ratDeployed = Subject.create(0);
+
+    private readonly yellowLP = Subject.create(false);
+
+    private readonly yellowRvrOvht = Subject.create(false);
+
+    private readonly yepumpPBisAuto = Subject.create(false);
+
+    /* FWS */
+
+    private readonly fwc1Normal = Subject.create(false);
+
+    private readonly fwc2Normal = Subject.create(false);
 
     private readonly fwcFlightPhase = Subject.create(-1);
 
-    private readonly flapsIndex = Subject.create(0);
+    private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
+
+    private readonly toInhibitTimer = new NXLogicConfirmNode(3);
+
+    /* LANDING GEAR AND LIGHTS */
+
+    private readonly aircraftOnGround = Subject.create(0);
+
+    private readonly antiskidActive = Subject.create(false);
+
+    private readonly brakeFan = Subject.create(false);
+
+    private readonly brakesHot = Subject.create(false);
+
+    private readonly landingLight2Retracted = Subject.create(false);
+
+    private readonly landingLight3Retracted = Subject.create(false);
+
+    private readonly lgciu1Fault = Subject.create(false);
+
+    private readonly lgciu2Fault = Subject.create(false);
+
+    private readonly nwSteeringDisc = Subject.create(false);
+
+    private readonly parkBrake = Subject.create(false);
+
+    /* NAVIGATION */
+
+    private readonly adirsRemainingAlignTime = Subject.create(0);
+
+    private readonly adiru1State = Subject.create(0);
+
+    private readonly adiru2State = Subject.create(0);
+
+    private readonly adiru3State = Subject.create(0);
 
     private readonly computedAirSpeed = Subject.create(Arinc429Word.empty());
 
     private readonly computedAirSpeedToNearest2 = this.computedAirSpeed.map((it) => Math.round(it.value / 2) * 2);
 
-    private readonly toConfigFail = Subject.create(false);
+    private readonly height1Failed = Subject.create(false);
+
+    private readonly height2Failed = Subject.create(false);
+
+    private readonly flapsIndex = Subject.create(0);
 
     /** ENGINE AND THROTTLE */
 
@@ -193,8 +277,6 @@ export class NewPseudoFWC {
     private readonly apuMasterSwitch = Subject.create(0);
 
     private readonly apuAvail = Subject.create(0);
-
-    private readonly apuBleedValveOpen = Subject.create(false);
 
     private readonly radioAlt = Subject.create(0);
 
@@ -232,115 +314,47 @@ export class NewPseudoFWC {
 
     private readonly thrustLeverNotSet = Subject.create(false);
 
-    /* FUEL */
-
-    private readonly leftOuterInnerValve = Subject.create(0);
-
-    private readonly fuelXFeedPBOn = Subject.create(false);
-
-    private readonly rightOuterInnerValve = Subject.create(0);
-
-    /* HYDRAULICS */
-
-    private readonly blueElecPumpPBAuto = Subject.create(false);
-
-    private readonly blueLP = Subject.create(false);
-
-    private readonly blueRvrLow = Subject.create(false);
-
-    private readonly blueRvrOvht = Subject.create(false);
-
-    private readonly eng1pumpPBisAuto = Subject.create(false);
-
-    private readonly eng2pumpPBisAuto = Subject.create(false);
-
-    private readonly greenHydEng1PBAuto = Subject.create(false);
-
-    private readonly greenLP = Subject.create(false);
-
-    private readonly greenRvrOvht = Subject.create(false);
-
-    private readonly hydPTU = Subject.create(false);
-
-    private readonly ptuAuto = Subject.create(false);
-
-    private readonly ratDeployed = Subject.create(0);
-
-    private readonly yellowLP = Subject.create(false);
-
-    private readonly yellowRvrOvht = Subject.create(false);
-
-    private readonly yepumpPBisAuto = Subject.create(false);
-
-    /* FCTL */
-
-    private readonly flapsAngle = Subject.create(0);
-
-    private readonly flapsHandle = Subject.create(0);
-
-    private readonly flapsMcdu = Subject.create(0);
-
-    private readonly flapsMcduEntered = Subject.create(false);
-
-    private readonly slatsAngle = Subject.create(0);
-
-    private spoilersArmed = Subject.create(false);
-
-    private speedBrakeCommand = Subject.create(false);
-
-    private showTakeoffInhibit = Subject.create(false);
-
-    private showLandingInhibit = Subject.create(false);
-
-    /* ADIRS */
-
-    private readonly adirsRemainingAlignTime = Subject.create(0);
-
-    private readonly adiru1State = Subject.create(0);
-
-    private readonly adiru2State = Subject.create(0);
-
-    private readonly adiru3State = Subject.create(0);
-
-    private readonly height1Failed = Subject.create(false);
-
-    private readonly height2Failed = Subject.create(false);
-
-    /* LANDING GEAR AND LIGHTS */
-
-    private readonly aircraftOnGround = Subject.create(0);
-
-    private readonly antiskidActive = Subject.create(false);
-
-    private readonly brakeFan = Subject.create(false);
-
-    private readonly brakesHot = Subject.create(false);
-
-    private readonly landingLight2Retracted = Subject.create(false);
-
-    private readonly landingLight3Retracted = Subject.create(false);
-
-    private readonly lgciu1Fault = Subject.create(false);
-
-    private readonly lgciu2Fault = Subject.create(false);
-
-    private readonly parkBrake = Subject.create(false);
-
-    private readonly nwSteeringDisc = Subject.create(false);
-
-    /* ELECTRICAL */
-
-    private readonly dcESSBusPowered = Subject.create(false);
-
-    private readonly dc2BusPowered = Subject.create(false);
-
-    private readonly ac1BusPowered = Subject.create(false);
-
-    private readonly ac2BusPowered = Subject.create(false);
-
-    private readonly acESSBusPowered = Subject.create(false);
-
     /* FIRE */
+
+    private readonly agent1Eng1Discharge = Subject.create(0);
+
+    private readonly agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
+
+    private readonly agent2Eng1Discharge = Subject.create(0);
+
+    private readonly agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
+
+    private readonly agent1Eng2Discharge = Subject.create(0);
+
+    private readonly agent1Eng2DischargeTimer = new NXLogicClockNode(10, 0);
+
+    private readonly agent2Eng2Discharge = Subject.create(0);
+
+    private readonly agent2Eng2DischargeTimer = new NXLogicClockNode(30, 0);
+
+    private readonly agentAPUDischarge = Subject.create(0);
+
+    private readonly agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
+
+    private readonly apuAgentPB = Subject.create(false);
+
+    private readonly apuFireTest = Subject.create(false);
+
+    private readonly cargoFireAgentDisch = Subject.create(false);
+
+    private readonly cargoFireTest = Subject.create(false);
+
+    private readonly eng1Agent1PB = Subject.create(false);
+
+    private readonly eng1Agent2PB = Subject.create(false);
+
+    private readonly eng1FireTest = Subject.create(false);
+
+    private readonly eng2Agent1PB = Subject.create(false);
+
+    private readonly eng2Agent2PB = Subject.create(false);
+
+    private readonly eng2FireTest = Subject.create(false);
 
     private readonly fireButton1 = Subject.create(false);
 
@@ -348,25 +362,23 @@ export class NewPseudoFWC {
 
     private readonly fireButtonAPU = Subject.create(false);
 
-    private readonly eng1FireTest = Subject.create(false);
+    /* ICE */
 
-    private readonly eng2FireTest = Subject.create(false);
+    private readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
 
-    private readonly apuFireTest = Subject.create(false);
+    private readonly iceDetectedTimer2 = new NXLogicConfirmNode(5);
 
-    private readonly eng1Agent1PB = Subject.create(false);
+    private readonly iceDetectedTimer2Status = Subject.create(false);
 
-    private readonly eng1Agent2PB = Subject.create(false);
+    private readonly iceNotDetTimer1 = new NXLogicConfirmNode(60);
 
-    private readonly eng2Agent1PB = Subject.create(false);
+    private readonly iceNotDetTimer2 = new NXLogicConfirmNode(130);
 
-    private readonly eng2Agent2PB = Subject.create(false);
+    private readonly iceNotDetTimer2Status = Subject.create(false);
 
-    private readonly apuAgentPB = Subject.create(false);
+    private readonly iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
 
-    private readonly cargoFireTest = Subject.create(false);
-
-    private readonly cargoFireAgentDisch = Subject.create(false);
+    private readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
     /* OTHER STUFF */
 
@@ -377,10 +389,6 @@ export class NewPseudoFWC {
     private readonly compMesgCount = Subject.create(0);
 
     private readonly dmcSwitchingKnob = Subject.create(0);
-
-    private readonly fwc1Normal = Subject.create(false);
-
-    private readonly fwc2Normal = Subject.create(false);
 
     private readonly gpwsFlaps3 = Subject.create(false);
 
