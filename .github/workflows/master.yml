@@ -1,8 +1,8 @@
 name: master
 on:
-  push:
-#    branches:
-#      - master
+ push:
+    branches:
+      - this-does-not-exist
 
 jobs:
   build:
