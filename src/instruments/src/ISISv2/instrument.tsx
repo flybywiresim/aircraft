@@ -1,12 +1,14 @@
 import './style.scss';
 import { ISISSimvarPublisher } from 'instruments/src/ISISv2/shared/ISISSimvarPublisher';
-import { EventBus, FSComponent } from 'msfssdk';
+import { Clock, EventBus, FSComponent } from 'msfssdk';
 import { ISISComponent } from 'instruments/src/ISISv2/ISISComponent';
 
 class A32NX_ISIS extends BaseInstrument {
     private readonly bus: EventBus;
 
     private readonly simVarPublisher: ISISSimvarPublisher;
+
+    private readonly clock: Clock;
 
     /**
      * "mainmenu" = 0
@@ -20,6 +22,7 @@ class A32NX_ISIS extends BaseInstrument {
         super();
         this.bus = new EventBus();
         this.simVarPublisher = new ISISSimvarPublisher(this.bus);
+        this.clock = new Clock(this.bus);
     }
 
     get templateID(): string {
@@ -40,6 +43,9 @@ class A32NX_ISIS extends BaseInstrument {
 
         this.simVarPublisher.subscribe('roll');
         this.simVarPublisher.subscribe('pitch');
+        this.simVarPublisher.subscribe('dcEssLive');
+        this.simVarPublisher.subscribe('dcHotLive');
+        this.simVarPublisher.subscribe('ias');
 
         FSComponent.render(<ISISComponent bus={this.bus} />, document.getElementById('ISIS_CONTENT'));
     }
@@ -58,10 +64,12 @@ class A32NX_ISIS extends BaseInstrument {
             const gamestate = this.getGameState();
             if (gamestate === 3) {
                 this.simVarPublisher.startPublish();
+                this.clock.init();
             }
             this.gameState = gamestate;
         } else {
             this.simVarPublisher.onUpdate();
+            this.clock.onUpdate();
         }
     }
 }
