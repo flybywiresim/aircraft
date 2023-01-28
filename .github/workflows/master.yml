@@ -113,7 +113,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
-          assets_path: ./build-modules/
+          assets_path: ./fbw-a32nx/out/build-modules
       - name: Update GitHub Pre-Release Body
         run: |
           curl --request PATCH \
