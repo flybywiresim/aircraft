@@ -35,7 +35,7 @@ jobs:
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
       - name: Build ZIP files
         run: |
           ./scripts/dev-env/run.sh node ./scripts/fragment.js
@@ -88,7 +88,7 @@ jobs:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
           CDN_BUCKET_DESTINATION: addons/a32nx/master-newrepo
         run: |
-          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./build-modules
+          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
 #      - name: Delete old GitHub Pre-Release assets
 #        uses: mknejp/delete-release-assets@v1
 #        with:
