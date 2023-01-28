@@ -24,6 +24,16 @@ export class NewPseudoFWC {
 
     private ldgInhibitTimer = new NXLogicConfirmNode(3);
 
+    private iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
+
+    private iceSevereDetectedTimerStatus = Subject.create(false);
+
+    private iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
+
+    private iceDetectedTimer2 = new NXLogicConfirmNode(5);
+
+    private iceDetectedTimer2Status = Subject.create(false);
+
     private iceNotDetTimer1 = new NXLogicConfirmNode(60);
 
     private iceNotDetTimer2 = new NXLogicConfirmNode(130);
@@ -232,19 +242,35 @@ export class NewPseudoFWC {
 
     /* HYDRAULICS */
 
+    private readonly blueElecPumpPBAuto = Subject.create(false);
+
     private readonly blueLP = Subject.create(false);
+
+    private readonly blueRvrLow = Subject.create(false);
+
+    private readonly blueRvrOvht = Subject.create(false);
 
     private readonly eng1pumpPBisAuto = Subject.create(false);
 
     private readonly eng2pumpPBisAuto = Subject.create(false);
 
+    private readonly greenHydEng1PBAuto = Subject.create(false);
+
     private readonly greenLP = Subject.create(false);
 
+    private readonly greenRvrOvht = Subject.create(false);
+
     private readonly hydPTU = Subject.create(false);
+
+    private readonly ptuAuto = Subject.create(false);
 
     private readonly ratDeployed = Subject.create(0);
 
     private readonly yellowLP = Subject.create(false);
+
+    private readonly yellowRvrOvht = Subject.create(false);
+
+    private readonly yepumpPBisAuto = Subject.create(false);
 
     /* FCTL */
 
@@ -276,6 +302,10 @@ export class NewPseudoFWC {
 
     private readonly adiru3State = Subject.create(0);
 
+    private readonly height1Failed = Subject.create(false);
+
+    private readonly height2Failed = Subject.create(false);
+
     /* LANDING GEAR AND LIGHTS */
 
     private readonly aircraftOnGround = Subject.create(0);
@@ -283,6 +313,8 @@ export class NewPseudoFWC {
     private readonly antiskidActive = Subject.create(false);
 
     private readonly brakeFan = Subject.create(false);
+
+    private readonly brakesHot = Subject.create(false);
 
     private readonly landingLight2Retracted = Subject.create(false);
 
@@ -346,6 +378,10 @@ export class NewPseudoFWC {
 
     private readonly dmcSwitchingKnob = Subject.create(0);
 
+    private readonly fwc1Normal = Subject.create(false);
+
+    private readonly fwc2Normal = Subject.create(false);
+
     private readonly gpwsFlaps3 = Subject.create(false);
 
     private readonly gpwsFlapMode = Subject.create(0);
@@ -368,7 +404,11 @@ export class NewPseudoFWC {
 
     private readonly strobeLightsOn = Subject.create(0);
 
+    private readonly tcasFault = Subject.create(false);
+
     private readonly tcasSensitivity = Subject.create(0);
+
+    private readonly toConfigNormal = Subject.create(false);
 
     private readonly wingAntiIce = Subject.create(false);
 
@@ -493,10 +533,10 @@ export class NewPseudoFWC {
 
         const flightPhaseInhibitOverride = SimVar.GetSimVarValue('L:A32NX_FWC_INHIBOVRD', 'bool');
 
-        const fwc1Normal = SimVar.GetSimVarValue('L:A32NX_FWS_FWC_1_NORMAL', 'bool');
-        const fwc2Normal = SimVar.GetSimVarValue('L:A32NX_FWS_FWC_2_NORMAL', 'bool');
+        this.fwc1Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_1_NORMAL', 'bool'));
+        this.fwc2Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_2_NORMAL', 'bool'));
 
-        if (!fwc1Normal && !fwc2Normal) {
+        if (!this.fwc1Normal.get() && !this.fwc2Normal.get()) {
             this.memoMessageLeft.set([
                 '0',
                 '310000701',
@@ -575,13 +615,21 @@ export class NewPseudoFWC {
 
         /* HYDRAULICS */
 
+        this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
         this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
+        this.blueRvrLow.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW', 'bool'));
+        this.blueRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_RESERVOIR_OVHT', 'bool'));
         this.eng1pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool'));
         this.eng2pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool'));
+        this.greenHydEng1PBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool'));
         this.greenLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool'));
+        this.greenRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
         this.hydPTU.set(SimVar.GetSimVarValue('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'Bool'));
+        this.ptuAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO', 'bool'));
         this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100'));
         this.yellowLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool'));
+        this.yellowRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
+        this.yepumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'bool'));
 
         const blueSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
         const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
@@ -595,6 +643,10 @@ export class NewPseudoFWC {
         this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
         this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
         this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
+        const height1: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
+        const height2: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
+        this.height1Failed.set(height1.isFailureWarning());
+        this.height2Failed.set(height2.isFailureWarning());
 
         /* LANDING GEAR AND LIGHTS */
 
@@ -605,6 +657,7 @@ export class NewPseudoFWC {
         this.aircraftOnGround.set(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
         this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
         this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
+        this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
         this.landingLight2Retracted.set(SimVar.GetSimVarValue('L:LANDING_2_Retracted', 'bool'));
         this.landingLight3Retracted.set(SimVar.GetSimVarValue('L:LANDING_3_Retracted', 'bool'));
         this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
@@ -660,6 +713,7 @@ export class NewPseudoFWC {
         this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
         this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
         this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
+        this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
         this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
         this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
         this.voiceVhf3.set(SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', 'number'));
@@ -783,12 +837,12 @@ export class NewPseudoFWC {
 
         /* ANTI ICE */
 
-        // const iceDetected1 = this.iceDetectedTimer1.write(icePercentage >= 0.1 && tat < 10 && !aircraftOnGround, deltaTime);
-        // const iceDetected2 = this.iceDetectedTimer2.write(iceDetected1 && !(this.eng1AntiIce.get() && this.eng2AntiIce.get()), deltaTime);
-        // const iceSevereDetected = this.iceSevereDetectedTimer.write(icePercentage >= 0.5 && tat < 10 && !this.aircraftOnGround.get(), deltaTime);
         const icePercentage = SimVar.GetSimVarValue('STRUCTURAL ICE PCT', 'percent over 100');
         const tat = SimVar.GetSimVarValue('TOTAL AIR TEMPERATURE', 'celsius');
         const inCloud = SimVar.GetSimVarValue('AMBIENT IN CLOUD', 'boolean');
+        const iceDetected1 = this.iceDetectedTimer1.write(icePercentage >= 0.1 && tat < 10 && !this.aircraftOnGround.get(), deltaTime);
+        this.iceDetectedTimer2Status.set(this.iceDetectedTimer2.write(iceDetected1 && !(this.eng1AntiIce.get() && this.eng2AntiIce.get()), deltaTime));
+        this.iceSevereDetectedTimerStatus.set(this.iceSevereDetectedTimer.write(icePercentage >= 0.5 && tat < 10 && !this.aircraftOnGround.get(), deltaTime));
         const iceNotDetected1 = this.iceNotDetTimer1.write(this.eng1AntiIce.get() || this.eng2AntiIce.get() || this.wingAntiIce.get(), deltaTime);
         this.iceNotDetTimer2Status.set(this.iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime));
 
@@ -851,6 +905,7 @@ export class NewPseudoFWC {
         } else {
             this.toConfigFail.set(false);
         }
+        this.toConfigNormal.set(SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool'));
 
         /* CLEAR AND RECALL */
 
@@ -1541,6 +1596,188 @@ export class NewPseudoFWC {
             memoInhibit: () => false,
             failure: 2,
             sysPage: 9,
+            side: 'LEFT',
+        },
+        3400140: { // RA 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([height1Failed, ac1BusPowered]) => height1Failed && ac1BusPowered, this.height1Failed, this.ac1BusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['340014001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400150: { // RA 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([height2Failed, ac2BusPowered]) => height2Failed && ac2BusPowered, this.height2Failed, this.ac2BusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['340015001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400500: { // TCAS FAULT
+            flightPhaseInhib: [1, 3, 4, 5, 7, 8, 10],
+            simVarIsActive: this.tcasFault,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['340050001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400507: { // NAV TCAS STBY (in flight)
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.tcasSensitivity.map((v) => v === 2),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['340050701'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3200010: { // L/G-BRAKES OVHT
+            flightPhaseInhib: [4, 8, 9, 10],
+            simVarIsActive: MappedSubject.create(
+                ([toConfigNormal, fwcFlightPhase, brakesHot]) => (toConfigNormal || fwcFlightPhase === 3) && brakesHot,
+                this.toConfigNormal, this.fwcFlightPhase, this.brakesHot,
+            ),
+            whichCodeToReturn: () => [
+                0,
+                !this.aircraftOnGround.get() ? 1 : null,
+                [1, 10].includes(this.fwcFlightPhase.get()) ? 2 : null,
+                !this.aircraftOnGround.get() ? 3 : null,
+                [1, 2].includes(this.fwcFlightPhase.get()) && !this.brakeFan.get() ? 4 : null,
+                this.aircraftOnGround.get() ? 5 : null,
+                !this.aircraftOnGround.get() ? 6 : null,
+                !this.aircraftOnGround.get() ? 7 : null,
+                !this.aircraftOnGround.get() ? 8 : null,
+            ],
+            codesToReturn: ['320001001', '320001002', '320001003', '320001004', '320001005', '320001006', '320001007', '320001008', '320001009'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        3081186: { // SEVERE ICE DETECTED
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.iceSevereDetectedTimerStatus,
+            whichCodeToReturn: () => [
+                0,
+                !this.wingAntiIce.get() ? 1 : null,
+                this.engSelectorPosition.get() !== 2 ? 2 : null,
+            ],
+            codesToReturn: ['308128001', '308128002', '308128003'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3081280: { // ICE DETECTED
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.iceDetectedTimer2Status,
+            whichCodeToReturn: () => [
+                0,
+                !this.eng1AntiIce.get() ? 1 : null,
+                !this.eng2AntiIce.get() ? 2 : null,
+            ],
+            codesToReturn: ['308128001', '308128002', '308128003'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2900126: { // *HYD  - Blue reservoir overheat
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.blueRvrOvht,
+            whichCodeToReturn: () => [
+                0,
+                this.blueElecPumpPBAuto.get() ? 1 : null,
+            ],
+            codesToReturn: ['290012601', '290012602'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 4,
+            side: 'LEFT',
+        },
+        2900127: { // *HYD  - Yellow reservoir overheat
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.yellowRvrOvht,
+            whichCodeToReturn: () => [
+                0,
+                this.ptuAuto.get() ? 1 : null,
+                this.eng2pumpPBisAuto.get() ? 2 : null,
+                !this.yepumpPBisAuto.get() ? 3 : null,
+            ],
+            codesToReturn: ['290012701', '290012702', '290012703', '290012704'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 4,
+            side: 'LEFT',
+        },
+        2900128: { // *HYD  - Green reservoir overheat
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.greenRvrOvht,
+            whichCodeToReturn: () => [
+                0,
+                this.ptuAuto.get() ? 1 : null,
+                this.eng1pumpPBisAuto.get() ? 2 : null,
+            ],
+            codesToReturn: ['290012801', '290012802', '290012803'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 4,
+            side: 'LEFT',
+        },
+        2900310: { // *HYD  - Blue
+            flightPhaseInhib: [1, 4, 5, 10],
+            simVarIsActive: MappedSubject.create(
+                ([blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) => !(blueRvrLow === 1 || !blueElecPumpPBAuto)
+                    && (!dcESSBusPowered || !ac1BusPowered) && blueLP === 1 && !emergencyGeneratorOn,
+                this.blueRvrLow, this.blueElecPumpPBAuto, this.dcESSBusPowered, this.ac1BusPowered, this.blueLP, this.emergencyGeneratorOn,
+            ),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['290031001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 4,
+            side: 'RIGHT',
+        },
+        2900312: { // *HYD  - Green Engine 1 //
+            flightPhaseInhib: [1, 2, 9, 10],
+            simVarIsActive: MappedSubject.create(
+                ([greenLP, greenHydEng1PBAuto, emergencyGeneratorOn]) => greenLP === 1
+                    // && ENG 1 OUT - not implemented
+                    && !greenHydEng1PBAuto && !emergencyGeneratorOn,
+                this.greenLP, this.greenHydEng1PBAuto, this.emergencyGeneratorOn,
+            ),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['290031201'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 4,
+            side: 'RIGHT',
+        },
+        3100010: { // FWC 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([fwc1Normal, acESSBusPowered]) => !fwc1Normal && acESSBusPowered, this.fwc1Normal, this.acESSBusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['310001001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3100011: { // FWC 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([fwc2Normal, acESSBusPowered]) => !fwc2Normal && acESSBusPowered, this.fwc2Normal, this.acESSBusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['310001101'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
             side: 'LEFT',
         },
     }
