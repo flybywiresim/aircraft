@@ -3,7 +3,7 @@ module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     setupFilesAfterEnv: [
-        "./jest/setupJestMock.js"
+        "./fbw-common/src/jest/setupJestMock.js"
     ],
     globals: {
         'ts-jest': {
