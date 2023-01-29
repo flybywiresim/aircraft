@@ -31,7 +31,7 @@
 1. [SOUND] Fix announcements playing twice and adding check for power to PA - @frankkopp (Frank Kopp)
 1. [ENG] Adjust oil pressure table - @tracernz (Mike)
 1. [FBW] Added option to have two axis for rudder e.g. racing pedals - @frankkopp (Frank Kopp)
-2. 1. [CLOCK] Ported Clock to MSFS Avionics Framework for better performance - @MicahBCode (Mischa Binder)
+1. [CLOCK] Ported Clock to MSFS Avionics Framework for better performance - @MicahBCode (Mischa Binder)
 
 ## 0.9.0
 
