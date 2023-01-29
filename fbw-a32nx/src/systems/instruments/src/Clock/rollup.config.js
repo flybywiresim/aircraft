@@ -6,14 +6,17 @@ import scss from 'rollup-plugin-scss';
 
 const { join } = require('path');
 
+const root = join(__dirname, '..', '..', '..', '..', '..', '..');
+
 export default {
     input: join(__dirname, 'instrument.tsx'),
     output: {
-        dir: '../../../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock',
+        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock/instrument.js'),
         format: 'es',
     },
-    plugins: [scss(
-        { output: '../../../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock/clock.css' },
-    ),
-    resolve(), ts()],
+    plugins: [
+        scss({ output: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock/clock.css') }),
+        resolve(),
+        ts(),
+    ],
 };
