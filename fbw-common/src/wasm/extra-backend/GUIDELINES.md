@@ -64,7 +64,7 @@ This logging framework will be improved and extended over time.
                      
 Some notes on logging:
 - challenge is to find a logging framework that does not use exceptions or 
-- threading (which is not supported in MSFS WASM)
+  threading (which is not supported in MSFS WASM)
 - MSFS does not easily allow to attach a debugger for C++ and tends to crash if one does
 - MSFS has no permanent logging to analyse CTDs
 - Logging should not be excessive but allow to see where the code is at

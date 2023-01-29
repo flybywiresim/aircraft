@@ -3,7 +3,7 @@
 A lightweight framework to abstract the most common aspects when developing
 C++ WASM modules using the MSFS SDK and SimConnect.
 
-See [GUIDELINES.md](fbw-common/src/wasm/extra-backend/GUIDELINES.md) for more information on how to write good 
+See [GUIDELINES.md](https://github.com/flybywiresim/a32nx/blob/cpp-wasm-framework/fbw-common/src/wasm/extra-backend/GUIDELINES.md) for more information on how to write good 
 C++ code for FlyByWire Simulations.
 
 ## Purpose
@@ -149,11 +149,11 @@ DataManager provides not only automatic updates and writing of the variables,
 but also convenience functions to create and register variables and events in 
 the DataManager itself and also de-duplicating variables. 
                           
-#### DataObjectBase
+#### DataObjectBase (abstract base class)
 
 The base class for all data objects.
 
-#### ManagedDataObjectBase
+#### ManagedDataObjectBase (abstract base class)
 MSFS SDK and SimConnect provide different kinds of variable each with different
 APIs on how to read and write them to the sim. 
 
@@ -171,7 +171,7 @@ Each variable has various ways to be updated and written back to the sim:
 - Max Age in Seconds: The variable can be configured to be automatically read from the sim if 
   it is older than a certain number of seconds (preUpdate)
 
-##### CacheableVariable
+##### CacheableVariable (abstract base class)
 The CacheableVariable is the base class for AircraftVariable and NamedVariable
 which can be cached to avoid multiple calls to the sim for the same variable.
 
@@ -235,12 +235,35 @@ It is based on the CacheableVariable - see above.
 
 No prefix is added to the variable name.
 
-#### DataDefinitionVariable (Custom SimObjects)
+#### SimObjectBase (abstract base class)
+
+The SimObjectBase is the base class for all custom SimObjects.
+
+**Reading**
+
+| method                 | description                                                                                                      |
+|:-----------------------|:-----------------------------------------------------------------------------------------------------------------|
+| data()                 | Returns a reference to the actual data struct holding the current data. Use this to read and write to the data.  |
+| requestDataFromSim()   | Sends a data request to the sim                                                                                  |
+| requestUpdateFromSim() | Sends a data request to the sim if update criteria are met (maxAge)                                              |
+| processSimData()       | The callback the DataManager uses when the requested data has been received from the sim                         | 
+
+See the documentation of CacheableVariable for more details.
+
+**Writing**
+
+| method            | description                                       |
+|-------------------|---------------------------------------------------|
+| writeDataToSim()  | Write the current data struct contents to the sim |
+
+##### DataDefinitionVariable (Custom SimObjects)
 The DataDefinitionVariable is a variable which is mapped to a custom data struct 
 and a SimObject which can be defined by adding separate data definition for single 
 sim variables (objects) to a container of data definitions (custom SimObject).
 
 It requires a local data struct as a template type which is used to hold the data.
+
+It is based on the SimObjectBase class - see above.
 
 As data definition sim objects use memory mapped data between clients they are 
 very efficient but a bit harder to set up and use.
@@ -263,23 +286,6 @@ Also see:
 - Example and Pushback modules for examples of custom writable sim objects
 - [MSFS SDK Documentation: SimConnect Data Definition](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm)
 
-**Reading**
-
-| method                 | description                                                                                                      |
-|:-----------------------|:-----------------------------------------------------------------------------------------------------------------|
-| data()                 | Returns a reference to the actual data struct holding the current data. Use this to read and write to the data.  |
-| requestDataFromSim()   | Sends a data request to the sim                                                                                  |
-| requestUpdateFromSim() | Sends a data request to the sim if update criteria are met (maxAge)                                              |
-| processSimData()       | The callback the DataManager uses when the requested data has been received from the sim                         | 
-
-See the documentation of CacheableVariable for more details.
-
-**Writing**
-
-| method            | description                                       |
-|-------------------|---------------------------------------------------|
-| writeDataToSim()  | Write the current data struct contents to the sim |
-
 #### ClientDataAreaVariable (Custom SimObject)
 <span style="color:yellow">Not yet implemented</span>
 THe MSFS SDK also allows to define custom SimObjects using memory mapped data 
@@ -293,6 +299,8 @@ the sim.
 An event can be triggered (send to the sim) or registered with the sim to receive
 events from the sim. Callbacks can be added to the Event object to handle the
 events.
+
+For details see class documentation. 
 
 ## Example Code
 Good examples of how to use the framework can be found in the modules:
@@ -315,7 +323,7 @@ Good examples of how to use the framework can be found in the modules:
 
 - ExampleModule
   - Is used to demonstrate various features of the framework and also to debug 
-    and test it
+    and test it.
   
 ## Building
 Assuming you are able to build the aircraft as a whole this describes how to add
@@ -336,22 +344,22 @@ Add it to the following files:
 To build it separately you can use the following commands:
                                             
 ```pwsh 
-.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake`
+.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake
 ```
 
 or
 
 ```pwsh 
-.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake`
+.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake
 ```
                                                                        
 If you want debug information in the build use:<br/>
 ```pwsh
-`.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake-debug`
+.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake-debug
 ```
 
 or
 
 ```pwsh
-`.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake-debug`
+.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake-debug
 ```
