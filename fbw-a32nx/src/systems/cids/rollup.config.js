@@ -9,7 +9,7 @@ const nodeResolve = require('@rollup/plugin-node-resolve').default;
 const extensions = ['.js', '.ts'];
 
 const src = join(__dirname, '..');
-const root = join(__dirname, '..', '..');
+const root = join(process.cwd());
 
 process.chdir(src);
 
@@ -31,7 +31,7 @@ module.exports = {
         }),
     ],
     output: {
-        file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/cids/cids.js'),
+        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/cids/cids.js'),
         format: 'umd',
         name: 'Cids',
     },
