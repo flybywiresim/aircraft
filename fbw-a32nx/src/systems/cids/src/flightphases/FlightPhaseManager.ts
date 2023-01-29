@@ -1,3 +1,5 @@
+import { DIR1 } from 'cids/src/core/directors/DIR1';
+import { DIR2 } from 'cids/src/core/directors/DIR2';
 import { Director } from '../core/directors/Director';
 import { AfterDisembarkationPhase } from './AfterDisembarkationPhase';
 import { ApproachPhase } from './ApproachPhase';
@@ -138,6 +140,17 @@ export class FlightPhaseManager {
 
     public setActiveFlightPhase(flightPhase: FlightPhase): void {
         const prevPhase = this.getActiveFlightPhase();
+
+        if (Cids.DEBUG) {
+            if (this.dir instanceof DIR1) {
+                SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', flightPhase.getValue())
+                    .then(() => console.log(`[CIDS/DIR1] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
+            } else if (this.dir instanceof DIR2) {
+                SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', flightPhase.getValue())
+                    .then(() => console.log(`[CIDS/DIR2] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
+            }
+        }
+
         this.dir.output(Cids.SimVar.FLIGHT_PHASE, 'Enum', flightPhase.getValue(), () => console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
     }
 
