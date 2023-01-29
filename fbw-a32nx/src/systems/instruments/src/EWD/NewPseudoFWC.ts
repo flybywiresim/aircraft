@@ -544,6 +544,7 @@ export class NewPseudoFWC {
         this.fwc1Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_1_NORMAL', 'bool'));
         this.fwc2Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_2_NORMAL', 'bool'));
 
+        /*
         if (!this.fwc1Normal.get() && !this.fwc2Normal.get()) {
             this.memoMessageLeft.set([
                 '0',
@@ -562,6 +563,7 @@ export class NewPseudoFWC {
             this.recallFailures = [];
             return;
         }
+        */
 
         this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
 
