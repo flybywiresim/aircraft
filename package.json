@@ -169,6 +169,7 @@
     "pdf-to-printer": "^5.1.1",
     "pdfkit": "^0.13.0",
     "pkg": "^5.1.0",
+    "postcss-color-hsl": "^2.0.0",
     "qrcode.react": "^1.0.1",
     "rc-slider": "^9.7.5",
     "react": "^17.0.0",
