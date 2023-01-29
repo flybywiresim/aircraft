@@ -18,12 +18,22 @@ export abstract class Director {
     }
 
     /**
-     * This method should not call methods only available when the CIDS is powered as it will run them regardless of the power state.
+     * This method should not execute code that is executed by the physical director itself.
      * @param oppositeDirector The second director. E.g. If this method is an instance of DIR1, DIR2 will be the opposite director.
      */
     abstract init(oppositeDirector: Director): void;
 
     abstract update(): void;
+
+    /**
+     * Executed whenever the power state of the director changes to ON.
+     */
+    abstract startup(): void;
+
+    /**
+     * Executed whenever the power state of the director changes to OFF.
+     */
+    abstract shutdown(): void;
 
     abstract isFaulty(): boolean;
 
@@ -41,8 +51,7 @@ export abstract class Director {
      */
     public output(varName: string, unit: SimVar.SimVarUnit, value: any, onComplete?: () => void, force = false): void {
         if (CidsOrchestrator.DEBUG) {
-            console.log('[CIDS/DIR] Received output command. Payload:');
-            console.dir({ 'SimVar name': varName, 'Unit': unit, 'Value:': value, 'Force': force });
+            console.log('[CIDS/DIR] Received output command. Payload:', { 'SimVar name': varName, 'Unit': unit, 'Value:': value, 'Force': force });
         }
 
         if (this.isActive && !this.isFaulty || force) {
