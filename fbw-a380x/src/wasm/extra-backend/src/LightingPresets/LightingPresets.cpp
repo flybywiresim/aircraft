@@ -86,8 +86,11 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     return false;
   }
 
+  // TODO: not yet available in the A380X
+  // if (!msfsHandler->getA32NxIsReady()) return true;
+
   // only run when aircraft is powered
-  if (!msfsHandler->getA32NxIsReady() || !elecAC1Powered->getAsBool()) return true;
+  if (!elecAC1Powered->getAsBool()) return true;
 
   // load becomes priority in case both vars are set.
   if (loadLightingPresetRequest->getAsBool()) {

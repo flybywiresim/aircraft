@@ -85,7 +85,8 @@ bool Pushback::update(sGaugeDrawData* pData) {
     return false;
   }
 
-  if (!msfsHandler->getA32NxIsReady()) return true;
+  // TODO: not yet available in the A380X
+  // if (!msfsHandler->getA32NxIsReady()) return true;
 
   // Check if the pushback system is enabled and conditions are met
   if (!pushbackSystemEnabled->getAsBool()

@@ -61,7 +61,8 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     return false;
   }
 
-  if (!msfsHandler->getA32NxIsReady()) return true;
+  // TODO: not yet available in the A380X
+  // if (!msfsHandler->getA32NxIsReady()) return true;
 
   // has request to load a preset been received?
   if (loadAircraftPresetRequest->get() > 0) {
