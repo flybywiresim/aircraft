@@ -15,6 +15,14 @@ export class DIR2 extends Director {
         throw new Error('Method not implemented.');
     }
 
+    startup(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    shutdown(): void {
+        throw new Error('Method not implemented.');
+    }
+
     isFaulty(): boolean {
         throw new Error('Method not implemented.');
     }
