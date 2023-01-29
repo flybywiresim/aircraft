@@ -11,7 +11,7 @@
 
 #include <MSFS/Legacy/gauges.h>
 
-#include "lib/Units.h"
+#include "Units.h"
 #include "ManagedDataObjectBase.h"
 
 /**

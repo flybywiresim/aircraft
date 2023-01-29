@@ -4,12 +4,14 @@
 #ifndef FLYBYWIRE_A32NX_DATAOBJECTBASE_H
 #define FLYBYWIRE_A32NX_DATAOBJECTBASE_H
 
-#include "lib/Units.h"
-#include <MSFS/Legacy/gauges.h>
 #include <utility>
 #include <string>
 #include <sstream>
 #include <optional>
+
+#include <MSFS/Legacy/gauges.h>
+
+#include "Units.h"
 
 /**
  * Base class for all data objects

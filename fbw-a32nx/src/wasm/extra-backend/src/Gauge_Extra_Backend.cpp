@@ -15,11 +15,11 @@
 #include <MSFS/MSFS.h>
 #include <MSFS/MSFS_Render.h>
 
-#include "MsfsHandler/MsfsHandler.h"
+#include "MsfsHandler.h"
 #include "Example/ExampleModule.h"
 #include "LightingPresets/LightingPresets.h"
-#include "Pushback.h"
-#include "AircraftPresets.h"
+#include "Pushback/Pushback.h"
+#include "AircraftPresets/AircraftPresets.h"
 
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically

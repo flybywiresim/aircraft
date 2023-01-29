@@ -135,7 +135,7 @@ export default new TaskOfTasks("all", [
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
             ]),
             new ExecTask('extra-backend',
-                "npm run build:extra-backend-cmake",
+                "npm run build-a32nx:extra-backend-cmake",
                 [
                     'fbw-a32nx/src/wasm/extra-backend',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/extra-backend.wasm'

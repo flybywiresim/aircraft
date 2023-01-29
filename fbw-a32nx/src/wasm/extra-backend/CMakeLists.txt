@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.19)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(FBW_ROOT "../../../..")
+
 if (WIN32)
     message("OS: Windows")
     set(MSFS_SDK "C:\\MSFS SDK")
@@ -51,19 +53,19 @@ project(extra-backend)
 
 # add all cpp source-files here
 set(SOURCES src/Gauge_Extra_Backend.cpp
-        src/MsfsHandler/MsfsHandler.cpp
-        src/MsfsHandler/DataManager/DataManager.cpp
-        src/MsfsHandler/DataManager/CacheableVariable.cpp
-        src/MsfsHandler/DataManager/NamedVariable.cpp
-        src/MsfsHandler/DataManager/AircraftVariable.cpp
-        src/MsfsHandler/DataManager/DataDefinitionVariable.cpp
-        src/MsfsHandler/DataManager/ClientDataAreaVariable.cpp
-        src/MsfsHandler/DataManager/Event.cpp
-        src/Modules/Example/ExampleModule.cpp
-        src/Modules/LightingPresets/LightingPresets.cpp
-        src/Modules/Pushback/Pushback.cpp
-        src/Modules/Pushback/InertialDampener.cpp
-        src/Modules/AircraftPresets/AircraftPresets.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/MsfsHandler.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/DataManager.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/CacheableVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/NamedVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/AircraftVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/DataDefinitionVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/ClientDataAreaVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/Event.cpp
+        src/Example/ExampleModule.cpp
+        src/LightingPresets/LightingPresets.cpp
+        src/Pushback/Pushback.cpp
+        src/Pushback/InertialDampener.cpp
+        src/AircraftPresets/AircraftPresets.cpp
         )
 
 # add all include directories here
@@ -71,14 +73,15 @@ set(INCLUDES
         "${MSFS_SDK}/WASM/include"
         "${MSFS_SDK}/WASM/wasi-sysroot/include"
         "${MSFS_SDK}/SimConnect SDK/include"
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/lib
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager
         src
-        src/lib
-        src/MsfsHandler
-        src/MsfsHandler/DataManager
         src/Modules
-        src/Modules/LightingPresets
-        src/Modules/Pushback
-        src/Modules/AircraftPresets
+        src/Example
+        src/LightingPresets
+        src/Pushback
+        src/AircraftPresets
         )
 
 # This builds the object library - that is all .o files

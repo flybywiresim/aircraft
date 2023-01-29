@@ -18,7 +18,7 @@ else ()
     set(CMAKE_GENERATOR "Ninja")
 endif ()
 
-project(flybywire-wasm)
+project(flybywire-aircraft)
 
 add_subdirectory(fbw-a32nx/src/wasm/fadec_a320)
 add_subdirectory(fbw-a380x/src/wasm/fadec_a380)

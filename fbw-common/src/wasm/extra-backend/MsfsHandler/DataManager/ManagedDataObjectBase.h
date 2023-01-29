@@ -4,13 +4,15 @@
 #ifndef FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 #define FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 
-#include "DataObjectBase.h"
-#include "lib/Units.h"
-#include <MSFS/Legacy/gauges.h>
 #include <utility>
 #include <string>
 #include <sstream>
 #include <optional>
+
+#include <MSFS/Legacy/gauges.h>
+
+#include "Units.h"
+#include "DataObjectBase.h"
 
 /**
  * Base class for all managed data objects.
