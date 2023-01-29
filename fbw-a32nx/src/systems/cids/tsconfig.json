@@ -4,10 +4,10 @@
     "moduleResolution": "node",
     "target": "ESNext",
     "noEmit": true,
-    "typeRoots": ["../../typings"]
+    "typeRoots": ["../../../../fbw-common/src/typings"]
   },
   "include": [
     "src/**/*",
-    "../../typings/**/*.d.ts"
+    "../../../../fbw-common/src/typings/**/*.d.ts"
   ]
 }
