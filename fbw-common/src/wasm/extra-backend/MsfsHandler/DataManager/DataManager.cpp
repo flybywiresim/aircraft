@@ -92,7 +92,7 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
   // write all data definitions set to automatically write
   for (auto &ddv: simObjects) {
     if (ddv.second->isAutoWrite()) {
-      if (!ddv.second->updateDataToSim()) {
+      if (!ddv.second->writeDataToSim()) {
         LOG_ERROR("DataManager::postUpdate(): updateDataToSim() failed for "
                   + ddv.second->getVarName());
       }

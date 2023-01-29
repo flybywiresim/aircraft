@@ -199,13 +199,6 @@ public:
     return true;
   };
 
-  bool updateDataToSim() override {
-    if (writeDataToSim()) {
-      return true;
-    }
-    return false;
-  };
-
   // Getters and setters
 
   [[nodiscard]]

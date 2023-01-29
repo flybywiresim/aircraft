@@ -106,16 +106,10 @@ public:
   virtual void processSimData(const SIMCONNECT_RECV_SIMOBJECT_DATA* pData) = 0;
 
   /**
-   * Writes the data to the sim without updating the time stamps for time and ticks.
-   * @return true if the write was successful, false otherwise
-   */
-  virtual bool writeDataToSim() = 0;
-
-  /**
    * Writes the data object to the sim.
    * @return true if the write was successful, false otherwise
    */
-  virtual bool updateDataToSim() = 0;
+  virtual bool writeDataToSim() = 0;
 
   /**
    * @return the data definition id
