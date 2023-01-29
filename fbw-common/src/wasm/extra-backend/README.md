@@ -3,7 +3,7 @@
 A lightweight framework to abstract the most common aspects when developing
 C++ WASM modules using the MSFS SDK and SimConnect.
 
-See [GUIDELINES.md](fbw-common/src/wasm/extra-backend/GUIDELINES.mdd) for more information on how to write good 
+See [GUIDELINES.md](fbw-common/src/wasm/extra-backend/GUIDELINES.md) for more information on how to write good 
 C++ code for FlyByWire Simulations.
 
 ## Purpose
@@ -41,7 +41,7 @@ for additional use cases without making it overly complex.
 
 The framework is split into two parts:
 
-### Gauge, MsfsHandler and Modules
+### Gauge and Modules
 These components simplify setting up a C++ WASM module and provide a simple API
 to implement a module with all necessary boilerplate code.
 
@@ -55,10 +55,23 @@ This part does not take care of any data or logic from or to the simulator. If
 a developer chooses to only use this part of the framework, MSFS SDK and 
 SimConnect have to be used directly.
 
-### DataManager / Data Objects 
+These components live in the aircraft src folders.  
+
+Details see below.
+
+### MsfsHandler and DataManager / Data Objects 
+MsfsHandler and DataManager are the central components which provide a simple
+API to retrieve and send data from and to the simulator.
+
+The MsfsHandler is the central component acts as a dispatcher for the custom
+module. It manages the SimConnect connection, all module updates, owns the
+DataManager and provides some imported core data variables to the modules.
+
 The DataManager is a central data store which allows to store and retrieve data
 from the simulator. It provides different kind of data objects / variables which abstract the 
 sim's data types and allows to easily retrieve and send data from the simulator.
+
+These components live in the common src folder.
 
 Details see below.
 
@@ -91,7 +104,7 @@ It is not expected that a Module-developer will have to modify the gauge other
 than adding new Modules.
 
 Also see:
-- [MFSF SDK Documentation: C/C++ GAUGES](https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback)
+- [MSFS SDK Documentation: C/C++ GAUGES](https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback)
 
 ### MsfsHandler
 <span style="color:cyan">src/extra-backend/src/MsfsHandler/MsfsHandler.h</span>
@@ -181,8 +194,8 @@ See the documentation of CacheableVariable for more details.
 | method             | description                                                                                                          |
 |--------------------|----------------------------------------------------------------------------------------------------------------------|
 | set()              | Sets cached value - never writes directly to sim - sets dirty flag if set with a different value as the cached value |
-| updateDataToSim()  | Updates a value to the sim if it is dirty.                                                                           |
-| writeDataToSim()   | Writes the current cached value to the sim. Clears the dirty flag.                                                   |
+| updateToSim()      | Updates a value to the sim if it is dirty.                                                                           |
+| writeToSim()       | Writes the current cached value to the sim. Clears the dirty flag.                                                   |
 | setAndWriteToSim() | Sets the current value and writes it to the sim. Clears the dirty flag.                                              |
 | rawWriteToSim()    | The raw MSFS SDK call to write the sim. **Must be implemented by specialized classes**                               |
                 
@@ -212,7 +225,7 @@ clang++ \
 ```
 
 ##### AircraftVariable
-The AircraftVariable is a variable which is mapped to a aircraft simvar. As simvars 
+The AircraftVariable is a variable which is mapped to an aircraft simvar. As simvars 
 are read-only it is required to use an event to write the variable back to the sim.
 
 It allows to specify either an event-name or an instance of an Event object to
@@ -223,10 +236,11 @@ It is based on the CacheableVariable - see above.
 No prefix is added to the variable name.
 
 #### DataDefinitionVariable (Custom SimObjects)
-The DataDefinitionVariable is a variable (in fact a set of variables) which 
-is mapped to a custom SimObject which can be defined by adding separate data 
-definition for single variables (objects) to a container of data definitions 
-(custom SimObject).
+The DataDefinitionVariable is a variable which is mapped to a custom data struct 
+and a SimObject which can be defined by adding separate data definition for single 
+sim variables (objects) to a container of data definitions (custom SimObject).
+
+It requires a local data struct as a template type which is used to hold the data.
 
 As data definition sim objects use memory mapped data between clients they are 
 very efficient but a bit harder to set up and use.
@@ -247,7 +261,24 @@ unique IDs.
 
 Also see:
 - Example and Pushback modules for examples of custom writable sim objects
-- [MFSF SDK Documentation: SimConnect Data Definition](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm)
+- [MSFS SDK Documentation: SimConnect Data Definition](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm)
+
+**Reading**
+
+| method                 | description                                                                                                      |
+|:-----------------------|:-----------------------------------------------------------------------------------------------------------------|
+| data()                 | Returns a reference to the actual data struct holding the current data. Use this to read and write to the data.  |
+| requestDataFromSim()   | Sends a data request to the sim                                                                                  |
+| requestUpdateFromSim() | Sends a data request to the sim if update criteria are met (maxAge)                                              |
+| processSimData()       | The callback the DataManager uses when the requested data has been received from the sim                         | 
+
+See the documentation of CacheableVariable for more details.
+
+**Writing**
+
+| method            | description                                       |
+|-------------------|---------------------------------------------------|
+| writeDataToSim()  | Write the current data struct contents to the sim |
 
 #### ClientDataAreaVariable (Custom SimObject)
 <span style="color:yellow">Not yet implemented</span>
@@ -290,21 +321,37 @@ Good examples of how to use the framework can be found in the modules:
 Assuming you are able to build the aircraft as a whole this describes how to add
 a new module (classes/headers) to the project.
 
-When adding new module please place the in a new folder in the Modules folder:<br/>
-<span style="color:cyan">src/extra-backend/src/Modules</span>
+The framework code is split into two parts:
+- the common framework code which lives in <span style="color:cyan">/fbw-common/src/wasm/extra-backend</span>
+- the aircraft specific gauge and modules which live in <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320</span> 
+  and <span style="color:cyan">/fbw-a380x/src/wasm/extra-backend-a380</span>
+
+When adding new modules please place the in a new folder in the aircraft's extra-backend folder:<br/>
+E.g. <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320</span>
 
 Add it to the following files:
-- <span style="color:cyan">src/extra-backend/build.sh</span>
-- <span style="color:cyan">src/extra-backend/CMakeLists.txt</span>
-- <span style="color:cyan">src/extra-backend/src/Gauge_Extra_Backend.cpp</span>
+- <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320/CMakeLists.txt</span>
+- <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320/src/Gauge_Extra_Backend.cpp</span>
 
 To build it separately you can use the following commands:
                                             
 ```pwsh 
-.\scripts\dev-env\run.cmd npm run build:extra-backend`
+.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake`
+```
+
+or
+
+```pwsh 
+.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake`
 ```
                                                                        
 If you want debug information in the build use:<br/>
 ```pwsh
-`.\scripts\dev-env\run.cmd npm run build:extra-backend-debug`
+`.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake-debug`
+```
+
+or
+
+```pwsh
+`.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake-debug`
 ```
