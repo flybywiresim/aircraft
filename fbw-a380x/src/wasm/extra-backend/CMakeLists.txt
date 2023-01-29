@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(FBW_ROOT "../../../..")
 
 # Configure the build as required
-set(AIRCRAFT "A32NX")
+set(AIRCRAFT "A380X")
 set(EXAMPLES "NO_EXAMPLES") # EXAMPLES, NO_EXAMPLES
 # ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
 set(LOG_LEVEL 4)
@@ -50,9 +50,9 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 message("Compiler flags: " ${CMAKE_CXX_FLAGS})
 message("")
 
-project(extra-backend-a32nx)
+project(extra-backend-a380x)
 
-set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../../../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/${PROJECT_NAME}.wasm\"")
+set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../../../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/${PROJECT_NAME}.wasm\"")
 
 # add all cpp source-files here
 set(SOURCES src/Gauge_Extra_Backend.cpp
