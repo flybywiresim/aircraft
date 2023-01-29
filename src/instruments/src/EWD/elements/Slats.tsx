@@ -21,7 +21,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     const alphaLockEngaged = sfccSlatFlapSystemStatusWord.getBitValue(24);
 
     // Same as above, the IPPU angle should come from the FWCs, or as a backup the FPPU angle from the
-    // SDACs/SFFCs can be used.
+    // SDACs/SFCCs can be used.
     const [slatsIppuAngle] = useSimVar(`L:A32NX_SLATS_IPPU_ANGLE`, 'degrees', 300);
     const [flapsIppuAngle] = useSimVar(`L:A32NX_FLAPS_IPPU_ANGLE`, 'degrees', 300);
 
@@ -88,6 +88,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
         setSlatPos([xFactor * value - 18, yFactor * value]);
     }, [slatsIppuAngle]);
 
+    // When IPPU is less than 79.1 deg, show flaps at 0deg. Then Flaps = 0.2301 * IPPU - 18.202
     useEffect(() => {
         const xFactor = 4.71;
         const yFactor = 0.97;
@@ -98,19 +99,19 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
         let positionFactor = 0;
         let positionOffset = 0;
 
-        if (flapsIppuAngle >= 0 && flapsIppuAngle < 120.5) {
+        if (flapsIppuAngle >= 0 && flapsIppuAngle < 120.21) {
             synchroOffset = 0;
             positionFactor = 0.97;
             positionOffset = 0;
-        } else if (flapsIppuAngle >= 120.5 && flapsIppuAngle < 145.5) {
+        } else if (flapsIppuAngle >= 120.21 && flapsIppuAngle < 145.49) {
             synchroOffset = 10.63;
             positionFactor = 1.4;
             positionOffset = 10.34;
-        } else if (flapsIppuAngle >= 145.5 && flapsIppuAngle < 168.3) {
+        } else if (flapsIppuAngle >= 145.49 && flapsIppuAngle < 168.34) {
             synchroOffset = 16.3;
             positionFactor = 1.62;
             positionOffset = 18.27;
-        } else if (flapsIppuAngle >= 168.3 && flapsIppuAngle < 355) {
+        } else if (flapsIppuAngle >= 168.34 && flapsIppuAngle < 355) {
             synchroOffset = 21.19;
             positionFactor = 0.43;
             positionOffset = 26.21;

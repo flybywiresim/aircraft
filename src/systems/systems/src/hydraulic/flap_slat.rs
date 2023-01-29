@@ -103,21 +103,26 @@ impl<const N: usize> Actuator for PressureMaintainingValve<N> {
     }
 }
 
+// https://vortarus.com/hydraulic-motor-calculations/
 pub struct HydraulicMotor {
     speed: AngularVelocity,
     position: Angle,
     max_flow: VolumeRate,
     motor_displacement: Volume,
-    motor_efficiency: Ratio,
+    motor_volumetric_efficiency: Ratio,
 }
 impl HydraulicMotor {
-    pub fn new(max_flow: VolumeRate, motor_displacement: Volume, motor_efficiency: Ratio) -> Self {
+    pub fn new(
+        max_flow: VolumeRate,
+        motor_displacement: Volume,
+        motor_volumetric_efficiency: Ratio,
+    ) -> Self {
         Self {
             speed: AngularVelocity::default(),
             position: Angle::default(),
             max_flow,
             motor_displacement,
-            motor_efficiency,
+            motor_volumetric_efficiency,
         }
     }
 
@@ -129,7 +134,7 @@ impl HydraulicMotor {
         match pob_status {
             BrakeStatus::Locked => return AngularVelocity::default(),
             BrakeStatus::Unlocked => {
-                let correction_factor = self.motor_efficiency.get::<ratio>();
+                let correction_factor = self.motor_volumetric_efficiency.get::<ratio>();
                 let displacement = self.motor_displacement.get::<cubic_inch>();
                 let flow = valve
                     .get_flow()
