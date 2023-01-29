@@ -2,7 +2,7 @@
 
 set -ex
 
-cd msfs-avionics-mirror/src/msfstypes
+cd fbw-common/msfs-avionics-mirror/src/msfstypes
 npm pack
 cd ../sdk
 rm -rf node_modules
