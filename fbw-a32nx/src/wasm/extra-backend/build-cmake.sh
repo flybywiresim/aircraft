@@ -35,8 +35,6 @@ done
 
 echo "Building extra-backend with CMAKE..."
 
-# Call CMake to compile the C++ code - this will not link the WASM module
-
 cmake -B${OUTPUT_DIR} -DCMAKE_BUILD_TYPE=${CONFIG} || (echo "CMake config failed" && exit 1)
 cmake --build ${OUTPUT_DIR} --config ${CONFIG} ${CLEAN} -j ${PARALLEL} || (echo "CMake build failed" && exit 1)
 
