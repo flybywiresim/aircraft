@@ -3,10 +3,13 @@
 
 #include <iostream>
 
+#include "logging.h"
+#include "Units.h"
 #include "MsfsHandler.h"
 #include "AircraftPresets.h"
-#include "Units.h"
-#include "logging.h"
+#include "AircraftVariable.h"
+#include "NamedVariable.h"
+
 
 ///
 // DataManager Howto Note:

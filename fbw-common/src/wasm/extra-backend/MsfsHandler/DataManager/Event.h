@@ -6,10 +6,11 @@
 
 #include <iostream>
 #include <string>
+#include <map>
 
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
-#include <map>
+
 #include "IDGenerator.h"
 
 // Used for callback registration to allow removal of callbacks

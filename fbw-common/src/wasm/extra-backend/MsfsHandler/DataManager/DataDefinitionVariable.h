@@ -14,8 +14,8 @@
 #include "logging.h"
 #include "simple_assert.h"
 #include "IDGenerator.h"
-#include "ManagedDataObjectBase.h"
 #include "SimObjectBase.h"
+#include "ManagedDataObjectBase.h"
 
 #define quote(x) #x
 

@@ -3,11 +3,12 @@
 
 #include <iostream>
 
+#include "logging.h"
+#include "Units.h"
 #include "MsfsHandler.h"
 #include "Pushback.h"
-#include "Units.h"
-#include "logging.h"
-#include "SimObjectBase.h"
+#include "AircraftVariable.h"
+#include "NamedVariable.h"
 
 static constexpr double SPEED_RATIO = 18.0;
 static constexpr double TURN_SPEED_RATIO = 0.16;

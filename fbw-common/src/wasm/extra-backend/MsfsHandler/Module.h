@@ -9,7 +9,6 @@
 #include <MSFS/Legacy/gauges.h>
 
 #include "MsfsHandler.h"
-#include "DataManager/DataManager.h"
 
 /**
  * Base class and interface for all modules to ensure that they are compatible with the MsfsHandler.

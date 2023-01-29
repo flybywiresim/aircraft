@@ -4,10 +4,10 @@
 #include <algorithm>
 
 #include "logging.h"
-#include "MsfsHandler.h"
 #include "Units.h"
+#include "MsfsHandler.h"
 #include "Module.h"
-#include "SimObjectBase.h"
+#include "NamedVariable.h"
 
 // =================================================================================================
 // PUBLIC METHODS
@@ -110,6 +110,14 @@ bool MsfsHandler::shutdown() {
     reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(DataManager::wrapperToCallMemberCallback), nullptr);
 
   return result;
+}
+
+bool MsfsHandler::getA32NxIsReady() const {
+  return a32nxIsReady->getAsBool();
+}
+
+FLOAT64 MsfsHandler::getA32NxIsDevelopmentState() const {
+  return a32nxIsDevelopmentState->get();
 }
 
 // =================================================================================================

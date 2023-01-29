@@ -14,12 +14,19 @@
 #include <SimConnect.h>
 
 #include "logging.h"
+#include "IDGenerator.h"
 #include "Units.h"
-#include "NamedVariable.h"
-#include "AircraftVariable.h"
-#include "DataDefinitionVariable.h"
-#include "Event.h"
 
+#include "DataDefinitionVariable.h"
+
+// Forward declarations
+class CacheableVariable;
+class NamedVariable;
+class AircraftVariable;
+class SimObjectBase;
+class Event;
+
+// convenience typedefs
 typedef std::shared_ptr<CacheableVariable> CacheableVariablePtr;
 typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
 typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;

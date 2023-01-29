@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "DataManager/DataManager.h"
+#include "DataManager.h"
 
 class Module;
 
@@ -137,21 +137,20 @@ public:
    * @return value of LVAR A32NX_IS_READY
    */
   [[maybe_unused]] [[nodiscard]]
-  bool getA32NxIsReady() const { return a32nxIsReady->getAsBool(); }
+  bool getA32NxIsReady() const;
 
   /**
    *
    * @return value of LVAR A32NX_DEVELOPMENT_STATE
    */
   [[maybe_unused]] [[nodiscard]]
-  FLOAT64 getA32NxIsDevelopmentState() const { return a32nxIsDevelopmentState->get(); }
+  FLOAT64 getA32NxIsDevelopmentState() const;
 
   /**
    * @return the current simulation time
    */
   [[maybe_unused]] [[nodiscard]]
   FLOAT64 getTimeStamp() const { return timeStamp; }
-
 
   /**
    * @return the current tick counter

@@ -7,6 +7,8 @@
 #include "logging.h"
 #include "MsfsHandler.h"
 #include "LightingPresets.h"
+#include "AircraftVariable.h"
+#include "NamedVariable.h"
 
 ///
 // DataManager Howto Note:

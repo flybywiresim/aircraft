@@ -4,6 +4,10 @@
 #include "DataManager.h"
 #include "SimconnectExceptionStrings.h"
 
+#include "NamedVariable.h"
+#include "AircraftVariable.h"
+#include "Event.h"
+
 bool DataManager::initialize(HANDLE hdl) {
   hSimConnect = hdl;
   isInitialized = true;

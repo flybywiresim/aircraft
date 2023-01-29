@@ -1,9 +1,9 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include "AircraftVariable.h"
-
 #include <utility>
+
+#include "AircraftVariable.h"
 
 FLOAT64 AircraftVariable::rawReadFromSim() {
   if (dataID == -1) {

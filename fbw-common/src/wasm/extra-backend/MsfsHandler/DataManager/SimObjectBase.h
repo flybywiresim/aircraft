@@ -11,8 +11,8 @@
 #include <SimConnect.h>
 
 #include "simple_assert.h"
-#include "ManagedDataObjectBase.h"
 #include "IDGenerator.h"
+#include "ManagedDataObjectBase.h"
 
 /**
  * Base class for all sim objects.

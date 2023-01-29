@@ -3,9 +3,9 @@
 
 #include <iostream>
 
+#include "logging.h"
 #include "math_utils.h"
 #include "CacheableVariable.h"
-#include "logging.h"
 
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {
