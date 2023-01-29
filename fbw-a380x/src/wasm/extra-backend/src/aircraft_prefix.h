@@ -12,7 +12,8 @@ static constexpr std::string_view AIRCRAFT_PREFIX = "A32NX_";
 
 #elif A380X
 
-static constexpr std::string_view AIRCRAFT_PREFIX = "A380X_";
+// FIXME: This is a temporary workaround until we have a proper separate EFB for the A380X
+static constexpr std::string_view AIRCRAFT_PREFIX = "A32NX_";
 
 #else
 
