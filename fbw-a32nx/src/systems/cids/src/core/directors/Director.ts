@@ -1,4 +1,4 @@
-import { CidsOrchestrator } from '../CidsOrchestrator';
+import { Cids } from '../CidsConstants';
 import { DirectorMemory } from './DirectorMemory';
 
 export abstract class Director {
@@ -50,7 +50,7 @@ export abstract class Director {
      * @param force Forces the output to be written regardless of active/faulty state.
      */
     public output(varName: string, unit: SimVar.SimVarUnit, value: any, onComplete?: () => void, force = false): void {
-        if (CidsOrchestrator.DEBUG) {
+        if (Cids.DEBUG) {
             console.log('[CIDS/DIR] Received output command. Payload:', { 'SimVar name': varName, 'Unit': unit, 'Value:': value, 'Force': force });
         }
 

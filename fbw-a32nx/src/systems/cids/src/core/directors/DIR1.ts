@@ -2,8 +2,8 @@ import { Arinc429Word } from '@shared/arinc429';
 import { DIR2 } from './DIR2';
 import { Director } from './Director';
 import { FlightPhaseManager } from '../../flightphases/FlightPhaseManager';
-import { CidsOrchestrator } from '../CidsOrchestrator';
 import { DirectorMemory } from './DirectorMemory';
+import { Cids } from '../CidsConstants';
 
 export class DIR1 extends Director {
     private isInit: boolean;
@@ -44,7 +44,7 @@ export class DIR1 extends Director {
 
         this.writeMemory();
 
-        if (CidsOrchestrator.DEBUG) {
+        if (Cids.DEBUG) {
             const set = SimVar.SetSimVarValue;
             const varname = 'L:A32NX_CIDS_DEBUG_DIR_1';
 
@@ -82,39 +82,39 @@ export class DIR1 extends Director {
             throw new Error('[CIDS/DIR1] startup() was called before initialization!');
         }
 
-        if (CidsOrchestrator.DEBUG) {
+        if (Cids.DEBUG) {
             console.log('[CIDS/DIR1] Booting...');
         }
 
         // Should BITE ever be implemented a power up test should be performed before setting these simvars
-        this.output('L:A32NX_CIDS_DIR_1_FAULT', 'Bool', false, null, true);
-        this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+        this.output(Cids.SimVar.DIR1.FAULT, 'Bool', false, null, true);
+        this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', true, null, true);
 
         /* Initialize Managers */
         this.flightPhaseManager.init();
     }
 
     public shutdown(): void {
-        if (CidsOrchestrator.DEBUG) {
+        if (Cids.DEBUG) {
             console.log('[CIDS/DIR1] Shutting down...');
         }
         this.memory.clear();
-        this.output('L:A32NX_CIDS_FLIGHT_PHASE', 'Enum', 0, null, true);
-        this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
+        this.output(Cids.SimVar.FLIGHT_PHASE, 'Enum', 0, null, true);
+        this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false, null, true);
     }
 
     public fail(): void {
-        this.output('L:A32NX_CIDS_DIR_1_FAULT', 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'));
-        this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false);
+        this.output(Cids.SimVar.DIR1.FAULT, 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'));
+        this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false);
         this.memory.clear();
     }
 
     public isFaulty(): boolean {
-        return SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_FAULT', 'Bool');
+        return SimVar.GetSimVarValue(Cids.SimVar.DIR1.FAULT, 'Bool');
     }
 
     public isActive(): boolean {
-        return SimVar.GetSimVarValue('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool');
+        return SimVar.GetSimVarValue(Cids.SimVar.DIR1.ACTIVE, 'Bool');
     }
 
     /**
@@ -150,16 +150,16 @@ export class DIR1 extends Director {
     private updateActiveState(): void {
         if (this.isActive()) {
             if (!this.isFaulty()) {
-                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+                this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', true, null, true);
             } else if (!this.dir2.isFaulty()) {
-                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
+                this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false, null, true);
             } else {
-                this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+                this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', true, null, true);
             }
         } else if (this.dir2.isActive()) {
-            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', false, null, true);
+            this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false, null, true);
         } else {
-            this.output('L:A32NX_CIDS_DIR_1_ACTIVE', 'Bool', true, null, true);
+            this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', true, null, true);
         }
     }
 
