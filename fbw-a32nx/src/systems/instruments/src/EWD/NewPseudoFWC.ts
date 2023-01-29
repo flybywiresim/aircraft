@@ -1769,7 +1769,7 @@ export class NewPseudoFWC {
             failure: 2,
             sysPage: 4,
             side: 'RIGHT',
-        },
+        }, /*
         3100010: { // FWC 1 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: MappedSubject.create(([fwc1Normal, acESSBusPowered]) => !fwc1Normal && acESSBusPowered, this.fwc1Normal, this.acESSBusPowered),
@@ -1789,7 +1789,7 @@ export class NewPseudoFWC {
             failure: 2,
             sysPage: -1,
             side: 'LEFT',
-        },
+        }, */
     }
 
     ewdMessageMemos: EWDMessageDict = {
