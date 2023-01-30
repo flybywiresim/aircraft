@@ -81,7 +81,7 @@ export class DIR2 extends Director {
 
         // Should BITE ever be implemented a power up test should be performed before setting these simvars
         this.output(Cids.SimVar.DIR2.FAULT, 'Bool', false, null, true);
-        this.output(Cids.SimVar.DIR2.ACTIVE, 'Bool', true, null, true);
+        this.output(Cids.SimVar.DIR2.ACTIVE, 'Bool', false, null, true);
 
         /* Initialize Managers */
         this.flightPhaseManager.init();
