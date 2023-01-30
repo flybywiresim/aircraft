@@ -147,7 +147,7 @@ export class FlightPhaseManager implements Manager {
 
         if (Cids.DEBUG) {
             SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', flightPhase.getValue())
-                .then(() => console.log(`[CIDS/DIR${this.directorId}] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
+                .then(() => console.log(`[CIDS/DIR${this.directorId}] Set debug flight phase to: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
         }
     }
 
@@ -178,7 +178,7 @@ export class FlightPhaseManager implements Manager {
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.afterDisembarkationPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId}] Flight phase: ${this.afterDisembarkationPhase.getValue()}`),
+                () => console.log(`[CIDS/FPM${this.directorId}] Initial flight phase: ${this.afterDisembarkationPhase.getValue()}`),
                 true,
             );
             if (Cids.DEBUG) {
@@ -191,7 +191,7 @@ export class FlightPhaseManager implements Manager {
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.taxiBeforeTakeoffPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Flight phase: ${this.taxiBeforeTakeoffPhase.getValue()}`),
+                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.taxiBeforeTakeoffPhase.getValue()}`),
                 true,
             );
             if (Cids.DEBUG) {
@@ -203,7 +203,7 @@ export class FlightPhaseManager implements Manager {
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.takeoffAndInitialClimbPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Flight phase: ${this.takeoffAndInitialClimbPhase.getValue()}`),
+                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.takeoffAndInitialClimbPhase.getValue()}`),
                 true,
             );
             if (Cids.DEBUG) {
@@ -215,7 +215,7 @@ export class FlightPhaseManager implements Manager {
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.cruisePhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Flight phase: ${this.cruisePhase.getValue()}`),
+                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.cruisePhase.getValue()}`),
                 true,
             );
             if (Cids.DEBUG) {
@@ -227,7 +227,7 @@ export class FlightPhaseManager implements Manager {
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.todPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Flight phase: ${this.todPhase.getValue()}`),
+                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.todPhase.getValue()}`),
                 true,
             );
             if (Cids.DEBUG) {
@@ -239,7 +239,7 @@ export class FlightPhaseManager implements Manager {
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.finalApprAndLandingPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Flight phase: ${this.finalApprAndLandingPhase.getValue()}`),
+                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.finalApprAndLandingPhase.getValue()}`),
                 true,
             );
             if (Cids.DEBUG) {
