@@ -20,6 +20,7 @@
 #include "DataDefinitionVariable.h"
 
 // Forward declarations
+class MsfsHandler;
 class CacheableVariable;
 class NamedVariable;
 class AircraftVariable;
@@ -68,6 +69,11 @@ private:
   std::map<SIMCONNECT_CLIENT_EVENT_ID, EventPtr> events{};
 
   /**
+   * Backreference to the MsfsHandler instance.
+   */
+  MsfsHandler *msfsHandler;
+
+  /**
    * Handle to the simconnect instance.
    */
   HANDLE hSimConnect{};
@@ -76,16 +82,6 @@ private:
    * Flag to indicate if the data manager is initialized.
    */
   bool isInitialized = false;
-
-  /**
-   * Counter for ticks to determine the age of variables.
-   */
-  UINT64 tickCounter{};
-
-  /**
-   * timeStamp for this update cycle to determine the age of variables.
-   */
-  FLOAT64 timeStamp{};
 
   /**
    * Instances of an IDGenerator to generate unique IDs for variables and events.
@@ -99,8 +95,9 @@ public:
   /**
    * Creates an instance of the DataManager.
    */
-  DataManager() = default;
+  explicit DataManager(MsfsHandler *msfsHdl) : msfsHandler(msfsHdl) {}
 
+  DataManager() = delete; // no default constructor
   DataManager(const DataManager &) = delete; // no copy constructor
   DataManager &operator=(const DataManager &) = delete; // no copy assignment
   ~DataManager() = default;
@@ -109,6 +106,7 @@ public:
    * Initializes the data manager.
    * This method must be called before any other method of the data manager.
    * Usually called in the MsfsHandler initialization.
+   * @param hdl Handle to the simconnect instance
    */
   bool initialize(HANDLE hdl);
 

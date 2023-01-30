@@ -70,6 +70,8 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   // and run a separate pair of getRequestedData() and requestPeriodicDataFromSim() for it
   if (baseSimData->requestDataFromSim()) dataManager.getRequestedData();
   if ((baseSimData->data().simulationTime) == timeStamp) return true;
+
+  // get a new timestamp and increase the tick counter
   timeStamp = baseSimData->data().simulationTime;
   tickCounter++;
 

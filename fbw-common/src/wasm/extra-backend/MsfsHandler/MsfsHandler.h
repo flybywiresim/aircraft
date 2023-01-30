@@ -40,7 +40,7 @@ class MsfsHandler {
    * It de-duplicates variables and events and only creates one instance of each if multiple modules
    * use the same variable or event.
    */
-  DataManager dataManager{};
+  DataManager dataManager;
 
   /**
    * Each simconnect instance has a name to identify it.
@@ -85,7 +85,7 @@ public:
    * Creates a new MsfsHandler instance.
    * @param name string containing an appropriate simconnect name for the client program.
    */
-  explicit MsfsHandler(std::string name) : simConnectName(std::move(name)) {}
+  explicit MsfsHandler(std::string name) : dataManager(this), simConnectName(std::move(name)) {}
 
   /**
    * Initializes the MsfsHandler instance. This method must be called before any other method.

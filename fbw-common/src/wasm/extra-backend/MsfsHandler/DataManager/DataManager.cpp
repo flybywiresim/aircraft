@@ -3,7 +3,7 @@
 
 #include "DataManager.h"
 #include "SimconnectExceptionStrings.h"
-
+#include "MsfsHandler.h"
 #include "NamedVariable.h"
 #include "AircraftVariable.h"
 #include "Event.h"
@@ -21,8 +21,9 @@ bool DataManager::preUpdate(sGaugeDrawData* pData) {
     return false;
   }
 
-  tickCounter++;
-  timeStamp = pData->t;
+  // get current time stamp and tick counter
+  FLOAT64 timeStamp = msfsHandler->getTimeStamp();
+  UINT64 tickCounter = msfsHandler->getTickCounter();
 
   // get all variables set to automatically read
   for (auto &var: variables) {
