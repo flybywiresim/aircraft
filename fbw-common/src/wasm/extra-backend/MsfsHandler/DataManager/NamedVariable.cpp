@@ -10,12 +10,15 @@
 
 FLOAT64 NamedVariable::rawReadFromSim() {
   const FLOAT64 d = get_named_variable_typed_value(dataID, unit.id);
-  LOG_TRACE("NamedVariable::rawReadFromSim() "
-           + this->name
-           + " fromSim = " + std::to_string(d)
-           + " cached  = " + std::to_string(cachedValue.value_or(-999999))
-           + " as " + unit.name
-  );
+  // DEBUG
+  //  if (name == "A32NX_DEBUG_LVAR") {
+  //    LOG_DEBUG("NamedVariable::rawReadFromSim() "
+  //              + this->name
+  //              + " fromSim = " + std::to_string(d)
+  //              + " cached  = " + std::to_string(cachedValue.value_or(-999999))
+  //              + " as " + unit.name
+  //    );
+  //  }
   return d;
 }
 
@@ -34,7 +37,7 @@ std::string NamedVariable::str() const {
   ss << ", tickStamp: " << tickStamp;
   ss << ", autoRead: " << autoRead;
   ss << ", autoWrite: " << autoWrite;
-  ss << ", maxAgeTime: " << maxAgeTime;
+  ss << ", maxAgeTime: " << std::to_string(maxAgeTime);
   ss << ", maxAgeTicks: " << maxAgeTicks;
   ss << "]";
   return ss.str();

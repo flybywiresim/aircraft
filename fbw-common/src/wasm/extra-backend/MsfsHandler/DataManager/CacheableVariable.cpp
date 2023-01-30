@@ -19,12 +19,25 @@ FLOAT64 CacheableVariable::get() const {
 }
 
 FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) {
-  // only update if the value is equal or older than the max age for sim time or ticks
-  if (cachedValue.has_value()
-      && (timeStampSimTime + maxAgeTime >= timeStamp || tickStamp + maxAgeTicks >= tickCounter)) {
+  const FLOAT64 timeStampPlusAge = timeStampSimTime + maxAgeTime;
+  const UINT64 tickStampPlusAge = tickStamp + maxAgeTicks;
+
+  // only update if the value is older than the max age for sim time and ticks
+  // also makes sure a variable is only read from the sim once per tick when max age is 0
+  const bool needsUpdateFromSim = (timeStampPlusAge < timeStamp && tickStampPlusAge < tickCounter);
+
+  if (cachedValue.has_value() && !needsUpdateFromSim) {
     changed = false;
+    LOG_TRACE("CacheableVariable::updateFromSim() - from cache "
+              + this->name
+              + " " + str()
+    );
     return cachedValue.value();
   }
+  LOG_TRACE("CacheableVariable::updateFromSim() - read from sim "
+            + this->name
+            + " " + str()
+  );
   // update the value from the sim
   timeStampSimTime = timeStamp;
   tickStamp = tickCounter;
@@ -33,6 +46,8 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
 
 FLOAT64 CacheableVariable::readFromSim() {
   const FLOAT64 fromSim = rawReadFromSim();
+
+  // compare the value from the sim with the cached value
   changed = !cachedValue.has_value()
             || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
 

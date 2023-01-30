@@ -105,12 +105,18 @@ public:
   FLOAT64 get() const;
 
   /**
-   * Reads the value fom the sim if the cached value is older than the max age (time or ticks).
+   * Reads the value fom the sim if the cached value is older than the max age (time or ticks).<p/>
+   *
+   * If a value has already been read during one tick it will therefore not be read again as the
+   * variable's timeStamp and tickStamp will not be older than the current time and tick.<p/>
+   *
    * It updates the cache (clears dirty flag), the hasChanged flag, the timeStampSimTime and
-   * tickStamp.
+   * tickStamp.<p/>
+   *
    * If the value has been set by the set() method since the last read from the sim (is dirty)
    * but has not been written to the sim yet an error message is printed to std::cerr.
    * (MSFS does not allow exceptions)
+   *
    * @param timeStamp the current sim time (taken from the sim update event)
    * @param tickCounter the current tick counter (taken from a custom counter at each update event
    * @return the value read from the sim
@@ -118,9 +124,13 @@ public:
   FLOAT64 updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter);
 
   /**
-   * Reads the value from the sim and updates the cache (clears dirty flag).
-   * It manages the changed flag and sets it to true if the value has changed since last read
-   * or sets it to false if the value has not changed.<p/>
+   * Reads the value from the sim ignoring the cached value. It is recommended to use the
+   * updateFromSim() method instead as this guarantees that a variable is only read once per tick
+   * no matter in which module the variable is used.<p/>
+   *
+   * Ir updates the cache (clears dirty flag) and manages the changed flag and sets it to true
+   * if the value has changed since last read or sets it to false if the value has not changed.<p/>
+   *
    * This does not update the timeStampSimTime or tickStamp.
    * @return the value read from the sim
    */

@@ -153,10 +153,19 @@ public:
   };
 
   [[nodiscard]] bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) override {
-    // only update if the value is equal or older than the max age for sim time ot ticks
-    if (timeStampSimTime + maxAgeTime >= timeStamp || tickStamp + maxAgeTicks >= tickCounter) {
+    const FLOAT64 timeStampPlusAge = timeStampSimTime + maxAgeTime;
+    const UINT64 tickStampPlusAge = tickStamp + maxAgeTicks;
+
+    // only update if the value is older than the max age for sim time and ticks
+    // also makes sure a variable is only read from the sim once per tick when max age is 0
+    const bool needsUpdateFromSim = (timeStampPlusAge < timeStamp && tickStampPlusAge < tickCounter);
+    if (!needsUpdateFromSim) {
+      LOG_TRACE("DataDefinitionVariable::requestUpdateFromSim: Not requesting update from sim as "
+                "value is not older than max age.");
       return true;
     }
+    LOG_TRACE("DataDefinitionVariable::requestUpdateFromSim: Requesting update from sim.");
+
     timeStampSimTime = timeStamp;
     tickStamp = tickCounter;
 
