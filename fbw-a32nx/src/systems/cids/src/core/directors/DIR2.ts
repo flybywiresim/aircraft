@@ -66,7 +66,7 @@ export class DIR2 extends Director {
             set(`${varname}_GEAR_DWN_LCKD`, 'Bool', this.memory.gearDownLocked);
         }
 
-        /* UPdate Managers */
+        /* Update Managers */
         this.flightPhaseManager.update();
 
         this.memory.clear();
