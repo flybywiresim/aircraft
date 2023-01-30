@@ -4,12 +4,14 @@ import { t } from '../translation';
 import { Navbar } from '../UtilComponents/Navbar';
 import { TODCalculator } from '../TODCalculator/TODCalculator';
 import { LandingWidget } from './Widgets/LandingWidget';
+import { TakeoffWidget } from './Widgets/TakeoffWidget';
 import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
 export const Performance = () => {
     const tabs: PageLink[] = [
         { name: 'Top of Descent', alias: t('Performance.TopOfDescent.Title'), component: <TODCalculator /> },
         { name: 'Landing', alias: t('Performance.Landing.Title'), component: <LandingWidget /> },
+        { name: 'Takeoff', alias: t('Performance.Takeoff.Title'), component: <TakeoffWidget /> },
     ];
 
     return (

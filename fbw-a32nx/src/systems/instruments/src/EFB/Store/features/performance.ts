@@ -27,8 +27,31 @@ interface TPerformanceLanding {
     autoland: boolean;
 }
 
+interface TPerformanceTakeoff {
+    icao: string;
+    windDirection?: number;
+    windMagnitude?: number;
+    weight?: number;
+    runwayHeading?: number;
+    approachSpeed?: number;
+    flaps: number;
+    runwayCondition: LandingRunwayConditions;
+    altitude?: number;
+    slope?: number;
+    temperature?: number;
+    pressure?: number;
+    runwayLength?: number;
+    takeoffDist: number;
+    runwayVisualizationLabels: DistanceLabel[];
+    runwayNumber: number;
+    displayedRunwayLength: number;
+    antiIce: boolean;
+    packs: boolean;
+}
+
 interface TPerformanceState {
     landing: TPerformanceLanding;
+    takeoff: TPerformanceTakeoff;
 }
 
 export const initialState: TPerformanceState = {
@@ -55,6 +78,27 @@ export const initialState: TPerformanceState = {
         runwayNumber: 0,
         displayedRunwayLength: 0,
         autoland: false,
+    },
+    takeoff: {
+        icao: '',
+        windDirection: undefined,
+        windMagnitude: undefined,
+        weight: undefined,
+        runwayHeading: undefined,
+        approachSpeed: undefined,
+        flaps: 1,
+        runwayCondition: LandingRunwayConditions.Dry,
+        altitude: undefined,
+        slope: undefined,
+        temperature: undefined,
+        pressure: undefined,
+        runwayLength: undefined,
+        takeoffDist: 0,
+        runwayVisualizationLabels: [],
+        runwayNumber: 0,
+        displayedRunwayLength: 0,
+        packs: false,
+        antiIce: false,
     },
 };
 
