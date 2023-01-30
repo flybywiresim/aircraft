@@ -38,37 +38,41 @@ export class DIR1 extends Director {
             throw new Error('[CIDS/DIR1] update() was called before initialization!');
         }
 
-        this.updateActiveState();
-
         if (this.isFaulty()) return;
+
+        this.updateActiveState();
 
         this.writeMemory();
 
         if (Cids.DEBUG) {
-            const set = SimVar.SetSimVarValue;
-            const varname = 'L:A32NX_CIDS_DEBUG_DIR_1';
+            if (this.isFaulty()) {
+                console.warn('[CIDS/DIR1] Director fault -> no simvars to set');
+            } else {
+                const set = SimVar.SetSimVarValue;
+                const varname = 'L:A32NX_CIDS_DEBUG_DIR_1';
 
-            set(`${varname}_FWC_FLIGHT_PHASE`, 'number', this.memory.fwcFlightPhase);
-            set(`${varname}_ALL_DOORS_CLSD_LCKED`, 'Bool', this.memory.allDoorsClosedLocked);
-            set(`${varname}_NW_STRG_DISC`, 'Bool', this.memory.nwStrgPinInserted);
-            set(`${varname}_THR_LVR_1_POS`, 'number', this.memory.thrustLever1Position);
-            set(`${varname}_THR_LVR_2_POS`, 'number', this.memory.thrustLever2Position);
-            set(`${varname}_GPWS_FLAP_3`, 'Bool', this.memory.gpwsFlap3);
-            set(`${varname}_FLAPS_CONF`, 'number', this.memory.flapsConfig);
-            set(`${varname}_ALT`, 'number', this.memory.altitude);
-            set(`${varname}_FCU_SEL_ALT`, 'number', this.memory.fcuSelectedAlt);
-            set(`${varname}_FMA_VERT_MODE`, 'number', this.memory.fmaVerticalMode);
-            set(`${varname}_FPA_SEL`, 'number', this.memory.fpaSelected);
-            set(`${varname}_VS_SEL`, 'number', this.memory.vsSelected);
-            set(`${varname}_CRZ_ALT`, 'number', this.memory.cruiseAltitude);
-            set(`${varname}_ALT_CRZ_ACTIVE`, 'Bool', this.memory.altCrzActive);
-            set(`${varname}_GS`, 'number', this.memory.groundSpeed);
-            set(`${varname}_GEAR_DWN_LCKD`, 'Bool', this.memory.gearDownLocked);
+                set(`${varname}_FWC_FLIGHT_PHASE`, 'number', this.memory.fwcFlightPhase);
+                set(`${varname}_ALL_DOORS_CLSD_LCKED`, 'Bool', this.memory.allDoorsClosedLocked);
+                set(`${varname}_NW_STRG_DISC`, 'Bool', this.memory.nwStrgPinInserted);
+                set(`${varname}_THR_LVR_1_POS`, 'number', this.memory.thrustLever1Position);
+                set(`${varname}_THR_LVR_2_POS`, 'number', this.memory.thrustLever2Position);
+                set(`${varname}_GPWS_FLAP_3`, 'Bool', this.memory.gpwsFlap3);
+                set(`${varname}_FLAPS_CONF`, 'number', this.memory.flapsConfig);
+                set(`${varname}_ALT`, 'number', this.memory.altitude);
+                set(`${varname}_FCU_SEL_ALT`, 'number', this.memory.fcuSelectedAlt);
+                set(`${varname}_FMA_VERT_MODE`, 'number', this.memory.fmaVerticalMode);
+                set(`${varname}_FPA_SEL`, 'number', this.memory.fpaSelected);
+                set(`${varname}_VS_SEL`, 'number', this.memory.vsSelected);
+                set(`${varname}_CRZ_ALT`, 'number', this.memory.cruiseAltitude);
+                set(`${varname}_ALT_CRZ_ACTIVE`, 'Bool', this.memory.altCrzActive);
+                set(`${varname}_GS`, 'number', this.memory.groundSpeed);
+                set(`${varname}_GEAR_DWN_LCKD`, 'Bool', this.memory.gearDownLocked);
 
-            set('L:A32NX_CIDS_DEBUG_BOARDING_IN_PROGRESS', 'Bool', this.boardingInProgress);
-            set('L:A32NX_CIDS_DEBUG_DEBOARDING_IN_PROGRESS', 'Bool', this.deboardingInProgress);
-            set('L:A32NX_CIDS_DEBUG_TOTAL_PAX', 'number', this.totalPax);
-            set('L:A32NX_CIDS_DEBUG_TOTAL_PAX_DESIRED', 'number', this.totalPaxDesired);
+                set('L:A32NX_CIDS_DEBUG_BOARDING_IN_PROGRESS', 'Bool', this.boardingInProgress);
+                set('L:A32NX_CIDS_DEBUG_DEBOARDING_IN_PROGRESS', 'Bool', this.deboardingInProgress);
+                set('L:A32NX_CIDS_DEBUG_TOTAL_PAX', 'number', this.totalPax);
+                set('L:A32NX_CIDS_DEBUG_TOTAL_PAX_DESIRED', 'number', this.totalPaxDesired);
+            }
         }
 
         /* Update Managers */
@@ -97,13 +101,17 @@ export class DIR1 extends Director {
 
         this.memory.clear();
         this.output(Cids.SimVar.FLIGHT_PHASE, 'Enum', 0, null, true);
+        this.output(Cids.SimVar.DIR1.FAULT, 'Bool', false, null, true);
         this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false, null, true);
     }
 
     public fail(): void {
-        this.output(Cids.SimVar.DIR1.FAULT, 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'));
-        this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false);
+        if (this.isFaulty() && !this.isActive) { // Prevent unnecessary simvar sets
+            return;
+        }
         this.memory.clear();
+        this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false, null, true);
+        this.output(Cids.SimVar.DIR1.FAULT, 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'), true);
     }
 
     public isFaulty(): boolean {

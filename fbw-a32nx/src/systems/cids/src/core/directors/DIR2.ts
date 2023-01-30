@@ -38,32 +38,36 @@ export class DIR2 extends Director {
             throw new Error('[CIDS/DIR2] update() was called before initialization!');
         }
 
-        this.updateActiveState();
-
         if (this.isFaulty()) return;
+
+        this.updateActiveState();
 
         this.writeMemory();
 
         if (Cids.DEBUG) {
-            const set = SimVar.SetSimVarValue;
-            const varname = 'L:A32NX_CIDS_DEBUG_DIR_2';
+            if (this.isFaulty()) {
+                console.warn('[CIDS/DIR2] Director fault -> no simvars to set');
+            } else {
+                const set = SimVar.SetSimVarValue;
+                const varname = 'L:A32NX_CIDS_DEBUG_DIR_2';
 
-            set(`${varname}_FWC_FLIGHT_PHASE`, 'number', this.memory.fwcFlightPhase);
-            set(`${varname}_ALL_DOORS_CLSD_LCKED`, 'Bool', this.memory.allDoorsClosedLocked);
-            set(`${varname}_NW_STRG_DISC`, 'Bool', this.memory.nwStrgPinInserted);
-            set(`${varname}_THR_LVR_1_POS`, 'number', this.memory.thrustLever1Position);
-            set(`${varname}_THR_LVR_2_POS`, 'number', this.memory.thrustLever2Position);
-            set(`${varname}_GPWS_FLAP_3`, 'Bool', this.memory.gpwsFlap3);
-            set(`${varname}_FLAPS_CONF`, 'number', this.memory.flapsConfig);
-            set(`${varname}_ALT`, 'number', this.memory.altitude);
-            set(`${varname}_FCU_SEL_ALT`, 'number', this.memory.fcuSelectedAlt);
-            set(`${varname}_FMA_VERT_MODE`, 'number', this.memory.fmaVerticalMode);
-            set(`${varname}_FPA_SEL`, 'number', this.memory.fpaSelected);
-            set(`${varname}_VS_SEL`, 'number', this.memory.vsSelected);
-            set(`${varname}_CRZ_ALT`, 'number', this.memory.cruiseAltitude);
-            set(`${varname}_ALT_CRZ_ACTIVE`, 'Bool', this.memory.altCrzActive);
-            set(`${varname}_GS`, 'number', this.memory.groundSpeed);
-            set(`${varname}_GEAR_DWN_LCKD`, 'Bool', this.memory.gearDownLocked);
+                set(`${varname}_FWC_FLIGHT_PHASE`, 'number', this.memory.fwcFlightPhase);
+                set(`${varname}_ALL_DOORS_CLSD_LCKED`, 'Bool', this.memory.allDoorsClosedLocked);
+                set(`${varname}_NW_STRG_DISC`, 'Bool', this.memory.nwStrgPinInserted);
+                set(`${varname}_THR_LVR_1_POS`, 'number', this.memory.thrustLever1Position);
+                set(`${varname}_THR_LVR_2_POS`, 'number', this.memory.thrustLever2Position);
+                set(`${varname}_GPWS_FLAP_3`, 'Bool', this.memory.gpwsFlap3);
+                set(`${varname}_FLAPS_CONF`, 'number', this.memory.flapsConfig);
+                set(`${varname}_ALT`, 'number', this.memory.altitude);
+                set(`${varname}_FCU_SEL_ALT`, 'number', this.memory.fcuSelectedAlt);
+                set(`${varname}_FMA_VERT_MODE`, 'number', this.memory.fmaVerticalMode);
+                set(`${varname}_FPA_SEL`, 'number', this.memory.fpaSelected);
+                set(`${varname}_VS_SEL`, 'number', this.memory.vsSelected);
+                set(`${varname}_CRZ_ALT`, 'number', this.memory.cruiseAltitude);
+                set(`${varname}_ALT_CRZ_ACTIVE`, 'Bool', this.memory.altCrzActive);
+                set(`${varname}_GS`, 'number', this.memory.groundSpeed);
+                set(`${varname}_GEAR_DWN_LCKD`, 'Bool', this.memory.gearDownLocked);
+            }
         }
 
         /* Update Managers */
@@ -92,13 +96,18 @@ export class DIR2 extends Director {
 
         this.memory.clear();
         this.output(Cids.SimVar.FLIGHT_PHASE, 'Enum', 0, null, true);
+        this.output(Cids.SimVar.DIR2.FAULT, 'Bool', false, null, true);
         this.output(Cids.SimVar.DIR2.ACTIVE, 'Bool', false, null, true);
     }
 
     public fail(): void {
-        this.output(Cids.SimVar.DIR2.FAULT, 'Bool', true, () => console.log('[CIDS/DIR2] FAULT'));
-        this.output(Cids.SimVar.DIR2.ACTIVE, 'Bool', false);
+        if (this.isFaulty() && !this.isActive() && this.dir1.isActive()) { // Prevent unnecessary simvar sets
+            return;
+        }
         this.memory.clear();
+        this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', true, null, true);
+        this.output(Cids.SimVar.DIR2.ACTIVE, 'Bool', false, null, true);
+        this.output(Cids.SimVar.DIR2.FAULT, 'Bool', true, () => console.log('[CIDS/DIR2] FAULT'), true);
     }
 
     public isFaulty(): boolean {
