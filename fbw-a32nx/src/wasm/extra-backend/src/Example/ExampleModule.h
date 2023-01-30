@@ -8,6 +8,7 @@
 
 #include "Module.h"
 #include "DataManager.h"
+#include "Event.h"
 
 class MsfsHandler;
 
@@ -26,6 +27,7 @@ private:
   NamedVariablePtr debugLVARPtr{};
   NamedVariablePtr debugLVAR2Ptr{};
   NamedVariablePtr debugLVAR3Ptr{};
+  NamedVariablePtr debugLVAR4Ptr{};
 
   // Sim-vars
   AircraftVariablePtr beaconLightSwitchPtr;

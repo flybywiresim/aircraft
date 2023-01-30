@@ -6,6 +6,7 @@
 #include "logging.h"
 #include "ExampleModule.h"
 #include "SimObjectBase.h"
+#include "NamedVariable.h"
 
 bool ExampleModule::initialize() {
 
@@ -87,8 +88,10 @@ bool ExampleModule::initialize() {
   // Test creating an existing variable manually
   debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
   // debugLVARPtr->setEpsilon(1.0); // only read when difference is >1.0
-  debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, true, false, 0, 0);
-  debugLVAR3Ptr = std::make_shared<NamedVariable>("DEBUG_LVAR", UNITS.Seconds, false, false, 0, 0);
+  // debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, false, false, 0, 0);
+  // debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, false, false, 0, 0);
+  // this is a duplicate of the first one, so should be the same pointer
+  debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
 
   // Aircraft variables - requested twice to demonstrate de-duplication
   beaconLightSwitchPtr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Percent, false, false, 0, 0);
@@ -112,14 +115,14 @@ bool ExampleModule::initialize() {
     {"LOCAL TIME",    0, UNITS.Number},
     {"ABSOLUTE TIME", 0, UNITS.Number},
   };
-  exampleDataPtr = dataManager->make_datadefinition_var<ExampleData>(
-    "EXAMPLE DATA", exampleDataDef, false, false, 0, 0);
+  exampleDataPtr = dataManager
+    ->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, false, false, 0, 0);
 
   // Alternative to use autoRead it is possible to set the SIMCONNECT_PERIOD.
   // See https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm?rhhlterm=SIMCONNECT_CLIENT_DATA_PERIOD&rhsearch=SIMCONNECT_CLIENT_DATA_PERIOD
-  if (!exampleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME)) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!exampleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME)) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
 
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
@@ -141,16 +144,26 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   // It is ready after the click on "READY TO FLY"
   if (!msfsHandler->getA32NxIsReady()) return true;
 
+  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
+  const UINT64 tickCounter = msfsHandler->getTickCounter();
+
   // Use this to throttle output frequency while you are debugging
   if (msfsHandler->getTickCounter() % 100 == 0) {
 
     // difference if using different units
-    //    debugLVAR3Ptr->setAndWriteToSim(msfsHandler->getTickCounter());
-    //    LOG_INFO("ticks " + std::to_string(msfsHandler->getTickCounter()));
-    //    LOG_INFO("debugLVARPtr  DEBUG_LVAR " + std::to_string(debugLVARPtr->rawReadFromSim()));
-    //    LOG_INFO("debugLVAR2Ptr DEBUG_LVAR " + std::to_string(debugLVAR2Ptr->rawReadFromSim()));
-    //    LOG_INFO("debugLVAR3Ptr DEBUG_LVAR " + std::to_string(debugLVAR3Ptr->rawReadFromSim()));
+    // debugLVAR3Ptr->setAndWriteToSim(msfsHandler->getTickCounter());
     //    LOG_INFO("--- DEBUG_LVAR");
+    //    LOG_INFO("timeStamp = " + std::to_string(timeStamp)
+    //             + "/ ticks = " + std::to_string(msfsHandler->getTickCounter()));
+    //    LOG_INFO("debugLVARPtr  DEBUG_LVAR "
+    //             + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
+    //             + std::to_string(debugLVARPtr->updateFromSim(timeStamp, tickCounter)));
+    //    LOG_INFO("debugLVAR2Ptr DEBUG_LVAR " + std::to_string(debugLVAR2Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
+    //    LOG_INFO("debugLVAR3Ptr DEBUG_LVAR " + std::to_string(debugLVAR3Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
+    // this second read of the duplicate should not trigger a read from the sim
+    //    LOG_INFO("debugLVAR4Ptr DEBUG_LVAR "
+    //             + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
+    //             + std::to_string(debugLVAR4Ptr->updateFromSim(timeStamp, tickCounter)));
     //
     //    LOG_INFO("beaconLightSwitchPtr  DEBUG_BEACON " + std::to_string(beaconLightSwitchPtr->rawReadFromSim()));
     //    LOG_INFO("beaconLightSwitch2Ptr DEBUG_BEACON " + std::to_string(beaconLightSwitch2Ptr->rawReadFromSim()));
@@ -171,7 +184,13 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     // std::cout << beaconLightSwitchPtr->str() << std::endl;
 
     // testing data definition variables
+    //    LOG_INFO("--- DEBUG SIMOBJECT DATA");
     //    std::cout << exampleDataPtr->str() << std::endl;
+    //    exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
+    //    std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
+    //    std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
+    //    std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;
+    //    exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
     //    std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
     //    std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
     //    std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;
