@@ -1,4 +1,4 @@
-import { FlightPhaseManager } from './FlightPhaseManager';
+import { FlightPhaseManager } from '../core/managers/FlightPhaseManager';
 
 export abstract class FlightPhase {
   protected readonly flightPhaseManager: FlightPhaseManager;

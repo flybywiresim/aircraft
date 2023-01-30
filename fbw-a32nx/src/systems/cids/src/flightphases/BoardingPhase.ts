@@ -23,9 +23,9 @@ export class BoardingPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.dir.memory.onGround
-            && this.flightPhaseManager.dir.memory.groundSpeed < 1
-            && this.flightPhaseManager.dir.boardingInProgress
+            this.flightPhaseManager.director.memory.onGround
+            && this.flightPhaseManager.director.memory.groundSpeed < 1
+            && this.flightPhaseManager.director.boardingInProgress
         );
     }
 

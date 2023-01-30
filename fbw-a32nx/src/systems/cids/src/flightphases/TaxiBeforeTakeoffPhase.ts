@@ -22,11 +22,11 @@ export class TaxiBeforeTakeoffPhase extends FlightPhase {
 
     public shouldActivate(): boolean {
         return (
-            this.flightPhaseManager.dir.memory.onGround
-            && this.flightPhaseManager.dir.memory.groundSpeed > 0
-            && this.flightPhaseManager.dir.memory.allDoorsClosedLocked
-            && this.flightPhaseManager.dir.memory.thrustLever1Position < 75
-            && this.flightPhaseManager.dir.memory.thrustLever2Position < 75
+            this.flightPhaseManager.director.memory.onGround
+            && this.flightPhaseManager.director.memory.groundSpeed > 0
+            && this.flightPhaseManager.director.memory.allDoorsClosedLocked
+            && this.flightPhaseManager.director.memory.thrustLever1Position < 75
+            && this.flightPhaseManager.director.memory.thrustLever2Position < 75
         );
     }
 

@@ -12,7 +12,7 @@ import { DisembarkationPhase } from './flightphases/DisembarkationPhase';
 import { FinalApproachAndLandingPhase } from './flightphases/FinalApproachAndLandingPhase';
 import { FinalClimbPhase } from './flightphases/FinalClimbPhase';
 import { FlightPhase } from './flightphases/FlightPhase';
-import { FlightPhaseManager } from './flightphases/FlightPhaseManager';
+import { FlightPhaseManager } from './core/managers/FlightPhaseManager';
 import { PushbackPhase } from './flightphases/PushbackPhase';
 import { TakeoffAndInitialClimbPhase } from './flightphases/TakeoffAndInitialClimbPhase';
 import { TaxiAfterLandingPhase } from './flightphases/TaxiAfterLandingPhase';

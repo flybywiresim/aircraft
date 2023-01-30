@@ -1,7 +1,7 @@
 import { Arinc429Word } from '@shared/arinc429';
 import { DIR2 } from './DIR2';
 import { Director } from './Director';
-import { FlightPhaseManager } from '../../flightphases/FlightPhaseManager';
+import { FlightPhaseManager } from '../managers/FlightPhaseManager';
 import { DirectorMemory } from './DirectorMemory';
 import { Cids } from '../CidsConstants';
 

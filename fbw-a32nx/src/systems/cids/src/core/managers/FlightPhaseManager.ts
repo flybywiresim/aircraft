@@ -1,23 +1,24 @@
-import { DIR1 } from '../core/directors/DIR1';
-import { DIR2 } from '../core/directors/DIR2';
-import { Director } from '../core/directors/Director';
-import { AfterDisembarkationPhase } from './AfterDisembarkationPhase';
-import { ApproachPhase } from './ApproachPhase';
-import { BoardingPhase } from './BoardingPhase';
-import { CruisePhase } from './CruisePhase';
-import { DisembarkationPhase } from './DisembarkationPhase';
-import { FinalApproachAndLandingPhase } from './FinalApproachAndLandingPhase';
-import { FinalClimbPhase } from './FinalClimbPhase';
-import { FlightPhase } from './FlightPhase';
-import { PushbackPhase } from './PushbackPhase';
-import { TakeoffAndInitialClimbPhase } from './TakeoffAndInitialClimbPhase';
-import { TaxiAfterLandingPhase } from './TaxiAfterLandingPhase';
-import { TaxiBeforeTakeoffPhase } from './TaxiBeforeTakeoffPhase';
-import { TopOfDescentPhase } from './TopOfDescentPhase';
-import { Cids } from '../core/CidsConstants';
+import { Manager } from './Manager';
+import { Cids } from '../CidsConstants';
+import { DIR1 } from '../directors/DIR1';
+import { DIR2 } from '../directors/DIR2';
+import { Director } from '../directors/Director';
+import { AfterDisembarkationPhase } from '../../flightphases/AfterDisembarkationPhase';
+import { ApproachPhase } from '../../flightphases/ApproachPhase';
+import { BoardingPhase } from '../../flightphases/BoardingPhase';
+import { CruisePhase } from '../../flightphases/CruisePhase';
+import { DisembarkationPhase } from '../../flightphases/DisembarkationPhase';
+import { FinalApproachAndLandingPhase } from '../../flightphases/FinalApproachAndLandingPhase';
+import { FinalClimbPhase } from '../../flightphases/FinalClimbPhase';
+import { FlightPhase } from '../../flightphases/FlightPhase';
+import { PushbackPhase } from '../../flightphases/PushbackPhase';
+import { TakeoffAndInitialClimbPhase } from '../../flightphases/TakeoffAndInitialClimbPhase';
+import { TaxiAfterLandingPhase } from '../../flightphases/TaxiAfterLandingPhase';
+import { TaxiBeforeTakeoffPhase } from '../../flightphases/TaxiBeforeTakeoffPhase';
+import { TopOfDescentPhase } from '../../flightphases/TopOfDescentPhase';
 
-export class FlightPhaseManager {
-    public readonly dir: Director;
+export class FlightPhaseManager implements Manager {
+    public readonly director: Director;
 
     private readonly boardingPhase: BoardingPhase;
 
@@ -44,7 +45,7 @@ export class FlightPhaseManager {
     private readonly afterDisembarkationPhase: AfterDisembarkationPhase;
 
     constructor(director: Director) {
-        this.dir = director;
+        this.director = director;
         this.boardingPhase = new BoardingPhase(this);
         this.pushbackPhase = new PushbackPhase(this);
         this.taxiBeforeTakeoffPhase = new TaxiBeforeTakeoffPhase(this);
@@ -59,7 +60,7 @@ export class FlightPhaseManager {
         this.afterDisembarkationPhase = new AfterDisembarkationPhase(this);
     }
 
-    public init() {
+    public init(): void {
         console.log('[CIDS/FPM] Initialization started...');
 
         this.initFlightPhases();
@@ -141,13 +142,13 @@ export class FlightPhaseManager {
     public setActiveFlightPhase(flightPhase: FlightPhase): void {
         const prevPhase = this.getActiveFlightPhase();
 
-        this.dir.output(Cids.SimVar.FLIGHT_PHASE, 'Enum', flightPhase.getValue(), () => console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
+        this.director.output(Cids.SimVar.FLIGHT_PHASE, 'Enum', flightPhase.getValue(), () => console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
 
         if (Cids.DEBUG) {
-            if (this.dir instanceof DIR1) {
+            if (this.director instanceof DIR1) {
                 SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', flightPhase.getValue())
                     .then(() => console.log(`[CIDS/DIR1] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
-            } else if (this.dir instanceof DIR2) {
+            } else if (this.director instanceof DIR2) {
                 SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', flightPhase.getValue())
                     .then(() => console.log(`[CIDS/DIR2] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
             }
@@ -177,7 +178,7 @@ export class FlightPhaseManager {
         switch (startState) {
         case 1:
         case 2:
-            this.dir.output(
+            this.director.output(
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.afterDisembarkationPhase.getValue(),
@@ -185,16 +186,16 @@ export class FlightPhaseManager {
                 true,
             );
             if (Cids.DEBUG) {
-                if (this.dir instanceof DIR1) {
+                if (this.director instanceof DIR1) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', this.afterDisembarkationPhase.getValue());
-                } else if (this.dir instanceof DIR2) {
+                } else if (this.director instanceof DIR2) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', this.afterDisembarkationPhase.getValue());
                 }
             }
             break;
         case 3:
         case 4:
-            this.dir.output(
+            this.director.output(
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.taxiBeforeTakeoffPhase.getValue(),
@@ -202,15 +203,15 @@ export class FlightPhaseManager {
                 true,
             );
             if (Cids.DEBUG) {
-                if (this.dir instanceof DIR1) {
+                if (this.director instanceof DIR1) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', this.taxiBeforeTakeoffPhase.getValue());
-                } else if (this.dir instanceof DIR2) {
+                } else if (this.director instanceof DIR2) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', this.taxiBeforeTakeoffPhase.getValue());
                 }
             }
             break;
         case 5:
-            this.dir.output(
+            this.director.output(
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.takeoffAndInitialClimbPhase.getValue(),
@@ -218,15 +219,15 @@ export class FlightPhaseManager {
                 true,
             );
             if (Cids.DEBUG) {
-                if (this.dir instanceof DIR1) {
+                if (this.director instanceof DIR1) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', this.takeoffAndInitialClimbPhase.getValue());
-                } else if (this.dir instanceof DIR2) {
+                } else if (this.director instanceof DIR2) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', this.takeoffAndInitialClimbPhase.getValue());
                 }
             }
             break;
         case 6:
-            this.dir.output(
+            this.director.output(
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.cruisePhase.getValue(),
@@ -234,15 +235,15 @@ export class FlightPhaseManager {
                 true,
             );
             if (Cids.DEBUG) {
-                if (this.dir instanceof DIR1) {
+                if (this.director instanceof DIR1) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', this.cruisePhase.getValue());
-                } else if (this.dir instanceof DIR2) {
+                } else if (this.director instanceof DIR2) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', this.cruisePhase.getValue());
                 }
             }
             break;
         case 7:
-            this.dir.output(
+            this.director.output(
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.todPhase.getValue(),
@@ -250,15 +251,15 @@ export class FlightPhaseManager {
                 true,
             );
             if (Cids.DEBUG) {
-                if (this.dir instanceof DIR1) {
+                if (this.director instanceof DIR1) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', this.todPhase.getValue());
-                } else if (this.dir instanceof DIR2) {
+                } else if (this.director instanceof DIR2) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', this.todPhase.getValue());
                 }
             }
             break;
         case 8:
-            this.dir.output(
+            this.director.output(
                 Cids.SimVar.FLIGHT_PHASE,
                 'Enum',
                 this.finalApprAndLandingPhase.getValue(),
@@ -266,9 +267,9 @@ export class FlightPhaseManager {
                 true,
             );
             if (Cids.DEBUG) {
-                if (this.dir instanceof DIR1) {
+                if (this.director instanceof DIR1) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_1_FLIGHT_PHASE', 'Enum', this.finalApprAndLandingPhase.getValue());
-                } else if (this.dir instanceof DIR2) {
+                } else if (this.director instanceof DIR2) {
                     SimVar.SetSimVarValue('L:A32NX_CIDS_DEBUG_DIR_2_FLIGHT_PHASE', 'Enum', this.finalApprAndLandingPhase.getValue());
                 }
             }
