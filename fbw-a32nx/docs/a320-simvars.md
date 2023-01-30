@@ -2867,6 +2867,23 @@ In the variables below, {number} should be replaced with one item in the set: { 
 | 11 | DISEMBARKATION | - A/C on ground <br> - A/C stationary <br> - Deboarding in progress |
 | 12 | AFTER PASSENGER DISEMBARKATION | - Total PAX on board == 0 <br> - A/C stationary |
 
+- A32NX_CIDS_DIR_{number}_FAULT
+  - Bool
+  - {number}
+    - 1
+    - 2
+  - Fault discrete signal of the respective director.
+
+- A32NX_CIDS_DIR_{number}_ACTIVE
+  - Bool
+  - {number}
+    - 1
+    - 2
+  - Active discrete signal of the respective director.
+    - The opposite state of "active" is "passive".
+    - Only one director can be active.
+    - Only the active director can output data.
+
 ## Flaps / Slats (ATA 27)
 
 - A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD
