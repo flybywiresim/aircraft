@@ -63,6 +63,9 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
   if (!msfsHandler->getA32NxIsReady()) return true;
 
+  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
+  const UINT64 tickCounter = msfsHandler->getTickCounter();
+
   // has request to load a preset been received?
   if (loadAircraftPresetRequest->get() > 0) {
     // we do not allow loading of presets in the air to prevent users from
@@ -75,8 +78,8 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     }
 
     // read the progress vars once to get the current state
-    progressAircraftPreset->readFromSim();
-    progressAircraftPresetId->readFromSim();
+    progressAircraftPreset->updateFromSim(timeStamp, tickCounter);
+    progressAircraftPresetId->updateFromSim(timeStamp, tickCounter);
 
     // check if we already have an active loading process or if this is a new request which
     // needs to be initialized

@@ -94,11 +94,15 @@ bool Pushback::update(sGaugeDrawData* pData) {
     return true;
   }
 
+  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
+  const UINT64 tickCounter = msfsHandler->getTickCounter();
+
   // read all data from sim - could be done inline but better readability this way
-  parkingBrakeEngaged->readFromSim();
-  aircraftHeading->readFromSim();
-  tugCommandedSpeedFactor->readFromSim();
-  tugCommandedHeadingFactor->readFromSim();
+  parkingBrakeEngaged->updateFromSim(timeStamp, tickCounter);
+  aircraftHeading->updateFromSim(timeStamp, tickCounter);
+  tugCommandedSpeedFactor->updateFromSim(timeStamp, tickCounter);
+  tugCommandedHeadingFactor->updateFromSim(timeStamp, tickCounter);
+  windVelBodyZ->updateFromSim(timeStamp, tickCounter);
 
   const double parkBrakeSpdFactor = parkingBrakeEngaged->getAsBool() ? (SPEED_RATIO / 10) : SPEED_RATIO;
   const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * parkBrakeSpdFactor;
@@ -113,7 +117,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   // As we might use the elevator for taxiing we compensate for wind to avoid
   // the aircraft lifting any gears.
-  const FLOAT64 windCounterRotAccel = windVelBodyZ->readFromSim() / 2000.0;
+  const FLOAT64 windCounterRotAccel = windVelBodyZ->get() / 2000.0;
   FLOAT64 movementCounterRotAccel = windCounterRotAccel;
   if (inertiaSpeed > 0) { movementCounterRotAccel -= 0.5; }
   else if (inertiaSpeed < 0) { movementCounterRotAccel += 1.0; }
