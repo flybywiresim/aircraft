@@ -25,7 +25,7 @@ export class CidsOrchestrator {
 
     public init(): void {
         this.dir1.init(this.dir2);
-        // this.dir2.init(this.dir1);
+        this.dir2.init(this.dir1);
 
         console.log('[CIDS] Initialization complete.');
     }
@@ -41,23 +41,20 @@ export class CidsOrchestrator {
         if (GND_FLT_BUS_POWERED && DC_ESS_BUS_POWERED) {
             if (!this.lastPowerStateOn) {
                 this.dir1.startup();
-                // this.dir2.powerOn();
+                this.dir2.startup();
             }
             this.lastPowerStateOn = true;
 
             if (this.dir1UpdateThrottler.canUpdate(deltaTime) !== -1) {
                 this.dir1.update();
             }
-            // if (this.dir2UpdateThrottler.canUpdate(deltaTime) !== -1) {
-            //     if (!this.lastPowerStateOn) [
-            //         this.dir2.powerOn();
-            //     ]
-            //     this.dir2.update();
-            // }
+            if (this.dir2UpdateThrottler.canUpdate(deltaTime) !== -1) {
+                this.dir2.update();
+            }
         } else if (this.lastPowerStateOn) {
             this.dir1.shutdown();
-            // this.dir2.shutdown();
-            this.lastPowerStateOn = false; // THIS IS NOT SET FOR SOME REASON???
+            this.dir2.shutdown();
+            this.lastPowerStateOn = false;
         }
     }
 }
