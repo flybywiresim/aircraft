@@ -13,7 +13,7 @@ const CidsConstants = {
     /**
      * If set to true will use verbose logging and set debug simvars. -> should be false for prod
      */
-    DEBUG: false,
+    DEBUG: true,
 };
 
 export const Cids = Object.freeze(CidsConstants);
