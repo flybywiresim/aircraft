@@ -14,7 +14,7 @@ bool DataManager::initialize(HANDLE hdl) {
   return true;
 }
 
-bool DataManager::preUpdate(sGaugeDrawData* pData) {
+bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
   LOG_TRACE("DataManager::preUpdate()");
   if (!isInitialized) {
     LOG_ERROR("DataManager::preUpdate() called but DataManager is not initialized");

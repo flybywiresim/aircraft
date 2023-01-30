@@ -117,7 +117,7 @@ public:
    * @param pData Pointer to the data structure of gauge pre-draw event
    * @return true if successful, false otherwise
    */
-  bool preUpdate(sGaugeDrawData* pData);
+  bool preUpdate([[maybe_unused]] sGaugeDrawData* pData);
 
   /**
  * Called by the MsfsHandler update() method.

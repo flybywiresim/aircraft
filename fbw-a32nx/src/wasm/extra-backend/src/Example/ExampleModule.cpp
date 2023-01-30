@@ -7,6 +7,7 @@
 #include "ExampleModule.h"
 #include "SimObjectBase.h"
 #include "NamedVariable.h"
+#include "AircraftVariable.h"
 
 bool ExampleModule::initialize() {
 
@@ -26,8 +27,8 @@ bool ExampleModule::initialize() {
   // Events
   beaconLightSetEventPtr = dataManager->make_event("BEACON_LIGHTS_SET");
   //  beaconLightSetCallbackID = beaconLightSetEventPtr
-  //    ->addCallback([&](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
-  //                      DWORD param4) {
+  //    ->addCallback([&, this](const int number, const DWORD param0, const DWORD param1,
+  //                            const DWORD param2, const DWORD param3, const DWORD param4) {
   //      LOG_INFO("Callback: BEACON_LIGHTS_SET event received with " + std::to_string(number)
   //               + " params:"
   //               + " 0: " + std::to_string(param0)
@@ -35,13 +36,28 @@ bool ExampleModule::initialize() {
   //               + " 2: " + std::to_string(param2)
   //               + " 3: " + std::to_string(param3)
   //               + " 4: " + std::to_string(param4)
+  //               + " beaconLt: " + this->beaconLightSetEventPtr->str()
+  //      );
+  //    });
+
+  //  beaconLightSetCallbackID = beaconLightSetEventPtr
+  //    ->addCallback([&, this](const int number, const DWORD param0, const DWORD param1,
+  //                            const DWORD param2, const DWORD param3, const DWORD param4) {
+  //      LOG_INFO("Callback 2: BEACON_LIGHTS_SET event received with " + std::to_string(number)
+  //               + " params:"
+  //               + " 0: " + std::to_string(param0)
+  //               + " 1: " + std::to_string(param1)
+  //               + " 2: " + std::to_string(param2)
+  //               + " 3: " + std::to_string(param3)
+  //               + " 4: " + std::to_string(param4)
+  //               + " beaconLt: " + this->beaconLightSetEventPtr->str()
   //      );
   //    });
 
   // Event with Callback example
   toggleFlightDirectorEventPtr = dataManager->make_event("TOGGLE_FLIGHT_DIRECTOR");
   //  toggleFlightDirectorCallbackID = toggleFlightDirectorEventPtr
-  //    ->addCallback([&](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+  //    ->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
   //                      DWORD param4) {
   //      LOG_DEBUG("Callback 1: TOGGLE_FLIGHT_DIRECTOR event received with " + std::to_string(number)
   //                + " params:"
@@ -56,7 +72,7 @@ bool ExampleModule::initialize() {
   // Event with Callback example - twice to see multiple callbacks added to a single event
   lightPotentiometerSetEventPtr = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
   //  lightPotentiometerSetCallbackID = lightPotentiometerSetEventPtr
-  //    ->addCallback([&](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+  //    ->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
   //                      DWORD param4) {
   //      LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
   //                + " params:"
@@ -71,7 +87,7 @@ bool ExampleModule::initialize() {
 
   lightPotentiometerSetEvent2Ptr = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
   //  lightPotentiometerSetCallback2ID = lightPotentiometerSetEvent2Ptr
-  //    ->addCallback([&](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+  //    ->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
   //                      DWORD param4) {
   //      LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
   //                + " params:"
@@ -144,11 +160,12 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   // It is ready after the click on "READY TO FLY"
   if (!msfsHandler->getA32NxIsReady()) return true;
 
-  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
-  const UINT64 tickCounter = msfsHandler->getTickCounter();
 
   // Use this to throttle output frequency while you are debugging
   if (msfsHandler->getTickCounter() % 100 == 0) {
+
+    //  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
+    //  const UINT64 tickCounter = msfsHandler->getTickCounter();
 
     // difference if using different units
     // debugLVAR3Ptr->setAndWriteToSim(msfsHandler->getTickCounter());
