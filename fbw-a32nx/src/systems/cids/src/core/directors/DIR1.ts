@@ -20,7 +20,7 @@ export class DIR1 extends Director {
         this.memory = new DirectorMemory();
 
         /* Instantiate Managers */
-        this.flightPhaseManager = new FlightPhaseManager(this);
+        this.flightPhaseManager = new FlightPhaseManager(this, 1);
         // new managers here...
 
         this.isInit = false;
