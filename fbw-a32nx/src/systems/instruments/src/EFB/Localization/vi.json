@@ -3,7 +3,7 @@
     "Active": "Đang hoạt động",
     "ChangeATISATCSourceButton": "Thay đổi nguồn ATIS/ATC",
     "ConnectHoppieACARS": "Kết nối Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "Không có thông tin có sẵn cho tần số này",
+    "NoInformationAvailableForThisFrequency": "Không có thông tin cho tần số này",
     "SearchPlaceholder": "Tìm kiếm",
     "SelectCorrectATISATCSource": "Trang này chỉ khả dụng khi IVAO hoặc VATSIM được sử dụng làm nguồn ATIS/ATC trong trang Cài đặt.",
     "SetActive": "Đặt hoạt động",
@@ -560,7 +560,7 @@
       "Off": "Tắt",
       "Save": "Lưu",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Địa chỉ máy chủ SimBridge",
       "SimBridgePort": "Cổng SimBridge bên ngoài",
       "SyncMsfsFlightPlan": "Đồng bộ hóa Kế hoạch chuyến bay của MSFS",
       "ThrottleDetents": "Chốt cần ga",
@@ -570,9 +570,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "Đồng bộ hoá hệ thống nhiên liệu của GSX",
+      "GsxPayloadEnabled": "Đồng bộ hoá hệ thống tải trọng của GSX",
+      "Title": "Tùy chọn bên thứ 3"
     },
     "ThrottleConfig": {
       "Apply": "Áp dụng",
@@ -651,10 +651,10 @@
   "VersionCheck": {
     "CurrentVersionText": "Bạn đang sử dụng bản $edition với phiên bản:",
     "LatestVersionText": "Phiên bản $edition mới nhất là",
-    "RecommendationText": "Vui lòng cập nhật máy bay của bạn bằng cách sử dụng trình cài đặt FlyByWire.",
+    "RecommendationText": "Vui lòng cập nhật máy bay của bạn bằng cách sử dụng Trình cài đặt FlyByWire.",
     "StatusBarWarning": "Phiên bản máy bay cũ",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Vui lòng cập nhật bằng trình cài đặt FlyByWire."
     },
     "Title": "Đã có cập nhật"
   }
