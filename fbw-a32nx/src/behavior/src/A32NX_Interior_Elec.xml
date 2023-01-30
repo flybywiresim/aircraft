@@ -1,0 +1,87 @@
+<!-- Copyright (c) 2022 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_Airbus_APU_Generator_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:APU_GENERATOR_SWITCH_TOGGLE)</LEFT_SINGLE_CODE>
+
+            <SEQ2_CODE>(A:APU GENERATOR SWITCH:#ID#, Bool) !</SEQ2_CODE>
+
+            <DOWN_CODE>(A:APU GENERATOR SWITCH:#ID#, Bool)</DOWN_CODE>
+
+            <TOOLTIPID>%((A:APU GENERATOR SWITCH:1, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.APU_GEN_ON%{else}TT:COCKPIT.TOOLTIPS.APU_GEN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Engine_Generator_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_ALTERNATOR#ID#)</LEFT_SINGLE_CODE>
+
+            <SEQ1_CODE>(L:A32NX_OVHD_ELEC_ENG_GEN_#ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool) !</SEQ2_CODE>
+
+            <DOWN_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool)</DOWN_CODE>
+
+            <TOOLTIPID>%((A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.GENERATOR_#ID#_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.GENERATOR_#ID#_TURN_ON%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_External_Power_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>
+                (A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and if{
+                    #ID# (&gt;K:TOGGLE_EXTERNAL_POWER)
+                } els{
+                    (A:EXTERNAL POWER ON:#ID#, Bool) if{
+                        #ID# (&gt;K:TOGGLE_EXTERNAL_POWER)
+                    }
+                }
+            </LEFT_SINGLE_CODE>
+
+            <MOMENTARY />
+
+            <SEQ1_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and</SEQ1_CODE>
+            <SEQ2_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) and</SEQ2_CODE>
+
+            <TOOLTIPID>%((A:EXTERNAL POWER AVAILABLE:1, Bool) 0 == )%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.EXT_PWR_OFF%{else}TT:COCKPIT.TOOLTIPS.EXT_PWR_ON%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Battery_Master_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>
+                (L:A32NX_OVHD_ELEC_BAT_#ID#_PB_IS_AUTO, Bool) if{
+                    0 (&gt;L:A32NX_OVHD_ELEC_BAT_#ID#_PB_IS_AUTO)
+                } els{
+                    1 (&gt;L:A32NX_OVHD_ELEC_BAT_#ID#_PB_IS_AUTO)
+                }
+            </LEFT_SINGLE_CODE>
+
+            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ1_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+            <SEQ1_CODE>(L:A32NX_OVHD_ELEC_BAT_#ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_ELEC_BAT_#ID#_PB_IS_AUTO, Bool) !</SEQ2_CODE>
+
+            <DOWN_CODE>(L:A32NX_OVHD_ELEC_BAT_#ID#_PB_IS_AUTO, Bool)</DOWN_CODE>
+
+            <TOOLTIPID>%((L:A32NX_OVHD_ELEC_BAT_#ID#_PB_IS_AUTO, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_OFF%{else}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_ON%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

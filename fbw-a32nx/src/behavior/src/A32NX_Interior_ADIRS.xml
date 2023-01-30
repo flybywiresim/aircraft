@@ -1,0 +1,87 @@
+<!-- Copyright (c) 2022 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+
+    <!--
+    Template for rigging ADIRS knobs.
+
+    Main parameters:
+            - ID        <no default>    ADIRS knob #
+    -->
+    <Template Name="FBW_Airbus_ADIRS_Knob">
+        <DefaultTemplateParameters>
+            <PART_ID>ADIRS_Knob</PART_ID>
+
+            <NODE_ID>KNOB_OVHD_ADIRS_#ID#</NODE_ID>
+            <ANIM_NAME>KNOB_OVHD_ADIRS_#ID#</ANIM_NAME>
+            <ANIM_CODE>50</ANIM_CODE>
+            <WWISE_EVENT>pulloutknob</WWISE_EVENT>
+            <WWISE_EVENT_1>pulloutknob</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>pulloutknob</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+
+            <KNOB_NUM_STATE>3</KNOB_NUM_STATE>
+            <KNOB_POSITION_TYPE>L</KNOB_POSITION_TYPE>
+            <KNOB_POSITION_VAR>A32NX_OVHD_ADIRS_IR_#ID#_MODE_SELECTOR_KNOB</KNOB_POSITION_VAR>
+            <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_#KNOB_NUM_STATE#States">
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
+                <SWITCH_POSITION_TYPE>#KNOB_POSITION_TYPE#</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>#KNOB_POSITION_VAR#</SWITCH_POSITION_VAR>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Template for the ADIRS IR buttons.
+
+    Main parameters:
+            - ID        <no default>    IR #
+    -->
+    <Template Name="FBW_Airbus_ADIRS_IR_Button">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_OVHD_ADIRS_IR#ID#</NODE_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOGGLE_SIMVAR>L:A32NX_OVHD_ADIRS_IR_#ID#_PB_IS_ON</TOGGLE_SIMVAR>
+
+            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_IR_#ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_ADIRS_IR_#ID#_PB_IS_ON, Bool) !</SEQ2_CODE>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for the ADIRS ADR buttons.
+
+    Main parameters:
+            - ID        <no default>    ADR #
+    -->
+    <Template Name="FBW_Airbus_ADIRS_ADR_Button">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_OVHD_ADIRS_#ID#</NODE_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOGGLE_SIMVAR>L:A32NX_OVHD_ADIRS_ADR_#ID#_PB_IS_ON</TOGGLE_SIMVAR>
+
+            <SEQ1_CODE>(L:A32NX_OVHD_ADIRS_ADR_#ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_ADIRS_ADR_#ID#_PB_IS_ON, Bool) !</SEQ2_CODE>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+        </UseTemplate>
+    </Template>
+
+</ModelBehaviors>
