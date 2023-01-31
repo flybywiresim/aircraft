@@ -106,7 +106,7 @@ export class DIR1 extends Director {
     }
 
     public fail(): void {
-        if (this.isFaulty() && !this.isActive) { // Prevent unnecessary simvar sets
+        if (this.isFaulty() && !this.isActive()) { // Prevent unnecessary simvar sets
             return;
         }
         this.memory.clear();
@@ -115,11 +115,11 @@ export class DIR1 extends Director {
     }
 
     public isFaulty(): boolean {
-        return SimVar.GetSimVarValue(Cids.SimVar.DIR1.FAULT, 'Bool');
+        return !!SimVar.GetSimVarValue(Cids.SimVar.DIR1.FAULT, 'Bool');
     }
 
     public isActive(): boolean {
-        return SimVar.GetSimVarValue(Cids.SimVar.DIR1.ACTIVE, 'Bool');
+        return !!SimVar.GetSimVarValue(Cids.SimVar.DIR1.ACTIVE, 'Bool');
     }
 
     /**

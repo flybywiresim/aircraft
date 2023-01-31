@@ -111,11 +111,11 @@ export class DIR2 extends Director {
     }
 
     public isFaulty(): boolean {
-        return SimVar.GetSimVarValue(Cids.SimVar.DIR2.FAULT, 'Bool');
+        return !!SimVar.GetSimVarValue(Cids.SimVar.DIR2.FAULT, 'Bool');
     }
 
     public isActive(): boolean {
-        return SimVar.GetSimVarValue(Cids.SimVar.DIR2.ACTIVE, 'Bool');
+        return !!SimVar.GetSimVarValue(Cids.SimVar.DIR2.ACTIVE, 'Bool');
     }
 
     /**

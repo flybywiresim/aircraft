@@ -143,7 +143,12 @@ export class FlightPhaseManager implements Manager {
     public setActiveFlightPhase(flightPhase: FlightPhase): void {
         const prevPhase = this.getActiveFlightPhase();
 
-        this.director.output(Cids.SimVar.FLIGHT_PHASE, 'Enum', flightPhase.getValue(), () => console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`));
+        this.director.output(
+            Cids.SimVar.FLIGHT_PHASE,
+            'Enum',
+            flightPhase.getValue(),
+            () => console.log(`[CIDS] Flight phase: ${prevPhase.getValue()} => ${flightPhase.getValue()}`),
+        );
 
         if (Cids.DEBUG) {
             SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', flightPhase.getValue())
