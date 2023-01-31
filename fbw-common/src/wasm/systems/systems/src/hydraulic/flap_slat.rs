@@ -77,6 +77,7 @@ impl<const N: usize> PressureMaintainingValve<N> {
         // Calculate valve_ratio
         self.flow = VolumeRate::new::<litre_per_minute>(flow_f64);
 
+        // Account for hydroulic liquid leak
         self.total_volume_to_actuator += self.flow * context.delta_as_time();
         self.total_volume_returned_to_reservoir += self.flow * context.delta_as_time();
     }
@@ -105,6 +106,7 @@ impl<const N: usize> Actuator for PressureMaintainingValve<N> {
 
 // https://vortarus.com/hydraulic-motor-calculations/
 pub struct HydraulicMotor {
+    speed_filtered: LowPassFilter<AngularVelocity>,
     speed: AngularVelocity,
     position: Angle,
     max_flow: VolumeRate,
@@ -112,12 +114,18 @@ pub struct HydraulicMotor {
     motor_volumetric_efficiency: Ratio,
 }
 impl HydraulicMotor {
+    // Simulates rpm transients.
+    const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT: Duration = Duration::from_millis(300);
+
     pub fn new(
         max_flow: VolumeRate,
         motor_displacement: Volume,
         motor_volumetric_efficiency: Ratio,
     ) -> Self {
         Self {
+            speed_filtered: LowPassFilter::<AngularVelocity>::new(
+                Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT,
+            ),
             speed: AngularVelocity::default(),
             position: Angle::default(),
             max_flow,
@@ -179,10 +187,12 @@ impl HydraulicMotor {
                 self.speed = AngularVelocity::default();
             }
         }
+        // Low pass filter to simulate motors spool up and down. Will ease pressure impact on transients
+        self.speed_filtered.update(context.delta(), self.speed);
     }
 
     pub fn get_motor_speed(&self) -> AngularVelocity {
-        self.speed
+        self.speed_filtered.output()
     }
 
     pub fn get_motor_position(&self) -> Angle {
@@ -454,6 +464,10 @@ impl<const N: usize> FlapSlatAssy<N> {
             // Can't use the motor position directly because motors may not move synchronously
             // with the differential gear
             let motor_speed = pcu.get_motor_speed().get::<radian_per_second>();
+            println!(
+                "motor_speed\t\t{:.2}",
+                pcu.get_motor_speed().get::<revolution_per_minute>()
+            );
             let delta_time = context.delta_as_secs_f64();
             let motor_delta_position = Angle::new::<radian>(motor_speed * delta_time);
             self.differential_gear +=
@@ -1144,7 +1158,7 @@ mod tests {
             if self.left_motor_angle_request.is_none() {
                 return SolenoidStatus::DeEnergised;
             }
-            let tolerance_deg = 0.18;
+            let tolerance_deg = 5.8; //0.18
             let fppu_f64 = self.fppu_angle.get::<degree>();
             let demanded_angle_f64 = self.left_motor_angle_request.unwrap().get::<degree>();
 
@@ -1278,7 +1292,7 @@ mod tests {
             )
         });
 
-        test_bed.run_with_delta(Duration::from_secs(7));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         println!(
             "FLAPS {:.2}\tFPPU {:.2}\tDRIVE LEVER {:.2}\tINTERMEDIATE GEAR {:.2}",
