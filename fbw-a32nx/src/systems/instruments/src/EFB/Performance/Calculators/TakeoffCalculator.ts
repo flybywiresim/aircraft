@@ -113,8 +113,6 @@ export class FlexCalculator {
 
     private packs : boolean = false;
 
-    private flapWindAIPackCorrection: number;
-
     /**
      * flex
      * @param runwayLength the length of the runway in either meters or feet
@@ -161,17 +159,6 @@ export class FlexCalculator {
             this.requiredRunway = this.togaRequiredRunway;
         }
         return [this.flexToTemp, this.requiredRunway];
-    }
-
-    private calculateDensityCorrection(density: number, AltCorrectionsTable: number[], perfDistDiffTable: number[]) {
-        let densityCorrection: number = 0;
-
-        for (let i = 0; i < AltCorrectionsTable.length; i++) {
-            densityCorrection += ((density > AltCorrectionsTable[i]) ? perfDistDiffTable[i] : (density / 200) * (perfDistDiffTable[i] / 100));
-        }
-        densityCorrection += ((density < AltCorrectionsTable[3]) ? 0 : ((density - AltCorrectionsTable[3]) / 200) * (perfDistDiffTable[4] / 100));
-
-        return (densityCorrection >= 0) ? densityCorrection : 0;
     }
 
     private plantSeeds(perfWeight : number, a : flexAircraftData) {
@@ -327,12 +314,19 @@ export class FlexCalculator {
             (a20n.to8k - a20n.to6k) * 1.53,
         ];
 
-        const densityCorrection = this.calculateDensityCorrection(density, AltCorrectionsTable, perfDistDiffTable);
+        let densityCorrection = 0;
+
+        for (let i = 0; i < AltCorrectionsTable.length; i++) {
+            densityCorrection += ((density > AltCorrectionsTable[i]) ? perfDistDiffTable[i] : (density / 200) * (perfDistDiffTable[i] / 100));
+        }
+        densityCorrection += ((density < AltCorrectionsTable[3]) ? 0 : ((density - AltCorrectionsTable[3]) / 200) * (perfDistDiffTable[4] / 100));
+
+        densityCorrection = (densityCorrection >= 0) ? densityCorrection : 0;
 
         const perfWeight = this.tow;
 
         const altBelowToWt2ISA = densityCorrection - (densityCorrection - (densityCorrection / 100 * (perfWeight / (a20n.towt2isa / 100)))) / 100 * a20n.toaltAdj;
-        const altAboveToWt2ISA = altBelowToWt2ISA; // the correction is the same above or below for the currently implemented aircraft
+        const altAboveToWt2ISA = altBelowToWt2ISA; // the correction is the same above or below for the currently implemented aircraft, may be needed for other airbus aircraft (a380?)
 
         const distanceByDensity = (perfWeight < a20n.towt2isa) ? altBelowToWt2ISA : altAboveToWt2ISA;
 
@@ -397,17 +391,14 @@ export class FlexCalculator {
         totDist += (this.antiIce) ? ((windLen / 100) * 3) : 0;
         totDist += (this.packs) ? ((windLen / 100) * 4) : 0;
         this.togaRequiredRunway = totDist;
-        this.flapWindAIPackCorrection = totDist / (isaCorrection / 100);
-
-        // do i need this?
-        trendBase[4] = (growthTrend[4] / 100 * this.flapWindAIPackCorrection);
+        const flapWindAIPackCorrection = totDist / (isaCorrection / 100);
 
         const distanceTrendTablePreFlex = [
-            ((trendWithModifiers[0] / 100) * this.flapWindAIPackCorrection),
-            ((trendWithModifiers[1] / 100) * this.flapWindAIPackCorrection),
-            ((trendWithModifiers[2] / 100) * this.flapWindAIPackCorrection),
-            ((trendWithModifiers[3] / 100) * this.flapWindAIPackCorrection),
-            ((trendWithModifiers[4] / 100) * this.flapWindAIPackCorrection),
+            ((trendWithModifiers[0] / 100) * flapWindAIPackCorrection),
+            ((trendWithModifiers[1] / 100) * flapWindAIPackCorrection),
+            ((trendWithModifiers[2] / 100) * flapWindAIPackCorrection),
+            ((trendWithModifiers[3] / 100) * flapWindAIPackCorrection),
+            ((trendWithModifiers[4] / 100) * flapWindAIPackCorrection),
             this.availRunway - a20n.runwayModifier,
         ];
 

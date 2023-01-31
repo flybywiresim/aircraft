@@ -99,7 +99,7 @@ export const TakeoffWidget = () => {
 
     } = useAppSelector((state) => state.performance.landing);
 
-    const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
+    const { departingAirport, departingMetar } = useAppSelector((state) => state.simbrief.data);
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
@@ -319,7 +319,7 @@ export const TakeoffWidget = () => {
             syncValuesWithApiMetar(icao);
         } else {
             try {
-                const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
+                const parsedMetar: MetarParserType = parseMetar(departingMetar);
 
                 const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
 
@@ -337,12 +337,12 @@ export const TakeoffWidget = () => {
                         bodyText={t('Performance.Landing.MetarErrorDialogMessage')}
                         cancelText="No"
                         confirmText="Yes"
-                        onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
+                        onConfirm={() => syncValuesWithApiMetar(departingAirport)}
                     />,
                 );
             }
 
-            dispatch(setLandingValues({ icao: arrivingAirport }));
+            dispatch(setLandingValues({ icao: departingAirport }));
         }
     };
 
@@ -350,7 +350,7 @@ export const TakeoffWidget = () => {
         if (autoFillSource === 'METAR') {
             return isValidIcao(icao);
         }
-        return isValidIcao(arrivingAirport);
+        return isValidIcao(departingAirport);
     };
 
     const [temperatureUnit, setTemperatureUnit] = usePersistentProperty('EFB_PREFERRED_TEMPERATURE_UNIT', usingMetric ? 'C' : 'F');
