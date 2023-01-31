@@ -541,7 +541,7 @@ export const TakeoffWidget = () => {
                                         reverse
                                     />
                                 </Label>
-                                <Label text={t('Performance.Landing.TORA')}>
+                                <Label text={t('Performance.Takeoff.TORA')}>
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
