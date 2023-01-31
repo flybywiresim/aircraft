@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { TakeoffFlapsConfig } from 'instruments/src/EFB/Performance/Calculators/TakeoffCalculator';
 import { LandingFlapsConfig, LandingRunwayConditions } from '../../Performance/Calculators/LandingCalculator';
 import { DistanceLabel } from '../../Performance/Widgets/RunwayVisualizationWidget';
 
@@ -86,7 +87,7 @@ export const initialState: TPerformanceState = {
         weight: undefined,
         runwayHeading: undefined,
         approachSpeed: undefined,
-        flaps: 1,
+        flaps: TakeoffFlapsConfig.OnePlusF,
         runwayCondition: LandingRunwayConditions.Dry,
         altitude: undefined,
         slope: undefined,

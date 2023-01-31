@@ -17,6 +17,8 @@
  */
 import { toRadians } from './CommonCalculations';
 
+const DEBUG_FLEX_CALCULATOR = true;
+
 type flexAircraftData = {
     isaInc: number,
     vrisa: number,
@@ -40,6 +42,7 @@ type flexAircraftData = {
     to4k: number,
     to6k: number,
     to8k: number,
+    runwayModifier: number,
 };
 
 // credit to Paul Gale (https://flightsim.to/profile/galeair) for raw data and trend seeds
@@ -66,10 +69,23 @@ const a20n : flexAircraftData = {
     to4k: 1920,
     to6k: 2050,
     to8k: 2330,
+    runwayModifier: 100,
 };
 
-export class flexCalculator {
-    private flex : number = 0;
+export enum TakeoffFlapsConfig {
+    OnePlusF,
+    Two,
+    Three,
+}
+
+const takeoffFlapsData = {
+    [TakeoffFlapsConfig.OnePlusF]: a20n.f1,
+    [TakeoffFlapsConfig.Two]: a20n.f2,
+    [TakeoffFlapsConfig.Three]: a20n.f3,
+};
+
+export class FlexCalculator {
+    private flexToTemp : number = 0;
 
     private requiredRunway : number = 0;
 
@@ -88,43 +104,34 @@ export class flexCalculator {
 
     private oat : number;
 
-    private flaps : number = 0;
+    private flaps : TakeoffFlapsConfig = TakeoffFlapsConfig.OnePlusF;
 
-    private runwayHeading : number = 10;
+    private runwayHeading : number;
 
-    private runwayAltitude : number = 31;
+    private runwayAltitude : number;
 
     private antiIce : boolean = true;
 
     private packs : boolean = false;
 
-    private isKG : boolean = true;
-
-    private isHP : boolean = true;
-
-    private isMeters : boolean = true;
-
     private flapWindAIPackCorrection: number;
 
     /**
-     * flexCalculator constructor
+     * flex
      * @param runwayLength the length of the runway in either meters or feet
      * @param windDir heading of the current winds
      * @param windSpeed speed of the current winds in knots
      * @param takeoffWeight takeoff weight in either KG or LBS
      * @param pressure current barometric pressure in either inHG or HPA
      * @param temperature current outside air temperature in Celsius
-     * @param flapsConfig flaps setting for takeoff as an integer (example: 1 instead of 1 + F)
+     * @param flapsConfig flaps setting for takeoff @TakeoffFlapsConfig
      * @param heading runway heading
      * @param altitude runway altitude in Feet
      * @param antiIceOn true if antiice is on
      * @param acOn true if air conditioning (packs) is on
-     * @param kg true if @takeoffWeight is provided in KG false if LBS
-     * @param hp true if @pressure is provided in HPA, false if inHG
-     * @param meters true if @runwayLength is provided in meters, false if feet
      * @returns flex and required runway in an array [flex, requiredRunway]
      */
-    flexCalculator(
+    public flex(
         runwayLength : number,
         windDir : number,
         windSpeed : number,
@@ -136,9 +143,6 @@ export class flexCalculator {
         altitude : number,
         antiIceOn : boolean,
         acOn : boolean,
-        kg : boolean,
-        hp : boolean,
-        meters : boolean,
     ) : number[] {
         this.availRunway = runwayLength;
         this.windHeading = windDir;
@@ -151,39 +155,22 @@ export class flexCalculator {
         this.runwayAltitude = altitude;
         this.antiIce = antiIceOn;
         this.packs = acOn;
-        this.isKG = kg;
-        this.isHP = hp;
-        this.isMeters = meters;
         this.calculateFlexDist();
-        return [this.flex, this.requiredRunway];
-    }
-
-    private parseQNH(qnh: number, ishpa = true) {
-        // workaround to allow decimal or not
-        if ((qnh - Math.floor(qnh)) !== 0) {
-            qnh *= 100;
+        if (DEBUG_FLEX_CALCULATOR) {
+            console.log(this.availRunway,
+                this.windHeading,
+                this.windKts,
+                this.tow,
+                this.baro,
+                this.oat,
+                this.flaps,
+                this.runwayHeading,
+                this.runwayAltitude,
+                this.antiIce,
+                this.packs,
+                this.flexToTemp, this.requiredRunway);
         }
-
-        if (!ishpa) {
-            qnh /= 2.95360316; // convert inHg to hectopascels
-        }
-        return qnh;
-    }
-
-    private parseWeight(w: number, iskg = true) {
-        let r = w;
-        if (!iskg) {
-            r = w / 2.20462262;
-        }
-        return r;
-    }
-
-    private parseDist(d: number, ism = true) {
-        let r = d;
-        if (!ism) {
-            r = d / 3.2808399;
-        }
-        return r;
+        return [this.flexToTemp, this.requiredRunway];
     }
 
     private calculateDensityCorrection(density: number, AltCorrectionsTable: number[], perfDistDiffTable: number[]) {
@@ -316,7 +303,7 @@ export class flexCalculator {
     private calculateFlexDist() {
         const density = (
             this.runwayAltitude
-        + (this.BARO_SEA - this.parseQNH(this.baro, this.isHP)) * 27
+        + (this.BARO_SEA - this.baro) * 27
         + (this.oat - (15 - (this.runwayAltitude / 1000) * 2)) * 120
         );
 
@@ -352,7 +339,7 @@ export class flexCalculator {
 
         const densityCorrection = this.calculateDensityCorrection(density, AltCorrectionsTable, perfDistDiffTable);
 
-        const perfWeight = this.parseWeight(this.tow, this.isKG);
+        const perfWeight = this.tow;
 
         const altBelowToWt2ISA = densityCorrection - (densityCorrection - (densityCorrection / 100 * (perfWeight / (a20n.towt2isa / 100)))) / 100 * a20n.toaltAdj;
         const altAboveToWt2ISA = altBelowToWt2ISA; // the correction is the same above or below for the currently implemented aircraft
@@ -377,7 +364,7 @@ export class flexCalculator {
                 flexTrendModifierTable[2],
             ],
             flexTrendModifierTable,
-            false,
+            true,
         );
 
         const trendBase = [
@@ -408,7 +395,10 @@ export class flexCalculator {
 
         const isaCorrection = (ISA > a20n.isaInc) ? trendWithModifiers[5] : growthTrend[0];
 
-        const flapCorr = isaCorrection + (isaCorrection / 100) * this.calculateFlapEffect();
+        const flapCorr = isaCorrection + (isaCorrection / 100) * takeoffFlapsData[this.flaps];
+        if (DEBUG_FLEX_CALCULATOR) {
+            console.log(takeoffFlapsData[this.flaps]);
+        }
 
         const headwind = Math.cos(toRadians(this.windHeading - (this.runwayHeading * 10))) * this.windKts;
 
@@ -431,7 +421,7 @@ export class flexCalculator {
             ((trendWithModifiers[2] / 100) * this.flapWindAIPackCorrection),
             ((trendWithModifiers[3] / 100) * this.flapWindAIPackCorrection),
             ((trendWithModifiers[4] / 100) * this.flapWindAIPackCorrection),
-            this.parseDist(this.availRunway, this.isMeters),
+            this.availRunway - a20n.runwayModifier,
         ];
 
         const flexTrendTable : number[] = this.trend(
@@ -475,25 +465,7 @@ export class flexCalculator {
             ],
         );
 
-        this.flex = flexTrendTable[6];
+        this.flexToTemp = flexTrendTable[6];
         this.requiredRunway = TakeoffDistanceTrendTable[4];
-    }
-
-    private calculateFlapEffect() : number {
-        let fe: number;
-        switch (this.flaps) {
-        default:
-        case 1:
-            fe = a20n.f1;
-            break;
-        case 2:
-            fe = a20n.f2;
-            break;
-        case 3:
-            fe = a20n.f3;
-            break;
-        }
-
-        return fe;
     }
 }

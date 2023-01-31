@@ -26,7 +26,7 @@ import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { LandingRunwayConditions } from '../Calculators/LandingCalculator';
-import { flexCalculator } from '../Calculators/TakeoffCalculator'
+import { FlexCalculator, TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator'
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
@@ -67,7 +67,7 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const TakeoffWidget = () => {
     const dispatch = useAppDispatch();
 
-    const calculator: flexCalculator = new flexCalculator();
+    const calculator: FlexCalculator = new FlexCalculator();
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
     const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
@@ -102,7 +102,7 @@ export const TakeoffWidget = () => {
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
-        const takeoffData = calculator.flexCalculator(
+        const takeoffData = calculator.flex(
             runwayLength ?? 0,
             windDirection ?? 0,
             windMagnitude ?? 0,
@@ -114,9 +114,6 @@ export const TakeoffWidget = () => {
             altitude ?? 0,
             antiIce,
             packs,
-            true,
-            true,
-            true,
         );
 
         dispatch(setLandingValues({
@@ -235,8 +232,8 @@ export const TakeoffWidget = () => {
     const handleFlapsChange = (newValue: number | string): void => {
         let flaps = parseInt(newValue.toString());
 
-        if (flaps !== 2 && flaps !== 3) {
-            flaps = 1;
+        if (flaps !== TakeoffFlapsConfig.Three && flaps !== TakeoffFlapsConfig.Two) {
+            flaps = TakeoffFlapsConfig.OnePlusF;
         }
 
         dispatch(setLandingValues({ flaps }));
@@ -544,7 +541,7 @@ export const TakeoffWidget = () => {
                                         reverse
                                     />
                                 </Label>
-                                <Label text={t('Performance.Landing.RunwayTda')}>
+                                <Label text={t('Performance.Landing.TORA')}>
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
@@ -560,8 +557,8 @@ export const TakeoffWidget = () => {
                                             value={distanceUnit}
                                             className="w-28 rounded-l-none"
                                             options={[
-                                                { value: 'ft', displayValue: `${t('Performance.Landing.RunwayTdaUnitFt')}` },
-                                                { value: 'm', displayValue: `${t('Performance.Landing.RunwayTdaUnitMeter')}` },
+                                                { value: 'ft', displayValue: `${t('Performance.Landing.RunwayLdaUnitFt')}` },
+                                                { value: 'm', displayValue: `${t('Performance.Landing.RunwayLdaUnitMeter')}` },
                                             ]}
                                             onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
                                         />
@@ -597,13 +594,13 @@ export const TakeoffWidget = () => {
                                         value={flaps}
                                         onChange={handleFlapsChange}
                                         options={[
-                                            { value: 1, displayValue: '1 + F' },
-                                            { value: 2, displayValue: '2' },
-                                            { value: 3, displayValue: '3' },
+                                            { value: TakeoffFlapsConfig.OnePlusF, displayValue: '1 + F' },
+                                            { value: TakeoffFlapsConfig.Two, displayValue: '2' },
+                                            { value: TakeoffFlapsConfig.Three, displayValue: '3' },
                                         ]}
                                     />
                                 </Label>
-                                <Label text={t('Performance.Landing.AntiIce')}>
+                                <Label text={t('Performance.Takeoff.AntiIce')}>
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.takeoff.antiIce}
@@ -615,7 +612,7 @@ export const TakeoffWidget = () => {
                                         ]}
                                     />
                                 </Label>
-                                <Label text={t('Performance.Landing.Packs')}>
+                                <Label text={t('Performance.Takeoff.Packs')}>
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.takeoff.packs}

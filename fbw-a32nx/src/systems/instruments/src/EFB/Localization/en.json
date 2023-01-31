@@ -317,6 +317,14 @@
       "WindMagnitude": "Wind Magnitude",
       "WindMagnitudeUnit": "kts"
     },
+    "Takeoff": {
+      "Title": "Takeoff",
+      "AntiIce": "Anti-Ice",
+      "Packs": "Packs",
+      "Flex": "Flex Temperature",
+      "Distance": "Runway Used",
+      "TORA": "Runway Available"
+    },
     "SYNC": "SYNC",
     "Title": "Performance",
     "TopOfDescent": {
