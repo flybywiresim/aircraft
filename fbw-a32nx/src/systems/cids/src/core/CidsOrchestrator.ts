@@ -1,4 +1,5 @@
 import { UpdateThrottler } from '@shared/UpdateThrottler';
+import { Cids } from './CidsConstants';
 import { DIR1 } from './directors/DIR1';
 import { DIR2 } from './directors/DIR2';
 
@@ -18,8 +19,14 @@ export class CidsOrchestrator {
     constructor() {
         this.dir1 = new DIR1();
         this.dir2 = new DIR2();
-        this.dir1UpdateThrottler = new UpdateThrottler(100);
-        this.dir2UpdateThrottler = new UpdateThrottler(100);
+        if (Cids.DEBUG) {
+            this.dir1UpdateThrottler = new UpdateThrottler(100);
+            this.dir2UpdateThrottler = new UpdateThrottler(100);
+        } else {
+            this.dir1UpdateThrottler = new UpdateThrottler(500);
+            this.dir2UpdateThrottler = new UpdateThrottler(500);
+        }
+
         this.lastPowerStateOn = false;
     }
 
@@ -33,10 +40,8 @@ export class CidsOrchestrator {
     public update(deltaTime: number): void {
         if (!SimVar.GetSimVarValue('L:A32NX_IS_READY', 'Bool')) return;
 
-        /* eslint-disable @typescript-eslint/no-unused-vars */
         const GND_FLT_BUS_POWERED = SimVar.GetSimVarValue('L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED', 'Bool');
         const DC_ESS_BUS_POWERED = SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool');
-        /* eslint-enable @typescript-eslint/no-unused-vars */
 
         if (GND_FLT_BUS_POWERED && DC_ESS_BUS_POWERED) {
             if (!this.lastPowerStateOn) {
