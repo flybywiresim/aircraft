@@ -5,7 +5,6 @@
 
 #include "logging.h"
 #include "ExampleModule.h"
-#include "SimObjectBase.h"
 #include "NamedVariable.h"
 #include "AircraftVariable.h"
 
@@ -100,16 +99,18 @@ bool ExampleModule::initialize() {
   //    });
 
   // LVARS
-  // requested twice to demonstrate de-duplication - also shows optional parameters
-  // Test creating an existing variable manually
+  // requested multiple times to demonstrate de-duplication - also shows optional parameters
   debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
   // debugLVARPtr->setEpsilon(1.0); // only read when difference is >1.0
-  // debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, false, false, 0, 0);
-  // debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, false, false, 0, 0);
+  // these are unique and not the same as the first
+  debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, false, false, 0, 0);
+  debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, false, false, 0, 0);
   // this is a duplicate of the first one, so should be the same pointer
   debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
 
-  // Aircraft variables - requested twice to demonstrate de-duplication
+  // Aircraft variables - requested multiple times to demonstrate de-duplication
+  // to test change the unitsto either use the same units (will be deduplicated) or different units
+  // in which case the variables will be unique.
   beaconLightSwitchPtr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Percent, false, false, 0, 0);
   beaconLightSwitch2Ptr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Bool, true, true, 0, 0);
   beaconLightSwitch3Ptr = dataManager->make_simple_aircraft_var("LIGHT BEACON", UNITS.PercentOver100);
