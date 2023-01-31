@@ -95,6 +95,7 @@ export const TakeoffWidget = () => {
         runwayVisualizationLabels,
         displayedRunwayLength,
         flex,
+        contimination,
 
     } = useAppSelector((state) => state.performance.landing);
 
@@ -114,6 +115,7 @@ export const TakeoffWidget = () => {
             altitude ?? 0,
             antiIce,
             packs,
+            contimination,
         );
 
         dispatch(setLandingValues({
@@ -241,11 +243,14 @@ export const TakeoffWidget = () => {
 
     const handleRunwayConditionChange = (newValue: number | string): void => {
         let runwayCondition: LandingRunwayConditions = parseInt(newValue.toString());
-
+        let contamination: boolean = false;
         if (!runwayCondition) {
             runwayCondition = LandingRunwayConditions.Dry;
         }
-
+        if (runwayCondition > LandingRunwayConditions.GoodMedium) {
+            contamination = true;
+        }
+        dispatch(setLandingValues({ contimination }));
         dispatch(setLandingValues({ runwayCondition }));
     };
 
@@ -656,7 +661,7 @@ export const TakeoffWidget = () => {
                         />
                         <OutputDisplay
                             label={t('Performance.Takeoff.Flex')}
-                            value={flex}
+                            value={flex == -1 ? 'TOGA' : flex}
                             error={flex > (74 ?? 0) || flex < (0 ?? 0)}
                         />
                     </div>

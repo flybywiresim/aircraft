@@ -87,7 +87,8 @@ export class FlexCalculator {
 
     private requiredRunway : number = 0;
 
-    // Private vars
+    private togaRequiredRunway : number;
+
     private BARO_SEA : number = 1013; // 29.92 inhg
 
     private availRunway : number;
@@ -141,6 +142,7 @@ export class FlexCalculator {
         altitude : number,
         antiIceOn : boolean,
         acOn : boolean,
+        contamination : boolean,
     ) : number[] {
         this.availRunway = runwayLength;
         this.windHeading = windDir;
@@ -154,6 +156,10 @@ export class FlexCalculator {
         this.antiIce = antiIceOn;
         this.packs = acOn;
         this.calculateFlexDist();
+        if (contamination || this.flexToTemp < this.oat) {
+            this.flexToTemp = -1;
+            this.requiredRunway = this.togaRequiredRunway;
+        }
         return [this.flexToTemp, this.requiredRunway];
     }
 
@@ -390,7 +396,7 @@ export class FlexCalculator {
         let totDist = windLen;
         totDist += (this.antiIce) ? ((windLen / 100) * 3) : 0;
         totDist += (this.packs) ? ((windLen / 100) * 4) : 0;
-
+        this.togaRequiredRunway = totDist;
         this.flapWindAIPackCorrection = totDist / (isaCorrection / 100);
 
         // do i need this?
