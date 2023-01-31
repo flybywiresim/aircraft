@@ -26,7 +26,7 @@ import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { LandingRunwayConditions } from '../Calculators/LandingCalculator';
-import { FlexCalculator, TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator'
+import { FlexCalculator, TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
@@ -124,7 +124,7 @@ export const TakeoffWidget = () => {
         );
         let vspeed = 'VR';
         if (takeoffData[2] > 0) {
-            vspeed = 'VR - ' + takeoffData[2];
+            vspeed = 'VR - '.concat(takeoffData[2].toString());
         }
         if (takeoffData[2] > 40) {
             vspeed = 'ERROR';
@@ -670,7 +670,7 @@ export const TakeoffWidget = () => {
                         />
                         <OutputDisplay
                             label={t('Performance.Takeoff.Flex')}
-                            value={flex == -1 ? 'TOGA' : flex}
+                            value={flex === -1 ? 'TOGA' : flex}
                             error={flex > (74 ?? 0) || flex < (0 ?? 0)}
                         />
                         <OutputDisplay
