@@ -17,8 +17,6 @@
  */
 import { toRadians } from './CommonCalculations';
 
-const DEBUG_FLEX_CALCULATOR = true;
-
 type flexAircraftData = {
     isaInc: number,
     vrisa: number,
@@ -156,20 +154,6 @@ export class FlexCalculator {
         this.antiIce = antiIceOn;
         this.packs = acOn;
         this.calculateFlexDist();
-        if (DEBUG_FLEX_CALCULATOR) {
-            console.log(this.availRunway,
-                this.windHeading,
-                this.windKts,
-                this.tow,
-                this.baro,
-                this.oat,
-                this.flaps,
-                this.runwayHeading,
-                this.runwayAltitude,
-                this.antiIce,
-                this.packs,
-                this.flexToTemp, this.requiredRunway);
-        }
         return [this.flexToTemp, this.requiredRunway];
     }
 
@@ -396,9 +380,6 @@ export class FlexCalculator {
         const isaCorrection = (ISA > a20n.isaInc) ? trendWithModifiers[5] : growthTrend[0];
 
         const flapCorr = isaCorrection + (isaCorrection / 100) * takeoffFlapsData[this.flaps];
-        if (DEBUG_FLEX_CALCULATOR) {
-            console.log(takeoffFlapsData[this.flaps]);
-        }
 
         const headwind = Math.cos(toRadians(this.windHeading - (this.runwayHeading * 10))) * this.windKts;
 

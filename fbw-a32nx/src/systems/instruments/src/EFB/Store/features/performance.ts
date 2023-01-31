@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TakeoffFlapsConfig } from 'instruments/src/EFB/Performance/Calculators/TakeoffCalculator';
+import { TakeoffFlapsConfig } from '../../Performance/Calculators/TakeoffCalculator';
 import { LandingFlapsConfig, LandingRunwayConditions } from '../../Performance/Calculators/LandingCalculator';
 import { DistanceLabel } from '../../Performance/Widgets/RunwayVisualizationWidget';
 
