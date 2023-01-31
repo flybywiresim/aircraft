@@ -54,7 +54,7 @@ export abstract class Director {
             console.log('[CIDS/DIR] Received output command. Payload:', { 'SimVar name': varName, 'Unit': unit, 'Value:': value, 'Force': force });
         }
 
-        if (this.isActive && !this.isFaulty || force) {
+        if (this.isActive() && !this.isFaulty() || force) {
             SimVar.SetSimVarValue(varName, unit, value)
                 .then(onComplete)
                 .catch((error) => console.error(
