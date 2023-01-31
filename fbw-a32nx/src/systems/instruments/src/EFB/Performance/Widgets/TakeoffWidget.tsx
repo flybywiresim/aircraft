@@ -121,7 +121,7 @@ export const TakeoffWidget = () => {
             takeoffDist: Math.round(takeoffData[1]),
             runwayVisualizationLabels: [
                 {
-                    label: 'T/O',
+                    label: 'VR',
                     distance: takeoffData[1],
                     type: LabelType.Main,
                 },

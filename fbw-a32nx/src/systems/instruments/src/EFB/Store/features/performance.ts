@@ -35,7 +35,7 @@ interface TPerformanceTakeoff {
     weight?: number;
     runwayHeading?: number;
     approachSpeed?: number;
-    flaps: number;
+    flaps: TakeoffFlapsConfig;
     runwayCondition: LandingRunwayConditions;
     altitude?: number;
     slope?: number;
