@@ -323,7 +323,8 @@
       "Packs": "Packs",
       "Flex": "Flex Temperature",
       "Distance": "Runway Used",
-      "TORA": "Runway Available"
+      "TORA": "Runway Available",
+      "V1": "V1"
     },
     "SYNC": "SYNC",
     "Title": "Performance",

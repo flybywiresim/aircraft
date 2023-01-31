@@ -41,6 +41,7 @@ type flexAircraftData = {
     to6k: number,
     to8k: number,
     runwayModifier: number,
+    dist3: number,
 };
 
 // credit to Paul Gale (https://flightsim.to/profile/galeair) for raw data and trend seeds
@@ -68,6 +69,7 @@ const a20n : flexAircraftData = {
     to6k: 2050,
     to8k: 2330,
     runwayModifier: 100,
+    dist3: 1621,
 };
 
 export enum TakeoffFlapsConfig {
@@ -158,7 +160,12 @@ export class FlexCalculator {
             this.flexToTemp = -1;
             this.requiredRunway = this.togaRequiredRunway;
         }
-        return [this.flexToTemp, this.requiredRunway];
+        return [this.flexToTemp, this.requiredRunway, this.v1Modifier()];
+    }
+
+    private v1Modifier() {
+        const v1 = ((a20n.dist3 / 2) - (this.availRunway - this.requiredRunway)) / 50;
+        return (v1 > 0) ? Math.ceil(v1) : Math.floor(v1);
     }
 
     private plantSeeds(perfWeight : number, a : flexAircraftData) {

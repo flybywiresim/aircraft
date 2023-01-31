@@ -95,7 +95,7 @@ export const TakeoffWidget = () => {
         runwayVisualizationLabels,
         displayedRunwayLength,
         flex,
-        contimination,
+        v1,
 
     } = useAppSelector((state) => state.performance.landing);
 
@@ -103,6 +103,11 @@ export const TakeoffWidget = () => {
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
+        let contamination: boolean = false;
+
+        if (runwayCondition > LandingRunwayConditions.GoodMedium) {
+            contamination = true;
+        }
         const takeoffData = calculator.flex(
             runwayLength ?? 0,
             windDirection ?? 0,
@@ -115,9 +120,15 @@ export const TakeoffWidget = () => {
             altitude ?? 0,
             antiIce,
             packs,
-            contimination,
+            contamination,
         );
-
+        let vspeed = 'VR';
+        if (takeoffData[2] > 0) {
+            vspeed = 'VR - ' + takeoffData[2];
+        }
+        if (takeoffData[2] > 40) {
+            vspeed = 'ERROR';
+        }
         dispatch(setLandingValues({
             flex: takeoffData[0],
             takeoffDist: Math.round(takeoffData[1]),
@@ -129,6 +140,7 @@ export const TakeoffWidget = () => {
                 },
             ],
             displayedRunwayLength: runwayLength ?? 0,
+            v1: vspeed,
         }));
     };
 
@@ -243,14 +255,11 @@ export const TakeoffWidget = () => {
 
     const handleRunwayConditionChange = (newValue: number | string): void => {
         let runwayCondition: LandingRunwayConditions = parseInt(newValue.toString());
-        let contamination: boolean = false;
+
         if (!runwayCondition) {
             runwayCondition = LandingRunwayConditions.Dry;
         }
-        if (runwayCondition > LandingRunwayConditions.GoodMedium) {
-            contamination = true;
-        }
-        dispatch(setLandingValues({ contimination }));
+
         dispatch(setLandingValues({ runwayCondition }));
     };
 
@@ -663,6 +672,11 @@ export const TakeoffWidget = () => {
                             label={t('Performance.Takeoff.Flex')}
                             value={flex == -1 ? 'TOGA' : flex}
                             error={flex > (74 ?? 0) || flex < (0 ?? 0)}
+                        />
+                        <OutputDisplay
+                            label={t('Performance.Takeoff.V1')}
+                            value={v1}
+                            error={v1 === 'ERROR'}
                         />
                     </div>
                 </div>
