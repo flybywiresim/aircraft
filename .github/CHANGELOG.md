@@ -26,9 +26,11 @@
 1. [FLIGHTMODEL] Update gear drag - @donstim (donbikes#4084)
 1. [FLIGHT MODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
 1. [HYD] Fix gear sequence starting when failing prox sensor - @Crocket63 (crocket)
-1. [MISC] Added aircraft version check and uer notification - @frankkopp (Frank Kopp) 
+1. [MISC] Added aircraft version check and uer notification - @frankkopp (Frank Kopp)
 1. [EFB] Added QuickControls to flyPad StatusBar - @Benjozork (Benjamin Dupont) @frankkopp (Frank Kopp)
 1. [SOUND] Fix announcements playing twice and adding check for power to PA - @frankkopp (Frank Kopp)
+1. [ENG] Adjust oil pressure table - @tracernz (Mike)
+1. [FBW] Added option to have two axis for rudder e.g. racing pedals - @frankkopp (Frank Kopp)
 1. [HYD] Realistic randomized yellow accumulator starting state - @Crocket63 (crocket)
 
 ## 0.9.0
