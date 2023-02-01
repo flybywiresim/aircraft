@@ -73,40 +73,8 @@ export class FlightPhaseManager implements Manager {
         this.getActiveFlightPhase().tryTransition();
     }
 
-    // TODO: merge 'getActiveFlightPhase' and 'getFlightPhaseById'
-    // eslint-disable-next-line consistent-return
     public getActiveFlightPhase(): FlightPhase {
-        const flightPhase = this.getFlightPhaseById(SimVar.GetSimVarValue(Cids.SimVar.FLIGHT_PHASE, 'Enum'));
-        // eslint-disable-next-line default-case
-        switch (flightPhase.getValue()) {
-        case 1:
-            return this.boardingPhase;
-        case 2:
-            return this.pushbackPhase;
-        case 3:
-            return this.taxiBeforeTakeoffPhase;
-        case 4:
-            return this.takeoffAndInitialClimbPhase;
-        case 5:
-            return this.finalClimbPhase;
-        case 6:
-            return this.cruisePhase;
-        case 7:
-            return this.todPhase;
-        case 8:
-            return this.apprPhase;
-        case 9:
-            return this.finalApprAndLandingPhase;
-        case 10:
-            return this.taxiAfterLandingPhase;
-        case 11:
-            return this.disembarkationPhase;
-        case 12:
-            return this.afterDisembarkationPhase;
-        default:
-            console.dir(flightPhase);
-            throw new Error('Invalid current flight phase');
-        }
+        return this.getFlightPhaseById(SimVar.GetSimVarValue(Cids.SimVar.FLIGHT_PHASE, 'Enum'));
     }
 
     public getFlightPhaseById(id: number): FlightPhase {
