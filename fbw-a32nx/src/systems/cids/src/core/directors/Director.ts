@@ -39,7 +39,7 @@ export abstract class Director {
 
     abstract isActive(): boolean;
 
-    abstract fail(): void;
+    abstract fail(cause: string): void;
 
     /**
      * Output of each director which filters if computed values should really be output -> aka the director is active and not faulty.

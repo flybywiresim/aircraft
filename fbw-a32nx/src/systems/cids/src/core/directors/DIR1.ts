@@ -105,13 +105,17 @@ export class DIR1 extends Director {
         this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false, null, true);
     }
 
-    public fail(): void {
+    public fail(cause: string): void {
         if (this.isFaulty() && !this.isActive()) { // Prevent unnecessary simvar sets
             return;
         }
         this.memory.clear();
         this.output(Cids.SimVar.DIR1.ACTIVE, 'Bool', false, null, true);
-        this.output(Cids.SimVar.DIR1.FAULT, 'Bool', true, () => console.log('[CIDS/DIR1] FAULT'), true);
+        if (Cids.DEBUG) {
+            this.output(Cids.SimVar.DIR1.FAULT, 'Bool', true, () => console.log(`[CIDS/DIR1] FAULT - Cause: ${cause}`), true);
+        } else {
+            this.output(Cids.SimVar.DIR1.FAULT, 'Bool', true, null, true);
+        }
     }
 
     public isFaulty(): boolean {
@@ -180,8 +184,7 @@ export class DIR1 extends Director {
         }
         if (this.memory.fwcFlightPhase === 1 || this.memory.fwcFlightPhase === 10) return 0;
 
-        console.log('decode alt: calling fail');
-        this.fail();
+        this.fail('Invalid ADR data (altitude)');
         return 0;
     }
 
@@ -199,8 +202,7 @@ export class DIR1 extends Director {
             return 0;
         }
 
-        console.log('decode gs: calling fail');
-        this.fail();
+        this.fail('Invalid IR data (GS)');
         return 0;
     }
 
@@ -211,8 +213,7 @@ export class DIR1 extends Director {
             return lgciu1Discrete.getBitValue(25);
         }
 
-        console.log('geardownlocked: calling fail');
-        this.fail();
+        this.fail('Invalid LGCIU data (gear down locked)');
         return false;
     }
 
@@ -223,8 +224,7 @@ export class DIR1 extends Director {
             return lgciu1Discrete.getBitValue(12);
         }
 
-        console.log('onground: calling fail');
-        this.fail();
+        this.fail('Invalid LGCIU data (A/C on ground)');
         return false;
     }
 }
