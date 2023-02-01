@@ -84,6 +84,11 @@ public:
    * @return false if an error occurred, true otherwise.
    */
   virtual bool shutdown() = 0;
+
+  /**
+   * @return true if the module has been initialized, false otherwise.
+   */
+  [[nodiscard]] bool isInitialized1() const { return isInitialized; }
 };
 
 #endif // FLYBYWIRE_MODULE_H
