@@ -122,12 +122,14 @@ void Event::subscribeToSim() {
     LOG_WARN("Event already subscribed to sim" + str());
     return;
   }
+
   if (!SUCCEEDED(SimConnect_AddClientEventToNotificationGroup(
     hSimConnect, groupId, eventClientID, maskEvent ? TRUE : FALSE))) {
     LOG_ERROR("Failed to add event " + eventName
               + " to client notification group " + std::to_string(groupId));
     return;
   }
+  isSubscribedToSim = true;
 
   if (!SUCCEEDED(SimConnect_SetNotificationGroupPriority(
     hSimConnect, groupId, SIMCONNECT_GROUP_PRIORITY_HIGHEST))) {
@@ -136,16 +138,21 @@ void Event::subscribeToSim() {
     return;
   }
 
-  isSubscribedToSim = true;
   LOG_DEBUG("Subscribed to event " + eventName + " with client ID " + std::to_string(eventClientID));
 }
 
 void Event::unsubscribeFromSim() {
+  if (!isSubscribedToSim) {
+    LOG_WARN("Failed to remove event as it is not subscribed ot sim" + str());
+    return;
+  }
+
   if (!SUCCEEDED(SimConnect_RemoveClientEvent(hSimConnect, groupId, eventClientID))) {
     LOG_ERROR("Failed to remove event " + eventName
               + " from client notification group " + std::to_string(groupId));
     return;
   }
   isSubscribedToSim = false;
+
   LOG_DEBUG("Unsubscribed from event " + eventName + " with client ID " + std::to_string(eventClientID));
 }
