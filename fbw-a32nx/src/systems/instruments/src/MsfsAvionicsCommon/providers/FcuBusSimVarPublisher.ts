@@ -2,7 +2,7 @@ import { EventBus, SimVarValueType, Subject } from 'msfssdk';
 import { EfisNdMode, EfisOption, NavAidMode } from '@shared/NavigationDisplay';
 import { SwitchableSimVarProvider } from './SwitchableProvider';
 
-export interface EcpSimVars {
+export interface FcuSimVars {
     ndRangeSetting: number,
     ndMode: EfisNdMode,
     option: EfisOption,
@@ -10,7 +10,7 @@ export interface EcpSimVars {
     navaidMode2: NavAidMode,
 }
 
-export class EcpBusSimVarPublisher extends SwitchableSimVarProvider<EcpSimVars, 'L' | 'R'> {
+export class FcuBusSimVarPublisher extends SwitchableSimVarProvider<FcuSimVars, 'L' | 'R'> {
     constructor(
         bus: EventBus,
         stateSubject: Subject<'L' | 'R'>,
