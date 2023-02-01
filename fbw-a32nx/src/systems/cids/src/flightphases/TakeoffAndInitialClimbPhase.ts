@@ -25,8 +25,8 @@ export class TakeoffAndInitialClimbPhase extends FlightPhase {
     public shouldActivate(): boolean {
         return (
             (
-                this.flightPhaseManager.director.memory.thrustLever1Position >= 75
-                && this.flightPhaseManager.director.memory.thrustLever2Position >= 75
+                this.flightPhaseManager.director.memory.thrustLever1Position >= 35
+                && this.flightPhaseManager.director.memory.thrustLever2Position >= 35
             )
             && (
                 this.flightPhaseManager.director.memory.onGround

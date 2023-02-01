@@ -132,8 +132,8 @@ export class DIR2 extends Director {
                                     && SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 20
                                     && SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'Bool');
         this.memory.nwStrgPinInserted = SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool');
-        this.memory.thrustLever1Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_1', 'number');
-        this.memory.thrustLever2Position = SimVar.GetSimVarValue('L:A32NX_3D_THROTTLE_LEVER_POSITION_2', 'number');
+        this.memory.thrustLever1Position = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number');
+        this.memory.thrustLever2Position = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number');
         this.memory.gpwsFlap3 = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool');
         this.memory.flapsConfig = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number'); // TODO: This should use ARINC429 once both SFCCs are implemented.
         this.memory.altitude = this.decodeAltitude();

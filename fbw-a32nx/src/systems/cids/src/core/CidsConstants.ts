@@ -11,7 +11,7 @@ const CidsConstants = {
         FLIGHT_PHASE: 'L:A32NX_CIDS_FLIGHT_PHASE',
     },
     /**
-     * If set to true will use verbose logging and set debug simvars. -> should be false for prod
+     * Will use verbose logging and set debug simvars when `true` -> should be `false` for prod
      */
     DEBUG: true,
 };

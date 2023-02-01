@@ -25,8 +25,8 @@ export class TaxiBeforeTakeoffPhase extends FlightPhase {
             this.flightPhaseManager.director.memory.onGround
             && this.flightPhaseManager.director.memory.groundSpeed > 0
             && this.flightPhaseManager.director.memory.allDoorsClosedLocked
-            && this.flightPhaseManager.director.memory.thrustLever1Position < 75
-            && this.flightPhaseManager.director.memory.thrustLever2Position < 75
+            && this.flightPhaseManager.director.memory.thrustLever1Position < 35
+            && this.flightPhaseManager.director.memory.thrustLever2Position < 35
         );
     }
 
