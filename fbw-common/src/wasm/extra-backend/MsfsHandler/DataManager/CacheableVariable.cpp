@@ -6,6 +6,7 @@
 #include "logging.h"
 #include "math_utils.h"
 #include "CacheableVariable.h"
+#include "ManagedDataObjectBase.h"
 
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {
@@ -19,14 +20,7 @@ FLOAT64 CacheableVariable::get() const {
 }
 
 FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) {
-  const FLOAT64 timeStampPlusAge = timeStampSimTime + maxAgeTime;
-  const UINT64 tickStampPlusAge = tickStamp + maxAgeTicks;
-
-  // only update if the value is older than the max age for sim time and ticks
-  // also makes sure a variable is only read from the sim once per tick when max age is 0
-  const bool needsUpdateFromSim = (timeStampPlusAge < timeStamp && tickStampPlusAge < tickCounter);
-
-  if (cachedValue.has_value() && !needsUpdateFromSim) {
+  if (cachedValue.has_value() && !needsUpdateFromSim(timeStamp, tickCounter)) {
     changed = false;
     LOG_TRACE("CacheableVariable::updateFromSim() - from cache "
               + this->name

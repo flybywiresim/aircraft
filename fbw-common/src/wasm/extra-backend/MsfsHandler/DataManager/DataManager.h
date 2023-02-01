@@ -149,8 +149,8 @@ public:
    */
   void getRequestedData();
 
-  // FIXME/HACK - this is a hack to get around the fact that the simconnect callback function
-  //  cannot be a member function of a class. This is a wrapper function that calls the
+  // FIXME/HACK - this is a hack to get around the fact that the simconnect key event  callback
+  //  function cannot be a member function of a class. This is a wrapper function that calls the
   //  member function.
   //  http://www.newty.de/fpt/callback.html#example2
   //  If no better solution is found, DataManager should become a singleton.
@@ -186,10 +186,12 @@ public:
 
   /**
    * Creates a new AircraftVariable and adds it to the list of managed variables.
+   * To create a writable variable, use either the setterEventName or setterEvent parameter.
+   * If both are set, the setterEvent will be used.
    * @param varName Name of the variable in the sim
-   * @param index Index of the indexed variable in the sim
-   * @param setterEventName the name of the event to set the variable with an event or calculator code
-   * @param setterEvent an instance of an event variable to set the variable with an event or calculator code
+   * @param index Index of the indexed variable in the sim (default=0)
+   * @param setterEventName the name of the event to set the variable with an event or calculator code (default="")
+   * @param setterEvent an instance of an event variable to set the variable with an event or calculator code (default=nullptr)
    * @param unit Unit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
@@ -211,6 +213,8 @@ public:
 
   /**
    * Creates a new readonly non-indexed AircraftVariable and adds it to the list of managed variables.
+   * This is a convenience method for make_aircraft_var() to create a variable that is read-only and
+   * does not have an index.
    * @param varName Name of the variable in the sim
    * @param unit Unit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)

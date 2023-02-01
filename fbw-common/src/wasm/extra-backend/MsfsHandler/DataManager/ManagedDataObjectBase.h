@@ -4,6 +4,9 @@
 #ifndef FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 #define FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 
+#include "math_utils.h"
+#include "logging.h"
+#include <iostream>
 #include <utility>
 #include <string>
 #include <sstream>
@@ -16,7 +19,7 @@
 
 /**
  * Base class for all managed data objects.
- * Adds the ability to to autoRead, autoWrite variables considering max age based on
+ * Adds the ability to autoRead, autoWrite variables considering max age based on
  * time- and tick-stamps.
  */
 class ManagedDataObjectBase : public DataObjectBase {
@@ -82,14 +85,31 @@ protected:
 
 public:
   ManagedDataObjectBase() = delete; // no default constructor
-  ManagedDataObjectBase(const ManagedDataObjectBase&) = delete; // no copy constructor
-  ManagedDataObjectBase& operator=(const ManagedDataObjectBase&) = delete; // no copy assignment
+  ManagedDataObjectBase(const ManagedDataObjectBase &) = delete; // no copy constructor
+  ManagedDataObjectBase &operator=(const ManagedDataObjectBase &) = delete; // no copy assignment
+
+  /**
+   * Checks if the variable needs to be updated from the sim based on the given time stamp
+   * and tickCounter.<p/>
+   * Returns true if the value is older than the max age for sim time and ticks.<p/>
+   * This includes to make sure is only read from the sim once per tick when max age is 0.
+   * @param timeStamp - current sim time
+   * @param tickCounter - current tick counter
+   * @return true if the variable needs to be updated from the sim, false otherwise
+   */
+  [[nodiscard]]
+  bool needsUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) const {
+    const FLOAT64 timeStampPlusAge = timeStampSimTime + maxAgeTime;
+    const UINT64 tickStampPlusAge = tickStamp + maxAgeTicks;
+    return (timeStampPlusAge < timeStamp && tickStampPlusAge < tickCounter);
+  }
 
   /**
    * @return true if the variable should be automatically updated from the sim n the DataManagers
    *         postUpdate() method.
    */
-  [[nodiscard]] bool isAutoRead() const { return autoRead; }
+  [[nodiscard]]
+  bool isAutoRead() const { return autoRead; }
 
   /**
    * Sets the autoRead flag.
@@ -151,6 +171,7 @@ public:
    * @param maxAgeTicksInTicks the maximum age of the variable in ticks
    */
   void setMaxAgeTicks(UINT64 maxAgeTicksInTicks) { maxAgeTicks = maxAgeTicksInTicks; }
+
 };
 
 #endif //FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
