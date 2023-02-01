@@ -55,7 +55,7 @@ project(extra-backend-a32nx)
 set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../../../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/${PROJECT_NAME}.wasm\"")
 
 # add all cpp source-files here
-set(SOURCES src/Gauge_Extra_Backend.cpp
+set(SOURCES
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/MsfsHandler.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/DataManager.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/CacheableVariable.cpp
@@ -64,6 +64,7 @@ set(SOURCES src/Gauge_Extra_Backend.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/DataDefinitionVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/ClientDataAreaVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/Event.cpp
+        src/Gauge_Extra_Backend.cpp
         src/Example/ExampleModule.cpp
         src/LightingPresets/LightingPresets.cpp
         src/Pushback/Pushback.cpp
