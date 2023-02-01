@@ -1585,7 +1585,7 @@ mod acs_controller_tests {
                     ZoneType::Cabin(1),
                     Volume::new::<cubic_meter>(400.),
                     0,
-                    Some([(1, 6), (7, 13)]),
+                    Some(["A", "B"]),
                 ),
                 measured_temperature: vec![
                     ThermodynamicTemperature::new::<degree_celsius>(24.),
@@ -2120,8 +2120,18 @@ mod acs_controller_tests {
         }
 
         fn command_pax_quantity(&mut self, pax_quantity: u8) {
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), pax_quantity / 2);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), pax_quantity / 2);
+            let mut pax_flag_a: u64 = 0;
+            let mut pax_flag_b: u64 = 0;
+            let station_quantity_a = pax_quantity / 2 + pax_quantity % 2;
+            let station_quantity_b = pax_quantity / 2;
+            for b in 0..station_quantity_a {
+                pax_flag_a ^= 1 << b;
+            }
+            for b in 0..station_quantity_b {
+                pax_flag_b ^= 1 << b;
+            }
+            self.write_by_name("PAX_FLAGS_A", pax_flag_a);
+            self.write_by_name("PAX_FLAGS_B", pax_flag_b);
             self.command(|a| a.test_cabin.update_number_of_passengers(pax_quantity));
         }
 

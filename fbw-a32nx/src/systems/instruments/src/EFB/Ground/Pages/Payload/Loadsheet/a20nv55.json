@@ -9,8 +9,8 @@
             "minZfw": 42500
         },
         "pax": {
-            "defaultPaxWeight": 80,
-            "defaultBagWeight": 15,
+            "defaultPaxWeight": 84,
+            "defaultBagWeight": 20,
             "minPaxWeight": 10,
             "maxPaxWeight": 250,
             "minBagWeight": 1,
@@ -20,6 +20,7 @@
     "seatMap": [
         {
             "name": "ROWS [1-6]",
+            "capacity": 36,
             "rows": [
                 {
                     "seats": [
@@ -290,10 +291,11 @@
             "stationIndex": 1,
             "position": 20.0,
             "fill": 0.19,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_1_6"
+            "simVar": "A32NX_PAX_FLAGS_A"
         },
         {
             "name": "ROWS [7-13]",
+            "capacity": 42,
             "rows": [
                 {
                     "seats": [
@@ -608,10 +610,11 @@
             "stationIndex": 2,
             "position": 0.9,
             "fill": 0.25,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_7_13"
+            "simVar": "A32NX_PAX_FLAGS_B"
         },
         {
             "name": "ROWS [14-21]",
+            "capacity": 48,
             "rows": [
                 {
                     "seats": [
@@ -970,10 +973,11 @@
             "stationIndex": 3,
             "position": -17.3,
             "fill": 0.28,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_14_21"
+            "simVar": "A32NX_PAX_FLAGS_C"
         },
         {
             "name": "ROWS [22-29]",
+            "capacity": 48,
             "rows": [
                 {
                     "seats": [
@@ -1332,7 +1336,7 @@
             "index": 3,
             "stationIndex": 4,
             "position": -36.3,
-            "simVar": "A32NX_PAX_TOTAL_ROWS_22_29"
+            "simVar": "A32NX_PAX_FLAGS_D"
         }
     ],
     "cargoMap": [

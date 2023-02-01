@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BitFlags } from '@shared/bitFlags';
 import * as ReactDOMServer from 'react-dom/server';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { CanvasConst, RowInfo, SeatConstants, SeatInfo, PaxStationInfo, TYPE } from './Constants';
+import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from './Constants';
 import { Seat } from '../../../../Assets/Seat';
 import { SeatOutlineBg } from '../../../../Assets/SeatOutlineBg';
 
@@ -64,7 +64,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
     const addXOffset = (xOff: number, station: number, row: number) => {
-        let seatType = TYPE.ECO;
+        let seatType: number = TYPE.NB_ECO;
         xOff += seatMap[station].rows[row].xOffset;
         for (let seat = 0; seat < seatMap[station].rows[row].seats.length; seat++) {
             if (seatType < seatMap[station].rows[row].seats[seat].type) {

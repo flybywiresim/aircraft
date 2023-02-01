@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod boarding;
 mod electrical;
 mod fuel;
 pub mod hydraulic;
@@ -10,6 +11,7 @@ mod power_consumption;
 
 use self::{
     air_conditioning::A320AirConditioning,
+    boarding::A320Boarding,
     fuel::A320Fuel,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
 };
@@ -49,6 +51,7 @@ pub struct A320 {
     pneumatic_overhead: A320PneumaticOverheadPanel,
     electrical_overhead: A320ElectricalOverheadPanel,
     emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
+    boarding: A320Boarding,
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
@@ -84,6 +87,7 @@ impl A320 {
             pneumatic_overhead: A320PneumaticOverheadPanel::new(context),
             electrical_overhead: A320ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(context),
+            boarding: A320Boarding::new(context),
             fuel: A320Fuel::new(context),
             engine_1: LeapEngine::new(context, 1),
             engine_2: LeapEngine::new(context, 2),
@@ -146,6 +150,7 @@ impl Aircraft for A320 {
             .update_after_electrical(&self.electrical, electricity);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
+        self.boarding.update(context);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -227,6 +232,7 @@ impl SimulationElement for A320 {
         self.apu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
+        self.boarding.accept(visitor);
         self.electrical_overhead.accept(visitor);
         self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);

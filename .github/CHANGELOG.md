@@ -54,6 +54,8 @@
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
+1. [EFB] Allow payload page passenger seating to be manipulated by external apps & WASM via LocalVars - @2hwk (2Cas#1022)
+1. [EFB] GW and GWCG display on payload page - @2hwk (2Cas#1022)
 
 ## 0.9.0
 

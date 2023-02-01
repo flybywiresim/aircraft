@@ -1,17 +1,13 @@
-export class BitFlags {
-    flags: number[];
-
-    static f64View = new Float64Array(1);
-
-    static u32View = new Uint32Array(BitFlags.f64View.buffer);
-
-    constructor(number: number) {
+class BitFlags {
+    constructor(number) {
+        this.f64View = new Float64Array(1);
+        this.u32View = new Uint32Array(this.f64View.buffer);
         this.setFlags(number);
     }
 
-    setFlags(number: number): void {
-        this.flags = Array.from(BitFlags.u32View);
-        const bigNumberAsBinaryStr = number.toString(2); // '100000000000000000000000000000000000000000000000000000'
+    setFlags(number) {
+        this.flags = Array.from(this.u32View);
+        const bigNumberAsBinaryStr = number.toString(2);
 
         let bigNumberAsBinaryStr2 = '';
         for (let i = 0; i < 64 - bigNumberAsBinaryStr.length; i++) {
@@ -24,28 +20,32 @@ export class BitFlags {
         this.flags[0] = parseInt(bigNumberAsBinaryStr2.substring(32), 2);
     }
 
-    getBitIndex(bit: number): boolean {
-        if (bit > 63) return false;
+    getBitIndex(bit) {
+        if (bit > 63) {
+            return false;
+        }
         const f = Math.floor(bit / 31);
         const b = bit % 31;
 
         return ((this.flags[f] >> b) & 1) !== 0;
     }
 
-    toggleBitIndex(bit: number): void {
-        if (bit > 63) return;
+    toggleBitIndex(bit) {
+        if (bit > 63) {
+            return;
+        }
         const f = Math.floor(bit / 31);
         const b = bit % 31;
 
         this.flags[f] ^= (1 << b);
     }
 
-    toDouble(): number {
+    toDouble() {
         return (new Float64Array(Uint32Array.from(this.flags).buffer))[0];
     }
 
-    toDebug(): string {
-        const debug: string[] = [];
+    toDebug() {
+        const debug = [];
         this.flags.forEach((flag, index) => {
             debug.push(flag.toString(2));
             const fL = 32 - flag.toString(2).length;
@@ -56,15 +56,15 @@ export class BitFlags {
         return (`HIGH [ ${debug[1]} | ${debug[0]} ] LOW`);
     }
 
-    toNumber(): number {
+    toNumber() {
         return this.flags[1] * 2 ** 32 + this.flags[0];
     }
 
-    toString(): string {
+    toString() {
         return this.toNumber().toString();
     }
 
-    getTotalBits(): number {
+    getTotalBits() {
         let total = 0;
         this.flags.forEach((flag) => {
             const n = 32;
@@ -79,17 +79,15 @@ export class BitFlags {
     }
 }
 
-export class SeatFlags extends BitFlags {
-    // Limit bits utilisation to < totalSeats
-    totalSeats: number;
-
-    constructor(number: number, totalSeats: number) {
+class SeatFlags extends BitFlags {
+    constructor(number, totalSeats) {
         super(number);
+        // Limit bits utilisation to < totalSeats
         this.totalSeats = totalSeats;
     }
 
-    getEmptySeatIds(): number[] {
-        const emptySeats: number[] = [];
+    getEmptySeatIds() {
+        const emptySeats = [];
         for (let seatId = 0; seatId < this.totalSeats; seatId++) {
             if (!this.getBitIndex(seatId)) {
                 emptySeats.push(seatId);
@@ -98,8 +96,8 @@ export class SeatFlags extends BitFlags {
         return emptySeats;
     }
 
-    getFilledSeatIds(): number[] {
-        const filledSeats: number[] = [];
+    getFilledSeatIds() {
+        const filledSeats = [];
         for (let seatId = 0; seatId < this.totalSeats; seatId++) {
             if (this.getBitIndex(seatId)) {
                 filledSeats.push(seatId);
@@ -108,17 +106,21 @@ export class SeatFlags extends BitFlags {
         return filledSeats;
     }
 
-    isSeatFilled(seatId: number): boolean {
-        if (seatId > this.totalSeats) return false;
+    isSeatFilled(seatId) {
+        if (seatId > this.totalSeats) {
+            return false;
+        }
         return this.getBitIndex(seatId);
     }
 
-    toggleSeatId(seatId: number): void {
-        if (seatId > this.totalSeats) return;
+    toggleSeatId(seatId) {
+        if (seatId > this.totalSeats) {
+            return;
+        }
         this.toggleBitIndex(seatId);
     }
 
-    fillSeats(numFill: number, choices: number[]) {
+    fillSeats(numFill, choices) {
         for (let i = 0; i < numFill; i++) {
             if (choices.length > 0) {
                 const chosen = ~~(Math.random() * choices.length);
@@ -128,11 +130,11 @@ export class SeatFlags extends BitFlags {
         }
     }
 
-    fillEmptySeats(numFill: number) {
+    fillEmptySeats(numFill) {
         this.fillSeats(numFill, this.getEmptySeatIds());
     }
 
-    emptySeats(numEmpty: number, choices: number[]) {
+    emptySeats(numEmpty, choices) {
         for (let i = 0; i < numEmpty; i++) {
             if (choices.length > 0) {
                 const chosen = ~~(Math.random() * choices.length);
@@ -142,15 +144,15 @@ export class SeatFlags extends BitFlags {
         }
     }
 
-    emptyFilledSeats(numEmpty: number) {
+    emptyFilledSeats(numEmpty) {
         this.emptySeats(numEmpty, this.getFilledSeatIds());
     }
 
-    getTotalFilledSeats(): number {
+    getTotalFilledSeats() {
         return this.getTotalBits();
     }
 
-    getTotalEmptySeats(): number {
+    getTotalEmptySeats() {
         return this.totalSeats - this.getTotalBits();
     }
 }

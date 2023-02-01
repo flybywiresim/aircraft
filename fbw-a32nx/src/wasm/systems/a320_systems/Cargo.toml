@@ -5,10 +5,14 @@ authors = ["FlyByWire Simulations"]
 edition = "2021"
 
 [dependencies]
+approx = "0.5.1"
 uom = "0.33.0"
 rand = "0.8.0"
+rand_pcg = "0.3.1"
+lazy_static = "1.4.0"
 nalgebra = "0.25.0"
 ntest = "0.7.2"
+enum-map = "2.4.2"
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]

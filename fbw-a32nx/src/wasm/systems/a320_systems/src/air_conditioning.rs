@@ -122,14 +122,14 @@ impl A320Cabin {
                     ZoneType::Cabin(1),
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
-                    Some([(1, 6), (7, 13)]),
+                    Some(["A", "B"]),
                 ),
                 CabinZone::new(
                     context,
                     ZoneType::Cabin(2),
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
-                    Some([(14, 21), (22, 29)]),
+                    Some(["C", "D"]),
                 ),
             ],
         }

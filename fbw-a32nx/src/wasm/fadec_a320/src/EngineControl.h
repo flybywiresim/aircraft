@@ -28,10 +28,10 @@ struct Configuration {
 };
 
 class EngineControl {
- private:
-  SimVars* simVars;
-  EngineRatios* ratios;
-  Polynomial* poly;
+private:
+  SimVars *simVars;
+  EngineRatios *ratios;
+  Polynomial *poly;
   Timer timerLeft;
   Timer timerRight;
   Timer timerFuel;
@@ -88,7 +88,7 @@ class EngineControl {
 
   const double LBS_TO_KGS = 0.4535934;
   const double KGS_TO_LBS = 1 / 0.4535934;
-  const double FUEL_THRESHOLD = 661;  // lbs/sec
+  const double FUEL_THRESHOLD = 661; // lbs/sec
 
   bool isFlexActive = false;
   double prevThrustLimitType = 0;
@@ -104,16 +104,19 @@ class EngineControl {
   /// <summary>
   /// Generate Idle/ Initial Engine Parameters (non-imbalanced)
   /// </summary>
-  void generateIdleParameters(double pressAltitude, double mach, double ambientTemp, double ambientPressure) {
+  void generateIdleParameters(double pressAltitude, double mach,
+                              double ambientTemp, double ambientPressure) {
     double idleCN1;
     double idleCFF;
 
     idleCN1 = iCN1(pressAltitude, mach, ambientTemp);
     idleN1 = idleCN1 * sqrt(ratios->theta2(0, ambientTemp));
     idleN2 = iCN2(pressAltitude, mach) * sqrt(ratios->theta(ambientTemp));
-    idleCFF = poly->correctedFuelFlow(idleCN1, 0, pressAltitude);                                               // lbs/hr
-    idleFF = idleCFF * LBS_TO_KGS * ratios->delta2(0, ambientPressure) * sqrt(ratios->theta2(0, ambientTemp));  // Kg/hr
-    idleEGT = poly->correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * ratios->theta2(0, ambientTemp);
+    idleCFF = poly->correctedFuelFlow(idleCN1, 0, pressAltitude); // lbs/hr
+    idleFF = idleCFF * LBS_TO_KGS * ratios->delta2(0, ambientPressure) *
+             sqrt(ratios->theta2(0, ambientTemp)); // Kg/hr
+    idleEGT = poly->correctedEGT(idleCN1, idleCFF, 0, pressAltitude) *
+              ratios->theta2(0, ambientTemp);
 
     simVars->setEngineIdleN1(idleN1);
     simVars->setEngineIdleN2(idleN2);
@@ -128,8 +131,9 @@ class EngineControl {
 
   /// <summary>
   /// Engine imbalance Coded Digital Word:
-  /// 0 - Engine, 00 - EGT, 00 - FuelFlow, 00 - N2, 00 - Oil Qty, 00 - Oil PSI, 00 - Oil PSI Rnd, 00 - Oil Max Temp
-  /// Generates a random engine imbalance. Next steps: make realistic imbalance due to wear
+  /// 0 - Engine, 00 - EGT, 00 - FuelFlow, 00 - N2, 00 - Oil Qty, 00 - Oil PSI,
+  /// 00 - Oil PSI Rnd, 00 - Oil Max Temp Generates a random engine imbalance.
+  /// Next steps: make realistic imbalance due to wear
   /// </summary>
   void generateEngineImbalance(int initial) {
     int oilQtyImbalance;
@@ -167,10 +171,14 @@ class EngineControl {
       oilTemperatureMax = (rand() % 10) + 86;
 
       // Zero Padding and Merging
-      imbalanceCode = to_string_with_zero_padding(engine, 2) + to_string_with_zero_padding(egtImbalance, 2) +
-                      to_string_with_zero_padding(ffImbalance, 2) + to_string_with_zero_padding(n2Imbalance, 2) +
-                      to_string_with_zero_padding(oilQtyImbalance, 2) + to_string_with_zero_padding(oilPressureImbalance, 2) +
-                      to_string_with_zero_padding(oilPressureIdle, 2) + to_string_with_zero_padding(oilTemperatureMax, 2);
+      imbalanceCode = to_string_with_zero_padding(engine, 2) +
+                      to_string_with_zero_padding(egtImbalance, 2) +
+                      to_string_with_zero_padding(ffImbalance, 2) +
+                      to_string_with_zero_padding(n2Imbalance, 2) +
+                      to_string_with_zero_padding(oilQtyImbalance, 2) +
+                      to_string_with_zero_padding(oilPressureImbalance, 2) +
+                      to_string_with_zero_padding(oilPressureIdle, 2) +
+                      to_string_with_zero_padding(oilTemperatureMax, 2);
 
       simVars->setEngineImbalance(stod(imbalanceCode));
     }
@@ -178,28 +186,25 @@ class EngineControl {
 
   /// <summary>
   /// Engine State Machine
-  /// 0 - Engine OFF, 1 - Engine ON, 2 - Engine Starting, 3 - Engine Re-starting & 4 - Engine Shutting
+  /// 0 - Engine OFF, 1 - Engine ON, 2 - Engine Starting, 3 - Engine Re-starting
+  /// & 4 - Engine Shutting
   /// </summary>
-  void engineStateMachine(int engine,
-                          double engineIgniter,
-                          double engineStarter,
-                          double simN2,
-                          double idleN2,
-                          double pressAltitude,
-                          double ambientTemp,
+  void engineStateMachine(int engine, double engineIgniter,
+                          double engineStarter, double simN2, double idleN2,
+                          double pressAltitude, double ambientTemp,
                           double deltaTimeDiff) {
     int resetTimer = 0;
     double egtFbw = 0;
 
     switch (engine) {
-      case 1:
-        engineState = simVars->getEngine1State();
-        egtFbw = simVars->getEngine1EGT();
-        break;
-      case 2:
-        engineState = simVars->getEngine2State();
-        egtFbw = simVars->getEngine2EGT();
-        break;
+    case 1:
+      engineState = simVars->getEngine1State();
+      egtFbw = simVars->getEngine1EGT();
+      break;
+    case 2:
+      engineState = simVars->getEngine2State();
+      egtFbw = simVars->getEngine2EGT();
+      break;
     }
     // Present State PAUSED
     if (deltaTimeDiff == 0 && engineState < 10) {
@@ -261,7 +266,8 @@ class EngineControl {
         if (engineIgniter == 2 && engineStarter == 1) {
           engineState = 3;
           resetTimer = 1;
-        } else if (engineStarter == 0 && simN2 < 0.05 && egtFbw <= ambientTemp) {
+        } else if (engineStarter == 0 && simN2 < 0.05 &&
+                   egtFbw <= ambientTemp) {
           engineState = 0;
           resetTimer = 1;
         } else if (engineStarter == 1 && simN2 > 50) {
@@ -274,32 +280,27 @@ class EngineControl {
     }
 
     switch (engine) {
-      case 1:
-        simVars->setEngine1State(engineState);
-        if (resetTimer == 1) {
-          simVars->setEngine1Timer(0);
-        }
-        break;
-      case 2:
-        simVars->setEngine2State(engineState);
-        if (resetTimer == 1) {
-          simVars->setEngine2Timer(0);
-        }
-        break;
+    case 1:
+      simVars->setEngine1State(engineState);
+      if (resetTimer == 1) {
+        simVars->setEngine1Timer(0);
+      }
+      break;
+    case 2:
+      simVars->setEngine2State(engineState);
+      if (resetTimer == 1) {
+        simVars->setEngine2Timer(0);
+      }
+      break;
     }
   }
 
   /// <summary>
   /// Engine Start Procedure
   /// </summary>TIT
-  void engineStartProcedure(int engine,
-                            double engineState,
-                            double imbalance,
-                            double deltaTime,
-                            double timer,
-                            double simN2,
-                            double pressAltitude,
-                            double ambientTemp) {
+  void engineStartProcedure(int engine, double engineState, double imbalance,
+                            double deltaTime, double timer, double simN2,
+                            double pressAltitude, double ambientTemp) {
     double startCN2Left;
     double startCN2Right;
     double preN2Fbw;
@@ -334,25 +335,30 @@ class EngineControl {
         }
         simVars->setEngine1Timer(timer + deltaTime);
         startCN2Left = 0;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Left, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &startCN2Left);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Left,
+                                      SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                      sizeof(double), &startCN2Left);
       } else {
         preN2Fbw = simVars->getEngine1N2();
         preEgtFbw = simVars->getEngine1EGT();
         newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2 - n2Imbalance);
-        startEgtFbw = poly->startEGT(newN2Fbw, idleN2 - n2Imbalance, ambientTemp, idleEGT - egtImbalance);
+        startEgtFbw = poly->startEGT(newN2Fbw, idleN2 - n2Imbalance,
+                                     ambientTemp, idleEGT - egtImbalance);
         shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
 
         simVars->setEngine1N2(newN2Fbw);
-        simVars->setEngine1N1(poly->startN1(newN2Fbw, idleN2 - n2Imbalance, idleN1));
-        simVars->setEngine1FF(poly->startFF(newN2Fbw, idleN2 - n2Imbalance, idleFF - ffImbalance));
+        simVars->setEngine1N1(
+            poly->startN1(newN2Fbw, idleN2 - n2Imbalance, idleN1));
+        simVars->setEngine1FF(poly->startFF(newN2Fbw, idleN2 - n2Imbalance,
+                                            idleFF - ffImbalance));
 
         if (engineState == 3) {
           if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
             simVars->setEngine1EGT(startEgtFbw);
             simVars->setEngine1State(2);
           } else if (startEgtFbw > preEgtFbw) {
-            simVars->setEngine1EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+            simVars->setEngine1EGT(preEgtFbw +
+                                   (0.75 * deltaTime * (idleN2 - newN2Fbw)));
           } else {
             simVars->setEngine1EGT(shutdownEgtFbw);
           }
@@ -362,8 +368,9 @@ class EngineControl {
 
         oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
         oilTemperatureLeftPre = oilTemperature;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &oilTemperature);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft,
+                                      SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                      sizeof(double), &oilTemperature);
       }
     } else {
       if (timer < 1.7) {
@@ -372,25 +379,30 @@ class EngineControl {
         }
         simVars->setEngine2Timer(timer + deltaTime);
         startCN2Right = 0;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Right, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &startCN2Right);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Right,
+                                      SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                      sizeof(double), &startCN2Right);
       } else {
         preN2Fbw = simVars->getEngine2N2();
         preEgtFbw = simVars->getEngine2EGT();
         newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2 - n2Imbalance);
-        startEgtFbw = poly->startEGT(newN2Fbw, idleN2 - n2Imbalance, ambientTemp, idleEGT - egtImbalance);
+        startEgtFbw = poly->startEGT(newN2Fbw, idleN2 - n2Imbalance,
+                                     ambientTemp, idleEGT - egtImbalance);
         shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
 
         simVars->setEngine2N2(newN2Fbw);
-        simVars->setEngine2N1(poly->startN1(newN2Fbw, idleN2 - n2Imbalance, idleN1));
-        simVars->setEngine2FF(poly->startFF(newN2Fbw, idleN2 - n2Imbalance, idleFF - ffImbalance));
+        simVars->setEngine2N1(
+            poly->startN1(newN2Fbw, idleN2 - n2Imbalance, idleN1));
+        simVars->setEngine2FF(poly->startFF(newN2Fbw, idleN2 - n2Imbalance,
+                                            idleFF - ffImbalance));
 
         if (engineState == 3) {
           if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
             simVars->setEngine2EGT(startEgtFbw);
             simVars->setEngine2State(2);
           } else if (startEgtFbw > preEgtFbw) {
-            simVars->setEngine2EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+            simVars->setEngine2EGT(preEgtFbw +
+                                   (0.75 * deltaTime * (idleN2 - newN2Fbw)));
           } else {
             simVars->setEngine2EGT(shutdownEgtFbw);
           }
@@ -400,8 +412,9 @@ class EngineControl {
 
         oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
         oilTemperatureRightPre = oilTemperature;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &oilTemperature);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight,
+                                      SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                      sizeof(double), &oilTemperature);
       }
     }
   }
@@ -409,7 +422,8 @@ class EngineControl {
   /// <summary>
   /// Engine Shutdown Procedure - TEMPORAL SOLUTION
   /// </summary>
-  void engineShutdownProcedure(int engine, double ambientTemp, double simN1, double deltaTime, double timer) {
+  void engineShutdownProcedure(int engine, double ambientTemp, double simN1,
+                               double deltaTime, double timer) {
     double preN1Fbw;
     double preN2Fbw;
     double preEgtFbw;
@@ -425,7 +439,7 @@ class EngineControl {
         preN2Fbw = simVars->getEngine1N2();
         preEgtFbw = simVars->getEngine1EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
-        if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
+        if (simN1 < 5 && simN1 > newN1Fbw) { // Takes care of windmilling
           newN1Fbw = simN1;
         }
         newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
@@ -443,7 +457,7 @@ class EngineControl {
         preN2Fbw = simVars->getEngine2N2();
         preEgtFbw = simVars->getEngine2EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
-        if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
+        if (simN1 < 5 && simN1 > newN1Fbw) { // Takes care of windmilling
           newN1Fbw = simN1;
         }
         newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
@@ -458,7 +472,8 @@ class EngineControl {
   /// FBW Engine RPM (N1 and N2)
   /// Updates Engine N1 and N2 with our own algorithm for start-up and shutdown
   /// </summary>
-  void updatePrimaryParameters(int engine, double imbalance, double simN1, double simN2) {
+  void updatePrimaryParameters(int engine, double imbalance, double simN1,
+                               double simN2) {
     // Engine imbalance
     engineImbalanced = imbalanceExtractor(imbalance, 1);
     paramImbalance = imbalanceExtractor(imbalance, 4) / 100;
@@ -481,15 +496,9 @@ class EngineControl {
   /// FBW Exhaust Gas Temperature (in degree Celsius)
   /// Updates EGT with realistic values visualized in the ECAM
   /// </summary>
-  void updateEGT(int engine,
-                 double imbalance,
-                 double deltaTime,
-                 double simOnGround,
-                 double engineState,
-                 double simCN1,
-                 double cFbwFF,
-                 double mach,
-                 double pressAltitude,
+  void updateEGT(int engine, double imbalance, double deltaTime,
+                 double simOnGround, double engineState, double simCN1,
+                 double cFbwFF, double mach, double pressAltitude,
                  double ambientTemp) {
     double egtFbwPreviousEng1;
     double egtFbwActualEng1;
@@ -512,8 +521,11 @@ class EngineControl {
         simVars->setEngine1EGT(ambientTemp);
       } else {
         egtFbwPreviousEng1 = simVars->getEngine1EGT();
-        egtFbwActualEng1 = (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
-        egtFbwActualEng1 = egtFbwActualEng1 + (egtFbwPreviousEng1 - egtFbwActualEng1) * expFBW(-0.1 * deltaTime);
+        egtFbwActualEng1 =
+            (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
+        egtFbwActualEng1 =
+            egtFbwActualEng1 +
+            (egtFbwPreviousEng1 - egtFbwActualEng1) * expFBW(-0.1 * deltaTime);
         simVars->setEngine1EGT(egtFbwActualEng1);
       }
     } else {
@@ -521,8 +533,11 @@ class EngineControl {
         simVars->setEngine2EGT(ambientTemp);
       } else {
         egtFbwPreviousEng2 = simVars->getEngine2EGT();
-        egtFbwActualEng2 = (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
-        egtFbwActualEng2 = egtFbwActualEng2 + (egtFbwPreviousEng2 - egtFbwActualEng2) * expFBW(-0.1 * deltaTime);
+        egtFbwActualEng2 =
+            (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
+        egtFbwActualEng2 =
+            egtFbwActualEng2 +
+            (egtFbwPreviousEng2 - egtFbwActualEng2) * expFBW(-0.1 * deltaTime);
         simVars->setEngine2EGT(egtFbwActualEng2);
       }
     }
@@ -532,15 +547,17 @@ class EngineControl {
   /// FBW Fuel FLow (in Kg/h)
   /// Updates Fuel Flow with realistic values
   /// </summary>
-  double
-  updateFF(int engine, double imbalance, double simCN1, double mach, double pressAltitude, double ambientTemp, double ambientPressure) {
+  double updateFF(int engine, double imbalance, double simCN1, double mach,
+                  double pressAltitude, double ambientTemp,
+                  double ambientPressure) {
     double outFlow = 0;
 
     // Engine imbalance
     engineImbalanced = imbalanceExtractor(imbalance, 1);
     paramImbalance = imbalanceExtractor(imbalance, 3);
 
-    correctedFuelFlow = poly->correctedFuelFlow(simCN1, mach, pressAltitude);  // in lbs/hr.
+    correctedFuelFlow =
+        poly->correctedFuelFlow(simCN1, mach, pressAltitude); // in lbs/hr.
 
     // Checking engine imbalance
     if (engineImbalanced != engine || correctedFuelFlow < 1) {
@@ -551,7 +568,9 @@ class EngineControl {
     if (correctedFuelFlow < 1) {
       outFlow = 0;
     } else {
-      outFlow = (correctedFuelFlow * LBS_TO_KGS * ratios->delta2(mach, ambientPressure) * sqrt(ratios->theta2(mach, ambientTemp))) -
+      outFlow = (correctedFuelFlow * LBS_TO_KGS *
+                 ratios->delta2(mach, ambientPressure) *
+                 sqrt(ratios->theta2(mach, ambientTemp))) -
                 paramImbalance;
     }
 
@@ -568,7 +587,8 @@ class EngineControl {
   /// FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and degree Celsius)
   /// Updates Oil with realistic values visualized in the SD
   /// </summary>
-  void updateOil(int engine, double imbalance, double thrust, double simN2, double deltaN2, double deltaTime, double ambientTemp) {
+  void updateOil(int engine, double imbalance, double thrust, double simN2,
+                 double deltaN2, double deltaTime, double ambientTemp) {
     double steadyTemperature;
     double thermalEnergy;
     double oilTemperaturePre;
@@ -599,14 +619,16 @@ class EngineControl {
     //--------------------------------------------
     // Oil Temperature
     //--------------------------------------------
-    if (simOnGround == 1 && engineState == 0 && ambientTemp > oilTemperaturePre - 10) {
+    if (simOnGround == 1 && engineState == 0 &&
+        ambientTemp > oilTemperaturePre - 10) {
       oilTemperature = ambientTemp;
     } else {
       if (steadyTemperature > oilTemperatureMax) {
         steadyTemperature = oilTemperatureMax;
       }
       thermalEnergy = (0.995 * thermalEnergy) + (deltaN2 / deltaTime);
-      oilTemperature = poly->oilTemperature(thermalEnergy, oilTemperaturePre, steadyTemperature, deltaTime);
+      oilTemperature = poly->oilTemperature(thermalEnergy, oilTemperaturePre,
+                                            steadyTemperature, deltaTime);
     }
 
     //--------------------------------------------
@@ -644,70 +666,108 @@ class EngineControl {
       oilTemperatureLeftPre = oilTemperature;
       simVars->setEngine1Oil(oilQtyActual);
       simVars->setEngine1TotalOil(oilTotalActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &oilTemperature);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &oilTemperature);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiLeft,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &oilPressure);
     } else {
       thermalEnergy2 = thermalEnergy;
       oilTemperatureRightPre = oilTemperature;
       simVars->setEngine2Oil(oilQtyActual);
       simVars->setEngine2TotalOil(oilTotalActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &oilTemperature);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &oilTemperature);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiRight,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &oilPressure);
     }
+  }
+
+  int getStationCount(long long paxStationFlags) {
+    int count = 0;
+    int eol = 0;
+    while (paxStationFlags && eol < 64) {
+      count += paxStationFlags & 1;
+      paxStationFlags >>= 1;
+      eol++;
+    }
+    if (eol >= 64) {
+      std::cerr << "ERROR: limit reached" << std::endl;
+    }
+    return count;
   }
 
   /// <summary>
   /// FBW Payload checking and UI override function
   /// </summary>
+  // TODO: remove from FADEC logic -> rust
   void checkPayload() {
-    double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double aircraftEmptyWeight = simVars->getEmptyWeight();  // in LBS
     double conversionFactor = simVars->getConversionFactor();
-    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;                   // in LBS
-    double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
-    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
-    double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;  // in LBS
-
-    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * perPaxWeightLbs;                 // in LBS
-    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * perPaxWeightLbs;               // in LBS
-    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * perPaxWeightLbs;             // in LBS
-    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * perPaxWeightLbs;             // in LBS
-    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * perPaxWeightLbs;               // in LBS
-    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * perPaxWeightLbs;             // in LBS
-    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * perPaxWeightLbs;           // in LBS
-    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * perPaxWeightLbs;           // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;    // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;    // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;        // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;              // in LBS
-    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() / conversionFactor;  // in LBS
-    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() / conversionFactor;  // in LBS
-    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() / conversionFactor;      // in LBS
-    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() / conversionFactor;            // in LBS
-    double paxTotalWeightActual = (paxRows1to6Actual + paxRows7to13Actual + paxRows14to21Actual + paxRows22to29Actual);
-    double paxTotalWeightDesired = (paxRows1to6Desired + paxRows7to13Desired + paxRows14to21Desired + paxRows22to29Desired);
-    double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
-    double cargoTotalWeightDesired = (cargoFwdContainerDesired + cargoAftContainerDesired + cargoAftBaggageDesired + cargoAftBulkDesired);
-
-    if (abs(payloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows1to6Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows7to13Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows14to21Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows22to29Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation5, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoFwdContainerActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation6, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftContainerActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation7, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftBaggageActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation8, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftBulkActual);
+    double fuelWeightGallon = simVars->getFuelWeightGallon();
+    double aircraftEmptyWeight = simVars->getEmptyWeight(); // in LBS
+    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;
+    double aircraftTotalWeight = simVars->getTotalWeight(); // in LBS
+    double fuelTotalWeight =
+        simVars->getFuelTotalQuantity() * fuelWeightGallon; // in LBS
+    double pilotsWeight = simVars->getPayloadStationWeight(9) +
+                          simVars->getPayloadStationWeight(10); // in LBS
+    double aircraftPayloadTotalWeight = aircraftTotalWeight -
+                                        aircraftEmptyWeight - fuelTotalWeight -
+                                        pilotsWeight; // in LBS
+    double paxStationAWeight =
+        getStationCount((long long)simVars->getPaxStationAFlags()) *
+        perPaxWeightLbs; // in LBS
+    double paxStationBWeight =
+        getStationCount((long long)simVars->getPaxStationBFlags()) *
+        perPaxWeightLbs; // in LBS
+    double paxStationCWeight =
+        getStationCount((long long)simVars->getPaxStationCFlags()) *
+        perPaxWeightLbs; // in LBS
+    double paxStationDWeight =
+        getStationCount((long long)simVars->getPaxStationDFlags()) *
+        perPaxWeightLbs; // in LBS
+    double cargoFwdContainerActual =
+        simVars->getCargoFwdContainerActual() / conversionFactor; // in LBS
+    double cargoAftContainerActual =
+        simVars->getCargoAftContainerActual() / conversionFactor; // in LBS
+    double cargoAftBaggageActual =
+        simVars->getCargoAftBaggageActual() / conversionFactor; // in LBS
+    double cargoAftBulkActual =
+        simVars->getCargoAftBulkActual() / conversionFactor; // in LBS
+    double paxTotalWeightActual = (paxStationAWeight + paxStationBWeight +
+                                   paxStationCWeight + paxStationDWeight);
+    double cargoTotalWeightActual =
+        (cargoFwdContainerActual + cargoAftContainerActual +
+         cargoAftBaggageActual + cargoAftBulkActual);
+    if (abs(aircraftPayloadTotalWeight - paxTotalWeightActual +
+            cargoTotalWeightActual) > 5) {
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &paxStationAWeight);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &paxStationBWeight);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation3,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &paxStationCWeight);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation4,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &paxStationDWeight);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation5,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &cargoFwdContainerActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation6,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &cargoAftContainerActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation7,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &cargoAftBaggageActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation8,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &cargoAftBulkActual);
     }
   }
 
@@ -727,26 +787,31 @@ class EngineControl {
     double pumpStateLeft = simVars->getPumpStateLeft();
     double pumpStateRight = simVars->getPumpStateRight();
 
-    double engine1PreFF = simVars->getEngine1PreFF();  // KG/H
-    double engine2PreFF = simVars->getEngine2PreFF();  // KG/H
-    double engine1FF = simVars->getEngine1FF();        // KG/H
-    double engine2FF = simVars->getEngine2FF();        // KG/H
+    double engine1PreFF = simVars->getEngine1PreFF(); // KG/H
+    double engine2PreFF = simVars->getEngine2PreFF(); // KG/H
+    double engine1FF = simVars->getEngine1FF();       // KG/H
+    double engine2FF = simVars->getEngine2FF();       // KG/H
 
     double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double fuelUsedLeft = simVars->getFuelUsedLeft();    // Kg
-    double fuelUsedRight = simVars->getFuelUsedRight();  // Kg
+    double fuelUsedLeft = simVars->getFuelUsedLeft();   // Kg
+    double fuelUsedRight = simVars->getFuelUsedRight(); // Kg
 
-    double fuelLeftPre = simVars->getFuelLeftPre();                                   // LBS
-    double fuelRightPre = simVars->getFuelRightPre();                                 // LBS
-    double fuelAuxLeftPre = simVars->getFuelAuxLeftPre();                             // LBS
-    double fuelAuxRightPre = simVars->getFuelAuxRightPre();                           // LBS
-    double fuelCenterPre = simVars->getFuelCenterPre();                               // LBS
-    double leftQuantity = simVars->getTankLeftQuantity() * fuelWeightGallon;          // LBS
-    double rightQuantity = simVars->getTankRightQuantity() * fuelWeightGallon;        // LBS
-    double leftAuxQuantity = simVars->getTankLeftAuxQuantity() * fuelWeightGallon;    // LBS
-    double rightAuxQuantity = simVars->getTankRightAuxQuantity() * fuelWeightGallon;  // LBS
-    double centerQuantity = simVars->getTankCenterQuantity() * fuelWeightGallon;      // LBS
-    double fuelLeft = 0;                                                              // LBS
+    double fuelLeftPre = simVars->getFuelLeftPre();         // LBS
+    double fuelRightPre = simVars->getFuelRightPre();       // LBS
+    double fuelAuxLeftPre = simVars->getFuelAuxLeftPre();   // LBS
+    double fuelAuxRightPre = simVars->getFuelAuxRightPre(); // LBS
+    double fuelCenterPre = simVars->getFuelCenterPre();     // LBS
+    double leftQuantity =
+        simVars->getTankLeftQuantity() * fuelWeightGallon; // LBS
+    double rightQuantity =
+        simVars->getTankRightQuantity() * fuelWeightGallon; // LBS
+    double leftAuxQuantity =
+        simVars->getTankLeftAuxQuantity() * fuelWeightGallon; // LBS
+    double rightAuxQuantity =
+        simVars->getTankRightAuxQuantity() * fuelWeightGallon; // LBS
+    double centerQuantity =
+        simVars->getTankCenterQuantity() * fuelWeightGallon; // LBS
+    double fuelLeft = 0;                                     // LBS
     double fuelRight = 0;
     double fuelLeftAux = 0;
     double fuelRightAux = 0;
@@ -754,9 +819,12 @@ class EngineControl {
     double xfrCenter = 0;
     double xfrAuxLeft = 0;
     double xfrAuxRight = 0;
-    double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
-    double fuelTotalPre = fuelLeftPre + fuelRightPre + fuelAuxLeftPre + fuelAuxRightPre + fuelCenterPre;          // LBS
-    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                  // LBS/ sec
+    double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity +
+                             rightAuxQuantity + centerQuantity; // LBS
+    double fuelTotalPre = fuelLeftPre + fuelRightPre + fuelAuxLeftPre +
+                          fuelAuxRightPre + fuelCenterPre; // LBS
+    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) /
+                           (fuelWeightGallon * deltaTime); // LBS/ sec
 
     double engine1State = simVars->getEngine1State();
     double engine2State = simVars->getEngine2State();
@@ -768,7 +836,8 @@ class EngineControl {
     deltaTime = deltaTime / 3600;
 
     // Pump State Logic for Left Wing
-    if (pumpStateLeft == 0 && (timerLeft.elapsed() == 0 || timerLeft.elapsed() >= 1000)) {
+    if (pumpStateLeft == 0 &&
+        (timerLeft.elapsed() == 0 || timerLeft.elapsed() >= 1000)) {
       if (fuelLeftPre - leftQuantity > 0 && leftQuantity == 0) {
         timerLeft.reset();
         simVars->setPumpStateLeft(1);
@@ -788,7 +857,8 @@ class EngineControl {
     }
 
     // Pump State Logic for Right Wing
-    if (pumpStateRight == 0 && (timerRight.elapsed() == 0 || timerRight.elapsed() >= 1000)) {
+    if (pumpStateRight == 0 &&
+        (timerRight.elapsed() == 0 || timerRight.elapsed() >= 1000)) {
       if (fuelRightPre - rightQuantity > 0 && rightQuantity == 0) {
         timerRight.reset();
         simVars->setPumpStateRight(1);
@@ -808,42 +878,57 @@ class EngineControl {
     }
 
     // Checking for in-game UI Fuel tampering
-    if ((isReady == 1 && refuelStartedByUser == 0 && deltaFuelRate > FUEL_THRESHOLD) ||
-        (isReady == 1 && refuelStartedByUser == 1 && deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
+    if ((isReady == 1 && refuelStartedByUser == 0 &&
+         deltaFuelRate > FUEL_THRESHOLD) ||
+        (isReady == 1 && refuelStartedByUser == 1 &&
+         deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
       uiFuelTamper = true;
     }
 
-    if (simPaused || uiFuelTamper && devState == 0) {  // Detects whether the Sim is paused or the Fuel UI is being tampered with
-      simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
-      simVars->setFuelRightPre(fuelRightPre);        // in LBS
-      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
-      simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
-      simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
+    if (simPaused ||
+        uiFuelTamper && devState == 0) { // Detects whether the Sim is paused or
+                                         // the Fuel UI is being tampered with
+      simVars->setFuelLeftPre(fuelLeftPre);         // in LBS
+      simVars->setFuelRightPre(fuelRightPre);       // in LBS
+      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);   // in LBS
+      simVars->setFuelAuxRightPre(fuelAuxRightPre); // in LBS
+      simVars->setFuelCenterPre(fuelCenterPre);     // in LBS
 
-      fuelLeft = (fuelLeftPre / fuelWeightGallon);          // USG
-      fuelRight = (fuelRightPre / fuelWeightGallon);        // USG
-      fuelCenter = (fuelCenterPre / fuelWeightGallon);      // USG
-      fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
-      fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
+      fuelLeft = (fuelLeftPre / fuelWeightGallon);         // USG
+      fuelRight = (fuelRightPre / fuelWeightGallon);       // USG
+      fuelCenter = (fuelCenterPre / fuelWeightGallon);     // USG
+      fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);   // USG
+      fuelRightAux = (fuelAuxRightPre / fuelWeightGallon); // USG
 
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
-    } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
-      simVars->setFuelLeftPre(leftQuantity);          // in LBS
-      simVars->setFuelRightPre(rightQuantity);        // in LBS
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(centerQuantity);      // in LBS
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelCenter);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelLeft);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelRight);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelLeftAux);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelRightAux);
+    } else if (!uiFuelTamper &&
+               refuelStartedByUser == 1) {     // Detects refueling from the EFB
+      simVars->setFuelLeftPre(leftQuantity);   // in LBS
+      simVars->setFuelRightPre(rightQuantity); // in LBS
+      simVars->setFuelAuxLeftPre(leftAuxQuantity);   // in LBS
+      simVars->setFuelAuxRightPre(rightAuxQuantity); // in LBS
+      simVars->setFuelCenterPre(centerQuantity);     // in LBS
     } else {
       if (uiFuelTamper == 1) {
-        fuelLeftPre = leftQuantity;          // LBS
-        fuelRightPre = rightQuantity;        // LBS
-        fuelAuxLeftPre = leftAuxQuantity;    // LBS
-        fuelAuxRightPre = rightAuxQuantity;  // LBS
-        fuelCenterPre = centerQuantity;      // LBS
+        fuelLeftPre = leftQuantity;         // LBS
+        fuelRightPre = rightQuantity;       // LBS
+        fuelAuxLeftPre = leftAuxQuantity;   // LBS
+        fuelAuxRightPre = rightAuxQuantity; // LBS
+        fuelCenterPre = centerQuantity;     // LBS
       }
       //--------------------------------------------
       // Left Engine and Wing routine
@@ -853,7 +938,7 @@ class EngineControl {
         if (devState != 2) {
           m = (engine1FF - engine1PreFF) / deltaTime;
           b = engine1PreFF;
-          fuelBurn1 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
+          fuelBurn1 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime); // KG
         }
         // Fuel Used Accumulators - Engine 1
         fuelUsedLeft += fuelBurn1;
@@ -878,7 +963,7 @@ class EngineControl {
         if (devState != 2) {
           m = (engine2FF - engine2PreFF) / deltaTime;
           b = engine2PreFF;
-          fuelBurn2 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
+          fuelBurn2 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime); // KG
         }
         // Fuel Used Accumulators - Engine 2
         fuelUsedRight += fuelBurn2;
@@ -902,12 +987,15 @@ class EngineControl {
         xfrCenter = fuelCenterPre - centerQuantity;
       }
 
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);     // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + (xfrCenter / 2);  // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft +
+                 (xfrCenter / 2); // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight +
+                  (xfrCenter / 2); // LBS
 
       // Checking for Inner Tank overflow - Will be taken off with Rust code
       if (fuelLeft > 12167.1 && fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + (fuelLeft - 12167.1) + (fuelRight - 12167.1);
+        fuelCenter =
+            centerQuantity + (fuelLeft - 12167.1) + (fuelRight - 12167.1);
         fuelLeft = 12167.1;
         fuelRight = 12167.1;
       } else if (fuelRight > 12167.1) {
@@ -923,50 +1011,58 @@ class EngineControl {
       // Setting new pre-cycle conditions
       simVars->setEngine1PreFF(engine1FF);
       simVars->setEngine2PreFF(engine2FF);
-      simVars->setFuelUsedLeft(fuelUsedLeft);         // in KG
-      simVars->setFuelUsedRight(fuelUsedRight);       // in KG
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(fuelCenter);          // in LBS
+      simVars->setFuelUsedLeft(fuelUsedLeft);        // in KG
+      simVars->setFuelUsedRight(fuelUsedRight);      // in KG
+      simVars->setFuelAuxLeftPre(leftAuxQuantity);   // in LBS
+      simVars->setFuelAuxRightPre(rightAuxQuantity); // in LBS
+      simVars->setFuelCenterPre(fuelCenter);         // in LBS
 
-      simVars->setFuelLeftPre(fuelLeft);    // in LBS
-      simVars->setFuelRightPre(fuelRight);  // in LBS
+      simVars->setFuelLeftPre(fuelLeft);   // in LBS
+      simVars->setFuelRightPre(fuelRight); // in LBS
 
-      fuelLeft = (fuelLeft / fuelWeightGallon);      // USG
-      fuelRight = (fuelRight / fuelWeightGallon);    // USG
-      fuelCenter = (fuelCenter / fuelWeightGallon);  // USG
+      fuelLeft = (fuelLeft / fuelWeightGallon);     // USG
+      fuelRight = (fuelRight / fuelWeightGallon);   // USG
+      fuelCenter = (fuelCenter / fuelWeightGallon); // USG
 
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelCenter);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelLeft);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain,
+                                    SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                    sizeof(double), &fuelRight);
     }
 
-    // Will save the current fuel quantities if on the ground AND engines being shutdown
+    // Will save the current fuel quantities if on the ground AND engines being
+    // shutdown
     if (timerFuel.elapsed() >= 1000 && simVars->getSimOnGround() &&
-        (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 || engine2State == 0 || engine2State == 10 ||
+        (engine1State == 0 || engine1State == 10 || engine1State == 4 ||
+         engine1State == 14 || engine2State == 0 || engine2State == 10 ||
          engine2State == 4 || engine2State == 14)) {
       Configuration configuration;
 
-      configuration.fuelLeft = simVars->getFuelLeftPre() / simVars->getFuelWeightGallon();
-      configuration.fuelRight = simVars->getFuelRightPre() / simVars->getFuelWeightGallon();
-      configuration.fuelCenter = simVars->getFuelCenterPre() / simVars->getFuelWeightGallon();
-      configuration.fuelLeftAux = simVars->getFuelAuxLeftPre() / simVars->getFuelWeightGallon();
-      configuration.fuelRightAux = simVars->getFuelAuxRightPre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeft =
+          simVars->getFuelLeftPre() / simVars->getFuelWeightGallon();
+      configuration.fuelRight =
+          simVars->getFuelRightPre() / simVars->getFuelWeightGallon();
+      configuration.fuelCenter =
+          simVars->getFuelCenterPre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeftAux =
+          simVars->getFuelAuxLeftPre() / simVars->getFuelWeightGallon();
+      configuration.fuelRightAux =
+          simVars->getFuelAuxRightPre() / simVars->getFuelWeightGallon();
 
       saveFuelInConfiguration(configuration);
       timerFuel.reset();
     }
   }
 
-  void updateThrustLimits(double simulationTime,
-                          double altitude,
-                          double ambientTemp,
-                          double ambientPressure,
-                          double mach,
-                          double simN1highest,
-                          double packs,
-                          double nai,
-                          double wai) {
+  void updateThrustLimits(double simulationTime, double altitude,
+                          double ambientTemp, double ambientPressure,
+                          double mach, double simN1highest, double packs,
+                          double nai, double wai) {
     double idle = simVars->getEngineIdleN1();
     double flexTemp = simVars->getFlexTemp();
     double thrustLimitType = simVars->getThrustLimitType();
@@ -980,23 +1076,32 @@ class EngineControl {
     double flex = 0;
 
     // Write all N1 Limits
-    to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
-    ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
+    to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure,
+                 0, packs, nai, wai);
+    ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure,
+                 0, packs, nai, wai);
     if (flexTemp > 0) {
-      flex_to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
-      flex_ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
+      flex_to = limitN1(0, min(16600.0, pressAltitude), ambientTemp,
+                        ambientPressure, flexTemp, packs, nai, wai);
+      flex_ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp,
+                        ambientPressure, flexTemp, packs, nai, wai);
     }
-    clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
-    mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
+    clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai,
+                  wai);
+    mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai,
+                  wai);
 
-    // transition between TO and GA limit -----------------------------------------------------------------------------
+    // transition between TO and GA limit
+    // -----------------------------------------------------------------------------
     double machFactorLow = max(0.0, min(1.0, (mach - 0.04) / 0.04));
     toga = to + (ga - to) * machFactorLow;
     flex = flex_to + (flex_ga - flex_to) * machFactorLow;
 
-    // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
+    // adaption of CLB due to FLX limit if necessary
+    // ------------------------------------------------------------------
 
-    if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
+    if ((prevThrustLimitType != 3 && thrustLimitType == 3) ||
+        (prevFlexTemperature == 0 && flexTemp > 0)) {
       isFlexActive = true;
     } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
       isFlexActive = false;
@@ -1016,7 +1121,8 @@ class EngineControl {
     double deltaThrust = 0;
 
     if (isTransitionActive) {
-      double timeDifference = max(0, (simulationTime - transitionStartTime) - waitTime);
+      double timeDifference =
+          max(0, (simulationTime - transitionStartTime) - waitTime);
 
       if (timeDifference > 0 && clb > flex) {
         deltaThrust = min(clb - flex, timeDifference * transitionFactor);
@@ -1035,7 +1141,8 @@ class EngineControl {
     prevThrustLimitType = thrustLimitType;
     prevFlexTemperature = flexTemp;
 
-    // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
+    // thrust transitions for MCT and TOGA
+    // ----------------------------------------------------------------------------
 
     // get factors
     double machFactor = max(0.0, min(1.0, ((mach - 0.37) / 0.05)));
@@ -1055,7 +1162,8 @@ class EngineControl {
       }
     }
 
-    // write limits ---------------------------------------------------------------------------------------------------
+    // write limits
+    // ---------------------------------------------------------------------------------------------------
     simVars->setThrustLimitIdle(idle);
     simVars->setThrustLimitToga(toga);
     simVars->setThrustLimitFlex(flex);
@@ -1063,11 +1171,11 @@ class EngineControl {
     simVars->setThrustLimitMct(mct);
   }
 
- public:
+public:
   /// <summary>
   /// Initialize the FADEC and Fuel model
   /// </summary>
-  void initialize(const char* acftRegistration) {
+  void initialize(const char *acftRegistration) {
     srand((int)time(0));
 
     std::cout << "FADEC: Initializing EngineControl" << std::endl;
@@ -1126,7 +1234,8 @@ class EngineControl {
     if (simOnGround == 1 && engine1Combustion == 1 && engine2Combustion == 1) {
       oilTemperatureLeftPre = 75;
       oilTemperatureRightPre = 75;
-    } else if (simOnGround == 0 && engine1Combustion == 1 && engine2Combustion == 1) {
+    } else if (simOnGround == 0 && engine1Combustion == 1 &&
+               engine2Combustion == 1) {
       oilTemperatureLeftPre = 85;
       oilTemperatureRightPre = 85;
 
@@ -1135,10 +1244,12 @@ class EngineControl {
       oilTemperatureRightPre = ambientTemp;
     }
 
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                  &oilTemperatureLeftPre);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                  &oilTemperatureRightPre);
+    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft,
+                                  SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                  sizeof(double), &oilTemperatureLeftPre);
+    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight,
+                                  SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                  sizeof(double), &oilTemperatureRightPre);
 
     // Initialize Engine State
     simVars->setEngine1State(10);
@@ -1149,11 +1260,16 @@ class EngineControl {
     simVars->setEngine2Timer(0);
 
     // Initialize Fuel Tanks
-    simVars->setFuelLeftPre(configuration.fuelLeft * simVars->getFuelWeightGallon());          // in LBS
-    simVars->setFuelRightPre(configuration.fuelRight * simVars->getFuelWeightGallon());        // in LBS
-    simVars->setFuelAuxLeftPre(configuration.fuelLeftAux * simVars->getFuelWeightGallon());    // in LBS
-    simVars->setFuelAuxRightPre(configuration.fuelRightAux * simVars->getFuelWeightGallon());  // in LBS
-    simVars->setFuelCenterPre(configuration.fuelCenter * simVars->getFuelWeightGallon());      // in LBS
+    simVars->setFuelLeftPre(configuration.fuelLeft *
+                            simVars->getFuelWeightGallon()); // in LBS
+    simVars->setFuelRightPre(configuration.fuelRight *
+                             simVars->getFuelWeightGallon()); // in LBS
+    simVars->setFuelAuxLeftPre(configuration.fuelLeftAux *
+                               simVars->getFuelWeightGallon()); // in LBS
+    simVars->setFuelAuxRightPre(configuration.fuelRightAux *
+                                simVars->getFuelWeightGallon()); // in LBS
+    simVars->setFuelCenterPre(configuration.fuelCenter *
+                              simVars->getFuelWeightGallon()); // in LBS
 
     // Initialize Pump State
     simVars->setPumpStateLeft(0);
@@ -1209,7 +1325,8 @@ class EngineControl {
       thrust = simVars->getThrust(engine);
 
       // Set & Check Engine Status for this Cycle
-      engineStateMachine(engine, engineIgniter, engineStarter, simN2, idleN2, pressAltitude, ambientTemp,
+      engineStateMachine(engine, engineIgniter, engineStarter, simN2, idleN2,
+                         pressAltitude, ambientTemp,
                          animationDeltaTime - prevAnimationDeltaTime);
       if (engine == 1) {
         engineState = simVars->getEngine1State();
@@ -1224,19 +1341,24 @@ class EngineControl {
       }
 
       switch (int(engineState)) {
-        case 2:
-        case 3:
-          engineStartProcedure(engine, engineState, imbalance, deltaTime, timer, simN2, pressAltitude, ambientTemp);
-          break;
-        case 4:
-          engineShutdownProcedure(engine, ambientTemp, simN1, deltaTime, timer);
-          cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
-          break;
-        default:
-          updatePrimaryParameters(engine, imbalance, simN1, simN2);
-          cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
-          updateEGT(engine, imbalance, deltaTime, simOnGround, engineState, simCN1, cFbwFF, mach, pressAltitude, ambientTemp);
-          // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
+      case 2:
+      case 3:
+        engineStartProcedure(engine, engineState, imbalance, deltaTime, timer,
+                             simN2, pressAltitude, ambientTemp);
+        break;
+      case 4:
+        engineShutdownProcedure(engine, ambientTemp, simN1, deltaTime, timer);
+        cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude,
+                          ambientTemp, ambientPressure);
+        break;
+      default:
+        updatePrimaryParameters(engine, imbalance, simN1, simN2);
+        cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude,
+                          ambientTemp, ambientPressure);
+        updateEGT(engine, imbalance, deltaTime, simOnGround, engineState,
+                  simCN1, cFbwFF, mach, pressAltitude, ambientTemp);
+        // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime,
+        // ambientTemp);
       }
 
       // set highest N1 from either engine
@@ -1250,7 +1372,8 @@ class EngineControl {
 
     updateFuel(deltaTime);
 
-    updateThrustLimits(simulationTime, pressAltitude, ambientTemp, ambientPressure, mach, simN1highest, packs, nai, wai);
+    updateThrustLimits(simulationTime, pressAltitude, ambientTemp,
+                       ambientPressure, mach, simN1highest, packs, nai, wai);
     // timer.elapsed();
   }
 
@@ -1263,9 +1386,11 @@ class EngineControl {
     mINI::INIFile iniFile(confFilename);
 
     if (!iniFile.read(stInitStructure)) {
-      std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno)
-                << "\" -> use default main/aux/center: " << configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/"
-                << configuration.fuelCenter << std::endl;
+      std::cout << "EngineControl: failed to read configuration file "
+                << confFilename << " due to error \"" << strerror(errno)
+                << "\" -> use default main/aux/center: "
+                << configuration.fuelLeft << "/" << configuration.fuelLeftAux
+                << "/" << configuration.fuelCenter << std::endl;
     } else {
       configuration = loadConfiguration(stInitStructure);
     }
@@ -1273,13 +1398,23 @@ class EngineControl {
     return configuration;
   }
 
-  Configuration loadConfiguration(const mINI::INIStructure& structure) {
+  Configuration loadConfiguration(const mINI::INIStructure &structure) {
     return {
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(
+            structure, CONFIGURATION_SECTION_FUEL,
+            CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
+        mINI::INITypeConversion::getDouble(
+            structure, CONFIGURATION_SECTION_FUEL,
+            CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
+        mINI::INITypeConversion::getDouble(
+            structure, CONFIGURATION_SECTION_FUEL,
+            CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
+        mINI::INITypeConversion::getDouble(
+            structure, CONFIGURATION_SECTION_FUEL,
+            CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(
+            structure, CONFIGURATION_SECTION_FUEL,
+            CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
     };
   }
 
@@ -1290,15 +1425,25 @@ class EngineControl {
     // Do not check a possible error since the file may not exist yet
     iniFile.read(stInitStructure);
 
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY] = std::to_string(configuration.fuelCenter);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY] = std::to_string(configuration.fuelLeft);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY] = std::to_string(configuration.fuelRight);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY] = std::to_string(configuration.fuelLeftAux);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY] = std::to_string(configuration.fuelRightAux);
+    stInitStructure[CONFIGURATION_SECTION_FUEL]
+                   [CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY] =
+                       std::to_string(configuration.fuelCenter);
+    stInitStructure[CONFIGURATION_SECTION_FUEL]
+                   [CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY] =
+                       std::to_string(configuration.fuelLeft);
+    stInitStructure[CONFIGURATION_SECTION_FUEL]
+                   [CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY] =
+                       std::to_string(configuration.fuelRight);
+    stInitStructure[CONFIGURATION_SECTION_FUEL]
+                   [CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY] =
+                       std::to_string(configuration.fuelLeftAux);
+    stInitStructure[CONFIGURATION_SECTION_FUEL]
+                   [CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY] =
+                       std::to_string(configuration.fuelRightAux);
 
     if (!iniFile.write(stInitStructure, true)) {
-      std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\""
-                << std::endl;
+      std::cout << "EngineControl: failed to write engine conf " << confFilename
+                << " due to error \"" << strerror(errno) << "\"" << std::endl;
     }
   }
 };

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 class A32NX_PayloadConstructor {
     constructor() {
         this.paxStations = {
@@ -5,45 +6,42 @@ class A32NX_PayloadConstructor {
                 name: 'ROWS [1-6]',
                 seats: 36,
                 weight: Math.round(NXUnits.kgToUser(3024)),
-                pax: 0,
-                paxTarget: 0,
                 stationIndex: 0 + 1,
                 position: 20.0,
-                seatsRange: [1, 36],
-                simVar: "A32NX_PAX_TOTAL_ROWS_1_6"
+                simVar: "A32NX_PAX_FLAGS_A",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_A', 'Number'), 36),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_A_DESIRED', 'Number'), 36),
+
             },
             rows7_13: {
                 name: 'ROWS [7-13]',
                 seats: 42,
                 weight: Math.round(NXUnits.kgToUser(3530)),
-                pax: 0,
-                paxTarget: 0,
                 stationIndex: 1 + 1,
                 position: 0.9,
-                seatsRange: [37, 78],
-                simVar: "A32NX_PAX_TOTAL_ROWS_7_13"
+                simVar: "A32NX_PAX_FLAGS_B",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_B', 'Number'), 42),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_B_DESIRED', 'Number'), 42),
             },
             rows14_21: {
                 name: 'ROWS [14-21]',
                 seats: 48,
                 weight: Math.round(NXUnits.kgToUser(4032)),
-                pax: 0,
-                paxTarget: 0,
                 stationIndex: 2 + 1,
                 position: -17.3,
-                seatsRange: [79, 126],
-                simVar: "A32NX_PAX_TOTAL_ROWS_14_21"
+                simVar: "A32NX_PAX_FLAGS_C",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_C', 'Number'), 48),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_C_DESIRED', 'Number'), 48),
             },
             rows22_29: {
                 name: 'ROWS [22-29]',
                 seats: 48,
                 weight: Math.round(NXUnits.kgToUser(4032)),
-                pax: 0,
-                paxTarget: 0,
                 stationIndex: 3 + 1,
                 position: -36.3,
-                seatsRange: [127, 174],
-                simVar: "A32NX_PAX_TOTAL_ROWS_22_29"
+                simVar: "A32NX_PAX_FLAGS_D",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_D', 'Number'), 48),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_D_DESIRED', 'Number'), 48),
             },
         };
 
@@ -94,8 +92,8 @@ const cargoStations = payloadConstruct.cargoStations;
 const MAX_SEAT_AVAILABLE = 174;
 
 /**
-     * Calculate %MAC ZWFCG of all stations
-     */
+ * Calculate %MAC ZWFCG of all stations
+ */
 function getZfwcg() {
 
     const leMacZ = -5.383; // Accurate to 3 decimals, replaces debug weight values

@@ -247,6 +247,14 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 3)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 4)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 5)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 6)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 7)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
@@ -283,6 +291,46 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         builder.copy(
             Variable::aircraft("STRUCTURAL DEICE SWITCH", "Bool", 0),
             Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 1),
+            Variable::aspect("PAYLOAD_STATION_1_REQ"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 2),
+            Variable::aspect("PAYLOAD_STATION_2_REQ"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 3),
+            Variable::aspect("PAYLOAD_STATION_3_REQ"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 4),
+            Variable::aspect("PAYLOAD_STATION_4_REQ"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 5),
+            Variable::aspect("PAYLOAD_STATION_5_REQ"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 6),
+            Variable::aspect("PAYLOAD_STATION_6_REQ"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 7),
+            Variable::aspect("PAYLOAD_STATION_7_REQ"),
+        );
+
+        builder.copy(
+            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 8),
+            Variable::aspect("PAYLOAD_STATION_8_REQ"),
         );
 
         builder.map(

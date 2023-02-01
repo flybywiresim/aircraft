@@ -23,7 +23,7 @@ pub struct CabinZone<const ROWS: usize> {
     zone_identifier: VariableIdentifier,
     fwd_door_id: VariableIdentifier,
     rear_door_id: VariableIdentifier,
-    passenger_rows_id: Option<Vec<VariableIdentifier>>,
+    passenger_stations_id: Option<Vec<VariableIdentifier>>,
 
     zone_id: ZoneType,
     zone_air: ZoneAir,
@@ -42,12 +42,12 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         zone_id: ZoneType,
         zone_volume: Volume,
         passengers: u8,
-        passenger_rows: Option<[(u8, u8); ROWS]>,
+        passenger_stations: Option<[&str; ROWS]>,
     ) -> Self {
-        let passenger_rows_id = if let Some(rows) = passenger_rows {
+        let passenger_stations_id = if let Some(rows) = passenger_stations {
             let mut row_id_vec = Vec::new();
             for r in rows.iter() {
-                row_id_vec.push(context.get_identifier(format!("PAX_TOTAL_ROWS_{}_{}", r.0, r.1)));
+                row_id_vec.push(context.get_identifier(format!("PAX_FLAGS_{}", r)));
             }
             Some(row_id_vec)
         } else {
@@ -57,7 +57,7 @@ impl<const ROWS: usize> CabinZone<ROWS> {
             zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
             fwd_door_id: context.get_identifier(Self::FWD_DOOR.to_owned()),
             rear_door_id: context.get_identifier(Self::REAR_DOOR.to_owned()),
-            passenger_rows_id,
+            passenger_stations_id,
 
             zone_id,
             zone_air: ZoneAir::new(),
@@ -108,10 +108,11 @@ impl<const ROWS: usize> SimulationElement for CabinZone<ROWS> {
         let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
         self.fwd_door_is_open = fwd_door_read > Ratio::new::<percent>(0.);
 
-        let zone_passengers: u8 = if let Some(rows) = &self.passenger_rows_id {
+        let zone_passengers: u8 = if let Some(rows) = &self.passenger_stations_id {
             let mut zone_sum_passengers: u8 = 0;
             for r in rows.iter() {
-                let passengers: u8 = reader.read(r);
+                let pax_flags: u64 = reader.read(r);
+                let passengers: u8 = u64::count_ones(pax_flags) as u8;
                 zone_sum_passengers += passengers;
             }
             zone_sum_passengers
@@ -451,7 +452,7 @@ mod cabin_air_tests {
                     ZoneType::Cabin(1),
                     Volume::new::<cubic_meter>(400. / 2.),
                     0,
-                    Some([(1, 6), (7, 13)]),
+                    Some(["A", "B"]),
                 ),
                 air_conditioning_system: TestAirConditioningSystem::new(),
                 pressurization: TestPressurization::new(),
@@ -529,10 +530,20 @@ mod cabin_air_tests {
             self
         }
 
-        fn passengers(mut self, passengers: u8) -> Self {
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), passengers / 2);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), passengers / 2);
-            self.command(|a| a.set_passengers(passengers));
+        fn passengers(mut self, pax_quantity: u8) -> Self {
+            let mut pax_flag_a: u64 = 0;
+            let mut pax_flag_b: u64 = 0;
+            let station_quantity_a = pax_quantity / 2 + pax_quantity % 2;
+            let station_quantity_b = pax_quantity / 2;
+            for b in 0..station_quantity_a {
+                pax_flag_a ^= 1 << b;
+            }
+            for b in 0..station_quantity_b {
+                pax_flag_b ^= 1 << b;
+            }
+            self.write_by_name("PAX_FLAGS_A", pax_flag_a);
+            self.write_by_name("PAX_FLAGS_B", pax_flag_b);
+            self.command(|a| a.set_passengers(pax_quantity));
             self
         }
 
