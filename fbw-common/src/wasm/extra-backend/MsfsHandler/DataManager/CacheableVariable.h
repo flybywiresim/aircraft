@@ -37,7 +37,7 @@ protected:
   /**
    * The value of the variable as it was last read from the sim or updated by the
    * set() method. If the variable has not been read from the sim yet and has never been set
-   * this value will be FLOAT64 default value.
+   * this value will be the FLOAT64 default value.
    * Prints an error to std::cerr if the cache is empty.
    * (MSFS does not allow exceptions)
    */
@@ -94,8 +94,10 @@ public:
   CacheableVariable& operator=(const CacheableVariable&) = delete; // no copy assignment
 
   /**
-   * Returns the cached value or the default value (FLOAT64{}) if the cache is empty.
-   * Prints an error to std::cerr if the cache is empty.
+   * Returns the cached value or the default value (FLOAT64{}) if the cache is empty.<p/>
+   *
+   * Prints an error to std::cerr if the cache is empty.<p/>
+   *
    * If the value has been set by the set() method since the last read from the sim (is dirty)
    * but has not been written to the sim yet an error message is printed to std::cerr.
    * (MSFS does not allow exceptions)
@@ -105,7 +107,7 @@ public:
   FLOAT64 get() const;
 
   /**
-   * Reads the value fom the sim if the cached value is older than the max age (time or ticks).<p/>
+   * Reads the value from the sim if the cached value is older than the max age (time and ticks).<p/>
    *
    * If a value has already been read during one tick it will therefore not be read again as the
    * variable's timeStamp and tickStamp will not be older than the current time and tick.<p/>
@@ -137,43 +139,43 @@ public:
   FLOAT64 readFromSim();
 
   /**
-   * Raw read call to the sim.
-   * Must be implemented by specialized classes.
-   * This method is called by the readFromSim2() method.
+   * Raw read call to the sim.<p/>
+   * Must be implemented by specialized classes.<p/>
+   * This method is called by the readFromSim() method.
    * @return the value read from the sim
    */
   virtual FLOAT64 rawReadFromSim() = 0;
 
    /**
-   * Sets the cache value and marks the variable as dirty.
+   * Sets the cache value and marks the variable as dirty.<p/>
    * Does not write the value to the sim or update the time and tick stamps.
    * @param value the value to set
    */
    virtual void set(FLOAT64 value);
 
   /**
-   * Writes the cached value to the sim if the dirty flag is set.
-   * If the cached value has never been set this method does nothing.
-   * This does not update the timeStampSimTime or tickStamp.
+   * Writes the cached value to the sim if the dirty flag is set.<p/>
+   * If the cached value has never been set this method does nothing.<p/>
+   * This does not update the timeStampSimTime or tickStamp.<p/>
    */
   void updateToSim();
 
   /**
-   * Writes the current value to the sim.
-   * Clears the dirty flag.<p/>
+   * Writes the current value to the sim.<p/>
+   * Clears the dirty flag.
    */
   void writeToSim();
 
   /**
-   * Writes the given value to the cache and the sim.
+   * Writes the given value to the cache and the sim.<p/>
    * Clears the dirty flag.
    * @param value The value to set the variable to.
    */
   void setAndWriteToSim(FLOAT64 value);
 
   /**
-   * Raw write call to the sim.
-   * Must be implemented by specialized classes.
+   * Raw write call to the sim.<p/>
+   * Must be implemented by specialized classes.<p/>
    * This method is called by the writeDataToSim()methods.
    */
   virtual void rawWriteToSim() = 0;

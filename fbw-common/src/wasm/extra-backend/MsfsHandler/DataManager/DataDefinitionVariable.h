@@ -244,5 +244,15 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const DataDefinitionVariable& ddv);
 };
 
+/**
+ * Overload of the << operator for DataDefinitionVariable
+ * @return returns a string representation of the DataDefinitionVariable as returned by
+ *         DataDefinitionVariable::str()
+ */
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const DataDefinitionVariable<T>& ddv) {
+  os << ddv.str();
+  return os;
+}
 
 #endif //FLYBYWIRE_DATADEFINITIONVARIABLE_H
