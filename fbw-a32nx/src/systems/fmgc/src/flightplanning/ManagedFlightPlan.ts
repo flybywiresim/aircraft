@@ -1245,7 +1245,7 @@ export class ManagedFlightPlan {
                         this.destinationAirfield.additionalData.annotation = approachName;
                     }
 
-                    this.destinationAirfield.verticalAngle = lastLeg.verticalAngle
+                    this.destinationAirfield.additionalData.verticalAngle = lastLeg.verticalAngle ? lastLeg.verticalAngle - 360 : undefined;
                 }
 
                 // Clear discontinuity before destination, if any
