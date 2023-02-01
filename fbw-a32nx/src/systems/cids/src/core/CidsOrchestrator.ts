@@ -4,8 +4,6 @@ import { DIR1 } from './directors/DIR1';
 import { DIR2 } from './directors/DIR2';
 
 export class CidsOrchestrator {
-    public static DEBUG = true; // TODO: revert to false
-
     private readonly dir1: DIR1;
 
     private readonly dir2: DIR2;
