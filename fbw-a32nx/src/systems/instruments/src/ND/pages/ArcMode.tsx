@@ -43,13 +43,13 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting, 492, trueHeading.value);
+        params.compute(ppos, 0, rangeSetting, 492, trueHeading.value);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting, 492, trueHeading.value);
+        mapParams.compute(ppos, 0, rangeSetting, 492, trueHeading.value);
     }, [ppos.lat, ppos.long, trueHeading.value, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
