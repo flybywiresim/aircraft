@@ -12,11 +12,17 @@ enum DataTypesID {
   PayloadStation6,
   PayloadStation7,
   PayloadStation8,
-  FuelLeftMain,
-  FuelRightMain,
-  FuelCenterMain,
-  FuelLeftAux,
-  FuelRightAux,
+  FuelSystemLeftOuter,
+  FuelSystemFeedOne,
+  FuelSystemLeftMid,
+  FuelSystemLeftInner,
+  FuelSystemFeedTwo,
+  FuelSystemFeedThree,
+  FuelSystemRightInner,
+  FuelSystemRightMid,
+  FuelSystemFeedFour,
+  FuelSystemRightOuter,
+  FuelSystemTrim,
   OilTempEngine1,
   OilTempEngine2,
   OilTempEngine3,
@@ -25,10 +31,10 @@ enum DataTypesID {
   OilPsiEngine2,
   OilPsiEngine3,
   OilPsiEngine4,
-  StartCN2Engine1,
-  StartCN2Engine2,
-  StartCN2Engine3,
-  StartCN2Engine4,
+  StartCN3Engine1,
+  StartCN3Engine2,
+  StartCN3Engine3,
+  StartCN3Engine4,
   SimulationDataTypeId,
   AcftInfo,
 };
@@ -98,30 +104,25 @@ class SimVars {
   ENUM EngineCombustion = get_aircraft_var_enum("GENERAL ENG COMBUSTION");
   ENUM animDeltaTime = get_aircraft_var_enum("ANIMATION DELTA TIME");
 
-  ENUM TankLeftAuxCapacity = get_aircraft_var_enum("FUEL TANK LEFT AUX CAPACITY");
-  ENUM TankRightAuxCapacity = get_aircraft_var_enum("FUEL TANK RIGHT AUX CAPACITY");
-  ENUM TankLeftCapacity = get_aircraft_var_enum("FUEL TANK LEFT MAIN CAPACITY");
-  ENUM TankRightCapacity = get_aircraft_var_enum("FUEL TANK RIGHT MAIN CAPACITY");
-  ENUM TankCenterCapacity = get_aircraft_var_enum("FUEL TANK CENTER CAPACITY");
-
-  ENUM TankLeftAuxQuantity = get_aircraft_var_enum("FUEL TANK LEFT AUX QUANTITY");
-  ENUM TankRightAuxQuantity = get_aircraft_var_enum("FUEL TANK RIGHT AUX QUANTITY");
-  ENUM TankLeftQuantity = get_aircraft_var_enum("FUEL TANK LEFT MAIN QUANTITY");
-  ENUM TankRightQuantity = get_aircraft_var_enum("FUEL TANK RIGHT MAIN QUANTITY");
-  ENUM TankCenterQuantity = get_aircraft_var_enum("FUEL TANK CENTER QUANTITY");
+  ENUM TankFuelQuantity = get_aircraft_var_enum("FUELSYSTEM TANK QUANTITY");
   ENUM FuelTotalQuantity = get_aircraft_var_enum("FUEL TOTAL QUANTITY");
+
   ENUM EmptyWeight = get_aircraft_var_enum("EMPTY WEIGHT");
   ENUM TotalWeight = get_aircraft_var_enum("TOTAL WEIGHT");
   ENUM FuelWeightGallon = get_aircraft_var_enum("FUEL WEIGHT PER GALLON");
 
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
-  ENUM WingAntiIce = get_aircraft_var_enum("STRUCTURAL DEICE SWITCH");
 
   /// <summary>
   /// Collection of LVars for the A32NX
   /// </summary>
   ID DevVar;
+  ID IsReady;			 
   ID FlexTemp;
+  ID Engine1N3;
+  ID Engine2N3;
+  ID Engine3N3;
+  ID Engine4N3;
   ID Engine1N2;
   ID Engine2N2;
   ID Engine3N2;
@@ -131,9 +132,7 @@ class SimVars {
   ID Engine3N1;
   ID Engine4N1;
   ID EngineIdleN1;
-  ID EngineIdleN2;
   ID EngineIdleN3;
-  ID EngineIdleN4;
   ID EngineIdleFF;
   ID EngineIdleEGT;
   ID Engine1EGT;
@@ -158,15 +157,24 @@ class SimVars {
   ID Engine4PreFF;
   ID EngineCycleTime;
   ID EngineImbalance;
+  ID WingAntiIce;
   ID FuelUsedEngine1;
   ID FuelUsedEngine2;
   ID FuelUsedEngine3;
   ID FuelUsedEngine4;
-  ID FuelLeftPre;
-  ID FuelRightPre;
-  ID FuelAuxLeftPre;
-  ID FuelAuxRightPre;
-  ID FuelCenterPre;
+
+  ID FuelLeftOuterPre;
+  ID FuelFeedOnePre;
+  ID FuelLeftMidPre;
+  ID FuelLeftInnerPre;
+  ID FuelFeedTwoPre;
+  ID FuelFeedThreePre;
+  ID FuelRightInnerPre;
+  ID FuelRightMidPre;
+  ID FuelFeedFourPre;
+  ID FuelRightOuterPre;
+  ID FuelTrimPre;
+
   ID RefuelRate;
   ID RefuelStartedByUser;
   ID FuelOverflowLeft;
@@ -214,7 +222,12 @@ class SimVars {
 
   void initializeVars() {
     DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
-    FlexTemp = register_named_variable("A32NX_TO_FLEX_TEMP");
+    IsReady = register_named_variable("A32NX_IS_READY");
+    FlexTemp = register_named_variable("AIRLINER_TO_FLEX_TEMP");
+    Engine1N3 = register_named_variable("A32NX_ENGINE_N3:1");
+    Engine2N3 = register_named_variable("A32NX_ENGINE_N3:2");
+    Engine3N3 = register_named_variable("A32NX_ENGINE_N3:3");
+    Engine4N3 = register_named_variable("A32NX_ENGINE_N3:4");
     Engine1N2 = register_named_variable("A32NX_ENGINE_N2:1");
     Engine2N2 = register_named_variable("A32NX_ENGINE_N2:2");
     Engine3N2 = register_named_variable("A32NX_ENGINE_N2:3");
@@ -224,7 +237,7 @@ class SimVars {
     Engine3N1 = register_named_variable("A32NX_ENGINE_N1:3");
     Engine4N1 = register_named_variable("A32NX_ENGINE_N1:4");
     EngineIdleN1 = register_named_variable("A32NX_ENGINE_IDLE_N1");
-    EngineIdleN2 = register_named_variable("A32NX_ENGINE_IDLE_N2");
+    EngineIdleN3 = register_named_variable("A32NX_ENGINE_IDLE_N3");
     EngineIdleFF = register_named_variable("A32NX_ENGINE_IDLE_FF");
     EngineIdleEGT = register_named_variable("A32NX_ENGINE_IDLE_EGT");
     Engine1EGT = register_named_variable("A32NX_ENGINE_EGT:1");
@@ -248,15 +261,24 @@ class SimVars {
     Engine3PreFF = register_named_variable("A32NX_ENGINE_PRE_FF:3");
     Engine4PreFF = register_named_variable("A32NX_ENGINE_PRE_FF:4");
     EngineImbalance = register_named_variable("A32NX_ENGINE_IMBALANCE");
+	WingAntiIce = register_named_variable("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
     FuelUsedEngine1 = register_named_variable("A32NX_FUEL_USED:1");
     FuelUsedEngine2 = register_named_variable("A32NX_FUEL_USED:2");
     FuelUsedEngine3 = register_named_variable("A32NX_FUEL_USED:3");
     FuelUsedEngine4 = register_named_variable("A32NX_FUEL_USED:4");
-    FuelLeftPre = register_named_variable("A32NX_FUEL_LEFT_PRE");
-    FuelRightPre = register_named_variable("A32NX_FUEL_RIGHT_PRE");
-    FuelAuxLeftPre = register_named_variable("A32NX_FUEL_AUX_LEFT_PRE");
-    FuelAuxRightPre = register_named_variable("A32NX_FUEL_AUX_RIGHT_PRE");
-    FuelCenterPre = register_named_variable("A32NX_FUEL_CENTER_PRE");
+
+    FuelLeftOuterPre = register_named_variable("A32NX_FUEL_LEFTOUTER_PRE");
+    FuelFeedOnePre = register_named_variable("A32NX_FUEL_FEED1_PRE");
+    FuelLeftMidPre = register_named_variable("A32NX_FUEL_LEFTMID_PRE");
+    FuelLeftInnerPre = register_named_variable("A32NX_FUEL_LEFTINNER_PRE");
+    FuelFeedTwoPre = register_named_variable("A32NX_FUEL_FEED2_PRE");
+    FuelFeedThreePre = register_named_variable("A32NX_FUEL_FEED3_PRE");
+    FuelRightInnerPre = register_named_variable("A32NX_FUEL_RIGHTINNER_PRE");
+    FuelRightMidPre = register_named_variable("A32NX_FUEL_RIGHTMID_PRE");
+    FuelFeedFourPre = register_named_variable("A32NX_FUEL_FEED4_PRE");
+    FuelRightOuterPre = register_named_variable("A32NX_FUEL_RIGHTOUTER_PRE");
+    FuelTrimPre = register_named_variable("A32NX_FUEL_TRIM_PRE");
+
     RefuelRate = register_named_variable("A32NX_EFB_REFUEL_RATE_SETTING");
     RefuelStartedByUser = register_named_variable("A32NX_REFUEL_STARTED_BY_USR");
     Engine1State = register_named_variable("A32NX_ENGINE_STATE:1");
@@ -301,6 +323,10 @@ class SimVars {
     PacksState2 = register_named_variable("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN");
 
     this->setDeveloperState(0);
+    this->setEngine1N3(0);
+    this->setEngine2N3(0);
+    this->setEngine3N3(0);
+    this->setEngine4N3(0);
     this->setEngine1N2(0);
     this->setEngine2N2(0);
     this->setEngine3N2(0);
@@ -310,7 +336,7 @@ class SimVars {
     this->setEngine3N1(0);
     this->setEngine4N1(0);
     this->setEngineIdleN1(0);
-    this->setEngineIdleN2(0);
+    this->setEngineIdleN3(0);
     this->setEngineIdleFF(0);
     this->setEngineIdleEGT(0);
     this->setEngine1EGT(0);
@@ -338,11 +364,17 @@ class SimVars {
     this->setFuelUsedEngine2(0);
     this->setFuelUsedEngine3(0);
     this->setFuelUsedEngine4(0);
-    this->setFuelLeftPre(0);
-    this->setFuelRightPre(0);
-    this->setFuelAuxLeftPre(0);
-    this->setFuelAuxRightPre(0);
-    this->setFuelCenterPre(0);
+    this->setFuelLeftOuterPre(0);
+    this->setFuelFeedOnePre(0);
+    this->setFuelLeftMidPre(0);
+    this->setFuelLeftInnerPre(0);
+    this->setFuelFeedTwoPre(0);
+    this->setFuelFeedThreePre(0);
+    this->setFuelRightInnerPre(0);
+    this->setFuelRightMidPre(0);
+    this->setFuelFeedFourPre(0);
+    this->setFuelRightOuterPre(0);
+    this->setFuelTrimPre(0);
     this->setEngine1State(0);
     this->setEngine2State(0);
     this->setEngine3State(0);
@@ -366,6 +398,10 @@ class SimVars {
 
   // Collection of LVar 'set' Functions
   void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
+  void setEngine1N3(FLOAT64 value) { set_named_variable_value(Engine1N3, value); }
+  void setEngine2N3(FLOAT64 value) { set_named_variable_value(Engine2N3, value); }
+  void setEngine3N3(FLOAT64 value) { set_named_variable_value(Engine3N3, value); }
+  void setEngine4N3(FLOAT64 value) { set_named_variable_value(Engine4N3, value); }
   void setEngine1N2(FLOAT64 value) { set_named_variable_value(Engine1N2, value); }
   void setEngine2N2(FLOAT64 value) { set_named_variable_value(Engine2N2, value); }
   void setEngine3N2(FLOAT64 value) { set_named_variable_value(Engine3N2, value); }
@@ -375,7 +411,7 @@ class SimVars {
   void setEngine3N1(FLOAT64 value) { set_named_variable_value(Engine3N1, value); }
   void setEngine4N1(FLOAT64 value) { set_named_variable_value(Engine4N1, value); }
   void setEngineIdleN1(FLOAT64 value) { set_named_variable_value(EngineIdleN1, value); }
-  void setEngineIdleN2(FLOAT64 value) { set_named_variable_value(EngineIdleN2, value); }
+  void setEngineIdleN3(FLOAT64 value) { set_named_variable_value(EngineIdleN3, value); }
   void setEngineIdleFF(FLOAT64 value) { set_named_variable_value(EngineIdleFF, value); }
   void setEngineIdleEGT(FLOAT64 value) { set_named_variable_value(EngineIdleEGT, value); }
   void setEngine1EGT(FLOAT64 value) { set_named_variable_value(Engine1EGT, value); }
@@ -403,11 +439,19 @@ class SimVars {
   void setFuelUsedEngine2(FLOAT64 value) { set_named_variable_value(FuelUsedEngine2, value); }
   void setFuelUsedEngine3(FLOAT64 value) { set_named_variable_value(FuelUsedEngine3, value); }
   void setFuelUsedEngine4(FLOAT64 value) { set_named_variable_value(FuelUsedEngine4, value); }
-  void setFuelLeftPre(FLOAT64 value) { set_named_variable_value(FuelLeftPre, value); }
-  void setFuelRightPre(FLOAT64 value) { set_named_variable_value(FuelRightPre, value); }
-  void setFuelAuxLeftPre(FLOAT64 value) { set_named_variable_value(FuelAuxLeftPre, value); }
-  void setFuelAuxRightPre(FLOAT64 value) { set_named_variable_value(FuelAuxRightPre, value); }
-  void setFuelCenterPre(FLOAT64 value) { set_named_variable_value(FuelCenterPre, value); }
+
+  void setFuelLeftOuterPre(FLOAT64 value) { set_named_variable_value(FuelLeftOuterPre, value); };
+  void setFuelFeedOnePre(FLOAT64 value) { set_named_variable_value(FuelFeedOnePre, value); };
+  void setFuelLeftMidPre(FLOAT64 value) { set_named_variable_value(FuelLeftMidPre, value); };
+  void setFuelLeftInnerPre(FLOAT64 value) { set_named_variable_value(FuelLeftInnerPre, value); };
+  void setFuelFeedTwoPre(FLOAT64 value) { set_named_variable_value(FuelFeedTwoPre, value); };
+  void setFuelFeedThreePre(FLOAT64 value) { set_named_variable_value(FuelFeedThreePre, value); };
+  void setFuelRightInnerPre(FLOAT64 value) { set_named_variable_value(FuelRightInnerPre, value); };
+  void setFuelRightMidPre(FLOAT64 value) { set_named_variable_value(FuelRightMidPre, value); };
+  void setFuelFeedFourPre(FLOAT64 value) { set_named_variable_value(FuelFeedFourPre, value); };
+  void setFuelRightOuterPre(FLOAT64 value) { set_named_variable_value(FuelRightOuterPre, value); };
+  void setFuelTrimPre(FLOAT64 value) { set_named_variable_value(FuelTrimPre, value); };
+
   void setEngine1State(FLOAT64 value) { set_named_variable_value(Engine1State, value); }
   void setEngine2State(FLOAT64 value) { set_named_variable_value(Engine2State, value); }
   void setEngine3State(FLOAT64 value) { set_named_variable_value(Engine3State, value); }
@@ -428,7 +472,12 @@ class SimVars {
 
   // Collection of SimVar/LVar 'get' Functions
   FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
+  FLOAT64 getIsReady() { return get_named_variable_value(IsReady); }
   FLOAT64 getFlexTemp() { return get_named_variable_value(FlexTemp); }
+  FLOAT64 getEngine1N3() { return get_named_variable_value(Engine1N3); }
+  FLOAT64 getEngine2N3() { return get_named_variable_value(Engine2N3); }
+  FLOAT64 getEngine3N3() { return get_named_variable_value(Engine3N3); }
+  FLOAT64 getEngine4N3() { return get_named_variable_value(Engine4N3); }
   FLOAT64 getEngine1N2() { return get_named_variable_value(Engine1N2); }
   FLOAT64 getEngine2N2() { return get_named_variable_value(Engine2N2); }
   FLOAT64 getEngine3N2() { return get_named_variable_value(Engine3N2); }
@@ -438,7 +487,7 @@ class SimVars {
   FLOAT64 getEngine3N1() { return get_named_variable_value(Engine3N1); }
   FLOAT64 getEngine4N1() { return get_named_variable_value(Engine4N1); }
   FLOAT64 getEngineIdleN1() { return get_named_variable_value(EngineIdleN1); }
-  FLOAT64 getEngineIdleN2() { return get_named_variable_value(EngineIdleN2); }
+  FLOAT64 getEngineIdleN3() { return get_named_variable_value(EngineIdleN3); }
   FLOAT64 getEngineIdleFF() { return get_named_variable_value(EngineIdleFF); }
   FLOAT64 getEngineIdleEGT() { return get_named_variable_value(EngineIdleEGT); }
   FLOAT64 getEngine1FF() { return get_named_variable_value(Engine1FF); }
@@ -462,15 +511,24 @@ class SimVars {
   FLOAT64 getEngine3PreFF() { return get_named_variable_value(Engine3PreFF); }
   FLOAT64 getEngine4PreFF() { return get_named_variable_value(Engine4PreFF); }
   FLOAT64 getEngineImbalance() { return get_named_variable_value(EngineImbalance); }
+  FLOAT64 getWAI() { return get_named_variable_value(WingAntiIce); }
   FLOAT64 getFuelUsedEngine1() { return get_named_variable_value(FuelUsedEngine1); }
   FLOAT64 getFuelUsedEngine2() { return get_named_variable_value(FuelUsedEngine2); }
   FLOAT64 getFuelUsedEngine3() { return get_named_variable_value(FuelUsedEngine3); }
   FLOAT64 getFuelUsedEngine4() { return get_named_variable_value(FuelUsedEngine4); }
-  FLOAT64 getFuelLeftPre() { return get_named_variable_value(FuelLeftPre); }
-  FLOAT64 getFuelRightPre() { return get_named_variable_value(FuelRightPre); }
-  FLOAT64 getFuelAuxLeftPre() { return get_named_variable_value(FuelAuxLeftPre); }
-  FLOAT64 getFuelAuxRightPre() { return get_named_variable_value(FuelAuxRightPre); }
-  FLOAT64 getFuelCenterPre() { return get_named_variable_value(FuelCenterPre); }
+
+  FLOAT64 getFuelLeftOuterPre() { return get_named_variable_value(FuelLeftOuterPre); }
+  FLOAT64 getFuelFeedOnePre() { return get_named_variable_value(FuelFeedOnePre); }
+  FLOAT64 getFuelLeftMidPre() { return get_named_variable_value(FuelLeftMidPre); }
+  FLOAT64 getFuelLeftInnerPre() { return get_named_variable_value(FuelLeftInnerPre); }
+  FLOAT64 getFuelFeedTwoPre() { return get_named_variable_value(FuelFeedTwoPre); }
+  FLOAT64 getFuelFeedThreePre() { return get_named_variable_value(FuelFeedThreePre); }
+  FLOAT64 getFuelRightInnerPre() { return get_named_variable_value(FuelRightInnerPre); }
+  FLOAT64 getFuelRightMidPre() { return get_named_variable_value(FuelRightMidPre); }
+  FLOAT64 getFuelFeedFourPre() { return get_named_variable_value(FuelFeedFourPre); }
+  FLOAT64 getFuelRightOuterPre() { return get_named_variable_value(FuelRightOuterPre); }
+  FLOAT64 getFuelTrimPre() { return get_named_variable_value(FuelTrimPre); }
+
   FLOAT64 getRefuelRate() { return get_named_variable_value(RefuelRate); }
   FLOAT64 getRefuelStartedByUser() { return get_named_variable_value(RefuelStartedByUser); }
   FLOAT64 getPumpStateEngine1() { return get_named_variable_value(PumpStateEngine1); }
@@ -524,25 +582,15 @@ class SimVars {
   FLOAT64 getAmbientPressure() { return aircraft_varget(AmbientPressure, m_Units->Millibars, 0); }
   FLOAT64 getStdTemperature() { return aircraft_varget(StdTemp, m_Units->Celsius, 0); }
   FLOAT64 getSimOnGround() { return aircraft_varget(SimOnGround, m_Units->Bool, 0); }
-  FLOAT64 getTankLeftAuxCapacity() { return aircraft_varget(TankLeftAuxCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightAuxCapacity() { return aircraft_varget(TankRightAuxCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftCapacity() { return aircraft_varget(TankLeftCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightCapacity() { return aircraft_varget(TankRightCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankCenterCapacity() { return aircraft_varget(TankCenterCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftAuxQuantity() { return aircraft_varget(TankLeftAuxQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightAuxQuantity() { return aircraft_varget(TankRightAuxQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftQuantity() { return aircraft_varget(TankLeftQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightQuantity() { return aircraft_varget(TankRightQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankCenterQuantity() { return aircraft_varget(TankCenterQuantity, m_Units->Gallons, 0); }
   FLOAT64 getFuelTotalQuantity() { return aircraft_varget(FuelTotalQuantity, m_Units->Gallons, 0); }
   FLOAT64 getEmptyWeight() { return aircraft_varget(EmptyWeight, m_Units->Pounds, 0); }
   FLOAT64 getTotalWeight() { return aircraft_varget(TotalWeight, m_Units->Pounds, 0); }
   FLOAT64 getFuelWeightGallon() { return aircraft_varget(FuelWeightGallon, m_Units->Pounds, 0); }
+  FLOAT64 getTankFuelQuantity(int index) { return aircraft_varget(TankFuelQuantity, m_Units->Gallons, index); }
   FLOAT64 getEngineTime(int index) { return aircraft_varget(EngineTime, m_Units->Seconds, index); }
   FLOAT64 getEngineStarter(int index) { return aircraft_varget(EngineStarter, m_Units->Bool, index); }
   FLOAT64 getEngineIgniter(int index) { return aircraft_varget(EngineIgniter, m_Units->Number, index); }
   FLOAT64 getEngineCombustion(int index) { return aircraft_varget(EngineCombustion, m_Units->Bool, index); }
   FLOAT64 getAnimDeltaTime() { return aircraft_varget(animDeltaTime, m_Units->Seconds, 0); }
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
-  FLOAT64 getWAI() { return aircraft_varget(WingAntiIce, m_Units->Bool, 0); }
 };

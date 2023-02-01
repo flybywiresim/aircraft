@@ -12,19 +12,31 @@
 #define FILENAME_FADEC_CONF_FILE_EXTENSION ".ini"
 #define CONFIGURATION_SECTION_FUEL "FUEL"
 
-#define CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY "FUEL_CENTER_QUANTITY"
-#define CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY "FUEL_LEFT_QUANTITY"
-#define CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY "FUEL_RIGHT_QUANTITY"
-#define CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY "FUEL_LEFT_AUX_QUANTITY"
-#define CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY "FUEL_RIGHT_AUX_QUANTITY"
+#define CONFIGURATION_SECTION_FUEL_LEFT_OUTER_QTY "FUEL_LEFT_OUTER_QTY"
+#define CONFIGURATION_SECTION_FUEL_FEED_ONE_QTY "FUEL_FEED_ONE_QTY"
+#define CONFIGURATION_SECTION_FUEL_LEFT_MID_QTY "FUEL_LEFT_MID_QTY"
+#define CONFIGURATION_SECTION_FUEL_LEFT_INNER_QTY "FUEL_LEFT_INNER_QTY"
+#define CONFIGURATION_SECTION_FUEL_FEED_TWO_QTY "FUEL_FEED_TWO_QTY"
+#define CONFIGURATION_SECTION_FUEL_FEED_THREE_QTY "FUEL_FEED_THREE_QTY"
+#define CONFIGURATION_SECTION_FUEL_RIGHT_INNER_QTY "FUEL_RIGHT_INNER_QTY"
+#define CONFIGURATION_SECTION_FUEL_RIGHT_MID_QTY "FUEL_RIGHT_MID_QTY"
+#define CONFIGURATION_SECTION_FUEL_FEED_FOUR_QTY "FUEL_FEED_FOUR_QTY"
+#define CONFIGURATION_SECTION_FUEL_RIGHT_OUTER_QTY "FUEL_RIGHT_OUTER_QTY"
+#define CONFIGURATION_SECTION_FUEL_TRIM_QTY "FUEL_TRIM_QTY"
 
 /* Values in gallons */
 struct Configuration {
-  double fuelCenter = 0;
-  double fuelLeft = 400;
-  double fuelRight = fuelLeft;
-  double fuelLeftAux = 228;
-  double fuelRightAux = fuelLeftAux;
+  double fuelLeftOuter = 2731.0;
+  double fuelFeedOne = 1082.0;
+  double fuelLeftMid = 9630.0;
+  double fuelLeftInner = 12187.0;
+  double fuelFeedTwo = fuelFeedOne;
+  double fuelFeedThree = fuelFeedOne;
+  double fuelRightInner = fuelLeftInner;
+  double fuelRightMid = fuelLeftMid;
+  double fuelFeedFour = fuelFeedOne;
+  double fuelRightOuter = fuelLeftOuter;
+  double fuelTrim = 6259.0;
 };
 
 class EngineControl {
@@ -47,6 +59,7 @@ class EngineControl {
   double ambientPressure;
   double simOnGround;
   double devState;
+  double isReady;
 
   int engine;
   double engineState;
@@ -59,13 +72,13 @@ class EngineControl {
 
   double simCN1;
   double simN1;
-  double simN2;
+  double simN3;
   double thrust;
-  double simN2Engine1Pre;
-  double simN2Engine2Pre;
-  double simN2Engine3Pre;
-  double simN2Engine4Pre;
-  double deltaN2;
+  double simN3Engine1Pre;
+  double simN3Engine2Pre;
+  double simN3Engine3Pre;
+  double simN3Engine4Pre;
+  double deltaN3;
   double thermalEnergy1;
   double thermalEnergy2;
   double thermalEnergy3;
@@ -77,7 +90,7 @@ class EngineControl {
   double oilTemperatureEngine4Pre;
   double oilTemperatureMax;
   double idleN1;
-  double idleN2;
+  double idleN3;
   double idleFF;
   double idleEGT;
   double idleOil;
@@ -111,13 +124,13 @@ class EngineControl {
 
     idleCN1 = iCN1(pressAltitude, mach, ambientTemp);
     idleN1 = idleCN1 * sqrt(ratios->theta2(0, ambientTemp));
-    idleN2 = iCN2(pressAltitude, mach) * sqrt(ratios->theta(ambientTemp));
+    idleN3 = iCN3(pressAltitude, mach) * sqrt(ratios->theta(ambientTemp));
     idleCFF = poly->correctedFuelFlow(idleCN1, 0, pressAltitude);                                               // lbs/hr
     idleFF = idleCFF * LBS_TO_KGS * ratios->delta2(0, ambientPressure) * sqrt(ratios->theta2(0, ambientTemp));  // Kg/hr
     idleEGT = poly->correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * ratios->theta2(0, ambientTemp);
 
     simVars->setEngineIdleN1(idleN1);
-    simVars->setEngineIdleN2(idleN2);
+    simVars->setEngineIdleN3(idleN3);
     simVars->setEngineIdleFF(idleFF);
     simVars->setEngineIdleEGT(idleEGT);
   }
@@ -134,8 +147,8 @@ class EngineControl {
   void engineStateMachine(int engine,
                           double engineIgniter,
                           double engineStarter,
-                          double simN2,
-                          double idleN2,
+                          double simN3,
+                          double idleN3,
                           double pressAltitude,
                           double ambientTemp,
                           double deltaTimeDiff) {
@@ -160,6 +173,7 @@ class EngineControl {
         egtFbw = simVars->getEngine4EGT();
         break;
     }
+
     // Present State PAUSED
     if (deltaTimeDiff == 0 && engineState < 10) {
       engineState = engineState + 10;
@@ -171,7 +185,7 @@ class EngineControl {
 
       // Present State OFF
       if (engineState == 0 || engineState == 10) {
-        if (engineIgniter == 1 && engineStarter == 1 && simN2 > 20) {
+        if (engineIgniter == 1 && engineStarter == 1 && simN3 > 20) {
           engineState = 1;
         } else if (engineIgniter == 2 && engineStarter == 1) {
           engineState = 2;
@@ -191,7 +205,7 @@ class EngineControl {
 
       // Present State Starting.
       if (engineState == 2 || engineState == 12) {
-        if (engineStarter == 1 && simN2 >= (idleN2 - 0.1)) {
+        if (engineStarter == 1 && simN3 >= (idleN3 - 0.1)) {
           engineState = 1;
           resetTimer = 1;
         } else if (engineStarter == 0) {
@@ -204,7 +218,7 @@ class EngineControl {
 
       // Present State Re-Starting.
       if (engineState == 3 || engineState == 13) {
-        if (engineStarter == 1 && simN2 >= (idleN2 - 0.1)) {
+        if (engineStarter == 1 && simN3 >= (idleN3 - 0.1)) {
           engineState = 1;
           resetTimer = 1;
         } else if (engineStarter == 0) {
@@ -220,10 +234,10 @@ class EngineControl {
         if (engineIgniter == 2 && engineStarter == 1) {
           engineState = 3;
           resetTimer = 1;
-        } else if (engineStarter == 0 && simN2 < 0.05 && egtFbw <= ambientTemp) {
+        } else if (engineStarter == 0 && simN3 < 0.05 && egtFbw <= ambientTemp) {
           engineState = 0;
           resetTimer = 1;
-        } else if (engineStarter == 1 && simN2 > 50) {
+        } else if (engineStarter == 1 && simN3 > 50) {
           engineState = 3;
           resetTimer = 1;
         } else {
@@ -267,20 +281,20 @@ class EngineControl {
                             double engineState,
                             double deltaTime,
                             double timer,
-                            double simN2,
+                            double simN3,
                             double pressAltitude,
                             double ambientTemp) {
-    double startCN2Engine1;
-    double startCN2Engine2;
-    double startCN2Engine3;
-    double startCN2Engine4;
-    double preN2Fbw;
-    double newN2Fbw;
+    double startCN3Engine1;
+    double startCN3Engine2;
+    double startCN3Engine3;
+    double startCN3Engine4;
+    double preN3Fbw;
+    double newN3Fbw;
     double preEgtFbw;
     double startEgtFbw;
     double shutdownEgtFbw;
 
-    idleN2 = simVars->getEngineIdleN2();
+    idleN3 = simVars->getEngineIdleN3();
     idleN1 = simVars->getEngineIdleN1();
     idleFF = simVars->getEngineIdleFF();
     idleEGT = simVars->getEngineIdleEGT();
@@ -292,26 +306,27 @@ class EngineControl {
           simVars->setFuelUsedEngine1(0);
         }
         simVars->setEngine1Timer(timer + deltaTime);
-        startCN2Engine1 = 0;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Engine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &startCN2Engine1);
+        startCN3Engine1 = 0;
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN3Engine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &startCN3Engine1);
       } else {
-        preN2Fbw = simVars->getEngine1N2();
+        preN3Fbw = simVars->getEngine1N3();
         preEgtFbw = simVars->getEngine1EGT();
-        newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2);
-        startEgtFbw = poly->startEGT(newN2Fbw, idleN2, ambientTemp, idleEGT);
+        newN3Fbw = poly->startN3(simN3, preN3Fbw, idleN3);
+        startEgtFbw = poly->startEGT(newN3Fbw, idleN3, ambientTemp, idleEGT);
         shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
 
-        simVars->setEngine1N2(newN2Fbw);
-        simVars->setEngine1N1(poly->startN1(newN2Fbw, idleN2, idleN1));
-        simVars->setEngine1FF(poly->startFF(newN2Fbw, idleN2, idleFF));
+        simVars->setEngine1N3(newN3Fbw);
+        simVars->setEngine1N2(newN3Fbw + 0.7);
+        simVars->setEngine1N1(poly->startN1(newN3Fbw, idleN3, idleN1));
+        simVars->setEngine1FF(poly->startFF(newN3Fbw, idleN3, idleFF));
 
         if (engineState == 3) {
           if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
             simVars->setEngine1EGT(startEgtFbw);
             simVars->setEngine1State(2);
           } else if (startEgtFbw > preEgtFbw) {
-            simVars->setEngine1EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+            simVars->setEngine1EGT(preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw)));
           } else {
             simVars->setEngine1EGT(shutdownEgtFbw);
           }
@@ -319,7 +334,7 @@ class EngineControl {
           simVars->setEngine1EGT(startEgtFbw);
         }
 
-        oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
+        oilTemperature = poly->startOilTemp(newN3Fbw, idleN3, ambientTemp);
         oilTemperatureEngine1Pre = oilTemperature;
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                       &oilTemperature);
@@ -330,26 +345,27 @@ class EngineControl {
           simVars->setFuelUsedEngine2(0);
         }
         simVars->setEngine2Timer(timer + deltaTime);
-        startCN2Engine2 = 0;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Engine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &startCN2Engine2);
+        startCN3Engine2 = 0;
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN3Engine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &startCN3Engine2);
       } else {
-        preN2Fbw = simVars->getEngine2N2();
+        preN3Fbw = simVars->getEngine2N3();
         preEgtFbw = simVars->getEngine2EGT();
-        newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2);
-        startEgtFbw = poly->startEGT(newN2Fbw, idleN2, ambientTemp, idleEGT);
+        newN3Fbw = poly->startN3(simN3, preN3Fbw, idleN3);
+        startEgtFbw = poly->startEGT(newN3Fbw, idleN3, ambientTemp, idleEGT);
         shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
 
-        simVars->setEngine2N2(newN2Fbw);
-        simVars->setEngine2N1(poly->startN1(newN2Fbw, idleN2, idleN1));
-        simVars->setEngine2FF(poly->startFF(newN2Fbw, idleN2, idleFF));
+        simVars->setEngine2N3(newN3Fbw);
+        simVars->setEngine2N2(newN3Fbw + 0.7);
+        simVars->setEngine2N1(poly->startN1(newN3Fbw, idleN3, idleN1));
+        simVars->setEngine2FF(poly->startFF(newN3Fbw, idleN3, idleFF));
 
         if (engineState == 3) {
           if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
             simVars->setEngine2EGT(startEgtFbw);
             simVars->setEngine2State(2);
           } else if (startEgtFbw > preEgtFbw) {
-            simVars->setEngine2EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+            simVars->setEngine2EGT(preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw)));
           } else {
             simVars->setEngine2EGT(shutdownEgtFbw);
           }
@@ -357,7 +373,7 @@ class EngineControl {
           simVars->setEngine2EGT(startEgtFbw);
         }
 
-        oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
+        oilTemperature = poly->startOilTemp(newN3Fbw, idleN3, ambientTemp);
         oilTemperatureEngine2Pre = oilTemperature;
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                       &oilTemperature);
@@ -368,26 +384,27 @@ class EngineControl {
           simVars->setFuelUsedEngine3(0);
         }
         simVars->setEngine3Timer(timer + deltaTime);
-        startCN2Engine3 = 0;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Engine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &startCN2Engine3);
+        startCN3Engine3 = 0;
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN3Engine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &startCN3Engine3);
       } else {
-        preN2Fbw = simVars->getEngine3N2();
+        preN3Fbw = simVars->getEngine3N3();
         preEgtFbw = simVars->getEngine3EGT();
-        newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2);
-        startEgtFbw = poly->startEGT(newN2Fbw, idleN2, ambientTemp, idleEGT);
+        newN3Fbw = poly->startN3(simN3, preN3Fbw, idleN3);
+        startEgtFbw = poly->startEGT(newN3Fbw, idleN3, ambientTemp, idleEGT);
         shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
 
-        simVars->setEngine3N2(newN2Fbw);
-        simVars->setEngine3N1(poly->startN1(newN2Fbw, idleN2, idleN1));
-        simVars->setEngine3FF(poly->startFF(newN2Fbw, idleN2, idleFF));
+        simVars->setEngine3N3(newN3Fbw);
+        simVars->setEngine3N2(newN3Fbw + 0.7);
+        simVars->setEngine3N1(poly->startN1(newN3Fbw, idleN3, idleN1));
+        simVars->setEngine3FF(poly->startFF(newN3Fbw, idleN3, idleFF));
 
         if (engineState == 3) {
           if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
             simVars->setEngine3EGT(startEgtFbw);
             simVars->setEngine3State(2);
           } else if (startEgtFbw > preEgtFbw) {
-            simVars->setEngine3EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+            simVars->setEngine3EGT(preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw)));
           } else {
             simVars->setEngine3EGT(shutdownEgtFbw);
           }
@@ -395,7 +412,7 @@ class EngineControl {
           simVars->setEngine3EGT(startEgtFbw);
         }
 
-        oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
+        oilTemperature = poly->startOilTemp(newN3Fbw, idleN3, ambientTemp);
         oilTemperatureEngine3Pre = oilTemperature;
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                       &oilTemperature);
@@ -406,26 +423,27 @@ class EngineControl {
           simVars->setFuelUsedEngine4(0);
         }
         simVars->setEngine4Timer(timer + deltaTime);
-        startCN2Engine4 = 0;
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN2Engine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &startCN2Engine4);
+        startCN3Engine4 = 0;
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::StartCN3Engine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &startCN3Engine4);
       } else {
-        preN2Fbw = simVars->getEngine4N2();
+        preN3Fbw = simVars->getEngine4N3();
         preEgtFbw = simVars->getEngine4EGT();
-        newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2);
-        startEgtFbw = poly->startEGT(newN2Fbw, idleN2, ambientTemp, idleEGT);
+        newN3Fbw = poly->startN3(simN3, preN3Fbw, idleN3);
+        startEgtFbw = poly->startEGT(newN3Fbw, idleN3, ambientTemp, idleEGT);
         shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
 
-        simVars->setEngine4N2(newN2Fbw);
-        simVars->setEngine4N1(poly->startN1(newN2Fbw, idleN2, idleN1));
-        simVars->setEngine4FF(poly->startFF(newN2Fbw, idleN2, idleFF));
+        simVars->setEngine4N3(newN3Fbw);
+        simVars->setEngine4N2(newN3Fbw + 0.7);
+        simVars->setEngine4N1(poly->startN1(newN3Fbw, idleN3, idleN1));
+        simVars->setEngine4FF(poly->startFF(newN3Fbw, idleN3, idleFF));
 
         if (engineState == 3) {
           if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
             simVars->setEngine4EGT(startEgtFbw);
             simVars->setEngine4State(2);
           } else if (startEgtFbw > preEgtFbw) {
-            simVars->setEngine4EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+            simVars->setEngine4EGT(preEgtFbw + (0.75 * deltaTime * (idleN3 - newN3Fbw)));
           } else {
             simVars->setEngine4EGT(shutdownEgtFbw);
           }
@@ -433,7 +451,7 @@ class EngineControl {
           simVars->setEngine4EGT(startEgtFbw);
         }
 
-        oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
+        oilTemperature = poly->startOilTemp(newN3Fbw, idleN3, ambientTemp);
         oilTemperatureEngine4Pre = oilTemperature;
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                       &oilTemperature);
@@ -446,10 +464,10 @@ class EngineControl {
   /// </summary>
   void engineShutdownProcedure(int engine, double ambientTemp, double simN1, double deltaTime, double timer) {
     double preN1Fbw;
-    double preN2Fbw;
+    double preN3Fbw;
     double preEgtFbw;
     double newN1Fbw;
-    double newN2Fbw;
+    double newN3Fbw;
     double newEgtFbw;
 
     if (engine == 1) {
@@ -457,16 +475,17 @@ class EngineControl {
         simVars->setEngine1Timer(timer + deltaTime);
       } else {
         preN1Fbw = simVars->getEngine1N1();
-        preN2Fbw = simVars->getEngine1N2();
+        preN3Fbw = simVars->getEngine1N3();
         preEgtFbw = simVars->getEngine1EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
         if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
           newN1Fbw = simN1;
         }
-        newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
+        newN3Fbw = poly->shutdownN3(preN3Fbw, deltaTime);
         newEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
         simVars->setEngine1N1(newN1Fbw);
-        simVars->setEngine1N2(newN2Fbw);
+        simVars->setEngine1N2(newN3Fbw + 0.7);
+        simVars->setEngine1N3(newN3Fbw);
         simVars->setEngine1EGT(newEgtFbw);
       }
     } else if (engine == 2) {
@@ -474,16 +493,17 @@ class EngineControl {
         simVars->setEngine2Timer(timer + deltaTime);
       } else {
         preN1Fbw = simVars->getEngine2N1();
-        preN2Fbw = simVars->getEngine2N2();
+        preN3Fbw = simVars->getEngine2N3();
         preEgtFbw = simVars->getEngine2EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
         if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
           newN1Fbw = simN1;
         }
-        newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
+        newN3Fbw = poly->shutdownN3(preN3Fbw, deltaTime);
         newEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
         simVars->setEngine2N1(newN1Fbw);
-        simVars->setEngine2N2(newN2Fbw);
+        simVars->setEngine2N2(newN3Fbw + 0.7);
+        simVars->setEngine2N3(newN3Fbw);
         simVars->setEngine2EGT(newEgtFbw);
       }
     } else if (engine == 3) {
@@ -491,16 +511,17 @@ class EngineControl {
         simVars->setEngine3Timer(timer + deltaTime);
       } else {
         preN1Fbw = simVars->getEngine3N1();
-        preN2Fbw = simVars->getEngine3N2();
+        preN3Fbw = simVars->getEngine3N3();
         preEgtFbw = simVars->getEngine3EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
         if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
           newN1Fbw = simN1;
         }
-        newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
+        newN3Fbw = poly->shutdownN3(preN3Fbw, deltaTime);
         newEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
         simVars->setEngine3N1(newN1Fbw);
-        simVars->setEngine3N2(newN2Fbw);
+        simVars->setEngine3N2(newN3Fbw + 0.7);
+        simVars->setEngine3N3(newN3Fbw);
         simVars->setEngine3EGT(newEgtFbw);
       }
     } else {
@@ -508,38 +529,42 @@ class EngineControl {
         simVars->setEngine4Timer(timer + deltaTime);
       } else {
         preN1Fbw = simVars->getEngine4N1();
-        preN2Fbw = simVars->getEngine4N2();
+        preN3Fbw = simVars->getEngine4N3();
         preEgtFbw = simVars->getEngine4EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
         if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
           newN1Fbw = simN1;
         }
-        newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
+        newN3Fbw = poly->shutdownN3(preN3Fbw, deltaTime);
         newEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
         simVars->setEngine4N1(newN1Fbw);
-        simVars->setEngine4N2(newN2Fbw);
+        simVars->setEngine4N2(newN3Fbw + 0.7);
+        simVars->setEngine4N3(newN3Fbw);
         simVars->setEngine4EGT(newEgtFbw);
       }
     }
   }
   /// <summary>
-  /// FBW Engine RPM (N1 and N2)
-  /// Updates Engine N1 and N2 with our own algorithm for start-up and shutdown
+  /// FBW Engine RPM (N1, N2 and N3)
+  /// Updates Engine N1, N2 and N3 with our own algorithm for start-up and shutdown
   /// </summary>
-  void updatePrimaryParameters(int engine, double simN1, double simN2) {
-
+  void updatePrimaryParameters(int engine, double simN1, double simN3) {
     if (engine == 1) {
       simVars->setEngine1N1(simN1);
-      simVars->setEngine1N2(simN2);
+      simVars->setEngine1N2(simN3 + 0.7);
+      simVars->setEngine1N3(simN3);
     } else if (engine == 2) {
       simVars->setEngine2N1(simN1);
-      simVars->setEngine2N2(simN2);
+      simVars->setEngine2N2(simN3 + 0.7);
+      simVars->setEngine2N3(simN3);
     } else if (engine == 3) {
       simVars->setEngine3N1(simN1);
-      simVars->setEngine3N2(simN2);
+      simVars->setEngine3N2(simN3 + 0.7);
+      simVars->setEngine3N3(simN3);
     } else {
       simVars->setEngine4N1(simN1);
-      simVars->setEngine4N2(simN2);
+      simVars->setEngine4N2(simN3 + 0.7);
+      simVars->setEngine4N3(simN3);
     }
   }
 
@@ -639,7 +664,7 @@ class EngineControl {
   /// FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and degree Celsius)
   /// Updates Oil with realistic values visualized in the SD
   /// </summary>
-  void updateOil(int engine, double thrust, double simN2, double deltaN2, double deltaTime, double ambientTemp) {
+  void updateOil(int engine, double thrust, double simN3, double deltaN3, double deltaTime, double ambientTemp) {
     double steadyTemperature;
     double thermalEnergy;
     double oilTemperaturePre;
@@ -688,7 +713,7 @@ class EngineControl {
       if (steadyTemperature > oilTemperatureMax) {
         steadyTemperature = oilTemperatureMax;
       }
-      thermalEnergy = (0.995 * thermalEnergy) + (deltaN2 / deltaTime);
+      thermalEnergy = (0.995 * thermalEnergy) + (deltaN3 / deltaTime);
       oilTemperature = poly->oilTemperature(thermalEnergy, oilTemperaturePre, steadyTemperature, deltaTime);
     }
 
@@ -709,7 +734,7 @@ class EngineControl {
     //--------------------------------------------
     oilPressureIdle = 0;
 
-    oilPressure = poly->oilPressure(simN2) + oilPressureIdle;
+    oilPressure = poly->oilPressure(simN3) + oilPressureIdle;
 
     //--------------------------------------------
     // Engine Writing
@@ -817,6 +842,7 @@ class EngineControl {
     double refuelRate = simVars->getRefuelRate();
     double refuelStartedByUser = simVars->getRefuelStartedByUser();
     bool uiFuelTamper = false;
+
     double pumpStateEngine1 = simVars->getPumpStateEngine1();
     double pumpStateEngine2 = simVars->getPumpStateEngine2();
     double pumpStateEngine3 = simVars->getPumpStateEngine3();
@@ -832,32 +858,52 @@ class EngineControl {
     double engine4FF = simVars->getEngine4FF();        // KG/H
 
     double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();    // Kg
+    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();  // Kg
     double fuelUsedEngine2 = simVars->getFuelUsedEngine2();  // Kg
-    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();    // Kg
-    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();    // Kg
+    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();  // Kg
+    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();  // Kg
 
-    double fuelLeftPre = simVars->getFuelLeftPre();                                   // LBS
-    double fuelRightPre = simVars->getFuelRightPre();                                 // LBS
-    double fuelAuxLeftPre = simVars->getFuelAuxLeftPre();                             // LBS
-    double fuelAuxRightPre = simVars->getFuelAuxRightPre();                           // LBS
-    double fuelCenterPre = simVars->getFuelCenterPre();                               // LBS
-    double leftQuantity = simVars->getTankLeftQuantity() * fuelWeightGallon;          // LBS
-    double rightQuantity = simVars->getTankRightQuantity() * fuelWeightGallon;        // LBS
-    double leftAuxQuantity = simVars->getTankLeftAuxQuantity() * fuelWeightGallon;    // LBS
-    double rightAuxQuantity = simVars->getTankRightAuxQuantity() * fuelWeightGallon;  // LBS
-    double centerQuantity = simVars->getTankCenterQuantity() * fuelWeightGallon;      // LBS
-    double fuelLeft = 0;                                                              // LBS
-    double fuelRight = 0;
-    double fuelLeftAux = 0;
-    double fuelRightAux = 0;
-    double fuelCenter = 0;
-    double xfrCenter = 0;
-    double xfrAuxLeft = 0;
-    double xfrAuxRight = 0;
-    double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
-    double fuelTotalPre = fuelLeftPre + fuelRightPre + fuelAuxLeftPre + fuelAuxRightPre + fuelCenterPre;          // LBS
-    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                  // LBS/ sec
+    double fuelLeftOuterPre = simVars->getFuelLeftOuterPre();    // LBS
+    double fuelFeedOnePre = simVars->getFuelFeedOnePre();        // LBS
+    double fuelLeftMidPre = simVars->getFuelLeftMidPre();        // LBS
+    double fuelLeftInnerPre = simVars->getFuelLeftInnerPre();    // LBS
+    double fuelFeedTwoPre = simVars->getFuelFeedTwoPre();        // LBS
+    double fuelFeedThreePre = simVars->getFuelFeedThreePre();    // LBS
+    double fuelRightInnerPre = simVars->getFuelRightInnerPre();  // LBS
+    double fuelRightMidPre = simVars->getFuelRightMidPre();      // LBS
+    double fuelFeedFourPre = simVars->getFuelFeedFourPre();      // LBS
+    double fuelRightOuterPre = simVars->getFuelRightOuterPre();  // LBS
+    double fuelTrimPre = simVars->getFuelTrimPre();              // LBS
+
+    double leftOuterQty = simVars->getTankFuelQuantity(1) * fuelWeightGallon;    // LBS
+    double feedOneQty = simVars->getTankFuelQuantity(2) * fuelWeightGallon;      // LBS
+    double leftMidQty = simVars->getTankFuelQuantity(3) * fuelWeightGallon;      // LBS
+    double leftInnerQty = simVars->getTankFuelQuantity(4) * fuelWeightGallon;    // LBS
+    double feedTwoQty = simVars->getTankFuelQuantity(5) * fuelWeightGallon;      // LBS
+    double feedThreeQty = simVars->getTankFuelQuantity(6) * fuelWeightGallon;    // LBS
+    double rightInnerQty = simVars->getTankFuelQuantity(7) * fuelWeightGallon;   // LBS
+    double rightMidQty = simVars->getTankFuelQuantity(8) * fuelWeightGallon;     // LBS
+    double feedFourQty = simVars->getTankFuelQuantity(9) * fuelWeightGallon;     // LBS
+    double rightOuterQty = simVars->getTankFuelQuantity(10) * fuelWeightGallon;  // LBS
+    double trimQty = simVars->getTankFuelQuantity(11) * fuelWeightGallon;        // LBS
+
+    double fuelLeftOuter = 0;
+    double fuelFeedOne = 0;
+    double fuelLeftMid = 0;
+    double fuelLeftInner = 0;
+    double fuelFeedTwo = 0;
+    double fuelFeedThree = 0;
+    double fuelRightInner = 0;
+    double fuelRightMid = 0;
+    double fuelFeedFour = 0;
+    double fuelRightOuter = 0;
+    double fuelTrim = 0;
+
+    double fuelTotalActual = leftOuterQty + feedOneQty + leftMidQty + leftInnerQty + feedTwoQty + feedThreeQty + rightInnerQty +
+                             rightMidQty + feedFourQty + rightOuterQty + trimQty;  // LBS
+    double fuelTotalPre = fuelLeftOuterPre + fuelFeedOnePre + fuelLeftMidPre + fuelLeftInnerPre + fuelFeedTwoPre + fuelFeedThreePre +
+                          fuelRightInnerPre + fuelRightMidPre + fuelFeedFourPre + fuelRightOuterPre + fuelTrimPre;  // LBS
+    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                    // LBS/ sec
 
     double engine1State = simVars->getEngine1State();
     double engine2State = simVars->getEngine2State();
@@ -865,9 +911,13 @@ class EngineControl {
     double engine4State = simVars->getEngine4State();
 
     // Check Development State for UI
+    isReady = simVars->getIsReady();
     devState = simVars->getDeveloperState();
 
     deltaTime = deltaTime / 3600;
+
+    /*--------------------------------------------
+    // Pump Logic - TO BE IMPLEMENTED
 
     // Pump State Logic for Engine 1
     if (pumpStateEngine1 == 0 && (timerEngine1.elapsed() == 0 || timerEngine1.elapsed() >= 1000)) {
@@ -929,7 +979,7 @@ class EngineControl {
       timerEngine3.reset();
     }
 
-    // Pump State Logic for Engine 44
+    // Pump State Logic for Engine 4
     if (pumpStateEngine4 == 0 && (timerEngine4.elapsed() == 0 || timerEngine4.elapsed() >= 1000)) {
       if (fuelRightPre - rightQuantity > 0 && rightQuantity == 0) {
         timerEngine4.reset();
@@ -948,197 +998,183 @@ class EngineControl {
       simVars->setPumpStateEngine4(0);
       timerEngine4.reset();
     }
+    --------------------------------------------*/
 
     // Checking for in-game UI Fuel tampering
-    if ((refuelStartedByUser == 0 && deltaFuelRate > FUEL_THRESHOLD) ||
-        (refuelStartedByUser == 1 && deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
+    if ((isReady == 1 && refuelStartedByUser == 0 && deltaFuelRate > FUEL_THRESHOLD) ||
+        (isReady == 1 && refuelStartedByUser == 1 && deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
       uiFuelTamper = true;
     }
 
-    if (simPaused || uiFuelTamper) {                 // Detects whether the Sim is paused or the Fuel UI is being tampered with
-      simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
-      simVars->setFuelRightPre(fuelRightPre);        // in LBS
-      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
-      simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
-      simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
-      if (devState == 0) {
-        fuelLeft = (fuelLeftPre / fuelWeightGallon);          // USG
-        fuelRight = (fuelRightPre / fuelWeightGallon);        // USG
-        fuelCenter = (fuelCenterPre / fuelWeightGallon);      // USG
-        fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
-        fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
+    //--------------------------------------------
+    // Main Fuel Burn Logic
+    //--------------------------------------------
+    if (simPaused || uiFuelTamper && devState == 0) {    // Detects whether the Sim is paused or the Fuel UI is being tampered with
+      simVars->setFuelLeftOuterPre(fuelLeftOuterPre);    // in LBS
+      simVars->setFuelFeedOnePre(fuelFeedOnePre);        // in LBS
+      simVars->setFuelLeftMidPre(fuelLeftMidPre);        // in LBS
+      simVars->setFuelLeftInnerPre(fuelLeftInnerPre);    // in LBS
+      simVars->setFuelFeedTwoPre(fuelFeedTwoPre);        // in LBS
+      simVars->setFuelFeedThreePre(fuelFeedThreePre);    // in LBS
+      simVars->setFuelRightInnerPre(fuelRightInnerPre);  // in LBS
+      simVars->setFuelRightMidPre(fuelRightMidPre);      // in LBS
+      simVars->setFuelFeedFourPre(fuelFeedFourPre);      // in LBS
+      simVars->setFuelRightOuterPre(fuelRightOuterPre);  // in LBS
+      simVars->setFuelTrimPre(fuelTrimPre);              // in LBS
 
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &fuelCenter);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &fuelRightAux);
-      }
+      fuelLeftOuter = (fuelLeftOuterPre / fuelWeightGallon);    // USG
+      fuelFeedOne = (fuelFeedOnePre / fuelWeightGallon);        // USG
+      fuelLeftMid = (fuelLeftMidPre / fuelWeightGallon);        // USG
+      fuelLeftInner = (fuelLeftInnerPre / fuelWeightGallon);    // USG
+      fuelFeedTwo = (fuelFeedTwoPre / fuelWeightGallon);        // USG
+      fuelFeedThree = (fuelFeedThreePre / fuelWeightGallon);    // USG
+      fuelRightInner = (fuelRightInnerPre / fuelWeightGallon);  // USG
+      fuelRightMid = (fuelRightMidPre / fuelWeightGallon);      // USG
+      fuelFeedFour = (fuelFeedFourPre / fuelWeightGallon);      // USG
+      fuelRightOuter = (fuelRightOuterPre / fuelWeightGallon);  // USG
+      fuelTrim = (fuelTrimPre / fuelWeightGallon);              // USG
+
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemLeftOuter, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelLeftOuter);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedOne, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedOne);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemLeftMid, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelLeftMid);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemLeftInner, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelLeftInner);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedTwo, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedTwo);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedThree, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedThree);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemRightInner, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelRightInner);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemRightMid, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelRightMid);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedFour, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedFour);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemRightOuter, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelRightOuter);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemTrim, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelTrim);
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
-      simVars->setFuelLeftPre(leftQuantity);                 // in LBS
-      simVars->setFuelRightPre(rightQuantity);               // in LBS
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);           // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);         // in LBS
-      simVars->setFuelCenterPre(centerQuantity);             // in LBS
+      simVars->setFuelLeftOuterPre(leftOuterQty);            // in LBS
+      simVars->setFuelFeedOnePre(feedOneQty);                // in LBS
+      simVars->setFuelLeftMidPre(leftMidQty);                // in LBS
+      simVars->setFuelLeftInnerPre(leftInnerQty);            // in LBS
+      simVars->setFuelFeedTwoPre(feedTwoQty);                // in LBS
+      simVars->setFuelFeedThreePre(feedThreeQty);            // in LBS
+      simVars->setFuelRightInnerPre(rightInnerQty);          // in LBS
+      simVars->setFuelRightMidPre(rightMidQty);              // in LBS
+      simVars->setFuelFeedFourPre(feedFourQty);              // in LBS
+      simVars->setFuelRightOuterPre(rightOuterQty);          // in LBS
+      simVars->setFuelTrimPre(trimQty);                      // in LBS
     } else {
+      if (uiFuelTamper == 1) {
+        fuelLeftOuterPre = leftOuterQty;    // in LBS
+        fuelFeedOnePre = feedOneQty;        // in LBS
+        fuelLeftMidPre = leftMidQty;        // in LBS
+        fuelLeftInnerPre = leftInnerQty;    // in LBS
+        fuelFeedTwoPre = feedTwoQty;        // in LBS
+        fuelFeedThreePre = feedThreeQty;    // in LBS
+        fuelRightInnerPre = rightInnerQty;  // in LBS
+        fuelRightMidPre = rightMidQty;      // in LBS
+        fuelFeedFourPre = feedFourQty;      // in LBS
+        fuelRightOuterPre = rightOuterQty;  // in LBS
+        fuelTrimPre = trimQty;              // in LBS
+      }
       //--------------------------------------------
-      // Engine 1 and Wing routine
-      //--------------------------------------------
-      if (fuelLeftPre > 0) {
+      // Engine 1 Fuel Burn routine
+      if (fuelFeedOnePre > 0) {
         // Cycle Fuel Burn for Engine 1
-        m = (engine1FF - engine1PreFF) / deltaTime;
-        b = engine1PreFF;
-        fuelBurn1 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
-
+        if (devState != 2) {
+          m = (engine1FF - engine1PreFF) / deltaTime;
+          b = engine1PreFF;
+          fuelBurn1 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
+        }
         // Fuel Used Accumulators - Engine 1
         fuelUsedEngine1 += fuelBurn1;
-
-        // Fuel transfer routine for Left Wing
-        if (fuelAuxLeftPre > leftAuxQuantity) {
-          xfrAuxLeft = fuelAuxLeftPre - leftAuxQuantity;
-        }
-      } else if (fuelLeftPre <= 0) {
-        fuelBurn1 = 0;
-        fuelLeftPre = 0;
       } else {
         fuelBurn1 = 0;
-        fuelLeftPre = -10;
+        fuelFeedOnePre = 0;
       }
-
       //--------------------------------------------
-      // Engine 2 and Wing routine
-      //--------------------------------------------
-      if (fuelLeftPre > 0) {
+      // Engine 2 Fuel Burn routine
+      if (fuelFeedTwoPre > 0) {
         // Cycle Fuel Burn for Engine 2
-        m = (engine2FF - engine2PreFF) / deltaTime;
-        b = engine2PreFF;
-        fuelBurn2 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
-
+        if (devState != 2) {
+          m = (engine2FF - engine2PreFF) / deltaTime;
+          b = engine2PreFF;
+          fuelBurn2 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
+        }
         // Fuel Used Accumulators - Engine 2
         fuelUsedEngine2 += fuelBurn2;
-
-        // Fuel transfer routine for Left Wing
-        if (fuelAuxLeftPre > leftAuxQuantity) {
-          xfrAuxLeft = fuelAuxLeftPre - leftAuxQuantity;
-        }
-      } else if (fuelLeftPre <= 0) {
-        fuelBurn2 = 0;
-        fuelLeftPre = 0;
       } else {
         fuelBurn2 = 0;
-        fuelLeftPre = -10;
+        fuelFeedTwoPre = 0;
       }
-
       //--------------------------------------------
-      // Engine 3 and Wing routine
-      //--------------------------------------------
-      if (fuelRightPre > 0) {
+      // Engine 3 Fuel Burn routine
+      if (fuelFeedThreePre > 0) {
         // Cycle Fuel Burn for Engine 3
-        m = (engine3FF - engine3PreFF) / deltaTime;
-        b = engine3PreFF;
-        fuelBurn3 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
-
+        if (devState != 2) {
+          m = (engine3FF - engine3PreFF) / deltaTime;
+          b = engine3PreFF;
+          fuelBurn3 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
+        }
         // Fuel Used Accumulators - Engine 3
         fuelUsedEngine3 += fuelBurn3;
-
-        // Fuel transfer routine for Left Wing
-        if (fuelAuxRightPre > rightAuxQuantity) {
-          xfrAuxRight = fuelAuxRightPre - rightAuxQuantity;
-        }
-      } else if (fuelRightPre <= 0) {
-        fuelBurn3 = 0;
-        fuelRightPre = 0;
       } else {
         fuelBurn3 = 0;
-        fuelRightPre = -10;
+        fuelFeedThreePre = 0;
       }
-
       //--------------------------------------------
-      // Engine 4 and Wing routine
-      //--------------------------------------------
-      if (fuelRightPre > 0) {
+      // Engine 4 Fuel Burn routine
+      if (fuelFeedFourPre > 0) {
         // Cycle Fuel Burn for Engine 4
-        m = (engine4FF - engine4PreFF) / deltaTime;
-        b = engine4PreFF;
-        fuelBurn4 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
-
+        if (devState != 2) {
+          m = (engine4FF - engine4PreFF) / deltaTime;
+          b = engine4PreFF;
+          fuelBurn4 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
+        }
         // Fuel Used Accumulators - Engine 4
         fuelUsedEngine4 += fuelBurn4;
-
-        // Fuel transfer routine for Left Wing
-        if (fuelAuxRightPre > rightAuxQuantity) {
-          xfrAuxRight = fuelAuxRightPre - rightAuxQuantity;
-        }
-      } else if (fuelRightPre <= 0) {
-        fuelBurn4 = 0;
-        fuelRightPre = 0;
       } else {
         fuelBurn4 = 0;
-        fuelRightPre = -10;
+        fuelFeedFourPre = 0;
       }
 
-      //--------------------------------------------
-      // Center Tank transfer routine
-      //--------------------------------------------
-      if (fuelCenterPre > centerQuantity) {
-        xfrCenter = fuelCenterPre - centerQuantity;
-      }
-
-      //--------------------------------------------
-      // Main Fuel Logic
-      // Include DevState = 2 - No Fuel Burn
-      //--------------------------------------------
-      if (devState == 2) {
-        fuelBurn1 = 0;
-        fuelBurn2 = 0;
-        fuelBurn3 = 0;
-        fuelBurn4 = 0;
-      }
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS) - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);  // LBS
-      fuelRight = (fuelRightPre - (fuelBurn3 * KGS_TO_LBS) - (fuelBurn4 * KGS_TO_LBS)) + xfrAuxRight + (xfrCenter / 2);  // LBS
-
-      // Checking for Inner Tank overflow - Will be taken off with Rust code
-      if (fuelLeft > 12167.1 && fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + (fuelLeft - 12167.1) + (fuelRight - 12167.1);
-        fuelLeft = 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + fuelRight - 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelLeft > 12167.1) {
-        fuelCenter = centerQuantity + fuelLeft - 12167.1;
-        fuelLeft = 12167.1;
-      } else {
-        fuelCenter = centerQuantity;
-      }
+      fuelFeedOne = fuelFeedOnePre - (fuelBurn1 * KGS_TO_LBS);      // LBS
+      fuelFeedTwo = fuelFeedTwoPre - (fuelBurn2 * KGS_TO_LBS);      // LBS
+      fuelFeedThree = fuelFeedThreePre - (fuelBurn3 * KGS_TO_LBS);  // LBS
+      fuelFeedFour = fuelFeedFourPre - (fuelBurn4 * KGS_TO_LBS);    // LBS
 
       // Setting new pre-cycle conditions
       simVars->setEngine1PreFF(engine1FF);
       simVars->setEngine2PreFF(engine2FF);
       simVars->setEngine3PreFF(engine3FF);
       simVars->setEngine4PreFF(engine4FF);
-      simVars->setFuelUsedEngine1(fuelUsedEngine1);       // in KG
-      simVars->setFuelUsedEngine2(fuelUsedEngine2);       // in KG
-      simVars->setFuelUsedEngine3(fuelUsedEngine3);       // in KG
-      simVars->setFuelUsedEngine4(fuelUsedEngine4);       // in KG
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(fuelCenter);          // in LBS
+      simVars->setFuelUsedEngine1(fuelUsedEngine1);  // in KG
+      simVars->setFuelUsedEngine2(fuelUsedEngine2);  // in KG
+      simVars->setFuelUsedEngine3(fuelUsedEngine3);  // in KG
+      simVars->setFuelUsedEngine4(fuelUsedEngine4);  // in KG
 
-      simVars->setFuelLeftPre(fuelLeft);    // in LBS
-      simVars->setFuelRightPre(fuelRight);  // in LBS
+      simVars->setFuelFeedOnePre(fuelFeedOne);      // in LBS
+      simVars->setFuelFeedTwoPre(fuelFeedTwo);      // in LBS
+      simVars->setFuelFeedThreePre(fuelFeedThree);  // in LBS
+      simVars->setFuelFeedFourPre(fuelFeedFour);    // in LBS
 
-      fuelLeft = (fuelLeft / fuelWeightGallon);      // USG
-      fuelRight = (fuelRight / fuelWeightGallon);    // USG
-      fuelCenter = (fuelCenter / fuelWeightGallon);  // USG
-      if (devState != 2) {
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &fuelCenter);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
-      }
+      fuelFeedOne = (fuelFeedOne / fuelWeightGallon);      // USG
+      fuelFeedTwo = (fuelFeedTwo / fuelWeightGallon);      // USG
+      fuelFeedThree = (fuelFeedThree / fuelWeightGallon);  // USG
+      fuelFeedFour = (fuelFeedFour / fuelWeightGallon);    // USG
+
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedOne, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedOne);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedTwo, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedTwo);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedThree, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedThree);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelSystemFeedFour, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &fuelFeedFour);
     }
 
     // Will save the current fuel quantities if on the ground AND engines being shutdown
@@ -1148,11 +1184,17 @@ class EngineControl {
          engine4State == 0 || engine4State == 10 || engine4State == 4 || engine4State == 14)) {
       Configuration configuration;
 
-      configuration.fuelLeft = simVars->getFuelLeftPre() / simVars->getFuelWeightGallon();
-      configuration.fuelRight = simVars->getFuelRightPre() / simVars->getFuelWeightGallon();
-      configuration.fuelCenter = simVars->getFuelCenterPre() / simVars->getFuelWeightGallon();
-      configuration.fuelLeftAux = simVars->getFuelAuxLeftPre() / simVars->getFuelWeightGallon();
-      configuration.fuelRightAux = simVars->getFuelAuxRightPre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeftOuter = simVars->getFuelLeftOuterPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedOne = simVars->getFuelFeedOnePre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeftMid = simVars->getFuelLeftMidPre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeftInner = simVars->getFuelLeftInnerPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedTwo = simVars->getFuelFeedTwoPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedThree = simVars->getFuelFeedThreePre() / simVars->getFuelWeightGallon();
+      configuration.fuelRightInner = simVars->getFuelRightInnerPre() / simVars->getFuelWeightGallon();
+      configuration.fuelRightMid = simVars->getFuelRightMidPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedFour = simVars->getFuelFeedFourPre() / simVars->getFuelWeightGallon();
+      configuration.fuelRightOuter = simVars->getFuelRightOuterPre() / simVars->getFuelWeightGallon();
+      configuration.fuelTrim = simVars->getFuelTrimPre() / simVars->getFuelWeightGallon();
 
       saveFuelInConfiguration(configuration);
       timerFuel.reset();
@@ -1276,10 +1318,10 @@ class EngineControl {
     simVars = new SimVars();
     double engTime = 0;
     ambientTemp = simVars->getAmbientTemperature();
-    simN2Engine1Pre = simVars->getN2(1);
-    simN2Engine2Pre = simVars->getN2(2);
-    simN2Engine3Pre = simVars->getN2(3);
-    simN2Engine4Pre = simVars->getN2(4);
+    simN3Engine1Pre = simVars->getN2(1);
+    simN3Engine2Pre = simVars->getN2(2);
+    simN3Engine3Pre = simVars->getN2(3);
+    simN3Engine4Pre = simVars->getN2(4);
 
     confFilename += acftRegistration;
     confFilename += FILENAME_FADEC_CONF_FILE_EXTENSION;
@@ -1356,11 +1398,17 @@ class EngineControl {
     simVars->setEngine4Timer(0);
 
     // Initialize Fuel Tanks
-    simVars->setFuelLeftPre(configuration.fuelLeft * simVars->getFuelWeightGallon());          // in LBS
-    simVars->setFuelRightPre(configuration.fuelRight * simVars->getFuelWeightGallon());        // in LBS
-    simVars->setFuelAuxLeftPre(configuration.fuelLeftAux * simVars->getFuelWeightGallon());    // in LBS
-    simVars->setFuelAuxRightPre(configuration.fuelRightAux * simVars->getFuelWeightGallon());  // in LBS
-    simVars->setFuelCenterPre(configuration.fuelCenter * simVars->getFuelWeightGallon());      // in LBS
+    simVars->setFuelLeftOuterPre(configuration.fuelLeftOuter * simVars->getFuelWeightGallon());
+    simVars->setFuelFeedOnePre(configuration.fuelFeedOne * simVars->getFuelWeightGallon());
+    simVars->setFuelLeftMidPre(configuration.fuelLeftMid * simVars->getFuelWeightGallon());
+    simVars->setFuelLeftInnerPre(configuration.fuelLeftInner * simVars->getFuelWeightGallon());
+    simVars->setFuelFeedTwoPre(configuration.fuelFeedTwo * simVars->getFuelWeightGallon());
+    simVars->setFuelFeedThreePre(configuration.fuelFeedThree * simVars->getFuelWeightGallon());
+    simVars->setFuelRightInnerPre(configuration.fuelRightInner * simVars->getFuelWeightGallon());
+    simVars->setFuelRightMidPre(configuration.fuelRightMid * simVars->getFuelWeightGallon());
+    simVars->setFuelFeedFourPre(configuration.fuelFeedFour * simVars->getFuelWeightGallon());
+    simVars->setFuelRightOuterPre(configuration.fuelRightOuter * simVars->getFuelWeightGallon());
+    simVars->setFuelTrimPre(configuration.fuelTrim * simVars->getFuelWeightGallon());
 
     // Initialize Pump State
     simVars->setPumpStateEngine1(0);
@@ -1406,55 +1454,56 @@ class EngineControl {
     }
     wai = simVars->getWAI();
 
+    generateIdleParameters(pressAltitude, mach, ambientTemp, ambientPressure);
+
     // Timer timer;
     for (engine = 1; engine <= 4; engine++) {
       engineStarter = simVars->getEngineStarter(engine);
       engineIgniter = simVars->getEngineIgniter(engine);
       simCN1 = simVars->getCN1(engine);
       simN1 = simVars->getN1(engine);
-      simN2 = simVars->getN2(engine);
+      simN3 = simVars->getN2(engine);
       thrust = simVars->getThrust(engine);
 
       // Set & Check Engine Status for this Cycle
-      engineStateMachine(engine, engineIgniter, engineStarter, simN2, idleN2, pressAltitude, ambientTemp,
+      engineStateMachine(engine, engineIgniter, engineStarter, simN3, idleN3, pressAltitude, ambientTemp,
                          animationDeltaTime - prevAnimationDeltaTime);
       if (engine == 1) {
         engineState = simVars->getEngine1State();
-        deltaN2 = simN2 - simN2Engine1Pre;
-        simN2Engine1Pre = simN2;
+        deltaN3 = simN3 - simN3Engine1Pre;
+        simN3Engine1Pre = simN3;
         timer = simVars->getEngine1Timer();
       } else if (engine == 2) {
         engineState = simVars->getEngine2State();
-        deltaN2 = simN2 - simN2Engine2Pre;
-        simN2Engine2Pre = simN2;
+        deltaN3 = simN3 - simN3Engine2Pre;
+        simN3Engine2Pre = simN3;
         timer = simVars->getEngine2Timer();
       } else if (engine == 3) {
         engineState = simVars->getEngine3State();
-        deltaN2 = simN2 - simN2Engine3Pre;
-        simN2Engine3Pre = simN2;
+        deltaN3 = simN3 - simN3Engine3Pre;
+        simN3Engine3Pre = simN3;
         timer = simVars->getEngine3Timer();
       } else {
         engineState = simVars->getEngine4State();
-        deltaN2 = simN2 - simN2Engine4Pre;
-        simN2Engine4Pre = simN2;
+        deltaN3 = simN3 - simN3Engine4Pre;
+        simN3Engine4Pre = simN3;
         timer = simVars->getEngine4Timer();
       }
-
 
       switch (int(engineState)) {
         case 2:
         case 3:
-          engineStartProcedure(engine, engineState, deltaTime, timer, simN2, pressAltitude, ambientTemp);
+          engineStartProcedure(engine, engineState, deltaTime, timer, simN3, pressAltitude, ambientTemp);
           break;
         case 4:
           engineShutdownProcedure(engine, ambientTemp, simN1, deltaTime, timer);
           cFbwFF = updateFF(engine, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
           break;
         default:
-          updatePrimaryParameters(engine, simN1, simN2);
+          updatePrimaryParameters(engine, simN1, simN3);
           cFbwFF = updateFF(engine, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
           updateEGT(engine, deltaTime, simOnGround, engineState, simCN1, cFbwFF, mach, pressAltitude, ambientTemp);
-          // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
+          // updateOil(engine, imbalance, thrust, simN3, deltaN3, deltaTime, ambientTemp);
       }
 
       // set highest N1 from either engine
@@ -1482,8 +1531,7 @@ class EngineControl {
 
     if (!iniFile.read(stInitStructure)) {
       std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno)
-                << "\" -> use default main/aux/center: " << configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/"
-                << configuration.fuelCenter << std::endl;
+                << "\" -> using default fuel quantities." << std::endl;
     } else {
       configuration = loadConfiguration(stInitStructure);
     }
@@ -1493,11 +1541,17 @@ class EngineControl {
 
   Configuration loadConfiguration(const mINI::INIStructure& structure) {
     return {
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
-        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_OUTER_QTY, 2731.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_FEED_ONE_QTY, 1082.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_MID_QTY, 9630.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_INNER_QTY, 12187.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_FEED_TWO_QTY, 1082.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_FEED_THREE_QTY, 1082.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_INNER_QTY, 12187.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_MID_QTY, 9630.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_FEED_FOUR_QTY, 1082.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_OUTER_QTY, 2731.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_TRIM_QTY, 6259.0),
     };
   }
 
@@ -1508,11 +1562,17 @@ class EngineControl {
     // Do not check a possible error since the file may not exist yet
     iniFile.read(stInitStructure);
 
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY] = std::to_string(configuration.fuelCenter);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY] = std::to_string(configuration.fuelLeft);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY] = std::to_string(configuration.fuelRight);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY] = std::to_string(configuration.fuelLeftAux);
-    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY] = std::to_string(configuration.fuelRightAux);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_OUTER_QTY] = std::to_string(configuration.fuelLeftOuter);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_FEED_ONE_QTY] = std::to_string(configuration.fuelFeedOne);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_MID_QTY] = std::to_string(configuration.fuelLeftMid);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_INNER_QTY] = std::to_string(configuration.fuelLeftInner);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_FEED_TWO_QTY] = std::to_string(configuration.fuelFeedTwo);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_FEED_THREE_QTY] = std::to_string(configuration.fuelFeedThree);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_INNER_QTY] = std::to_string(configuration.fuelRightInner);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_MID_QTY] = std::to_string(configuration.fuelRightMid);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_FEED_FOUR_QTY] = std::to_string(configuration.fuelFeedFour);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_OUTER_QTY] = std::to_string(configuration.fuelRightOuter);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_TRIM_QTY] = std::to_string(configuration.fuelTrim);
 
     if (!iniFile.write(stInitStructure, true)) {
       std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\""

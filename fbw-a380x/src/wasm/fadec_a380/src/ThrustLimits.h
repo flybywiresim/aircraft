@@ -220,7 +220,7 @@ limitN1(int type, double altitude, double ambientTemp, double ambientPressure, d
   cn1Flat = interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][3], limits[hiAltRow][3]);
   cn1Last = interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][4], limits[hiAltRow][4]);
   cn1Flex = interpolate(altitude, limits[loAltRow][0], limits[hiAltRow][0], limits[loAltRow][5], limits[hiAltRow][5]);
-
+	  
   if (flexTemp > 0 && type <= 1) { // CN1 for Flex Case
     if (flexTemp <= cp) {
       cn1 = cn1Flat;
