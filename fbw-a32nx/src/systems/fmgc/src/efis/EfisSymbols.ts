@@ -18,6 +18,9 @@ import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes
 import { NearbyFacilities } from './NearbyFacilities';
 
 export class EfisSymbols {
+    /** these types of legs are current not integrated into the normal symbol drawing routines */
+    static readonly LEG_MANAGED_TYPES = [LegType.CA, LegType.CR, LegType.CI, LegType.FM, LegType.PI, LegType.VA, LegType.VI, LegType.VM];
+
     private blockUpdate = false;
 
     private flightPlanManager: FlightPlanManager;
@@ -295,21 +298,45 @@ export class EfisSymbols {
                 }
             }
 
+            // add constraint prediction circles
+            let constraintPredictions = 0;
+            for (let i = activeFp.activeWaypointIndex; i < activeFp.length && constraintPredictions < 2; i++) {
+                const wp = activeFp.getWaypoint(i);
+
+                if (wp.type === 'A') {
+                    continue;
+                }
+
+                // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
+                const legType = wp.additionalData.legType;
+                if (EfisSymbols.LEG_MANAGED_TYPES.includes(legType)) {
+                    continue;
+                }
+
+                if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
+                    // TODO vnav to predict
+                    upsertSymbol({
+                        databaseId: wp.icao,
+                        ident: wp.ident,
+                        location: wp.infos.coordinates,
+                        type: NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.ConstraintUnknown,
+                    });
+
+                    constraintPredictions++;
+                }
+            }
+
             // TODO don't send the waypoint before active once FP sequencing is properly implemented
             // (currently sequences with guidance which is too early)
             // eslint-disable-next-line no-lone-blocks
             {
                 for (let i = activeFp.length - 1; i >= (activeFp.activeWaypointIndex - 1) && i >= 0; i--) {
                     const wp = activeFp.getWaypoint(i);
+                    const isFromWp = i < activeFp.activeWaypointIndex;
 
-                    // Managed by legs
                     // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
                     const legType = wp.additionalData.legType;
-                    if (
-                        legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
-                        || legType === LegType.FM || legType === LegType.PI
-                        || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
-                    ) {
+                    if (EfisSymbols.LEG_MANAGED_TYPES.includes(legType)) {
                         continue;
                     }
 
@@ -354,12 +381,7 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
-                    // TODO vnav to predict
-                        type |= NdSymbolTypeFlags.ConstraintUnknown;
-                    }
-
-                    if (efisOption === EfisOption.Constraints) {
+                    if (efisOption === EfisOption.Constraints && !isFromWp) {
                         const descent = wp.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
