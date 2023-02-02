@@ -22,7 +22,7 @@ $ mach build --config path/to/mach.config.js --work-in-config-dir
 
 ### Building a specific instrument
 
-You can build only one instrument by using the `--filter / -f` flag:
+You can build only one instrument by using the `--filter / -f` flag (parsed as a RegEx):
 
 ```
 $ mach build -f EWD
@@ -35,6 +35,10 @@ To watch an instrument and recompile when changes to source files are detected, 
 ```
 $ mach watch -f EWD
 ```
+
+### Source maps
+
+You can append source maps to the end of instrument bundles using the `-u / --output-sourcemaps` flag.
 
 ### Adding a new instrument
 
