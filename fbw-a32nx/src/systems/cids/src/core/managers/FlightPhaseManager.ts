@@ -143,85 +143,30 @@ export class FlightPhaseManager implements Manager {
 
     private initActiveFlightPhase(): void {
         console.log(`[CIDS/FPM${this.directorId}] Initializing active flight phase...`);
-        const startState = SimVar.GetSimVarValue('L:A32NX_START_STATE', 'Enum');
-        switch (startState) {
-        case 1:
-        case 2:
-            this.director.output(
-                Cids.SimVar.FLIGHT_PHASE,
-                'Enum',
-                this.afterDisembarkationPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId}] Initial flight phase: ${this.afterDisembarkationPhase.getValue()}`),
-                true,
-            );
-            if (Cids.DEBUG) {
-                SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', this.afterDisembarkationPhase.getValue());
+
+        const flightPhases = [
+            this.boardingPhase,
+            this.pushbackPhase,
+            this.taxiBeforeTakeoffPhase,
+            this.takeoffAndInitialClimbPhase,
+            this.finalClimbPhase,
+            this.cruisePhase,
+            this.todPhase,
+            this.apprPhase,
+            this.finalApprAndLandingPhase,
+            this.taxiAfterLandingPhase,
+            this.disembarkationPhase,
+            this.afterDisembarkationPhase,
+        ];
+
+        for (const current of flightPhases) {
+            console.log('current fp iteration:', current);
+            console.log('current shouldActivate():', current.shouldActivate());
+            if (current.shouldActivate()) {
+                console.log('activating fp:', current.getValue());
+                this.setActiveFlightPhase(current);
+                return;
             }
-            break;
-        case 3:
-        case 4:
-            this.director.output(
-                Cids.SimVar.FLIGHT_PHASE,
-                'Enum',
-                this.taxiBeforeTakeoffPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.taxiBeforeTakeoffPhase.getValue()}`),
-                true,
-            );
-            if (Cids.DEBUG) {
-                SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', this.taxiBeforeTakeoffPhase.getValue());
-            }
-            break;
-        case 5:
-            this.director.output(
-                Cids.SimVar.FLIGHT_PHASE,
-                'Enum',
-                this.takeoffAndInitialClimbPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.takeoffAndInitialClimbPhase.getValue()}`),
-                true,
-            );
-            if (Cids.DEBUG) {
-                SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', this.takeoffAndInitialClimbPhase.getValue());
-            }
-            break;
-        case 6:
-            this.director.output(
-                Cids.SimVar.FLIGHT_PHASE,
-                'Enum',
-                this.cruisePhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.cruisePhase.getValue()}`),
-                true,
-            );
-            if (Cids.DEBUG) {
-                SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', this.cruisePhase.getValue());
-            }
-            break;
-        case 7:
-            this.director.output(
-                Cids.SimVar.FLIGHT_PHASE,
-                'Enum',
-                this.todPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.todPhase.getValue()}`),
-                true,
-            );
-            if (Cids.DEBUG) {
-                SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', this.todPhase.getValue());
-            }
-            break;
-        case 8:
-            this.director.output(
-                Cids.SimVar.FLIGHT_PHASE,
-                'Enum',
-                this.finalApprAndLandingPhase.getValue(),
-                () => console.log(`[CIDS/FPM${this.directorId} Initial flight phase: ${this.finalApprAndLandingPhase.getValue()}`),
-                true,
-            );
-            if (Cids.DEBUG) {
-                SimVar.SetSimVarValue(`L:A32NX_CIDS_DEBUG_DIR_${this.directorId}_FLIGHT_PHASE`, 'Enum', this.finalApprAndLandingPhase.getValue());
-            }
-            break;
-        default:
-            console.error(`[CIDS/FPM${this.directorId} Found unknown value '${startState}' for A32NX_START_STATE.`);
-            break;
         }
     }
 }

@@ -24,6 +24,7 @@ export class TaxiAfterLandingPhase extends FlightPhase {
         return (
             this.flightPhaseManager.director.memory.onGround
             && this.flightPhaseManager.director.memory.groundSpeed < 80
+            && this.flightPhaseManager.director.memory.groundSpeed > 0
         );
     }
 
