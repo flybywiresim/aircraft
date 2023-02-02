@@ -87,8 +87,12 @@ export class DIR2 extends Director {
         this.output(Cids.SimVar.DIR2.FAULT, 'Bool', false, null, true);
         this.output(Cids.SimVar.DIR2.ACTIVE, 'Bool', false, null, true);
 
+        this.writeMemory();
+
         /* Initialize Managers */
         this.flightPhaseManager.init();
+
+        this.memory.clear();
     }
 
     public shutdown(): void {
