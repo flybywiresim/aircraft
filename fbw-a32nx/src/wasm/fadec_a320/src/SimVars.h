@@ -156,7 +156,6 @@ class SimVars {
   ID Engine2Timer;
   ID PumpStateLeft;
   ID PumpStateRight;
-  ID ConversionFactor;
   ID PerPaxWeight;
   ID PaxStationAFlags;
   ID PaxStationBFlags;
@@ -224,7 +223,6 @@ class SimVars {
     Engine2Timer = register_named_variable("A32NX_ENGINE_TIMER:2");
     PumpStateLeft = register_named_variable("A32NX_PUMP_STATE:1");
     PumpStateRight = register_named_variable("A32NX_PUMP_STATE:2");
-    ConversionFactor = register_named_variable("A32NX_EFB_UNIT_CONVERSION_FACTOR");
     PerPaxWeight = register_named_variable("A32NX_WB_PER_PAX_WEIGHT");
     PaxStationAFlags = register_named_variable("A32NX_PAX_FLAGS_A");
     PaxStationBFlags = register_named_variable("A32NX_PAX_FLAGS_B");
@@ -371,7 +369,6 @@ class SimVars {
   FLOAT64 getPumpStateLeft() { return get_named_variable_value(PumpStateLeft); }
   FLOAT64 getPumpStateRight() { return get_named_variable_value(PumpStateRight); }
   FLOAT64 getPerPaxWeight() { return get_named_variable_value(PerPaxWeight); }
-  FLOAT64 getConversionFactor() { return get_named_variable_value(ConversionFactor); }
   FLOAT64 getPaxStationAFlags() { return get_named_variable_value(PaxStationAFlags); }
   FLOAT64 getPaxStationBFlags() { return get_named_variable_value(PaxStationBFlags); }
   FLOAT64 getPaxStationCFlags() { return get_named_variable_value(PaxStationCFlags); }

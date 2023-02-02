@@ -423,7 +423,6 @@ impl VariableValue {
     fn write(&mut self, value: f64) {
         match self {
             Self::Aircraft(_) => panic!("Cannot write to an aircraft variable."),
-            // Self::Aircraft(underlying) => underlying.set_value(value),
             Self::Named(underlying) => underlying.set_value(value),
             Self::Aspect(underlying) => *underlying = value,
         }

@@ -193,7 +193,6 @@ class SimVars {
   ID PumpStateEngine2;
   ID PumpStateEngine3;
   ID PumpStateEngine4;
-  ID ConversionFactor;
   ID PerPaxWeight;
   ID PaxStationAFlags;
   ID PaxStationBFlags;
@@ -295,7 +294,6 @@ class SimVars {
     PumpStateEngine2 = register_named_variable("A32NX_PUMP_STATE:2");
     PumpStateEngine3 = register_named_variable("A32NX_PUMP_STATE:3");
     PumpStateEngine4 = register_named_variable("A32NX_PUMP_STATE:4");
-    ConversionFactor = register_named_variable("A32NX_EFB_UNIT_CONVERSION_FACTOR");
     PerPaxWeight = register_named_variable("A32NX_WB_PER_PAX_WEIGHT");
     PaxStationAFlags = register_named_variable("A32NX_PAX_FLAGS_A");
     PaxStationBFlags = register_named_variable("A32NX_PAX_FLAGS_B");
@@ -538,7 +536,6 @@ class SimVars {
   FLOAT64 getPumpStateEngine3() { return get_named_variable_value(PumpStateEngine3); }
   FLOAT64 getPumpStateEngine4() { return get_named_variable_value(PumpStateEngine4); }
   FLOAT64 getPerPaxWeight() { return get_named_variable_value(PerPaxWeight); }
-  FLOAT64 getConversionFactor() { return get_named_variable_value(ConversionFactor); }
   FLOAT64 getPaxStationAFlags() { return get_named_variable_value(PaxStationAFlags); }
   FLOAT64 getPaxStationBFlags() { return get_named_variable_value(PaxStationBFlags); }
   FLOAT64 getPaxStationCFlags() { return get_named_variable_value(PaxStationCFlags); }

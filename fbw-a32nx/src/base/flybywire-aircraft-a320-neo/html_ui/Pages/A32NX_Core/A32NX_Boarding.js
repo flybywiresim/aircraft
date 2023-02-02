@@ -1,14 +1,8 @@
 /* eslint-disable no-undef */
 // TODO: Deprecate, move boarding backend to WASM
 function setDefaultWeights() {
-    const perPaxWeight = Math.round(NXUnits.kgToUser(84));
-    const perBagWeight = Math.round(NXUnits.kgToUser(20));
-    SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", parseInt(perPaxWeight));
-    SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", parseInt(perBagWeight));
-
-    // TODO: Deprecate C++ (in FADEC WASM) that uses this SimVar
-    const conversionFactor = (getUserUnit() == "Kilograms") ? 0.4535934 : 1;
-    SimVar.SetSimVarValue("L:A32NX_EFB_UNIT_CONVERSION_FACTOR", "Number", conversionFactor);
+    SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", 84);
+    SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", 20);
 }
 
 class A32NX_Boarding {
@@ -73,19 +67,19 @@ class A32NX_Boarding {
     loadPaxPayload() {
         const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
         return Promise.all(Object.values(this.paxStations).map((paxStation) => {
-            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, getUserUnit(), paxStation.activeFlags.getTotalFilledSeats() * PAX_WEIGHT);
+            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, "Pounds", NXUnits.kgToPounds(paxStation.activeFlags.getTotalFilledSeats() * PAX_WEIGHT));
         }));
     }
 
     loadCargoPayload() {
         return Promise.all(Object.values(this.cargoStations).map((cargoStation) => {
-            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${cargoStation.stationIndex}`, getUserUnit(), cargoStation.load);
+            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${cargoStation.stationIndex}`, "Pounds", NXUnits.kgToPounds(cargoStation.load));
         }));
     }
 
     loadCargoZero() {
         Object.values(this.cargoStations).forEach((cargoStation) => {
-            SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${cargoStation.stationIndex}`, "Kilograms", 0);
+            SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${cargoStation.stationIndex}`, "Pounds", 0);
             SimVar.SetSimVarValue(`L:${cargoStation.simVar}_DESIRED`, "Number", 0);
             SimVar.SetSimVarValue(`L:${cargoStation.simVar}`, "Number", 0);
         });

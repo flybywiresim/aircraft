@@ -793,10 +793,10 @@ class EngineControl {
   /// </summary>
   // TODO: remove from FADEC logic -> rust
   void checkPayload() {
-    double conversionFactor = simVars->getConversionFactor();
+    double lbsToKg = 0.4535934;
     double fuelWeightGallon = simVars->getFuelWeightGallon();
     double aircraftEmptyWeight = simVars->getEmptyWeight();  // in LBS
-    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;
+    double perPaxWeightLbs = simVars->getPerPaxWeight() / lbsToKg;
     double aircraftTotalWeight = simVars->getTotalWeight();                                                          // in LBS
     double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;                                     // in LBS
     double pilotsWeight = simVars->getPayloadStationWeight(9) + simVars->getPayloadStationWeight(10);                // in LBS
@@ -805,10 +805,10 @@ class EngineControl {
     double paxStationBWeight = getStationCount((long long)simVars->getPaxStationBFlags()) * perPaxWeightLbs;         // in LBS
     double paxStationCWeight = getStationCount((long long)simVars->getPaxStationCFlags()) * perPaxWeightLbs;         // in LBS
     double paxStationDWeight = getStationCount((long long)simVars->getPaxStationDFlags()) * perPaxWeightLbs;         // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;                       // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;                       // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;                           // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;                                 // in LBS
+    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / lbsToKg;                       // in LBS
+    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / lbsToKg;                       // in LBS
+    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / lbsToKg;                           // in LBS
+    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / lbsToKg;                                 // in LBS
     double paxTotalWeightActual = (paxStationAWeight + paxStationBWeight + paxStationCWeight + paxStationDWeight);
     double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
     if (abs(aircraftPayloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {

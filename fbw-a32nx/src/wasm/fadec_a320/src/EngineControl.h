@@ -703,12 +703,11 @@ private:
   /// <summary>
   /// FBW Payload checking and UI override function
   /// </summary>
-  // TODO: remove from FADEC logic -> rust
   void checkPayload() {
-    double conversionFactor = simVars->getConversionFactor();
+    double lbsToKg = 0.4535934;
     double fuelWeightGallon = simVars->getFuelWeightGallon();
     double aircraftEmptyWeight = simVars->getEmptyWeight(); // in LBS
-    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;
+    double perPaxWeightLbs = simVars->getPerPaxWeight() / lbsToKg;
     double aircraftTotalWeight = simVars->getTotalWeight(); // in LBS
     double fuelTotalWeight =
         simVars->getFuelTotalQuantity() * fuelWeightGallon; // in LBS
@@ -730,13 +729,13 @@ private:
         getStationCount((long long)simVars->getPaxStationDFlags()) *
         perPaxWeightLbs; // in LBS
     double cargoFwdContainerActual =
-        simVars->getCargoFwdContainerActual() / conversionFactor; // in LBS
+        simVars->getCargoFwdContainerActual() / lbsToKg; // in LBS
     double cargoAftContainerActual =
-        simVars->getCargoAftContainerActual() / conversionFactor; // in LBS
+        simVars->getCargoAftContainerActual() / lbsToKg; // in LBS
     double cargoAftBaggageActual =
-        simVars->getCargoAftBaggageActual() / conversionFactor; // in LBS
+        simVars->getCargoAftBaggageActual() / lbsToKg; // in LBS
     double cargoAftBulkActual =
-        simVars->getCargoAftBulkActual() / conversionFactor; // in LBS
+        simVars->getCargoAftBulkActual() / lbsToKg; // in LBS
     double paxTotalWeightActual = (paxStationAWeight + paxStationBWeight +
                                    paxStationCWeight + paxStationDWeight);
     double cargoTotalWeightActual =

@@ -16,7 +16,6 @@ pub struct PaxSync {
     pax_id: VariableIdentifier,
     pax_target_id: VariableIdentifier,
     per_pax_weight: Rc<Cell<f64>>,
-    is_unit_metric: Rc<Cell<bool>>,
     payload_id: VariableIdentifier,
     pax_target: u64,
     pax: u64,
@@ -27,14 +26,12 @@ impl PaxSync {
         pax_id: VariableIdentifier,
         pax_target_id: VariableIdentifier,
         per_pax_weight: Rc<Cell<f64>>,
-        is_unit_metric: Rc<Cell<bool>>,
         payload_id: VariableIdentifier,
     ) -> Self {
         PaxSync {
             pax_id,
             pax_target_id,
             per_pax_weight,
-            is_unit_metric,
             payload_id,
             pax_target: 0,
             pax: 0,
@@ -46,24 +43,8 @@ impl PaxSync {
         self.per_pax_weight.get()
     }
 
-    fn is_unit_metric(&self) -> bool {
-        self.is_unit_metric.get()
-    }
-
-    fn unit_convert(&self) -> f64 {
-        if self.is_unit_metric() {
-            LBS_TO_KG
-        } else {
-            1.0
-        }
-    }
-
     pub fn pax_is_target(&self) -> bool {
         self.pax == self.pax_target
-    }
-
-    pub fn payload_is_sync(&self) -> bool {
-        self.pax_num() as f64 * self.per_pax_weight() / self.unit_convert() == self.payload
     }
 
     pub fn pax(&self) -> u64 {
@@ -83,12 +64,18 @@ impl PaxSync {
     }
 
     pub fn load_payload(&mut self) {
-        self.payload = self.pax_num() as f64 * self.per_pax_weight() / self.unit_convert();
+        self.payload = self.pax_num() as f64 * self.per_pax_weight() / LBS_TO_KG;
     }
 
     pub fn move_all_pax(&mut self) {
         self.pax = self.pax_target;
         self.load_payload();
+    }
+
+    pub fn move_pax(&mut self, pax: i8) {
+        for _ in 0..pax {
+            self.move_one_pax();
+        }
     }
 
     pub fn move_one_pax(&mut self) {
@@ -104,10 +91,10 @@ impl PaxSync {
             let mut skip: i8 = rand::thread_rng().gen_range(0..count);
 
             for i in 0..JS_MAX_SAFE_INTEGER {
-                let mask = 1 << i;
-                if (n & mask) > 0 {
+                let bit = 1 << i;
+                if (n & bit) > 0 {
                     if skip <= 0 {
-                        self.pax ^= mask;
+                        self.pax ^= bit;
                         break;
                     }
                     skip -= 1;
@@ -134,7 +121,6 @@ pub struct CargoSync {
     cargo_target_id: VariableIdentifier,
     cargo_id: VariableIdentifier,
     payload_id: VariableIdentifier,
-    is_unit_metric: Rc<Cell<bool>>,
     cargo: f64,
     cargo_target: f64,
     payload: f64,
@@ -143,13 +129,11 @@ impl CargoSync {
     pub fn new(
         cargo_id: VariableIdentifier,
         cargo_target_id: VariableIdentifier,
-        is_unit_metric: Rc<Cell<bool>>,
         payload_id: VariableIdentifier,
     ) -> Self {
         CargoSync {
             cargo_id,
             cargo_target_id,
-            is_unit_metric,
             payload_id,
             cargo: 0.0,
             cargo_target: 0.0,
@@ -165,28 +149,12 @@ impl CargoSync {
         self.payload
     }
 
-    fn is_unit_metric(&self) -> bool {
-        self.is_unit_metric.get()
-    }
-
-    fn unit_convert(&self) -> f64 {
-        if self.is_unit_metric() {
-            LBS_TO_KG
-        } else {
-            1.0
-        }
-    }
-
     pub fn cargo_is_target(&self) -> bool {
         relative_eq!(self.cargo, self.cargo_target)
     }
 
-    pub fn payload_is_sync(&self) -> bool {
-        relative_eq!(self.cargo, self.payload * self.unit_convert())
-    }
-
     pub fn load_payload(&mut self) {
-        self.payload = self.cargo / self.unit_convert();
+        self.payload = self.cargo / LBS_TO_KG
     }
 
     pub fn move_all_cargo(&mut self) {
@@ -195,11 +163,7 @@ impl CargoSync {
     }
 
     pub fn move_one_cargo(&mut self) {
-        let max_move = if self.is_unit_metric() {
-            MAX_CARGO_MOVE
-        } else {
-            MAX_CARGO_MOVE / LBS_TO_KG
-        };
+        let max_move = MAX_CARGO_MOVE;
         let cargo_delta = f64::abs(self.cargo_target - self.cargo);
 
         if self.cargo < self.cargo_target {
@@ -222,6 +186,8 @@ impl SimulationElement for CargoSync {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.cargo_id, self.cargo);
         writer.write(&self.payload_id, self.payload);
+        // Note: only sets aspect, not actual Aircraft Payload Station vars
+        // This is done via EngineControl.h checkPayload() -> C++/SimConnect
     }
 }
 
