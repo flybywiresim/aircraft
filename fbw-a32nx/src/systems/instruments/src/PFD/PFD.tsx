@@ -62,7 +62,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
         this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DisplayManagementComputerEvents & PFDSimvars>();
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
