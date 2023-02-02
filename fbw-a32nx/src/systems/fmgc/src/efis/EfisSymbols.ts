@@ -302,6 +302,9 @@ export class EfisSymbols {
             let constraintPredictions = 0;
             for (let i = activeFp.activeWaypointIndex; i < activeFp.length && constraintPredictions < 2; i++) {
                 const wp = activeFp.getWaypoint(i);
+                if (!wp) {
+                    continue;
+                }
 
                 if (wp.type === 'A') {
                     continue;
@@ -332,6 +335,10 @@ export class EfisSymbols {
             {
                 for (let i = activeFp.length - 1; i >= (activeFp.activeWaypointIndex - 1) && i >= 0; i--) {
                     const wp = activeFp.getWaypoint(i);
+                    if (!wp) {
+                        continue;
+                    }
+
                     const isFromWp = i < activeFp.activeWaypointIndex;
 
                     // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
