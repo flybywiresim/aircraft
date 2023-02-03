@@ -346,6 +346,7 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
     }
 
     default:
+      LOG_WARN("DataManager: Unknown/Unimplemented SimConnect message received: " + std::to_string(pRecv->dwID));
       break;
   }
 }
