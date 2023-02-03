@@ -162,14 +162,14 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     ivalue = 0;
     svalue = "";
     if (!currentStepPtr->expectedStateCheckCode.empty()) {
-      if (aircraftPresetVerbose) {
+      if (aircraftPresetVerbose->getAsBool()) {
         std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Test: "
                   << currentStepPtr->description << " TEST: \""
                   << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
       }
       execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
       if (static_cast<bool>(fvalue)) {
-        if (aircraftPresetVerbose) {
+        if (aircraftPresetVerbose->getAsBool()) {
           std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Skipping: "
                     << currentStepPtr->description << " TEST: \""
                     << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
