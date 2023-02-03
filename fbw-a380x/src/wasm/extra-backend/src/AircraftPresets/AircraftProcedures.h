@@ -24,6 +24,9 @@ struct ProcedureStep {
   std::string actionCode;
 };
 
+typedef const std::vector<ProcedureStep> ProcedureDefinition;
+typedef std::vector<const ProcedureStep*> Procedure;
+
 class AircraftProcedures {
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -229,21 +232,21 @@ class AircraftProcedures {
   // clang-format on
   // @formatter:on
 
-  std::vector<const ProcedureStep*> coldAndDark;
-  std::vector<const ProcedureStep*> powered;
-  std::vector<const ProcedureStep*> readyForPushback;
-  std::vector<const ProcedureStep*> readyForTaxi;
-  std::vector<const ProcedureStep*> readyForTakeoff;
+  Procedure coldAndDark;
+  Procedure powered;
+  Procedure readyForPushback;
+  Procedure readyForTaxi;
+  Procedure readyForTakeoff;
 
   static void
-  insert(std::vector<const ProcedureStep*> &dest, const std::vector<ProcedureStep> &src) {
+  insert(Procedure &dest, ProcedureDefinition &src) {
     std::transform(begin(src), end(src), back_inserter(dest), [](const auto &procedure) {
       return &procedure;
     });
   }
 
 #ifdef DEBUG
-  static inline void printProcedure(const std::vector<ProcedureStep> &procedures) {
+  static inline void printProcedure(ProcedureDefinition &procedures) {
     for (const auto &p: procedures) {
       std::cout << p.id << " = " << p.description << std::endl;
     }
@@ -252,7 +255,6 @@ class AircraftProcedures {
 
 public:
   AircraftProcedures() {
-
 #ifdef DEBUG
     // Map the procedure groups
     // Print to console to add them to the EFB code to display the current step.

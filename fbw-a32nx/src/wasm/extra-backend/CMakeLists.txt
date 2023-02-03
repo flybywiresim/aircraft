@@ -8,7 +8,7 @@ set(FBW_ROOT "../../../..")
 set(AIRCRAFT "A32NX")
 set(EXAMPLES "NO_EXAMPLES") # EXAMPLES, NO_EXAMPLES
 # ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
-set(LOG_LEVEL 4)
+set(LOG_LEVEL 5)
 set(LOGGING "LOG_LEVEL=${LOG_LEVEL}")
 
 # Configure the build for the current OS - local on Windows or CI/dev-env on Linux

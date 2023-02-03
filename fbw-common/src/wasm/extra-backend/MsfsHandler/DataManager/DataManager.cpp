@@ -170,8 +170,6 @@ NamedVariablePtr DataManager::make_named_var(const std::string &varName,
   // used in different places with different expected values via Units.
   const std::string uniqueName = varName + ":" + unit.name;
 
-  LOG_DEBUG("DataManager::make_named_var(): " + uniqueName);
-
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
   // use the update method and frequency of the automated one with faster update frequency
@@ -216,8 +214,6 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string &varName,
   // and the expected value uniquely. This is because the same variable can be
   // used in different places with different expected values via Index and Units.
   const std::string uniqueName = varName + ":" + std::to_string(index) + ":" + unit.name;
-
-  LOG_DEBUG("DataManager::make_aircraft_var(): " + uniqueName);
 
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
@@ -265,8 +261,6 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string &var
   // and the expected value uniquely. This is because the same variable can be
   // used in different places with different expected values via Index and Units.
   const std::string uniqueName = varName + ":" + std::to_string(0) + ":" + unit.name;
-
-  LOG_DEBUG("DataManager::make_simple_aircraft_var(): " + uniqueName);
 
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
