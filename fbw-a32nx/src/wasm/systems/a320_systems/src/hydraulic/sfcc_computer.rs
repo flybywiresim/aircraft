@@ -610,13 +610,13 @@ impl SlatFlapComplex {
         );
     }
 
-    pub fn flap_demand(&self, n: usize) -> Option<Angle> {
-        self.sfcc[n].signal_flaps_demanded_angle()
-    }
+    // pub fn flap_demand(&self, n: usize) -> Option<Angle> {
+    //     self.sfcc[n].signal_flaps_demanded_angle()
+    // }
 
-    pub fn slat_demand(&self, n: usize) -> Option<Angle> {
-        self.sfcc[n].signal_slats_demanded_angle()
-    }
+    // pub fn slat_demand(&self, n: usize) -> Option<Angle> {
+    //     self.sfcc[n].signal_slats_demanded_angle()
+    // }
 
     pub fn get_pcu_solenoids_commands(
         &self,

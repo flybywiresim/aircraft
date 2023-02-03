@@ -524,6 +524,14 @@ impl<const N: usize> FlapSlatAssy<N> {
     pub fn get_intermediate_gear_angle(&self) -> Angle {
         self.intermediate_gear
     }
+
+    pub fn left_motor(&mut self) -> &mut impl Actuator {
+        &mut self.power_control_units[0].valve_block.control_valve
+    }
+
+    pub fn right_motor(&mut self) -> &mut impl Actuator {
+        &mut self.power_control_units[1].valve_block.control_valve
+    }
 }
 impl<const N: usize> PositionPickoffUnit for FlapSlatAssy<N> {
     fn fppu_angle(&self) -> Angle {

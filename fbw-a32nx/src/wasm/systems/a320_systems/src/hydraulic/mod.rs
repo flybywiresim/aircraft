@@ -1740,8 +1740,8 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(context),
 
-            flap_system: A320FlapSlatFactory::new_flaps(),
-            slat_system: A320FlapSlatFactory::new_slats(),
+            flap_system: A320FlapSlatFactory::new_flaps(context),
+            slat_system: A320FlapSlatFactory::new_slats(context),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
             gcu: GeneratorControlUnit::new(

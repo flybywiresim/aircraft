@@ -41,29 +41,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "a380_systems"
-version = "0.1.0"
-dependencies = [
- "nalgebra",
- "ntest",
- "rand",
- "rstest",
- "systems",
- "uom",
-]
-
-[[package]]
-name = "a380_systems_wasm"
-version = "0.1.0"
-dependencies = [
- "a380_systems",
- "msfs",
- "systems",
- "systems_wasm",
- "uom",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
