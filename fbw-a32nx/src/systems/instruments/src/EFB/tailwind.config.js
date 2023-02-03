@@ -1,7 +1,5 @@
 'use strict';
 
-const colors = require('tailwindcss/colors');
-
 const fallbacks = [
     'NotoSansJP',
     'NotoSansSC',
