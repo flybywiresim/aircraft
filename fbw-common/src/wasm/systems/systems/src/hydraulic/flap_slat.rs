@@ -1,12 +1,10 @@
 use super::linear_actuator::Actuator;
 use crate::shared::PowerControlUnitInterface;
 use crate::shared::{
-    litre_per_minute::litre_per_minute, newton_per_square_millimeter::newton_per_square_millimeter,
-};
-// use crate::shared::pid::PidController;
-// use crate::shared::ControlValveCommand;
-use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, PositionPickoffUnit, SectionPressure,
+};
+use crate::shared::{
+    litre_per_minute::litre_per_minute, newton_per_square_millimeter::newton_per_square_millimeter,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -34,35 +32,26 @@ pub trait HydraulicValve {
 pub struct PressureMaintainingValve<const N: usize> {
     valve_ratio: Ratio,
     flow: VolumeRate,
-    motor_flow_breakpoints: [f64; N], //         [0.,  1.5,  3.,  6.,  18.,  19., 22.22] L/min
-    hydraulic_pressure_breakpoints: [f64; N], // [3.3, 3.3, 15., 16.2, 17.8, 20., 22.] N/mm2
+    motor_flow_breakpoints: [f64; N],
+    hydraulic_pressure_breakpoints: [f64; N],
 
     total_volume_to_actuator: Volume,
     total_volume_returned_to_reservoir: Volume,
 }
 impl<const N: usize> PressureMaintainingValve<N> {
     pub fn new(
-        // motor_flow_breakpoints: [VolumeRate; N],
-        // hydraulic_pressure_breakpoints: [Pressure; N],
-        motor_flow_breakpoints: [f64; N],
-        hydraulic_pressure_breakpoints: [f64; N],
+        motor_flow_breakpoints: [f64; N],         // L/min
+        hydraulic_pressure_breakpoints: [f64; N], // N/mm2
     ) -> Self {
         Self {
             valve_ratio: Ratio::default(),
             flow: VolumeRate::default(),
-            // motor_flow_breakpoints: motor_flow_breakpoints.map(|x| x.get::<litre_per_minute>()),
-            // hydraulic_pressure_breakpoints: hydraulic_pressure_breakpoints
-            //     .map(|x| x.get::<newton_per_square_millimeter>()),
             motor_flow_breakpoints,
             hydraulic_pressure_breakpoints,
             total_volume_to_actuator: Volume::default(),
             total_volume_returned_to_reservoir: Volume::default(),
         }
     }
-
-    // pub fn change_gain(&mut self, gain: f64) {
-    //     self.pid.set_gains(0.002, 0., gain);
-    // }
 
     pub fn update(&mut self, context: &UpdateContext, pressure: Pressure) {
         let fluid_pressure = pressure.get::<newton_per_square_millimeter>();
@@ -77,7 +66,7 @@ impl<const N: usize> PressureMaintainingValve<N> {
         // Calculate valve_ratio
         self.flow = VolumeRate::new::<litre_per_minute>(flow_f64);
 
-        // Account for hydroulic liquid leak
+        // Account for hydraulic liquid leak
         self.total_volume_to_actuator += self.flow * context.delta_as_time();
         self.total_volume_returned_to_reservoir += self.flow * context.delta_as_time();
     }
@@ -267,12 +256,7 @@ pub struct ValveBlock<const N: usize> {
     enable_solenoid: SolenoidStatus, // When de-energised, the brake locks the motor
 }
 impl<const N: usize> ValveBlock<N> {
-    pub fn new(
-        // motor_flow_breakpoints: [VolumeRate; N],
-        // hydraulic_pressure_breakpoints: [Pressure; N],
-        motor_flow_breakpoints: [f64; N],
-        hydraulic_pressure_breakpoints: [f64; N],
-    ) -> Self {
+    pub fn new(motor_flow_breakpoints: [f64; N], hydraulic_pressure_breakpoints: [f64; N]) -> Self {
         Self {
             control_valve: PressureMaintainingValve::new(
                 motor_flow_breakpoints,
@@ -326,8 +310,6 @@ pub struct PowerControlUnit<const N: usize> {
 impl<const N: usize> PowerControlUnit<N> {
     pub fn new(
         max_pressure: Pressure,
-        // motor_flow_breakpoints: [VolumeRate; N],
-        // hydraulic_pressure_breakpoints: [Pressure; N],
         motor_flow_breakpoints: [f64; N],
         hydraulic_pressure_breakpoints: [f64; N],
         motor_max_flow: VolumeRate,
@@ -398,8 +380,6 @@ pub struct FlapSlatAssy<const N: usize> {
 impl<const N: usize> FlapSlatAssy<N> {
     pub fn new(
         max_pressure: Pressure,
-        // motor_flow_breakpoints: [VolumeRate; N],
-        // hydraulic_pressure_breakpoints: [Pressure; N],
         motor_flow_breakpoints: [f64; N],
         hydraulic_pressure_breakpoints: [f64; N],
         motor_max_flow: VolumeRate,
