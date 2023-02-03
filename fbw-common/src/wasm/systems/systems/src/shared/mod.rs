@@ -222,6 +222,7 @@ pub enum GearWheel {
 pub trait SectionPressure {
     fn pressure(&self) -> Pressure;
     fn pressure_downstream_leak_valve(&self) -> Pressure;
+    fn pressure_downstream_priority_valve(&self) -> Pressure;
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
