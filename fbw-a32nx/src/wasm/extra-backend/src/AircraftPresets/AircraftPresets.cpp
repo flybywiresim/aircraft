@@ -37,7 +37,8 @@ bool AircraftPresets::initialize() {
   dataManager = &msfsHandler->getDataManager();
 
   // LVARs
-  loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Bool, true, true);
+  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, true);
+  loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, true, true);
   progressAircraftPreset = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
   progressAircraftPresetId = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0); // reset to 0 on startup
@@ -161,14 +162,14 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     ivalue = 0;
     svalue = "";
     if (!currentStepPtr->expectedStateCheckCode.empty()) {
-      if (msfsHandler->getA32NxIsDevelopmentState() > 0) {
+      if (aircraftPresetVerbose) {
         std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Test: "
                   << currentStepPtr->description << " TEST: \""
                   << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
       }
       execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
       if (static_cast<bool>(fvalue)) {
-        if (msfsHandler->getA32NxIsDevelopmentState() > 0) {
+        if (aircraftPresetVerbose) {
           std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Skipping: "
                     << currentStepPtr->description << " TEST: \""
                     << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;

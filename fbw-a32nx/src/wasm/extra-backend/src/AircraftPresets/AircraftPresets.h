@@ -20,6 +20,7 @@ private:
   DataManager* dataManager{};
 
   // LVARs
+  NamedVariablePtr aircraftPresetVerbose{};
   NamedVariablePtr loadAircraftPresetRequest{};
   NamedVariablePtr progressAircraftPreset{};
   NamedVariablePtr progressAircraftPresetId{};
