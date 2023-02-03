@@ -5,6 +5,7 @@ mod elevators;
 mod flaps;
 mod gear;
 mod nose_wheel_steering;
+mod payload;
 mod rudder;
 mod spoilers;
 mod trimmable_horizontal_stabilizer;
@@ -17,6 +18,7 @@ use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
+use payload::payload;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
@@ -293,46 +295,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             Variable::aspect("BUTTON_OVHD_ANTI_ICE_WING_POSITION"),
         );
 
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 1),
-            Variable::aspect("PAYLOAD_STATION_1_REQ"),
-        );
-
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 2),
-            Variable::aspect("PAYLOAD_STATION_2_REQ"),
-        );
-
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 3),
-            Variable::aspect("PAYLOAD_STATION_3_REQ"),
-        );
-
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 4),
-            Variable::aspect("PAYLOAD_STATION_4_REQ"),
-        );
-
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 5),
-            Variable::aspect("PAYLOAD_STATION_5_REQ"),
-        );
-
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 6),
-            Variable::aspect("PAYLOAD_STATION_6_REQ"),
-        );
-
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 7),
-            Variable::aspect("PAYLOAD_STATION_7_REQ"),
-        );
-
-        builder.copy(
-            Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 8),
-            Variable::aspect("PAYLOAD_STATION_8_REQ"),
-        );
-
         builder.map(
             ExecuteOn::PreTick,
             Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),
@@ -351,6 +313,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(elevators)?
     .with_aspect(rudder)?
     .with_aspect(gear)?
+    .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
     .build(A320::new)?;
 

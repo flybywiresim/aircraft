@@ -789,49 +789,6 @@ class EngineControl {
   }
 
   /// <summary>
-  /// FBW Payload checking and UI override function
-  /// </summary>
-  // TODO: remove from FADEC logic -> rust
-  void checkPayload() {
-    double lbsToKg = 0.4535934;
-    double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double aircraftEmptyWeight = simVars->getEmptyWeight();  // in LBS
-    double perPaxWeightLbs = simVars->getPerPaxWeight() / lbsToKg;
-    double aircraftTotalWeight = simVars->getTotalWeight();                                                          // in LBS
-    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;                                     // in LBS
-    double pilotsWeight = simVars->getPayloadStationWeight(9) + simVars->getPayloadStationWeight(10);                // in LBS
-    double aircraftPayloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight - pilotsWeight;  // in LBS
-    double paxStationAWeight = getStationCount((long long)simVars->getPaxStationAFlags()) * perPaxWeightLbs;         // in LBS
-    double paxStationBWeight = getStationCount((long long)simVars->getPaxStationBFlags()) * perPaxWeightLbs;         // in LBS
-    double paxStationCWeight = getStationCount((long long)simVars->getPaxStationCFlags()) * perPaxWeightLbs;         // in LBS
-    double paxStationDWeight = getStationCount((long long)simVars->getPaxStationDFlags()) * perPaxWeightLbs;         // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / lbsToKg;                       // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / lbsToKg;                       // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / lbsToKg;                           // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / lbsToKg;                                 // in LBS
-    double paxTotalWeightActual = (paxStationAWeight + paxStationBWeight + paxStationCWeight + paxStationDWeight);
-    double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
-    if (abs(aircraftPayloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxStationAWeight);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxStationBWeight);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxStationCWeight);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxStationDWeight);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation5, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoFwdContainerActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation6, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftContainerActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation7, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftBaggageActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation8, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftBulkActual);
-    }
-  }
-
-  /// <summary>
   /// FBW Fuel Consumption and Tankering
   /// Updates Fuel Consumption with realistic values
   /// </summary>
@@ -1503,11 +1460,6 @@ class EngineControl {
       // set highest N1 from either engine
       simN1highest = max(simN1highest, simN1);
     }
-
-    // If Development State is 1, UI Payload will be enabled
-    devState = simVars->getDeveloperState();
-    if (devState == 0)
-      checkPayload();
 
     updateFuel(deltaTime);
 
