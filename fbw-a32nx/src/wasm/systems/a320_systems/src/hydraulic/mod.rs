@@ -10,7 +10,7 @@ use uom::si::{
     f64::*,
     length::meter,
     mass::kilogram,
-    pressure::psi,
+    pressure::{bar, psi},
     ratio::{percent, ratio},
     velocity::knot,
     volume::{cubic_inch, gallon, liter},
@@ -27,7 +27,7 @@ use systems::{
             BrakeCircuitController,
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
-        flap_slat::FlapSlatAssembly,
+        flap_slat::FlapSlatAssy,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticPowered, HydraulicAssemblyController,
@@ -57,14 +57,14 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
-        random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirDataSource,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
-        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorPower,
-        EngineFirePushButtons, GearWheel, HydraulicColor, HydraulicGeneratorControlUnit,
-        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure,
-        SectionPressure, TrimmableHorizontalStabilizer,
+        interpolation, litre_per_minute::litre_per_minute, low_pass_filter::LowPassFilter,
+        random_from_normal_distribution, random_from_range, update_iterator::MaxStepLoop,
+        AdirsDiscreteOutputs, AirDataSource, AirbusElectricPumpId, AirbusEngineDrivenPumpId,
+        DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
+        HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
+        ReservoirAirPressure, SFCCChannel, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -81,6 +81,74 @@ mod slats_channel;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
+
+pub struct A320FlapSlatFactory {}
+impl A320FlapSlatFactory {
+    // Generics
+    const MAX_PCU_PRESSURE_BAR: f64 = 220.;
+    const MAX_FLOW_HYDRAULIC_MOTOR: f64 = 22.22; // Litre per minute
+    const HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH: f64 = 0.32;
+    const HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY: f64 = 0.95;
+    const UNLOCK_POB_PRESSURE_BAR: f64 = 200.;
+    const DIFFERENTIAL_GEAR_RATIO: f64 = 16.632;
+    const INTERMEDIATE_GEAR_RATIO: f64 = 140.;
+    const DRIVE_LEVER_GEAR_RATIO: f64 = 314.98;
+    // Flaps related
+    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
+    ];
+    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
+    const FLAP_MOTOR_FLOW: [f64; 7] = [0., 1.5, 3., 6., 18., 19., 22.22]; // Litre per minute
+    const FLAP_MOTOR_HYDRAULIC_PRESSURE: [f64; 7] = [3.3, 3.3, 15., 16.2, 17.8, 20., 22.]; // Newton per mm2 @ 0degC
+
+    // Slats related
+    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
+    ];
+    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
+    const SLAT_MOTOR_FLOW: [f64; 7] = [0., 1.5, 3., 6., 18., 19., 22.22]; // Litre per minute
+    const SLAT_MOTOR_HYDRAULIC_PRESSURE: [f64; 7] = [3.3, 3.3, 15., 16.2, 17.8, 20., 22.]; // Newton per mm2 @ 0degC
+
+    fn new_flaps(context: &mut InitContext) -> FlapSlatAssy<7> {
+        FlapSlatAssy::new(
+            context,
+            "FLAPS",
+            Pressure::new::<bar>(Self::MAX_PCU_PRESSURE_BAR),
+            Self::FLAP_MOTOR_FLOW,
+            Self::FLAP_MOTOR_HYDRAULIC_PRESSURE,
+            VolumeRate::new::<litre_per_minute>(Self::MAX_FLOW_HYDRAULIC_MOTOR),
+            Volume::new::<cubic_inch>(Self::HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH),
+            Ratio::new::<ratio>(Self::HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY),
+            Pressure::new::<psi>(Self::UNLOCK_POB_PRESSURE_BAR),
+            Ratio::new::<ratio>(Self::DIFFERENTIAL_GEAR_RATIO),
+            Ratio::new::<ratio>(Self::INTERMEDIATE_GEAR_RATIO),
+            Ratio::new::<ratio>(Self::DRIVE_LEVER_GEAR_RATIO),
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
+    }
+
+    fn new_slats(context: &mut InitContext) -> FlapSlatAssy<7> {
+        FlapSlatAssy::new(
+            context,
+            "SLATS",
+            Pressure::new::<bar>(Self::MAX_PCU_PRESSURE_BAR),
+            Self::SLAT_MOTOR_FLOW,
+            Self::SLAT_MOTOR_HYDRAULIC_PRESSURE,
+            VolumeRate::new::<litre_per_minute>(Self::MAX_FLOW_HYDRAULIC_MOTOR),
+            Volume::new::<cubic_inch>(Self::HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH),
+            Ratio::new::<ratio>(Self::HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY),
+            Pressure::new::<psi>(Self::UNLOCK_POB_PRESSURE_BAR),
+            Ratio::new::<ratio>(16.632),
+            Ratio::new::<ratio>(140.),
+            Ratio::new::<ratio>(314.98),
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
+    }
+}
 
 struct A320HydraulicReservoirFactory {}
 impl A320HydraulicReservoirFactory {
@@ -1476,8 +1544,8 @@ pub(super) struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
 
-    flap_system: FlapSlatAssembly,
-    slat_system: FlapSlatAssembly,
+    flap_system: FlapSlatAssy<7>,
+    slat_system: FlapSlatAssy<7>,
     slats_flaps_complex: SlatFlapComplex,
 
     gcu: GeneratorControlUnit<9>,
@@ -1515,18 +1583,6 @@ pub(super) struct A320Hydraulic {
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
     const HIGH_PITCH_PTU_SOUND_DURATION: Duration = Duration::from_millis(3000);
-
-    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
-    ];
-    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
-
-    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
-    ];
-    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
 
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
@@ -1684,30 +1740,8 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(context),
 
-            flap_system: FlapSlatAssembly::new(
-                context,
-                "FLAPS",
-                Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Ratio::new::<ratio>(140.),
-                Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
-            ),
-            slat_system: FlapSlatAssembly::new(
-                context,
-                "SLATS",
-                Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Ratio::new::<ratio>(140.),
-                Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
-            ),
+            flap_system: A320FlapSlatFactory::new_flaps(),
+            slat_system: A320FlapSlatFactory::new_slats(),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
             gcu: GeneratorControlUnit::new(
@@ -2096,18 +2130,22 @@ impl A320Hydraulic {
 
         self.flap_system.update(
             context,
-            self.slats_flaps_complex.flap_demand(0),
-            self.slats_flaps_complex.flap_demand(1),
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(0, SFCCChannel::FlapChannel),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(1, SFCCChannel::FlapChannel),
         );
 
         self.slat_system.update(
             context,
-            self.slats_flaps_complex.slat_demand(0),
-            self.slats_flaps_complex.slat_demand(1),
             self.blue_circuit.system_section(),
             self.green_circuit.system_section(),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(0, SFCCChannel::SlatChannel),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(1, SFCCChannel::SlatChannel),
         );
 
         self.forward_cargo_door_controller.update(
