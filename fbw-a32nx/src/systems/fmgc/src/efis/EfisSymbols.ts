@@ -298,37 +298,6 @@ export class EfisSymbols {
                 }
             }
 
-            // add constraint prediction circles
-            let constraintPredictions = 0;
-            for (let i = activeFp.activeWaypointIndex; i < activeFp.length && constraintPredictions < 2; i++) {
-                const wp = activeFp.getWaypoint(i);
-                if (!wp) {
-                    continue;
-                }
-
-                if (wp.type === 'A') {
-                    continue;
-                }
-
-                // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
-                const legType = wp.additionalData.legType;
-                if (EfisSymbols.LEG_MANAGED_TYPES.includes(legType)) {
-                    continue;
-                }
-
-                if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
-                    // TODO vnav to predict
-                    upsertSymbol({
-                        databaseId: wp.icao,
-                        ident: wp.ident,
-                        location: wp.infos.coordinates,
-                        type: NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.ConstraintUnknown,
-                    });
-
-                    constraintPredictions++;
-                }
-            }
-
             // TODO don't send the waypoint before active once FP sequencing is properly implemented
             // (currently sequences with guidance which is too early)
             // eslint-disable-next-line no-lone-blocks
@@ -388,6 +357,11 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
+                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !isFromWp) {
+                        // TODO vnav to predict
+                        type |= NdSymbolTypeFlags.ConstraintUnknown;
+                    }
+
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
                         const descent = wp.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
@@ -421,6 +395,20 @@ export class EfisSymbols {
                         constraints: constraints.length > 0 ? constraints : undefined,
                         direction,
                     });
+                }
+            }
+
+            // we can only send 2 constraint predictions, so filter out any past the 2 close to the AC
+            let constraintPredictions = 0;
+            const constraintFlags = NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed;
+            for (let i = symbols.length - 1; i >= 0; i--) {
+                if ((symbols[i].type & constraintFlags) === 0) {
+                    continue;
+                }
+                if (constraintPredictions >= 2) {
+                    symbols[i].type &= ~constraintFlags;
+                } else {
+                    constraintPredictions++;
                 }
             }
 
