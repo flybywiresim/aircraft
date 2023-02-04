@@ -6,40 +6,73 @@ use crate::simulation::{
 };
 use approx::relative_eq;
 use rand::Rng;
+use uom::si::{f64::Mass, mass::kilogram, mass::pound};
 
-const LBS_TO_KG: f64 = 0.4535934;
 const JS_MAX_SAFE_INTEGER: i8 = 53;
-const MAX_CARGO_MOVE: f64 = 60.0;
+const MAX_CARGO_MOVE: f64 = 60.;
 
+pub struct PaxInfo {
+    pub max_pax: i8,
+    pub pax_id: String,
+    pub pax_target_id: String,
+    pub payload_id: String,
+}
+impl PaxInfo {
+    pub fn new(max_pax: i8, pax_id: &str, pax_target_id: &str, payload_id: &str) -> Self {
+        PaxInfo {
+            max_pax,
+            pax_id: pax_id.to_string(),
+            pax_target_id: pax_target_id.to_string(),
+            payload_id: payload_id.to_string(),
+        }
+    }
+}
+
+pub struct CargoInfo {
+    pub max_cargo: Mass,
+    pub cargo_id: String,
+    pub cargo_target_id: String,
+    pub payload_id: String,
+}
+impl CargoInfo {
+    pub fn new(max_cargo: Mass, cargo_id: &str, cargo_target_id: &str, payload_id: &str) -> Self {
+        CargoInfo {
+            max_cargo,
+            cargo_id: cargo_id.to_string(),
+            cargo_target_id: cargo_target_id.to_string(),
+            payload_id: payload_id.to_string(),
+        }
+    }
+}
 #[derive(Debug)]
-pub struct PaxSync {
+pub struct Pax {
     pax_id: VariableIdentifier,
     pax_target_id: VariableIdentifier,
-    per_pax_weight: Rc<Cell<f64>>,
     payload_id: VariableIdentifier,
+    per_pax_weight: Rc<Cell<Mass>>,
     pax_target: u64,
     pax: u64,
-    payload: f64,
+    payload: Mass,
 }
-impl PaxSync {
+impl Pax {
     pub fn new(
         pax_id: VariableIdentifier,
         pax_target_id: VariableIdentifier,
-        per_pax_weight: Rc<Cell<f64>>,
         payload_id: VariableIdentifier,
+        per_pax_weight: Rc<Cell<Mass>>,
     ) -> Self {
-        PaxSync {
+        Pax {
             pax_id,
             pax_target_id,
             per_pax_weight,
             payload_id,
             pax_target: 0,
             pax: 0,
-            payload: 0.0,
+            payload: Mass::new::<pound>(0.),
         }
     }
 
-    fn per_pax_weight(&self) -> f64 {
+    fn per_pax_weight(&self) -> Mass {
         self.per_pax_weight.get()
     }
 
@@ -59,12 +92,13 @@ impl PaxSync {
         self.pax_target.count_ones() as i8
     }
 
-    pub fn payload(&self) -> f64 {
+    pub fn payload(&self) -> Mass {
         self.payload
     }
 
     pub fn load_payload(&mut self) {
-        self.payload = self.pax_num() as f64 * self.per_pax_weight() / LBS_TO_KG;
+        self.payload =
+            Mass::new::<pound>(self.pax_num() as f64 * self.per_pax_weight().get::<pound>());
     }
 
     pub fn move_all_pax(&mut self) {
@@ -104,7 +138,7 @@ impl PaxSync {
         self.load_payload();
     }
 }
-impl SimulationElement for PaxSync {
+impl SimulationElement for Pax {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.pax = reader.read(&self.pax_id);
         self.pax_target = reader.read(&self.pax_target_id);
@@ -112,49 +146,52 @@ impl SimulationElement for PaxSync {
     }
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pax_id, self.pax);
-        writer.write(&self.payload_id, self.payload);
+        writer.write(&self.payload_id, self.payload.get::<pound>());
     }
 }
 
 #[derive(Debug)]
-pub struct CargoSync {
+pub struct Cargo {
     cargo_target_id: VariableIdentifier,
     cargo_id: VariableIdentifier,
     payload_id: VariableIdentifier,
-    cargo: f64,
-    cargo_target: f64,
-    payload: f64,
+    cargo: Mass,
+    cargo_target: Mass,
+    payload: Mass,
 }
-impl CargoSync {
+impl Cargo {
     pub fn new(
         cargo_id: VariableIdentifier,
         cargo_target_id: VariableIdentifier,
         payload_id: VariableIdentifier,
     ) -> Self {
-        CargoSync {
+        Cargo {
             cargo_id,
             cargo_target_id,
             payload_id,
-            cargo: 0.0,
-            cargo_target: 0.0,
-            payload: 0.0,
+            cargo: Mass::new::<kilogram>(0.),
+            cargo_target: Mass::new::<kilogram>(0.),
+            payload: Mass::new::<pound>(0.),
         }
     }
 
-    pub fn cargo(&self) -> f64 {
+    pub fn cargo(&self) -> Mass {
         self.cargo
     }
 
-    pub fn payload(&self) -> f64 {
+    pub fn payload(&self) -> Mass {
         self.payload
     }
 
     pub fn cargo_is_target(&self) -> bool {
-        relative_eq!(self.cargo, self.cargo_target)
+        relative_eq!(
+            self.cargo.get::<kilogram>(),
+            self.cargo_target.get::<kilogram>()
+        )
     }
 
     pub fn load_payload(&mut self) {
-        self.payload = self.cargo / LBS_TO_KG
+        self.payload = self.cargo;
     }
 
     pub fn move_all_cargo(&mut self) {
@@ -164,30 +201,31 @@ impl CargoSync {
 
     pub fn move_one_cargo(&mut self) {
         let max_move = MAX_CARGO_MOVE;
-        let cargo_delta = f64::abs(self.cargo_target - self.cargo);
+        let cargo_delta =
+            f64::abs(self.cargo_target.get::<kilogram>() - self.cargo.get::<kilogram>());
+
+        let qty = Mass::new::<kilogram>(f64::min(cargo_delta, max_move));
 
         if self.cargo < self.cargo_target {
-            self.cargo += f64::min(cargo_delta, max_move);
+            self.cargo += qty;
         } else if self.cargo > self.cargo_target {
-            self.cargo -= f64::min(cargo_delta, max_move);
+            self.cargo -= qty;
         }
         self.load_payload();
     }
 }
-impl SimulationElement for CargoSync {
+impl SimulationElement for Cargo {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
     }
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.cargo = reader.read(&self.cargo_id);
-        self.cargo_target = reader.read(&self.cargo_target_id);
+        self.cargo = Mass::new::<kilogram>(reader.read(&self.cargo_id));
+        self.cargo_target = Mass::new::<kilogram>(reader.read(&self.cargo_target_id));
         self.payload = reader.read(&self.payload_id);
     }
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.cargo_id, self.cargo);
+        writer.write(&self.cargo_id, self.cargo.get::<kilogram>());
         writer.write(&self.payload_id, self.payload);
-        // Note: only sets aspect, not actual Aircraft Payload Station vars
-        // This is done via EngineControl.h checkPayload() -> C++/SimConnect
     }
 }
 

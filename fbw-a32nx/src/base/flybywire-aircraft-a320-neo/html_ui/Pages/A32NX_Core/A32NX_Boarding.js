@@ -1,9 +1,5 @@
 /* eslint-disable no-undef */
 // TODO: Deprecate, move boarding backend to WASM
-function setDefaultWeights() {
-    SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", 84);
-    SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", 20);
-}
 
 class A32NX_Boarding {
     constructor() {
@@ -29,7 +25,6 @@ class A32NX_Boarding {
     }
 
     async init() {
-        setDefaultWeights();
         this.updateStationVars();
     }
 
