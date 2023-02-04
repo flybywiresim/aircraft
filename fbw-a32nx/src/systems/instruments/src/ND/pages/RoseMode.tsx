@@ -638,7 +638,8 @@ const IlsCaptureOverlay: React.FC<{
 
     useEffect(() => {
         // TODO back-course
-        setCdiPx(Math.min(12, Math.max(-12, courseDeviation)) * 74 / 5);
+        const dots = Math.max(-2, Math.min(2, courseDeviation / 0.8));
+        setCdiPx(dots * 74);
     }, [courseDeviation.toFixed(2)]);
 
     return (
