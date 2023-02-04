@@ -8,12 +8,13 @@ use crate::{
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        VariableIdentifier,
+        SimulatorWriter, VariableIdentifier, Write,
     },
 };
 
 pub struct Keyboard {
     power_supply: PowerSupplyRelay,
+    available_id: VariableIdentifier,
     keys: [Button; 58],
     switch_kbd_id: VariableIdentifier,
     switch_kbd_value: f64,
@@ -30,6 +31,7 @@ impl Keyboard {
     ) -> Self {
         Keyboard {
             power_supply: PowerSupplyRelay::new(primary_power_supply, fallback_power_supply),
+            available_id: context.get_identifier(format!("CDS_KCCU_KBD_{}_AVAIL", side)),
             keys: [
                 Button::new(context, side, "ESC", 0x001b),
                 Button::new(context, side, "CLRINFO", 0x0070),
@@ -155,5 +157,13 @@ impl SimulationElement for Keyboard {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.switch_kbd_value = reader.read(&self.switch_kbd_id);
+    }
+
+    fn write(&mut self, writer: &mut SimulatorWriter) {
+        if self.switch_kbd_value > 0.0 && self.power_supply.output_is_powered() {
+            writer.write(&self.available_id, 1.0);
+        } else {
+            writer.write(&self.available_id, 0.0);
+        }
     }
 }
