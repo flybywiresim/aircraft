@@ -5,12 +5,8 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
-<<<<<<< HEAD:src/instruments/src/EFB/Settings/Pages/AtsuAocPage.tsx
 import { HoppieConnector } from '@atsu/system/com/webinterfaces/HoppieConnector';
-=======
-import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
 import { SENTRY_CONSENT_KEY, SentryConsentState } from '@sentry/FbwAircraftSentryClient';
->>>>>>> master:fbw-a32nx/src/systems/instruments/src/EFB/Settings/Pages/AtsuAocPage.tsx
 import { t } from '../../translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
 import { Toggle } from '../../UtilComponents/Form/Toggle';

@@ -31,7 +31,7 @@ export default new TaskOfTasks("all", [
                 new ExecTask('system','npm run build-a32nx:atsu-system', ['fbw-a32nx/src/systems/atsu/system', 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/system.js']),
                 new ExecTask('fmsclient','npm run build-a32nx:atsu-fms-client', ['fbw-a32nx/src/systems/atsu/fmsclient', 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/fmsclient.js']),
             ]),
-            new ExecTask('systems-host', 'npm run build-a32nx:systems-host', ['fbw-a32nx/src/systems/src/systems-host','fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost']),
+            new ExecTask('systems-host', 'npm run build-a32nx:systems-host', ['fbw-a32nx/src/systems/systems-host','fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost']),
             new ExecTask("failures",
                 "npm run build-a32nx:failures",
                 [

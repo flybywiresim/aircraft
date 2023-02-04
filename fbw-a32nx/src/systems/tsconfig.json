@@ -11,7 +11,9 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "paths": {
-      "@atsu/*": ["./atsu/src/*"],
+      "@atsu/common/*": ["./atsu/common/src/*"],
+      "@atsu/fmsclient/*": ["./atsu/fmsclient/src/*"],
+      "@atsu/system/*": ["./atsu/system/src/*"],
       "@failures": ["./failures/src/index.ts"],
       "@fmgc/*": ["./fmgc/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],

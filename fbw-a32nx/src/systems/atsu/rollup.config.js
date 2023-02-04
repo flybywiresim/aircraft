@@ -14,15 +14,10 @@ const replace = require('@rollup/plugin-replace');
 
 const extensions = ['.js', '.ts'];
 
-<<<<<<< HEAD:fbw-a32nx/src/systems/atsu/common/rollup.config.js
-const src = join(__dirname, '..', '..');
-const root = join(__dirname, '..', '..', '..');
-=======
 const src = join(__dirname, '..');
 console.log('Src: ', src);
 const root = join(process.cwd());
 console.log('Root: ', root);
->>>>>>> master:fbw-a32nx/src/systems/atsu/rollup.config.js
 
 process.chdir(src);
 
@@ -51,11 +46,7 @@ module.exports = {
         }),
     ],
     output: {
-<<<<<<< HEAD:fbw-a32nx/src/systems/atsu/common/rollup.config.js
-        file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/atsu/common.js'),
-=======
         file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/atsu.js'),
->>>>>>> master:fbw-a32nx/src/systems/atsu/rollup.config.js
         format: 'umd',
         name: 'AtsuCommon',
     },
