@@ -930,9 +930,7 @@ export class NewPseudoFWC {
 
         if (recallButton === 1) {
             if (this.recallFailures.length > 0) {
-                const recall = this.recallFailures[0];
-                this.recallFailures.shift();
-                this.failuresLeft.push(recall);
+                this.failuresLeft.push(this.recallFailures.shift());
             }
         }
 
