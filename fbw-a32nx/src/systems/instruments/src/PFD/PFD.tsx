@@ -5,7 +5,7 @@ import { Arinc429Word } from '@shared/arinc429';
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { DisplayUnit } from './shared/displayUnit';
+import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import './style.scss';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
 import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';

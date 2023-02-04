@@ -139,7 +139,7 @@ export class SimVarPublisher<E extends SimVarEventTypes> extends BasePublisher<E
         if (simvar === undefined) {
             return undefined;
         }
-        return SimVar.GetSimVarValue(simvar.name, simvar.type);
+        return SimVar.GetSimVarValue(typeof simvar.name === 'function' ? simvar.name() : simvar.name, simvar.type);
     }
 
     /**

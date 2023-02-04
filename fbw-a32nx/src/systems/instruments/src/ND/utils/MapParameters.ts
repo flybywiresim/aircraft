@@ -11,16 +11,19 @@ export class MapParameters {
 
     public nmRadius: number;
 
+    public centerYBias: number;
+
     public version = 0;
 
     public valid = false;
 
-    compute(centerCoordinates: Coordinates, nmRadius: number, pxRadius: number, mapUpTrueDeg: number): void {
+    compute(centerCoordinates: Coordinates, centerYBias: number, nmRadius: number, pxRadius: number, mapUpTrueDeg: number): void {
         this.version++;
         this.valid = Number.isFinite(centerCoordinates.lat) && Number.isFinite(centerCoordinates.long) && Number.isFinite(pxRadius) && Number.isFinite(mapUpTrueDeg);
 
         this.mapUpTrueDeg = mapUpTrueDeg;
         this.centerCoordinates = centerCoordinates;
+        this.centerYBias = centerYBias;
         this.nmToPx = pxRadius / nmRadius;
         this.mToPx = this.nmToPx / 1852;
         this.nmRadius = nmRadius;
@@ -35,7 +38,7 @@ export class MapParameters {
 
         return [
             xNm * this.nmToPx,
-            yNm * this.nmToPx,
+            yNm * this.nmToPx + this.centerYBias,
         ];
     }
 
