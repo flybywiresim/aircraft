@@ -4,8 +4,7 @@
 import { DescentPathBuilder } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { CoarsePredictions } from '@fmgc/guidance/vnav/CoarsePredictions';
-import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanManager, FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { VerticalMode, ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode } from '@shared/autopilot';
 import { PseudoWaypointFlightPlanInfo } from '@fmgc/guidance/PseudoWaypoint';
 import { VerticalProfileComputationParameters, VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
@@ -59,9 +58,11 @@ export class VnavDriver implements GuidanceComponent {
 
     private cruiseToDescentCoordinator: CruiseToDescentCoordinator;
 
-    currentNavGeometryProfile: NavGeometryProfile;
+    currentMcduGeometryProfile: NavGeometryProfile;
 
     currentNdGeometryProfile?: BaseGeometryProfile;
+
+    currentDescentGeometryProfile: NavGeometryProfile;
 
     // eslint-disable-next-line camelcase
     private coarsePredictionsUpdate = new A32NX_Util.UpdateThrottler(5000);
@@ -125,7 +126,7 @@ export class VnavDriver implements GuidanceComponent {
             const { presentPosition, flightPhase } = this.computationParametersObserver.get();
 
             if (this.coarsePredictionsUpdate.canUpdate(deltaTime) !== -1) {
-                CoarsePredictions.updatePredictions(this.guidanceController, this.atmosphericConditions);
+                this.updateLegSpeedPredictions();
             }
 
             if (flightPhase >= FmgcFlightPhase.Takeoff) {
@@ -158,8 +159,17 @@ export class VnavDriver implements GuidanceComponent {
             this.requestDescentProfileRecomputation = false;
             this.previousManagedDescentSpeedTarget = newParameters.managedDescentSpeed;
 
-            if (this.currentNavGeometryProfile?.isReadyToDisplay) {
-                this.descentGuidance.updateProfile(this.currentNavGeometryProfile);
+            this.currentDescentGeometryProfile = new NavGeometryProfile(
+                this.guidanceController,
+                this.constraintReader,
+                this.atmosphericConditions,
+                this.flightPlanManager.getWaypointsCount(FlightPlans.Active),
+            );
+
+            this.currentDescentGeometryProfile.checkpoints = this.currentMcduGeometryProfile.checkpoints.slice();
+
+            if (this.currentMcduGeometryProfile?.isReadyToDisplay) {
+                this.descentGuidance.updateProfile(this.currentDescentGeometryProfile);
             }
         }
 
@@ -170,12 +180,12 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     private updateTimeMarkers() {
-        if (!this.currentNavGeometryProfile.isReadyToDisplay) {
+        if (!this.currentMcduGeometryProfile.isReadyToDisplay) {
             return;
         }
 
         for (const [time] of this.timeMarkers.entries()) {
-            const prediction = this.currentNavGeometryProfile.predictAtTime(time);
+            const prediction = this.currentMcduGeometryProfile.predictAtTime(time);
 
             this.timeMarkers.set(time, prediction);
         }
@@ -202,9 +212,9 @@ export class VnavDriver implements GuidanceComponent {
 
         this.currentMcduSpeedProfile = new McduSpeedProfile(
             this.computationParametersObserver,
-            this.currentNavGeometryProfile.distanceToPresentPosition,
-            this.currentNavGeometryProfile.maxClimbSpeedConstraints,
-            this.currentNavGeometryProfile.descentSpeedConstraints,
+            this.currentMcduGeometryProfile.distanceToPresentPosition,
+            this.currentMcduGeometryProfile.maxClimbSpeedConstraints,
+            this.currentMcduGeometryProfile.descentSpeedConstraints,
         );
 
         if (fromFlightPhase < FmgcFlightPhase.Cruise) {
@@ -213,38 +223,33 @@ export class VnavDriver implements GuidanceComponent {
 
         if (profile instanceof NavGeometryProfile && this.cruiseToDescentCoordinator.canCompute(profile)) {
             this.cruiseToDescentCoordinator.buildCruiseAndDescentPath(profile, this.currentMcduSpeedProfile, cruiseWinds, descentWinds, managedClimbStrategy, stepDescentStrategy);
+        }
 
-            if (this.currentMcduSpeedProfile.shouldTakeDescentSpeedLimitIntoAccount()) {
-                this.cruiseToDescentCoordinator.addSpeedLimitAsCheckpoint(profile);
-            }
+        if (fromFlightPhase >= FmgcFlightPhase.Descent && fromFlightPhase <= FmgcFlightPhase.Approach || this.aircraftToDescentProfileRelation.isPastTopOfDescent()) {
+            this.buildInterceptToDescentPath(this.currentMcduGeometryProfile);
         }
     }
 
     private computeVerticalProfileForMcdu(geometry: Geometry) {
         const { flightPhase, presentPosition, fuelOnBoard, approachSpeed } = this.computationParametersObserver.get();
 
-        this.currentNavGeometryProfile = new NavGeometryProfile(this.guidanceController, this.constraintReader, this.atmosphericConditions, this.flightPlanManager.getWaypointsCount());
+        this.currentMcduGeometryProfile = new NavGeometryProfile(this.guidanceController, this.constraintReader, this.atmosphericConditions, this.flightPlanManager.getWaypointsCount());
 
         if (geometry.legs.size <= 0 || !this.computationParametersObserver.canComputeProfile()) {
             return;
         }
 
         console.time('VNAV computation');
-        // TODO: This is where the return to trajectory would go:
         if (flightPhase >= FmgcFlightPhase.Climb) {
-            this.currentNavGeometryProfile.addPresentPositionCheckpoint(presentPosition, fuelOnBoard, this.currentMcduSpeedProfile.getManagedMachTarget(), this.getVman(approachSpeed));
+            this.currentMcduGeometryProfile.addPresentPositionCheckpoint(presentPosition, fuelOnBoard, this.currentMcduSpeedProfile.getManagedMachTarget(), this.getVman(approachSpeed));
         }
 
-        this.finishProfileInManagedModes(this.currentNavGeometryProfile, Math.max(FmgcFlightPhase.Takeoff, flightPhase));
+        this.finishProfileInManagedModes(this.currentMcduGeometryProfile, Math.max(FmgcFlightPhase.Takeoff, flightPhase));
 
-        this.currentNavGeometryProfile.finalizeProfile();
-        this.decelPoint = this.currentNavGeometryProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
+        this.currentMcduGeometryProfile.finalizeProfile();
+        this.decelPoint = this.currentMcduGeometryProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
 
         console.timeEnd('VNAV computation');
-
-        if (VnavConfig.DEBUG_PROFILE) {
-            console.log('this.currentNavGeometryProfile:', this.currentNavGeometryProfile);
-        }
     }
 
     private computeVerticalProfileForNd() {
@@ -338,7 +343,7 @@ export class VnavDriver implements GuidanceComponent {
         } else if (shouldApplyDescentPredictions) {
             // The idea here is that we compute a profile to FCU alt in the current modes, find the intercept with the managed profile. And then compute the managed profile from there.
 
-            const descentStrategy = this.getAppropriateTacticalDescentStrategy(fcuVerticalMode, fcuVerticalSpeed, fcuFlightPathAngle, this.aircraftToDescentProfileRelation);
+            const descentStrategy = this.getAppropriateTacticalDescentStrategy(fcuVerticalMode, fcuVerticalSpeed, fcuFlightPathAngle);
             const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
 
             // The guidance profile and the tactical profile agree on the distance to destination by design.
@@ -353,7 +358,7 @@ export class VnavDriver implements GuidanceComponent {
             ).map((c: VerticalCheckpointForDeceleration) => ({ ...c, distanceFromStart: c.distanceFromStart + tacticalToGuidanceProfileOffset }));
 
             // Build path to FCU altitude.
-            this.tacticalDescentPathBuilder.buildTacticalDescentPath(this.currentNdGeometryProfile, descentStrategy, speedProfile, descentWinds,
+            this.tacticalDescentPathBuilder.buildTacticalDescentPathToAltitude(this.currentNdGeometryProfile, descentStrategy, speedProfile, descentWinds,
                 isInLevelFlight ? this.currentNdGeometryProfile.checkpoints[0].altitude : fcuAltitude, plannedDecelerations);
 
             // Compute intercept with managed profile
@@ -466,7 +471,7 @@ export class VnavDriver implements GuidanceComponent {
                 }
             } else {
                 this.currentNdGeometryProfile.checkpoints.push(
-                    ...this.currentNavGeometryProfile.checkpoints.filter((checkpoint) => checkpoint.distanceFromStart > this.currentNdGeometryProfile.lastCheckpoint?.distanceFromStart ?? 0),
+                    ...this.currentMcduGeometryProfile.checkpoints.filter((checkpoint) => checkpoint.distanceFromStart > this.currentNdGeometryProfile.lastCheckpoint?.distanceFromStart ?? 0),
                 );
             }
         }
@@ -479,10 +484,8 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     private getAppropriateTacticalDescentStrategy(
-        fcuVerticalMode: VerticalMode, fcuVerticalSpeed: FeetPerMinute, fcuFlightPathAngle: Degrees, relation: AircraftToDescentProfileRelation,
+        fcuVerticalMode: VerticalMode, fcuVerticalSpeed: FeetPerMinute, fcuFlightPathAngle: Degrees,
     ): DescentStrategy {
-        const linearDeviation = relation.computeLinearDeviation();
-
         if (fcuVerticalMode === VerticalMode.VS && fcuVerticalSpeed <= 0) {
             return new VerticalSpeedStrategy(this.computationParametersObserver, this.atmosphericConditions, fcuVerticalSpeed);
         } if (fcuVerticalMode === VerticalMode.FPA && fcuFlightPathAngle <= 0) {
@@ -492,22 +495,28 @@ export class VnavDriver implements GuidanceComponent {
             return new IdleDescentStrategy(this.computationParametersObserver, this.atmosphericConditions);
         }
 
-        if (relation.isValid && fcuVerticalMode === VerticalMode.DES) {
-            if (linearDeviation > 0 && relation.isPastTopOfDescent()) {
-                return DesModeStrategy.aboveProfile(this.computationParametersObserver, this.atmosphericConditions);
-            } if (relation.isOnGeometricPath()) {
-                const fpaTarget = relation.currentTargetPathAngle() / 2;
-                return DesModeStrategy.belowProfileFpa(this.computationParametersObserver, this.atmosphericConditions, fpaTarget);
-            }
-
-            const vsTarget = relation.isAboveSpeedLimitAltitude() && !relation.isCloseToAirfieldElevation() ? -1000 : -500;
-            return DesModeStrategy.belowProfileVs(
-                this.computationParametersObserver, this.atmosphericConditions, vsTarget,
-            );
+        if (this.aircraftToDescentProfileRelation.isValid && fcuVerticalMode === VerticalMode.DES) {
+            return this.getDesModeStrategy();
         }
 
         // Assume level flight if we're in a different mode
         return new VerticalSpeedStrategy(this.computationParametersObserver, this.atmosphericConditions, 0);
+    }
+
+    private getDesModeStrategy() {
+        const linearDeviation = this.aircraftToDescentProfileRelation.computeLinearDeviation();
+
+        if (linearDeviation > 0 && this.aircraftToDescentProfileRelation.isPastTopOfDescent()) {
+            return DesModeStrategy.aboveProfile(this.computationParametersObserver, this.atmosphericConditions);
+        } if (this.aircraftToDescentProfileRelation.isOnGeometricPath()) {
+            const fpaTarget = this.aircraftToDescentProfileRelation.currentTargetPathAngle() / 2;
+            return DesModeStrategy.belowProfileFpa(this.computationParametersObserver, this.atmosphericConditions, fpaTarget);
+        }
+
+        const vsTarget = this.aircraftToDescentProfileRelation.isAboveSpeedLimitAltitude() && !this.aircraftToDescentProfileRelation.isCloseToAirfieldElevation() ? -1000 : -500;
+        return DesModeStrategy.belowProfileVs(
+            this.computationParametersObserver, this.atmosphericConditions, vsTarget,
+        );
     }
 
     private shouldObeySpeedConstraints(): boolean {
@@ -716,15 +725,15 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     public getDestinationPrediction(): VerticalWaypointPrediction | null {
-        return this.currentNavGeometryProfile?.waypointPredictions?.get(this.flightPlanManager.getDestinationIndex());
+        return this.currentMcduGeometryProfile?.waypointPredictions?.get(this.flightPlanManager.getDestinationIndex());
     }
 
     public getPerfCrzToPrediction(): PerfCrzToPrediction | null {
-        if (!this.currentNavGeometryProfile?.isReadyToDisplay) {
+        if (!this.currentMcduGeometryProfile?.isReadyToDisplay) {
             return null;
         }
 
-        const todOrStep = this.currentNavGeometryProfile.findVerticalCheckpoint(
+        const todOrStep = this.currentMcduGeometryProfile.findVerticalCheckpoint(
             VerticalCheckpointReason.StepClimb, VerticalCheckpointReason.StepDescent, VerticalCheckpointReason.TopOfDescent,
         );
 
@@ -797,14 +806,126 @@ export class VnavDriver implements GuidanceComponent {
     public invalidateFlightPlanProfile(): void {
         this.requestDescentProfileRecomputation = true;
 
-        if (this.currentNavGeometryProfile) {
-            this.currentNavGeometryProfile.invalidate();
+        if (this.currentMcduGeometryProfile) {
+            this.currentMcduGeometryProfile.invalidate();
         }
     }
 
     // Only used to check whether T/D PWP should be displayed despite not being in lat auto control
     public isFlightPhasePreflight(): boolean {
         return this.computationParametersObserver.get().flightPhase === FmgcFlightPhase.Preflight;
+    }
+
+    private buildInterceptToDescentPath(profile: NavGeometryProfile) {
+        const { presentPosition, fuelOnBoard, approachSpeed } = this.computationParametersObserver.get();
+
+        profile.addPresentPositionCheckpoint(presentPosition, fuelOnBoard, this.currentMcduSpeedProfile.getManagedMachTarget(), this.getVman(approachSpeed));
+
+        const desModeStrategy = this.getDesModeStrategy();
+        const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
+
+        const guidanceDistanceFromStart = this.aircraftToDescentProfileRelation.distanceFromStart;
+        const tacticalDistanceFromStart = this.constraintReader.distanceToPresentPosition;
+        const tacticalToGuidanceProfileOffset = tacticalDistanceFromStart - guidanceDistanceFromStart;
+
+        const plannedDecelerations = this.extractForcedDecelerations(
+            this.aircraftToDescentProfileRelation.currentProfile.checkpoints, this.computationParametersObserver.get(), tacticalToGuidanceProfileOffset,
+        );
+
+        this.tacticalDescentPathBuilder.buildMcduPredictionPath(
+            profile,
+            desModeStrategy,
+            this.currentMcduSpeedProfile,
+            descentWinds,
+            this.constraintReader.totalFlightPlanDistance,
+            plannedDecelerations,
+        );
+
+        const interceptDistance = ProfileInterceptCalculator.calculateIntercept(
+            profile.checkpoints,
+            this.aircraftToDescentProfileRelation.currentProfile.checkpoints,
+            tacticalToGuidanceProfileOffset,
+        );
+
+        profile.checkpoints = profile.checkpoints.filter((c) => c.distanceFromStart < interceptDistance);
+        for (const checkpoint of this.aircraftToDescentProfileRelation.currentProfile.checkpoints) {
+            const tacticalDistanceFromStart = checkpoint.distanceFromStart + tacticalToGuidanceProfileOffset;
+
+            if (tacticalDistanceFromStart > interceptDistance) {
+                profile.checkpoints.push(
+                    { ...checkpoint, distanceFromStart: tacticalDistanceFromStart },
+                );
+            }
+        }
+    }
+
+    private updateLegSpeedPredictions() {
+        const geometry = this.guidanceController.activeGeometry;
+        const activeLegIndex = this.guidanceController.activeLegIndex;
+        let distanceFromAircraft = this.guidanceController.activeLegCompleteLegPathDtg;
+        const tacticalDistanceFromStart = this.constraintReader.distanceToPresentPosition;
+
+        for (let i = activeLegIndex; i < activeLegIndex + 3; i++) {
+            const leg = geometry.legs.get(i);
+
+            if (!leg) {
+                continue;
+            }
+
+            if (i > activeLegIndex) {
+                const inboundTransition = geometry.transitions.get(i - 1);
+                const outboundTransition = geometry.transitions.get(i);
+
+                const [inboundLength, legDistance, outboundLength] = Geometry.completeLegPathLengths(
+                    leg,
+                    (inboundTransition?.isNull || !inboundTransition?.isComputed) ? null : inboundTransition,
+                    (outboundTransition?.isNull || !outboundTransition?.isComputed) ? null : outboundTransition,
+                );
+
+                const correctedInboundLength = Number.isNaN(inboundLength) ? 0 : inboundLength;
+                const totalLegLength = legDistance + correctedInboundLength + outboundLength;
+                distanceFromAircraft += totalLegLength;
+            }
+
+            const prediction = this.currentMcduGeometryProfile.interpolateEverythingFromStart(tacticalDistanceFromStart + distanceFromAircraft);
+            const tasPrediction = this.atmosphericConditions.computeTasFromCas(prediction.altitude, prediction.speed);
+            const gsPrediction = tasPrediction + this.atmosphericConditions.currentWindSpeed;
+
+            leg.predictedTas = tasPrediction;
+            leg.predictedGs = gsPrediction;
+        }
+    }
+
+    private extractForcedDecelerations(descentProfile: VerticalCheckpoint[], parameters: VerticalProfileComputationParameters, offset: NauticalMiles): VerticalCheckpointForDeceleration[] {
+        const { slatRetractionSpeed, flapRetractionSpeed, cleanSpeed, approachSpeed } = parameters;
+
+        return descentProfile.reduce((decelerations, checkpoint) => {
+            switch (checkpoint.reason) {
+            case VerticalCheckpointReason.StartDecelerationToConstraint:
+            case VerticalCheckpointReason.StartDecelerationToLimit:
+                decelerations.push({ ...checkpoint as VerticalCheckpointForDeceleration, distanceFromStart: checkpoint.distanceFromStart + offset });
+                break;
+            case VerticalCheckpointReason.Decel:
+                decelerations.push({ ...checkpoint, targetSpeed: cleanSpeed, distanceFromStart: checkpoint.distanceFromStart + offset });
+                break;
+            case VerticalCheckpointReason.Flaps1:
+                decelerations.push({ ...checkpoint, targetSpeed: slatRetractionSpeed, distanceFromStart: checkpoint.distanceFromStart + offset });
+                break;
+            case VerticalCheckpointReason.Flaps2:
+                decelerations.push({ ...checkpoint, targetSpeed: flapRetractionSpeed, distanceFromStart: checkpoint.distanceFromStart + offset });
+                break;
+            case VerticalCheckpointReason.Flaps3:
+                decelerations.push({ ...checkpoint, targetSpeed: (flapRetractionSpeed + approachSpeed) / 2, distanceFromStart: checkpoint.distanceFromStart + offset });
+                break;
+            case VerticalCheckpointReason.FlapsFull:
+                decelerations.push({ ...checkpoint, targetSpeed: approachSpeed, distanceFromStart: checkpoint.distanceFromStart + offset });
+                break;
+            default:
+                break;
+            }
+
+            return decelerations;
+        }, [] as VerticalCheckpointForDeceleration[]);
     }
 }
 

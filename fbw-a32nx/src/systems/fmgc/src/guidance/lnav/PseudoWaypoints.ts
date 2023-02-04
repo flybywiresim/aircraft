@@ -104,7 +104,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         const geometry = this.guidanceController.activeGeometry;
         const wptCount = this.guidanceController.flightPlanManager.getWaypointsCount();
 
-        const navGeometryProfile = this.guidanceController.vnavDriver.currentNavGeometryProfile;
+        const navGeometryProfile = this.guidanceController.vnavDriver.currentMcduGeometryProfile;
         if (!geometry || geometry.legs.size < 1 || !navGeometryProfile.isReadyToDisplay) {
             this.pseudoWaypoints.length = 0;
             return;

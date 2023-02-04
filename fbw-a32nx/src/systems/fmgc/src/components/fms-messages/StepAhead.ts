@@ -18,7 +18,7 @@ export class StepAhead implements FMMessageSelector {
         const fpm = this.guidanceController.flightPlanManager;
         const distanceToEnd = this.guidanceController.vnavDriver.distanceToEnd;
 
-        if (!this.guidanceController.vnavDriver.currentNavGeometryProfile.isReadyToDisplay || distanceToEnd <= 0) {
+        if (!this.guidanceController.vnavDriver.currentMcduGeometryProfile.isReadyToDisplay || distanceToEnd <= 0) {
             return FMMessageUpdate.NO_ACTION;
         }
 

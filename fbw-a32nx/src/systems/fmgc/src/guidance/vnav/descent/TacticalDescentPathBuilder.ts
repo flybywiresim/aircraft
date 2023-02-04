@@ -25,6 +25,53 @@ export class TacticalDescentPathBuilder {
     }
 
     /**
+     * Builds a path from the last checkpoint to the finalDistance
+     * @param profile
+     * @param descentStrategy
+     * @param speedProfile
+     * @param windProfile
+     * @param finalDistance
+     * @param forcedDecelerations Points at which the plane must decelerate
+     */
+    buildMcduPredictionPath(
+        profile: BaseGeometryProfile,
+        descentStrategy: DescentStrategy,
+        speedProfile: SpeedProfile,
+        windProfile: HeadwindProfile,
+        finalDistance: NauticalMiles,
+        forcedDecelerations: VerticalCheckpointForDeceleration[],
+    ) {
+        const start = profile.lastCheckpoint;
+
+        let minAlt = Infinity;
+        const altConstraintsToUse = profile.descentAltitudeConstraints.map((constraint) => {
+            minAlt = Math.min(minAlt, minimumAltitude(constraint.constraint));
+            return {
+                distanceFromStart: constraint.distanceFromStart,
+                minimumAltitude: minAlt,
+            } as MinimumDescentAltitudeConstraint;
+        });
+
+        const phaseTable = new PhaseTable(windProfile);
+        phaseTable.start = start;
+        phaseTable.phases = [
+            new DescendToDistance(finalDistance).withReasonAfter(VerticalCheckpointReason.CrossingFcuAltitudeDescent),
+        ];
+
+        let isPathValid = false;
+        let numRecomputations = 0;
+        let sequence: TemporaryCheckpointSequence | null = null;
+        while (!isPathValid && numRecomputations++ < 100) {
+            sequence = phaseTable.execute(descentStrategy, this.levelFlightStrategy);
+            isPathValid = this.checkForViolations(phaseTable, profile, altConstraintsToUse, speedProfile, forcedDecelerations);
+        }
+
+        if (sequence != null) {
+            profile.checkpoints.push(...sequence.get());
+        }
+    }
+
+    /**
      * Builds a path from the last checkpoint to the finalAltitude
      * @param profile
      * @param descentStrategy
@@ -32,7 +79,7 @@ export class TacticalDescentPathBuilder {
      * @param windProfile
      * @param finalAltitude
      */
-    buildTacticalDescentPath(
+    buildTacticalDescentPathToAltitude(
         profile: BaseGeometryProfile,
         descentStrategy: DescentStrategy,
         speedProfile: SpeedProfile,
@@ -146,7 +193,8 @@ export class TacticalDescentPathBuilder {
         } else {
             phaseTable.phases.splice(violatingPhaseIndex, 0,
                 new DescendToDistance(forcedDeceleration.distanceFromStart),
-                new DescendingDeceleration(forcedDeceleration.targetSpeed).withReasonBefore(VerticalCheckpointReason.StartDecelerationToConstraint));
+                // Use deceleration reason as before
+                new DescendingDeceleration(forcedDeceleration.targetSpeed).withReasonBefore(forcedDeceleration.reason));
         }
     }
 
@@ -279,14 +327,12 @@ export class TacticalDescentPathBuilder {
     }
 
     private doesPhaseViolateForcedConstraintDeceleration(phase: SubPhase, forcedDeceleration: VerticalCheckpointForDeceleration) {
-        if (forcedDeceleration.reason === VerticalCheckpointReason.StartDecelerationToConstraint) {
-            if (phase.lastResult.distanceFromStart <= forcedDeceleration.distanceFromStart) {
-                return false;
-            }
-        } else if (forcedDeceleration.reason === VerticalCheckpointReason.StartDecelerationToLimit) {
+        if (forcedDeceleration.reason === VerticalCheckpointReason.StartDecelerationToLimit) {
             if (phase.lastResult.altitude >= forcedDeceleration.altitude) {
                 return false;
             }
+        } else if (phase.lastResult.distanceFromStart <= forcedDeceleration.distanceFromStart) {
+            return false;
         }
 
         if (phase instanceof DescendingDeceleration) {
