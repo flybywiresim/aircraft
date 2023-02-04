@@ -80,6 +80,8 @@ const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
         return null;
     }
 
+    // FIXME pointers should never be correct in ROSE VOR/LS... easier when VOR/MKR LRU is implemented
+
     return available && !isLoc && (
         <g transform={`rotate(${relativeBearing} 384 ${centreHeight})`}>
             <path
