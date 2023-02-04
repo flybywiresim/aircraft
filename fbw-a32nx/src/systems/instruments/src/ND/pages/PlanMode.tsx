@@ -27,7 +27,7 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
     const [mapParams] = useState<MapParameters>(new MapParameters());
 
     useEffect(() => {
-        mapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
+        mapParams.compute({ lat: planCentreLat, long: planCentreLong }, 0, rangeSetting / 2, 250, 0);
     }, [planCentreLat, planCentreLong, rangeSetting]);
 
     useEffect(() => {
