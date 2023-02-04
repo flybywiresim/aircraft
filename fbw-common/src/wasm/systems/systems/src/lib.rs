@@ -9,7 +9,6 @@ pub mod macros;
 
 pub mod air_conditioning;
 pub mod apu;
-pub mod boarding;
 pub mod electrical;
 pub mod engine;
 pub mod failures;
@@ -19,6 +18,7 @@ pub mod integrated_modular_avionics;
 pub mod landing_gear;
 pub mod navigation;
 pub mod overhead;
+pub mod payload;
 pub mod pneumatic;
 pub mod pressurization;
 pub mod shared;

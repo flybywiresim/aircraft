@@ -6,7 +6,7 @@ use std::{cell::Cell, rc::Rc, time::Duration};
 use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
-    boarding::{BoardingRate, Cargo, CargoInfo, Pax, PaxInfo},
+    payload::{BoardingRate, Cargo, CargoInfo, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -187,7 +187,7 @@ impl SimulationElement for A320BoardingSounds {
         writer.write(&self.pax_ambience_id, self.pax_ambience);
     }
 }
-pub struct A320Boarding {
+pub struct A320Payload {
     is_boarding_id: VariableIdentifier,
     is_gsx_enabled_id: VariableIdentifier,
     board_rate_id: VariableIdentifier,
@@ -201,7 +201,7 @@ pub struct A320Boarding {
     boarding_sounds: A320BoardingSounds,
     time: Duration,
 }
-impl A320Boarding {
+impl A320Payload {
     pub fn new(context: &mut InitContext) -> Self {
         let per_pax_weight = Rc::new(Cell::new(Mass::new::<kilogram>(DEFAULT_PER_PAX_WEIGHT_KG)));
 
@@ -224,7 +224,7 @@ impl A320Boarding {
                 context.get_identifier(A320_CARGO[cs].payload_id.to_owned()),
             ));
         }
-        A320Boarding {
+        A320Payload {
             is_boarding_id: context.get_identifier("BOARDING_STARTED_BY_USR".to_owned()),
             is_gsx_enabled_id: context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
             board_rate_id: context.get_identifier("BOARDING_RATE".to_owned()),
@@ -533,7 +533,7 @@ impl A320Boarding {
         self.per_pax_weight.get()
     }
 }
-impl SimulationElement for A320Boarding {
+impl SimulationElement for A320Payload {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         for ps in 0..self.pax.len() {
             self.pax[ps].accept(visitor);
@@ -574,20 +574,20 @@ mod boarding_test {
     use uom::si::mass::pound;
 
     use super::*;
-    use crate::boarding::A320Boarding;
+    use crate::payload::A320Payload;
     use crate::systems::simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
         Aircraft, SimulationElement, SimulationElementVisitor,
     };
 
     struct BoardingTestAircraft {
-        boarding: A320Boarding,
+        boarding: A320Payload,
     }
 
     impl BoardingTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                boarding: A320Boarding::new(context),
+                boarding: A320Payload::new(context),
             }
         }
     }
