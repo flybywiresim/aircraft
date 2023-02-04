@@ -1744,8 +1744,8 @@ export class NewPseudoFWC {
         2900310: { // *HYD  - Blue
             flightPhaseInhib: [1, 4, 5, 10],
             simVarIsActive: MappedSubject.create(
-                ([blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) => !(blueRvrLow === 1 || !blueElecPumpPBAuto)
-                    && (!dcESSBusPowered || !ac1BusPowered) && blueLP === 1 && !emergencyGeneratorOn,
+                ([blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) => !(blueRvrLow || !blueElecPumpPBAuto)
+                    && (!dcESSBusPowered || !ac1BusPowered) && blueLP && !emergencyGeneratorOn,
                 this.blueRvrLow, this.blueElecPumpPBAuto, this.dcESSBusPowered, this.ac1BusPowered, this.blueLP, this.emergencyGeneratorOn,
             ),
             whichCodeToReturn: () => [0],
@@ -1758,7 +1758,7 @@ export class NewPseudoFWC {
         2900312: { // *HYD  - Green Engine 1 //
             flightPhaseInhib: [1, 2, 9, 10],
             simVarIsActive: MappedSubject.create(
-                ([greenLP, greenHydEng1PBAuto, emergencyGeneratorOn]) => greenLP === 1
+                ([greenLP, greenHydEng1PBAuto, emergencyGeneratorOn]) => greenLP
                     // && ENG 1 OUT - not implemented
                     && !greenHydEng1PBAuto && !emergencyGeneratorOn,
                 this.greenLP, this.greenHydEng1PBAuto, this.emergencyGeneratorOn,
