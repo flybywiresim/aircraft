@@ -10,7 +10,10 @@ export function getInstrumentsIgniterTasks() {
     return baseInstruments.map(({ name }) => new ExecTask(
         name,
         `mach build --config fbw-a32nx/mach.config.js --work-in-config-dir -f ${name}`,
-        [join('fbw-a32nx/src/systems/instruments/src', name),
-            join('fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX', name)],
+        [
+            join('fbw-a32nx/src/systems/instruments/src', name),
+            'fbw-a32nx/src/systems/instruments/src/Common',
+            join('fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX', name),
+        ],
     ));
 }
