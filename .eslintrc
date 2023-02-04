@@ -5,12 +5,9 @@
     "es2021": true
   },
   "ignorePatterns": [
-    "/flybywire-aircraft-a320-neo/html_ui/JS/fmgc/**",
-    "/flybywire-aircraft-a320-neo/html_ui/JS/atsu/**",
-    "/flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/**",
-    "/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/**",
-    "typings/**",
-    "/msfs-avionics-mirror/**"
+    "/fbw-a32nx/src/base/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/**",
+    "/fbw-common/src/typings/**",
+    "/fbw-common/msfs-avionics-mirror/**"
   ],
   // DO NOT CHANGE THIS FILE (unless you are an admin) (if admin, make sure you change the same file in the latest asobo branch as well)
   "rules": {

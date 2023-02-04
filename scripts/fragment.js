@@ -5,8 +5,8 @@ const execute = async () => {
     try {
         const result = await fragmenter.pack({
             packOptions: { splitFileSize: 102_760_448, keepCompleteModulesAfterSplit: false },
-            baseDir: './flybywire-aircraft-a320-neo',
-            outDir: './build-modules',
+            baseDir: './fbw-a32nx/out/flybywire-aircraft-a320-neo',
+            outDir: './fbw-a32nx/out/build-modules',
             modules: [{
                 name: 'effects',
                 sourceDir: './effects'
@@ -37,7 +37,7 @@ const execute = async () => {
             }]
         });
         console.log(result);
-        console.log(fs.readFileSync('./build-modules/modules.json').toString());
+        console.log(fs.readFileSync('./fbw-a32nx/out/build-modules/modules.json').toString());
     } catch (e) {
         console.error(e);
         process.exit(1);

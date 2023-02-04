@@ -1,0 +1,151 @@
+<!-- Copyright (c) 2022 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_ENGINE_Lever_Throttle_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.THROTTLE_CONTROL</TOOLTIPID>
+            <POSITION_TYPE>O</POSITION_TYPE>
+            <POSITION_VAR>Position</POSITION_VAR>
+            <PART_ID>ENGINE_Lever_Throttle</PART_ID>
+            <USE_TRAJECTORY_DRAG_MODE>true</USE_TRAJECTORY_DRAG_MODE>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_ENGINE_Lever_Throttle_SubTemplate">
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Lever_Throttle_SubTemplate">
+        <DefaultTemplateParameters>
+            <DRAG_AXIS_SCALE>-450</DRAG_AXIS_SCALE>
+            <DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+            <DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+            <AXIS>Y</AXIS>
+            <NO_ARROWS/>
+            <CURSOR>Grab</CURSOR>
+            <CLIMB_LEVEL>25</CLIMB_LEVEL>
+            <FLEX_LEVEL>35</FLEX_LEVEL>
+            <TOGA_LEVEL>45</TOGA_LEVEL>
+            <REV_LEVEL>-20</REV_LEVEL>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+            <DRAG_MIN_VALUE Process="Int">(A:THROTTLE LOWER LIMIT, position 16k)</DRAG_MIN_VALUE>
+            <DRAG_ANIM_VAR>(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)</DRAG_ANIM_VAR>
+        </OverrideTemplateParameters>
+
+        <UseTemplate Name="FBW_ENGINE_Lever_Throttle_SubTemplate2">
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Lever_Throttle_SubTemplate2">
+        <DefaultTemplateParameters>
+            <Condition Valid="USE_TRAJECTORY_DRAG_MODE">
+                <DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
+            </Condition>
+            <SNAP_DISTANCE>1</SNAP_DISTANCE>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <ANIMATION_CODE_SETTER>
+                (L:A32NX_3D_THROTTLE_LEVER_POSITION_#ID#, number)
+            </ANIMATION_CODE_SETTER>
+            <THROTTLE_ANIM_CODE>
+                (L:A32NX_3D_THROTTLE_LEVER_POSITION_#ID#, number)
+            </THROTTLE_ANIM_CODE>
+        </OverrideTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_CODE>
+                    (#POSITION_TYPE#:#POSITION_VAR#) 1 &lt; 100 *
+                </ANIM_CODE>
+                <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+                <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+                <WWISE_EVENT_1>detent</WWISE_EVENT_1>
+                <WWISE_EVENT_2>detent</WWISE_EVENT_2>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_CODE>#THROTTLE_ANIM_CODE#</ANIM_CODE>
+            </UseTemplate>
+            <Update Once="True">
+                1 (&gt;L:#POSITION_VAR#, number)
+            </Update>
+            <Update Frequency="30" type="rnp">
+                if (O:IsDragging, number) != 1 {
+                    let dragPos = (L:#POSITION_VAR#, number);
+                    let tla = (L:A32NX_AUTOTHRUST_TLA:#ID#, number);
+                    // This code is used for snapping to the nearest detent
+                    let detent_tla = 0;
+                    if dragPos &lt; 0.5 {
+                        detent_tla = -20;
+                    } else if dragPos > 0.5 and dragPos &lt; 1.5 {
+                        detent_tla = 0;
+                    } else if dragPos > 1.5 and dragPos &lt; 2.5 {
+                        detent_tla = 25;
+                    } else if dragPos > 2.5 and dragPos &lt; 3.5 {
+                        detent_tla = 35;
+                    } else {
+                        detent_tla = 45;
+                    }
+
+                    if (tla - detent_tla).abs() &lt; 1 {
+                        tla = detent_tla;
+                    }
+                    //(L:A32NX_AUTOTHRUST_TLA:#ID#) = tla;
+
+                    // This code is used for updating the internal drag var when the throttle is being changed by
+                    // something other than dragging
+                    let targetDragPos = 0;
+                    if tla &lt; 0 {
+                        targetDragPos = (tla + 20) / 20;
+                    } else if tla &lt; 25 {
+                        targetDragPos = tla / 25 + 1;
+                    } else {
+                        targetDragPos = tla / 10 - 0.5;
+                    }
+                    (L:#POSITION_VAR#, number) = targetDragPos;
+                }
+            </Update>
+            <UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_Gates">
+                <HELPID>HELPID_GAUGE_THROTTLE_THROTTLE</HELPID>
+                <STEPS_NUMBER>4</STEPS_NUMBER>
+                <DRAG_CODE type="rnp">
+                    // This code is to update the TLA from the internal drag var
+                    // only executed when dragging.
+                    let dragPos = (L:#POSITION_VAR#, number);
+                    let tla = 0;
+
+                    if dragPos &lt; 1 {
+                        tla = dragPos * 20 - 20;
+                    } else if dragPos &lt; 2 {
+                        tla = (dragPos - 1) * 25;
+                    } else if dragPos &lt; 3 {
+                        tla = (dragPos - 2) * (35 - 25) + 25;
+                    } else {
+                        tla = (dragPos - 3) * (45 - 35) + 35;
+                    }
+
+                    (L:A32NX_AUTOTHRUST_TLA:#ID#) = tla;
+                </DRAG_CODE>
+                <GATE_DIRECTION>0</GATE_DIRECTION>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="HIGHLIGHT_NODE_ID">
+            <UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+                <NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
+            </UseTemplate>
+        </Condition>
+    </Template>
+
+    <Template Name="FBW_Airbus_Engine_Lights">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_ENG#ID#, bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:ENG FAILED:#ID#, bool)</SEQ2_CODE>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "baseUrl": ".",
+    "resolveJsonModule" : true,
+    "typeRoots": [
+      "../../../fbw-common/src/typings",
+      "../../../node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "paths": {
+      "@atsu/*": ["./atsu/src/*"],
+      "@failures": ["./failures/src/index.ts"],
+      "@fmgc/*": ["./fmgc/src/*"],
+      "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@sentry/*": ["./sentry-client/src/*"],
+      "@simbridge/*": ["./simbridge-client/src/*"],
+      "@shared/*": ["./shared/src/*"],
+      "@tcas/*": ["./tcas/src/*"],
+      "@typings/*": ["../../../fbw-common/src/typings/*"],
+    }
+  },
+}

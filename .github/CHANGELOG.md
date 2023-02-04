@@ -31,6 +31,9 @@
 1. [EFB] Added QuickControls to flyPad StatusBar - @Benjozork (Benjamin Dupont) @frankkopp (Frank Kopp)
 1. [SOUND] Fix announcements playing twice and adding check for power to PA - @frankkopp (Frank Kopp)
 1. [ENG] Adjust oil pressure table - @tracernz (Mike)
+1. [FBW] Added option to have two axis for rudder e.g. racing pedals - @frankkopp (Frank Kopp)
+1. [HYD] Added priority valves - @Crocket63 (crocket)
+1. [ND] Fixed LOC deviation scaling - @tracernz (Mike)
 1. [SYSTEM] Introduce Typescript based systems in VCockpit17 - @svengcz (Sven)
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 
