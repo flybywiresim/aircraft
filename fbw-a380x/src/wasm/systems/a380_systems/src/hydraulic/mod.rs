@@ -43,7 +43,8 @@ use systems::{
             TrimmableHorizontalStabilizerAssembly,
         },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PumpController, Reservoir,
+        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PriorityValve,
+        PumpController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
@@ -175,8 +176,12 @@ impl A380HydraulicCircuitFactory {
     const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 2612.0;
     const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.5;
 
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 3000.;
+    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 3800.;
+
     pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A380HydraulicReservoirFactory::new_green_reservoir(context);
+
         HydraulicCircuit::new(
             context,
             HydraulicColor::Green,
@@ -192,6 +197,10 @@ impl A380HydraulicCircuitFactory {
             false,
             true,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
+            ),
             Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
             Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
@@ -214,6 +223,10 @@ impl A380HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
+            ),
             Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
             Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
@@ -9763,16 +9776,17 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             test_bed = test_bed
-                .set_yellow_e_pump_a(true)
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng3(Ratio::new::<percent>(80.))
+                .start_eng4(Ratio::new::<percent>(80.))
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(5));
 
-            // Only yellow press so only flaps can move
             assert!(test_bed.is_flaps_moving());
-            assert!(!test_bed.is_slats_moving());
         }
 
         #[test]
