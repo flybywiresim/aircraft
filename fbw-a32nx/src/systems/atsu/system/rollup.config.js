@@ -35,8 +35,10 @@ const replace = require('@rollup/plugin-replace');
 
 const extensions = ['.js', '.ts'];
 
-const src = join(__dirname, '..', '..');
-const root = join(__dirname, '..', '..', '..');
+const src = join(__dirname, '..');
+console.log('Src: ', src);
+const root = join(process.cwd());
+console.log('Root: ', root);
 
 process.chdir(src);
 
@@ -64,7 +66,7 @@ module.exports = {
         }),
     ],
     output: {
-        file: join(root, 'flybywire-aircraft-a320-neo/html_ui/JS/atsu/system.js'),
+        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/system.js'),
         format: 'umd',
         name: 'AtsuSystem',
     },

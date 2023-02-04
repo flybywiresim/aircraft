@@ -7,10 +7,13 @@ import json from '@rollup/plugin-json';
 
 const { join } = require('path');
 
+const root = join(__dirname, '..', '..', '..', '..');
+console.log('Root: ', root);
+
 export default {
     input: join(__dirname, 'index.tsx'),
     output: {
-        dir: '../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost',
+        dir: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost'),
         format: 'es',
     },
     plugins: [
