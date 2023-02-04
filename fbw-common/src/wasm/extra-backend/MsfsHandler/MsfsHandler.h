@@ -117,13 +117,6 @@ public:
    */
   void registerModule(Module* pModule);
 
-private:
-  /**
-   * Handles opening the simconnect connection..
-   * @return
-   */
-  bool initializeSimConnect();
-
 
   // Getters and setters
 public:

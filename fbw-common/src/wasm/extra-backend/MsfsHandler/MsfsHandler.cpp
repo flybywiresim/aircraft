@@ -20,7 +20,7 @@ void MsfsHandler::registerModule(Module* pModule) {
 bool MsfsHandler::initialize() {
   // Initialize SimConnect
   bool result;
-  result = initializeSimConnect();
+  result = SUCCEEDED(SimConnect_Open(&hSimConnect, simConnectName.c_str(), nullptr, 0, 0, 0));
   if (!result) {
     LOG_ERROR(simConnectName + ": Failed to initialize SimConnect");
     return false;
@@ -33,6 +33,11 @@ bool MsfsHandler::initialize() {
     return false;
   }
 
+  // FIXME/HACK - this is a hack to get around the fact that the simconnect key event  callback
+  //  function cannot be a member function of a class. This is a wrapper function that calls the
+  //  member function.
+  //  http://www.newty.de/fpt/callback.html#example2
+  //  If no better solution is found, DataManager should become a singleton.
   globalDataManagerInstancePtr = (void*) &dataManager;
 
   // Register as key event handler
@@ -125,7 +130,3 @@ FLOAT64 MsfsHandler::getA32NxIsDevelopmentState() const {
 // =================================================================================================
 // PRIVATE METHODS
 // =================================================================================================
-
-bool MsfsHandler::initializeSimConnect() {
-  return SUCCEEDED(SimConnect_Open(&hSimConnect, simConnectName.c_str(), nullptr, 0, 0, 0));
-}
