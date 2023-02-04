@@ -4,7 +4,6 @@ use crate::simulation::{
     Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
     VariableIdentifier, Write, Writer,
 };
-use approx::relative_eq;
 use rand::Rng;
 use uom::si::{f64::Mass, mass::kilogram, mass::pound};
 
@@ -193,10 +192,7 @@ impl Cargo {
     }
 
     pub fn cargo_is_target(&self) -> bool {
-        relative_eq!(
-            self.cargo.get::<kilogram>(),
-            self.cargo_target.get::<kilogram>()
-        )
+        self.cargo == self.cargo_target
     }
 
     pub fn load_payload(&mut self) {

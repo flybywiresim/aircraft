@@ -774,20 +774,6 @@ class EngineControl {
     }
   }
 
-  int getStationCount(long long paxStationFlags) {
-    int count = 0;
-    int eol = 0;
-    while (paxStationFlags && eol < 64) {
-      count += paxStationFlags & 1;
-      paxStationFlags >>= 1;
-      eol++;
-    }
-    if (eol >= 64) {
-      std::cerr << "ERROR: limit reached" << std::endl;
-    }
-    return count;
-  }
-
   /// <summary>
   /// FBW Fuel Consumption and Tankering
   /// Updates Fuel Consumption with realistic values
@@ -819,10 +805,10 @@ class EngineControl {
     double engine4FF = simVars->getEngine4FF();        // KG/H
 
     double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();  // Kg
+    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();    // Kg
     double fuelUsedEngine2 = simVars->getFuelUsedEngine2();  // Kg
-    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();  // Kg
-    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();  // Kg
+    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();    // Kg
+    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();    // Kg
 
     double fuelLeftOuterPre = simVars->getFuelLeftOuterPre();    // LBS
     double fuelFeedOnePre = simVars->getFuelFeedOnePre();        // LBS
@@ -1440,6 +1426,7 @@ class EngineControl {
         simN3Engine4Pre = simN3;
         timer = simVars->getEngine4Timer();
       }
+
 
       switch (int(engineState)) {
         case 2:
