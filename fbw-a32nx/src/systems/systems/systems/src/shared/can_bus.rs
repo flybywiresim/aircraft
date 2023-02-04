@@ -168,11 +168,10 @@ impl<const N: usize> SimulationElement for CanBus<N> {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         // set the availability flag
-        if self.failure_indication {
-            writer.write(&self.availability_id, 0.0);
-        } else {
-            writer.write(&self.availability_id, 1.0);
-        }
+        writer.write(
+            &self.availability_id,
+            if self.failure_indication { 0. } else { 1. },
+        );
 
         if self.next_output_message_valid {
             writer.write_arinc825(
@@ -184,11 +183,14 @@ impl<const N: usize> SimulationElement for CanBus<N> {
 
         // write the current status of the message received state per system
         for (i, id) in self.message_received_by_systems_ids.iter().enumerate() {
-            if self.message_received_by_systems[i][0] {
-                writer.write(id, 1.0);
-            } else {
-                writer.write(id, 0.0);
-            }
+            writer.write(
+                id,
+                if self.message_received_by_systems[i][0] {
+                    1.
+                } else {
+                    0.
+                },
+            );
         }
     }
 }
