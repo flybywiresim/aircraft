@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
-import { Arinc429Word } from '@shared/arinc429';
-import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
-import { Terrain } from '@simbridge/index';
+import { Arinc429SignStatusMatrix } from '@shared/arinc429';
+import { EfisNdMode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
+import { Terrain } from '../../../../simbridge-client/src/index';
 
 const MAP_TRANSITION_FRAMERATE = 15;
 const MAP_TRANSITION_DURATION = 1.5;
@@ -262,28 +262,28 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
 
         let meterPerPixel = Math.round(rangeSettings[rangeIndex] * METRES_TO_NAUTICAL_MILES / height);
         // scaling is required due to bigger area than visualized (clipped areas)
-        if (modeIndex === Mode.ARC) {
+        if (modeIndex === EfisNdMode.ARC) {
             meterPerPixel *= 2;
         }
         meterPerPixel += (10 - (meterPerPixel % 10));
 
         let latitude: number | undefined = undefined;
         let longitude: number | undefined = undefined;
-        if (destinationLatitudeSsm === Arinc429Word.SignStatusMatrix.NormalOperation
-            && destinationLongitudeSsm === Arinc429Word.SignStatusMatrix.NormalOperation
+        if (destinationLatitudeSsm === Arinc429SignStatusMatrix.NormalOperation
+            && destinationLongitudeSsm === Arinc429SignStatusMatrix.NormalOperation
         ) {
             latitude = destinationLatitude;
             longitude = destinationLongitude;
         }
 
         const displayConfiguration = {
-            active: modeIndex !== Mode.PLAN && terrOnNdActive !== 0,
+            active: modeIndex !== EfisNdMode.PLAN && terrOnNdActive !== 0,
             mapWidth: width,
             mapHeight: height,
             meterPerPixel,
             mapTransitionTime: MAP_TRANSITION_DURATION,
             mapTransitionFps: MAP_TRANSITION_FRAMERATE,
-            arcMode: modeIndex === Mode.ARC,
+            arcMode: modeIndex === EfisNdMode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
             destinationLatitude: latitude,
             destinationLongitude: longitude,
@@ -291,7 +291,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ potentiometerIndex, x, y
         Terrain.setDisplaySettings(side, displayConfiguration).catch((_ex) => setMapVisualization(new MapVisualizationData()));
     }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, destinationLatitude, destinationLatitudeSsm, destinationLongitude, destinationLongitudeSsm]);
 
-    if (!terrOnNdActive || modeIndex === Mode.PLAN) {
+    if (!terrOnNdActive || modeIndex === EfisNdMode.PLAN) {
         return <></>;
     }
 
