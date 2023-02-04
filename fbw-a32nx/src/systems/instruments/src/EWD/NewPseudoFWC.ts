@@ -967,7 +967,7 @@ export class NewPseudoFWC {
         for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
             if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
                 failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
-                recallFailureKeys = this.recallFailures.filter((e) => e !== key);
+                recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
             }
         }
 
