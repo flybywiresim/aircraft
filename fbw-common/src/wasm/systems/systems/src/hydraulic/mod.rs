@@ -38,6 +38,7 @@ pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
 pub mod pumps;
+pub mod reverser;
 pub mod rudder_control;
 pub mod trimmable_horizontal_stabilizer;
 
