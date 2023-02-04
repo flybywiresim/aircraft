@@ -36,7 +36,7 @@ module.exports = {
         reactInstrument('BAT'),
         reactInstrument('ATC'),
         reactInstrument('Clock'),
-        reactInstrument('EFB'),
+        reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
     ],
 };
 
