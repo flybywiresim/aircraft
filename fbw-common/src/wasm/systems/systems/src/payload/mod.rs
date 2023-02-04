@@ -96,6 +96,11 @@ impl Pax {
         self.payload
     }
 
+    pub fn payload_is_sync(&self) -> bool {
+        self.payload
+            == Mass::new::<pound>(self.pax_num() as f64 * self.per_pax_weight().get::<pound>())
+    }
+
     pub fn load_payload(&mut self) {
         self.payload =
             Mass::new::<pound>(self.pax_num() as f64 * self.per_pax_weight().get::<pound>());
@@ -181,6 +186,10 @@ impl Cargo {
 
     pub fn payload(&self) -> Mass {
         self.payload
+    }
+
+    pub fn payload_is_sync(&self) -> bool {
+        self.payload == self.cargo
     }
 
     pub fn cargo_is_target(&self) -> bool {

@@ -188,10 +188,12 @@ impl SimulationElement for A320BoardingSounds {
     }
 }
 pub struct A320Payload {
+    developer_state_id: VariableIdentifier,
     is_boarding_id: VariableIdentifier,
     is_gsx_enabled_id: VariableIdentifier,
     board_rate_id: VariableIdentifier,
     per_pax_weight_id: VariableIdentifier,
+    developer_state: i8,
     is_boarding: bool,
     is_gsx_enabled: bool,
     board_rate: BoardingRate,
@@ -225,10 +227,12 @@ impl A320Payload {
             ));
         }
         A320Payload {
+            developer_state_id: context.get_identifier("DEVELOPER_STATE".to_owned()),
             is_boarding_id: context.get_identifier("BOARDING_STARTED_BY_USR".to_owned()),
             is_gsx_enabled_id: context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
             board_rate_id: context.get_identifier("BOARDING_RATE".to_owned()),
             per_pax_weight_id: context.get_identifier("WB_PER_PAX_WEIGHT".to_owned()),
+            developer_state: 0,
             is_boarding: false,
             is_gsx_enabled: false,
             board_rate: BoardingRate::Instant,
@@ -246,7 +250,9 @@ impl A320Payload {
     }
 
     pub(crate) fn update(&mut self, context: &UpdateContext) {
-        self.update_pax_sync();
+        if !self.is_developer_state_active() {
+            self.ensure_payload_sync()
+        };
 
         if self.is_gsx_enabled() {
             self.stop_boarding();
@@ -257,9 +263,17 @@ impl A320Payload {
         }
     }
 
-    fn update_pax_sync(&mut self) {
+    fn ensure_payload_sync(&mut self) {
         for ps in A320Pax::iterator() {
-            if self.pax_payload(ps) > Mass::new::<kilogram>(0.) {}
+            if !self.pax_is_sync(ps) {
+                self.sync_pax(ps);
+            }
+        }
+
+        for cs in A320Cargo::iterator() {
+            if !self.cargo_is_sync(cs) {
+                self.sync_cargo(cs);
+            }
         }
     }
 
@@ -411,6 +425,10 @@ impl A320Payload {
         }
     }
 
+    fn is_developer_state_active(&mut self) -> bool {
+        self.developer_state > 0
+    }
+
     fn is_pax_boarding(&mut self) -> bool {
         for ps in A320Pax::iterator() {
             if self.pax_num(ps) < self.pax_target_num(ps) && self.is_boarding() {
@@ -483,8 +501,16 @@ impl A320Payload {
         self.pax[ps as usize].payload()
     }
 
+    fn pax_is_sync(&mut self, ps: A320Pax) -> bool {
+        self.pax[ps as usize].payload_is_sync()
+    }
+
     fn pax_is_target(&mut self, ps: A320Pax) -> bool {
         self.pax[ps as usize].pax_is_target()
+    }
+
+    fn sync_pax(&mut self, ps: A320Pax) {
+        self.pax[ps as usize].load_payload();
     }
 
     fn move_all_pax(&mut self, ps: A320Pax) {
@@ -505,6 +531,10 @@ impl A320Payload {
         self.cargo[cs as usize].payload()
     }
 
+    fn cargo_is_sync(&mut self, cs: A320Cargo) -> bool {
+        self.cargo[cs as usize].payload_is_sync()
+    }
+
     fn cargo_is_target(&mut self, cs: A320Cargo) -> bool {
         self.cargo[cs as usize].cargo_is_target()
     }
@@ -515,6 +545,10 @@ impl A320Payload {
 
     fn move_one_cargo(&mut self, cs: A320Cargo) {
         self.cargo[cs as usize].move_one_cargo();
+    }
+
+    fn sync_cargo(&mut self, cs: A320Cargo) {
+        self.cargo[cs as usize].load_payload();
     }
 
     fn is_boarding(&self) -> bool {
@@ -547,6 +581,7 @@ impl SimulationElement for A320Payload {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
+        self.developer_state = reader.read(&self.developer_state_id);
         self.is_boarding = reader.read(&self.is_boarding_id);
         self.board_rate = reader.read(&self.board_rate_id);
         self.is_gsx_enabled = reader.read(&self.is_gsx_enabled_id);
