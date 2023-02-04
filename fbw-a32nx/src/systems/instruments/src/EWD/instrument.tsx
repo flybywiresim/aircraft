@@ -1,7 +1,8 @@
-import { Clock, EventBus, FSComponent } from 'msfssdk';
+import { Clock, ClockEvents, EventBus, FSComponent } from 'msfssdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdComponent } from './EWD';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
+import { PseudoFWC } from './PseudoFWC';
 
 import './style.scss';
 
@@ -13,6 +14,8 @@ class A32NX_EWD extends BaseInstrument {
     private readonly arincProvider: ArincValueProvider;
 
     private readonly clock: Clock;
+
+    private pseudoFwc: PseudoFWC;
 
     /**
      * "mainmenu" = 0
@@ -28,6 +31,7 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher = new EwdSimvarPublisher(this.bus);
         this.arincProvider = new ArincValueProvider(this.bus);
         this.clock = new Clock(this.bus);
+        this.pseudoFwc = new PseudoFWC();
     }
 
     get templateID(): string {
@@ -113,6 +117,9 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('slatsPositionRaw');
 
         FSComponent.render(<EwdComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
+
+        const sub = this.bus.getSubscriber<ClockEvents>();
+        sub.on('realTime').handle((deltaTime) => this.pseudoFwc.onUpdate(deltaTime));
     }
 
     public Update(): void {

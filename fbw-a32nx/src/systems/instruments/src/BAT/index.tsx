@@ -3,7 +3,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import { render } from '@instruments/common/index';
 import { useSimVar } from '@instruments/common/simVars';
 import { useUpdate } from '@instruments/common/hooks';
-import PseudoFWC from '@instruments/common/PseudoFWC';
 
 const BASE_DELAY_MS = 1_000;
 const DIGIT_REFRESH_INTERVAL_MS = 130;
@@ -85,7 +84,6 @@ const BatRoot = () => (
     <svg className="bat-svg" viewBox="0 0 200 100">
         <BatDisplay batteryNumber={1} x="184" y="45" />
         <BatDisplay batteryNumber={2} x="184" y="95" />
-        <PseudoFWC />
     </svg>
 );
 
