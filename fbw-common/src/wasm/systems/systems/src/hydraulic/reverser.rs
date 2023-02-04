@@ -64,6 +64,10 @@ impl ReverserActuator {
 
         pressure_ratio * Self::NOMINAL_SPEED_RATIO_PER_S
     }
+
+    fn position(&self) -> Ratio {
+        self.position
+    }
 }
 
 struct ElectricalLock {
@@ -84,6 +88,10 @@ impl ElectricalLock {
         let is_locking = !controller.should_unlock() || !self.is_powered;
 
         self.is_locked = is_locking && actuator_position.get::<ratio>() < 0.01;
+    }
+
+    fn is_locked(&self) -> bool {
+        self.is_locked
     }
 }
 impl SimulationElement for ElectricalLock {
@@ -286,5 +294,53 @@ impl ReverserHydraulicManifold {
 
     fn pressure_switch_pressurised(&self) -> bool {
         self.pressure_switch.state() == PressureSwitchState::Pressurised
+    }
+}
+
+struct ReverserAssembly {
+    electrical_lock: ElectricalLock,
+    hydraulic_manifold: ReverserHydraulicManifold,
+    actuator: ReverserActuator,
+}
+impl ReverserAssembly {
+    fn new(
+        nominal_hydraulic_pressure: Pressure,
+        switch_high_threshold_pressure: Pressure,
+        switch_low_threshold_pressure: Pressure,
+        electrical_lock_powered_by: ElectricalBusType,
+        hyd_valves_powered_by: ElectricalBusType,
+    ) -> Self {
+        Self {
+            electrical_lock: ElectricalLock::new(electrical_lock_powered_by),
+            hydraulic_manifold: ReverserHydraulicManifold::new(
+                hyd_valves_powered_by,
+                switch_high_threshold_pressure,
+                switch_low_threshold_pressure,
+            ),
+            actuator: ReverserActuator::new(nominal_hydraulic_pressure),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        controller: &impl ReverserInterface,
+        pressure: Pressure,
+    ) {
+        self.electrical_lock
+            .update(controller, self.reverser_position());
+
+        self.hydraulic_manifold
+            .update(context, pressure, controller);
+
+        self.actuator.update(
+            context,
+            self.hydraulic_manifold.pressure_output(),
+            self.electrical_lock.is_locked(),
+        );
+    }
+
+    fn reverser_position(&self) -> Ratio {
+        self.actuator.position()
     }
 }
