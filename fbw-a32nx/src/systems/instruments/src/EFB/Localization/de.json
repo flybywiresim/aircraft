@@ -649,8 +649,6 @@
     "Wed": "Mi"
   },
   "VersionCheck": {
-    "Title": "Neue Version verfügbar",
-    "StatusBarWarning": "Neue A32NX Version verfügbar",
     "CurrentVersionText": "Momentan wird die $edition Edition in dieser Version genutzt:",
     "LatestVersionText": "Die aktuell verfügbare $edition Version ist:",
     "RecommendationText": "Bitte mit Hilfe des FlyByWire-Installer die neueste Version installieren.",

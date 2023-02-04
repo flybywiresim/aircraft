@@ -326,6 +326,10 @@ mod tests {
             self.pressure
         }
 
+        fn pressure_downstream_priority_valve(&self) -> Pressure {
+            self.pressure
+        }
+
         fn is_pressure_switch_pressurised(&self) -> bool {
             self.pressure.get::<psi>() > 1700.
         }
