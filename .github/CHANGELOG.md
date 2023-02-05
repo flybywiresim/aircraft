@@ -32,6 +32,7 @@
 1. [ENG] Adjust oil pressure table - @tracernz (Mike)
 1. [FBW] Added option to have two axis for rudder e.g. racing pedals - @frankkopp (Frank Kopp)
 1. [HYD] Added priority valves - @Crocket63 (crocket)
+1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
 
 ## 0.9.0
 
