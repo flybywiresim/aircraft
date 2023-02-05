@@ -11,9 +11,9 @@ use systems::{
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
     pneumatic::PneumaticContainer,
     shared::{
-        random_number, update_iterator::MaxStepLoop, CabinAltitude, CabinSimulation,
-        ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels,
+        random_number, update_iterator::MaxStepLoop, AdirsSignalInterface, CabinAltitude,
+        CabinSimulation, ControllerSignal, ElectricalBusType, EngineBleedPushbutton,
+        EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
         PackFlowValveState, PneumaticBleed, PressurizationOverheadShared,
     },
     simulation::{
@@ -64,7 +64,7 @@ impl A380AirConditioning {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl GroundSpeed,
+        adirs: &impl AdirsSignalInterface,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
@@ -97,6 +97,7 @@ impl A380AirConditioning {
 
             self.a320_pressurization_system.update(
                 &context.with_delta(cur_time_step),
+                adirs,
                 pressurization_overhead,
                 engines,
                 lgciu,
@@ -271,6 +272,7 @@ impl A320PressurizationSystem {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        adirs: &impl AdirsSignalInterface,
         press_overhead: &A380PressurizationOverheadPanel,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -283,6 +285,7 @@ impl A320PressurizationSystem {
         for controller in self.cpc.iter_mut() {
             controller.update(
                 context,
+                adirs,
                 engines,
                 lgciu_gears_compressed,
                 press_overhead,
@@ -511,7 +514,10 @@ mod tests {
             valve::{DefaultValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, EngineState, PneumaticPipe, Precooler,
         },
-        shared::{PneumaticValve, PotentialOrigin},
+        shared::{
+            arinc429::{Arinc429Word, SignStatus},
+            PneumaticValve, PotentialOrigin,
+        },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -528,17 +534,48 @@ mod tests {
 
     struct TestAdirs {
         ground_speed: Velocity,
+        true_airspeed: Velocity,
+        baro_correction: Pressure,
+        baro_correction_ssm: SignStatus,
     }
     impl TestAdirs {
         fn new() -> Self {
             Self {
                 ground_speed: Velocity::new::<knot>(0.),
+                true_airspeed: Velocity::new::<knot>(0.),
+                baro_correction: Pressure::new::<hectopascal>(1013.25),
+                baro_correction_ssm: SignStatus::NormalOperation,
+            }
+        }
+        fn set_true_airspeed(&mut self, airspeed: Velocity) {
+            self.true_airspeed = airspeed;
+        }
+        fn set_baro_correction(&mut self, altimeter_setting: Pressure) {
+            self.baro_correction = altimeter_setting;
+        }
+        fn set_baro_correction_fault(&mut self, fault: bool) {
+            self.baro_correction_ssm = if fault {
+                SignStatus::FailureWarning
+            } else {
+                SignStatus::NormalOperation
             }
         }
     }
-    impl GroundSpeed for TestAdirs {
-        fn ground_speed(&self) -> Velocity {
+    impl AdirsSignalInterface for TestAdirs {
+        fn ground_speed(&self, _adiru_number: usize) -> Velocity {
             self.ground_speed
+        }
+        fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            Arinc429Word::new(self.true_airspeed, SignStatus::NormalOperation)
+        }
+        fn baro_correction(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(self.baro_correction, self.baro_correction_ssm)
+        }
+        fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(
+                Pressure::new::<hectopascal>(1013.25),
+                SignStatus::NormalOperation,
+            )
         }
     }
 
@@ -1046,6 +1083,7 @@ mod tests {
                 stored_vertical_speed: None,
             };
             test_bed.set_indicated_altitude(Length::new::<foot>(0.));
+            test_bed.indicated_airspeed(Velocity::new::<knot>(250.));
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.command_measured_temperature(
                 [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
@@ -1058,7 +1096,7 @@ mod tests {
 
         fn on_ground(mut self) -> Self {
             self.set_ambient_pressure(Pressure::new::<hectopascal>(1013.25));
-            self.set_indicated_airspeed(Velocity::new::<knot>(0.));
+            self.indicated_airspeed(Velocity::new::<knot>(0.));
             self.set_indicated_altitude(Length::new::<foot>(0.));
             self.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
             self.command_on_ground(true);
@@ -1147,8 +1185,14 @@ mod tests {
             self
         }
 
+        fn indicated_airspeed(&mut self, velocity: Velocity) {
+            self.set_indicated_airspeed(velocity);
+            self.command(|a| a.adirs.set_true_airspeed(velocity));
+        }
+
         fn indicated_airspeed_of(mut self, velocity: Velocity) -> Self {
             self.set_indicated_airspeed(velocity);
+            self.command(|a| a.adirs.set_true_airspeed(velocity));
             self
         }
 
@@ -1220,6 +1264,16 @@ mod tests {
             } else {
                 self.write_by_name("OVHD_PRESS_MAN_VS_CTL_SWITCH", 1);
             }
+            self
+        }
+
+        fn command_altimeter_setting(mut self, altimeter: Pressure) -> Self {
+            self.command(|a| a.adirs.set_baro_correction(altimeter));
+            self
+        }
+
+        fn command_altimeter_setting_fault(mut self, fault: bool) -> Self {
+            self.command(|a| a.adirs.set_baro_correction_fault(fault));
             self
         }
 
@@ -1354,7 +1408,7 @@ mod tests {
         test_bed
     }
 
-    mod a320_pressurization_tests {
+    mod a380_pressurization_tests {
         use super::*;
 
         #[test]
@@ -1912,6 +1966,62 @@ mod tests {
             assert_eq!(
                 test_bed.safety_valve_open_amount(),
                 Ratio::new::<percent>(0.)
+            );
+        }
+    }
+
+    mod cabin_pressure_controller_tests {
+        use super::*;
+
+        #[test]
+        fn altitude_calculation_uses_local_altimeter() {
+            let mut test_bed = test_bed()
+                .on_ground()
+                .run_and()
+                .command_packs_on_off(false)
+                .ambient_pressure_of(Pressure::new::<hectopascal>(1020.)) // Equivalent to 10,000ft from tables
+                .iterate(100);
+
+            assert!(
+                (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
+                    > Length::new::<foot>(10.)
+            );
+
+            test_bed = test_bed
+                .command_altimeter_setting(Pressure::new::<hectopascal>(1020.))
+                .iterate(100);
+            assert!(
+                (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
+                    < Length::new::<foot>(10.)
+            );
+        }
+
+        #[test]
+        fn altitude_calculation_uses_standard_if_no_altimeter_data() {
+            let mut test_bed = test_bed()
+                .on_ground()
+                .run_and()
+                .command_packs_on_off(false)
+                .ambient_pressure_of(Pressure::new::<hectopascal>(1020.)) // Equivalent to 10,000ft from tables
+                .iterate(100);
+
+            let initial_altitude = test_bed.cabin_altitude();
+
+            assert!(
+                (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
+                    > Length::new::<foot>(10.)
+            );
+
+            test_bed = test_bed
+                .command_altimeter_setting(Pressure::new::<hectopascal>(1020.))
+                .command_altimeter_setting_fault(true)
+                .iterate(100);
+            assert!(
+                (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
+                    > Length::new::<foot>(10.)
+            );
+            assert!(
+                (test_bed.cabin_altitude() - initial_altitude).abs() < Length::new::<foot>(10.)
             );
         }
     }

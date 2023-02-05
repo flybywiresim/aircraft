@@ -10,9 +10,9 @@ use crate::{
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe,
     },
     shared::{
-        AverageExt, CabinAltitude, CabinSimulation, ConsumePower, ControllerSignal,
-        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels,
+        AdirsSignalInterface, AverageExt, CabinAltitude, CabinSimulation, ConsumePower,
+        ControllerSignal, ElectricalBusType, ElectricalBuses, EngineBleedPushbutton,
+        EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
         PackFlowValveState, PneumaticBleed, PressurizationOverheadShared,
     },
     simulation::{
@@ -175,7 +175,7 @@ impl<const ZONES: usize, const FANS: usize> AirConditioningSystem<ZONES, FANS> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl GroundSpeed,
+        adirs: &impl AdirsSignalInterface,
         cabin_simulation: &impl CabinSimulation,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,

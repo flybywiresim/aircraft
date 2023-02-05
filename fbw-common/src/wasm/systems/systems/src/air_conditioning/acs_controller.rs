@@ -1,10 +1,10 @@
 use crate::{
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     shared::{
-        pid::PidController, CabinAltitude, CabinSimulation, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
-        PressurizationOverheadShared,
+        pid::PidController, AdirsSignalInterface, CabinAltitude, CabinSimulation, ControllerSignal,
+        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
+        PneumaticBleed, PressurizationOverheadShared,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -79,7 +79,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl GroundSpeed,
+        adirs: &impl AdirsSignalInterface,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         cabin_temperature: &impl CabinSimulation,
         engines: [&impl EngineCorrectedN1; 2],
@@ -226,7 +226,7 @@ impl AirConditioningStateManager {
     fn update(
         mut self,
         context: &UpdateContext,
-        adirs: &impl GroundSpeed,
+        adirs: &impl AdirsSignalInterface,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> Self {
@@ -336,11 +336,11 @@ impl AirConditioningState<BeginTakeOff> {
     fn step(
         self: AirConditioningState<BeginTakeOff>,
         context: &UpdateContext,
-        adirs: &impl GroundSpeed,
+        adirs: &impl AdirsSignalInterface,
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
         if (AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && adirs.ground_speed().get::<knot>()
+            && adirs.ground_speed(1).get::<knot>()
                 > AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
@@ -402,11 +402,11 @@ impl AirConditioningState<BeginLanding> {
     fn step(
         self: AirConditioningState<BeginLanding>,
         context: &UpdateContext,
-        adirs: &impl GroundSpeed,
+        adirs: &impl AdirsSignalInterface,
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
         if (!AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && adirs.ground_speed().get::<knot>()
+            && adirs.ground_speed(1).get::<knot>()
                 < AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
@@ -1100,7 +1100,10 @@ mod acs_controller_tests {
             ControllablePneumaticValve, EngineModeSelector, PneumaticContainer, PneumaticPipe,
             Precooler,
         },
-        shared::{AverageExt, EngineBleedPushbutton, PneumaticValve, PotentialOrigin},
+        shared::{
+            arinc429::{Arinc429Word, SignStatus},
+            AverageExt, EngineBleedPushbutton, PneumaticValve, PotentialOrigin,
+        },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1108,7 +1111,10 @@ mod acs_controller_tests {
         },
     };
     use uom::si::{
-        length::foot, pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
+        length::foot,
+        pressure::{hectopascal, psi},
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
         volume::cubic_meter,
     };
 
@@ -1126,9 +1132,18 @@ mod acs_controller_tests {
             self.ground_speed = ground_speed;
         }
     }
-    impl GroundSpeed for TestAdirs {
-        fn ground_speed(&self) -> Velocity {
+    impl AdirsSignalInterface for TestAdirs {
+        fn ground_speed(&self, __adiru_number: usize) -> Velocity {
             self.ground_speed
+        }
+        fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            Arinc429Word::new(Velocity::new::<knot>(0.), SignStatus::NoComputedData)
+        }
+        fn baro_correction(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
+        }
+        fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
         }
     }
 

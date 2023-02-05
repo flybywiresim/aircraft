@@ -1345,9 +1345,10 @@ mod tests {
             TargetPressureTemperatureSignal,
         },
         shared::{
-            ApuBleedAirValveSignal, CabinAltitude, CabinSimulation, ControllerSignal,
-            ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
-            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, GroundSpeed,
+            arinc429::{Arinc429Word, SignStatus},
+            AdirsSignalInterface, ApuBleedAirValveSignal, CabinAltitude, CabinSimulation,
+            ControllerSignal, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
+            EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
             HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
             PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
@@ -1360,8 +1361,13 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        f64::*,
+        length::foot,
+        mass_rate::kilogram_per_second,
+        pressure::{hectopascal, psi},
+        ratio::ratio,
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
     };
 
     use crate::air_conditioning::A380PressurizationOverheadPanel;
@@ -1455,9 +1461,18 @@ mod tests {
             }
         }
     }
-    impl GroundSpeed for TestAdirs {
-        fn ground_speed(&self) -> Velocity {
+    impl AdirsSignalInterface for TestAdirs {
+        fn ground_speed(&self, _adiru_number: usize) -> Velocity {
             self.ground_speed
+        }
+        fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            Arinc429Word::new(Velocity::new::<knot>(0.), SignStatus::NoComputedData)
+        }
+        fn baro_correction(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
+        }
+        fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
         }
     }
 
