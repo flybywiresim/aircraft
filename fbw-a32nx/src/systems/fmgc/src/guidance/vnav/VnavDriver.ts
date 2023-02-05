@@ -705,7 +705,9 @@ export class VnavDriver implements GuidanceComponent {
             || numberOrNanChanged(this.lastParameters.managedDescentSpeed, newParameters.managedDescentSpeed)
             || numberOrNanChanged(this.lastParameters.managedDescentSpeedMach, newParameters.managedDescentSpeedMach)
             || numberOrNanChanged(this.lastParameters.approachQnh, newParameters.approachQnh)
-            || numberOrNanChanged(this.lastParameters.approachTemperature, newParameters.approachTemperature);
+            || numberOrNanChanged(this.lastParameters.approachTemperature, newParameters.approachTemperature)
+            || numberOrNanChanged(this.lastParameters.descentSpeedLimit?.speed, newParameters.descentSpeedLimit?.speed)
+            || numberOrNanChanged(this.lastParameters.descentSpeedLimit?.underAltitude, newParameters.descentSpeedLimit?.underAltitude);
     }
 
     private didLegsChange(oldLegs: Map<number, Leg>, newLegs: Map<number, Leg>): boolean {
