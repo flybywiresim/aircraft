@@ -35,7 +35,7 @@ const replace = require('@rollup/plugin-replace');
 
 const extensions = ['.js', '.ts'];
 
-const src = join(__dirname, '..');
+const src = join(__dirname, '.');
 console.log('Src: ', src);
 const root = join(process.cwd());
 console.log('Root: ', root);
@@ -43,7 +43,7 @@ console.log('Root: ', root);
 process.chdir(src);
 
 module.exports = {
-    input: join(__dirname, 'src/index.ts'),
+    input: join(src, 'src/index.ts'),
     plugins: [
         nodeResolve({ extensions, browser: true }),
         commonjs(),
