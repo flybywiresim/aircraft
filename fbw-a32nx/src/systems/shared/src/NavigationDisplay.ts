@@ -1,20 +1,20 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { Coordinates } from '../../fmgc/src/flightplanning/data/geo';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
-export type RangeSetting = 10 | 20 | 40 | 80 | 160 | 320;
-export const rangeSettings: RangeSetting[] = [10, 20, 40, 80, 160, 320];
+export type EfisSide = 'L' | 'R'
 
-export enum Mode {
+export type EfisNdRangeValue = 10 | 20 | 40 | 80 | 160 | 320;
+export const rangeSettings: EfisNdRangeValue[] = [10, 20, 40, 80, 160, 320];
+
+export enum EfisNdMode {
     ROSE_ILS,
     ROSE_VOR,
     ROSE_NAV,
     ARC,
     PLAN,
 }
-
-export type EfisSide = 'L' | 'R'
 
 export enum EfisOption {
     None = 0,
@@ -141,4 +141,15 @@ export interface NdTraffic {
     vTau?: number;
     closureRate?: number;
     closureAccel?: number;
+}
+
+export const enum NavAidMode {
+    Off = 0,
+    ADF,
+    VOR,
+}
+
+export interface TcasWxrMessage {
+    text: string;
+    color: 'White' | 'Amber';
 }

@@ -39,7 +39,7 @@ export enum SimVarValueType {
 export type SimVarDefinition = {
 
     /** The name of the simvar. */
-    name: string,
+    name: string | (() => string),
 
     /** The value to be used to retrieve this simvar. */
     type: SimVarValueType,
