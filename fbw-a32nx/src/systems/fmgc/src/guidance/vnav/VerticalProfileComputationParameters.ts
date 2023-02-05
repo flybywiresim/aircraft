@@ -44,6 +44,7 @@ export interface VerticalProfileComputationParameters {
     preselectedCruiseSpeed: Knots,
     preselectedDescentSpeed: Knots,
     takeoffFlapsSetting?: FlapConf
+    estimatedDestinationFuel: Pounds,
 
     approachQnh: Millibar,
     approachTemperature: Celsius,
@@ -99,6 +100,7 @@ export class VerticalProfileComputationParametersObserver {
             preselectedCruiseSpeed: this.fmgc.getPreSelectedCruiseSpeed(),
             preselectedDescentSpeed: this.fmgc.getPreSelectedDescentSpeed(),
             takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting(),
+            estimatedDestinationFuel: this.fmgc.getDestEFOB(false) * Constants.TONS_TO_POUNDS,
 
             approachQnh: this.fmgc.getApproachQnh(),
             approachTemperature: this.fmgc.getApproachTemperature(),

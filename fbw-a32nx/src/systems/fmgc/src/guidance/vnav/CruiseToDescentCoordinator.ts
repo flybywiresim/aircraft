@@ -12,7 +12,7 @@ import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/Tempora
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 
 export class CruiseToDescentCoordinator {
-    private lastEstimatedFuelAtDestination: Pounds = 2300;
+    private lastEstimatedFuelAtDestination: Pounds = 4000;
 
     private lastEstimatedTimeAtDestination: Seconds = 0;
 
@@ -24,7 +24,10 @@ export class CruiseToDescentCoordinator {
     ) { }
 
     resetEstimations() {
-        this.lastEstimatedFuelAtDestination = 2300;
+        const { estimatedDestinationFuel } = this.observer.get();
+
+        // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid unrealistic entries from erroneous pilot input.
+        this.lastEstimatedFuelAtDestination = Number.isFinite(estimatedDestinationFuel) ? Math.min(Math.max(estimatedDestinationFuel, 0), 40000) : 4000;
         this.lastEstimatedTimeAtDestination = 0;
     }
 
@@ -134,6 +137,7 @@ export class CruiseToDescentCoordinator {
         profile.checkpoints.push(...descentPath.get(true).reverse());
     }
 
+    // TODO: Remove since it unused I think?
     addSpeedLimitAsCheckpoint(profile: NavGeometryProfile) {
         const { flightPhase, descentSpeedLimit: { underAltitude }, presentPosition: { alt }, cruiseAltitude } = this.observer.get();
 
