@@ -4,18 +4,10 @@
       "moduleResolution": "node",
       "target": "ESNext",
       "noEmit": true,
-<<<<<<< HEAD:fbw-a32nx/src/systems/atsu/common/tsconfig.json
-      "typeRoots": ["../../../typings"]
-    },
-    "include": [
-      "src/**/*",
-      "../../../typings/**/*.d.ts",
-=======
       "typeRoots": ["../../../../fbw-common/src/typings"]
     },
     "include": [
       "src/**/*",
       "../../../../fbw-common/src/typings/**/*.d.ts"
->>>>>>> master:fbw-a32nx/src/systems/atsu/tsconfig.json
     ]
   }
