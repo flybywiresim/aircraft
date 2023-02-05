@@ -37,6 +37,7 @@
 1. [COND] Add mixer unit and recirculation fans to air conditioning system - @mjuhe (Miquel Juhe)
 1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
 1. [EFB] GSX Integration - Lucky38i (Lucky38#3550)
+1. [FMGC] Constraints for waypoints behind the aircraft are no longer sent - @tracernz (Mike)
 
 ## 0.9.0
 
