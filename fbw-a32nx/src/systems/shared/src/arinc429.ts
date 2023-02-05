@@ -67,7 +67,7 @@ export class Arinc429Word implements Arinc429WordData {
     /**
      * Returns the value when normal operation, the supplied default value otherwise.
      */
-    valueOr(defaultValue: number) {
+    valueOr(defaultValue: number | undefined | null) {
         return this.isNormalOperation() ? this.value : defaultValue;
     }
 
@@ -75,7 +75,7 @@ export class Arinc429Word implements Arinc429WordData {
         return ((this.value >> (bit - 1)) & 1) !== 0;
     }
 
-    getBitValueOr(bit: number, defaultValue: boolean): boolean {
+    getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
         return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
     }
 }
