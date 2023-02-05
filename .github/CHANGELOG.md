@@ -34,6 +34,8 @@
 1. [HYD] Added priority valves - @Crocket63 (crocket)
 1. [ND] Fixed LOC deviation scaling - @tracernz (Mike)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [COND] Add mixer unit and recirculation fans to air conditioning system - @mjuhe (Miquel Juhe)
+1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
 
 ## 0.9.0
 

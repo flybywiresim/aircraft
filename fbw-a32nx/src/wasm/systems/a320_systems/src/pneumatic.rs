@@ -359,6 +359,10 @@ impl A320Pneumatic {
         self.yellow_hydraulic_reservoir_with_valve
             .change_spatial_volume(yellow_hydraulic_reservoir.available_volume());
     }
+
+    pub fn packs(&mut self) -> &mut [PackComplex; 2] {
+        &mut self.packs
+    }
 }
 impl PneumaticBleed for A320Pneumatic {
     fn apu_bleed_is_on(&self) -> bool {
@@ -380,8 +384,8 @@ impl EngineStartState for A320Pneumatic {
     }
 }
 impl PackFlowValveState for A320Pneumatic {
-    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio {
-        self.packs[pack_id].pack_flow_valve_open_amount()
+    fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
+        self.packs[pack_id].pack_flow_valve_is_open()
     }
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
         self.packs[pack_id].pack_flow_valve_air_flow()
@@ -1181,7 +1185,7 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 }
 
 /// A struct to hold all the pack related components
-struct PackComplex {
+pub struct PackComplex {
     engine_number: usize,
     pack_flow_valve_id: VariableIdentifier,
     pack_flow_valve_flow_rate_id: VariableIdentifier,
@@ -1227,8 +1231,8 @@ impl PackComplex {
             .update_move_fluid(context, &mut self.pack_container);
     }
 
-    fn pack_flow_valve_open_amount(&self) -> Ratio {
-        self.pack_flow_valve.open_amount()
+    fn pack_flow_valve_is_open(&self) -> bool {
+        self.pack_flow_valve.is_open()
     }
 
     fn pack_flow_valve_air_flow(&self) -> MassRate {
@@ -1268,10 +1272,7 @@ impl PneumaticContainer for PackComplex {
 }
 impl SimulationElement for PackComplex {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.pack_flow_valve_id,
-            self.pack_flow_valve_open_amount() > Ratio::new::<ratio>(0.),
-        );
+        writer.write(&self.pack_flow_valve_id, self.pack_flow_valve_is_open());
         writer.write(
             &self.pack_flow_valve_flow_rate_id,
             self.pack_flow_valve.fluid_flow(),
@@ -1367,11 +1368,11 @@ mod tests {
         },
         pressurization::PressurizationOverheadPanel,
         shared::{
-            ApuBleedAirValveSignal, Cabin, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineBleedPushbutton, EngineCorrectedN1,
-            EngineFirePushButtons, EngineStartState, GroundSpeed, HydraulicColor,
-            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
-            PneumaticBleed, PneumaticValve, PotentialOrigin,
+            ApuBleedAirValveSignal, CabinAir, CabinTemperature, ControllerSignal,
+            ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
+            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, GroundSpeed,
+            HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
+            PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -1394,7 +1395,9 @@ mod tests {
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a320_air_conditioning_system: AirConditioningSystem<3>,
+        a320_air_conditioning_system: AirConditioningSystem<3, 2>,
+        test_cabin: TestCabin,
+
         adirs: TestAdirs,
         pressurization: TestPressurization,
         pressurization_overhead: PressurizationOverheadPanel,
@@ -1410,7 +1413,10 @@ mod tests {
                     cabin_zones,
                     vec![ElectricalBusType::DirectCurrent(1)],
                     vec![ElectricalBusType::DirectCurrent(2)],
+                    ElectricalBusType::AlternatingCurrent(1),
                 ),
+                test_cabin: TestCabin::new(),
+
                 adirs: TestAdirs::new(),
                 pressurization: TestPressurization::new(),
                 pressurization_overhead: PressurizationOverheadPanel::new(context),
@@ -1428,6 +1434,7 @@ mod tests {
             self.a320_air_conditioning_system.update(
                 context,
                 &self.adirs,
+                &self.test_cabin,
                 engines,
                 engine_fire_push_buttons,
                 pneumatic,
@@ -1449,6 +1456,18 @@ mod tests {
             self.a320_air_conditioning_system.accept(visitor);
 
             visitor.visit(self);
+        }
+    }
+
+    struct TestCabin {}
+    impl TestCabin {
+        fn new() -> Self {
+            Self {}
+        }
+    }
+    impl CabinTemperature for TestCabin {
+        fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 3]
         }
     }
 
@@ -1478,7 +1497,7 @@ mod tests {
             }
         }
     }
-    impl Cabin for TestPressurization {
+    impl CabinAir for TestPressurization {
         fn altitude(&self) -> Length {
             Length::new::<foot>(0.)
         }

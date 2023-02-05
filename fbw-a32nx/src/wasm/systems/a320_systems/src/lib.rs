@@ -219,6 +219,8 @@ impl Aircraft for A320 {
             &self.air_conditioning,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
+        self.air_conditioning
+            .mix_packs_air_update(self.pneumatic.packs());
         self.air_conditioning.update(
             context,
             &self.adirs,
