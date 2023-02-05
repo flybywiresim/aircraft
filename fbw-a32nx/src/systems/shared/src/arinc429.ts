@@ -1,26 +1,38 @@
-type SignStatusMatrixRange = (typeof Arinc429Word.SignStatusMatrix)[keyof typeof Arinc429Word.SignStatusMatrix];
-
 export class Arinc429WordSsmParseError extends Error {
     constructor(public ssm: number) {
         super();
     }
 }
 
-export class Arinc429Word {
-    static SignStatusMatrix = Object.freeze({
-        FailureWarning: 0b00,
-        NoComputedData: 0b01,
-        FunctionalTest: 0b10,
-        NormalOperation: 0b11,
-    } as const);
+export enum Arinc429SignStatusMatrix {
+    FailureWarning = 0b00,
+    NoComputedData = 0b01,
+    FunctionalTest = 0b10,
+    NormalOperation = 0b11,
+}
 
+export interface Arinc429WordData {
+    ssm: Arinc429SignStatusMatrix,
+
+    value: number,
+
+    isFailureWarning(): boolean,
+
+    isNoComputedData(): boolean,
+
+    isFunctionalTest(): boolean,
+
+    isNormalOperation(): boolean,
+}
+
+export class Arinc429Word implements Arinc429WordData {
     static f64View = new Float64Array(1);
 
     static u32View = new Uint32Array(Arinc429Word.f64View.buffer);
 
     static f32View = new Float32Array(Arinc429Word.f64View.buffer);
 
-    ssm: SignStatusMatrixRange;
+    ssm: Arinc429SignStatusMatrix;
 
     value: number;
 
@@ -29,7 +41,7 @@ export class Arinc429Word {
 
         const ssm = Arinc429Word.u32View[0];
         if (ssm >= 0b00 && ssm <= 0b11) {
-            this.ssm = ssm as SignStatusMatrixRange;
+            this.ssm = ssm as Arinc429SignStatusMatrix;
         } else {
             throw new Arinc429WordSsmParseError(ssm);
         }
@@ -46,19 +58,19 @@ export class Arinc429Word {
     }
 
     isFailureWarning() {
-        return this.ssm === Arinc429Word.SignStatusMatrix.FailureWarning;
+        return this.ssm === Arinc429SignStatusMatrix.FailureWarning;
     }
 
     isNoComputedData() {
-        return this.ssm === Arinc429Word.SignStatusMatrix.NoComputedData;
+        return this.ssm === Arinc429SignStatusMatrix.NoComputedData;
     }
 
     isFunctionalTest() {
-        return this.ssm === Arinc429Word.SignStatusMatrix.FunctionalTest;
+        return this.ssm === Arinc429SignStatusMatrix.FunctionalTest;
     }
 
     isNormalOperation() {
-        return this.ssm === Arinc429Word.SignStatusMatrix.NormalOperation;
+        return this.ssm === Arinc429SignStatusMatrix.NormalOperation;
     }
 
     /**
@@ -74,5 +86,54 @@ export class Arinc429Word {
 
     getBitValueOr(bit: number, defaultValue: boolean): boolean {
         return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+    }
+}
+
+export class Arinc429Register implements Arinc429WordData {
+    f64View = new Float64Array(1);
+
+    u32View = new Uint32Array(this.f64View.buffer);
+
+    f32View = new Float32Array(this.f64View.buffer);
+
+    ssm: Arinc429SignStatusMatrix;
+
+    value: number;
+
+    static empty() {
+        return new Arinc429Register();
+    }
+
+    private constructor() {
+        this.set(0);
+    }
+
+    set(word: number) {
+        this.f64View[0] = word;
+
+        const ssm = this.u32View[0];
+        if (ssm >= 0b00 && ssm <= 0b11) {
+            this.ssm = ssm as Arinc429SignStatusMatrix;
+        } else {
+            throw new Arinc429WordSsmParseError(ssm);
+        }
+
+        this.value = this.f32View[1];
+    }
+
+    isFailureWarning() {
+        return this.ssm === Arinc429SignStatusMatrix.FailureWarning;
+    }
+
+    isNoComputedData() {
+        return this.ssm === Arinc429SignStatusMatrix.NoComputedData;
+    }
+
+    isFunctionalTest() {
+        return this.ssm === Arinc429SignStatusMatrix.FunctionalTest;
+    }
+
+    isNormalOperation() {
+        return this.ssm === Arinc429SignStatusMatrix.NormalOperation;
     }
 }

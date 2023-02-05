@@ -1,17 +1,17 @@
 import { useSimVar } from '@instruments/common/simVars';
 import React, { FC } from 'react';
-import { Mode } from '@shared/NavigationDisplay';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 
 export interface NavigationDisplayMessagesProps {
     adirsAlign: boolean,
-    mode: Mode,
+    mode: EfisNdMode,
     modeChangeShown: boolean,
     rangeChangeShown: boolean,
 }
 
 export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ adirsAlign, mode, modeChangeShown, rangeChangeShown }) => {
     // Do not show general messages in ROSE VOR/ILS or ANF (latter is not in neo)
-    const modeValidForGeneralMessages = (mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS) && (adirsAlign || mode === Mode.PLAN);
+    const modeValidForGeneralMessages = (mode !== EfisNdMode.ROSE_VOR && mode !== EfisNdMode.ROSE_ILS) && (adirsAlign || mode === EfisNdMode.PLAN);
 
     const [tcasState] = useSimVar('L:A32NX_TCAS_STATE', 'Enum', 200);
 
@@ -37,7 +37,7 @@ export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ 
             >
                 RANGE CHANGE
             </text>
-            { tcasState === 2 && (mode === Mode.PLAN || mode === Mode.ROSE_ILS || mode === Mode.ROSE_VOR) && !modeChangeShown && !rangeChangeShown
+            { tcasState === 2 && (mode === EfisNdMode.PLAN || mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR) && !modeChangeShown && !rangeChangeShown
             && (
                 <text
                     x={384}
@@ -49,7 +49,7 @@ export const NavigationDisplayMessages: FC<NavigationDisplayMessagesProps> = ({ 
                     TCAS: CHANGE MODE
                 </text>
             )}
-            { tcasState === 3 && (mode === Mode.PLAN || mode === Mode.ROSE_ILS || mode === Mode.ROSE_VOR) && !modeChangeShown && !rangeChangeShown
+            { tcasState === 3 && (mode === EfisNdMode.PLAN || mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR) && !modeChangeShown && !rangeChangeShown
             && (
                 <text
                     x={384}

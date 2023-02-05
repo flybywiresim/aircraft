@@ -496,7 +496,8 @@ impl PowerTransferUnit {
         loop_right_section: &impl SectionPressure,
     ) {
         let delta_p = if self.is_enabled {
-            loop_left_section.pressure() - loop_right_section.pressure()
+            loop_left_section.pressure_downstream_priority_valve()
+                - loop_right_section.pressure_downstream_priority_valve()
         } else {
             Pressure::new::<psi>(0.)
         };
@@ -514,8 +515,8 @@ impl PowerTransferUnit {
 
         let new_displacement = if !self.control_valve_opened {
             self.calc_equilibrium_displacement(
-                loop_left_section.pressure(),
-                loop_right_section.pressure(),
+                loop_left_section.pressure_downstream_priority_valve(),
+                loop_right_section.pressure_downstream_priority_valve(),
             )
         } else {
             Volume::new::<cubic_inch>(interpolation(
@@ -568,12 +569,12 @@ impl PowerTransferUnit {
         loop_right_section: &impl SectionPressure,
     ) {
         let left_pressure = if self.is_enabled {
-            loop_left_section.pressure()
+            loop_left_section.pressure_downstream_priority_valve()
         } else {
             Pressure::new::<psi>(0.)
         };
         let right_pressure = if self.is_enabled {
-            loop_right_section.pressure()
+            loop_right_section.pressure_downstream_priority_valve()
         } else {
             Pressure::new::<psi>(0.)
         };
@@ -939,6 +940,7 @@ impl HydraulicCircuit {
         has_auxiliary_section: bool,
 
         circuit_target_pressure: Pressure,
+        priority_valve: PriorityValve,
         system_accumulator_precharge: Pressure,
         system_accumulator_volume: Volume,
     ) -> Self {
@@ -973,6 +975,7 @@ impl HydraulicCircuit {
                 fire_valve,
                 false,
                 false,
+                None,
                 None,
             ));
 
@@ -1010,6 +1013,7 @@ impl HydraulicCircuit {
                 Some(LeakMeasurementValve::new(
                     Self::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
                 )),
+                Some(priority_valve),
             ),
             auxiliary_section: if has_auxiliary_section {
                 Some(Section::new(
@@ -1028,6 +1032,7 @@ impl HydraulicCircuit {
                     None,
                     false,
                     false,
+                    None,
                     None,
                 ))
             } else {
@@ -1446,6 +1451,7 @@ pub struct Section {
     pressure_switch: PressureSwitch,
 
     leak_measurement_valve: Option<LeakMeasurementValve>,
+    priority_valve: Option<PriorityValve>,
 
     total_actuator_consumed_volume: Volume,
     total_actuator_returned_volume: Volume,
@@ -1466,6 +1472,7 @@ impl Section {
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
         leak_measurement_valve: Option<LeakMeasurementValve>,
+        priority_valve: Option<PriorityValve>,
     ) -> Self {
         let section_name: String = format!("HYD_{}_{}_{}_SECTION", loop_id, section_id, pump_id);
 
@@ -1499,6 +1506,7 @@ impl Section {
             ),
 
             leak_measurement_valve,
+            priority_valve,
 
             total_actuator_consumed_volume: Volume::new::<gallon>(0.),
             total_actuator_returned_volume: Volume::new::<gallon>(0.),
@@ -1665,11 +1673,11 @@ impl Section {
             + self.delta_pressure_from_delta_volume(fluid_volume_compressed, fluid);
         self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
 
-        if let Some(valve) = &self.leak_measurement_valve {
-            self.pressure_switch
-                .update(context, valve.downstream_pressure());
-        } else {
-            self.pressure_switch.update(context, self.current_pressure);
+        self.pressure_switch
+            .update(context, self.pressure_downstream_leak_valve());
+
+        if let Some(priority_valve) = &mut self.priority_valve {
+            priority_valve.update(context, self.current_pressure)
         }
     }
 
@@ -1754,6 +1762,14 @@ impl SectionPressure for Section {
 
     fn pressure_downstream_leak_valve(&self) -> Pressure {
         if let Some(valve) = &self.leak_measurement_valve {
+            valve.downstream_pressure()
+        } else {
+            self.pressure()
+        }
+    }
+
+    fn pressure_downstream_priority_valve(&self) -> Pressure {
+        if let Some(valve) = &self.priority_valve {
             valve.downstream_pressure()
         } else {
             self.pressure()
@@ -1888,6 +1904,60 @@ impl CheckValve {
         }
 
         self.max_virtual_volume = available_volume_from_upstream.max(Volume::new::<gallon>(0.));
+    }
+}
+
+pub struct PriorityValve {
+    open_ratio: LowPassFilter<Ratio>,
+
+    fully_closed_threshold: Pressure,
+    fully_opened_threshold: Pressure,
+
+    upstream_pressure: Pressure,
+    downstream_pressure: Pressure,
+}
+impl PriorityValve {
+    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(5);
+
+    pub fn new(fully_closed_threshold: Pressure, fully_opened_threshold: Pressure) -> Self {
+        Self {
+            open_ratio: LowPassFilter::<Ratio>::new(Self::VALVE_RESPONSE_TIME_CONSTANT),
+
+            fully_closed_threshold,
+            fully_opened_threshold,
+
+            upstream_pressure: Pressure::default(),
+            downstream_pressure: Pressure::default(),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, upstream_pressure: Pressure) {
+        self.upstream_pressure = upstream_pressure;
+
+        self.update_open_state(context);
+
+        self.update_downstream_pressure();
+    }
+
+    fn update_open_state(&mut self, context: &UpdateContext) {
+        let opening_ratio = Ratio::new::<ratio>(
+            ((self.upstream_pressure - self.fully_closed_threshold).get::<psi>()
+                / (self.fully_opened_threshold - self.fully_closed_threshold).get::<psi>())
+            .max(0.)
+            .min(1.),
+        );
+
+        self.open_ratio.update(context.delta(), opening_ratio);
+    }
+
+    fn update_downstream_pressure(&mut self) {
+        let current_open_state = self.open_ratio.output();
+
+        self.downstream_pressure = self.upstream_pressure * current_open_state * current_open_state;
+    }
+
+    fn downstream_pressure(&self) -> Pressure {
+        self.downstream_pressure
     }
 }
 
@@ -3035,6 +3105,8 @@ mod tests {
         }
     }
 
+    impl SimulationElement for PriorityValve {}
+
     #[test]
     fn section_writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
@@ -3126,6 +3198,63 @@ mod tests {
 
         assert!(test_bed.query_element(|e| e.downstream_pressure == Pressure::new::<psi>(0.)));
         assert!(test_bed.query_element(|e| e.upstream_pressure == Pressure::new::<psi>(0.)));
+    }
+
+    #[test]
+    fn priority_valve_init_with_zero_pressures() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
+        }));
+
+        assert!(test_bed.query_element(|e| e.downstream_pressure() == Pressure::new::<psi>(0.)));
+        assert!(test_bed.query_element(|e| e.upstream_pressure == Pressure::new::<psi>(0.)));
+    }
+
+    #[test]
+    fn priority_valve_opened_with_pressure() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
+        }));
+
+        test_bed.set_update_after_power_distribution(|valve, context| {
+            valve.update(context, Pressure::new::<psi>(3000.))
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs(2));
+
+        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(2800.)));
+    }
+
+    #[test]
+    fn priority_valve_not_fully_opened_with_lower_pressure() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
+        }));
+
+        test_bed.set_update_after_power_distribution(|valve, context| {
+            valve.update(context, Pressure::new::<psi>(1800.))
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs(2));
+
+        assert!(test_bed.query_element(|e| e.downstream_pressure() <= Pressure::new::<psi>(1500.)));
+        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(500.)));
+    }
+
+    #[test]
+    fn priority_valve_closed_with_under_threshold_pressure() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.))
+        }));
+
+        test_bed.set_update_after_power_distribution(|valve, context| {
+            valve.update(context, Pressure::new::<psi>(1450.))
+        });
+
+        test_bed.run_multiple_frames(Duration::from_secs(2));
+
+        assert!(test_bed.query_element(|e| e.downstream_pressure() <= Pressure::new::<psi>(50.)));
+        assert!(test_bed.query_element(|e| e.downstream_pressure() >= Pressure::new::<psi>(0.)));
     }
 
     #[test]
@@ -3385,6 +3514,10 @@ mod tests {
             Some(LeakMeasurementValve::new(
                 HydraulicCircuit::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
             )),
+            Some(PriorityValve::new(
+                Pressure::new::<psi>(1500.),
+                Pressure::new::<psi>(2000.),
+            )),
         )
     }
 
@@ -3422,6 +3555,10 @@ mod tests {
             Volume::new::<gallon>(4.),
             Volume::new::<gallon>(3.),
         );
+
+        let priority_valve =
+            PriorityValve::new(Pressure::new::<psi>(1500.), Pressure::new::<psi>(2000.));
+
         HydraulicCircuit::new(
             context,
             loop_color,
@@ -3437,6 +3574,7 @@ mod tests {
             false,
             false,
             Pressure::new::<psi>(3000.),
+            priority_valve,
             Pressure::new::<psi>(1885.),
             Volume::new::<gallon>(0.264),
         )

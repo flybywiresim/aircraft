@@ -49,7 +49,8 @@ use systems::{
         ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
         HydraulicCircuitController, HydraulicPressureSensors, PowerTransferUnit,
         PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
-        PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
+        PressureSwitchType, PriorityValve, PumpController, RamAirTurbine, RamAirTurbineController,
+        Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
@@ -147,6 +148,9 @@ impl A320HydraulicCircuitFactory {
 
     const HYDRAULIC_TARGET_PRESSURE_PSI: f64 = 3000.;
 
+    const PRIORITY_VALVE_PRESSURE_CUTOFF_PSI: f64 = 1842.;
+    const PRIORITY_VALVE_PRESSURE_OPENED_PSI: f64 = 2300.;
+
     // Nitrogen PSI precharge pressure
     const ACCUMULATOR_GAS_PRE_CHARGE_PSI: f64 = 1885.0;
     const ACCUMULATOR_MAX_VOLUME_GALLONS: f64 = 0.264;
@@ -168,6 +172,10 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
+            ),
             Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
             Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
@@ -190,6 +198,10 @@ impl A320HydraulicCircuitFactory {
             false,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
+            ),
             Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
             Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
@@ -212,6 +224,10 @@ impl A320HydraulicCircuitFactory {
             true,
             false,
             Pressure::new::<psi>(Self::HYDRAULIC_TARGET_PRESSURE_PSI),
+            PriorityValve::new(
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_CUTOFF_PSI),
+                Pressure::new::<psi>(Self::PRIORITY_VALVE_PRESSURE_OPENED_PSI),
+            ),
             Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
             Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME_GALLONS),
         )
@@ -9929,7 +9945,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             test_bed = test_bed
                 .set_yellow_e_pump(false)
@@ -10299,7 +10315,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs_f64(1.));
 
             test_bed = test_bed
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
@@ -10370,7 +10386,7 @@ mod tests {
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
                 .set_anti_skid(true)
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs_f64(1.));
 
             test_bed = test_bed
                 .set_tiller_demand(Ratio::new::<ratio>(1.))
@@ -10395,7 +10411,7 @@ mod tests {
                 .set_cold_dark_inputs()
                 .start_eng1(Ratio::new::<percent>(80.))
                 .start_eng2(Ratio::new::<percent>(80.))
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs_f64(1.));
 
             test_bed = test_bed
                 .set_autopilot_steering_demand(Ratio::new::<ratio>(1.5))
@@ -10828,6 +10844,32 @@ mod tests {
         }
 
         #[test]
+        fn leak_meas_valve_closed_on_ground_ptu_is_working() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_yellow_e_pump(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .green_leak_meas_valve_closed()
+                .blue_leak_meas_valve_closed()
+                .yellow_leak_meas_valve_closed()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
+            assert!(!test_bed.is_blue_leak_meas_valve_commanded_open());
+            assert!(!test_bed.is_green_leak_meas_valve_commanded_open());
+
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+
+            assert!(test_bed.yellow_pressure().get::<psi>() > 2000.);
+            assert!(test_bed.green_pressure().get::<psi>() > 2000.);
+        }
+
+        #[test]
         fn nose_wheel_steers_with_pushback_tug() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
@@ -10921,7 +10963,7 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed.set_gear_lever_up();
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(80.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(150.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
@@ -11345,7 +11387,7 @@ mod tests {
 
             test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Yellow));
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(120.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(150.));
             assert!(test_bed.green_reservoir_has_overheat_fault());
         }
 

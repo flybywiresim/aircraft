@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { TuningMode } from '@fmgc/radionav';
-import { EfisSide, Mode } from '@shared/NavigationDisplay';
-
-export enum NavAidMode {
-    Off = 0,
-    ADF,
-    VOR,
-}
+import { EfisNdMode, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
 
 export type RadioNavInfoProps = {
     index: 1 | 2,
     side: EfisSide,
     trueRef: boolean,
-    mode: Mode,
+    mode: EfisNdMode,
 }
 
 const TuningModeIndicator: React.FC<{ index: 1 | 2 }> = ({ index }) => {
@@ -26,7 +20,7 @@ const TuningModeIndicator: React.FC<{ index: 1 | 2 }> = ({ index }) => {
     );
 };
 
-const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: Mode }> = ({ index, trueRef, mode }) => {
+const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: EfisNdMode }> = ({ index, trueRef, mode }) => {
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
     const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [vorHasDme] = useSimVar(`NAV HAS DME:${index}`, 'bool');
@@ -45,9 +39,9 @@ const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: Mode }> = ({ inde
     }, [stationDeclination, stationLocation.lat]);
 
     useEffect(() => {
-        setCorrected(vorAvailable && !!(trueRef) !== stationRefTrue && mode !== Mode.ROSE_VOR && mode !== Mode.ROSE_ILS);
-        setMagWarning(vorAvailable && !!(trueRef) && !stationRefTrue && (mode === Mode.ROSE_VOR || mode === Mode.ROSE_ILS));
-        setTrueWarning(vorAvailable && !(trueRef) && stationRefTrue && (mode === Mode.ROSE_VOR || mode === Mode.ROSE_ILS));
+        setCorrected(vorAvailable && !!(trueRef) !== stationRefTrue && mode !== EfisNdMode.ROSE_VOR && mode !== EfisNdMode.ROSE_ILS);
+        setMagWarning(vorAvailable && !!(trueRef) && !stationRefTrue && (mode === EfisNdMode.ROSE_VOR || mode === EfisNdMode.ROSE_ILS));
+        setTrueWarning(vorAvailable && !(trueRef) && stationRefTrue && (mode === EfisNdMode.ROSE_VOR || mode === EfisNdMode.ROSE_ILS));
     }, [trueRef, stationRefTrue, mode, vorAvailable]);
 
     const x = index === 1 ? 37 : 668;
@@ -65,12 +59,11 @@ const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: Mode }> = ({ inde
         );
     };
 
-    // FIXME: Use actual JSX syntax for this
     const freqText = bigLittle(vorFrequency, 2);
-    let dmeText = '---';
+    let dmeText = <>---</>;
     if (vorHasDme && dmeDistance > 0) {
         if (dmeDistance > 20) {
-            dmeText = dmeDistance.toFixed(0);
+            dmeText = <>{dmeDistance.toFixed(0)}</>;
         } else {
             dmeText = bigLittle(dmeDistance, 1);
         }
@@ -83,7 +76,7 @@ const VorInfo: React.FC<{index: 1 | 2, trueRef: boolean, mode: Mode }> = ({ inde
             <path
                 d={path}
                 strokeWidth={2}
-                className={vorAvailable && !!(trueRef) !== stationRefTrue && (mode === Mode.ARC || mode === Mode.ROSE_NAV) ? 'Magenta' : 'White'}
+                className={vorAvailable && !!(trueRef) !== stationRefTrue && (mode === EfisNdMode.ARC || mode === EfisNdMode.ROSE_NAV) ? 'Magenta' : 'White'}
                 strokeLinejoin="round"
                 strokeLinecap="round"
             />
