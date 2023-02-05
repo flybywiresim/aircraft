@@ -176,9 +176,13 @@ pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
 }
 
-pub trait Cabin {
+pub trait CabinAir {
     fn altitude(&self) -> Length;
     fn pressure(&self) -> Pressure;
+}
+
+pub trait CabinTemperature {
+    fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature>;
 }
 
 pub trait PneumaticBleed {
@@ -198,7 +202,7 @@ pub trait EngineBleedPushbutton {
 
 pub trait PackFlowValveState {
     // Pack id is 1 or 2
-    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio;
+    fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool;
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
 }
 
@@ -728,10 +732,40 @@ impl Average for Pressure {
     }
 }
 
+impl Average for ThermodynamicTemperature {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = ThermodynamicTemperature>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<kelvin>();
+            count += 1;
+        }
+
+        if count > 0 {
+            ThermodynamicTemperature::new::<kelvin>(sum / (count as f64))
+        } else {
+            ThermodynamicTemperature::new::<kelvin>(0.)
+        }
+    }
+}
+
 impl<'a> Average<&'a Pressure> for Pressure {
     fn average<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Pressure>,
+    {
+        iter.copied().average()
+    }
+}
+
+impl<'a> Average<&'a ThermodynamicTemperature> for ThermodynamicTemperature {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a ThermodynamicTemperature>,
     {
         iter.copied().average()
     }

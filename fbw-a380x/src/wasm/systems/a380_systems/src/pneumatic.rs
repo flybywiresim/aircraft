@@ -362,8 +362,8 @@ impl EngineStartState for A380Pneumatic {
     }
 }
 impl PackFlowValveState for A380Pneumatic {
-    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio {
-        self.packs[pack_id].pack_flow_valve_open_amount()
+    fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
+        self.packs[pack_id].pack_flow_valve_is_open()
     }
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
         self.packs[pack_id].pack_flow_valve_air_flow()
@@ -1205,8 +1205,8 @@ impl PackComplex {
             .update_move_fluid(context, &mut self.pack_container);
     }
 
-    fn pack_flow_valve_open_amount(&self) -> Ratio {
-        self.pack_flow_valve.open_amount()
+    fn pack_flow_valve_is_open(&self) -> bool {
+        self.pack_flow_valve.is_open()
     }
 
     fn pack_flow_valve_air_flow(&self) -> MassRate {
@@ -1246,10 +1246,7 @@ impl PneumaticContainer for PackComplex {
 }
 impl SimulationElement for PackComplex {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.pack_flow_valve_id,
-            self.pack_flow_valve_open_amount() > Ratio::new::<ratio>(0.),
-        );
+        writer.write(&self.pack_flow_valve_id, self.pack_flow_valve_is_open());
         writer.write(
             &self.pack_flow_valve_flow_rate_id,
             self.pack_flow_valve.fluid_flow(),
@@ -1345,11 +1342,11 @@ mod tests {
         },
         pressurization::PressurizationOverheadPanel,
         shared::{
-            ApuBleedAirValveSignal, Cabin, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineBleedPushbutton, EngineCorrectedN1,
-            EngineFirePushButtons, EngineStartState, GroundSpeed, HydraulicColor,
-            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
-            PneumaticBleed, PneumaticValve, PotentialOrigin,
+            ApuBleedAirValveSignal, CabinAir, CabinTemperature, ControllerSignal,
+            ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
+            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, GroundSpeed,
+            HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
+            PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
@@ -1372,10 +1369,10 @@ mod tests {
     use super::{A380Pneumatic, A380PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a380_air_conditioning_system: AirConditioningSystem<3>,
+        a380_air_conditioning_system: AirConditioningSystem<3, 2>,
+        test_cabin: TestCabin,
 
         adirs: TestAdirs,
-        lgciu: TestLgciu,
         pressurization: TestPressurization,
         pressurization_overhead: PressurizationOverheadPanel,
     }
@@ -1390,10 +1387,11 @@ mod tests {
                     cabin_zones,
                     vec![ElectricalBusType::DirectCurrent(1)],
                     vec![ElectricalBusType::DirectCurrent(2)],
+                    ElectricalBusType::AlternatingCurrent(1),
                 ),
+                test_cabin: TestCabin::new(),
 
                 adirs: TestAdirs::new(),
-                lgciu: TestLgciu::new(true),
                 pressurization: TestPressurization::new(),
                 pressurization_overhead: PressurizationOverheadPanel::new(context),
             }
@@ -1405,17 +1403,19 @@ mod tests {
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
             pneumatic_overhead: &impl EngineBleedPushbutton,
+            lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.a380_air_conditioning_system.update(
                 context,
                 &self.adirs,
+                &self.test_cabin,
                 engines,
                 engine_fire_push_buttons,
                 pneumatic,
                 pneumatic_overhead,
                 &self.pressurization,
                 &self.pressurization_overhead,
-                [&self.lgciu; 2],
+                lgciu,
             );
         }
     }
@@ -1430,6 +1430,18 @@ mod tests {
             self.a380_air_conditioning_system.accept(visitor);
 
             visitor.visit(self);
+        }
+    }
+
+    struct TestCabin {}
+    impl TestCabin {
+        fn new() -> Self {
+            Self {}
+        }
+    }
+    impl CabinTemperature for TestCabin {
+        fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 3]
         }
     }
 
@@ -1459,7 +1471,7 @@ mod tests {
             }
         }
     }
-    impl Cabin for TestPressurization {
+    impl CabinAir for TestPressurization {
         fn altitude(&self) -> Length {
             Length::new::<foot>(0.)
         }
@@ -1599,6 +1611,7 @@ mod tests {
     struct PneumaticTestAircraft {
         pneumatic: A380Pneumatic,
         air_conditioning: TestAirConditioning,
+        lgciu: TestLgciu,
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
@@ -1621,6 +1634,7 @@ mod tests {
             Self {
                 pneumatic: A380Pneumatic::new(context),
                 air_conditioning: TestAirConditioning::new(context),
+                lgciu: TestLgciu::new(true),
                 apu: TestApu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
@@ -1696,6 +1710,7 @@ mod tests {
                 &self.fire_pushbuttons,
                 &self.pneumatic,
                 &self.pneumatic_overhead_panel,
+                [&self.lgciu; 2],
             )
         }
     }
