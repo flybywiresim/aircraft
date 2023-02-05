@@ -13,15 +13,13 @@ const MAX_CARGO_MOVE: f64 = 60.;
 pub struct PaxInfo {
     pub max_pax: i8,
     pub pax_id: String,
-    pub pax_target_id: String,
     pub payload_id: String,
 }
 impl PaxInfo {
-    pub fn new(max_pax: i8, pax_id: &str, pax_target_id: &str, payload_id: &str) -> Self {
+    pub fn new(max_pax: i8, pax_id: &str, payload_id: &str) -> Self {
         PaxInfo {
             max_pax,
             pax_id: pax_id.to_string(),
-            pax_target_id: pax_target_id.to_string(),
             payload_id: payload_id.to_string(),
         }
     }
@@ -30,15 +28,13 @@ impl PaxInfo {
 pub struct CargoInfo {
     pub max_cargo: Mass,
     pub cargo_id: String,
-    pub cargo_target_id: String,
     pub payload_id: String,
 }
 impl CargoInfo {
-    pub fn new(max_cargo: Mass, cargo_id: &str, cargo_target_id: &str, payload_id: &str) -> Self {
+    pub fn new(max_cargo: Mass, cargo_id: &str, payload_id: &str) -> Self {
         CargoInfo {
             max_cargo,
             cargo_id: cargo_id.to_string(),
-            cargo_target_id: cargo_target_id.to_string(),
             payload_id: payload_id.to_string(),
         }
     }

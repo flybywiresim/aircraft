@@ -52,54 +52,30 @@ impl A320Cargo {
 
 lazy_static! {
     static ref A320_PAX: EnumMap<A320Pax, PaxInfo> = EnumMap::from_array([
-        PaxInfo::new(
-            36,
-            "PAX_FLAGS_A",
-            "PAX_FLAGS_A_DESIRED",
-            "PAYLOAD_STATION_1_REQ",
-        ),
-        PaxInfo::new(
-            42,
-            "PAX_FLAGS_B",
-            "PAX_FLAGS_B_DESIRED",
-            "PAYLOAD_STATION_2_REQ",
-        ),
-        PaxInfo::new(
-            48,
-            "PAX_FLAGS_C",
-            "PAX_FLAGS_C_DESIRED",
-            "PAYLOAD_STATION_3_REQ",
-        ),
-        PaxInfo::new(
-            48,
-            "PAX_FLAGS_D",
-            "PAX_FLAGS_D_DESIRED",
-            "PAYLOAD_STATION_4_REQ",
-        )
+        PaxInfo::new(36, "PAX_FLAGS_A", "PAYLOAD_STATION_1_REQ",),
+        PaxInfo::new(42, "PAX_FLAGS_B", "PAYLOAD_STATION_2_REQ",),
+        PaxInfo::new(48, "PAX_FLAGS_C", "PAYLOAD_STATION_3_REQ",),
+        PaxInfo::new(48, "PAX_FLAGS_D", "PAYLOAD_STATION_4_REQ",)
     ]);
     static ref A320_CARGO: EnumMap<A320Cargo, CargoInfo> = EnumMap::from_array([
         CargoInfo::new(
             Mass::new::<kilogram>(3402.),
             "CARGO_FWD_BAGGAGE_CONTAINER",
-            "CARGO_FWD_BAGGAGE_CONTAINER_DESIRED",
             "PAYLOAD_STATION_5_REQ",
         ),
         CargoInfo::new(
             Mass::new::<kilogram>(2426.),
             "CARGO_AFT_CONTAINER",
-            "CARGO_AFT_CONTAINER_DESIRED",
             "PAYLOAD_STATION_6_REQ",
         ),
         CargoInfo::new(
             Mass::new::<kilogram>(2110.),
             "CARGO_AFT_BAGGAGE",
-            "CARGO_AFT_BAGGAGE_DESIRED",
             "PAYLOAD_STATION_7_REQ",
         ),
         CargoInfo::new(
             Mass::new::<kilogram>(1497.),
             "CARGO_AFT_BULK_LOOSE",
-            "CARGO_AFT_BULK_LOOSE_DESIRED",
             "PAYLOAD_STATION_8_REQ",
         )
     ]);
@@ -212,7 +188,7 @@ impl A320Payload {
         for ps in A320Pax::iterator() {
             pax.push(Pax::new(
                 context.get_identifier(A320_PAX[ps].pax_id.to_owned()),
-                context.get_identifier(A320_PAX[ps].pax_target_id.to_owned()),
+                context.get_identifier(format!("{}_DESIRED", A320_PAX[ps].pax_id).to_owned()),
                 context.get_identifier(A320_PAX[ps].payload_id.to_owned()),
                 Rc::clone(&per_pax_weight),
             ));
@@ -222,7 +198,7 @@ impl A320Payload {
         for cs in A320Cargo::iterator() {
             cargo.push(Cargo::new(
                 context.get_identifier(A320_CARGO[cs].cargo_id.to_owned()),
-                context.get_identifier(A320_CARGO[cs].cargo_target_id.to_owned()),
+                context.get_identifier(format!("{}_DESIRED", A320_CARGO[cs].cargo_id).to_owned()),
                 context.get_identifier(A320_CARGO[cs].payload_id.to_owned()),
             ));
         }
@@ -739,7 +715,7 @@ mod boarding_test {
                 pax_flag ^= 1 << c;
             }
 
-            self.write_by_name(&A320_PAX[ps].pax_target_id, pax_flag);
+            self.write_by_name(&format!("{}_DESIRED", A320_PAX[ps].pax_id), pax_flag);
         }
 
         fn load_cargo(&mut self, cs: A320Cargo, cargo_qty: Mass) {
@@ -752,7 +728,10 @@ mod boarding_test {
         fn target_cargo(&mut self, cs: A320Cargo, cargo_qty: Mass) {
             assert!(cargo_qty <= A320_CARGO[cs].max_cargo);
 
-            self.write_by_name(&A320_CARGO[cs].cargo_target_id, cargo_qty.get::<kilogram>());
+            self.write_by_name(
+                &format!("{}_DESIRED", A320_CARGO[cs].cargo_id),
+                cargo_qty.get::<kilogram>(),
+            );
         }
 
         fn start_boarding(mut self) -> Self {
