@@ -85,11 +85,16 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // check if we already have an active loading process or if this is a new request which
     // needs to be initialized
     if (!loadingIsActive) {
-      // check if procedure ID exists
-      const std::vector<const ProcedureStep*>* requestedProcedure =
+
+      // get the requested procedure
+      const std::optional<const Procedure*> requestedProcedure =
         procedures.getProcedure(loadAircraftPresetRequest->getAsInt64());
-      if (requestedProcedure == nullptr) {
-        LOG_WARN("AircraftPresets: Preset " + std::to_string(loadAircraftPresetRequest->getAsInt64()) + " not found!");
+
+      // check if procedure ID exists
+      if (!requestedProcedure.has_value()) {
+        LOG_WARN("AircraftPresets: Preset "
+                 + std::to_string(loadAircraftPresetRequest->getAsInt64())
+                 + " not found!");
         loadAircraftPresetRequest->set(0);
         loadingIsActive = false;
         return true;
@@ -97,21 +102,23 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
 
       // initialize new loading process
       currentProcedureID = loadAircraftPresetRequest->getAsInt64();
-      currentProcedure = requestedProcedure;
+      currentProcedure = requestedProcedure.value();
       currentLoadingTime = 0;
       currentDelay = 0;
       currentStep = 0;
       loadingIsActive = true;
       progressAircraftPreset->setAndWriteToSim(0);
       progressAircraftPresetId->setAndWriteToSim(0);
-      LOG_INFO("AircraftPresets: Aircraft Preset " + std::to_string(currentProcedureID) + " starting procedure!");
+      LOG_INFO("AircraftPresets: Aircraft Preset "
+               + std::to_string(currentProcedureID)
+               + " starting procedure!");
       return true;
     }
 
     // reset the LVAR to the currently running procedure in case it has been changed
     // during a running procedure. We only allow "0" as a signal to interrupt the
     // current procedure
-    loadAircraftPresetRequest->set(static_cast<FLOAT64>(currentProcedureID));
+    loadAircraftPresetRequest->setAsInt64(currentProcedureID);
 
     // check if all procedure steps are done and the procedure is finished
     if (currentStep >= currentProcedure->size()) {

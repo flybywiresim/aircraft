@@ -295,7 +295,7 @@ public:
   }
 
   [[nodiscard]]
-  const std::vector<const ProcedureStep*>* getProcedure(int64_t pID) const {
+  std::optional<const Procedure*> getProcedure(int64_t pID) const {
     switch (pID) {
       case 1:
         return &coldAndDark;
@@ -308,7 +308,7 @@ public:
       case 5:
         return &readyForTakeoff;
       default:
-        return nullptr;
+        return std::nullopt;
     }
   }
 };
