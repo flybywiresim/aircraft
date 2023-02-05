@@ -91,7 +91,22 @@ const NXSystemMessages = {
     systemBusy:             new TypeIMessage("SYSTEM BUSY-TRY LATER"),
     uplinkInsertInProg:     new TypeIIMessage("UPLINK INSERT IN PROG"),
     vToDisagree:            new TypeIIMessage("V1/VR/V2 DISAGREE", true),
-    waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE")
+    waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE"),
+    // FIXME these should be in alphabetical order like the rest
+    comUnavailable:         new TypeIMessage("COM UNAVAILABLE"),
+    dcduFileFull:           new TypeIMessage("DCDU FILE FULL"),
+    systemBusy:             new TypeIMessage("SYSTEM BUSY-TRY LATER"),
+    noAtc:                  new TypeIMessage("NO ACTIVE ATC"),
+    newAtisReceived:        new TypeIMessage("NEW ATIS: READ AGAIN"),
+    noAtisReceived:         new TypeIMessage("NO ATIS REPORT RECEIVED"),
+    noPreviousAtis:         new TypeIMessage("NO PREVIOUS ATIS STORED"),
+    arptTypeAlreadyInUse:   new TypeIMessage("ARPT/TYPE ALREADY USED"),
+    cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE"),
+    keyNotActive:           new TypeIMessage("KEY NOT ACTIVE"),
+    latLonAbreviated:       new TypeIMessage("LAT/LON DISPL ABREVIATED"),
+    stepAboveMaxFl:         new TypeIIMessage("STEP ABOVE MAX FL"),
+    stepAhead:              new TypeIIMessage("STEP AHEAD"),
+    stepDeleted:            new TypeIIMessage("STEP DELETED"),
 };
 
 const NXFictionalMessages = {

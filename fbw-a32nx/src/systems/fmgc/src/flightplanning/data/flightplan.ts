@@ -66,3 +66,11 @@ export enum HoldType {
     Database = 1,
     Pilot = 2,
 }
+
+export interface StepData {
+    distanceBeforeTermination: NauticalMiles,
+
+    toAltitude: Feet,
+
+    ident: string,
+}

@@ -155,6 +155,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('engTwoRunning');
         this.simVarPublisher.subscribe('expediteMode');
         this.simVarPublisher.subscribe('setHoldSpeed');
+        this.simVarPublisher.subscribe('tdReached');
         this.simVarPublisher.subscribe('trkFpaDeselectedTCAS');
         this.simVarPublisher.subscribe('tcasRaInhibited');
         this.simVarPublisher.subscribe('groundSpeed');
@@ -225,11 +226,16 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('trueHeadingRaw');
         this.simVarPublisher.subscribe('trueTrackRaw');
         this.simVarPublisher.subscribe('slatPosLeft');
-
         this.simVarPublisher.subscribe('fwc1AltAlertPulsing');
         this.simVarPublisher.subscribe('fwc2AltAlertPulsing');
         this.simVarPublisher.subscribe('fwc1AltAlertFlashing');
         this.simVarPublisher.subscribe('fwc2AltAlertFlashing');
+        this.simVarPublisher.subscribe('linearDeviationActive');
+        this.simVarPublisher.subscribe('verticalProfileLatched');
+        this.simVarPublisher.subscribe('targetAltitude');
+        this.simVarPublisher.subscribe('showSpeedMargins');
+        this.simVarPublisher.subscribe('upperSpeedMargin');
+        this.simVarPublisher.subscribe('lowerSpeedMargin');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }

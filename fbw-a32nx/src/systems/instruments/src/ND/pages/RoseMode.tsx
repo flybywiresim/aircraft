@@ -38,6 +38,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
     const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
     const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
@@ -78,7 +79,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                             { ((fmaLatMode === LateralMode.NONE || fmaLatMode === LateralMode.HDG || fmaLatMode === LateralMode.TRACK)
                                 && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV)) && (
-                                <TrackLine x={384} y={384} heading={heading} track={track} />
+                                <TrackLine x={384} y={384} heading={heading} track={track} mapParams={mapParams} groundSpeed={groundSpeed} symbols={symbols} ndRange={rangeSetting} />
                             )}
                         </g>
                     )}

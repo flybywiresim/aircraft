@@ -23,8 +23,7 @@
  * SOFTWARE.
  */
 
-import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { HoldData, StepData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
@@ -1191,6 +1190,8 @@ export class ManagedFlightPlan {
                     } else {
                         this.destinationAirfield.additionalData.annotation = approachName;
                     }
+
+                    this.destinationAirfield.verticalAngle = lastLeg.verticalAngle
                 }
 
                 // Clear discontinuity before destination, if any
@@ -1624,5 +1625,37 @@ export class ManagedFlightPlan {
         }
 
         return false;
+    }
+
+    public tryAddOrUpdateCruiseStep(ident: string, toAltitude: Feet): boolean {
+        // TODO: Handle optimum steps
+        const waypointIndex = this.findWaypointIndexByIdent(ident);
+        const waypoint = this.getWaypoint(waypointIndex);
+        if (waypointIndex > 0) {
+            waypoint.additionalData.cruiseStep = {
+                distanceBeforeTermination: 0,
+                toAltitude,
+                waypointIndex: waypointIndex,
+            };
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public tryRemoveCruiseStep(waypointIndex: number): boolean {
+        const waypoint = this.getWaypoint(waypointIndex);
+
+        if (waypoint) {
+            waypoint.additionalData.cruiseStep = undefined;
+            return true;
+        }
+
+        return false
+    }
+
+    private findWaypointIndexByIdent(ident: string): number {
+        return this.waypoints.findIndex(waypoint => waypoint.ident === ident);
     }
 }

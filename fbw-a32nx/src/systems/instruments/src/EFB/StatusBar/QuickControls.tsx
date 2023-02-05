@@ -19,11 +19,11 @@ import { useSimVar } from '@instruments/common/simVars';
 import Slider from 'rc-slider';
 import { useHistory } from 'react-router-dom';
 import { useInterval } from '@flybywiresim/react-components';
-import { SimBridgeClientState } from '@simbridge/components/ClientState';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { PowerStates, usePower } from '../Efb';
 import { ClientState } from '../../../../simbridge-client/src';
+import { SimBridgeClientState } from '../../../../simbridge-client/src/components/ClientState';
 
 interface QuickSettingsButtonProps {
     onClick: () => void;

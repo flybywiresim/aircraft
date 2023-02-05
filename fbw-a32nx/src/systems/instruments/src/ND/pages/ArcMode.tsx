@@ -37,6 +37,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
     const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
     const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
@@ -78,7 +79,16 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             || fmaLatMode === LateralMode.HDG
                             || fmaLatMode === LateralMode.TRACK)
                             && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV)) && (
-                            <TrackLine x={384} y={620} heading={heading} track={track} />
+                            <TrackLine
+                                x={384}
+                                y={620}
+                                heading={heading}
+                                track={track}
+                                groundSpeed={Number(MathUtils.fastToFixed(groundSpeed, 2))}
+                                mapParams={mapParams}
+                                symbols={symbols}
+                                ndRange={rangeSetting}
+                            />
                         )}
                     </g>
                     <RadioNeedle index={1} side={side} displayMode={EfisNdMode.ARC} centreHeight={620} trueRef={trueRef} />

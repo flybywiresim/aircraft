@@ -4,26 +4,87 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
-import { PseudoWaypoint, PseudoWaypointSequencingAction } from '@fmgc/guidance/PsuedoWaypoint';
+import { PseudoWaypoint, PseudoWaypointFlightPlanInfo, PseudoWaypointSequencingAction } from '@fmgc/guidance/PseudoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
 import { NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { LateralMode } from '@shared/autopilot';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { TimeUtils } from '@fmgc/utils/TimeUtils';
+import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
+import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 
+const PWP_IDENT_CLIMB_CONSTRAINT_LEVEL_OFF = 'Level off for climb constraint';
+const PWP_IDENT_CONTINUE_CLIMB = 'Continue climb';
+const PWP_SPEED_CHANGE = 'Speed change';
+const PWP_IDENT_TOC = '(T/C)';
+const PWP_IDENT_STEP_CLIMB = '(S/C)';
+const PWP_IDENT_STEP_DESCENT = '(S/D)';
+const PWP_IDENT_SPD_LIM = '(LIM)';
 const PWP_IDENT_TOD = '(T/D)';
 const PWP_IDENT_DECEL = '(DECEL)';
 const PWP_IDENT_FLAP1 = '(FLAP1)';
 const PWP_IDENT_FLAP2 = '(FLAP2)';
 
+const CHECKPOINTS_TO_PUT_IN_MCDU = new Set([
+    VerticalCheckpointReason.TopOfClimb,
+    VerticalCheckpointReason.CrossingClimbSpeedLimit,
+
+    VerticalCheckpointReason.StepClimb,
+    VerticalCheckpointReason.StepDescent,
+
+    // Descent
+    VerticalCheckpointReason.TopOfDescent,
+    VerticalCheckpointReason.CrossingDescentSpeedLimit,
+
+    // Approach
+    VerticalCheckpointReason.Decel,
+    VerticalCheckpointReason.Flaps1,
+    VerticalCheckpointReason.Flaps2,
+]);
+const isCheckpointForMcduPwp = (checkpoint: VerticalCheckpoint) => CHECKPOINTS_TO_PUT_IN_MCDU.has(checkpoint.reason);
+
+const CHECKPOINTS_TO_DRAW_ON_ND = new Set([
+    VerticalCheckpointReason.TopOfClimb,
+    VerticalCheckpointReason.LevelOffForClimbConstraint,
+    VerticalCheckpointReason.ContinueClimb,
+    VerticalCheckpointReason.CrossingFcuAltitudeClimb,
+    VerticalCheckpointReason.TopOfDescent,
+    VerticalCheckpointReason.CrossingFcuAltitudeDescent,
+    VerticalCheckpointReason.ContinueDescent,
+    VerticalCheckpointReason.ContinueDescentArmed,
+    VerticalCheckpointReason.LevelOffForDescentConstraint,
+    VerticalCheckpointReason.InterceptDescentProfileManaged,
+    VerticalCheckpointReason.InterceptDescentProfileSelected,
+    VerticalCheckpointReason.Decel,
+    VerticalCheckpointReason.Flaps1,
+    VerticalCheckpointReason.Flaps2,
+]);
+const isCheckpointForNdPwp = (checkpoint: VerticalCheckpoint) => CHECKPOINTS_TO_DRAW_ON_ND.has(checkpoint.reason);
+
+const CHECKPOINT_REASONS_BEFORE_FCU_ALT_FOR_PWP: VerticalCheckpointReason[] = [
+    VerticalCheckpointReason.LevelOffForClimbConstraint,
+    VerticalCheckpointReason.ContinueClimb,
+    VerticalCheckpointReason.CrossingClimbSpeedLimit,
+    VerticalCheckpointReason.CrossingFcuAltitudeClimb,
+];
+
+const CDA_CHECKPOINT_FOR_PWP: Set<VerticalCheckpointReason> = new Set([
+    VerticalCheckpointReason.Flaps1,
+    VerticalCheckpointReason.Flaps2,
+]);
+const isCheckpointForCdaPwp = (checkpoint: VerticalCheckpoint) => CDA_CHECKPOINT_FOR_PWP.has(checkpoint.reason);
+
 export class PseudoWaypoints implements GuidanceComponent {
     pseudoWaypoints: PseudoWaypoint[] = [];
 
-    constructor(private guidanceController: GuidanceController) { }
+    constructor(private guidanceController: GuidanceController, private atmosphericConditions: AtmosphericConditions) { }
 
     acceptVerticalProfile() {
         if (DEBUG) {
@@ -42,103 +103,105 @@ export class PseudoWaypoints implements GuidanceComponent {
     private recompute() {
         const geometry = this.guidanceController.activeGeometry;
         const wptCount = this.guidanceController.flightPlanManager.getWaypointsCount();
-        const haveApproach = !!this.guidanceController.vnavDriver.currentApproachProfile;
 
-        if (!geometry || geometry.legs.size < 1) {
+        const navGeometryProfile = this.guidanceController.vnavDriver.currentNavGeometryProfile;
+        if (!geometry || geometry.legs.size < 1 || !navGeometryProfile.isReadyToDisplay) {
             this.pseudoWaypoints.length = 0;
             return;
         }
 
+        const ndPseudoWaypointCandidates = this.guidanceController.vnavDriver.currentNdGeometryProfile?.isReadyToDisplay
+            ? this.guidanceController.vnavDriver.currentNdGeometryProfile.checkpoints.filter(isCheckpointForNdPwp)
+            : [];
+
         const newPseudoWaypoints: PseudoWaypoint[] = [];
+        const totalDistance = navGeometryProfile.totalFlightPlanDistance;
 
-        if (VnavConfig.VNAV_EMIT_TOD) {
-            const tod = PseudoWaypoints.pointFromEndOfPath(geometry, wptCount, this.guidanceController.vnavDriver.currentDescentProfile.tod, DEBUG && PWP_IDENT_TOD);
+        const shouldEmitCdaPwp = VnavConfig.VNAV_DESCENT_MODE === VnavDescentMode.CDA && VnavConfig.VNAV_EMIT_CDA_FLAP_PWP;
 
-            if (tod) {
-                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = tod;
+        // We do this so we only draw the first of each waypoint type
+        const waypointsLeftToDraw = new Set([...CHECKPOINTS_TO_PUT_IN_MCDU, ...CHECKPOINTS_TO_DRAW_ON_ND]);
+
+        for (const checkpoint of [...navGeometryProfile.checkpoints.filter(isCheckpointForMcduPwp), ...ndPseudoWaypointCandidates]) {
+            if (!waypointsLeftToDraw.has(checkpoint.reason) || (!shouldEmitCdaPwp && isCheckpointForCdaPwp(checkpoint))) {
+                continue;
+            }
+
+            // Do not draw climb PWP past the FCU altitude
+            if (!waypointsLeftToDraw.has(VerticalCheckpointReason.CrossingFcuAltitudeClimb) && CHECKPOINT_REASONS_BEFORE_FCU_ALT_FOR_PWP.includes(checkpoint.reason)) {
+                continue;
+            }
+
+            waypointsLeftToDraw.delete(checkpoint.reason);
+
+            const pwp = this.createPseudoWaypointFromVerticalCheckpoint(geometry, wptCount, totalDistance, checkpoint);
+            if (pwp) {
+                newPseudoWaypoints.push(pwp);
+            }
+        }
+
+        // Speed Changes
+        const firstSpeedChange = this.guidanceController.vnavDriver.findNextSpeedChange();
+
+        if (Number.isFinite(firstSpeedChange)) {
+            let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
+            if (this.guidanceController.vnavDriver.isLatAutoControlActive()) {
+                const pwp = this.pointFromEndOfPath(geometry, wptCount, totalDistance - firstSpeedChange);
+
+                if (pwp) {
+                    [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = pwp;
+                }
+            }
+
+            newPseudoWaypoints.push({
+                ident: PWP_SPEED_CHANGE,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpSpeedChange | NdSymbolTypeFlags.MagentaColor,
+                efisSymbolLla,
+                distanceFromStart: firstSpeedChange,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            });
+        }
+
+        // Time Markers
+        for (const [time, prediction] of this.guidanceController.vnavDriver.timeMarkers.entries()) {
+            if (!this.guidanceController.vnavDriver.isLatAutoControlActive() || !prediction) {
+                continue;
+            }
+
+            const position = this.pointFromEndOfPath(geometry, wptCount, totalDistance - prediction.distanceFromStart, `TIME ${time}`);
+
+            if (position) {
+                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = position;
+
+                const ident = TimeUtils.formatSeconds(time);
 
                 newPseudoWaypoints.push({
-                    ident: PWP_IDENT_TOD,
-                    sequencingType: PseudoWaypointSequencingAction.TOD_REACHED,
+                    ident,
                     alongLegIndex,
                     distanceFromLegTermination,
-                    efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+                    efisSymbolFlag: NdSymbolTypeFlags.PwpTimeMarker,
                     efisSymbolLla,
+                    distanceFromStart: prediction.distanceFromStart,
                     displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_TOD, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
+                    mcduIdent: `(${TimeUtils.formatSeconds(time, false)})`,
+                    mcduHeader: '{white}{big}(UTC){end}{end}',
+                    // TODO: Use `formatFlightPlanInfo` for this.
+                    flightPlanInfo: {
+                        ...prediction,
+                        distanceFromLastFix: PseudoWaypoints.computePseudoWaypointDistanceFromFix(geometry.legs.get(alongLegIndex), distanceFromLegTermination),
+                    },
+                    displayedOnNd: true,
                 });
             }
         }
 
-        if (VnavConfig.VNAV_EMIT_DECEL && haveApproach) {
-            const decel = PseudoWaypoints.pointFromEndOfPath(geometry, wptCount, this.guidanceController.vnavDriver.currentApproachProfile.decel, DEBUG && PWP_IDENT_DECEL);
-
-            if (decel) {
-                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = decel;
-
-                newPseudoWaypoints.push({
-                    ident: PWP_IDENT_DECEL,
-                    sequencingType: PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE,
-                    alongLegIndex,
-                    distanceFromLegTermination,
-                    efisSymbolFlag: NdSymbolTypeFlags.PwpDecel,
-                    efisSymbolLla,
-                    displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_DECEL, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
-                });
-            }
-
-            // for (let i = 0; i < 75; i++) {
-            //     const point = PseudoWaypoints.pointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.decel + i / 2, `(BRUH${i}`);
-            //
-            //     if (point) {
-            //         const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = point;
-            //
-            //         newPseudoWaypoints.push({
-            //             ident: `(BRUH${i})`,
-            //             sequencingType: PseudoWaypointSequencingAction.TOD_REACHED,
-            //             alongLegIndex,
-            //             distanceFromLegTermination,
-            //             efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
-            //             efisSymbolLla,
-            //             displayedOnMcdu: true,
-            //             stats: PseudoWaypoints.computePseudoWaypointStats(`(BRUH${i})`, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
-            //         });
-            //     }
-            // }
-        }
-
-        if (VnavConfig.VNAV_DESCENT_MODE === VnavDescentMode.CDA && VnavConfig.VNAV_EMIT_CDA_FLAP_PWP && haveApproach) {
-            const flap1 = PseudoWaypoints.pointFromEndOfPath(geometry, wptCount, this.guidanceController.vnavDriver.currentApproachProfile.flap1, DEBUG && PWP_IDENT_FLAP1);
-
-            if (flap1) {
-                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = flap1;
-
-                newPseudoWaypoints.push({
-                    ident: PWP_IDENT_FLAP1,
-                    alongLegIndex,
-                    distanceFromLegTermination,
-                    efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap1,
-                    efisSymbolLla,
-                    displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_FLAP1, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
-                });
-            }
-
-            const flap2 = PseudoWaypoints.pointFromEndOfPath(geometry, wptCount, this.guidanceController.vnavDriver.currentApproachProfile.flap2, DEBUG && PWP_IDENT_FLAP2);
-
-            if (flap2) {
-                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = flap2;
-
-                newPseudoWaypoints.push({
-                    ident: PWP_IDENT_FLAP2,
-                    alongLegIndex,
-                    distanceFromLegTermination,
-                    efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap2,
-                    efisSymbolLla,
-                    displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_FLAP2, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
-                });
+        if (VnavConfig.DEBUG_PROFILE || VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {
+            const debugPoint = this.createDebugPwp(geometry, wptCount, totalDistance);
+            if (debugPoint) {
+                newPseudoWaypoints.push(debugPoint);
             }
         }
 
@@ -158,6 +221,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             const onPreviousLeg = pseudoWaypoint.alongLegIndex === this.guidanceController.activeLegIndex - 1;
             const onActiveLeg = pseudoWaypoint.alongLegIndex === this.guidanceController.activeLegIndex;
             const afterActiveLeg = pseudoWaypoint.alongLegIndex > this.guidanceController.activeLegIndex;
+            const inSelectedHdg = !this.guidanceController.vnavDriver.isLatAutoControlActive();
 
             // TODO we also consider the previous leg as active because we sequence Type I transitions at the same point
             // for both guidance and legs list. IRL, the display sequences after the guidance, which means the pseudo-waypoints
@@ -166,7 +230,8 @@ export class PseudoWaypoints implements GuidanceComponent {
 
             // We only want to add the pseudo waypoint if it's after the active leg or it isn't yet passed
             if (
-                afterActiveLeg
+                inSelectedHdg
+                || afterActiveLeg
                 || (onPreviousLeg && this.guidanceController.displayActiveLegCompleteLegPathDtg > pseudoWaypoint.distanceFromLegTermination)
                 || (onActiveLeg && this.guidanceController.activeLegCompleteLegPathDtg > pseudoWaypoint.distanceFromLegTermination)
             ) {
@@ -209,42 +274,38 @@ export class PseudoWaypoints implements GuidanceComponent {
     }
 
     /**
-     * Computes a {@link WaypointStats} object for a pseudo waypoint
+     * Computes a the distance between the fix before the PWP and the PWP
      *
-     * @param ident             the text identifier to give to this pseudo waypoint, for display on the MCDU
      * @param leg               the leg along which this pseudo waypoint is situated
      * @param distanceAlongLeg  the distance from the termination of the leg to this pseudo waypoint
      *
      * @private
      */
-    private static computePseudoWaypointStats(ident: string, leg: Leg, distanceAlongLeg: number): WaypointStats {
-        // TODO use predictions store to find out altitude, speed and time
-        return {
-            ident,
-            bearingInFp: 0,
-            distanceInFP: leg.distance - distanceAlongLeg,
-            distanceFromPpos: 0,
-            timeFromPpos: 0,
-            etaFromPpos: 0,
-            magneticVariation: 0,
-        };
+    private static computePseudoWaypointDistanceFromFix(leg: Leg, distanceAlongLeg: number): NauticalMiles {
+        return (leg?.distance ?? 0) - distanceAlongLeg;
     }
 
-    private static pointFromEndOfPath(
+    private pointFromEndOfPath(
         path: Geometry,
         wptCount: number,
         distanceFromEnd: NauticalMiles,
         debugString?: string,
     ): [lla: Coordinates, distanceFromLegTermination: number, legIndex: number] | undefined {
-        if (distanceFromEnd < 0) {
-            throw new Error('[FMS/PWP](pointFromEndOfPath) distanceFromEnd was negative');
+        if (!distanceFromEnd || distanceFromEnd < 0) {
+            if (VnavConfig.DEBUG_PROFILE) {
+                console.warn('[FMS/PWP](pointFromEndOfPath) distanceFromEnd was negative or undefined');
+            }
+
+            return undefined;
         }
 
         let accumulator = 0;
 
-        if (false) {
+        if (DEBUG) {
             console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
         }
+
+        const destination = this.guidanceController.flightPlanManager.getDestination();
 
         for (let i = wptCount - 1; i > 0; i--) {
             const leg = path.legs.get(i);
@@ -252,6 +313,24 @@ export class PseudoWaypoints implements GuidanceComponent {
             if (!leg || leg.isNull) {
                 continue;
             }
+
+            let distanceInDiscontinuity = 0;
+            const nextLeg = path.legs.get(i + 1);
+            const previousLeg = path.legs.get(i - 1);
+
+            if (leg instanceof XFLeg && leg.fix.endsInDiscontinuity) {
+                if (!nextLeg) {
+                    // The idea is that if there's a discontinuity but not next leg, we're probably at the end of the path.
+                    // So the distance in the discontinuity is just the distance to the airport.
+                    distanceInDiscontinuity = Avionics.Utils.computeGreatCircleDistance(leg.fix.infos.coordinates, destination.infos.coordinates);
+                } else if (nextLeg instanceof XFLeg) {
+                    distanceInDiscontinuity = Avionics.Utils.computeGreatCircleDistance(leg.fix.infos.coordinates, nextLeg.fix.infos.coordinates);
+                }
+            } else if (leg instanceof VMLeg && previousLeg instanceof XFLeg && nextLeg instanceof XFLeg) {
+                distanceInDiscontinuity = Avionics.Utils.computeGreatCircleDistance(previousLeg.fix.infos.coordinates, nextLeg.fix.infos.coordinates);
+            }
+
+            accumulator += distanceInDiscontinuity;
 
             const inboundTrans = path.transitions.get(i - 1);
             const outboundTrans = path.transitions.get(i);
@@ -275,6 +354,20 @@ export class PseudoWaypoints implements GuidanceComponent {
             }
 
             if (accumulator > distanceFromEnd) {
+                if (distanceInDiscontinuity > 0 && accumulator - totalLegPathLength > distanceFromEnd) {
+                    // Points lies on discontinuity (on the direct line between the two fixes)
+                    // In this case, we don't want to place the PWP unless we force placement. In this case, we place it on the termination
+                    if (nextLeg instanceof IFLeg) {
+                        // If the point lies on a discontinuity, we place it on the next leg.
+                        return [nextLeg.fix.infos.coordinates, distanceFromEnd - (accumulator - totalLegPathLength), i + 1];
+                    } if (!nextLeg && destination?.infos?.coordinates) {
+                        // Hack until destination airport is properly handled (should exist as IF leg in geometry.)
+                        return [destination.infos.coordinates, distanceFromEnd, i + 1];
+                    }
+
+                    return undefined;
+                }
+
                 const distanceFromEndOfLeg = distanceFromEnd - (accumulator - totalLegPathLength);
 
                 let lla;
@@ -311,6 +404,10 @@ export class PseudoWaypoints implements GuidanceComponent {
                     return [lla, distanceFromEndOfLeg, i];
                 }
 
+                if (VnavConfig.DEBUG_PROFILE) {
+                    console.error(`[FMS/PseudoWaypoints] Tried to place PWP ${debugString} on ${leg.repr}, but failed`);
+                }
+
                 return undefined;
             }
         }
@@ -320,5 +417,271 @@ export class PseudoWaypoints implements GuidanceComponent {
         }
 
         return undefined;
+    }
+
+    private createPseudoWaypointFromVerticalCheckpoint(geometry: Geometry, wptCount: number, totalDistance: number, checkpoint: VerticalCheckpoint): PseudoWaypoint | undefined {
+        let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
+        // We want the decel point and T/D to be drawn along the track line even if not in NAV mode
+        if (this.guidanceController.vnavDriver.isLatAutoControlActive() || isCheckpointForMcduPwp(checkpoint)) {
+            const pwp = this.pointFromEndOfPath(geometry, wptCount, totalDistance - checkpoint?.distanceFromStart, checkpoint.reason);
+            if (!pwp) {
+                return undefined;
+            }
+
+            [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = pwp;
+        }
+
+        switch (checkpoint.reason) {
+        case VerticalCheckpointReason.LevelOffForClimbConstraint:
+            return {
+                ident: PWP_IDENT_CLIMB_CONSTRAINT_LEVEL_OFF,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.MagentaColor,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.ContinueClimb:
+            return {
+                ident: PWP_IDENT_CONTINUE_CLIMB,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpStartOfClimb | NdSymbolTypeFlags.CyanColor,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.CrossingClimbSpeedLimit:
+            return {
+                ident: PWP_IDENT_SPD_LIM,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: 0, // Since this is not shown on the ND, it does not need a symbol
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                mcduHeader: '\xa0(SPD)',
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: false,
+            };
+        case VerticalCheckpointReason.CrossingDescentSpeedLimit:
+            return {
+                ident: PWP_IDENT_SPD_LIM,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: 0, // Since this is not shown on the ND, it does not need a symbol
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                mcduHeader: '\xa0(SPD)',
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: false,
+            };
+        case VerticalCheckpointReason.CrossingFcuAltitudeClimb:
+            return {
+                ident: 'FCU alt',
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.CyanColor,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.TopOfClimb:
+            return {
+                ident: PWP_IDENT_TOC,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: 0,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: false,
+            };
+        case VerticalCheckpointReason.StepClimb:
+            return {
+                ident: PWP_IDENT_STEP_CLIMB,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpStartOfClimb,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: this.guidanceController.vnavDriver.isLatAutoControlActive(),
+            };
+        case VerticalCheckpointReason.StepDescent:
+            return {
+                ident: PWP_IDENT_STEP_DESCENT,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: this.guidanceController.vnavDriver.isLatAutoControlActive(),
+            };
+        case VerticalCheckpointReason.ContinueDescent:
+            return {
+                ident: PWP_IDENT_TOD,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.ContinueDescentArmed:
+            return {
+                ident: PWP_IDENT_TOD,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent | NdSymbolTypeFlags.CyanColor,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.TopOfDescent:
+            return {
+                ident: PWP_IDENT_TOD,
+                sequencingType: PseudoWaypointSequencingAction.TOD_REACHED,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: this.guidanceController.vnavDriver.isLatAutoControlActive() || this.guidanceController.vnavDriver.isFlightPhasePreflight(),
+            };
+        case VerticalCheckpointReason.CrossingFcuAltitudeDescent:
+            return {
+                ident: 'FCU alt',
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.CyanColor,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.LevelOffForDescentConstraint:
+            return {
+                ident: 'Level off for descent constraint',
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.MagentaColor,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.InterceptDescentProfileSelected:
+            return {
+                ident: 'Intercept',
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.InterceptDescentProfileManaged:
+            return {
+                ident: 'Intercept',
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile | NdSymbolTypeFlags.CyanColor,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: false,
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.Decel:
+            return {
+                ident: PWP_IDENT_DECEL,
+                sequencingType: PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpDecel
+                    | (Simplane.getAutoPilotAirspeedManaged() && this.guidanceController.vnavDriver.isLatAutoControlActive() ? NdSymbolTypeFlags.MagentaColor : 0),
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.Flaps1:
+            return {
+                ident: PWP_IDENT_FLAP1,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap1,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: true,
+            };
+        case VerticalCheckpointReason.Flaps2:
+            return {
+                ident: PWP_IDENT_FLAP2,
+                alongLegIndex,
+                distanceFromLegTermination,
+                efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap2,
+                efisSymbolLla,
+                distanceFromStart: checkpoint.distanceFromStart,
+                displayedOnMcdu: true,
+                flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
+                displayedOnNd: true,
+            };
+        default:
+            return undefined;
+        }
+    }
+
+    private createDebugPwp(geometry: Geometry, wptCount: number, totalDistance: number): PseudoWaypoint | null {
+        const debugDistanceToEnd = SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END', 'number');
+
+        if (debugDistanceToEnd <= 0) {
+            return null;
+        }
+
+        const position = this.pointFromEndOfPath(geometry, wptCount, debugDistanceToEnd);
+        if (!position) {
+            return null;
+        }
+
+        const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = position;
+
+        return {
+            ident: 'DEBUG_POINT',
+            alongLegIndex,
+            distanceFromLegTermination,
+            efisSymbolFlag: NdSymbolTypeFlags.PwpSpeedChange | NdSymbolTypeFlags.CyanColor,
+            efisSymbolLla,
+            distanceFromStart: totalDistance - debugDistanceToEnd,
+            displayedOnMcdu: false,
+            displayedOnNd: true,
+        };
+    }
+
+    private formatFlightPlanInfo(checkpoint: VerticalCheckpoint, geometry: Geometry, alongLegIndex: number, distanceFromLegTermination: number): PseudoWaypointFlightPlanInfo {
+        return {
+            ...checkpoint,
+            speed: this.atmosphericConditions.casOrMach(checkpoint.speed, checkpoint.mach, checkpoint.altitude),
+            distanceFromLastFix: Number.isFinite(alongLegIndex)
+                ? PseudoWaypoints.computePseudoWaypointDistanceFromFix(geometry.legs.get(alongLegIndex), distanceFromLegTermination)
+                : 0,
+        };
     }
 }
