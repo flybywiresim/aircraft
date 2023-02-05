@@ -408,6 +408,14 @@ impl AirDataInertialReferenceSystem {
     fn ir_has_fault(&self, number: usize) -> bool {
         self.adirus[number - 1].ir_has_fault()
     }
+
+    pub fn altitude(&self, number: usize) -> Arinc429Word<Length> {
+        (&self.adirus[number - 1].adr.altitude).into()
+    }
+
+    pub fn computed_speed(&self, number: usize) -> Arinc429Word<Velocity> {
+        (&self.adirus[number - 1].adr.computed_airspeed).into()
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -681,6 +689,12 @@ impl<T: Copy + Default + PartialOrd> AdirsData<T> {
         convert: V,
     ) {
         writer.write_arinc429(&self.id, convert(self.value), self.ssm);
+    }
+}
+
+impl<T: Copy + Default + PartialOrd> From<&AdirsData<T>> for Arinc429Word<T> {
+    fn from(value: &AdirsData<T>) -> Self {
+        Arinc429Word::new(value.value, value.ssm)
     }
 }
 
