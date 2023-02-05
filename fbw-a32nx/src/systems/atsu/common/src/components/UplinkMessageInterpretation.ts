@@ -1,7 +1,7 @@
-import { coordinateToString, timestampToString } from '@atsu/common/components/Convert';
-import { InputValidation } from '@atsu/common/components/InputValidation';
-import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
-import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { coordinateToString, timestampToString } from './Convert';
+import { InputValidation } from './InputValidation';
+import { CpdlcMessagesDownlink } from '../messages/CpdlcMessageElements';
+import { CpdlcMessage } from '../messages/CpdlcMessage';
 import { Atsu } from '../../../system/src/ATSU';
 
 export class UplinkMessageInterpretation {
