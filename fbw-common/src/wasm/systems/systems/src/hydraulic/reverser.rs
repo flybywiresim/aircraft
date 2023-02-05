@@ -37,7 +37,20 @@ impl ReverserActuator {
     ) {
         self.update_current_speed(context, pressure, is_mechanically_locked);
 
+        println!(
+            "ACTUATOR: islocked{:?} speed {:.2} position {:.3}",
+            is_mechanically_locked,
+            self.current_speed.output().get::<ratio>(),
+            self.position.get::<ratio>()
+        );
+
         self.position += context.delta_as_secs_f64() * self.current_speed.output();
+
+        if self.current_speed.output().get::<ratio>() > 0. && self.position.get::<ratio>() >= 1.
+            || self.current_speed.output().get::<ratio>() < 0. && self.position.get::<ratio>() <= 0.
+        {
+            self.current_speed.reset(Ratio::default());
+        }
 
         self.position = self
             .position
@@ -288,12 +301,24 @@ impl ReverserHydraulicManifold {
         )
     }
 
-    fn pressure_output(&self) -> Pressure {
+    fn manifold_pressure(&self) -> Pressure {
+        self.isolation_valve.pressure_output()
+    }
+
+    fn actuator_pressure(&self) -> Pressure {
         self.directional_valve.pressure_output()
     }
 
     fn pressure_switch_pressurised(&self) -> bool {
         self.pressure_switch.state() == PressureSwitchState::Pressurised
+    }
+}
+impl SimulationElement for ReverserHydraulicManifold {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+        self.isolation_valve.accept(visitor);
+        self.directional_valve.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -335,12 +360,349 @@ impl ReverserAssembly {
 
         self.actuator.update(
             context,
-            self.hydraulic_manifold.pressure_output(),
+            self.hydraulic_manifold.actuator_pressure(),
             self.electrical_lock.is_locked(),
         );
     }
 
     fn reverser_position(&self) -> Ratio {
         self.actuator.position()
+    }
+}
+impl SimulationElement for ReverserAssembly {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+        self.electrical_lock.accept(visitor);
+        self.hydraulic_manifold.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use uom::si::{angle::degree, electric_potential::volt, volume_rate::gallon_per_minute};
+
+    use crate::electrical::test::TestElectricitySource;
+    use crate::electrical::ElectricalBus;
+    use crate::electrical::Electricity;
+
+    use super::*;
+    use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
+    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
+    use crate::simulation::{Aircraft, SimulationElement};
+    use ntest::assert_about_eq;
+    use std::time::Duration;
+
+    struct TestReverserController {
+        should_lock: bool,
+        should_isolate_hydraulics: bool,
+        should_deploy_reversers: bool,
+    }
+    impl TestReverserController {
+        fn default() -> Self {
+            Self {
+                should_lock: true,
+                should_isolate_hydraulics: true,
+                should_deploy_reversers: false,
+            }
+        }
+
+        fn set_isolation_valve(&mut self, is_closed: bool) {
+            self.should_isolate_hydraulics = is_closed;
+        }
+
+        fn set_deploy_reverser(&mut self, is_deploying: bool) {
+            self.should_deploy_reversers = is_deploying;
+        }
+
+        fn set_lock_reverser(&mut self, lock: bool) {
+            self.should_lock = lock;
+        }
+    }
+    impl ReverserInterface for TestReverserController {
+        fn should_unlock(&self) -> bool {
+            !self.should_lock
+        }
+
+        fn should_isolate_hydraulics(&self) -> bool {
+            self.should_isolate_hydraulics
+        }
+
+        fn should_deploy_reverser(&self) -> bool {
+            self.should_deploy_reversers
+        }
+    }
+
+    struct TestAircraft {
+        updater_fixed_step: FixedStepLoop,
+
+        controller: TestReverserController,
+
+        reverser: ReverserAssembly,
+
+        hydraulic_pressure: Pressure,
+
+        powered_source_ac: TestElectricitySource,
+        dc_ess_bus: ElectricalBus,
+        dc_2_bus: ElectricalBus,
+        ac_ess_bus: ElectricalBus,
+        ac_2_bus: ElectricalBus,
+        is_dc_elec_powered: bool,
+        is_ac_elec_powered: bool,
+    }
+    impl TestAircraft {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                updater_fixed_step: FixedStepLoop::new(Duration::from_millis(10)),
+                controller: TestReverserController::default(),
+
+                reverser: ReverserAssembly::new(
+                    Pressure::new::<psi>(3000.),
+                    Pressure::new::<psi>(2100.),
+                    Pressure::new::<psi>(1750.),
+                    ElectricalBusType::AlternatingCurrent(2),
+                    ElectricalBusType::DirectCurrent(2),
+                ),
+
+                hydraulic_pressure: Pressure::default(),
+
+                powered_source_ac: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EngineGenerator(1),
+                ),
+
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+                dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                ac_ess_bus: ElectricalBus::new(
+                    context,
+                    ElectricalBusType::AlternatingCurrentEssential,
+                ),
+                ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+
+                is_dc_elec_powered: true,
+                is_ac_elec_powered: true,
+            }
+        }
+
+        fn reverser_position(&self) -> Ratio {
+            self.reverser.reverser_position()
+        }
+
+        fn reverser_manifold_pressure(&self) -> Pressure {
+            self.reverser.hydraulic_manifold.manifold_pressure()
+        }
+
+        fn reverser_is_locked(&self) -> bool {
+            self.reverser.electrical_lock.is_locked()
+        }
+
+        fn set_hyd_pressure(&mut self, pressure: Pressure) {
+            self.hydraulic_pressure = pressure;
+        }
+
+        fn set_ac_elec_power(&mut self, is_on: bool) {
+            self.is_ac_elec_powered = is_on;
+        }
+
+        fn set_dc_elec_power(&mut self, is_on: bool) {
+            self.is_dc_elec_powered = is_on;
+        }
+
+        fn set_isolation_valve(&mut self, is_closed: bool) {
+            self.controller.set_isolation_valve(is_closed)
+        }
+
+        fn set_deploy_reverser(&mut self, is_deploying: bool) {
+            self.controller.set_deploy_reverser(is_deploying)
+        }
+
+        fn set_lock_reverser(&mut self, lock: bool) {
+            self.controller.set_lock_reverser(lock)
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_ac
+                .power_with_potential(ElectricPotential::new::<volt>(140.));
+            electricity.supplied_by(&self.powered_source_ac);
+
+            if self.is_dc_elec_powered {
+                electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
+                electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
+            }
+
+            if self.is_ac_elec_powered {
+                electricity.flow(&self.powered_source_ac, &self.ac_ess_bus);
+                electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
+            }
+        }
+
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.updater_fixed_step.update(context);
+
+            for cur_time_step in &mut self.updater_fixed_step {
+                self.reverser.update(
+                    &context.with_delta(cur_time_step),
+                    &self.controller,
+                    self.hydraulic_pressure,
+                );
+
+                println!(
+                    "Reverser Pos: {:.3} ,Hyds Input/Manifold/Actuator {:.0}/{:.0}/{:.0}",
+                    self.reverser.actuator.position().get::<ratio>(),
+                    self.hydraulic_pressure.get::<psi>(),
+                    self.reverser
+                        .hydraulic_manifold
+                        .manifold_pressure()
+                        .get::<psi>(),
+                    self.reverser
+                        .hydraulic_manifold
+                        .directional_valve
+                        .pressure_output()
+                        .get::<psi>(),
+                );
+            }
+        }
+    }
+    impl SimulationElement for TestAircraft {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.reverser.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    #[test]
+    fn reverser_stowed_at_init() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_ac_elec_power(false));
+        test_bed.command(|a| a.set_dc_elec_power(false));
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) == 0.);
+    }
+
+    #[test]
+    fn reverser_without_pressure_if_isolated() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) <= 50.);
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= -50.);
+    }
+
+    #[test]
+    fn reverser_isolated_if_no_valve_power() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.set_ac_elec_power(false));
+        test_bed.command(|a| a.set_dc_elec_power(false));
+        test_bed.command(|a| a.set_isolation_valve(false));
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) <= 50.);
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= -50.);
+    }
+
+    #[test]
+    fn reverser_pressurised_if_valve_powered_and_opened() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.set_ac_elec_power(true));
+        test_bed.command(|a| a.set_dc_elec_power(true));
+        test_bed.command(|a| a.set_isolation_valve(false));
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
+    }
+
+    #[test]
+    fn reverser_do_not_deploy_if_locked() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.set_ac_elec_power(true));
+        test_bed.command(|a| a.set_dc_elec_power(true));
+        test_bed.command(|a| a.set_isolation_valve(false));
+        test_bed.command(|a| a.set_deploy_reverser(true));
+        test_bed.command(|a| a.set_lock_reverser(true));
+
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) == 0.);
+    }
+
+    #[test]
+    fn reverser_do_not_deploy_if_unlocked_but_no_lock_power() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.set_ac_elec_power(false));
+        test_bed.command(|a| a.set_dc_elec_power(true));
+        test_bed.command(|a| a.set_isolation_valve(false));
+        test_bed.command(|a| a.set_deploy_reverser(true));
+        test_bed.command(|a| a.set_lock_reverser(false));
+
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) == 0.);
+    }
+
+    #[test]
+    fn reverser_deploys_if_unlocked_and_lock_powered() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.set_ac_elec_power(true));
+        test_bed.command(|a| a.set_dc_elec_power(true));
+        test_bed.command(|a| a.set_isolation_valve(false));
+        test_bed.command(|a| a.set_deploy_reverser(true));
+        test_bed.command(|a| a.set_lock_reverser(false));
+
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(test_bed.query(|a| a.reverser_manifold_pressure().get::<psi>()) >= 2800.);
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.3);
+
+        test_bed.run_with_delta(Duration::from_millis(1500));
+
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.99);
+    }
+
+    #[test]
+    fn reverser_deploys_and_can_be_stowed_back() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.set_ac_elec_power(true));
+        test_bed.command(|a| a.set_dc_elec_power(true));
+        test_bed.command(|a| a.set_isolation_valve(false));
+        test_bed.command(|a| a.set_deploy_reverser(true));
+        test_bed.command(|a| a.set_lock_reverser(false));
+
+        test_bed.run_with_delta(Duration::from_millis(2500));
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) >= 0.99);
+
+        test_bed.command(|a| a.set_lock_reverser(true));
+        test_bed.command(|a| a.set_deploy_reverser(false));
+
+        test_bed.run_with_delta(Duration::from_millis(1000));
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) <= 0.9);
+        assert!(test_bed.query(|a| !a.reverser_is_locked()));
+
+        test_bed.run_with_delta(Duration::from_millis(2000));
+        assert!(test_bed.query(|a| a.reverser_position().get::<ratio>()) <= 0.01);
+        assert!(test_bed.query(|a| a.reverser_is_locked()));
     }
 }
