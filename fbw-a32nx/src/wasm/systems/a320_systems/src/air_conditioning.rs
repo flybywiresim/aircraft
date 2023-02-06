@@ -5,10 +5,12 @@ use systems::{
         cabin_air::CabinZone,
         AirConditioningSystem, DuctTemperature, PackFlow, PackFlowControllers, ZoneType,
     },
+    pneumatic::PneumaticContainer,
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        CabinAir, CabinTemperature, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels,
+        PackFlowValveState, PneumaticBleed,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -16,7 +18,7 @@ use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3>,
+    a320_air_conditioning_system: AirConditioningSystem<3, 2>,
 }
 
 impl A320AirConditioning {
@@ -37,6 +39,7 @@ impl A320AirConditioning {
                     ElectricalBusType::DirectCurrent(2),
                     ElectricalBusType::AlternatingCurrent(2),
                 ],
+                ElectricalBusType::AlternatingCurrent(1),
             ),
         }
     }
@@ -49,13 +52,14 @@ impl A320AirConditioning {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
-        pressurization: &impl Cabin,
+        pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.a320_air_conditioning_system.update(
             context,
             adirs,
+            &self.a320_cabin,
             engines,
             engine_fire_push_buttons,
             pneumatic,
@@ -70,6 +74,11 @@ impl A320AirConditioning {
             &self.a320_air_conditioning_system,
             pressurization,
         );
+    }
+
+    pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
+        self.a320_air_conditioning_system
+            .mix_packs_air_update(pack_container);
     }
 }
 
@@ -131,7 +140,7 @@ impl A320Cabin {
         context: &UpdateContext,
         duct_temperature: &impl DuctTemperature,
         pack_flow: &impl PackFlow,
-        pressurization: &impl Cabin,
+        pressurization: &impl CabinAir,
     ) {
         let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
             pack_flow.pack_flow().get::<kilogram_per_second>()
@@ -145,6 +154,16 @@ impl A320Cabin {
                 pressurization,
             );
         }
+    }
+}
+
+impl CabinTemperature for A320Cabin {
+    fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        let mut cabin_temperature_vector = Vec::new();
+        for zone in self.cabin_zone.iter() {
+            cabin_temperature_vector.append(&mut zone.cabin_temperature())
+        }
+        cabin_temperature_vector
     }
 }
 

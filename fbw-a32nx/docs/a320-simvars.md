@@ -88,14 +88,6 @@
     - Position (0-2)
     - 0 is LO, 1 is NORM, 2 is HI
 
-- A32NX_AIRCOND_HOTAIR_FAULT
-    - Bool
-    - True if fault in hot air system
-
-- A32NX_AIRCOND_HOTAIR_TOGGLE
-    - Bool
-    - True if hot air system is on
-
 - A32NX_AIRCOND_RAMAIR_TOGGLE
     - Bool
     - True if ram air is on
@@ -171,10 +163,6 @@
 - A32NX_VENTILATION_EXTRACT_TOGGLE
     - Bool
     - True if ventilation extractor on
-
-- A32NX_VENTILATION_CABFANS_TOGGLE
-    - Bool
-    - True if cabin fans on/auto
 
 - A32NX_PITOT_HEAT_AUTO
     - Bool
@@ -2422,6 +2410,22 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Percentage flow coming out of each pack {1 or 2} into the cabin (LO: 80%, NORM: 100%, HI: 120%)
 
+- A32NX_COND_{id}_TRIM_AIR_VALVE_POSITION
+    - Percentage
+    - Percentage opening of each trim air valve (hot air)
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_HOT_AIR_VALVE_IS_ENABLED
+    - Bool
+    - True if the trim air system is enabled (pushbutton in auto and power supplied to system)
+
+- A32NX_HOT_AIR_VALVE_IS_OPEN
+    - Bool
+    - True if the trim air system is enabled and the hot air valve is open
+
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage
     - Percent rotation of the overhead temperature selectors for each of the cabin zones
@@ -2438,6 +2442,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_COND_PACK_{index}_PB_HAS_FAULT
     - Bool
     - True if pack {1 or 2} has a fault
+
+- A32NX_OVHD_COND_HOT_AIR_PB_IS_ON
+    - Bool
+    - True if the hot air pushbutton is pressed in the on position (no white light)
+
+- A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT
+    - Bool
+    - True if the hot air trim system has a fault
 
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet
@@ -2500,6 +2512,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PRESS_DITCHING_PB_IS_ON
     - Bool
     - True if DITCHING pushbutton is pressed
+
+- A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON
+    - Bool
+    - True if CAB FANS pushbutton is in the on position (no white light)
 
 - A32NX_PACKS_{number}_IS_SUPPLYING
     - Bool
