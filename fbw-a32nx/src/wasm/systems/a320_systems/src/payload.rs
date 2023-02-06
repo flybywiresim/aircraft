@@ -357,26 +357,6 @@ impl A320Payload {
         self.boarding_sounds.stop_pax_complete();
     }
 
-    #[allow(dead_code)]
-    fn sound_pax_ambience(&self) -> bool {
-        self.boarding_sounds.pax_ambience()
-    }
-
-    #[allow(dead_code)]
-    fn sound_pax_boarding(&self) -> bool {
-        self.boarding_sounds.pax_boarding()
-    }
-
-    #[allow(dead_code)]
-    fn sound_pax_deboarding(&self) -> bool {
-        self.boarding_sounds.pax_deboarding()
-    }
-
-    #[allow(dead_code)]
-    fn sound_pax_complete(&self) -> bool {
-        self.boarding_sounds.pax_complete()
-    }
-
     fn update_pax(&mut self) {
         for ps in A320Pax::iterator() {
             if self.pax_is_target(ps) {
@@ -463,22 +443,12 @@ impl A320Payload {
         self.board_rate
     }
 
-    #[allow(dead_code)]
-    fn pax(&self, ps: A320Pax) -> u64 {
-        self.pax[ps as usize].pax()
-    }
-
     fn pax_num(&self, ps: A320Pax) -> i8 {
         self.pax[ps as usize].pax_num() as i8
     }
 
     fn pax_target_num(&self, ps: A320Pax) -> i8 {
         self.pax[ps as usize].pax_target_num() as i8
-    }
-
-    #[allow(dead_code)]
-    fn pax_payload(&self, ps: A320Pax) -> Mass {
-        self.pax[ps as usize].payload()
     }
 
     fn pax_is_sync(&mut self, ps: A320Pax) -> bool {
@@ -499,16 +469,6 @@ impl A320Payload {
 
     fn move_one_pax(&mut self, ps: A320Pax) {
         self.pax[ps as usize].move_one_pax();
-    }
-
-    #[allow(dead_code)]
-    fn cargo(&self, cs: A320Cargo) -> Mass {
-        self.cargo[cs as usize].cargo()
-    }
-
-    #[allow(dead_code)]
-    fn cargo_payload(&self, cs: A320Cargo) -> Mass {
-        self.cargo[cs as usize].payload()
     }
 
     fn cargo_is_sync(&mut self, cs: A320Cargo) -> bool {
@@ -973,35 +933,35 @@ mod boarding_test {
         }
 
         fn sound_pax_ambience(&self) -> bool {
-            self.query(|a| a.boarding.sound_pax_ambience())
+            self.query(|a| a.boarding.boarding_sounds.pax_ambience())
         }
 
         fn sound_pax_boarding(&self) -> bool {
-            self.query(|a| a.boarding.sound_pax_boarding())
+            self.query(|a| a.boarding.boarding_sounds.pax_boarding())
         }
 
         fn sound_pax_deboarding(&self) -> bool {
-            self.query(|a| a.boarding.sound_pax_deboarding())
+            self.query(|a| a.boarding.boarding_sounds.pax_deboarding())
         }
 
         fn sound_pax_complete(&self) -> bool {
-            self.query(|a| a.boarding.sound_pax_complete())
+            self.query(|a| a.boarding.boarding_sounds.pax_complete())
         }
 
         fn pax_num(&self, ps: A320Pax) -> i8 {
-            self.query(|a| a.boarding.pax_num(ps))
+            self.query(|a| a.boarding.pax[ps as usize].pax_num())
         }
 
         fn pax_payload(&self, ps: A320Pax) -> Mass {
-            self.query(|a| a.boarding.pax_payload(ps))
+            self.query(|a| a.boarding.pax[ps as usize].payload())
         }
 
         fn cargo(&self, cs: A320Cargo) -> Mass {
-            self.query(|a| a.boarding.cargo(cs))
+            self.query(|a| a.boarding.cargo[cs as usize].cargo())
         }
 
         fn cargo_payload(&self, cs: A320Cargo) -> Mass {
-            self.query(|a| a.boarding.cargo_payload(cs))
+            self.query(|a| a.boarding.cargo[cs as usize].payload())
         }
     }
 
