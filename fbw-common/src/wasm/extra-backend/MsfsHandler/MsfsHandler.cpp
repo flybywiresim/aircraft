@@ -5,6 +5,7 @@
 
 #include "logging.h"
 #include "Units.h"
+#include "Callback.h"
 #include "MsfsHandler.h"
 #include "Module.h"
 #include "NamedVariable.h"
@@ -33,16 +34,32 @@ bool MsfsHandler::initialize() {
     return false;
   }
 
-  // FIXME/HACK - this is a hack to get around the fact that the simconnect key event  callback
-  //  function cannot be a member function of a class. This is a wrapper function that calls the
-  //  member function.
-  //  http://www.newty.de/fpt/callback.html#example2
-  //  If no better solution is found, DataManager should become a singleton.
-  globalDataManagerInstancePtr = (void*) &dataManager;
+  // This is a workaround to be able to use a member function as callback as the API callback
+  // function must be static.
+  // See https://blog.mbedded.ninja/programming/languages/c-plus-plus/callbacks/#static-variables-with-templating
+  Callback<void(ID32, UINT32, UINT32, UINT32, UINT32, UINT32, PVOID)>::func
+    = [ObjectPtr = &dataManager](auto &&PH1,
+                                 auto &&PH2,
+                                 auto &&PH3,
+                                 auto &&PH4,
+                                 auto &&PH5,
+                                 auto &&PH6,
+                                 auto &&PH7) {
+    ObjectPtr->processKeyEvent(std::forward<decltype(PH1)>(PH1),
+                               std::forward<decltype(PH2)>(PH2),
+                               std::forward<decltype(PH3)>(PH3),
+                               std::forward<decltype(PH4)>(PH4),
+                               std::forward<decltype(PH5)>(PH5),
+                               std::forward<decltype(PH6)>(PH6),
+                               std::forward<decltype(PH7)>(PH7));
+  };
+  keyEventHandlerEx1 = static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(Callback<void(ID32, UINT32, UINT32,
+                                                                              UINT32, UINT32,
+                                                                              UINT32,
+                                                                              PVOID)>::callback);
 
   // Register as key event handler
-  register_key_event_handler_EX1(
-    reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(DataManager::wrapperToCallMemberCallback), nullptr);
+  register_key_event_handler_EX1(keyEventHandlerEx1, nullptr);
 
   // Initialize modules
   result = true;
@@ -114,7 +131,7 @@ bool MsfsHandler::shutdown() {
   modules.clear();
   result &= dataManager.shutdown();
   unregister_key_event_handler_EX1(
-    reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(DataManager::wrapperToCallMemberCallback), nullptr);
+    reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(keyEventHandlerEx1), nullptr);
 
   return result;
 }

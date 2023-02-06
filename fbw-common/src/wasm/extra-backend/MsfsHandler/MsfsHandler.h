@@ -80,6 +80,9 @@ class MsfsHandler {
    */
   UINT64 tickCounter{};
 
+  // Callback function for register_key_event_handler_EX1
+  GAUGE_KEY_EVENT_HANDLER_EX1 keyEventHandlerEx1 = nullptr;
+
 public:
   /**
    * Creates a new MsfsHandler instance.

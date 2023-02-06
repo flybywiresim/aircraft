@@ -34,9 +34,6 @@ typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
 typedef std::shared_ptr<Event> EventPtr;
 
-// See below - hack for the simconnect callback
-inline void* globalDataManagerInstancePtr;
-
 /**
  * DataManager is responsible for managing all variables and events.
  * It is used to register variables and events and to update them.
@@ -148,18 +145,6 @@ public:
    * on the data definition variable.
    */
   void getRequestedData();
-
-  // FIXME/HACK - this is a hack to get around the fact that the simconnect key event  callback
-  //  function cannot be a member function of a class. This is a wrapper function that calls the
-  //  member function.
-  //  http://www.newty.de/fpt/callback.html#example2
-  //  If no better solution is found, DataManager should become a singleton.
-  static void
-  wrapperToCallMemberCallback(ID32 event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2,
-                              UINT32 evdata3, UINT32 evdata4, PVOID userdata) {
-    auto* dm = (DataManager*) globalDataManagerInstancePtr;
-    dm->processKeyEvent(event, evdata0, evdata1, evdata2, evdata3, evdata4, userdata);
-  }
 
   [[maybe_unused]]
   void processKeyEvent(ID32 event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2,
