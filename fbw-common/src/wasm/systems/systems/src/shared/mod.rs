@@ -58,7 +58,7 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait HydraulicGeneratorControlUnit {
+pub trait EmergencyGeneratorControlUnit {
     fn max_allowed_power(&self) -> Power;
     fn motor_speed(&self) -> AngularVelocity;
 }
@@ -69,6 +69,14 @@ pub trait ControlValveCommand {
 
 pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
+}
+
+pub trait RamAirTurbineController {
+    fn should_deploy(&self) -> bool;
+}
+
+pub trait AngularSpeedSensor {
+    fn speed(&self) -> AngularVelocity;
 }
 
 pub trait FeedbackPositionPickoffUnit {

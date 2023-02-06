@@ -6,7 +6,7 @@ use super::{
     ProvidePotential,
 };
 use crate::shared::{
-    EmergencyGeneratorPower, HydraulicGeneratorControlUnit, PowerConsumptionReport,
+    EmergencyGeneratorControlUnit, EmergencyGeneratorPower, PowerConsumptionReport,
 };
 use uom::si::{
     angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, frequency::hertz,
@@ -38,7 +38,7 @@ impl EmergencyGenerator {
         }
     }
 
-    pub fn update(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
+    pub fn update(&mut self, gcu: &impl EmergencyGeneratorControlUnit) {
         self.update_generated_power(gcu);
 
         self.supplying = self.generated_power
@@ -58,7 +58,7 @@ impl EmergencyGenerator {
         self.supplying
     }
 
-    fn update_generated_power(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
+    fn update_generated_power(&mut self, gcu: &impl EmergencyGeneratorControlUnit) {
         self.generated_power =
             if gcu.motor_speed().get::<revolution_per_minute>() > Self::MIN_RPM_TO_SUPPLY_POWER {
                 self.demand.min(gcu.max_allowed_power())
@@ -185,7 +185,7 @@ mod emergency_generator_tests {
             self.motor_speed = speed;
         }
     }
-    impl HydraulicGeneratorControlUnit for TestHydraulicSystem {
+    impl EmergencyGeneratorControlUnit for TestHydraulicSystem {
         fn max_allowed_power(&self) -> Power {
             if self.motor_speed.get::<revolution_per_minute>() > 10000. {
                 Power::new::<watt>(5000.)

@@ -8,7 +8,7 @@ use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
     random_from_range, AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedTrueLogicGate,
-    ElectricalBusType, ElectricalBuses, HydraulicColor, SectionPressure,
+    ElectricalBusType, ElectricalBuses, HydraulicColor, RamAirTurbineController, SectionPressure,
 };
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -2838,7 +2838,7 @@ impl HeatingElement for EngineDrivenPump {
 }
 impl HeatingPressureSource for EngineDrivenPump {}
 
-struct WindTurbine {
+pub struct WindTurbine {
     rpm_id: VariableIdentifier,
 
     position: f64,
@@ -2859,7 +2859,7 @@ impl WindTurbine {
     ];
     const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
 
-    fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
             rpm_id: context.get_identifier("HYD_RAT_RPM".to_owned()),
 
@@ -2870,8 +2870,16 @@ impl WindTurbine {
         }
     }
 
-    fn speed(&self) -> AngularVelocity {
+    pub fn speed(&self) -> AngularVelocity {
         self.speed
+    }
+
+    pub fn position(&self) -> f64 {
+        self.position
+    }
+
+    pub fn is_low_speed(&self) -> bool {
+        self.speed.get::<revolution_per_minute>().abs() < Self::LOW_SPEED_PHYSICS_ACTIVATION
     }
 
     fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
@@ -2890,22 +2898,29 @@ impl WindTurbine {
             * (std::f64::consts::PI / 2. * stow_pos).sin();
 
         self.torque_sum += air_speed_torque;
+
+        println!("GEN TORQUE {:.2}", air_speed_torque);
     }
 
-    fn update_friction_torque(&mut self, displacement: Volume, pressure: Pressure) {
+    fn update_friction_torque(&mut self, resistant_torque: Torque) {
         let mut pump_torque = 0.;
-        if self.speed.get::<revolution_per_minute>() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
-            pump_torque += (self.position * 4.).cos() * displacement.get::<gallon>().max(0.35) * 2.;
-            pump_torque -= self.speed.get::<radian_per_second>() * 0.25;
+        if self.is_low_speed() {
+            pump_torque -= self.speed().get::<radian_per_second>() * 0.25;
         } else {
-            pump_torque -=
-                pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI);
             pump_torque -= 20.
-                + (self.speed.get::<radian_per_second>() * self.speed.get::<radian_per_second>())
+                + (self.speed().get::<radian_per_second>()
+                    * self.speed().get::<radian_per_second>())
                     * Self::FRICTION_COEFFICIENT;
         }
 
-        self.torque_sum += pump_torque;
+        println!("FRICTION TORQUE {:.2}", pump_torque);
+
+        self.torque_sum += resistant_torque.get::<newton_meter>() + pump_torque;
+
+        println!(
+            "RESISTANT TORQUE {:.2}",
+            resistant_torque.get::<newton_meter>()
+        );
     }
 
     fn update_physics(&mut self, delta_time: &Duration) {
@@ -2918,18 +2933,18 @@ impl WindTurbine {
         self.torque_sum = 0.;
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         delta_time: &Duration,
         indicated_speed: Velocity,
         stow_pos: f64,
-        displacement: Volume,
-        pressure: Pressure,
+        resistant_torque: Torque,
     ) {
         if stow_pos > 0.1 {
+            println!("PROPELLER!! ");
             // Do not update anything on the propeller if still stowed
             self.update_generated_torque(indicated_speed, stow_pos);
-            self.update_friction_torque(displacement, pressure);
+            self.update_friction_torque(resistant_torque);
             self.update_physics(delta_time);
         }
     }
@@ -2955,10 +2970,6 @@ impl Default for AlwaysPressurisePumpController {
     fn default() -> Self {
         Self::new()
     }
-}
-
-pub trait RamAirTurbineController {
-    fn should_deploy(&self) -> bool;
 }
 
 pub struct RamAirTurbine {
@@ -3011,12 +3022,12 @@ impl RamAirTurbine {
         indicated_airspeed: Velocity,
         pressure: &impl SectionPressure,
     ) {
+        let resistant_torque = self.resistant_torque(self.delta_vol_max(), pressure.pressure());
         self.wind_turbine.update(
             delta_time,
             indicated_airspeed,
             self.position,
-            self.delta_vol_max(),
-            pressure.pressure(),
+            resistant_torque,
         );
     }
 
@@ -3031,6 +3042,20 @@ impl RamAirTurbine {
                 self.position = 1.;
             }
         }
+    }
+
+    fn resistant_torque(&mut self, displacement: Volume, pressure: Pressure) -> Torque {
+        let mut pump_torque = 0.;
+        if self.wind_turbine.is_low_speed() {
+            pump_torque += (self.wind_turbine.position * 4.).cos()
+                * displacement.get::<gallon>().max(0.35)
+                * 2.;
+        } else {
+            pump_torque -=
+                pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI);
+        }
+
+        Torque::new::<newton_meter>(pump_torque)
     }
 }
 impl PressureSource for RamAirTurbine {
