@@ -13,8 +13,6 @@ use systems::{
     },
 };
 
-const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
-
 #[derive(Debug, Clone, Copy, Enum)]
 pub enum A320Pax {
     A,
@@ -52,10 +50,10 @@ impl A320Cargo {
 
 lazy_static! {
     static ref A320_PAX: EnumMap<A320Pax, PaxInfo> = EnumMap::from_array([
-        PaxInfo::new(36, "PAX_FLAGS_A", "PAYLOAD_STATION_1_REQ",),
-        PaxInfo::new(42, "PAX_FLAGS_B", "PAYLOAD_STATION_2_REQ",),
-        PaxInfo::new(48, "PAX_FLAGS_C", "PAYLOAD_STATION_3_REQ",),
-        PaxInfo::new(48, "PAX_FLAGS_D", "PAYLOAD_STATION_4_REQ",)
+        PaxInfo::new(36, "PAX_A", "PAYLOAD_STATION_1_REQ",),
+        PaxInfo::new(42, "PAX_B", "PAYLOAD_STATION_2_REQ",),
+        PaxInfo::new(48, "PAX_C", "PAYLOAD_STATION_3_REQ",),
+        PaxInfo::new(48, "PAX_D", "PAYLOAD_STATION_4_REQ",)
     ]);
     static ref A320_CARGO: EnumMap<A320Cargo, CargoInfo> = EnumMap::from_array([
         CargoInfo::new(
@@ -113,44 +111,47 @@ impl A320BoardingSounds {
     fn start_pax_boarding(&mut self) {
         self.pax_boarding = true;
     }
+
     fn stop_pax_boarding(&mut self) {
         self.pax_boarding = false;
     }
+
     fn start_pax_deboarding(&mut self) {
         self.pax_deboarding = true;
     }
+
     fn stop_pax_deboarding(&mut self) {
         self.pax_deboarding = false;
     }
+
     fn start_pax_complete(&mut self) {
         self.pax_complete = true;
     }
+
     fn stop_pax_complete(&mut self) {
         self.pax_complete = false;
     }
+
     fn start_pax_ambience(&mut self) {
         self.pax_ambience = true;
     }
+
     fn stop_pax_ambience(&mut self) {
         self.pax_ambience = false;
     }
 
-    #[allow(dead_code)]
     fn pax_ambience(&self) -> bool {
         self.pax_ambience
     }
 
-    #[allow(dead_code)]
     fn pax_boarding(&self) -> bool {
         self.pax_boarding
     }
 
-    #[allow(dead_code)]
     fn pax_deboarding(&self) -> bool {
         self.pax_deboarding
     }
 
-    #[allow(dead_code)]
     fn pax_complete(&self) -> bool {
         self.pax_complete
     }
@@ -180,8 +181,11 @@ pub struct A320Payload {
     time: Duration,
 }
 impl A320Payload {
+    const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
     pub fn new(context: &mut InitContext) -> Self {
-        let per_pax_weight = Rc::new(Cell::new(Mass::new::<kilogram>(DEFAULT_PER_PAX_WEIGHT_KG)));
+        let per_pax_weight = Rc::new(Cell::new(Mass::new::<kilogram>(
+            Self::DEFAULT_PER_PAX_WEIGHT_KG,
+        )));
 
         let mut pax = Vec::new();
 
@@ -645,7 +649,7 @@ mod boarding_test {
 
         fn init_vars(mut self) -> Self {
             self.write_by_name("BOARDING_RATE", BoardingRate::Instant);
-            self.write_by_name("WB_PER_PAX_WEIGHT", DEFAULT_PER_PAX_WEIGHT_KG);
+            self.write_by_name("WB_PER_PAX_WEIGHT", A320Payload::DEFAULT_PER_PAX_WEIGHT_KG);
 
             self
         }
@@ -852,10 +856,14 @@ mod boarding_test {
             }
         }
 
-        fn has_half_pax(&self) {
+        fn has_half_pax(&mut self) {
+            let per_pax_weight: Mass =
+                Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
+
             for ps in A320Pax::iterator() {
                 let pax_num = A320_PAX[ps].max_pax / 2;
-                let pax_payload = Mass::new::<kilogram>(pax_num as f64 * DEFAULT_PER_PAX_WEIGHT_KG);
+                let pax_payload =
+                    Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
                 assert_eq!(
                     self.pax_payload(ps).get::<pound>().floor(),
                     pax_payload.get::<pound>().floor()
@@ -863,10 +871,14 @@ mod boarding_test {
             }
         }
 
-        fn has_full_pax(&self) {
+        fn has_full_pax(&mut self) {
+            let per_pax_weight: Mass =
+                Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
+
             for ps in A320Pax::iterator() {
                 let pax_num = A320_PAX[ps].max_pax;
-                let pax_payload = Mass::new::<kilogram>(pax_num as f64 * DEFAULT_PER_PAX_WEIGHT_KG);
+                let pax_payload =
+                    Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
                 assert_eq!(self.pax_num(ps), pax_num);
                 assert_eq!(
                     self.pax_payload(ps).get::<pound>().floor(),
