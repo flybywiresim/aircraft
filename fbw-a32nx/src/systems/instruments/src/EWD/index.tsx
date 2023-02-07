@@ -13,11 +13,6 @@ import { NewPseudoFWC } from './NewPseudoFWC';
 import './style.scss';
 
 export const EWD: React.FC = () => {
-    const [displayIndex] = useState(() => {
-        const url = document.getElementsByTagName('a32nx-ewd')[0].getAttribute('url');
-        return url ? parseInt(url.substring(url.length - 1), 10) : 0;
-    });
-
     const [pseudoFwc] = useState(() => new NewPseudoFWC());
 
     useUpdate((deltaTime) => pseudoFwc.onUpdate(deltaTime));
@@ -25,7 +20,7 @@ export const EWD: React.FC = () => {
     return (
         <DisplayUnit
             electricitySimvar="L:A32NX_ELEC_AC_2_BUS_IS_POWERED"
-            potentiometerIndex={displayIndex}
+            potentiometerIndex={92}
         >
             <svg className="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
                 <UpperDisplay />
