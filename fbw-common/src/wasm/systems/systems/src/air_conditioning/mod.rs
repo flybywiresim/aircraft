@@ -88,7 +88,7 @@ pub struct AirConditioningSystem<const ZONES: usize, const FANS: usize, const EN
     mixer_unit: MixerUnit<ZONES>,
     // Temporary structure until packs are simulated
     packs: [AirConditioningPack; 2],
-    trim_air_system: TrimAirSystem<ZONES>,
+    trim_air_system: TrimAirSystem<ZONES, ENGINES>,
 }
 
 impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
@@ -121,7 +121,7 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
         context: &UpdateContext,
         adirs: &impl GroundSpeed,
         cabin_temperature: &impl CabinTemperature,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: [&impl EngineCorrectedN1; ENGINES],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
@@ -179,28 +179,32 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
     }
 }
 
-impl<const ZONES: usize, const FANS: usize> DuctTemperature for AirConditioningSystem<ZONES, FANS> {
+impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> DuctTemperature
+    for AirConditioningSystem<ZONES, FANS, ENGINES>
+{
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
         self.trim_air_system.duct_temperature()
     }
 }
 
-impl<const ZONES: usize, const FANS: usize> PackFlow for AirConditioningSystem<ZONES, FANS> {
+impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> PackFlow
+    for AirConditioningSystem<ZONES, FANS, ENGINES>
+{
     fn pack_flow(&self) -> MassRate {
         self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2))
     }
 }
 
-impl<const ZONES: usize, const FANS: usize> PackFlowControllers<ZONES, ENGINES>
-    for AirConditioningSystem<ZONES, FANS>
+impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
+    PackFlowControllers<ZONES, ENGINES> for AirConditioningSystem<ZONES, FANS, ENGINES>
 {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES> {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES, ENGINES> {
         self.acsc.pack_flow_controller(pack_id)
     }
 }
 
-impl<const ZONES: usize, const FANS: usize> SimulationElement
-    for AirConditioningSystem<ZONES, FANS>
+impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> SimulationElement
+    for AirConditioningSystem<ZONES, FANS, ENGINES>
 {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.acs_overhead.accept(visitor);
@@ -528,7 +532,7 @@ impl OutletAir for AirConditioningPack {
     }
 }
 
-struct TrimAirSystem<const ZONES: usize> {
+struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
     duct_temperature_id: [VariableIdentifier; ZONES],
     trim_air_valves: [TrimAirValve; ZONES],
     // These are not a real components of the system, but a tool to simulate the mixing of air
@@ -536,7 +540,7 @@ struct TrimAirSystem<const ZONES: usize> {
     trim_air_mixers: [MixerUnit<1>; ZONES],
 }
 
-impl<const ZONES: usize> TrimAirSystem<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
     fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
         let duct_temperature_id = cabin_zone_ids
             .iter()
@@ -572,7 +576,7 @@ impl<const ZONES: usize> TrimAirSystem<ZONES> {
         &mut self,
         context: &UpdateContext,
         mixer_air: &MixerUnit<ZONES>,
-        tav_controller: &AirConditioningSystemController<ZONES>,
+        tav_controller: &AirConditioningSystemController<ZONES, ENGINES>,
     ) {
         for (id, tav) in self.trim_air_valves.iter_mut().enumerate() {
             tav.update(
@@ -617,7 +621,7 @@ impl<const ZONES: usize> TrimAirSystem<ZONES> {
     }
 }
 
-impl<const ZONES: usize> DuctTemperature for TrimAirSystem<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> DuctTemperature for TrimAirSystem<ZONES, ENGINES> {
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
         self.trim_air_mixers
             .iter()
@@ -626,7 +630,7 @@ impl<const ZONES: usize> DuctTemperature for TrimAirSystem<ZONES> {
     }
 }
 
-impl<const ZONES: usize> SimulationElement for TrimAirSystem<ZONES> {
+impl<const ZONES: usize, const ENGINES: usize> SimulationElement for TrimAirSystem<ZONES, ENGINES> {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         accept_iterable!(self.trim_air_valves, visitor);
 

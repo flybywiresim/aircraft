@@ -39,7 +39,7 @@ pub(super) struct AirConditioningSystemController<const ZONES: usize, const ENGI
     aircraft_state: AirConditioningStateManager,
     zone_controller: Vec<ZoneController<ZONES>>,
     pack_flow_controller: [PackFlowController<ZONES, ENGINES>; 2],
-    trim_air_system_controller: TrimAirSystemController<ZONES>,
+    trim_air_system_controller: TrimAirSystemController<ZONES, ENGINES>,
     cabin_fans_controller: CabinFanController<ZONES>,
     primary_powered_by: Vec<ElectricalBusType>,
     primary_is_powered: bool,
@@ -88,7 +88,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
-        trim_air_system: &TrimAirSystem<ZONES>,
+        trim_air_system: &TrimAirSystem<ZONES, ENGINES>,
     ) {
         self.aircraft_state = self.aircraft_state.update(context, adirs, &engines, lgciu);
 
@@ -927,7 +927,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         pack_flow_controller: &[PackFlowController<ZONES, ENGINES>; 2],
         operation_mode: ACSCActiveComputer,
         pneumatic: &impl PackFlowValveState,
-        trim_air_system: &TrimAirSystem<ZONES>,
+        trim_air_system: &TrimAirSystem<ZONES, ENGINES>,
     ) {
         self.is_enabled = self
             .trim_air_pressure_regulating_valve_status_determination(acs_overhead, operation_mode);
@@ -1665,7 +1665,7 @@ mod acs_controller_tests {
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         test_cabin: TestCabin,
-        trim_air_system: TrimAirSystem<2>,
+        trim_air_system: TrimAirSystem<2, 2>,
         powered_dc_source_1: TestElectricitySource,
         powered_ac_source_1: TestElectricitySource,
         powered_dc_source_2: TestElectricitySource,

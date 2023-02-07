@@ -1395,7 +1395,7 @@ mod tests {
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a320_air_conditioning_system: AirConditioningSystem<3, 2>,
+        a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
         test_cabin: TestCabin,
 
         adirs: TestAdirs,

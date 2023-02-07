@@ -1231,20 +1231,12 @@ impl PackComplex {
             .update_move_fluid(context, &mut self.pack_container);
     }
 
-    fn left_pack_flow_valve_is_open(&self) -> Ratio {
+    fn left_pack_flow_valve_is_open(&self) -> bool {
         self.left_pack_flow_valve.is_open()
     }
 
-    fn right_pack_flow_valve_is_open(&self) -> Ratio {
+    fn right_pack_flow_valve_is_open(&self) -> bool {
         self.right_pack_flow_valve.is_open()
-    }
-
-    fn left_pack_flow_valve_open_amount(&self) -> Ratio {
-        self.left_pack_flow_valve.open_amount()
-    }
-
-    fn right_pack_flow_valve_open_amount(&self) -> Ratio {
-        self.right_pack_flow_valve.open_amount()
     }
 
     fn left_pack_flow_valve_air_flow(&self) -> MassRate {

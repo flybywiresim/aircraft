@@ -18,7 +18,7 @@ use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3, 2>,
+    a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
 }
 
 impl A320AirConditioning {
