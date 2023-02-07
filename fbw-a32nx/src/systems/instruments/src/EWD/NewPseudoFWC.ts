@@ -192,10 +192,6 @@ export class NewPseudoFWC {
 
     /* FWS */
 
-    private readonly fwc1Normal = Subject.create(false);
-
-    private readonly fwc2Normal = Subject.create(false);
-
     private readonly fwcFlightPhase = Subject.create(-1);
 
     private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
@@ -429,22 +425,18 @@ export class NewPseudoFWC {
             [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${value}`, 'string', '');
             });
-            //   if (Array.isArray(v) && v.length > 0) {
             this.memoMessageLeft.getArray().forEach((value, index) => {
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`, 'string', value);
             });
-            //  }
         });
 
         this.memoMessageRight.sub((_i, _t, _v) => {
             [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${value}`, 'string', '');
             });
-            //  if (v.length > 0 && Array.isArray(v)) {
             this.memoMessageRight.getArray().forEach((value, index) => {
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${index + 1}`, 'string', value);
             });
-            //   }
         });
 
         SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
@@ -538,30 +530,6 @@ export class NewPseudoFWC {
         // Inputs update
 
         const flightPhaseInhibitOverride = SimVar.GetSimVarValue('L:A32NX_FWC_INHIBOVRD', 'bool');
-
-        this.fwc1Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_1_NORMAL', 'bool'));
-        this.fwc2Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_2_NORMAL', 'bool'));
-
-        /*
-        if (!this.fwc1Normal.get() && !this.fwc2Normal.get()) {
-            this.memoMessageLeft.set([
-                '0',
-                '310000701',
-                '310000702',
-                '310000703',
-            ]);
-            this.memoMessageRight.set([
-                '310000704',
-                '310000705',
-                '310000706',
-                '310000707',
-                '310000708',
-                '310000709',
-            ]);
-            this.recallFailures = [];
-            return;
-        }
-        */
 
         this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
 
@@ -1763,27 +1731,7 @@ export class NewPseudoFWC {
             failure: 2,
             sysPage: 4,
             side: 'RIGHT',
-        }, /*
-        3100010: { // FWC 1 FAULT
-            flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: MappedSubject.create(([fwc1Normal, acESSBusPowered]) => !fwc1Normal && acESSBusPowered, this.fwc1Normal, this.acESSBusPowered),
-            whichCodeToReturn: () => [0],
-            codesToReturn: ['310001001'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: -1,
-            side: 'LEFT',
         },
-        3100011: { // FWC 2 FAULT
-            flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: MappedSubject.create(([fwc2Normal, acESSBusPowered]) => !fwc2Normal && acESSBusPowered, this.fwc2Normal, this.acESSBusPowered),
-            whichCodeToReturn: () => [0],
-            codesToReturn: ['310001101'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: -1,
-            side: 'LEFT',
-        }, */
     }
 
     ewdMessageMemos: EWDMessageDict = {

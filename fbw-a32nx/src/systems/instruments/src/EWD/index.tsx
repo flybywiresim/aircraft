@@ -37,8 +37,6 @@ export const EWD: React.FC = () => {
                 <STS x={484} y={753} active={false} />
                 <ADV x={483} y={543} active={false} />
                 <DownArrow x={481} y={729} active={false} />
-                {/* <PseudoFWC /> */}
-                {/* sd */}
             </svg>
         </DisplayUnit>
     );
