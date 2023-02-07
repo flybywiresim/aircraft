@@ -25,6 +25,14 @@ export const FlyPadPage = () => {
     const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
     const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
     const [batteryLifeEnabled, setBatteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
+    const [cabinAnnouncementVolume, setCabinAnnouncementVolume] = usePersistentNumberProperty('CABIN_ANNOUNCEMENT_VOLUME', 50);
+    const [cabinAnnouncementVolumeLevel] = useSimVar('CABIN_ANNOUNCEMENT_VOLUME_LEVEL', 'number', 50);
+    const cabinAnnouncementSliderRef = useRef<any>(null);
+    const handleCabinAnnouncementVolumeChange = (volume: number) => {
+        setCabinAnnouncementVolume(volume);
+        // update the cabin announcement volume level
+        // based on the new volume set by the slider
+    };
 
     // the tt() is a special case to update the page with the correct language after user
     // changes the language. the change to simvar hooks changed timing/order of updates.
@@ -102,6 +110,13 @@ export const FlyPadPage = () => {
                                     value={usingAutobrightness ? brightness : brightnessSetting}
                                     onChange={setBrightnessSetting}
                                     onAfterChange={() => brightnessSliderRef.current.blur()}
+                                    
+                                    ref={cabinAnnouncementSliderRef}
+                                    value={cabinAnnouncementVolume}
+                                    onChange={handleCabinAnnouncementVolumeChange}
+                                    onAfterChange={() => cabinAnnouncementSliderRef.current.blur()}
+                                    min={0}
+                                    max={100}
                                 />
                                 <SimpleInput
                                     min={1}
