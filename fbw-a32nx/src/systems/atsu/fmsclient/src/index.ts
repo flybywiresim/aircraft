@@ -1,7 +1,8 @@
-import { AtsuFmsMessages, FmsAtsuMessages } from '@atsu/common/databus';
-import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { FansMode } from '@atsu/common/com/FutureAirNavigationSystem';
 import {
+    AtsuFmsMessages,
+    FmsAtsuMessages,
+    AtsuStatusCodes,
+    FansMode,
     AtisMessage,
     AtisType,
     AtsuMessage,
@@ -12,8 +13,13 @@ import {
     FreetextMessage,
     OclMessage,
     WeatherMessage,
-} from '@atsu/common/messages';
-import { AutopilotData, DatalinkModeCode, DatalinkStatusCode, EnvironmentData, FlightStateData, PositionReportData } from '@atsu/common/types';
+    AutopilotData,
+    DatalinkModeCode,
+    DatalinkStatusCode,
+    EnvironmentData,
+    FlightStateData,
+    PositionReportData,
+} from '@atsu/common/index';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';

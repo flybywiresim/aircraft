@@ -1,4 +1,4 @@
-import { Waypoint } from '@atsu/common/types/Waypoint';
+import { Waypoint } from './Waypoint';
 
 export interface FlightStateData {
     lat: number;

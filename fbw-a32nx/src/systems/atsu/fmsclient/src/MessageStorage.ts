@@ -1,5 +1,13 @@
-import { AtsuFmsMessages } from '@atsu/common/databus';
-import { AtisMessage, AtsuMessage, AtsuMessageDirection, Conversion, CpdlcMessage, DclMessage, OclMessage } from '@atsu/common/messages';
+import {
+    AtsuFmsMessages,
+    AtisMessage,
+    AtsuMessage,
+    AtsuMessageDirection,
+    Conversion,
+    CpdlcMessage,
+    DclMessage,
+    OclMessage,
+} from '@atsu/common/index';
 import { EventSubscriber } from 'msfssdk';
 
 export class MessageStorage {

@@ -1,6 +1,9 @@
-import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { DatalinkModeCode, DatalinkStatusCode, PositionReportData } from '@atsu/common/types';
-import { FansMode } from '@atsu/common/com/FutureAirNavigationSystem';
+import {
+    DatalinkModeCode,
+    DatalinkStatusCode,
+    PositionReportData,
+    Waypoint,
+} from '../types';
 import {
     AtisMessage,
     AtisType,
@@ -10,9 +13,10 @@ import {
     FreetextMessage,
     OclMessage,
     WeatherMessage,
-} from '@atsu/common/messages';
+} from '../messages';
+import { FansMode } from '../com/FutureAirNavigationSystem';
 
-import { Waypoint } from '@atsu/common/index';
+import { AtsuStatusCodes } from '../AtsuStatusCodes';
 
 export interface AtsuFmsRegisterMessages<T> {
     requestId: number;

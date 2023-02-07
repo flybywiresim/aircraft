@@ -1,6 +1,5 @@
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { Clock } from '../types';
-import { Waypoint } from '../types/Waypoint';
+import { Clock, Waypoint } from '../types';
 
 export enum UplinkMonitorType {
     Unknown = -1,

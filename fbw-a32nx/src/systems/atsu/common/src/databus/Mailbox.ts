@@ -1,5 +1,4 @@
-import { DclMessage, OclMessage } from '@atsu/common/messages';
-import { CpdlcMessage } from '../messages/CpdlcMessage';
+import { DclMessage, OclMessage, CpdlcMessage } from '../messages';
 
 export enum MailboxStatusMessage {
     NoMessage = -1,
