@@ -1058,7 +1058,7 @@ export class NewPseudoFWC {
         }
 
         const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, mesgOrderLeft);
-        let orderedMemoArrayRight = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
+        let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
 
         if (!failLeft) {
             this.memoMessageLeft.set(orderedMemoArrayLeft);
@@ -1080,7 +1080,6 @@ export class NewPseudoFWC {
             const filteredMemo = orderedMemoArrayRight.filter((e) => !specialLines.includes(e));
             const specLinesInMemo = orderedMemoArrayRight.filter((e) => specialLines.includes(e));
             if (specLinesInMemo.length > 0) {
-                // @ts-expect-error
                 orderedMemoArrayRight = [...specLinesInMemo, ...orderedFailureArrayRight, ...filteredMemo];
             } else {
                 orderedMemoArrayRight = [...orderedFailureArrayRight, ...orderedMemoArrayRight];
