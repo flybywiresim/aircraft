@@ -7,8 +7,9 @@ use systems::{
     },
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        CabinAir, CabinTemperature, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels,
+        PackFlowValveState, PneumaticBleed,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -16,7 +17,7 @@ use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
 pub(super) struct A380AirConditioning {
     a380_cabin: A380Cabin,
-    a380_air_conditioning_system: AirConditioningSystem<3>,
+    a380_air_conditioning_system: AirConditioningSystem<3, 2>,
 }
 
 impl A380AirConditioning {
@@ -37,6 +38,7 @@ impl A380AirConditioning {
                     ElectricalBusType::DirectCurrent(2),
                     ElectricalBusType::AlternatingCurrent(2),
                 ],
+                ElectricalBusType::AlternatingCurrent(1),
             ),
         }
     }
@@ -49,13 +51,14 @@ impl A380AirConditioning {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton,
-        pressurization: &impl Cabin,
+        pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.a380_air_conditioning_system.update(
             context,
             adirs,
+            &self.a380_cabin,
             engines,
             engine_fire_push_buttons,
             pneumatic,
@@ -131,7 +134,7 @@ impl A380Cabin {
         context: &UpdateContext,
         duct_temperature: &impl DuctTemperature,
         pack_flow: &impl PackFlow,
-        pressurization: &impl Cabin,
+        pressurization: &impl CabinAir,
     ) {
         let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
             pack_flow.pack_flow().get::<kilogram_per_second>()
@@ -145,6 +148,16 @@ impl A380Cabin {
                 pressurization,
             );
         }
+    }
+}
+
+impl CabinTemperature for A380Cabin {
+    fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        let mut cabin_temperature_vector = Vec::new();
+        for zone in self.cabin_zone.iter() {
+            cabin_temperature_vector.append(&mut zone.cabin_temperature())
+        }
+        cabin_temperature_vector
     }
 }
 

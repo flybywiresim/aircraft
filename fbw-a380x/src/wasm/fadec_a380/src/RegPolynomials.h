@@ -9,18 +9,18 @@
 class Polynomial {
  public:
   /// <summary>
-  /// Shutdown polynomials - N2 (%)
+  /// Shutdown polynomials - N3 (%)
   /// </summary>
-  double shutdownN2(double preN2, double deltaTime) {
-    double outN2 = 0;
+  double shutdownN3(double preN3, double deltaTime) {
+    double outN3 = 0;
     double k = -0.08183;
 
-    if (preN2 < 30)
+    if (preN3 < 30)
       k = -0.0515;
 
-    outN2 = preN2 * expFBW(k * deltaTime);
+    outN3 = preN3 * expFBW(k * deltaTime);
 
-    return outN2;
+    return outN3;
   }
 
   /// <summary>
@@ -61,51 +61,51 @@ class Polynomial {
   }
 
   /// <summary>
-  /// Start-up polynomials - N2 (%)
+  /// Start-up polynomials - N3 (%)
   /// </summary>
-  double startN2(double n2, double preN2, double idleN2) {
-    double outN2 = 0;
-    double normalN2 = 0;
+  double startN3(double n3, double preN3, double idleN3) {
+    double outN3 = 0;
+    double normalN3 = 0;
 
-    normalN2 = n2 * 68.2 / idleN2;
+    normalN3 = n3 * 60.0 / idleN3;
 
-    double c_N2[16] = {4.03649879e+00,  -9.41981960e-01, 1.98426614e-01,  -2.11907840e-02, 1.00777507e-03,  -1.57319166e-06,
+    double c_N3[16] = {4.03649879e+00,  -9.41981960e-01, 1.98426614e-01,  -2.11907840e-02, 1.00777507e-03,  -1.57319166e-06,
                        -2.15034888e-06, 1.08288379e-07,  -2.48504632e-09, 2.52307089e-11,  -2.06869243e-14, 8.99045761e-16,
                        -9.94853959e-17, 1.85366499e-18,  -1.44869928e-20, 4.31033031e-23};
 
-    outN2 = c_N2[0] + (c_N2[1] * normalN2) + (c_N2[2] * powFBW(normalN2, 2)) + (c_N2[3] * powFBW(normalN2, 3)) +
-            (c_N2[4] * powFBW(normalN2, 4)) + (c_N2[5] * powFBW(normalN2, 5)) + (c_N2[6] * powFBW(normalN2, 6)) +
-            (c_N2[7] * powFBW(normalN2, 7)) + (c_N2[8] * powFBW(normalN2, 8)) + (c_N2[9] * powFBW(normalN2, 9)) +
-            (c_N2[10] * powFBW(normalN2, 10)) + (c_N2[11] * powFBW(normalN2, 11)) + (c_N2[12] * powFBW(normalN2, 12)) +
-            (c_N2[13] * powFBW(normalN2, 13)) + (c_N2[14] * powFBW(normalN2, 14)) + (c_N2[15] * powFBW(normalN2, 15));
+    outN3 = c_N3[0] + (c_N3[1] * normalN3) + (c_N3[2] * powFBW(normalN3, 2)) + (c_N3[3] * powFBW(normalN3, 3)) +
+            (c_N3[4] * powFBW(normalN3, 4)) + (c_N3[5] * powFBW(normalN3, 5)) + (c_N3[6] * powFBW(normalN3, 6)) +
+            (c_N3[7] * powFBW(normalN3, 7)) + (c_N3[8] * powFBW(normalN3, 8)) + (c_N3[9] * powFBW(normalN3, 9)) +
+            (c_N3[10] * powFBW(normalN3, 10)) + (c_N3[11] * powFBW(normalN3, 11)) + (c_N3[12] * powFBW(normalN3, 12)) +
+            (c_N3[13] * powFBW(normalN3, 13)) + (c_N3[14] * powFBW(normalN3, 14)) + (c_N3[15] * powFBW(normalN3, 15));
 
-    outN2 = outN2 * n2;
+    outN3 = outN3 * n3;
 
-    if (outN2 < preN2) {
-      outN2 = preN2 + 0.002;
+    if (outN3 < preN3) {
+      outN3 = preN3 + 0.002;
     }
-    if (outN2 >= idleN2 + 0.1) {
-      outN2 = idleN2 + 0.05;
+    if (outN3 >= idleN3 + 0.1) {
+      outN3 = idleN3 + 0.05;
     }
 
-    return outN2;
+    return outN3;
   }
 
   /// <summary>
   /// Start-up polynomials - N1 (%)
   /// </summary>
-  double startN1(double fbwN2, double idleN2, double idleN1) {
+  double startN1(double fbwN3, double idleN3, double idleN1) {
     double normalN1pre = 0;
     double normalN1post = 0;
-    double normalN2 = fbwN2 / idleN2;
+    double normalN3 = fbwN3 / idleN3;
     double c_N1[9] = {-2.2812156e-12, -5.9830374e+01, 7.0629094e+02,  -3.4580361e+03, 9.1428923e+03,
                       -1.4097740e+04, 1.2704110e+04,  -6.2099935e+03, 1.2733071e+03};
 
-    normalN1pre = (-2.4698087 * powFBW(normalN2, 3)) + (0.9662026 * powFBW(normalN2, 2)) + (0.0701367 * normalN2);
+    normalN1pre = (-2.4698087 * powFBW(normalN3, 3)) + (0.9662026 * powFBW(normalN3, 2)) + (0.0701367 * normalN3);
 
-    normalN1post = c_N1[0] + (c_N1[1] * normalN2) + (c_N1[2] * powFBW(normalN2, 2)) + (c_N1[3] * powFBW(normalN2, 3)) +
-                   (c_N1[4] * powFBW(normalN2, 4)) + (c_N1[5] * powFBW(normalN2, 5)) + (c_N1[6] * powFBW(normalN2, 6)) +
-                   (c_N1[7] * powFBW(normalN2, 7)) + (c_N1[8] * powFBW(normalN2, 8));
+    normalN1post = c_N1[0] + (c_N1[1] * normalN3) + (c_N1[2] * powFBW(normalN3, 2)) + (c_N1[3] * powFBW(normalN3, 3)) +
+                   (c_N1[4] * powFBW(normalN3, 4)) + (c_N1[5] * powFBW(normalN3, 5)) + (c_N1[6] * powFBW(normalN3, 6)) +
+                   (c_N1[7] * powFBW(normalN3, 7)) + (c_N1[8] * powFBW(normalN3, 8));
 
     if (normalN1post >= normalN1pre)
       return normalN1post * idleN1;
@@ -116,20 +116,20 @@ class Polynomial {
   /// <summary>
   /// Start-up polynomials - Fuel Flow (Kg/hr)
   /// </summary>
-  double startFF(double fbwN2, double idleN2, double idleFF) {
+  double startFF(double fbwN3, double idleN3, double idleFF) {
     double normalFF = 0;
     double outFF = 0;
-    double normalN2 = fbwN2 / idleN2;
+    double normalN3 = fbwN3 / idleN3;
 
-    if (normalN2 <= 0.37) {
+    if (normalN3 <= 0.37) {
       normalFF = 0;
     } else {
       double c_FF[9] = {3.1110282e-12, 1.0804331e+02,  -1.3972629e+03, 7.4874131e+03, -2.1511983e+04,
                         3.5957757e+04, -3.5093994e+04, 1.8573033e+04,  -4.1220062e+03};
 
-      normalFF = c_FF[0] + (c_FF[1] * normalN2) + (c_FF[2] * powFBW(normalN2, 2)) + (c_FF[3] * powFBW(normalN2, 3)) +
-                 (c_FF[4] * powFBW(normalN2, 4)) + (c_FF[5] * powFBW(normalN2, 5)) + (c_FF[6] * powFBW(normalN2, 6)) +
-                 (c_FF[7] * powFBW(normalN2, 7)) + (c_FF[8] * powFBW(normalN2, 8));
+      normalFF = c_FF[0] + (c_FF[1] * normalN3) + (c_FF[2] * powFBW(normalN3, 2)) + (c_FF[3] * powFBW(normalN3, 3)) +
+                 (c_FF[4] * powFBW(normalN3, 4)) + (c_FF[5] * powFBW(normalN3, 5)) + (c_FF[6] * powFBW(normalN3, 6)) +
+                 (c_FF[7] * powFBW(normalN3, 7)) + (c_FF[8] * powFBW(normalN3, 8));
     }
 
     if (normalFF < 0) {
@@ -142,22 +142,22 @@ class Polynomial {
   /// <summary>
   /// Start-up polynomials - EGT (Celsius)
   /// </summary>
-  double startEGT(double fbwN2, double idleN2, double ambientTemp, double idleEGT) {
+  double startEGT(double fbwN3, double idleN3, double ambientTemp, double idleEGT) {
     double normalEGT = 0;
     double outEGT = 0;
-    double normalN2 = fbwN2 / idleN2;
+    double normalN3 = fbwN3 / idleN3;
 
-    if (normalN2 < 0.17) {
+    if (normalN3 < 0.17) {
       normalEGT = 0;
-    } else if (normalN2 <= 0.4) {
-      normalEGT = (0.04783 * normalN2) - 0.00813;
+    } else if (normalN3 <= 0.4) {
+      normalEGT = (0.04783 * normalN3) - 0.00813;
     } else {
       double c_EGT[9] = {-6.8725167e+02, 7.7548864e+03,  -3.7507098e+04, 1.0147016e+05, -1.6779273e+05,
                          1.7357157e+05,  -1.0960924e+05, 3.8591956e+04,  -5.7912600e+03};
 
-      normalEGT = c_EGT[0] + (c_EGT[1] * normalN2) + (c_EGT[2] * powFBW(normalN2, 2)) + (c_EGT[3] * powFBW(normalN2, 3)) +
-                  (c_EGT[4] * powFBW(normalN2, 4)) + (c_EGT[5] * powFBW(normalN2, 5)) + (c_EGT[6] * powFBW(normalN2, 6)) +
-                  (c_EGT[7] * powFBW(normalN2, 7)) + (c_EGT[8] * powFBW(normalN2, 8));
+      normalEGT = c_EGT[0] + (c_EGT[1] * normalN3) + (c_EGT[2] * powFBW(normalN3, 2)) + (c_EGT[3] * powFBW(normalN3, 3)) +
+                  (c_EGT[4] * powFBW(normalN3, 4)) + (c_EGT[5] * powFBW(normalN3, 5)) + (c_EGT[6] * powFBW(normalN3, 6)) +
+                  (c_EGT[7] * powFBW(normalN3, 7)) + (c_EGT[8] * powFBW(normalN3, 8));
     }
 
     outEGT = (normalEGT * (idleEGT - (ambientTemp))) + (ambientTemp);
@@ -168,12 +168,12 @@ class Polynomial {
   /// <summary>
   /// Start-up polynomials - Oil Temperature (Celsius)
   /// </summary>
-  double startOilTemp(double fbwN2, double idleN2, double ambientTemp) {
+  double startOilTemp(double fbwN3, double idleN3, double ambientTemp) {
     double outOilTemp = 0;
 
-    if (fbwN2 < 0.79 * idleN2) {
+    if (fbwN3 < 0.79 * idleN3) {
       outOilTemp = ambientTemp;
-    } else if (fbwN2 < 0.98 * idleN2) {
+    } else if (fbwN3 < 0.98 * idleN3) {
       outOilTemp = ambientTemp + 5;
     } else {
       outOilTemp = ambientTemp + 10;
@@ -187,6 +187,7 @@ class Polynomial {
   /// </summary>
   double correctedEGT(double cn1, double cff, double mach, double alt) {
     double outCEGT = 0;
+    cff = cff / 2; // to account for the A380 double fuel flow. Will have to be taken care of
 
     double c_EGT[16] = {3.2636e+02,  0.0000e+00, 9.2893e-01, 3.9505e-02,  3.9070e+02, -4.7911e-04, 7.7679e-03,  5.8361e-05,
                         -2.5566e+00, 5.1227e-06, 1.0178e-07, -7.4602e-03, 1.2106e-07, -5.1639e+01, -2.7356e-03, 1.9312e-08};
@@ -216,7 +217,7 @@ class Polynomial {
              (c_Flow[16] * cn1 * powFBW(alt, 2)) + (c_Flow[17] * powFBW(mach, 3)) + (c_Flow[18] * powFBW(mach, 2) * alt) +
              (c_Flow[19] * mach * powFBW(alt, 2)) + (c_Flow[20] * powFBW(alt, 3));
 
-    return outCFF;
+    return 2*outCFF;
   }
 
   double oilTemperature(double energy, double preOilTemp, double maxOilTemp, double deltaTime) {
@@ -259,12 +260,12 @@ class Polynomial {
   /// <summary>
   /// Real-life modeled polynomials - Oil Pressure (PSI)
   /// </summary>
-  double oilPressure(double simN2) {
+  double oilPressure(double simN3) {
     double outOilPressure = 0;
 
     double c_OilPress[3] = {-0.88921, 0.23711, 0.00682};
 
-    outOilPressure = c_OilPress[0] + (c_OilPress[1] * simN2) + (c_OilPress[2] * powFBW(simN2, 2));
+    outOilPressure = c_OilPress[0] + (c_OilPress[1] * simN3) + (c_OilPress[2] * powFBW(simN3, 2));
 
     return outOilPressure;
   }

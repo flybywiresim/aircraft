@@ -1,6 +1,6 @@
 use super::{Air, DuctTemperature, ZoneType};
 use crate::{
-    shared::Cabin,
+    shared::{CabinAir, CabinTemperature},
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -73,10 +73,10 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         context: &UpdateContext,
         duct_temperature: &impl DuctTemperature,
         pack_flow_per_cubic_meter: MassRate,
-        pressurization: &impl Cabin,
+        pressurization: &impl CabinAir,
     ) {
         let mut air_in = Air::new();
-        air_in.set_temperature(duct_temperature.duct_demand_temperature()[self.zone_id.id()]);
+        air_in.set_temperature(duct_temperature.duct_temperature()[self.zone_id.id()]);
         air_in.set_flow_rate(pack_flow_per_cubic_meter * self.zone_volume.get::<cubic_meter>());
 
         self.zone_air.update(
@@ -92,6 +92,12 @@ impl<const ROWS: usize> CabinZone<ROWS> {
 
     pub fn update_number_of_passengers(&mut self, passengers: u8) {
         self.passengers = passengers;
+    }
+}
+
+impl<const ROWS: usize> CabinTemperature for CabinZone<ROWS> {
+    fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        vec![self.zone_air.zone_air_temperature()]
     }
 }
 
@@ -156,7 +162,7 @@ impl ZoneAir {
         zone_passengers: u8,
         fwd_door_is_open: bool,
         rear_door_is_open: bool,
-        pressurization: &impl Cabin,
+        pressurization: &impl CabinAir,
     ) {
         if !self.is_initialised {
             self.internal_air
@@ -391,7 +397,7 @@ mod cabin_air_tests {
     }
 
     impl DuctTemperature for TestAirConditioningSystem {
-        fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
             let mut duct_temperature: Vec<ThermodynamicTemperature> = Vec::new();
             // We push a 2 len element to simulate the cockpit so the indices match the final model
             let mut cabin_duct_temperatures = vec![
@@ -421,7 +427,7 @@ mod cabin_air_tests {
         }
     }
 
-    impl Cabin for TestPressurization {
+    impl CabinAir for TestPressurization {
         fn altitude(&self) -> Length {
             Length::new::<foot>(0.)
         }

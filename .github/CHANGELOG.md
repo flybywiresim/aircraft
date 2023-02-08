@@ -34,6 +34,9 @@
 1. [FBW] Added option to have two axis for rudder e.g. racing pedals - @frankkopp (Frank Kopp)
 1. [HYD] Added priority valves - @Crocket63 (crocket)
 1. [ND] Fixed LOC deviation scaling - @tracernz (Mike)
+1. [COND] Add mixer unit and recirculation fans to air conditioning system - @mjuhe (Miquel Juhe)
+1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
+1. [CLOCK] Ported Clock to MSFS Avionics Framework for better performance - @MicahBCode (Mischa Binder)
 1. [SYSTEM] Introduce Typescript based systems in VCockpit17 - @svengcz (Sven)
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 
