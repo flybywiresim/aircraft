@@ -35,6 +35,7 @@
 1. [ND] Fixed LOC deviation scaling - @tracernz (Mike)
 1. [COND] Add mixer unit and recirculation fans to air conditioning system - @mjuhe (Miquel Juhe)
 1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
+1. [CLOCK] Ported Clock to MSFS Avionics Framework for better performance - @MicahBCode (Mischa Binder)
 
 ## 0.9.0
 
