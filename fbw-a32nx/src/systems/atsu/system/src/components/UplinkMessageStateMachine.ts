@@ -1,6 +1,4 @@
-import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
-import { AtsuMessageComStatus } from '@atsu/common/messages/AtsuMessage';
-import { AtsuTimestamp } from '@atsu/common/messages';
+import { CpdlcMessage, CpdlcMessageMonitoringState, AtsuMessageComStatus, AtsuTimestamp } from '@atsu/common';
 import { Atsu } from '../ATSU';
 import { UplinkMonitor } from '../../../common/src/components/UplinkMonitor';
 import { UplinkMessageInterpretation } from '../../../common/src/components/UplinkMessageInterpretation';

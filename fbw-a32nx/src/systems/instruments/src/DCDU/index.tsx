@@ -11,8 +11,9 @@ import {
     CpdlcMessageMonitoringState,
     CpdlcMessageExpectedResponseType,
     Conversion,
-} from '@atsu/common/messages';
-import { AtsuMailboxMessages, MailboxStatusMessage } from '@atsu/common/databus/Mailbox';
+    AtsuMailboxMessages,
+    MailboxStatusMessage,
+} from '@atsu/common';
 import { SemanticResponseButtons } from './elements/SemanticResponseButtons';
 import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';

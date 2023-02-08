@@ -7,7 +7,7 @@ import {
     CpdlcMessage,
     DclMessage,
     OclMessage,
-} from '@atsu/common/index';
+} from '@atsu/common';
 import { EventSubscriber } from 'msfssdk';
 
 export class MessageStorage {

@@ -1,6 +1,6 @@
-import { FmsOutputBus } from '@atsu/system/databus/FmsBus';
 import { EventBus } from 'msfssdk';
 import { AtcMessageButtonOutputBus } from './databus/AtcMessageButtonBus';
+import { FmsOutputBus } from './databus/FmsBus';
 import { FwcOutputBus } from './databus/FwcBus';
 
 export class DigitalOutputs {

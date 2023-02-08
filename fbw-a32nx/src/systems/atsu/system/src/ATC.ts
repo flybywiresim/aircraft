@@ -1,15 +1,23 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { InputValidation } from '@atsu/common/components/InputValidation';
-import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { MailboxStatusMessage } from '@atsu/common/databus/Mailbox';
-import { AtisMessage, AtisType } from '@atsu/common/messages/AtisMessage';
-import { AtsuTimestamp } from '@atsu/common/messages/AtsuTimestamp';
-import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
-import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from '@atsu/common/messages/CpdlcMessageElements';
-import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
-import { FansMode, FutureAirNavigationSystem } from '@atsu/common/com/FutureAirNavigationSystem';
+import {
+    InputValidation,
+    AtsuStatusCodes,
+    MailboxStatusMessage,
+    AtisMessage,
+    AtisType,
+    AtsuTimestamp,
+    AtsuMessageComStatus,
+    AtsuMessage,
+    AtsuMessageType,
+    AtsuMessageDirection,
+    CpdlcMessagesDownlink,
+    CpdlcMessageExpectedResponseType,
+    CpdlcMessage,
+    FansMode,
+    FutureAirNavigationSystem,
+} from '@atsu/common';
 import { Atsu } from './ATSU';
 import { MailboxBus } from './databus/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';

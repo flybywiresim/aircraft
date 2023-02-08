@@ -1,7 +1,5 @@
-import { Atsu } from '@atsu/system/ATSU';
+import { Atsu, DigitalInputs, DigitalOutputs } from '@atsu/system';
 import { EventBus } from 'msfssdk';
-import { DigitalInputs } from '@atsu/system/DigitalInputs';
-import { DigitalOutputs } from '@atsu/system/DigitalOutputs';
 
 export class AtsuSystem {
     private readonly digitalInputs: DigitalInputs;

@@ -1,7 +1,12 @@
 import React from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/common/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
-import { MailboxStatusMessage } from '@atsu/common/databus/Mailbox';
+import {
+    AtsuMessageComStatus,
+    AtsuMessageDirection,
+    AtsuMessageSerializationFormat,
+    CpdlcMessage,
+    CpdlcMessageMonitoringState,
+    MailboxStatusMessage,
+} from '@atsu/common';
 import { MessageVisualization } from './MessageVisualization';
 
 type DatalinkMessageProps = {

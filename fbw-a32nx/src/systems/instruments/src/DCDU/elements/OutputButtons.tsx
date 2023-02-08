@@ -1,6 +1,5 @@
 import React from 'react';
-import { AtsuMessageComStatus } from '@atsu/common/messages/AtsuMessage';
-import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
+import { AtsuMessageComStatus, CpdlcMessage } from '@atsu/common';
 import { Button } from './Button';
 
 type OutputButtonsProps = {

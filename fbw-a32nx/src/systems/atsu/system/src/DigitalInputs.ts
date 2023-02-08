@@ -1,12 +1,11 @@
-import { FmsAtsuMessages, FmsRouteData } from '@atsu/common/databus';
-import { Clock } from '@atsu/common/types';
-import { FmsInputBus } from '@atsu/system/databus/FmsBus';
+import { FmsAtsuMessages, FmsRouteData, Clock } from '@atsu/common';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus } from './databus/AtcMessageButtonBus';
 import { ClockDataBusTypes, ClockInputBus } from './databus/ClockBus';
 import { FmgcDataBusTypes, FmgcInputBus } from './databus/FmgcBus';
+import { FmsInputBus } from './databus/FmsBus';
 import { FwcDataBusTypes, FwcInputBus } from './databus/FwcBus';
 import { TransponderDataBusTypes, TransponderInputBus } from './databus/TransponderBus';
 

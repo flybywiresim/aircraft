@@ -1,9 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { AtsuMessageDirection, AtsuMessage, AtsuMessageType, WeatherMessage } from '@atsu/common/messages';
-import { AtisType } from '@atsu/common/messages/AtisMessage';
+import { AtsuStatusCodes, AtsuMessageDirection, AtsuMessage, AtsuMessageType, WeatherMessage, AtisType } from '@atsu/common';
 import { Atsu } from './ATSU';
 
 /**

@@ -19,7 +19,7 @@ import {
     EnvironmentData,
     FlightStateData,
     PositionReportData,
-} from '@atsu/common/index';
+} from '@atsu/common';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';

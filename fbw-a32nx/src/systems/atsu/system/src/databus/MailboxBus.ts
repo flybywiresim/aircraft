@@ -1,20 +1,18 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
 import {
+    AtsuStatusCodes,
     AtsuMailboxMessages,
     MailboxStatusMessage,
-} from '@atsu/common/databus/Mailbox';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
-import {
     AtsuMessage,
     AtsuMessageDirection,
     AtsuMessageType,
     CpdlcMessage,
     DclMessage,
     OclMessage,
-} from '@atsu/common/messages';
+} from '@atsu/common';
+import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 import { Atsu } from '../ATSU';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from '../components/UplinkMessageStateMachine';

@@ -2,15 +2,18 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
-import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { AtsuMessage } from '@atsu/common/messages/AtsuMessage';
-import { CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
-import { coordinateToString, timestampToString } from '@atsu/common/components/Convert';
-import { InputValidation } from '@atsu/common/components/InputValidation';
-import { FmsRouteData } from '@atsu/common/databus';
-import { PositionReportData } from '@atsu/common/types';
-import { AtsuTimestamp } from '@atsu/common/messages';
+import {
+    CpdlcMessage,
+    AtsuStatusCodes,
+    AtsuMessage,
+    CpdlcMessagesDownlink,
+    coordinateToString,
+    timestampToString,
+    InputValidation,
+    FmsRouteData,
+    PositionReportData,
+    AtsuTimestamp,
+} from '@atsu/common';
 import { Aoc } from './AOC';
 import { Atc } from './ATC';
 import { Datalink } from './com/Datalink';

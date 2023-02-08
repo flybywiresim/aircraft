@@ -8,6 +8,6 @@
   },
   "include": [
     "src/**/*",
-    "../../../../fbw-common/src/typings/**/*.d.ts"
+    "../../../../../fbw-common/src/typings/**/*.d.ts"
   ]
 }

@@ -1,7 +1,12 @@
 import React from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/common/messages/AtsuMessage';
-import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from '@atsu/common/messages/CpdlcMessageElements';
-import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/common/messages/CpdlcMessage';
+import {
+    AtsuMessageComStatus,
+    AtsuMessageDirection,
+    CpdlcMessageExpectedResponseType,
+    CpdlcMessagesDownlink,
+    CpdlcMessage,
+    CpdlcMessageMonitoringState,
+} from '@atsu/common';
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {

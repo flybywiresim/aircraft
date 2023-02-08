@@ -1,14 +1,20 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/common/types';
-import { AtsuStatusCodes } from '@atsu/common/AtsuStatusCodes';
-import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
-import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '@atsu/common/messages/AtsuMessage';
-import { AtisMessage, AtisType } from '@atsu/common/messages/AtisMessage';
-import { MetarMessage } from '@atsu/common/messages/MetarMessage';
-import { TafMessage } from '@atsu/common/messages/TafMessage';
-import { WeatherMessage } from '@atsu/common/messages/WeatherMessage';
+import {
+    DatalinkModeCode,
+    DatalinkStatusCode,
+    AtsuStatusCodes,
+    CpdlcMessage,
+    AtsuMessage,
+    AtsuMessageNetwork,
+    AtsuMessageType,
+    AtisMessage,
+    AtisType,
+    MetarMessage,
+    TafMessage,
+    WeatherMessage,
+} from '@atsu/common';
 import { NXDataStore } from '@shared/persistence';
 import { Vdl } from './vhf/VDL';
 import { Atsu } from '../ATSU';

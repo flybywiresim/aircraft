@@ -1,7 +1,5 @@
 import React from 'react';
-import { AtsuMessageComStatus } from '@atsu/common/messages/AtsuMessage';
-import { CpdlcMessage } from '@atsu/common/messages/CpdlcMessage';
-import { UplinkMessageInterpretation } from '@atsu/common/components/UplinkMessageInterpretation';
+import { AtsuMessageComStatus, CpdlcMessage, UplinkMessageInterpretation } from '@atsu/common';
 import { Button } from './Button';
 
 type SemanticResponseButtonsProps = {
