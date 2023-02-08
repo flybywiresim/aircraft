@@ -17,7 +17,7 @@ use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
 pub(super) struct A380AirConditioning {
     a380_cabin: A380Cabin,
-    a380_air_conditioning_system: AirConditioningSystem<3, 2>,
+    a380_air_conditioning_system: AirConditioningSystem<3, 2, 4>,
 }
 
 impl A380AirConditioning {
@@ -47,10 +47,10 @@ impl A380AirConditioning {
         &mut self,
         context: &UpdateContext,
         adirs: &impl GroundSpeed,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -76,8 +76,8 @@ impl A380AirConditioning {
     }
 }
 
-impl PackFlowControllers<3> for A380AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+impl PackFlowControllers<3, 4> for A380AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 4> {
         self.a380_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
