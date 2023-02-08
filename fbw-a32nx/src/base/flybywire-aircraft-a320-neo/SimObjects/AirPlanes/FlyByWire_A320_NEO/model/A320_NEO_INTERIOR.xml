@@ -2384,14 +2384,14 @@
                         <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_HOTAIR</NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_AIRCOND_HOTAIR_TOGGLE</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ1_CODE>(L:A32NX_AIRCOND_HOTAIR_FAULT, Bool)</SEQ1_CODE>
-                        <SEQ2_CODE>(L:A32NX_AIRCOND_HOTAIR_TOGGLE, Bool) !</SEQ2_CODE>
+                        <SEQ1_CODE>(L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON, Bool) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <TOOLTIPID>%((L:A32NX_AIRCOND_HOTAIR_TOGGLE, Bool))%{if}Turn OFF hot air%{else}Turn ON hot air%{end}</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON, Bool))%{if}Turn OFF hot air%{else}Turn ON hot air%{end}</TOOLTIPID>
                     </UseTemplate>
 
                     <!-- AIR COND RAM AIR -->
@@ -2650,14 +2650,14 @@
                             <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                             <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
-                            <TOGGLE_SIMVAR>L:A32NX_VENTILATION_CABFANS_TOGGLE</TOGGLE_SIMVAR>
+                            <TOGGLE_SIMVAR>L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ2_CODE>(L:A32NX_VENTILATION_CABFANS_TOGGLE, Bool) !</SEQ2_CODE>
+                            <SEQ2_CODE>(L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON, Bool) !</SEQ2_CODE>
                             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOOLTIPID>%((L:A32NX_VENTILATION_CABFANS_TOGGLE, Bool))%{if}Turn OFF cabin fans%{else}Turn ON cabin fans%{end}</TOOLTIPID>
+                            <TOOLTIPID>%((L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON, Bool))%{if}Turn OFF cabin fans%{else}Turn ON cabin fans%{end}</TOOLTIPID>
                         </UseTemplate>
                     </Component>
 
