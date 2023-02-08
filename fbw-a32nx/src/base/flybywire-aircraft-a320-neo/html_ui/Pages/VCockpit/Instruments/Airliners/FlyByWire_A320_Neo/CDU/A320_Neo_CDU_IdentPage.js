@@ -105,7 +105,7 @@ class CDUIdentPage {
             };
         }
 
-        secondaryDBSubLine = (confirmType == ConfirmType.SwitchDataBase) ? '{amber}CONFIRM DATA BASE CHANGE*{end}inop' : "{small}{" + calculateSecDate(date) + "{end}[color]inop";
+        secondaryDBSubLine = (confirmType == ConfirmType.SwitchDataBase) ? '{amber}CONFIRM DATABASE CHANGE*{end}inop' : "{small}{" + calculateSecDate(date) + "{end}[color]inop";
 
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
@@ -113,14 +113,13 @@ class CDUIdentPage {
 
         mcdu.onLeftInput[2] = () => {
             // Only performing a reset of the MCDU for now, no secondary database
-
             if (confirmType == ConfirmType.SwitchDataBase) {
-            mcdu.setScratchpadMessage(new TypeIMessage("FLT PLN & DATA RESET"));
             mcdu.resetCoroute();
             mcdu.atsu.atc.resetAtisAutoUpdate();
             mcdu.flightPlanManager.clearFlightPlan();
             mcdu.dataManager.deleteAllStoredWaypoints();
             CDUIdentPage.ShowPage(mcdu);
+            mcdu.setScratchpadMessage(new TypeIMessage("FLT PLN & DATA RESET"));
             }
             else CDUIdentPage.ShowPage(mcdu,ConfirmType.SwitchDataBase);
         }
