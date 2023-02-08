@@ -1,4 +1,8 @@
-import { Mode, RangeSetting } from '@shared/NavigationDisplay';
+// Copyright (c) 2021-2022 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { EfisNdMode, EfisNdRangeValue } from '@shared/NavigationDisplay';
 
 export interface FmsState {
     leftEfisState: EfisState,
@@ -7,9 +11,9 @@ export interface FmsState {
 }
 
 export interface EfisState {
-    mode: Mode,
+    mode: EfisNdMode,
 
-    range: RangeSetting,
+    range: EfisNdRangeValue,
 
     dataLimitReached: boolean,
 

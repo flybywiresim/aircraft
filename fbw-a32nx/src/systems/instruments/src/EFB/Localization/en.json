@@ -649,8 +649,6 @@
     "Wed": "Wed"
   },
   "VersionCheck": {
-    "Title": "New Version Available",
-    "StatusBarWarning": "Outdated Aircraft Version",
     "CurrentVersionText": "You are using the $edition edition with version:",
     "LatestVersionText": "Latest $edition version is",
     "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
@@ -661,4 +659,3 @@
     "Title": "New Version Available"
   }
 }
-
