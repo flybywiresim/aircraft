@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "baseUrl": ".",
+    "resolveJsonModule" : true,
+    "typeRoots": [
+      "../../../fbw-common/src/typings",
+      "../../../node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "paths": {
+      "@atsu/common": ["atsu/common/src/index.ts"],
+      "@atsu/system": ["atsu/system/src/index.ts"],
+      "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
+      "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
+      "@typings/*": ["../typings/*"],
+    }
+  },
+}

@@ -3,8 +3,8 @@
 const esbuild = require('esbuild');
 const path = require('path');
 
-const rootDir = path.join(__dirname, '..', '..', '..');
-const outFile = '../out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/common.js';
+const rootDir = path.join(__dirname, '..', '..', '..', '..');
+const outFile = 'out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/common.js';
 
 const isProductionBuild = process.env.A32NX_PRODUCTION_BUILD === '1';
 
@@ -13,7 +13,7 @@ esbuild.build({
 
     define: { DEBUG: 'false' },
 
-    entryPoints: ['src/index.ts'],
+    entryPoints: [ path.join(rootDir,  '../fbw-common/src/systems/atsu/common/src/index.ts')],
     bundle: true,
     treeShaking: false,
     minify: isProductionBuild,

@@ -11,8 +11,8 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "paths": {
-      "@atsu/common": ["./atsu/common/src/index.ts"],
-      "@atsu/system": ["./atsu/system/src/index.ts"],
+      "@atsu/common": ["../../../fbw-common/src/systems/atsu/common/src/index.ts"],
+      "@atsu/system": ["../../../fbw-common/src/systems/atsu/system/src/index.ts"],
       "@failures": ["./failures/src/index.ts"],
       "@fmgc/*": ["./fmgc/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
