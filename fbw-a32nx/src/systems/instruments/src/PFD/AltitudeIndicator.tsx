@@ -1,5 +1,5 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429SignStatusMatrix, Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
@@ -183,7 +183,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }
         sub.on('mda').whenChanged().handle((mda) => {
             // TODO get a real word
             this.mda.value = mda;
-            this.mda.ssm = mda > 0 ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+            this.mda.ssm = mda > 0 ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
             this.updateIndication();
         });
 

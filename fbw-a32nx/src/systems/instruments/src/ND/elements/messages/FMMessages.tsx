@@ -1,10 +1,10 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { Mode } from '@shared/NavigationDisplay';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { useSimVar } from '@instruments/common/simVars';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
 
-export const FMMessages: FC<{ modeIndex: Mode, side: 'L' | 'R' }> = ({ modeIndex, side }) => {
+export const FMMessages: FC<{ modeIndex: EfisNdMode, side: 'L' | 'R' }> = ({ modeIndex, side }) => {
     const [activeMessages, setActiveMessages] = useState<FMMessage[]>([]);
 
     // TODO check FM failure and get messages from other FM
@@ -29,7 +29,7 @@ export const FMMessages: FC<{ modeIndex: Mode, side: 'L' | 'R' }> = ({ modeIndex
         setActiveMessages(newActiveMessages);
     }, [messageFlags]);
 
-    if (modeIndex !== Mode.ARC && modeIndex !== Mode.PLAN && modeIndex !== Mode.ROSE_NAV || activeMessages.length < 1) {
+    if (modeIndex !== EfisNdMode.ARC && modeIndex !== EfisNdMode.PLAN && modeIndex !== EfisNdMode.ROSE_NAV || activeMessages.length < 1) {
         return null;
     }
 
