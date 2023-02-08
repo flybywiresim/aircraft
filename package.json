@@ -20,6 +20,7 @@
     "build-a32nx:simbridge-client": "rollup -c fbw-a32nx/src/systems/simbridge-client/rollup.config.js",
     "build-a32nx:tcas": "rollup -c fbw-a32nx/src/systems/tcas/rollup.config.js",
     "build-a32nx:pfd": "cd fbw-a32nx/src/systems/instruments/src/PFD && rollup -c",
+    "build-a32nx:clock": "cd fbw-a32nx/src/systems/instruments/src/Clock && rollup -c",
 
     "build-a32nx:systems": "cargo build -p a320_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm /external/target/wasm32-wasi/release/a320_systems_wasm.wasm",
     "build-a32nx:fadec": "cd fbw-a32nx/src/wasm/fadec_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm",
