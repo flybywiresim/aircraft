@@ -65,8 +65,14 @@ function calculateSecDate(date) {
 
 }
 
+const ConfirmType = {
+    NoConfirm : 0,
+    DeleteStored : 1,
+    SwitchDataBase : 2,
+}
+
 class CDUIdentPage {
-    static ShowPage(mcdu, confirmDeleteAll = false) {
+    static ShowPage(mcdu, confirmType = ConfirmType.NoConfirm) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = 'FMGC';
@@ -78,24 +84,45 @@ class CDUIdentPage {
         let storedRoutesRunwaysCell = "";
         let storedWaypointsNavaidsCell = "";
         let storedDeleteCell = "";
+        let secondaryDBSubLine = "";
         if ((stored.routes + stored.runways + stored.waypoints + stored.navaids) > 0) {
             storedTitleCell = "STORED\xa0\xa0\xa0\xa0";
             storedRoutesRunwaysCell = `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`;
             storedWaypointsNavaidsCell = `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`;
-            storedDeleteCell = confirmDeleteAll ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}';
+            storedDeleteCell = (confirmType == ConfirmType.DeleteStored) ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}';
 
             // DELETE ALL
             mcdu.onRightInput[4] = () => {
-                if (confirmDeleteAll) {
+                if (confirmType == ConfirmType.DeleteStored) {
                     const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
                     if (!allDeleted) {
                         mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
                     }
                     CDUIdentPage.ShowPage(mcdu);
                 } else {
-                    CDUIdentPage.ShowPage(mcdu, true);
+                    CDUIdentPage.ShowPage(mcdu, ConfirmType.DeleteStored);
                 }
             };
+        }
+
+        secondaryDBSubLine = (confirmType == ConfirmType.SwitchDataBase) ? '{amber}CONFIRM DATA BASE CHANGE*{end}inop' : "{small}{" + calculateSecDate(date) + "{end}[color]inop";
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onLeftInput[2] = () => {
+            // Only performing a reset of the MCDU for now, no secondary database
+
+            if (confirmType == ConfirmType.SwitchDataBase) {
+            mcdu.setScratchpadMessage(new TypeIMessage("FLT PLN & DATA RESET"));
+            mcdu.resetCoroute();
+            mcdu.atsu.atc.resetAtisAutoUpdate();
+            mcdu.flightPlanManager.clearFlightPlan();
+            mcdu.dataManager.deleteAllStoredWaypoints();
+            CDUIdentPage.ShowPage(mcdu);
+            }
+            else CDUIdentPage.ShowPage(mcdu,ConfirmType.SwitchDataBase);
         }
 
         mcdu.setTemplate([
@@ -105,7 +132,7 @@ class CDUIdentPage {
             ["\xa0ACTIVE NAV DATA BASE"],
             ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
-            ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
+            [secondaryDBSubLine],
             ["", storedTitleCell],
             ["", storedRoutesRunwaysCell],
             ["CHG CODE", storedWaypointsNavaidsCell],
@@ -113,5 +140,6 @@ class CDUIdentPage {
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
         ]);
+
     }
 }
