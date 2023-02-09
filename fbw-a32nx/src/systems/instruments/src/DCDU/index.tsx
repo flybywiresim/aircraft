@@ -250,10 +250,15 @@ const DCDU: React.FC = () => {
         const newSubscriber = eventBus.getSubscriber<AtsuMailboxMessages>();
 
         newSubscriber.on('resetSystem').handle(() => {
-            setMessages(new Map<number, DcduMessageBlock>());
-            setAtcMessage('');
             setSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setSystemStatusTimer(null);
+            if (screenTimeout) {
+                clearTimeout(screenTimeout);
+                setScreenTimeout(null);
+            }
+
+            setMessages(new Map<number, DcduMessageBlock>());
+            setAtcMessage('');
         });
 
         const handleIncomingMessages = (cpdlcMessages: CpdlcMessage[]): void => {

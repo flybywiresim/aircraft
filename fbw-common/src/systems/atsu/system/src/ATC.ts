@@ -67,6 +67,7 @@ export class Atc {
         if (this.poweredUp) return;
 
         this.messageMonitoring = new UplinkMessageMonitoring(this.atsu);
+        this.mailboxBus.reset();
 
         this.messageWatchdogInterval = setInterval(() => {
             const ids = this.messageMonitoring.checkMessageConditions();
