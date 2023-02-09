@@ -86,6 +86,13 @@ export class FmsClient {
         this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
         this.messageStorage = new MessageStorage(this.subscriber);
 
+        // register the system control handlers
+        this.subscriber.on('resetData').handle(() => {
+            this.messageStorage.reset();
+            this.atisAutoUpdates = [];
+            this.atisReportsPrintActive = false;
+        });
+
         // register the streaming handlers
         this.subscriber.on('atsuSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
         this.subscriber.on('messageModify').handle((message) => this.modificationMessage = message);

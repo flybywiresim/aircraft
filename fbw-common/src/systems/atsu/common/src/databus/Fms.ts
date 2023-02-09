@@ -31,6 +31,9 @@ export interface FmsRouteData {
 }
 
 export interface AtsuFmsMessages {
+    // data management control
+    resetData: boolean;
+
     // responses from ATSU to FMS for requests
     genericRequestResponse: number;
     requestAtsuStatusCode: { requestId: number; code: AtsuStatusCodes };

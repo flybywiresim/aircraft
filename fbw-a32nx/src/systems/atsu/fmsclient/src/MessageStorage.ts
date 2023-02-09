@@ -85,4 +85,12 @@ export class MessageStorage {
         this.subscriber.on('resynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as OclMessage));
         this.subscriber.on('deleteMessage').handle((uid) => this.deleteMessage(uid));
     }
+
+    public reset(): void {
+        this.atisReports = new Map();
+        this.atcMessagesBuffer = [];
+        this.atcMonitoredMessages = [];
+        this.aocUplinkMessages = [];
+        this.aocDownlinkMessages = [];
+    }
 }

@@ -58,6 +58,7 @@ export class Atsu {
     }
 
     public powerDown(): void {
+        this.digitalOutputs.FmsBus.powerDown();
         this.aoc.powerDown();
         this.atc.powerDown();
         this.poweredUp = false;
