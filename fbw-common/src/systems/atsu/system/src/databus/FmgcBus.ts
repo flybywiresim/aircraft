@@ -1,4 +1,4 @@
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 
 interface FmgcSimvars {
@@ -54,7 +54,7 @@ export class FmgcSimvarPuplisher extends SimVarPublisher<FmgcSimvars> {
         ['msfsAutopilotActive', { name: FmgcSimvarSources.autopilotActive, type: SimVarValueType.Number }],
         ['msfsAutothrustMode', { name: FmgcSimvarSources.autothrustMode, type: SimVarValueType.Number }],
         ['msfsAutothrustSelectedMach', { name: FmgcSimvarSources.autothrustSelectedMach, type: SimVarValueType.Number }],
-        ['msfsAutothrustSelectedKnots', { name: FmgcSimvarSources.autothrustSelectedKnots, type: SimVarValueType.Number }],
+        ['msfsAutothrustSelectedKnots', { name: FmgcSimvarSources.autothrustSelectedKnots, type: SimVarValueType.Knots }],
         ['msfsWindDirection', { name: FmgcSimvarSources.windDirection, type: SimVarValueType.Number }],
         ['msfsWindSpeed', { name: FmgcSimvarSources.windSpeed, type: SimVarValueType.Number }],
         ['msfsStaticAirTemperature', { name: FmgcSimvarSources.staticAirTemperature, type: SimVarValueType.Number }],
@@ -136,10 +136,18 @@ export class FmgcInputBus {
             this.publisher.pub('autothrustMode', new Arinc429Word(mode), true, false);
         });
         this.subscriber.on('msfsAutothrustSelectedMach').handle((mach: number) => {
-            this.publisher.pub('autothrustSelectedMach', new Arinc429Word(mach), true, false);
+            const word = new Arinc429Word(0.0);
+            word.ssm = Arinc429SignStatusMatrix.NormalOperation;
+            word.value = mach;
+
+            this.publisher.pub('autothrustSelectedMach', word, true, false);
         });
         this.subscriber.on('msfsAutothrustSelectedKnots').handle((knots: number) => {
-            this.publisher.pub('autothrustSelectedKnots', new Arinc429Word(knots), true, false);
+            const word = new Arinc429Word(0.0);
+            word.ssm = Arinc429SignStatusMatrix.NormalOperation;
+            word.value = knots;
+
+            this.publisher.pub('autothrustSelectedKnots', word, true, false);
         });
         this.subscriber.on('msfsWindDirection').handle((direction: number) => {
             this.publisher.pub('windDirection', new Arinc429Word(direction), true, false);
