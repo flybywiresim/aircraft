@@ -878,8 +878,6 @@ export class PseudoFWC {
                 SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 0);
                 this.toConfigFail.set(true);
             }
-        } else {
-            this.toConfigFail.set(false);
         }
         this.toConfigNormal.set(SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool'));
 
