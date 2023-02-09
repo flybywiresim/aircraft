@@ -801,8 +801,7 @@ mod tests {
 
     #[test]
     fn brake_actuator_moves_with_pressure() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| brake_actuator(context)));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(brake_actuator));
 
         assert!(test_bed.query_element(|e| e.current_position) == 0.);
         assert!(test_bed.query_element(|e| e.required_position) == 0.);
@@ -847,8 +846,7 @@ mod tests {
 
     #[test]
     fn brake_actuator_not_moving_without_pressure() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| brake_actuator(context)));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(brake_actuator));
 
         test_bed.command_element(|e| e.set_position_demand(1.2));
 
@@ -863,8 +861,7 @@ mod tests {
 
     #[test]
     fn brake_actuator_movement_medium_pressure() {
-        let mut test_bed =
-            SimulationTestBed::from(ElementCtorFn(|context| brake_actuator(context)));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(brake_actuator));
 
         test_bed.command_element(|e| e.set_position_demand(1.2));
 
