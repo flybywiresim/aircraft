@@ -8,12 +8,12 @@ import LowerRightDisplay from './elements/LowerRightDisplay';
 import STS from './elements/STS';
 import ADV from './elements/ADV';
 import DownArrow from './elements/DownArrow';
-import { NewPseudoFWC } from './NewPseudoFWC';
+import { PseudoFWC } from './PseudoFWC';
 
 import './style.scss';
 
 export const EWD: React.FC = () => {
-    const [pseudoFwc] = useState(() => new NewPseudoFWC());
+    const [pseudoFwc] = useState(() => new PseudoFWC());
 
     useUpdate((deltaTime) => pseudoFwc.onUpdate(deltaTime));
 

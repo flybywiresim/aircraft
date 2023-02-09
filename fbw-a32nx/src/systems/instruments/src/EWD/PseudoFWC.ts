@@ -19,7 +19,7 @@ interface EWDMessageDict {
     [key: string] : EWDItem
 }
 
-export class NewPseudoFWC {
+export class PseudoFWC {
     /* PSEUDO FWC VARIABLES */
 
     private readonly allCurrentFailures: string[] = [];
