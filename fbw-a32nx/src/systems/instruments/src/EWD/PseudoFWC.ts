@@ -2002,8 +2002,8 @@ export class PseudoFWC {
             side: 'RIGHT',
         },
         '0000540': { // PRED W/S OFF
-            flightPhaseInhib: [1, 10],
-            simVarIsActive: this.predWSOn.map((v) => !v),
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(([predWSOn, fwcFlightPhase]) => !predWSOn && ![1, 10].includes(fwcFlightPhase), this.predWSOn, this.fwcFlightPhase),
             whichCodeToReturn: () => [[3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool') ? 1 : 0],
             codesToReturn: ['000054001', '000054002'],
             memoInhibit: () => false,
