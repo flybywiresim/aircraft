@@ -115,7 +115,11 @@ class CDUAtcReports {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = () => {
-            mcdu.atsu.toggleAutomaticPositionReportActive().then(() => {
+            mcdu.atsu.toggleAutomaticPositionReportActive().then((status) => {
+                if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
+
                 data.updateInProgress = false;
                 CDUAtcReports.ShowPage(mcdu, data);
             });

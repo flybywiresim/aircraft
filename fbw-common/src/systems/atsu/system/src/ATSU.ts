@@ -52,6 +52,7 @@ export class Atsu {
     }
 
     public powerUp(): void {
+        this.digitalOutputs.FmsBus.powerUp();
         this.aoc.powerUp();
         this.atc.powerUp();
         this.poweredUp = true;

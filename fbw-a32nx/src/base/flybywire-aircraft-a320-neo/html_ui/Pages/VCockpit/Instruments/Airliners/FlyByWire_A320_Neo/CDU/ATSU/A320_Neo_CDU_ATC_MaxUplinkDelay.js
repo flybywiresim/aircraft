@@ -36,7 +36,12 @@ class CDUAtcMaxUplinkDelay {
                 mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
             } else if (updateInProgress === false) {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.atsu.setMaxUplinkDelay(-1).then(() => CDUAtcMaxUplinkDelay.ShowPage(mcdu));
+                    mcdu.atsu.setMaxUplinkDelay(-1).then((status) => {
+                        if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                            mcdu.addNewAtsuMessage(status);
+                        }
+                        CDUAtcMaxUplinkDelay.ShowPage(mcdu);
+                    });
                     CDUAtcMaxUplinkDelay.ShowPage(mcdu, true);
                 } else if (value) {
                     if (/^[0-9]{3}(S)*$/.test(value)) {
@@ -44,7 +49,12 @@ class CDUAtcMaxUplinkDelay {
                         if (delay < 5 || delay > 999) {
                             mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         } else {
-                            mcdu.atsu.setMaxUplinkDelay(delay).then(() => CDUAtcMaxUplinkDelay.ShowPage(mcdu));
+                            mcdu.atsu.setMaxUplinkDelay(delay).then((status) => {
+                                if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                                    mcdu.addNewAtsuMessage(status);
+                                }
+                                CDUAtcMaxUplinkDelay.ShowPage(mcdu);
+                            });
                             CDUAtcMaxUplinkDelay.ShowPage(mcdu, true);
                         }
                     } else {

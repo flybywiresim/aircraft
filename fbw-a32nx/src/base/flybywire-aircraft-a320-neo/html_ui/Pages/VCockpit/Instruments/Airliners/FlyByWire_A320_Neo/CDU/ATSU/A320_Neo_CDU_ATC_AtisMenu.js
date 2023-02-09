@@ -222,7 +222,12 @@ class CDUAtcAtisMenu {
         };
         mcdu.onRightInput[5] = () => {
             if (updateAtisPrintInProgress === false) {
-                mcdu.atsu.togglePrintAtisReports().then(() => CDUAtcAtisMenu.ShowPage(mcdu, airports));
+                mcdu.atsu.togglePrintAtisReports().then((status) => {
+                    if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(status);
+                    }
+                    CDUAtcAtisMenu.ShowPage(mcdu, airports);
+                });
                 CDUAtcAtisMenu.ShowPage(mcdu, airports, true);
             }
         };

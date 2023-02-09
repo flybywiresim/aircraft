@@ -193,8 +193,13 @@ export class FmsOutputBus {
         this.publisher = this.bus.getPublisher<AtsuFmsMessages>();
     }
 
+    public powerUp(): void {
+        this.publisher.pub('poweredUp', true, true, false);
+    }
+
     public powerDown(): void {
         this.publisher.pub('resetData', true, true, false);
+        this.publisher.pub('poweredUp', false, true, false);
     }
 
     public sendAtsuSystemStatus(status: AtsuStatusCodes): void {

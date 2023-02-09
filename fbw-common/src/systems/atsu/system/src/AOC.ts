@@ -8,6 +8,8 @@ import { Atsu } from './ATSU';
  * Defines the AOC
  */
 export class Aoc {
+    private poweredUp: boolean = false;
+
     private atsu: Atsu = null;
 
     private messageQueueUplink: AtsuMessage[] = [];
@@ -18,11 +20,14 @@ export class Aoc {
         this.atsu = atsu;
     }
 
-    public powerUp(): void { }
+    public powerUp(): void {
+        this.poweredUp = true;
+    }
 
     public powerDown(): void {
         this.messageQueueUplink = [];
         this.messageQueueDownlink = [];
+        this.poweredUp = false;
     }
 
     public static isRelevantMessage(message: AtsuMessage): boolean {

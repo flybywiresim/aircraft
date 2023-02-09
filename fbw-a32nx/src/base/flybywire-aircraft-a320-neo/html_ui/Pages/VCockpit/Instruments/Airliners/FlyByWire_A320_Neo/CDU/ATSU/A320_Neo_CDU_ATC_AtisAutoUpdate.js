@@ -1,13 +1,19 @@
 class CDUAtcAtisAutoUpdate {
     static ToggleAutoUpdate(mcdu, icao, reloadPage) {
         if (mcdu.atsu.atisAutoUpdateActive(icao)) {
-            mcdu.atsu.deactivateAtisAutoUpdate(icao).then(() => {
+            mcdu.atsu.deactivateAtisAutoUpdate(icao).then((status) => {
+                if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
                 if (reloadPage) {
                     CDUAtcAtisAutoUpdate.ShowPage(mcdu);
                 }
             });
         } else {
-            mcdu.atsu.activateAtisAutoUpdate(icao, AtsuCommon.AtisType.Arrival).then(() => {
+            mcdu.atsu.activateAtisAutoUpdate(icao, AtsuCommon.AtisType.Arrival).then((status) => {
+                if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
                 if (reloadPage) {
                     CDUAtcAtisAutoUpdate.ShowPage(mcdu);
                 }

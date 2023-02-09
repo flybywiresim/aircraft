@@ -32,6 +32,7 @@ export interface FmsRouteData {
 
 export interface AtsuFmsMessages {
     // data management control
+    poweredUp: boolean;
     resetData: boolean;
 
     // responses from ATSU to FMS for requests
