@@ -1,22 +1,28 @@
 import { Atsu, DigitalInputs, DigitalOutputs } from '@atsu/system';
-import { EventBus } from 'msfssdk';
+import { EventBus, EventSubscriber } from 'msfssdk';
+import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 
 export class AtsuSystem {
+    private readonly powerSupply: EventSubscriber<PowerSupplyBusTypes>;
+
     private readonly digitalInputs: DigitalInputs;
 
     private readonly digitalOutputs: DigitalOutputs;
 
     private readonly atsu: Atsu;
 
-    /**
-     * "mainmenu" = 0
-     * "loading" = 1
-     * "briefing" = 2
-     * "ingame" = 3
-     */
-    private gameState = 0;
-
     constructor(private readonly bus: EventBus) {
+        this.powerSupply = this.bus.getSubscriber<PowerSupplyBusTypes>();
+        this.powerSupply.on('acBus1').whenChanged().handle((powered: boolean) => {
+            if (powered) {
+                this.atsu.powerUp();
+                this.digitalInputs.powerUp();
+            } else {
+                this.digitalInputs.powerDown();
+                this.atsu.powerDown();
+            }
+        });
+
         this.digitalInputs = new DigitalInputs(this.bus);
         this.digitalOutputs = new DigitalOutputs(this.bus);
         this.atsu = new Atsu(this.digitalInputs, this.digitalOutputs);

@@ -27,6 +27,8 @@ import { DigitalOutputs } from './DigitalOutputs';
 export class Atsu {
     public datalink: Datalink = null;
 
+    private poweredUp: boolean = false;
+
     private fltNo: string = '';
 
     private messageCounter = 0;
@@ -42,7 +44,23 @@ export class Atsu {
     public atc: Atc = null;
 
     destinationWaypoint(): any {
-        return {};
+        if (this.digitalInputs.FlightRoute && this.digitalInputs.FlightRoute.destination) {
+            return this.digitalInputs.FlightRoute.destination;
+        } else {
+            return {};
+        }
+    }
+
+    public powerUp(): void {
+        this.aoc.powerUp();
+        this.atc.powerUp();
+        this.poweredUp = true;
+    }
+
+    public powerDown(): void {
+        this.aoc.powerDown();
+        this.atc.powerDown();
+        this.poweredUp = false;
     }
 
     public createAutomatedPositionReport(): CpdlcMessage {
@@ -321,7 +339,7 @@ export class Atsu {
     }
 
     public registerMessages(messages: AtsuMessage[]): void {
-        if (messages.length === 0) return;
+        if (!this.poweredUp || messages.length === 0) return;
 
         messages.forEach((message) => {
             message.UniqueMessageID = ++this.messageCounter;
@@ -343,18 +361,19 @@ export class Atsu {
     }
 
     public publishAtsuStatusCode(code: AtsuStatusCodes): void {
-        this.digitalOutputs.FmsBus.sendAtsuSystemStatus(code);
+        if (this.poweredUp) this.digitalOutputs.FmsBus.sendAtsuSystemStatus(code);
     }
 
     public modifyMailboxMessage(message: CpdlcMessage): void {
-        this.digitalOutputs.FmsBus.sendMessageModify(message);
+        if (this.poweredUp) this.digitalOutputs.FmsBus.sendMessageModify(message);
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
+        if (!this.poweredUp) return AtsuStatusCodes.Ok;
         return this.datalink.isStationAvailable(callsign);
     }
 
     public printMessage(message: AtsuMessage): void {
-        this.digitalOutputs.FmsBus.sendPrintMessage(message);
+        if (this.poweredUp) this.digitalOutputs.FmsBus.sendPrintMessage(message);
     }
 }

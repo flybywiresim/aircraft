@@ -18,6 +18,13 @@ export class Aoc {
         this.atsu = atsu;
     }
 
+    public powerUp(): void { }
+
+    public powerDown(): void {
+        this.messageQueueUplink = [];
+        this.messageQueueDownlink = [];
+    }
+
     public static isRelevantMessage(message: AtsuMessage): boolean {
         return message.Type < AtsuMessageType.AOC;
     }

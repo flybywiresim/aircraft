@@ -102,55 +102,55 @@ export class FmgcInputBus {
         this.subscriber = this.bus.getSubscriber<FmgcSimvars>();
         this.publisher = this.bus.getPublisher<FmgcDataBusTypes>();
 
-        this.subscriber.on('msfsPresentPositionLatitude').whenChanged().handle((latitude: number) => {
+        this.subscriber.on('msfsPresentPositionLatitude').handle((latitude: number) => {
             this.publisher.pub('presentPositionLatitude', new Arinc429Word(latitude), true, false);
         });
-        this.subscriber.on('msfsPresentPositionLongitude').whenChanged().handle((longitude: number) => {
+        this.subscriber.on('msfsPresentPositionLongitude').handle((longitude: number) => {
             this.publisher.pub('presentPositionLongitude', new Arinc429Word(longitude), true, false);
         });
-        this.subscriber.on('msfsPresentAltitude').whenChanged().handle((altitude: number) => {
+        this.subscriber.on('msfsPresentAltitude').handle((altitude: number) => {
             this.publisher.pub('presentAltitude', new Arinc429Word(altitude), true, false);
         });
-        this.subscriber.on('msfsPresentHeading').whenChanged().handle((heading: number) => {
+        this.subscriber.on('msfsPresentHeading').handle((heading: number) => {
             this.publisher.pub('presentHeading', new Arinc429Word(heading), true, false);
         });
-        this.subscriber.on('msfsPresentTrack').whenChanged().handle((track: number) => {
+        this.subscriber.on('msfsPresentTrack').handle((track: number) => {
             this.publisher.pub('presentTrack', new Arinc429Word(track), true, false);
         });
-        this.subscriber.on('msfsComputedAirspeed').whenChanged().handle((cas: number) => {
+        this.subscriber.on('msfsComputedAirspeed').handle((cas: number) => {
             this.publisher.pub('computedAirspeed', new Arinc429Word(cas), true, false);
         });
-        this.subscriber.on('msfsPresentMach').whenChanged().handle((mach: number) => {
+        this.subscriber.on('msfsPresentMach').handle((mach: number) => {
             this.publisher.pub('presentMach', new Arinc429Word(mach), true, false);
         });
-        this.subscriber.on('msfsGroundSpeed').whenChanged().handle((groundSpeed: number) => {
+        this.subscriber.on('msfsGroundSpeed').handle((groundSpeed: number) => {
             this.publisher.pub('groundSpeed', new Arinc429Word(groundSpeed), true, false);
         });
-        this.subscriber.on('msfsVerticalSpeed').whenChanged().handle((verticalSpeed: number) => {
+        this.subscriber.on('msfsVerticalSpeed').handle((verticalSpeed: number) => {
             this.publisher.pub('verticalSpeed', new Arinc429Word(verticalSpeed), true, false);
         });
-        this.subscriber.on('msfsAutopilotActive').whenChanged().handle((active: boolean) => {
+        this.subscriber.on('msfsAutopilotActive').handle((active: boolean) => {
             this.publisher.pub('autopilotActive', new Arinc429Word(active === true ? 1 : 0), true, false);
         });
-        this.subscriber.on('msfsAutothrustMode').whenChanged().handle((mode: number) => {
+        this.subscriber.on('msfsAutothrustMode').handle((mode: number) => {
             this.publisher.pub('autothrustMode', new Arinc429Word(mode), true, false);
         });
-        this.subscriber.on('msfsAutothrustSelectedMach').whenChanged().handle((mach: number) => {
+        this.subscriber.on('msfsAutothrustSelectedMach').handle((mach: number) => {
             this.publisher.pub('autothrustSelectedMach', new Arinc429Word(mach), true, false);
         });
-        this.subscriber.on('msfsAutothrustSelectedKnots').whenChanged().handle((knots: number) => {
+        this.subscriber.on('msfsAutothrustSelectedKnots').handle((knots: number) => {
             this.publisher.pub('autothrustSelectedKnots', new Arinc429Word(knots), true, false);
         });
-        this.subscriber.on('msfsWindDirection').whenChanged().handle((direction: number) => {
+        this.subscriber.on('msfsWindDirection').handle((direction: number) => {
             this.publisher.pub('windDirection', new Arinc429Word(direction), true, false);
         });
-        this.subscriber.on('msfsWindSpeed').whenChanged().handle((speed: number) => {
+        this.subscriber.on('msfsWindSpeed').handle((speed: number) => {
             this.publisher.pub('windSpeed', new Arinc429Word(speed), true, false);
         });
-        this.subscriber.on('msfsStaticAirTemperature').whenChanged().handle((sat: number) => {
+        this.subscriber.on('msfsStaticAirTemperature').handle((sat: number) => {
             this.publisher.pub('staticAirTemperature', new Arinc429Word(sat), true, false);
         });
-        this.subscriber.on('msfsFlightPhase').whenChanged().handle((phase: number) => {
+        this.subscriber.on('msfsFlightPhase').handle((phase: number) => {
             this.publisher.pub('flightPhase', new Arinc429Word(phase), true, false);
         });
     }

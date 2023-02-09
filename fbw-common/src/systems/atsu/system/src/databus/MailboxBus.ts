@@ -58,6 +58,8 @@ export class MailboxBus {
 
     private atcRingInterval: NodeJS.Timer = null;
 
+    private poweredUp: boolean = false;
+
     private uploadMessagesToMailbox(messages: CpdlcMessage[]): void {
         if (messages.length !== 0) {
             switch (messages[0].Type) {
@@ -147,6 +149,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('uplinkResponse').handle((data: { uid: number; responseId: number }) => {
+            if (!this.poweredUp) return;
+
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === data.uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
@@ -158,6 +162,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('downlinkTransmit').handle((uid: number) => {
+            if (!this.poweredUp) return;
+
             let idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
@@ -191,6 +197,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('modifyMessage').handle((uid: number) => {
+            if (!this.poweredUp) return;
+
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
@@ -201,6 +209,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('printMessage').handle((uid: number) => {
+            if (!this.poweredUp) return;
+
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
                 this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.Printing, true, false);
@@ -220,6 +230,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('updateMessageMonitoring').handle((uid: number) => {
+            if (!this.poweredUp) return;
+
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, true);
             this.update(message as CpdlcMessage);
@@ -232,6 +244,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('recallMessage').handle(() => {
+            if (!this.poweredUp) return;
+
             if (!this.lastClosedMessage) {
                 this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.RecallEmpty, true, false);
             } else {
@@ -263,6 +277,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('readMessage').handle((uid: number) => {
+            if (!this.poweredUp) return;
+
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx !== -1) {
                 this.uplinkMessages[idx][0].MessageRead = true;
@@ -271,6 +287,8 @@ export class MailboxBus {
         });
 
         this.mailboxSubscriber.on('invertSemanticResponse').handle((uid: number) => {
+            if (!this.poweredUp) return;
+
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
                 UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
@@ -328,6 +346,14 @@ export class MailboxBus {
 
         // start the ring tone interval
         this.atcRingInterval = setInterval(() => this.atsu.digitalOutputs.FwcBus.activateAtcRing(), this.estimateRingInterval());
+    }
+
+    public powerUp(): void {
+        this.poweredUp = true;
+    }
+
+    public powerDown(): void {
+        this.poweredUp = false;
     }
 
     public reset() {

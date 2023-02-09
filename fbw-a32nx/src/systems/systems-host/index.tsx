@@ -1,11 +1,14 @@
 import { EventBus, HEventPublisher } from 'msfssdk';
 import { AtsuSystem } from './systems/atsu';
 import './style.scss';
+import { PowerSupplyBusses } from './systems/powersupply';
 
 class SystemsHost extends BaseInstrument {
     private readonly bus: EventBus;
 
     private readonly hEventPublisher: HEventPublisher;
+
+    private readonly powerSupply: PowerSupplyBusses;
 
     private readonly atsu: AtsuSystem;
 
@@ -22,6 +25,7 @@ class SystemsHost extends BaseInstrument {
 
         this.bus = new EventBus();
         this.hEventPublisher = new HEventPublisher(this.bus);
+        this.powerSupply = new PowerSupplyBusses(this.bus);
         this.atsu = new AtsuSystem(this.bus);
     }
 
@@ -40,6 +44,7 @@ class SystemsHost extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
+        this.powerSupply.connectedCallback();
         this.atsu.connectedCallback();
     }
 
@@ -50,11 +55,13 @@ class SystemsHost extends BaseInstrument {
             const gamestate = this.getGameState();
             if (gamestate === 3) {
                 this.hEventPublisher.startPublish();
+                this.powerSupply.startPublish();
                 this.atsu.startPublish();
             }
             this.gameState = gamestate;
         }
 
+        this.powerSupply.update();
         this.atsu.update();
     }
 }

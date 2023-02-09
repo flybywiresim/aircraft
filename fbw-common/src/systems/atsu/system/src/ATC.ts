@@ -31,6 +31,8 @@ export class Atc {
 
     public mailboxBus: MailboxBus = null;
 
+    private poweredUp: boolean = false;
+
     private handoverInterval: NodeJS.Timer = null;
 
     private handoverOngoing = false;
@@ -57,14 +59,12 @@ export class Atc {
 
     private automaticPositionReport: boolean = false;
 
+    private messageWatchdogInterval: NodeJS.Timer = null;
+
     public messageMonitoring: UplinkMessageMonitoring = null;
 
-    constructor(atsu: Atsu) {
-        this.atsu = atsu;
-        this.mailboxBus = new MailboxBus(atsu, this);
-        this.messageMonitoring = new UplinkMessageMonitoring(atsu);
-
-        setInterval(() => {
+    public powerUp(): void {
+        this.messageWatchdogInterval = setInterval(() => {
             const ids = this.messageMonitoring.checkMessageConditions();
             ids.forEach((id) => {
                 const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
@@ -74,6 +74,49 @@ export class Atc {
                 }
             });
         }, 5000);
+
+        this.mailboxBus.powerUp();
+        this.poweredUp = true;
+    }
+
+    public powerDown(): void {
+        if (this.messageWatchdogInterval !== null) {
+            clearInterval(this.messageWatchdogInterval);
+            this.messageWatchdogInterval = null;
+        }
+
+        this.atisAutoUpdateIcaos.forEach((entry) => {
+            clearInterval(entry[2]);
+        });
+        this.atisAutoUpdateIcaos = [];
+
+        if (this.handoverInterval !== null) {
+            clearInterval(this.handoverInterval);
+            this.handoverInterval = null;
+        }
+
+        this.handoverOngoing = false;
+        this.currentAtc = '';
+        this.nextAtc = '';
+        this.notificationTime = 0;
+        this.messageQueue = [];
+        this.printAtisReport = false;
+        this.atisAutoUpdateIcaos = [];
+        this.atisMessages = new Map();
+        this.maxUplinkDelay = -1;
+        this.currentFansMode = FansMode.FansNone;
+        this.automaticPositionReport = false;
+        this.messageWatchdogInterval = null;
+        this.messageMonitoring = null;
+
+        this.mailboxBus.powerDown();
+        this.poweredUp = false;
+    }
+
+    constructor(atsu: Atsu) {
+        this.atsu = atsu;
+        this.mailboxBus = new MailboxBus(atsu, this);
+        this.messageMonitoring = new UplinkMessageMonitoring(atsu);
     }
 
     public async disconnect(): Promise<void> {
@@ -243,6 +286,8 @@ export class Atc {
     }
 
     public sendResponse(uid: number, response: number): void {
+        if (!this.poweredUp) return;
+
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             const responseMsg = this.createCpdlcResponse(message, response);
@@ -282,6 +327,8 @@ export class Atc {
     }
 
     public sendExistingResponse(uid: number): void {
+        if (!this.poweredUp) return;
+
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined && message.Response !== undefined) {
             // avoid double-sends
@@ -317,7 +364,7 @@ export class Atc {
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
-        if (message.ComStatus === AtsuMessageComStatus.Sending || message.ComStatus === AtsuMessageComStatus.Sent) {
+        if (!this.poweredUp || message.ComStatus === AtsuMessageComStatus.Sending || message.ComStatus === AtsuMessageComStatus.Sent) {
             return AtsuStatusCodes.Ok;
         }
 

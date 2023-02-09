@@ -37,7 +37,7 @@ export class TransponderInputBus {
         this.publisher = this.bus.getPublisher<TransponderDataBusTypes>();
         this.subscriber = this.bus.getSubscriber<TransponderSimvars>();
 
-        this.subscriber.on('msfsTransponderCode').whenChanged().handle((code: number) => {
+        this.subscriber.on('msfsTransponderCode').handle((code: number) => {
             this.publisher.pub('transponderCode', code, true, false);
         });
     }

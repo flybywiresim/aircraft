@@ -39,8 +39,18 @@ export class AtcMessageButtonInputBus {
 
     private callbacks: AtcMessageButtonBusCallbacks = { onButtonPressed: null }
 
+    private poweredUp: boolean = false;
+
     constructor(private readonly bus: EventBus) {
         this.simVarPublisher = new AtcMessageButtonSimvarPublisher(this.bus);
+    }
+
+    public powerUp(): void {
+        this.poweredUp = true;
+    }
+
+    public powerDown(): void {
+        this.poweredUp = false;
     }
 
     public initialize(): void {
@@ -49,7 +59,7 @@ export class AtcMessageButtonInputBus {
         this.subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => this.buttonActive = active);
         this.subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => {
             if (pressed) {
-                if (this.buttonActive && this.callbacks.onButtonPressed !== null) {
+                if (this.poweredUp && this.buttonActive && this.callbacks.onButtonPressed !== null) {
                     this.callbacks.onButtonPressed();
                 }
 
