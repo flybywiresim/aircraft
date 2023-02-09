@@ -5,10 +5,12 @@ use crate::{
         pid::PidController, random_from_normal_distribution, random_from_range, HydraulicColor,
     },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, StartState, UpdateContext,
+        Write,
     },
 };
 
+use std::fmt::Debug;
 use std::time::Duration;
 
 use uom::si::{
@@ -37,11 +39,20 @@ impl BrakeActuator {
     const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 50.;
     const PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI: f64 = 3100.;
 
-    fn new(total_displacement: Volume) -> Self {
+    fn new(context: &mut InitContext, total_displacement: Volume) -> Self {
         Self {
             total_displacement,
             base_speed: BrakeActuator::ACTUATOR_BASE_SPEED,
-            current_position: 0.,
+            // Here we consider brakes are applied on spawn where park brake should be applied
+            // This avoids actuator movement on spawn that would mess hydraulic quantities on init
+            current_position: if context.start_state() == StartState::Hangar
+                || context.start_state() == StartState::Apron
+                || context.start_state() == StartState::Runway
+            {
+                1.
+            } else {
+                0.
+            },
             required_position: 0.,
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
@@ -176,8 +187,8 @@ impl BrakeCircuit {
             acc_press_id: context.get_identifier(format!("HYD_BRAKE_{}_ACC_PRESS", id)),
 
             // We assume displacement is just split on left and right
-            left_brake_actuator: BrakeActuator::new(total_displacement / 2.),
-            right_brake_actuator: BrakeActuator::new(total_displacement / 2.),
+            left_brake_actuator: BrakeActuator::new(context, total_displacement / 2.),
+            right_brake_actuator: BrakeActuator::new(context, total_displacement / 2.),
 
             demanded_brake_position_left: Ratio::new::<ratio>(0.0),
             pressure_applied_left: Pressure::new::<psi>(0.0),
@@ -643,6 +654,17 @@ impl BrakeAccumulatorCharacteristics {
         self.target_pressure
     }
 }
+impl Debug for BrakeAccumulatorCharacteristics {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\ntotal vol: {:.2}\ninit vol {:.2}\ngas_precharge{:.2}]",
+            self.total_volume().get::<gallon>(),
+            self.volume_at_init().get::<gallon>(),
+            self.gas_precharge().get::<psi>(),
+        )
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -779,7 +801,8 @@ mod tests {
 
     #[test]
     fn brake_actuator_moves_with_pressure() {
-        let mut test_bed = SimulationTestBed::from(brake_actuator());
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| brake_actuator(context)));
 
         assert!(test_bed.query_element(|e| e.current_position) == 0.);
         assert!(test_bed.query_element(|e| e.required_position) == 0.);
@@ -824,7 +847,8 @@ mod tests {
 
     #[test]
     fn brake_actuator_not_moving_without_pressure() {
-        let mut test_bed = SimulationTestBed::from(brake_actuator());
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| brake_actuator(context)));
 
         test_bed.command_element(|e| e.set_position_demand(1.2));
 
@@ -839,7 +863,8 @@ mod tests {
 
     #[test]
     fn brake_actuator_movement_medium_pressure() {
-        let mut test_bed = SimulationTestBed::from(brake_actuator());
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| brake_actuator(context)));
 
         test_bed.command_element(|e| e.set_position_demand(1.2));
 
@@ -1035,7 +1060,7 @@ mod tests {
         )
     }
 
-    fn brake_actuator() -> BrakeActuator {
-        BrakeActuator::new(Volume::new::<gallon>(0.04))
+    fn brake_actuator(context: &mut InitContext) -> BrakeActuator {
+        BrakeActuator::new(context, Volume::new::<gallon>(0.04))
     }
 }

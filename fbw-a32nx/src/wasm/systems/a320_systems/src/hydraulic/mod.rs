@@ -118,13 +118,16 @@ impl A320HydraulicReservoirFactory {
         )
     }
 
-    fn new_yellow_reservoir(context: &mut InitContext) -> Reservoir {
+    fn new_yellow_reservoir(
+        context: &mut InitContext,
+        fluid_volume_in_brake_accumulator: Volume,
+    ) -> Reservoir {
         Reservoir::new(
             context,
             HydraulicColor::Yellow,
             Volume::new::<liter>(20.),
             Volume::new::<liter>(18.),
-            Volume::new::<gallon>(3.6),
+            Volume::new::<gallon>(3.8) - fluid_volume_in_brake_accumulator,
             vec![PressureSwitch::new(
                 Pressure::new::<psi>(25.),
                 Pressure::new::<psi>(22.),
@@ -207,8 +210,14 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    pub fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
-        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
+    pub fn new_yellow_circuit(
+        context: &mut InitContext,
+        fluid_volume_in_brake_accumulator: Volume,
+    ) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(
+            context,
+            fluid_volume_in_brake_accumulator,
+        );
         HydraulicCircuit::new(
             context,
             HydraulicColor::Yellow,
@@ -1563,7 +1572,7 @@ impl A320Hydraulic {
             Volume::new::<gallon>(1.0),
             Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
             Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
-            Ratio::new::<ratio>(0.01),
+            Ratio::new::<ratio>(0.03),
         );
 
         A320Hydraulic {
@@ -1593,7 +1602,10 @@ impl A320Hydraulic {
                 Some(1),
                 HydraulicColor::Green,
             ),
-            yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
+            yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(
+                context,
+                brake_accumulator_charac.volume_at_init(),
+            ),
             yellow_circuit_controller: A320HydraulicCircuitController::new(
                 Some(2),
                 HydraulicColor::Yellow,
