@@ -194,6 +194,56 @@ impl SimulationElement for OnOffAvailablePushButton {
     }
 }
 
+pub struct OnOffPushButton {
+    is_on_id: VariableIdentifier,
+    is_on: bool,
+}
+impl OnOffPushButton {
+    pub fn new_on(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
+    }
+
+    pub fn new_off(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
+    }
+
+    fn new(context: &mut InitContext, name: &str, is_on: bool) -> Self {
+        Self {
+            is_on_id: context.get_identifier(format!("OVHD_{}_PB_IS_ON", name)),
+            is_on,
+        }
+    }
+
+    pub fn set_on(&mut self, value: bool) {
+        self.is_on = value;
+    }
+
+    pub fn turn_on(&mut self) {
+        self.is_on = true;
+    }
+
+    pub fn turn_off(&mut self) {
+        self.is_on = false;
+    }
+
+    pub fn is_on(&self) -> bool {
+        self.is_on
+    }
+
+    pub fn is_off(&self) -> bool {
+        !self.is_on
+    }
+}
+impl SimulationElement for OnOffPushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_on_id, self.is_on());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_on(reader.read(&self.is_on_id));
+    }
+}
+
 pub struct NormalOnPushButton {
     is_on_id: VariableIdentifier,
     is_on: bool,
@@ -862,6 +912,66 @@ mod on_off_available_push_button_tests {
 
         assert!(test_bed.contains_variable_with_name("OVHD_ELEC_EXT_PWR_PB_IS_ON"));
         assert!(test_bed.contains_variable_with_name("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"));
+    }
+}
+
+#[cfg(test)]
+mod on_off_push_button_tests {
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
+
+    use super::*;
+
+    #[test]
+    fn new_on_push_button_is_on() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffPushButton::new_on(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_on()));
+    }
+
+    #[test]
+    fn new_off_push_button_is_off() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffPushButton::new_off(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_off()));
+    }
+
+    #[test]
+    fn when_set_on_is_on() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffPushButton::new_off(context, "TEST")
+        }));
+
+        test_bed.command_element(|e| e.turn_on());
+
+        assert!(test_bed.query_element(|e| e.is_on()));
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffPushButton::new_off(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_PB_IS_ON", true);
+
+        test_bed.run();
+
+        assert!(test_bed.query_element(|e| e.is_on()));
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffPushButton::new_off(context, "TEST")
+        }));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_PB_IS_ON"));
     }
 }
 

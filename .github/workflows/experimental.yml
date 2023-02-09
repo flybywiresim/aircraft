@@ -41,7 +41,7 @@ jobs:
           ./scripts/dev-env/run.sh node ./scripts/install-source.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a32nx/out/
-          zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.EXPERIMENTAL_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
       - name: Upload to CloudFlare CDN
         env:
@@ -54,7 +54,7 @@ jobs:
         with:
           token: ${{ github.token }}
           tag: ${{ env.EXPERIMENTAL_PRE_RELEASE_TAG }}
-          assets: "*"
+          assets: '*'
           fail-if-no-assets: false
       - name: Upload aircraft package to GitHub Pre-Release Assets
         uses: actions/upload-release-asset@v1.0.2
