@@ -53,7 +53,7 @@ export class PowerSupplyBusses {
         this.simVarPublisher = new PowerSupplySimvarPublisher(this.bus);
     }
 
-    public initialize(): void {
+    private initialize(): void {
         this.publisher = this.bus.getPublisher<PowerSupplyBusTypes>();
         this.subscriber = this.bus.getSubscriber<PowerSupplySimvars>();
 
@@ -66,6 +66,8 @@ export class PowerSupplyBusses {
     }
 
     public connectedCallback(): void {
+        this.initialize();
+
         this.simVarPublisher.subscribe('msfsAcBus1');
         this.simVarPublisher.subscribe('msfsAcBus2');
         this.simVarPublisher.subscribe('msfsAcBusEss');

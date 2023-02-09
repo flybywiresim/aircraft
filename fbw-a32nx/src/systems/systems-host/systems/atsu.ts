@@ -12,6 +12,10 @@ export class AtsuSystem {
     private readonly atsu: Atsu;
 
     constructor(private readonly bus: EventBus) {
+        this.digitalInputs = new DigitalInputs(this.bus);
+        this.digitalOutputs = new DigitalOutputs(this.bus);
+        this.atsu = new Atsu(this.digitalInputs, this.digitalOutputs);
+
         this.powerSupply = this.bus.getSubscriber<PowerSupplyBusTypes>();
         this.powerSupply.on('acBus1').whenChanged().handle((powered: boolean) => {
             if (powered) {
@@ -22,10 +26,6 @@ export class AtsuSystem {
                 this.atsu.powerDown();
             }
         });
-
-        this.digitalInputs = new DigitalInputs(this.bus);
-        this.digitalOutputs = new DigitalOutputs(this.bus);
-        this.atsu = new Atsu(this.digitalInputs, this.digitalOutputs);
     }
 
     public connectedCallback(): void {
