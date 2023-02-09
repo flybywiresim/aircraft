@@ -6,10 +6,15 @@ type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 type UnitName = SimVar.SimVarUnit;
 type SimVarValue = number | any;
 
+/**
+ * taken from the AAU1 G3000
+ * The purpose is to reduce the amount of allocations
+ * by reducing the amount of allocations caused by the default function
+ */
 const latlonaltRegEx = new RegExp(/latlonalt/i);
 const latlonaltpbhRegex = new RegExp(/latlonaltpbh/i);
 const pbhRegex = new RegExp(/pbh/i);
-const pid_structRegex = new RegExp(/pid_struct/i);
+const pidStructRegex = new RegExp(/pid_struct/i);
 const xyzRegex = new RegExp(/xyz/i);
 const stringRegex = new RegExp(/string/i);
 const boolRegex = new RegExp(/boolean|bool/i);
@@ -40,7 +45,7 @@ SimVar.GetSimVarValue = (name, unit, dataSource = defaultSource) => {
                 } else if (pbhRegex.test(unit)) {
                     // @ts-ignore
                     output = new PitchBankHeading(simvar.getValue_PBH(name, dataSource));
-                } else if (pid_structRegex.test(unit)) {
+                } else if (pidStructRegex.test(unit)) {
                     // @ts-ignore
                     output = new PID_STRUCT(simvar.getValue_PID_STRUCT(name, dataSource));
                 } else if (xyzRegex.test(unit)) {
@@ -62,7 +67,7 @@ SimVar.GetSimVarValue = (name, unit, dataSource = defaultSource) => {
     return null;
 };
 SimVar.SetSimVarValue = (name, unit, value, dataSource = defaultSource) => {
-    if (value == undefined) {
+    if (value === undefined) {
         console.warn(`${name} : Trying to set a null value`);
         return Promise.resolve();
     }
@@ -89,7 +94,7 @@ SimVar.SetSimVarValue = (name, unit, value, dataSource = defaultSource) => {
                 if (pbhRegex.test(unit)) {
                     return Coherent.call('setValue_PBH', name, value, dataSource);
                 }
-                if (pid_structRegex.test(unit)) {
+                if (pidStructRegex.test(unit)) {
                     return Coherent.call('setValue_PID_STRUCT', name, value, dataSource);
                 }
                 if (xyzRegex.test(unit)) {

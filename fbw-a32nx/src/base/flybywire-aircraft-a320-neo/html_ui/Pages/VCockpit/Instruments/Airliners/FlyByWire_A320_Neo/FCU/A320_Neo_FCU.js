@@ -1,5 +1,3 @@
-
-
 class A320_Neo_FCU extends BaseAirliners {
     constructor() {
         super();
