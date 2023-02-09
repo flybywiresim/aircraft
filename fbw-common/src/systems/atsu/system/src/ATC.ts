@@ -64,6 +64,10 @@ export class Atc {
     public messageMonitoring: UplinkMessageMonitoring = null;
 
     public powerUp(): void {
+        if (this.poweredUp) return;
+
+        this.messageMonitoring = new UplinkMessageMonitoring(this.atsu);
+
         this.messageWatchdogInterval = setInterval(() => {
             const ids = this.messageMonitoring.checkMessageConditions();
             ids.forEach((id) => {
@@ -80,6 +84,8 @@ export class Atc {
     }
 
     public powerDown(): void {
+        if (!this.poweredUp) return;
+
         if (this.messageWatchdogInterval !== null) {
             clearInterval(this.messageWatchdogInterval);
             this.messageWatchdogInterval = null;
@@ -116,7 +122,6 @@ export class Atc {
     constructor(atsu: Atsu) {
         this.atsu = atsu;
         this.mailboxBus = new MailboxBus(atsu, this);
-        this.messageMonitoring = new UplinkMessageMonitoring(atsu);
     }
 
     public async disconnect(): Promise<void> {
