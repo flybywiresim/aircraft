@@ -37,7 +37,7 @@ public:
    * @return the name of the variable
    */
   [[nodiscard]]
-  const std::string &getVarName() const {
+  const std::string &getName() const {
     return name;
   }
 

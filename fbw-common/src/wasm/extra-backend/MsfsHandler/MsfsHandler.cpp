@@ -53,10 +53,8 @@ bool MsfsHandler::initialize() {
                                std::forward<decltype(PH6)>(PH6),
                                std::forward<decltype(PH7)>(PH7));
   };
-  keyEventHandlerEx1 = static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(Callback<void(ID32, UINT32, UINT32,
-                                                                              UINT32, UINT32,
-                                                                              UINT32,
-                                                                              PVOID)>::callback);
+  keyEventHandlerEx1 = static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(
+    Callback<void(ID32, UINT32, UINT32, UINT32, UINT32, UINT32, PVOID)>::callback);
 
   // Register as key event handler
   register_key_event_handler_EX1(keyEventHandlerEx1, nullptr);

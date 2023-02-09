@@ -18,6 +18,7 @@
 #include "Units.h"
 
 #include "DataDefinitionVariable.h"
+#include "ClientDataAreaVariable.h"
 
 // Forward declarations
 class MsfsHandler;
@@ -48,43 +49,30 @@ typedef std::shared_ptr<Event> EventPtr;
  */
 class DataManager {
 private:
-  /**
-   * A map of all registered variables.
-   */
+  // A map of all registered variables.
   std::map<std::string, CacheableVariablePtr> variables{};
 
-  /**
-   * A map of all registered SimObjects.
-   * Map over the request id to quickly find the SimObject.
-   */
+  // A map of all registered SimObjects.
+  // Map over the request id to quickly find the SimObject.
   std::map<SIMCONNECT_DATA_REQUEST_ID, SimObjectBasePtr> simObjects{};
 
-  /**
-   * A map of all registered events.
-   * Map over the event id to quickly find the event - make creating an event a bit less efficient.
-   */
+  // A map of all registered events.
+  // Map over the event id to quickly find the event - make creating an event a bit less efficient.
   std::map<SIMCONNECT_CLIENT_EVENT_ID, EventPtr> events{};
 
-  /**
-   * Backreference to the MsfsHandler instance.
-   */
+  // Backreference to the MsfsHandler instance.
   MsfsHandler *msfsHandler;
 
-  /**
-   * Handle to the simconnect instance.
-   */
+  // Handle to the simconnect instance.
   HANDLE hSimConnect{};
 
-  /**
-   * Flag to indicate if the data manager is initialized.
-   */
+  // Flag to indicate if the data manager is initialized.
   bool isInitialized = false;
 
-  /**
-   * Instances of an IDGenerator to generate unique IDs for variables and events.
-   */
+  // Instances of an IDGenerator to generate unique IDs for variables and events.
   IDGenerator dataDefIDGen{};
   IDGenerator dataReqIDGen{};
+  IDGenerator clientDataIDGen{};
   IDGenerator eventIDGen{};
 
 public:
@@ -255,6 +243,50 @@ public:
   }
 
   /**
+   * Creates a new client data area variable and adds it to the list of managed variables.
+   * @typename T Type of the data structure to use to store the data
+   * @param clientDataName String containing the client data area name. This is the name that another
+   *                       client will use to specify the data area. The name is not case-sensitive.
+   *                       If the name requested is already in use by another addon, a error will be
+   *                       printed to the console.
+   * @param readOnlyForOthers Specify if the data area can only be written to by this client (the
+   *                          client creating the data area). By default other clients can write to
+   *                          this data area.
+   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
+   * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
+   * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
+   * @param maxAgeTicks optional Maximum age of the variable in ticks (default=0)
+   * @return A shared pointer to the variable
+   */
+  template<typename T>
+  std::shared_ptr<ClientDataAreaVariable<T>> make_clientdataarea_var(
+    const std::string &clientDataName,
+    bool autoReading = false,
+    bool autoWriting = false,
+    FLOAT64 maxAgeTime = 0.0,
+    UINT64 maxAgeTicks = 0) {
+
+    std::shared_ptr<ClientDataAreaVariable<T>> var =
+      std::make_shared<ClientDataAreaVariable<T>>(
+        hSimConnect,
+        clientDataName,
+        clientDataIDGen.getNextId(),
+        dataDefIDGen.getNextId(),
+        dataReqIDGen.getNextId(),
+        autoReading,
+        autoWriting,
+        maxAgeTime,
+        maxAgeTicks);
+
+    LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
+
+    simObjects.insert({var->getRequestId(), var});
+
+    return var;
+  }
+
+
+  /**
    * Creates a new event and adds it to the list of managed events.
    * Per default does not subscribe to the event. Use the subscribeToSim() method
    * to subscribeToSim to the event.
@@ -286,7 +318,7 @@ private:
    * @param data Pointer to the data structure of gauge pre-draw event
    * @return true if request ID has been processed, false otherwise
    */
-  void processSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data);
+  void processSimObjectData(SIMCONNECT_RECV* data);
 
   /**
    * Called from processDispatchMessage() for SIMCONNECT_RECV_ID_EVENT messages.

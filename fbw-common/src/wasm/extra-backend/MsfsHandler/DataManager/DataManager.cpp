@@ -32,7 +32,7 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
       LOG_VERBOSE_BLOCK(
         if (tickCounter % 100 == 0) {
           std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
-                    << var.second->getVarName() << " = " << var.second->get()
+                    << var.second->getName() << " = " << var.second->get()
                     << std::endl;
         })
     }
@@ -43,12 +43,12 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (ddv.second->isAutoRead()) {
       if (!ddv.second->requestUpdateFromSim(timeStamp, tickCounter)) {
         LOG_ERROR("DataManager::preUpdate(): requestUpdateFromSim() failed for "
-                  + ddv.second->getVarName());
+                  + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
         if (tickCounter % 100 == 0) {
           std::cout << "DataManager::preUpdate() - auto read simobjects: "
-                    << ddv.second->getVarName()
+                    << ddv.second->getName()
                     << std::endl;
         })
     }
@@ -84,7 +84,7 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
       LOG_VERBOSE_BLOCK(
         if (tickCounter % 100 == 0) {
           std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
-                    << var.second->getVarName() << " = " << var.second->get()
+                    << var.second->getName() << " = " << var.second->get()
                     << std::endl;
         })
     }
@@ -95,12 +95,12 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (ddv.second->isAutoWrite()) {
       if (!ddv.second->writeDataToSim()) {
         LOG_ERROR("DataManager::postUpdate(): updateDataToSim() failed for "
-                  + ddv.second->getVarName());
+                  + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
         if (tickCounter % 100 == 0) {
           std::cout << "DataManager::postUpdate() - auto write simobjects"
-                    << ddv.second->getVarName()
+                    << ddv.second->getName()
                     << std::endl;
         })
     }
@@ -316,7 +316,14 @@ EventPtr DataManager::make_event(
 void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]] DWORD* cbData) {
   switch (pRecv->dwID) {
     case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
-      processSimObjectData(reinterpret_cast<SIMCONNECT_RECV_SIMOBJECT_DATA*>(pRecv));
+      // fallthrough
+    case SIMCONNECT_RECV_ID_CLIENT_DATA:
+      // We are using the same callback for both SIMOBJECT_DATA and CLIENT_DATA
+      // as SIMCONNECT_RECV_CLIENT_DATA is a specialization of SIMCONNECT_RECV_SIMOBJECT_DATA,
+      // and we do not need to distinguish between them here.
+      // Alternatively, we could have used SIMCONNECT_RECV and then cast to the appropriate type
+      // later.
+      processSimObjectData(pRecv);
       break;
 
     case SIMCONNECT_RECV_ID_EVENT:
@@ -351,13 +358,14 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
   }
 }
 
-void DataManager::processSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
-  if (auto pair = simObjects.find(data->dwRequestID); pair != simObjects.end()) {
-    pair->second->processSimData(data);
+void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) {
+  const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
+  if (auto pair = simObjects.find(pSimobjectData->dwRequestID); pair != simObjects.end()) {
+    pair->second->processSimData(pData);
     return;
   }
   LOG_ERROR("DataManager::processSimObjectData() - unknown request id: "
-            + std::to_string(data->dwRequestID));
+            + std::to_string(pSimobjectData->dwRequestID));
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) {

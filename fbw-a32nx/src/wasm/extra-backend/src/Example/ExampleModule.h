@@ -47,9 +47,31 @@ private:
   };
   std::shared_ptr<DataDefinitionVariable<ExampleData>> exampleDataPtr;
 
+  // ClientDataArea variables
+  struct ExampleClientData {
+    FLOAT64 aFloat64;
+    FLOAT32 aFloat32;
+    INT64 anInt64;
+    INT32 anInt32;
+    INT16 anInt16;
+    INT8 anInt8;
+  } __attribute__((packed));
+  std::shared_ptr<ClientDataAreaVariable<ExampleClientData>> exampleClientDataPtr;
+
+  // Second ClientDataArea variable identical to the first one for testing
+  struct ExampleClientData2 {
+    INT8 anInt8;
+    INT16 anInt16;
+    INT32 anInt32;
+    INT64 anInt64;
+    FLOAT32 aFloat32;
+    FLOAT64 aFloat64;
+  } __attribute__((packed));
+  std::shared_ptr<ClientDataAreaVariable<ExampleClientData2>> exampleClientData2Ptr;
+
   // Events
   EventPtr beaconLightSetEventPtr;
-  [[maybe_unused]] CallbackID beaconLightSetCallbackID;
+  [[maybe_unused]] CallbackID beaconLightSetCallbackID{};
   EventPtr toggleFlightDirectorEventPtr;
   [[maybe_unused]] CallbackID toggleFlightDirectorCallbackID{};
   EventPtr lightPotentiometerSetEventPtr;

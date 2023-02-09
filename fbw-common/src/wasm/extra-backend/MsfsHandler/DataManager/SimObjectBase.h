@@ -39,23 +39,49 @@ protected:
   SIMCONNECT_DATA_REQUEST_ID requestId = 0;
 
   /**
+   * Flag to indicate if the check for data changes should be skipped to save performance when the
+   * check is not required.
+   */
+  bool skipChangeCheck = false;
+
+  /**
+   * Flag to indicate if the data has been changed compared to the corrent data held in the
+   * datastruct.
+   */
+  bool dataChanged = false;
+
+  /**
   * Creates a new instance of a DataDefinitionVariable.
   * @param hSimConnect Handle to the SimConnect object.
   * @param name Arbitrary name for the data definition variable for debugging purposes
-  * @param dataDefinitions List of data definitions to add to the sim object data
   * @param dataDefinitionId Each data definition variable has its own unique id so the sim can map registered data sim objects to data definitions.
   * @param requestId Each request for sim object data requires a unique id so the sim can provide the request ID in the response (message SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
-  * @param pDataStruct Pointer to the data struct that will be used to store the data from the sim.
-  * @param structSize Size of the data struct that will be used to store the data from the sim.
   * @param autoReading Used by external classes to determine if the variable should updated from the sim when a sim update call occurs.
   * @param autoWriting Used by external classes to determine if the variable should written to the sim when a sim update call occurs.
   * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by the requestUpdateFromSim() method.
   * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
   */
-  SimObjectBase(const std::string &varName, bool autoRead, bool autoWrite, FLOAT64 maxAgeTime,
-                UINT64 maxAgeTicks, DWORD dataDefId, HANDLE hSimConnect, DWORD requestId)
+  SimObjectBase(
+    HANDLE hSimConnect,
+    const std::string &varName,
+    DWORD dataDefId,
+    DWORD requestId,
+    bool autoRead = false,
+    bool autoWrite = false,
+    FLOAT64 maxAgeTime = 0.0,
+    UINT64 maxAgeTicks = 0)
     : ManagedDataObjectBase(varName, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
       hSimConnect(hSimConnect), dataDefId(dataDefId), requestId(requestId) {}
+
+
+  /**
+   * Sets the data changed flag after a reading from the sim which is not identical to the current
+   * data in the datastruct.
+   * @param hasChanged true if the data has changed, false otherwise
+   */
+  void setDataChanged(bool hasChanged) {
+    SimObjectBase::dataChanged = hasChanged;
+  }
 
 public:
 
@@ -72,8 +98,8 @@ public:
   };
 
   SimObjectBase() = delete; // no default constructor
-  SimObjectBase(const SimObjectBase&) = delete; // no copy constructor
-  SimObjectBase& operator=(const SimObjectBase&) = delete; // no copy assignment
+  SimObjectBase(const SimObjectBase &) = delete; // no copy constructor
+  SimObjectBase &operator=(const SimObjectBase &) = delete; // no copy assignment
 
   ~SimObjectBase() override = default;
 
@@ -98,12 +124,12 @@ public:
   virtual bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) = 0;
 
   /**
-   * Called by the DataManager when a SIMCONNECT_RECV_ID_SIMOBJECT_DATA message for this
-   * variables request ID is received.
-   * @param pointer to the SIMCONNECT_RECV_SIMOBJECT_DATA structure
-   * @See SIMCONNECT_RECV_SIMOBJECT_DATA
+   * Called by the DataManager when a SIMCONNECT_RECV_ID_SIMOBJECT_DATA
+   * or SIMCONNECT_RECV_ID_CLIENT_DATA message for this variables request ID is received.
+   * @param pointer to the SIMCONNECT_RECV_SIMOBJECT_DATA of SIMCONNECT_RECV_CLIENT_DATA structure
+   * @See SIMCONNECT_RECV
    */
-  virtual void processSimData(const SIMCONNECT_RECV_SIMOBJECT_DATA* pData) = 0;
+  virtual void processSimData(const SIMCONNECT_RECV* pData) = 0;
 
   /**
    * Writes the data object to the sim.
@@ -122,6 +148,24 @@ public:
    */
   [[nodiscard]]
   DWORD getRequestId() const { return requestId; }
+
+  /**
+   * @return true if the data is not identical to the current data in the struct, false otherwise
+   */
+  [[nodiscard]] bool hasDataChanged() const { return dataChanged; }
+
+  /**
+   * @return true if the check for data changes should be skipped to save performance when the check is not required, false otherwise
+   */
+  [[nodiscard]] bool isSkipChangeCheck() const { return skipChangeCheck; }
+
+  /**
+   * Sets the flag to skip the check for data changes to save performance when the check is not required.
+   * @param changeCheck
+   */
+  void setSkipChangeCheck(bool changeCheck) { SimObjectBase::skipChangeCheck = changeCheck; }
+
+
 };
 
 #endif //FLYBYWIRE_A32NX_SIMOBJECTBASE_H

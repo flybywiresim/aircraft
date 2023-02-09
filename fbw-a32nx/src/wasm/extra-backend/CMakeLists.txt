@@ -6,7 +6,7 @@ set(FBW_ROOT "../../../..")
 
 # Configure the build as required
 set(AIRCRAFT "A32NX")
-set(EXAMPLES "NO_EXAMPLES") # EXAMPLES, NO_EXAMPLES
+set(EXAMPLES "EXAMPLES") # EXAMPLES, NO_EXAMPLES
 # ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
 set(LOG_LEVEL 5)
 set(LOGGING "LOG_LEVEL=${LOG_LEVEL}")
@@ -61,7 +61,6 @@ set(SOURCES
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/CacheableVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/NamedVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/AircraftVariable.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/ClientDataAreaVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/Event.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/InputEvent.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/KeyEvent.cpp
