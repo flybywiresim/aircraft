@@ -57,12 +57,12 @@ export class PowerSupplyBusses {
         this.publisher = this.bus.getPublisher<PowerSupplyBusTypes>();
         this.subscriber = this.bus.getSubscriber<PowerSupplySimvars>();
 
-        this.subscriber.on('msfsAcBus1').whenChanged().handle((powered: number) => this.publisher.pub('acBus1', powered !== 0));
-        this.subscriber.on('msfsAcBus2').whenChanged().handle((powered: number) => this.publisher.pub('acBus2', powered !== 0));
-        this.subscriber.on('msfsAcBusEss').whenChanged().handle((powered: number) => this.publisher.pub('acBusEss', powered !== 0));
-        this.subscriber.on('msfsDcBus1').whenChanged().handle((powered: number) => this.publisher.pub('dcBus1', powered !== 0));
-        this.subscriber.on('msfsDcBus2').whenChanged().handle((powered: number) => this.publisher.pub('dcBus2', powered !== 0));
-        this.subscriber.on('msfsDcBusEss').whenChanged().handle((powered: number) => this.publisher.pub('dcBusEss', powered !== 0));
+        this.subscriber.on('msfsAcBus1').whenChanged().handle((powered: number) => this.publisher.pub('acBus1', powered !== 0, false, false));
+        this.subscriber.on('msfsAcBus2').whenChanged().handle((powered: number) => this.publisher.pub('acBus2', powered !== 0, false, false));
+        this.subscriber.on('msfsAcBusEss').whenChanged().handle((powered: number) => this.publisher.pub('acBusEss', powered !== 0, false, false));
+        this.subscriber.on('msfsDcBus1').whenChanged().handle((powered: number) => this.publisher.pub('dcBus1', powered !== 0, false, false));
+        this.subscriber.on('msfsDcBus2').whenChanged().handle((powered: number) => this.publisher.pub('dcBus2', powered !== 0, false, false));
+        this.subscriber.on('msfsDcBusEss').whenChanged().handle((powered: number) => this.publisher.pub('dcBusEss', powered !== 0, false, false));
     }
 
     public connectedCallback(): void {
