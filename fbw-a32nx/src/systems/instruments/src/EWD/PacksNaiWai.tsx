@@ -1,6 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
-import { AutoThrustMode } from '@shared/autopilot';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 
 interface PacksNaiWaiProps {
