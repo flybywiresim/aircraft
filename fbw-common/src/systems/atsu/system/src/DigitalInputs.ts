@@ -55,7 +55,7 @@ export class DigitalInputs {
 
     public RmpData: {
         transponderCode: number,
-        vhf3Frequency: number,
+        vhf3DataMode: boolean,
     };
 
     public FlightPhase: FmgcFlightPhase = FmgcFlightPhase.Preflight;
@@ -111,7 +111,7 @@ export class DigitalInputs {
 
         this.RmpData = {
             transponderCode: 2000,
-            vhf3Frequency: 0,
+            vhf3DataMode: false,
         }
 
         this.FlightPhase = FmgcFlightPhase.Preflight;
@@ -259,10 +259,9 @@ export class DigitalInputs {
         this.subscriber.on('transponderCode').handle((code: number) => {
             if (this.poweredUp) this.RmpData.transponderCode = code;
         });
-        this.subscriber.on('vhf3Frequency').handle((frequency: number) => {
-            console.log(frequency);
-            if (this.poweredUp) this.RmpData.vhf3Frequency = frequency;
-        })
+        this.subscriber.on('vhf3DataMode').handle((active: boolean) => {
+            if (this.poweredUp) this.RmpData.vhf3DataMode = active;
+        });
 
         this.subscriber.on('routeData').handle((route) => {
             if (!this.poweredUp) return;
