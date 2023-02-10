@@ -1,5 +1,7 @@
 const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+//use this config to display newest versions of FMC instead
+const confirmDataBaseSwitch = false;
 
 function findNewMonthIndex(index) {
     if (index === 0) {
@@ -62,8 +64,40 @@ function calculateSecDate(date) {
     } else {
         return "ERR";
     }
-
 }
+
+function switchDataBase(mcdu)
+    {
+    // Only performing a reset of the MCDU for now, no secondary database
+    //Speed AP returns to selected
+    const isSelected = Simplane.getAutoPilotAirspeedSelected();
+    if (isSelected == false) SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
+    //flight plan
+    mcdu.resetCoroute();
+    mcdu.atsu.atc.resetAtisAutoUpdate();
+    mcdu.flightPlanManager.clearFlightPlan();
+    //stored data
+    mcdu.dataManager.deleteAllStoredWaypoints();
+    //Fuel reset
+    mcdu.zeroFuelWeight = undefined;
+    mcdu.zeroFuelWeightMassCenter = undefined ;
+    mcdu._blockFuelEntered = false;
+    mcdu._fuelPlanningPhase = mcdu._fuelPlanningPhases.PLANNING;
+    mcdu._zeroFuelWeightZFWCGEntered= false;
+    mcdu._blockFuelEntered = false;
+    mcdu.blockFuel = undefined;
+    mcdu.taxiFuelWeight = undefined;
+    //other data
+    mcdu.costIndex = undefined;
+    mcdu.costIndexSet = false;
+    mcdu.flightNumber = undefined
+    mcdu._cruiseEntered =false
+    mcdu._cruiseFlightLevel = undefined;
+    //position loss
+    // Missing FEATURE
+    // Internal FMC position shall also be lost so that navigation Display is blanked and speed prediction in Navigation.ts
+    // Must be done when the navigation system implements an internal position.
+    }
 
 const ConfirmType = {
     NoConfirm : 0,
@@ -85,6 +119,7 @@ class CDUIdentPage {
         let storedWaypointsNavaidsCell = "";
         let storedDeleteCell = "";
         let secondaryDBSubLine = "";
+        let secondaryDBTopLine = "";
         if ((stored.routes + stored.runways + stored.waypoints + stored.navaids) > 0) {
             storedTitleCell = "STORED\xa0\xa0\xa0\xa0";
             storedRoutesRunwaysCell = `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`;
@@ -105,23 +140,42 @@ class CDUIdentPage {
             };
         }
 
-        secondaryDBSubLine = (confirmType == ConfirmType.SwitchDataBase) ? '{amber}CONFIRM DATABASE CHANGE*{end}inop' : "{small}{" + calculateSecDate(date) + "{end}[color]inop";
+        //Potential future message in case we switch to a newer version of the FMS
+        if (confirmDataBaseSwitch) {
+            secondaryDBTopLine = (confirmType == ConfirmType.SwitchDataBase) ? "{red}{small} " + calculateSecDate(date) + "{end}" : "\xa0SECOND NAV DATA BASE";
+            secondaryDBSubLine = (confirmType == ConfirmType.SwitchDataBase) ? '{amber}{CANCEL   SWAP  CONFIRM*{end}' : "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
+        }
+        else {
+            secondaryDBTopLine = "\xa0SECOND NAV DATA BASE";
+            secondaryDBSubLine = "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
+        }
 
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[2] = () => {
-            // Only performing a reset of the MCDU for now, no secondary database
-            if (confirmType == ConfirmType.SwitchDataBase) {
-            mcdu.resetCoroute();
-            mcdu.atsu.atc.resetAtisAutoUpdate();
-            mcdu.flightPlanManager.clearFlightPlan();
-            mcdu.dataManager.deleteAllStoredWaypoints();
-            CDUIdentPage.ShowPage(mcdu);
-            mcdu.setScratchpadMessage(new TypeIMessage("FLT PLN & DATA RESET"));
+            if (confirmDataBaseSwitch)
+            {
+                if (confirmType == ConfirmType.SwitchDataBase) {
+                    CDUIdentPage.ShowPage(mcdu);
+                }
+                else CDUIdentPage.ShowPage(mcdu,ConfirmType.SwitchDataBase);
             }
-            else CDUIdentPage.ShowPage(mcdu,ConfirmType.SwitchDataBase);
+        else { switchDataBase(mcdu);
+            CDUIdentPage.ShowPage(mcdu);}
+        }
+
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[2] = () => {
+            if (confirmType == ConfirmType.SwitchDataBase) {
+            switchDataBase(mcdu);
+            CDUIdentPage.ShowPage(mcdu);
+            }
+
         }
 
         mcdu.setTemplate([
@@ -130,7 +184,7 @@ class CDUIdentPage {
             ["LEAP-1A26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
             ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
-            ["\xa0SECOND NAV DATA BASE"],
+            [secondaryDBTopLine],
             [secondaryDBSubLine],
             ["", storedTitleCell],
             ["", storedRoutesRunwaysCell],
