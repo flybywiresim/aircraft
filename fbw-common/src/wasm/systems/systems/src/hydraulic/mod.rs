@@ -17,7 +17,9 @@ use crate::simulation::{
 use nalgebra::Vector3;
 
 use std::time::Duration;
+
 use uom::si::{
+    angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     mass::kilogram,
@@ -2840,11 +2842,15 @@ impl HeatingPressureSource for EngineDrivenPump {}
 
 pub struct WindTurbine {
     rpm_id: VariableIdentifier,
+    angular_position_id: VariableIdentifier,
+    propeller_angle_id: VariableIdentifier,
 
-    position: f64,
+    position: Angle,
     speed: AngularVelocity,
     acceleration: f64,
     torque_sum: f64,
+
+    propeller_angle: Angle,
 }
 impl WindTurbine {
     // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
@@ -2862,11 +2868,15 @@ impl WindTurbine {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             rpm_id: context.get_identifier("HYD_RAT_RPM".to_owned()),
+            angular_position_id: context.get_identifier("HYD_RAT_ANGULAR_POSITION".to_owned()),
+            propeller_angle_id: context.get_identifier("HYD_RAT_PROPELLER_ANGLE".to_owned()),
 
-            position: Self::STOWED_ANGLE,
+            position: Angle::new::<radian>(Self::STOWED_ANGLE),
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
             acceleration: 0.,
             torque_sum: 0.,
+
+            propeller_angle: Angle::default(),
         }
     }
 
@@ -2874,7 +2884,7 @@ impl WindTurbine {
         self.speed
     }
 
-    pub fn position(&self) -> f64 {
+    pub fn position(&self) -> Angle {
         self.position
     }
 
@@ -2883,14 +2893,16 @@ impl WindTurbine {
     }
 
     fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
-        let cur_alpha = interpolation(
+        let cur_alpha_degrees = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
             self.speed().get::<revolution_per_minute>(),
         );
 
+        self.propeller_angle = Angle::new::<degree>(cur_alpha_degrees);
+
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
-        let air_speed_torque = cur_alpha.to_radians().sin()
+        let air_speed_torque = cur_alpha_degrees.to_radians().sin()
             * (indicated_speed.get::<knot>()
                 * indicated_speed.get::<knot>()
                 * Self::AIR_LIFT_COEFFICIENT)
@@ -2898,8 +2910,6 @@ impl WindTurbine {
             * (std::f64::consts::PI / 2. * stow_pos).sin();
 
         self.torque_sum += air_speed_torque;
-
-        println!("GEN TORQUE {:.2}", air_speed_torque);
     }
 
     fn update_friction_torque(&mut self, resistant_torque: Torque) {
@@ -2913,24 +2923,20 @@ impl WindTurbine {
                     * Self::FRICTION_COEFFICIENT;
         }
 
-        println!("FRICTION TORQUE {:.2}", pump_torque);
-
         self.torque_sum += resistant_torque.get::<newton_meter>() + pump_torque;
-
-        println!(
-            "RESISTANT TORQUE {:.2}",
-            resistant_torque.get::<newton_meter>()
-        );
     }
 
     fn update_physics(&mut self, delta_time: &Duration) {
         self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
         self.speed +=
             AngularVelocity::new::<radian_per_second>(self.acceleration * delta_time.as_secs_f64());
-        self.position += self.speed.get::<radian_per_second>() * delta_time.as_secs_f64();
+        self.position +=
+            Angle::new::<radian>(self.speed.get::<radian_per_second>() * delta_time.as_secs_f64());
 
         // Reset torque accumulator at end of update
         self.torque_sum = 0.;
+
+        self.position = Angle::new::<degree>(self.position.get::<degree>() % 360.);
     }
 
     pub fn update(
@@ -2941,7 +2947,6 @@ impl WindTurbine {
         resistant_torque: Torque,
     ) {
         if stow_pos > 0.1 {
-            println!("PROPELLER!! ");
             // Do not update anything on the propeller if still stowed
             self.update_generated_torque(indicated_speed, stow_pos);
             self.update_friction_torque(resistant_torque);
@@ -2952,6 +2957,16 @@ impl WindTurbine {
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.rpm_id, self.speed());
+
+        writer.write(
+            &self.angular_position_id,
+            self.position.get::<degree>() % 360.,
+        );
+
+        writer.write(
+            &self.propeller_angle_id,
+            self.propeller_angle.get::<degree>() / 45.,
+        );
     }
 }
 
@@ -3047,7 +3062,7 @@ impl RamAirTurbine {
     fn resistant_torque(&mut self, displacement: Volume, pressure: Pressure) -> Torque {
         let mut pump_torque = 0.;
         if self.wind_turbine.is_low_speed() {
-            pump_torque += (self.wind_turbine.position * 4.).cos()
+            pump_torque += (self.wind_turbine.position().get::<radian>() * 4.).cos()
                 * displacement.get::<gallon>().max(0.35)
                 * 2.;
         } else {

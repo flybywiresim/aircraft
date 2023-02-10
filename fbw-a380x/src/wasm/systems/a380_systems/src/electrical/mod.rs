@@ -9,7 +9,7 @@ use self::{
 };
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 
-use uom::si::f64::*;
+use uom::si::{angular_velocity::revolution_per_minute, f64::*};
 
 #[cfg(test)]
 use systems::electrical::Battery;
@@ -70,7 +70,10 @@ impl A380Electrical {
             main_galley: MainGalley::new(),
             secondary_galley: SecondaryGalley::new(),
             emergency_elec: EmergencyElectrical::new(),
-            emergency_gen: EmergencyGenerator::new(context),
+            emergency_gen: EmergencyGenerator::new(
+                context,
+                AngularVelocity::new::<revolution_per_minute>(2000.),
+            ),
 
             rat_physics_updater: MaxStepLoop::new(Self::RAT_SIM_TIME_STEP),
             gcu: GeneratorControlUnit::new(

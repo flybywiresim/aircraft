@@ -21,12 +21,15 @@ pub struct EmergencyGenerator {
     output_potential: ElectricPotential,
     generated_power: Power,
     demand: Power,
+    min_rpm_to_supply_power: AngularVelocity,
 }
 impl EmergencyGenerator {
-    const MIN_RPM_TO_SUPPLY_POWER: f64 = 10000.;
     const MIN_POWER_TO_DECLARE_SUPPLYING_WATT: f64 = 100.;
 
-    pub fn new(context: &mut InitContext) -> EmergencyGenerator {
+    pub fn new(
+        context: &mut InitContext,
+        min_rpm_to_supply_power: AngularVelocity,
+    ) -> EmergencyGenerator {
         EmergencyGenerator {
             identifier: context.next_electrical_identifier(),
             writer: ElectricalStateWriter::new(context, "EMER_GEN"),
@@ -35,6 +38,7 @@ impl EmergencyGenerator {
             output_potential: ElectricPotential::new::<volt>(0.),
             generated_power: Power::new::<watt>(0.),
             demand: Power::new::<watt>(0.),
+            min_rpm_to_supply_power,
         }
     }
 
@@ -43,8 +47,7 @@ impl EmergencyGenerator {
 
         self.supplying = self.generated_power
             > Power::new::<watt>(Self::MIN_POWER_TO_DECLARE_SUPPLYING_WATT)
-            || (gcu.motor_speed()
-                > AngularVelocity::new::<revolution_per_minute>(Self::MIN_RPM_TO_SUPPLY_POWER));
+            || (gcu.motor_speed() > self.min_rpm_to_supply_power);
     }
 
     /// Indicates if the provided electricity's potential and frequency
@@ -59,12 +62,11 @@ impl EmergencyGenerator {
     }
 
     fn update_generated_power(&mut self, gcu: &impl EmergencyGeneratorControlUnit) {
-        self.generated_power =
-            if gcu.motor_speed().get::<revolution_per_minute>() > Self::MIN_RPM_TO_SUPPLY_POWER {
-                self.demand.min(gcu.max_allowed_power())
-            } else {
-                Power::new::<watt>(0.)
-            };
+        self.generated_power = if gcu.motor_speed() > self.min_rpm_to_supply_power {
+            self.demand.min(gcu.max_allowed_power())
+        } else {
+            Power::new::<watt>(0.)
+        };
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
@@ -210,7 +212,7 @@ mod emergency_generator_tests {
             Self {
                 supplied_bus: ElectricalBus::new(context,ElectricalBusType::AlternatingCurrent(1)),
                 consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
-                emer_gen: EmergencyGenerator::new(context),
+                emer_gen: EmergencyGenerator::new(context, AngularVelocity::new::<revolution_per_minute>(10000.)),
                 hydraulic: TestHydraulicSystem::new(),
                 generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }

@@ -14,6 +14,7 @@ use crate::{
 };
 
 use uom::si::{
+    angle::radian,
     angular_acceleration::radian_per_second_squared,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
@@ -66,12 +67,6 @@ impl RamAirTurbine {
         self.update_position(context);
 
         self.update_physics(context, generator_power);
-
-        println!(
-            "RAT  deploycommand {:?}  position  {:?}",
-            self.deployment_commanded,
-            self.position,
-        );
     }
 
     pub fn update_physics(
@@ -104,7 +99,7 @@ impl RamAirTurbine {
     fn resistant_torque(&mut self, generator_power: &impl EmergencyGeneratorPower) -> Torque {
         let mut pump_torque = 0.;
         if self.wind_turbine.is_low_speed() {
-            pump_torque += (self.wind_turbine.position() * 4.).cos() * 0.35 * 2.;
+            pump_torque += (self.wind_turbine.position().get::<radian>() * 4.).cos() * 0.35 * 2.;
         } else {
             pump_torque -= generator_power.generated_power().get::<watt>()
                 * Self::GENERATOR_EFFICIENCY_PENALTY
