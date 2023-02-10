@@ -94,6 +94,27 @@ export class FmsClient {
             this.messageStorage.reset();
             this.atisAutoUpdates = [];
             this.atisReportsPrintActive = false;
+            this.automaticPositionReportIsActive = false;
+
+            this.atcStationStatus = {
+                current: '',
+                next: '',
+                notificationTime: 0,
+                mode: FansMode.FansNone,
+                logonInProgress: false,
+            };
+
+            this.datalinkStatus = {
+                vhf: DatalinkStatusCode.NotInstalled,
+                satellite: DatalinkStatusCode.NotInstalled,
+                hf: DatalinkStatusCode.NotInstalled,
+            };
+
+            this.datalinkMode = {
+                vhf: DatalinkModeCode.None,
+                satellite: DatalinkModeCode.None,
+                hf: DatalinkModeCode.None,
+            };
         });
 
         // register the streaming handlers
