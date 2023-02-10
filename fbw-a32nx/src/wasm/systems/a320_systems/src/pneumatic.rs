@@ -221,7 +221,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.physics_updater.update(context);
@@ -246,7 +246,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
@@ -1119,7 +1119,7 @@ impl A320PneumaticOverheadPanel {
         }
     }
 }
-impl EngineBleedPushbutton for A320PneumaticOverheadPanel {
+impl EngineBleedPushbutton<2> for A320PneumaticOverheadPanel {
     fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
         [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
     }
@@ -1218,7 +1218,7 @@ impl PackComplex {
         &mut self,
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<3>,
+        pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
     ) {
         self.pack_flow_valve.update_open_amount(
             &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
@@ -1395,7 +1395,7 @@ mod tests {
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a320_air_conditioning_system: AirConditioningSystem<3, 2>,
+        a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
         test_cabin: TestCabin,
 
         adirs: TestAdirs,
@@ -1428,7 +1428,7 @@ mod tests {
             engines: [&impl EngineCorrectedN1; 2],
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-            pneumatic_overhead: &impl EngineBleedPushbutton,
+            pneumatic_overhead: &impl EngineBleedPushbutton<2>,
             lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.a320_air_conditioning_system.update(
@@ -1445,8 +1445,8 @@ mod tests {
             );
         }
     }
-    impl PackFlowControllers<3> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+    impl PackFlowControllers<3, 2> for TestAirConditioning {
+        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 2> {
             self.a320_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }

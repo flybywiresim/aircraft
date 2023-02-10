@@ -2,7 +2,8 @@ use crate::{
     failures::{Failure, FailureType},
     pneumatic::valve::*,
     shared::{
-        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, HydraulicColor, PneumaticValve,
+        ControllerSignal, ElectricalBusType, ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2,
+        HydraulicColor, PneumaticValve,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -777,6 +778,74 @@ impl From<f64> for EngineModeSelector {
             2 => EngineModeSelector::Ignition,
             _ => panic!("Engine mode selector position not recognized."),
         }
+    }
+}
+
+pub struct PressureTransducer {
+    pressure_output: Option<Pressure>,
+
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+}
+impl PressureTransducer {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            pressure_output: None,
+            powered_by,
+            is_powered: false,
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, container: &impl PneumaticContainer) {
+        self.pressure_output = self
+            .is_powered
+            .then_some(container.pressure() - context.ambient_pressure());
+    }
+}
+impl SimulationElement for PressureTransducer {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
+impl ControllerSignal<Pressure> for PressureTransducer {
+    fn signal(&self) -> Option<Pressure> {
+        self.pressure_output
+    }
+}
+
+pub struct DifferentialPressureTransducer {
+    pressure_output: Option<Pressure>,
+
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+}
+impl DifferentialPressureTransducer {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            pressure_output: None,
+            powered_by,
+            is_powered: false,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        upstream: &impl PneumaticContainer,
+        downstream: &impl PneumaticContainer,
+    ) {
+        self.pressure_output = self
+            .is_powered
+            .then_some(upstream.pressure() - downstream.pressure());
+    }
+}
+impl SimulationElement for DifferentialPressureTransducer {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
+impl ControllerSignal<Pressure> for DifferentialPressureTransducer {
+    fn signal(&self) -> Option<Pressure> {
+        self.pressure_output
     }
 }
 

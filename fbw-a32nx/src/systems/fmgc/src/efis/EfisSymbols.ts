@@ -18,6 +18,9 @@ import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes
 import { NearbyFacilities } from './NearbyFacilities';
 
 export class EfisSymbols {
+    /** these types of legs are current not integrated into the normal symbol drawing routines */
+    static readonly LEG_MANAGED_TYPES = [LegType.CA, LegType.CR, LegType.CI, LegType.FM, LegType.PI, LegType.VA, LegType.VI, LegType.VM];
+
     private blockUpdate = false;
 
     private flightPlanManager: FlightPlanManager;
@@ -301,15 +304,15 @@ export class EfisSymbols {
             {
                 for (let i = activeFp.length - 1; i >= (activeFp.activeWaypointIndex - 1) && i >= 0; i--) {
                     const wp = activeFp.getWaypoint(i);
+                    if (!wp) {
+                        continue;
+                    }
 
-                    // Managed by legs
+                    const isFromWp = i < activeFp.activeWaypointIndex;
+
                     // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
                     const legType = wp.additionalData.legType;
-                    if (
-                        legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
-                        || legType === LegType.FM || legType === LegType.PI
-                        || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
-                    ) {
+                    if (EfisSymbols.LEG_MANAGED_TYPES.includes(legType)) {
                         continue;
                     }
 
@@ -354,12 +357,12 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
-                    // TODO vnav to predict
+                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !isFromWp) {
+                        // TODO vnav to predict
                         type |= NdSymbolTypeFlags.ConstraintUnknown;
                     }
 
-                    if (efisOption === EfisOption.Constraints) {
+                    if (efisOption === EfisOption.Constraints && !isFromWp) {
                         const descent = wp.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
@@ -392,6 +395,20 @@ export class EfisSymbols {
                         constraints: constraints.length > 0 ? constraints : undefined,
                         direction,
                     });
+                }
+            }
+
+            // we can only send 2 constraint predictions, so filter out any past the 2 close to the AC
+            let constraintPredictions = 0;
+            const constraintFlags = NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed;
+            for (let i = symbols.length - 1; i >= 0; i--) {
+                if ((symbols[i].type & constraintFlags) === 0) {
+                    continue;
+                }
+                if (constraintPredictions >= 2) {
+                    symbols[i].type &= ~constraintFlags;
+                } else {
+                    constraintPredictions++;
                 }
             }
 
