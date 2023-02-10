@@ -344,7 +344,7 @@ const Efb = () => {
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen">
+                            <div className="pt-14 pr-6 w-screen min-w-0 h-screen">
                                 <Switch>
                                     <Route exact path="/">
                                         <Redirect to="/dashboard" />

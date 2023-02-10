@@ -209,14 +209,18 @@ impl FlapSlatAssembly {
         self.update_current_max_speed(
             sfcc1_surface_position_request.is_some(),
             sfcc2_surface_position_request.is_some(),
-            left_pressure.pressure(),
-            right_pressure.pressure(),
+            left_pressure.pressure_downstream_priority_valve(),
+            right_pressure.pressure_downstream_priority_valve(),
             context,
         );
 
         self.update_speed_and_position(context);
 
-        self.update_motors_speed(left_pressure.pressure(), right_pressure.pressure(), context);
+        self.update_motors_speed(
+            left_pressure.pressure_downstream_priority_valve(),
+            right_pressure.pressure_downstream_priority_valve(),
+            context,
+        );
 
         self.update_motors_flow(context);
     }
@@ -522,6 +526,10 @@ mod tests {
         }
 
         fn pressure_downstream_leak_valve(&self) -> Pressure {
+            self.pressure
+        }
+
+        fn pressure_downstream_priority_valve(&self) -> Pressure {
             self.pressure
         }
 
