@@ -55,6 +55,7 @@ export class DigitalInputs {
 
     public RmpData: {
         transponderCode: number,
+        vhf3Powered: boolean,
         vhf3DataMode: boolean,
     };
 
@@ -111,6 +112,7 @@ export class DigitalInputs {
 
         this.RmpData = {
             transponderCode: 2000,
+            vhf3Powered: false,
             vhf3DataMode: false,
         }
 
@@ -259,6 +261,7 @@ export class DigitalInputs {
         this.subscriber.on('transponderCode').handle((code: number) => {
             if (this.poweredUp) this.RmpData.transponderCode = code;
         });
+        this.subscriber.on('vhf3Powered').handle((powered: boolean) => this.RmpData.vhf3Powered = powered);
         this.subscriber.on('vhf3DataMode').handle((active: boolean) => {
             if (this.poweredUp) this.RmpData.vhf3DataMode = active;
         });
