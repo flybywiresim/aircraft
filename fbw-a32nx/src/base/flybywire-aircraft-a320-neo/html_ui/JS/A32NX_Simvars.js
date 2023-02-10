@@ -1,3 +1,8 @@
+/**
+ * taken from the AAU1 G3000
+ * The purpose is to reduce the amount of string allocations caused by `.toLowerCase()`
+ */
+
 const latlonaltRegEx = new RegExp(/latlonalt/i);
 const latlonaltpbhRegex = new RegExp(/latlonaltpbh/i);
 const pbhRegex = new RegExp(/pbh/i);
@@ -7,7 +12,6 @@ const stringRegex = new RegExp(/string/i);
 const boolRegex = new RegExp(/boolean|bool/i);
 const numberRegex = new RegExp(/number/i);
 const defaultSource = '';
-
 
 SimVar.GetSimVarValue = (name, unit, dataSource = defaultSource) => {
     try {
@@ -36,7 +40,6 @@ SimVar.GetSimVarValue = (name, unit, dataSource = defaultSource) => {
             }
             return output;
         }
-
         console.warn(`SimVar handler is not defined (${name})`);
     } catch (error) {
         console.warn('ERROR ', error, ` GetSimVarValue ${name} unit : ${unit}`);
@@ -50,7 +53,6 @@ SimVar.SetSimVarValue = (name, unit, value, dataSource = defaultSource) => {
         return Promise.resolve();
     }
     try {
-        // @ts-ignore
         if (simvar) {
             const regID = SimVar.GetRegisteredId(name, unit, dataSource);
             if (regID >= 0) {
