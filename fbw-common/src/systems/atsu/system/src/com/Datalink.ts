@@ -21,7 +21,16 @@ import { Atsu } from '../ATSU';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
 
+enum ActiveCommunicationInterface {
+    None,
+    VHF,
+    HF,
+    SATCOM,
+};
+
 export class Datalink {
+    private communicationInterface: ActiveCommunicationInterface = ActiveCommunicationInterface.None;
+
     private vdl: Vdl = new Vdl();
 
     private waitedComUpdate = 0;
@@ -33,22 +42,41 @@ export class Datalink {
     private firstPollHoppie = true;
 
     private enqueueReceivedMessages(atsu: Atsu, messages: AtsuMessage[]): void {
-        messages.forEach((message) => {
-            // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
-            if (message.Message.length !== 0) {
-                const transmissionTime = this.vdl.enqueueInboundMessage(message);
-                setTimeout(() => {
-                    this.vdl.dequeueInboundMessage(transmissionTime);
-                    atsu.registerMessages([message]);
-                }, transmissionTime);
-            }
-        });
+        switch (this.communicationInterface) {
+        case ActiveCommunicationInterface.VHF:
+            messages.forEach((message) => {
+                // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
+                if (message.Message.length !== 0) {
+                    const transmissionTime = this.vdl.enqueueInboundMessage(message);
+                    setTimeout(() => {
+                        this.vdl.dequeueInboundMessage(transmissionTime);
+                        atsu.registerMessages([message]);
+                    }, transmissionTime);
+                }
+            });
+            break;
+        case ActiveCommunicationInterface.HF:
+        case ActiveCommunicationInterface.SATCOM:
+        case ActiveCommunicationInterface.None:
+        default:
+            return;
+        }
     }
 
     constructor(atsu: Atsu) {
         HoppieConnector.activateHoppie();
 
         setInterval(() => {
+            // update the communication interface states
+            this.vdl.vhf3.updateDatalinkStates(atsu.digitalInputs.RmpData.vhf3Powered, atsu.digitalInputs.RmpData.vhf3DataMode);
+
+            // find the best communication
+            if (this.vdl.vhf3.datalinkStatus === DatalinkStatusCode.DlkAvail) {
+                this.communicationInterface = ActiveCommunicationInterface.VHF;
+            } else {
+                this.communicationInterface = ActiveCommunicationInterface.None;
+            }
+
             if (this.waitedComUpdate <= 30000) {
                 this.vdl.simulateTransmissionTimes(atsu.flightPhase());
                 this.waitedComUpdate = 0;
@@ -159,6 +187,10 @@ export class Datalink {
     }
 
     public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        if (this.communicationInterface === ActiveCommunicationInterface.None) {
+            return [AtsuStatusCodes.ComFailed, null];
+        }
+
         let message = undefined;
         if (requestMetar === true) {
             message = new MetarMessage();
@@ -174,11 +206,19 @@ export class Datalink {
     }
 
     public async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        if (this.communicationInterface === ActiveCommunicationInterface.None) {
+            return [AtsuStatusCodes.ComFailed, null];
+        }
+
         const message = new AtisMessage();
         return NXApiConnector.receiveAtis(icao, type, message).then(() => this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], sentCallback));
     }
 
     public async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
+        if (this.communicationInterface === ActiveCommunicationInterface.None) {
+            return AtsuStatusCodes.ComFailed;
+        }
+
         return new Promise((resolve, _reject) => {
             const timeout = this.vdl.enqueueOutboundMessage(message);
             setTimeout(() => {
@@ -201,33 +241,30 @@ export class Datalink {
         });
     }
 
-    public vhfDatalinkStatus() {
-        return DatalinkStatusCode.DlkAvail;
+    public vhfDatalinkStatus(): DatalinkStatusCode {
+        return this.vdl.vhf3.datalinkStatus;
     }
 
-    public vhfDatalinkMode() {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
-            return DatalinkModeCode.AtcAoc;
-        }
-        return DatalinkModeCode.Aoc;
+    public vhfDatalinkMode(): DatalinkModeCode {
+        return this.vdl.vhf3.datalinkMode;
     }
 
-    public satcomDatalinkStatus() {
+    public satcomDatalinkStatus(): DatalinkStatusCode {
         if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
             return DatalinkStatusCode.DlkNotAvail;
         }
         return DatalinkStatusCode.NotInstalled;
     }
 
-    public satcomDatalinkMode() {
+    public satcomDatalinkMode(): DatalinkModeCode {
         return DatalinkModeCode.None;
     }
 
-    public hfDatalinkStatus() {
+    public hfDatalinkStatus(): DatalinkStatusCode {
         return DatalinkStatusCode.NotInstalled;
     }
 
-    public hfDatalinkMode() {
+    public hfDatalinkMode(): DatalinkModeCode {
         return DatalinkModeCode.None;
     }
 }

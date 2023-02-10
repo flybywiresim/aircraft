@@ -1,6 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { DatalinkModeCode, DatalinkStatusCode } from '@atsu/common';
 import { ATC } from '@flybywiresim/api-client';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXDataStore } from '@shared/persistence';
@@ -123,6 +124,10 @@ export class Vhf {
     private frequencyOverlap: number[] = [];
 
     public relevantAirports: Airport[] = [];
+
+    public datalinkStatus: DatalinkStatusCode = DatalinkStatusCode.Inop;
+
+    public datalinkMode: DatalinkModeCode = DatalinkModeCode.None;
 
     private updatePresentPosition() {
         this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
@@ -304,5 +309,21 @@ export class Vhf {
                 if (stationCount[i] !== 0) this.datarates[i] /= stationCount[i];
             }
         }));
+    }
+
+    public updateDatalinkStates(interfacePowered: boolean, datalinkMode: boolean) {
+        if (!interfacePowered) {
+            this.datalinkStatus = DatalinkStatusCode.Inop;
+            this.datalinkMode = DatalinkModeCode.None;
+        } else if (!datalinkMode) {
+            this.datalinkStatus = DatalinkStatusCode.DlkNotAvail;
+            this.datalinkMode = DatalinkModeCode.None;
+        } else {
+            this.datalinkStatus = DatalinkStatusCode.DlkAvail;
+            if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+                this.datalinkMode = DatalinkModeCode.AtcAoc;
+            }
+            this.datalinkMode = DatalinkModeCode.Aoc;
+        }
     }
 }

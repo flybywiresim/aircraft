@@ -43,7 +43,7 @@ export class Vdl {
 
     private outboundDelay = { updateTime: 0, messages: 0, delay: 0 };
 
-    private vhf3: Vhf = new Vhf();
+    public vhf3: Vhf = new Vhf();
 
     private presentPosition: OwnAircraft = new OwnAircraft();
 
