@@ -8647,7 +8647,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             // Getting accumulator pressure on cold start
             let mut accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
@@ -8725,7 +8725,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             // Getting accumulator pressure on cold start
             let accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
