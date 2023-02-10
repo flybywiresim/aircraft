@@ -82,7 +82,7 @@ export class UplinkMessageInterpretation {
             }
             return false;
         case 'UM144':
-            message.Response.Content[0].Content[0].Value = String(atsu.digitalInputs.TransponderCode).padStart(4, '0');
+            message.Response.Content[0].Content[0].Value = String(atsu.digitalInputs.RmpData.transponderCode).padStart(4, '0');
             return true;
         case 'UM145':
             if (atsu.digitalInputs.PresentPosition.heading.isNormalOperation()) {

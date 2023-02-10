@@ -7,11 +7,16 @@ import { ClockDataBusTypes, ClockInputBus } from './databus/ClockBus';
 import { FmgcDataBusTypes, FmgcInputBus } from './databus/FmgcBus';
 import { FmsInputBus } from './databus/FmsBus';
 import { FwcDataBusTypes, FwcInputBus } from './databus/FwcBus';
-import { TransponderDataBusTypes, TransponderInputBus } from './databus/TransponderBus';
+import { RmpDataBusTypes, RmpInputBus } from './databus/RmpBus';
 
 export class DigitalInputs {
     private subscriber: EventSubscriber<
-        AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & FmsAtsuMessages
+        AtcMessageButtonBusTypes &
+        ClockDataBusTypes &
+        FmgcDataBusTypes &
+        FwcDataBusTypes &
+        FmsAtsuMessages &
+        RmpDataBusTypes
     > = null;
 
     private poweredUp: boolean = false;
@@ -48,11 +53,14 @@ export class DigitalInputs {
         selectedAltitude: number,
     };
 
+    public RmpData: {
+        transponderCode: number,
+        vhf3Frequency: number,
+    };
+
     public FlightPhase: FmgcFlightPhase = FmgcFlightPhase.Preflight;
 
     public CompanyMessageCount: number = 0;
-
-    public TransponderCode: number = 2000;
 
     public FlightRoute: FmsRouteData;
 
@@ -64,9 +72,9 @@ export class DigitalInputs {
 
     public readonly fwcBus: FwcInputBus;
 
-    public readonly transponderBus: TransponderInputBus;
-
     public readonly fmsBus: FmsInputBus;
+
+    public readonly rmpBus: RmpInputBus;
 
     private resetData(): void {
         this.UtcClock = new Clock(0, 0, 0, 0, 0, 0, 0);
@@ -101,11 +109,14 @@ export class DigitalInputs {
             selectedAltitude: 0,
         };
 
+        this.RmpData = {
+            transponderCode: 2000,
+            vhf3Frequency: 0,
+        }
+
         this.FlightPhase = FmgcFlightPhase.Preflight;
 
         this.CompanyMessageCount = 0;
-
-        this.TransponderCode = 2000;
 
         this.FlightRoute = {
             lastWaypoint: null,
@@ -122,8 +133,8 @@ export class DigitalInputs {
         this.clockBus = new ClockInputBus(this.bus);
         this.fmgcBus = new FmgcInputBus(this.bus);
         this.fwcBus = new FwcInputBus(this.bus);
-        this.transponderBus = new TransponderInputBus(this.bus);
         this.fmsBus = new FmsInputBus(this.bus);
+        this.rmpBus = new RmpInputBus(this.bus);
     }
 
     public initialize(): void {
@@ -131,10 +142,17 @@ export class DigitalInputs {
         this.clockBus.initialize();
         this.fmgcBus.initialize();
         this.fwcBus.initialize();
-        this.transponderBus.initialize();
         this.fmsBus.initialize();
+        this.rmpBus.initialize();
 
-        this.subscriber = this.bus.getSubscriber<AtcMessageButtonBusTypes & ClockDataBusTypes & FmgcDataBusTypes & FwcDataBusTypes & TransponderDataBusTypes & FmsAtsuMessages>();
+        this.subscriber = this.bus.getSubscriber<
+            AtcMessageButtonBusTypes &
+            ClockDataBusTypes &
+            FmgcDataBusTypes &
+            FwcDataBusTypes &
+            FmsAtsuMessages &
+            RmpDataBusTypes
+        >();
     }
 
     public connectedCallback(): void {
@@ -142,7 +160,7 @@ export class DigitalInputs {
         this.clockBus.connectedCallback();
         this.fmgcBus.connectedCallback();
         this.fwcBus.connectedCallback();
-        this.transponderBus.connectedCallback();
+        this.rmpBus.connectedCallback();
 
         this.subscriber.on('utcYear').handle((year: number) => {
             if (this.poweredUp) this.UtcClock.year = year;
@@ -239,8 +257,12 @@ export class DigitalInputs {
         });
 
         this.subscriber.on('transponderCode').handle((code: number) => {
-            if (this.poweredUp) this.TransponderCode = code;
+            if (this.poweredUp) this.RmpData.transponderCode = code;
         });
+        this.subscriber.on('vhf3Frequency').handle((frequency: number) => {
+            console.log(frequency);
+            if (this.poweredUp) this.RmpData.vhf3Frequency = frequency;
+        })
 
         this.subscriber.on('routeData').handle((route) => {
             if (!this.poweredUp) return;
@@ -272,7 +294,7 @@ export class DigitalInputs {
         this.clockBus.startPublish();
         this.fmgcBus.startPublish();
         this.fwcBus.startPublish();
-        this.transponderBus.startPublish();
+        this.rmpBus.startPublish();
     }
 
     public powerUp(): void {
@@ -292,6 +314,6 @@ export class DigitalInputs {
         this.clockBus.update();
         this.fmgcBus.update();
         this.fwcBus.update();
-        this.transponderBus.update();
+        this.rmpBus.update();
     }
 }
