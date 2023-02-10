@@ -55,6 +55,8 @@ pub(super) struct A380Electrical {
     rat_controller: A380RamAirTurbineController,
 }
 impl A380Electrical {
+    const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 2000.;
+
     const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(1);
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
@@ -72,7 +74,9 @@ impl A380Electrical {
             emergency_elec: EmergencyElectrical::new(),
             emergency_gen: EmergencyGenerator::new(
                 context,
-                AngularVelocity::new::<revolution_per_minute>(2000.),
+                AngularVelocity::new::<revolution_per_minute>(
+                    Self::MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY,
+                ),
             ),
 
             rat_physics_updater: MaxStepLoop::new(Self::RAT_SIM_TIME_STEP),
