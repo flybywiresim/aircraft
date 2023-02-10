@@ -207,11 +207,13 @@ mod emergency_generator_tests {
         generator_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
+        const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 10000.;
+
         fn new(context: &mut InitContext) -> Self {
             Self {
                 supplied_bus: ElectricalBus::new(context,ElectricalBusType::AlternatingCurrent(1)),
                 consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
-                emer_gen: EmergencyGenerator::new(context, AngularVelocity::new::<revolution_per_minute>(10000.)),
+                emer_gen: EmergencyGenerator::new(context, AngularVelocity::new::<revolution_per_minute>(Self::MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY)),
                 hydraulic: TestHydraulicSystem::new(),
                 generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }

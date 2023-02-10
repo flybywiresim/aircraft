@@ -48,6 +48,7 @@ pub(super) struct A320Electrical {
     emergency_gen: EmergencyGenerator,
 }
 impl A320Electrical {
+    const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 10000.;
     pub fn new(context: &mut InitContext) -> A320Electrical {
         A320Electrical {
             galley_is_shed_id: context.get_identifier("ELEC_GALLEY_IS_SHED".to_owned()),
@@ -58,7 +59,9 @@ impl A320Electrical {
             emergency_elec: EmergencyElectrical::new(),
             emergency_gen: EmergencyGenerator::new(
                 context,
-                AngularVelocity::new::<revolution_per_minute>(10000.),
+                AngularVelocity::new::<revolution_per_minute>(
+                    Self::MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY,
+                ),
             ),
         }
     }
