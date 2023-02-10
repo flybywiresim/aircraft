@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';
@@ -7,6 +7,15 @@ import { t } from '../../translation';
 export const ThirdPartyOptionsPage = () => {
     const [gsxFuelSyncEnabled, setGsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxPayloadSyncEnabled, setGsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
+    const [, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
+    const [, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+
+    useEffect(() => {
+        if (gsxFuelSyncEnabled === 1 || gsxPayloadSyncEnabled === 1) {
+            setWheelChocksEnabled(0);
+            setConesEnabled(0);
+        }
+    }, [gsxFuelSyncEnabled, gsxPayloadSyncEnabled]);
 
     return (
         <>
