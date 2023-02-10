@@ -1127,7 +1127,7 @@ class EngineControl {
     // Will save the current fuel quantities if on the ground AND engines being shutdown
     if (timerFuel.elapsed() >= 1000 && simVars->getSimOnGround() &&
          engine2State == 4 || engine2State == 14 || engine3State == 0 || engine3State == 10 || engine3State == 4 || engine3State == 14 ||
-         engine4State == 0 || engine4State == 10 || engine4State == 4 || engine4State == 14)) {
+         engine4State == 0 || engine4State == 10 || engine4State == 4 || engine4State == 14) {
       Configuration configuration;
 
       configuration.fuelRightOuter = simVars->getFuelRightOuterPre() / simVars->getFuelWeightGallon();
