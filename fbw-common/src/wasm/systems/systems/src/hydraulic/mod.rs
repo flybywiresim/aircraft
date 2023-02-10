@@ -2867,9 +2867,9 @@ impl WindTurbine {
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            rpm_id: context.get_identifier("HYD_RAT_RPM".to_owned()),
-            angular_position_id: context.get_identifier("HYD_RAT_ANGULAR_POSITION".to_owned()),
-            propeller_angle_id: context.get_identifier("HYD_RAT_PROPELLER_ANGLE".to_owned()),
+            rpm_id: context.get_identifier("RAT_RPM".to_owned()),
+            angular_position_id: context.get_identifier("RAT_ANGULAR_POSITION".to_owned()),
+            propeller_angle_id: context.get_identifier("RAT_PROPELLER_ANGLE".to_owned()),
 
             position: Angle::new::<radian>(Self::STOWED_ANGLE),
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
@@ -3002,7 +3002,7 @@ impl RamAirTurbine {
 
     pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
-            stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
+            stow_position_id: context.get_identifier("RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
             pump: Pump::new(pump_characteristics),

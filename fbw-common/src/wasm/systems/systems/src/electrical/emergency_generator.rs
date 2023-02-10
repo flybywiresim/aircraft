@@ -8,10 +8,7 @@ use super::{
 use crate::shared::{
     EmergencyGeneratorControlUnit, EmergencyGeneratorPower, PowerConsumptionReport,
 };
-use uom::si::{
-    angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, frequency::hertz,
-    power::watt,
-};
+use uom::si::{electric_potential::volt, f64::*, frequency::hertz, power::watt};
 
 pub struct EmergencyGenerator {
     identifier: ElectricalElementIdentifier,
@@ -138,6 +135,8 @@ mod emergency_generator_tests {
             Aircraft, SimulationElementVisitor, UpdateContext,
         },
     };
+
+    use uom::si::angular_velocity::revolution_per_minute;
 
     struct EmergencyGeneratorTestBed {
         test_bed: SimulationTestBed<TestAircraft>,

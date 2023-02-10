@@ -33,7 +33,7 @@
 1. [FBW] Added option to have two axis for rudder e.g. racing pedals - @frankkopp (Frank Kopp)
 1. [HYD] Added priority valves - @Crocket63 (crocket)
 1. [ND] Fixed LOC deviation scaling - @tracernz (Mike)
-
+1. [HYD] RAT code refactor to allow for hyd or elec rat design - @Crocket63 (crocket)
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)

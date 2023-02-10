@@ -205,7 +205,7 @@ const PseudoFWC: React.FC = () => {
     const [yepumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'bool', 500);
     const [ptuIsAuto] = useSimVar('L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO', 'bool', 500);
     const [hydPTU] = useSimVar('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'bool', 500);
-    const [ratDeployed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
+    const [ratDeployed] = useSimVar('L:A32NX_RAT_STOW_POSITION', 'percent over 100', 500);
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_1');

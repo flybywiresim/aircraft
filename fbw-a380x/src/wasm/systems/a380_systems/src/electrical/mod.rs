@@ -30,8 +30,8 @@ use systems::{
     shared::{
         update_iterator::MaxStepLoop, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorPower, EngineCorrectedN2,
-        EngineFirePushButtons, LgciuWeightOnWheels, RamAirTurbineController,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
+        RamAirTurbineController,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -121,7 +121,6 @@ impl A380Electrical {
             .update(context, emergency_overhead, &self.emergency_elec);
 
         self.gcu.update(
-            context,
             &self.ram_air_turbine,
             &self.emergency_elec,
             emergency_overhead,
@@ -476,9 +475,7 @@ impl A380RamAirTurbineController {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
-        // let solenoid_1_should_trigger_deployment_if_powered =
-        //     overhead_panel.rat_man_on_push_button_is_pressed();
-
+        // TODO check actual A380 logic for deployment : solenoid 1 stubbed for now
         let solenoid_1_should_trigger_deployment_if_powered = false;
 
         let solenoid_2_should_trigger_deployment_if_powered =
@@ -488,13 +485,6 @@ impl A380RamAirTurbineController {
         self.should_deploy = context.is_sim_ready()
             && ((self.is_solenoid_1_powered && solenoid_1_should_trigger_deployment_if_powered)
                 || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered));
-
-        println!(
-            "RAT CONTROLLER IS EMER ELEC:{:?}   IS PRESSED:{:?}  DEPLOY {:?}",
-            emergency_elec_state.is_in_emergency_elec(),
-            rat_and_emer_gen_man_on.is_pressed(),
-            self.should_deploy
-        );
     }
 }
 impl RamAirTurbineController for A380RamAirTurbineController {

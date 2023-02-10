@@ -1,11 +1,9 @@
 use crate::{
     hydraulic::WindTurbine,
     shared::{
-        calculate_towards_target_temperature, interpolation, low_pass_filter::LowPassFilter,
-        pid::PidController, AngularSpeedSensor, ControlValveCommand,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
-        EmergencyGeneratorPower, EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
-        PowerConsumptionReport, RamAirTurbineController, SectionPressure,
+        interpolation, AngularSpeedSensor, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EmergencyGeneratorControlUnit, EmergencyGeneratorPower,
+        LgciuWeightOnWheels, RamAirTurbineController,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -15,18 +13,11 @@ use crate::{
 
 use uom::si::{
     angle::radian,
-    angular_acceleration::radian_per_second_squared,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     power::watt,
-    pressure::psi,
-    ratio::ratio,
-    torque::{newton_meter, pound_force_inch},
-    volume::{cubic_inch, gallon},
-    volume_rate::{gallon_per_minute, gallon_per_second},
+    torque::newton_meter,
 };
-
-use std::time::Duration;
 
 pub struct RamAirTurbine {
     stow_position_id: VariableIdentifier,
@@ -46,7 +37,7 @@ impl RamAirTurbine {
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            stow_position_id: context.get_identifier("ELEC_RAT_STOW_POSITION".to_owned()),
+            stow_position_id: context.get_identifier("RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
 
@@ -164,7 +155,6 @@ impl<const N: usize> GeneratorControlUnit<N> {
 
     pub fn update(
         &mut self,
-        context: &UpdateContext,
         generator_feedback: &impl AngularSpeedSensor,
         elec_emergency_state: &impl EmergencyElectricalState,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
@@ -173,13 +163,6 @@ impl<const N: usize> GeneratorControlUnit<N> {
         self.current_speed = generator_feedback.speed();
 
         self.update_active_state(elec_emergency_state, rat_and_emer_gen_man_on, lgciu);
-
-        println!(
-            "GCU speed rpm {:.1} IS ACTIVE{:?}   MAX POWER W:{:.1}",
-            self.current_speed.get::<revolution_per_minute>(),
-            self.is_active,
-            self.max_allowed_power().get::<watt>()
-        );
     }
 
     fn max_allowed_power(&self) -> Power {
