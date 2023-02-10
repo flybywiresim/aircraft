@@ -137,7 +137,7 @@ class A32NX_Boarding {
         }
     }
 
-    manageGsxBoarding(boardState) {
+    async manageGsxBoarding(currentPax, boardState) {
         switch (boardState) {
             //GSX doesn't emit 100% boarding, this case is to ensure cargo is 100% filled to target
             case this.gsxStates.COMPLETED:
@@ -145,8 +145,11 @@ class A32NX_Boarding {
                     const stationCurrentLoadTarget = SimVar.GetSimVarValue(`L:${loadStation.simVar}_DESIRED`, "Number");
                     this.fillCargoStation(loadStation, stationCurrentLoadTarget);
                 }
+
+                await SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", currentPax > 0);
                 break;
             case this.gsxStates.PERFORMING:
+                await SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", currentPax > 0);
                 const gsxBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", "Number");
                 this.passengersLeftToFillOrEmpty = gsxBoardingTotal - this.prevBoardedOrDeboarded;
 
@@ -178,7 +181,7 @@ class A32NX_Boarding {
         }
     }
 
-    manageGsxDeBoarding(boardState) {
+    manageGsxDeBoarding(currentPax, boardState) {
         switch (boardState) {
 
             // this is a backup state incase the EFB page isn't open to set desired PAX/Cargo to 0
@@ -196,9 +199,11 @@ class A32NX_Boarding {
                 for (const loadStation of Object.values(this.cargoStations)) {
                     this.fillCargoStation(loadStation, 0);
                 }
+                SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", currentPax > 0);
                 break;
 
             case this.gsxStates.PERFORMING:
+                SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", currentPax > 0);
                 const gsxDeBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", "Number");
                 this.passengersLeftToFillOrEmpty = gsxDeBoardingTotal - this.prevBoardedOrDeboarded;
 
@@ -330,13 +335,14 @@ class A32NX_Boarding {
         this.time += _deltaTime;
 
         const gsxPayloadSyncEnabled = NXDataStore.get("GSX_PAYLOAD_SYNC", 0);
+        const currentPax = Object.values(this.paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
 
         if (gsxPayloadSyncEnabled === '1') {
             const gsxBoardState = Math.round(SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_STATE", "Number"));
             const gsxDeBoardState = Math.round(SimVar.GetSimVarValue("L:FSDT_GSX_DEBOARDING_STATE", "Number"));
 
-            this.manageGsxDeBoarding(gsxDeBoardState);
-            this.manageGsxBoarding(gsxBoardState);
+            this.manageGsxDeBoarding(currentPax, gsxDeBoardState);
+            this.manageGsxBoarding(currentPax, gsxBoardState);
 
             this.loadPaxPayload();
             this.loadCargoPayload();
@@ -353,7 +359,6 @@ class A32NX_Boarding {
                 return;
             }
 
-            const currentPax = Object.values(this.paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
             const paxTarget = Object.values(this.paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
 
             await this.manageSoundControllers(currentPax, paxTarget, boardingStartedByUser);
