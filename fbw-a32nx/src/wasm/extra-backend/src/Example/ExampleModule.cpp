@@ -100,11 +100,13 @@ bool ExampleModule::initialize() {
 
   // LVARS
   // requested multiple times to demonstrate de-duplication - also shows optional parameters
-  debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
-  // debugLVARPtr->setEpsilon(1.0); // only read when difference is >1.0
+  debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, true, false, 0, 0);
+  debugLVARPtr->setEpsilon(1.0); // only read when difference is >1.0
+
   // these are unique and not the same as the first
   debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, false, false, 0, 0);
   debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, false, false, 0, 0);
+
   // this is a duplicate of the first one, so should be the same pointer
   debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
 
@@ -260,74 +262,74 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
 
     // Read vars which auto update each tick
-    /*     std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
-                   << (debugLVARPtr->hasChanged() ? "yes" : "no")
-                   << " debugLVARPtr  time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+    std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
+              << (debugLVARPtr->hasChanged() ? "yes" : "no")
+              << " debugLVARPtr  time = " << msfsHandler->getTimeStamp()
+              << " tick = " << msfsHandler->getTickCounter()
+              << std::endl;
+    /*
+     std::cout << "debugLVAR2Ptr = " << debugLVAR2Ptr->get() << " changed? "
+               << (debugLVAR2Ptr->hasChanged() ? "yes" : "no")
+               << " debugLVAR2Ptr time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "debugLVAR2Ptr = " << debugLVAR2Ptr->get() << " changed? "
-                   << (debugLVAR2Ptr->hasChanged() ? "yes" : "no")
-                   << " debugLVAR2Ptr time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "beaconLightSwitchPtr =  " << beaconLightSwitchPtr->get() << " changed? "
+               << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no")
+               << " beaconLightSwitchPtr  time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "beaconLightSwitchPtr =  " << beaconLightSwitchPtr->get() << " changed? "
-                   << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no")
-                   << " beaconLightSwitchPtr  time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "beaconLightSwitch2Ptr = " << beaconLightSwitch2Ptr->get() << " changed? "
+               << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no")
+               << " beaconLightSwitch2Ptr time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "beaconLightSwitch2Ptr = " << beaconLightSwitch2Ptr->get() << " changed? "
-                   << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no")
-                   << " beaconLightSwitch2Ptr time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "beaconLightSwitch3Ptr = " << beaconLightSwitch3Ptr->get() << " changed? "
+               << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no")
+               << " beaconLightSwitch3Ptr time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "beaconLightSwitch3Ptr = " << beaconLightSwitch3Ptr->get() << " changed? "
-                   << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no")
-                   << " beaconLightSwitch3Ptr time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "fuelPumpSwitch1Ptr = " << fuelPumpSwitch1Ptr->get() << " changed? "
+               << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
+               << " time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "fuelPumpSwitch1Ptr = " << fuelPumpSwitch1Ptr->get() << " changed? "
-                   << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-                   << " time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "fuelPumpSwitch2Ptr = " << fuelPumpSwitch2Ptr->get() << " changed? "
+               << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
+               << " time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "fuelPumpSwitch2Ptr = " << fuelPumpSwitch2Ptr->get() << " changed? "
-                   << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-                   << " time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "zuluTimePtr = " << zuluTimePtr->get() << " changed? "
+               << (zuluTimePtr->hasChanged() ? "yes" : "no")
+               << " time = " << msfsHandler->getTimeStamp()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "zuluTimePtr = " << zuluTimePtr->get() << " changed? "
-                   << (zuluTimePtr->hasChanged() ? "yes" : "no")
-                   << " time = " << msfsHandler->getTimeStamp()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "zuluTime =  " << exampleDataStruct.zuluTime
+               << " time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "zuluTime =  " << exampleDataStruct.zuluTime
-                   << " time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "localTime =  " << exampleDataStruct.localTime
+               << " time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "localTime =  " << exampleDataStruct.localTime
-                   << " time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
+     std::cout << "absoluteTime =  " << static_cast<UINT64>(exampleDataStruct.absoluteTime)
+               << " time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter()
+               << std::endl;
 
-         std::cout << "absoluteTime =  " << static_cast<UINT64>(exampleDataStruct.absoluteTime)
-                   << " time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter()
-                   << std::endl;
-
-         std::cout << "strobeLightSwitch =  " << exampleDataStruct.strobeLightSwitch
-                   << " (time = " << msfsHandler->getPreviousSimulationTime()
-                   << " tick = " << msfsHandler->getTickCounter() << ")"
-                   << std::endl;
- */
+     std::cout << "strobeLightSwitch =  " << exampleDataStruct.strobeLightSwitch
+               << " (time = " << msfsHandler->getPreviousSimulationTime()
+               << " tick = " << msfsHandler->getTickCounter() << ")"
+               << std::endl;
+*/
     // Set a variable which does not auto write
     //    debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
 
