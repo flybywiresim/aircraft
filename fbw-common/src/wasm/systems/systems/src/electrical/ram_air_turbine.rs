@@ -1,5 +1,4 @@
 use crate::{
-    hydraulic::WindTurbine,
     shared::{
         interpolation, AngularSpeedSensor, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorControlUnit, EmergencyGeneratorPower,
@@ -9,6 +8,7 @@ use crate::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
     },
+    wind_turbine::WindTurbine,
 };
 
 use uom::si::{

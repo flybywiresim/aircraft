@@ -250,16 +250,6 @@ impl SimulationElement for A380Electrical {
         writer.write(&self.galley_is_shed_id, self.galley_is_shed())
     }
 }
-// impl EmergencyElectricalState for A380Electrical {
-//     fn is_in_emergency_elec(&self) -> bool {
-//         self.in_emergency_elec()
-//     }
-// }
-// impl EmergencyGeneratorPower for A380Electrical {
-//     fn generated_power(&self) -> Power {
-//         self.emergency_gen.generated_power()
-//     }
-// }
 
 trait A380DirectCurrentElectricalSystem {
     fn static_inverter(&self) -> &StaticInverter;
