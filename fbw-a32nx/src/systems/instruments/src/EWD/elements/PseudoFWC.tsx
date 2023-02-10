@@ -385,7 +385,7 @@ const PseudoFWC: React.FC = () => {
     const [fac1Failed] = useSimVar('L:A32NX_FBW_FAC_FAILED:1', 'bool', 500);
     const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'bool', 500);
 
-    const [cabinRecircBtnOn] = useSimVar('L:A32NX_VENTILATION_CABFANS_TOGGLE', 'bool', 500);
+    const [cabinRecircBtnOn] = useSimVar('L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON', 'bool', 500);
     const computedAirSpeed: Arinc429Word = useArinc429Var('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED', 1000);
     // Reduce number of rewrites triggered by this value
     const computedAirSpeedToNearest2 = Math.round(computedAirSpeed.value / 2) * 2;
