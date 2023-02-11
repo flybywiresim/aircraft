@@ -155,16 +155,16 @@ class CDUIdentPage {
         };
 
         mcdu.onLeftInput[2] = () => {
-            if (confirmDataBaseSwitch)
-            {
-                if (confirmType == ConfirmType.SwitchDataBase) {
+            if (confirmDataBaseSwitch) {
+                if (confirmType === ConfirmType.SwitchDataBase) {
                     CDUIdentPage.ShowPage(mcdu);
+                } else {
+                    CDUIdentPage.ShowPage(mcdu,ConfirmType.SwitchDataBase);
                 }
-                else CDUIdentPage.ShowPage(mcdu,ConfirmType.SwitchDataBase);
+            } else {
+                switchDataBase(mcdu);
+                CDUIdentPage.ShowPage(mcdu);}
             }
-        else { switchDataBase(mcdu);
-            CDUIdentPage.ShowPage(mcdu);}
-        }
 
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
