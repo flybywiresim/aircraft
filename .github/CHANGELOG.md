@@ -37,8 +37,8 @@
 1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
 1. [CLOCK] Ported Clock to MSFS Avionics Framework for better performance - @MicahBCode (Mischa Binder)
 1. [FMGC] Constraints for waypoints behind the aircraft are no longer sent - @tracernz (Mike)
+1. [EFB] GSX Integration - Lucky38i (Lucky38#3550)
 1. [HYD] RAT code refactor to allow for hyd or elec rat design - @Crocket63 (crocket)
-
 
 ## 0.9.0
 
