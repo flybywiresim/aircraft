@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(FBW_ROOT "../../../..")
 
@@ -27,7 +27,7 @@ else ()
 endif ()
 
 # Prepare the compiler flags
-set(CMAKE_CXX_FLAGS "-c -std=c++17")
+set(CMAKE_CXX_FLAGS "-c -std=c++20")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DDEBUG")
     set(WASM_LD_ARGS "-O0")
