@@ -1921,12 +1921,8 @@ export class FlightPlanManager {
     public isWaypointInUse(icao: string): boolean {
         for (const fp of this._flightPlans) {
             for (let i = 0; i < fp?.waypoints.length; i++) {
-                const wp = fp.getWaypoint(i);
-                if (wp != undefined)
-                {
-                    const waypointIcao =wp.icao;
-                        if (waypointIcao === icao)
-                            return true;
+                if (fp?.getWaypoint(i)?.icao === icao) {
+                    return true;
                 }
             }
         }
