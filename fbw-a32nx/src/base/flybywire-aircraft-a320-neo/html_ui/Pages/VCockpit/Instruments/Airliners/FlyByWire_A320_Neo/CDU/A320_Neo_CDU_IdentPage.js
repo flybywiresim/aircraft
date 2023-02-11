@@ -76,7 +76,7 @@ function switchDataBase(mcdu)
     mcdu.resetCoroute();
     mcdu.atsu.atc.resetAtisAutoUpdate();
     mcdu.flightPlanManager.clearFlightPlan();
-    //stored data
+    // stored data
     mcdu.dataManager.deleteAllStoredWaypoints();
     //Fuel reset
     mcdu.zeroFuelWeight = undefined;
