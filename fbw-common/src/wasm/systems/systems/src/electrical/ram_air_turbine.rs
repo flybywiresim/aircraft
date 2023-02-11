@@ -134,7 +134,7 @@ impl<const N: usize> GeneratorControlUnit<N> {
             is_active: false,
             max_allowed_power_rpm_breakpoints,
             max_allowed_power_vs_rpm,
-            current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
+            current_speed: AngularVelocity::default(),
             manual_generator_on_was_pressed: false,
         }
     }
