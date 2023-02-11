@@ -1,6 +1,6 @@
 const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-//use this config to display newest versions of FMC instead
+// Honeywell H4+ feature only
 const confirmDataBaseSwitch = false;
 
 function findNewMonthIndex(index) {
@@ -124,7 +124,7 @@ class CDUIdentPage {
             storedTitleCell = "STORED\xa0\xa0\xa0\xa0";
             storedRoutesRunwaysCell = `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`;
             storedWaypointsNavaidsCell = `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`;
-            storedDeleteCell = (confirmType == ConfirmType.DeleteStored) ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}';
+            storedDeleteCell = (confirmType === ConfirmType.DeleteStored) ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}';
 
             // DELETE ALL
             mcdu.onRightInput[4] = () => {
