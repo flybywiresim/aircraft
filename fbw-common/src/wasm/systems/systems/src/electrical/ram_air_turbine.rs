@@ -78,12 +78,7 @@ impl RamAirTurbine {
         if self.deployment_commanded {
             self.position += context.delta_as_secs_f64() * Self::STOWING_SPEED;
 
-            // Finally limiting pos in [0:1] range
-            if self.position < 0. {
-                self.position = 0.;
-            } else if self.position > 1. {
-                self.position = 1.;
-            }
+            self.position = self.position.clamp(0., 1.);
         }
     }
 
