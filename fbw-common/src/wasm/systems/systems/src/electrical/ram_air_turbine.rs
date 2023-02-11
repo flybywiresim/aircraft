@@ -88,14 +88,12 @@ impl RamAirTurbine {
     }
 
     fn resistant_torque(&mut self, generator_power: &impl EmergencyGeneratorPower) -> Torque {
-        let mut pump_torque = 0.;
-        if self.wind_turbine.is_low_speed() {
-            pump_torque += (self.wind_turbine.position().get::<radian>() * 4.).cos() * 0.35 * 2.;
+        let pump_torque = if self.wind_turbine.is_low_speed() {
+            (self.wind_turbine.position().get::<radian>() * 4.).cos() * 0.35 * 2.
         } else {
-            pump_torque -= generator_power.generated_power().get::<watt>()
-                * Self::GENERATOR_EFFICIENCY_PENALTY
-                / self.wind_turbine.speed().get::<radian_per_second>();
-        }
+            generator_power.generated_power().get::<watt>() * -Self::GENERATOR_EFFICIENCY_PENALTY
+                / self.wind_turbine.speed().get::<radian_per_second>()
+        };
 
         Torque::new::<newton_meter>(pump_torque)
     }
