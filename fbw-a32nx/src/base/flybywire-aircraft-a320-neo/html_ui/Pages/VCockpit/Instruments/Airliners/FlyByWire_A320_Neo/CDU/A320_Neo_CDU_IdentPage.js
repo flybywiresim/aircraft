@@ -87,7 +87,7 @@ function switchDataBase(mcdu)
     mcdu._blockFuelEntered = false;
     mcdu.blockFuel = undefined;
     mcdu.taxiFuelWeight = undefined;
-    //other data
+    // other data
     mcdu.costIndex = undefined;
     mcdu.costIndexSet = false;
     mcdu.flightNumber = undefined
