@@ -40,6 +40,8 @@ $ mach watch -f EWD
 
 You can append source maps to the end of instrument bundles using the `-u / --output-sourcemaps` flag.
 
+**Note:** Source maps currently do not work with React based instruments. This will be fixed in the future.
+
 ### Adding a new instrument
 
 To add a new instrument, simply edit the `mach.config.js` file of your desired project folder.
