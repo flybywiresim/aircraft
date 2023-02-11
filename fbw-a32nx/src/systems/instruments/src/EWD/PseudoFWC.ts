@@ -597,7 +597,6 @@ export class PseudoFWC {
         this.blueRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_RESERVOIR_OVHT', 'bool'));
         this.eng1pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool'));
         this.eng2pumpPBisAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool'));
-        this.greenHydEng1PBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool'));
         this.greenLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool'));
         this.greenRvrOvht.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
         this.hydPTU.set(SimVar.GetSimVarValue('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'Bool'));
@@ -1703,9 +1702,9 @@ export class PseudoFWC {
         2900310: { // *HYD  - Blue
             flightPhaseInhib: [1, 4, 5, 10],
             simVarIsActive: MappedSubject.create(
-                ([blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) => !(blueRvrLow || !blueElecPumpPBAuto)
+                ([blueRvrOvht, blueRvrLow, blueElecPumpPBAuto, dcESSBusPowered, ac1BusPowered, blueLP, emergencyGeneratorOn]) => !(blueRvrOvht || blueRvrLow || !blueElecPumpPBAuto)
                     && (!dcESSBusPowered || !ac1BusPowered) && blueLP && !emergencyGeneratorOn,
-                this.blueRvrLow, this.blueElecPumpPBAuto, this.dcESSBusPowered, this.ac1BusPowered, this.blueLP, this.emergencyGeneratorOn,
+                this.blueRvrOvht, this.blueRvrLow, this.blueElecPumpPBAuto, this.dcESSBusPowered, this.ac1BusPowered, this.blueLP, this.emergencyGeneratorOn,
             ),
             whichCodeToReturn: () => [0],
             codesToReturn: ['290031001'],
@@ -1717,10 +1716,10 @@ export class PseudoFWC {
         2900312: { // *HYD  - Green Engine 1 //
             flightPhaseInhib: [1, 2, 9, 10],
             simVarIsActive: MappedSubject.create(
-                ([greenLP, greenHydEng1PBAuto, emergencyGeneratorOn]) => greenLP
+                ([greenLP, eng1pumpPBisAuto, emergencyGeneratorOn]) => greenLP
                     // && ENG 1 OUT - not implemented
-                    && !greenHydEng1PBAuto && !emergencyGeneratorOn,
-                this.greenLP, this.greenHydEng1PBAuto, this.emergencyGeneratorOn,
+                    && eng1pumpPBisAuto && !emergencyGeneratorOn,
+                this.greenLP, this.eng1pumpPBisAuto, this.emergencyGeneratorOn,
             ),
             whichCodeToReturn: () => [0],
             codesToReturn: ['290031201'],
