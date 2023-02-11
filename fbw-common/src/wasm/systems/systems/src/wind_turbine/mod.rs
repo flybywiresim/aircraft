@@ -45,7 +45,7 @@ impl WindTurbine {
             propeller_angle_id: context.get_identifier("RAT_PROPELLER_ANGLE".to_owned()),
 
             position: Angle::new::<radian>(Self::STOWED_ANGLE),
-            speed: AngularVelocity::new::<revolution_per_minute>(0.),
+            speed: AngularVelocity::default(),
             acceleration: 0.,
             torque_sum: 0.,
 
