@@ -272,10 +272,8 @@ impl HydraulicDriveMotor {
     }
 
     fn current_max_speed_from_hydraulic_pressure(&self, pressure: Pressure) -> AngularVelocity {
-        let pressure_coefficient = (pressure.get::<psi>()
-            / self.max_speed_hyd_pressure.get::<psi>())
-        .min(1.)
-        .max(0.);
+        let pressure_coefficient =
+            (pressure.get::<psi>() / self.max_speed_hyd_pressure.get::<psi>()).clamp(0., 1.);
 
         self.max_speed * pressure_coefficient
     }
@@ -534,7 +532,7 @@ impl ThsMotorMechanicalController {
         Self {
             should_motor_activate: false,
 
-            requested_position: Angle::new::<degree>(0.),
+            requested_position: Angle::default(),
         }
     }
 
