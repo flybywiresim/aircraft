@@ -78,7 +78,7 @@ function switchDataBase(mcdu)
     mcdu.flightPlanManager.clearFlightPlan();
     // stored data
     mcdu.dataManager.deleteAllStoredWaypoints();
-    //Fuel reset
+    // Fuel reset
     mcdu.zeroFuelWeight = undefined;
     mcdu.zeroFuelWeightMassCenter = undefined ;
     mcdu._blockFuelEntered = false;
