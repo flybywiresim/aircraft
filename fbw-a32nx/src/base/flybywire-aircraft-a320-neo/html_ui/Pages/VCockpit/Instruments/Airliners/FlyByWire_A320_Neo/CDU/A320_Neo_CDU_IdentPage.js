@@ -69,10 +69,10 @@ function calculateSecDate(date) {
 function switchDataBase(mcdu)
     {
     // Only performing a reset of the MCDU for now, no secondary database
-    //Speed AP returns to selected
+    // Speed AP returns to selected
     const isSelected = Simplane.getAutoPilotAirspeedSelected();
     if (isSelected == false) SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
-    //flight plan
+    // flight plan
     mcdu.resetCoroute();
     mcdu.atsu.atc.resetAtisAutoUpdate();
     mcdu.flightPlanManager.clearFlightPlan();
@@ -94,7 +94,7 @@ function switchDataBase(mcdu)
     mcdu._cruiseEntered =false
     mcdu._cruiseFlightLevel = undefined;
     // position loss
-    // Missing FEATURE
+    // TODO:
     // Internal FMC position shall also be lost so that navigation Display is blanked and speed prediction in Navigation.ts
     // Must be done when the navigation system implements an internal position.
     }
