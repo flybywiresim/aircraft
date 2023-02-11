@@ -127,9 +127,11 @@ public:
    * Called by the DataManager when a SIMCONNECT_RECV_ID_SIMOBJECT_DATA
    * or SIMCONNECT_RECV_ID_CLIENT_DATA message for this variables request ID is received.
    * @param pointer to the SIMCONNECT_RECV_SIMOBJECT_DATA of SIMCONNECT_RECV_CLIENT_DATA structure
+   * @param simTime the current sim time (taken from the sim update event)
+   * @param tickCounter the current tick counter (taken from a custom counter at each update event)
    * @See SIMCONNECT_RECV
    */
-  virtual void processSimData(const SIMCONNECT_RECV* pData) = 0;
+  virtual void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) = 0;
 
   /**
    * Writes the data object to the sim.

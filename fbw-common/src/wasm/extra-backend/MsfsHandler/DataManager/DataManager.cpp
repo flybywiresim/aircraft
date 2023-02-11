@@ -361,7 +361,7 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
 void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) {
   const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
   if (auto pair = simObjects.find(pSimobjectData->dwRequestID); pair != simObjects.end()) {
-    pair->second->processSimData(pData);
+    pair->second->processSimData(pData, msfsHandler->getTimeStamp(), msfsHandler->getTickCounter());
     return;
   }
   LOG_ERROR("DataManager::processSimObjectData() - unknown request id: "

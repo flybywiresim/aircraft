@@ -138,6 +138,7 @@ bool ExampleModule::initialize() {
     ->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, false, false, 0, 0);
 
   // Alternative to use autoRead it is possible to set the SIMCONNECT_PERIOD.
+  // this is probably very efficient for data definitions areas if every change needs to be read
   // See https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm?rhhlterm=SIMCONNECT_CLIENT_DATA_PERIOD&rhsearch=SIMCONNECT_CLIENT_DATA_PERIOD
   //  if (!exampleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME)) {
   //    LOG_ERROR("Failed to request periodic data from sim");
@@ -152,6 +153,7 @@ bool ExampleModule::initialize() {
   exampleClientData2Ptr =
     dataManager->make_clientdataarea_var<ExampleClientData2>("EXAMPLE 2 CLIENT DATA");
   // exampleClientData2Ptr->setSkipChangeCheck(true);
+  // this is probably very efficient for client data areas if every change needs to be read
   if (!exampleClientData2Ptr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
     LOG_ERROR("Failed to request periodic data from sim");
   }

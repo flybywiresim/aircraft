@@ -34,10 +34,6 @@
  * 2. a data request will be send to the sim to have the sim prepare the requested data<br/>
  * 3. the sim will send an message (SIMCONNECT_RECV_ID_SIMOBJECT_DATA) to signal that the data is
  *    ready to be read. This event also contains a pointer to the provided data. <br/>
- *
- * The DataManager class will provide the requestPeriodicDataFromSim() method to read the sim's message queue.
- * Currently SIMCONNECT_PERIOD is not used (at the moment) and data is requested on demand via
- * the DataManager.
  */
 template<typename T>
 class DataDefinitionVariable : public SimObjectBase {
@@ -161,14 +157,10 @@ public:
       return true;
     }
     LOG_TRACE("DataDefinitionVariable::requestUpdateFromSim: Requesting update from sim.");
-
-    timeStampSimTime = timeStamp;
-    tickStamp = tickCounter;
-
     return requestDataFromSim();
   };
 
-  void processSimData(const SIMCONNECT_RECV* pData) override {
+  void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_TRACE("DataDefinitionVariable: Received client data: " + name);
     const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
     SIMPLE_ASSERT(sizeof(T) == pSimobjectData->dwDefineCount * sizeof(FLOAT64),
@@ -180,6 +172,8 @@ public:
     if (dataChanged) {
       LOG_TRACE("DataDefinitionVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pSimobjectData->dwData, sizeof(T));
+      timeStampSimTime = simTime;
+      tickStamp = tickCounter;
       return;
     }
     LOG_TRACE("DataDefinitionVariable: Data has not changed: " + name);

@@ -150,12 +150,10 @@ public:
       return true;
     }
     LOG_TRACE("ClientDataAreaVariable::requestUpdateFromSim: Requesting update from sim.");
-    timeStampSimTime = timeStamp;
-    tickStamp = tickCounter;
     return requestDataFromSim();
   }
 
-  void processSimData(const SIMCONNECT_RECV* pData) override {
+  void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_INFO("ClientDataAreaVariable: Received client data: " + name);
     const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
     SIMPLE_ASSERT(pClientData->dwRequestID == requestId,
@@ -165,6 +163,8 @@ public:
     if (dataChanged) {
       LOG_TRACE("ClientDataAreaVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pClientData->dwData, sizeof(T));
+      timeStampSimTime = simTime;
+      tickStamp = tickCounter;
       return;
     }
     LOG_TRACE("ClientDataAreaVariable: Data has not changed: " + name);
