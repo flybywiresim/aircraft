@@ -10,8 +10,8 @@ use crate::{
 };
 
 use super::{
-    pressure_valve::{PressureValve, PressureValveSignal},
-    OutflowValveActuator, OutflowValveSignal, PressurizationConstants,
+    pressure_valve::{OutflowValve, PressureValveSignal, SafetyValve},
+    OutflowValveSignal, PressurizationConstants,
 };
 
 use std::time::Duration;
@@ -131,8 +131,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         lgciu_gears_compressed: bool,
         press_overhead: &impl PressurizationOverheadShared,
         cabin_simulation: &impl CabinSimulation,
-        outflow_valve: &PressureValve,
-        safety_valve: &PressureValve,
+        outflow_valve: Vec<&OutflowValve>,
+        safety_valve: &SafetyValve,
     ) {
         self.exterior_pressure = cabin_simulation.exterior_pressure();
         self.exterior_vertical_speed = context.vertical_speed();
@@ -178,7 +178,12 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             self.is_ground() && self.should_open_outflow_valve(),
         );
 
-        self.outflow_valve_open_amount = outflow_valve.open_amount();
+        self.outflow_valve_open_amount = outflow_valve
+            .iter()
+            .map(|valve| valve.open_amount())
+            .collect::<Vec<Ratio>>()
+            .iter()
+            .average();
         self.safety_valve_open_amount = safety_valve.open_amount();
 
         if self.is_in_man_mode && press_overhead.is_in_man_mode() {
@@ -446,12 +451,11 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 }
 
-impl<C: PressurizationConstants> OutflowValveActuator for CabinPressureController<C> {
-    fn target_valve_position(&self) -> Ratio {
-        match self.outflow_valve_controller.signal() {
-            Some(signal) => signal.target_open_amount(),
-            None => self.outflow_valve_open_amount,
-        }
+impl<C: PressurizationConstants> ControllerSignal<OutflowValveSignal>
+    for CabinPressureController<C>
+{
+    fn signal(&self) -> Option<OutflowValveSignal> {
+        self.outflow_valve_controller.signal()
     }
 }
 
@@ -460,20 +464,28 @@ impl<C: PressurizationConstants> ControllerSignal<PressureValveSignal>
     for CabinPressureController<C>
 {
     fn signal(&self) -> Option<PressureValveSignal> {
+        let open = Some(PressureValveSignal::Open(
+            Ratio::new::<percent>(100.),
+            Duration::from_secs(1),
+        ));
+        let closed = Some(PressureValveSignal::Close(
+            Ratio::new::<percent>(0.),
+            Duration::from_secs(1),
+        ));
         if self.cabin_delta_p() > Pressure::new::<psi>(8.1) {
             if self.cabin_delta_p() > Pressure::new::<psi>(8.6) {
-                Some(PressureValveSignal::Open)
+                open
             } else {
                 Some(PressureValveSignal::Neutral)
             }
         } else if self.cabin_delta_p() < Pressure::new::<psi>(-0.5) {
             if self.cabin_delta_p() < Pressure::new::<psi>(-1.) {
-                Some(PressureValveSignal::Open)
+                open
             } else {
                 Some(PressureValveSignal::Neutral)
             }
         } else if self.safety_valve_open_amount > Ratio::new::<percent>(0.) {
-            Some(PressureValveSignal::Close)
+            closed
         } else {
             Some(PressureValveSignal::Neutral)
         }
@@ -923,6 +935,7 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::shared::ElectricalBusType;
     use crate::simulation::{Aircraft, InitContext, SimulationElement, SimulationElementVisitor};
     use crate::{
         air_conditioning::{
@@ -1116,15 +1129,15 @@ mod tests {
         }
     }
 
-    impl ControllerSignal<PressureValveSignal> for TestPressurizationOverheadPanel {
-        fn signal(&self) -> Option<PressureValveSignal> {
+    impl ControllerSignal<OutflowValveSignal> for TestPressurizationOverheadPanel {
+        fn signal(&self) -> Option<OutflowValveSignal> {
             if !self.is_in_man_mode() {
                 None
             } else {
                 match self.man_vs_switch_position() {
-                    0 => Some(PressureValveSignal::Open),
-                    1 => Some(PressureValveSignal::Neutral),
-                    2 => Some(PressureValveSignal::Close),
+                    0 => Some(OutflowValveSignal::new_open()),
+                    1 => None,
+                    2 => Some(OutflowValveSignal::new_closed()),
                     _ => panic!("Could not convert manual vertical speed switch position '{}' to pressure valve signal.", self.man_vs_switch_position()),
                 }
             }
@@ -1182,8 +1195,8 @@ mod tests {
         air_conditioning_system: TestAirConditioningSystem,
         cpc: CabinPressureController<TestConstants>,
         cabin_air_simulation: CabinAirSimulation<TestConstants, 3>,
-        outflow_valve: PressureValve,
-        safety_valve: PressureValve,
+        outflow_valve: OutflowValve,
+        safety_valve: SafetyValve,
         press_overhead: TestPressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
@@ -1201,8 +1214,14 @@ mod tests {
                     TestConstants,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)],
                 ),
-                outflow_valve: PressureValve::new_outflow_valve(),
-                safety_valve: PressureValve::new_safety_valve(),
+                outflow_valve: OutflowValve::new(
+                    vec![
+                        ElectricalBusType::DirectCurrentEssential,
+                        ElectricalBusType::DirectCurrent(2),
+                    ],
+                    vec![ElectricalBusType::DirectCurrentBattery],
+                ),
+                safety_valve: SafetyValve::new(),
                 press_overhead: TestPressurizationOverheadPanel::new(context),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
@@ -1291,7 +1310,7 @@ mod tests {
                 lgciu_gears_compressed,
                 &self.press_overhead,
                 &self.cabin_air_simulation,
-                &self.outflow_valve,
+                vec![&self.outflow_valve],
                 &self.safety_valve,
             );
         }

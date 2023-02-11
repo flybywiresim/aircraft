@@ -84,10 +84,6 @@ impl Display for ZoneType {
     }
 }
 
-pub trait OutflowValveActuator {
-    fn target_valve_position(&self) -> Ratio;
-}
-
 pub struct OutflowValveSignal {
     target_open_amount: Ratio,
 }
@@ -97,11 +93,11 @@ impl OutflowValveSignal {
         Self { target_open_amount }
     }
 
-    fn new_open() -> Self {
+    pub fn new_open() -> Self {
         Self::new(Ratio::new::<percent>(100.))
     }
 
-    fn new_closed() -> Self {
+    pub fn new_closed() -> Self {
         Self::new(Ratio::new::<percent>(0.))
     }
 

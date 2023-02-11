@@ -12,6 +12,7 @@ use uom::si::{
     length::meter,
     mass_rate::kilogram_per_second,
     pressure::{hectopascal, pascal},
+    ratio::ratio,
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
 
@@ -792,6 +793,27 @@ impl Average for ThermodynamicTemperature {
     }
 }
 
+impl Average for Ratio {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Ratio>,
+    {
+        let mut sum: Ratio = Ratio::new::<ratio>(0.);
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v;
+            count += 1;
+        }
+
+        if count > 0 {
+            sum / (count as f64)
+        } else {
+            Ratio::new::<ratio>(0.)
+        }
+    }
+}
+
 impl<'a> Average<&'a Pressure> for Pressure {
     fn average<I>(iter: I) -> Self
     where
@@ -814,6 +836,15 @@ impl<'a> Average<&'a ThermodynamicTemperature> for ThermodynamicTemperature {
     fn average<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a ThermodynamicTemperature>,
+    {
+        iter.copied().average()
+    }
+}
+
+impl<'a> Average<&'a Ratio> for Ratio {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Ratio>,
     {
         iter.copied().average()
     }

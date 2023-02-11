@@ -4,8 +4,8 @@ use systems::{
         acs_controller::{Pack, PackFlowController},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
-        pressure_valve::{PressureValve, PressureValveSignal},
-        AirConditioningSystem, DuctTemperature, OutletAir, PackFlowControllers,
+        pressure_valve::{OutflowValve, SafetyValve},
+        AirConditioningSystem, DuctTemperature, OutflowValveSignal, OutletAir, PackFlowControllers,
         PressurizationConstants, ZoneType,
     },
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
@@ -241,8 +241,8 @@ struct A320PressurizationSystem {
     active_cpc_sys_id: VariableIdentifier,
 
     cpc: [CabinPressureController<A320PressurizationConstants>; 2],
-    outflow_valve: [PressureValve; 1], // Array to prepare for more than 1 outflow valve in A380
-    safety_valve: PressureValve,
+    outflow_valve: [OutflowValve; 1], // Array to prepare for more than 1 outflow valve in A380
+    safety_valve: SafetyValve,
     residual_pressure_controller: ResidualPressureController,
     active_system: usize,
 }
@@ -262,8 +262,14 @@ impl A320PressurizationSystem {
                 CabinPressureController::new(context, A320PressurizationConstants),
                 CabinPressureController::new(context, A320PressurizationConstants),
             ],
-            outflow_valve: [PressureValve::new_outflow_valve(); 1],
-            safety_valve: PressureValve::new_safety_valve(),
+            outflow_valve: [OutflowValve::new(
+                vec![
+                    ElectricalBusType::DirectCurrentEssential,
+                    ElectricalBusType::DirectCurrent(2),
+                ],
+                vec![ElectricalBusType::DirectCurrentBattery],
+            ); 1],
+            safety_valve: SafetyValve::new(),
             residual_pressure_controller: ResidualPressureController::new(),
             active_system: active,
         }
@@ -290,7 +296,7 @@ impl A320PressurizationSystem {
                 lgciu_gears_compressed,
                 press_overhead,
                 cabin_simulation,
-                &self.outflow_valve[0],
+                self.outflow_valve.iter().collect(),
                 &self.safety_valve,
             );
         }
@@ -304,14 +310,27 @@ impl A320PressurizationSystem {
             self.cpc[self.active_system - 1].cabin_delta_p(),
         );
 
-        for ofv_valve in self.outflow_valve.iter_mut() {
-            ofv_valve.calculate_outflow_valve_position(&self.cpc[self.active_system - 1])
-        }
-
+        // The outflow valve(s) is(are) controlled by either the CPC, the RCPU (both in auto) or the overhead (manual)
         if self.residual_pressure_controller.signal().is_some() {
-            self.outflow_valve[0].update(context, &self.residual_pressure_controller);
+            self.outflow_valve.iter_mut().for_each(|valve| {
+                valve.update(
+                    context,
+                    &self.residual_pressure_controller,
+                    press_overhead.is_in_man_mode(),
+                )
+            })
+        } else if press_overhead.is_in_man_mode() {
+            self.outflow_valve.iter_mut().for_each(|valve| {
+                valve.update(context, press_overhead, press_overhead.is_in_man_mode())
+            })
         } else {
-            self.outflow_valve[0].update(context, press_overhead);
+            self.outflow_valve.iter_mut().for_each(|valve| {
+                valve.update(
+                    context,
+                    &self.cpc[self.active_system - 1],
+                    press_overhead.is_in_man_mode(),
+                )
+            });
         }
 
         self.safety_valve
@@ -357,6 +376,7 @@ impl SimulationElement for A320PressurizationSystem {
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.cpc, visitor);
+        accept_iterable!(self.outflow_valve, visitor);
 
         visitor.visit(self);
     }
@@ -423,15 +443,15 @@ impl SimulationElement for A380PressurizationOverheadPanel {
     }
 }
 
-impl ControllerSignal<PressureValveSignal> for A380PressurizationOverheadPanel {
-    fn signal(&self) -> Option<PressureValveSignal> {
+impl ControllerSignal<OutflowValveSignal> for A380PressurizationOverheadPanel {
+    fn signal(&self) -> Option<OutflowValveSignal> {
         if !self.is_in_man_mode() {
             None
         } else {
             match self.man_vs_switch_position() {
-                0 => Some(PressureValveSignal::Open),
-                1 => Some(PressureValveSignal::Neutral),
-                2 => Some(PressureValveSignal::Close),
+                0 => Some(OutflowValveSignal::new_open()),
+                1 => None,
+                2 => Some(OutflowValveSignal::new_closed()),
                 _ => panic!("Could not convert manual vertical speed switch position '{}' to pressure valve signal.", self.man_vs_switch_position()),
             }
         }
@@ -494,10 +514,10 @@ impl ResidualPressureController {
     }
 }
 
-impl ControllerSignal<PressureValveSignal> for ResidualPressureController {
-    fn signal(&self) -> Option<PressureValveSignal> {
+impl ControllerSignal<OutflowValveSignal> for ResidualPressureController {
+    fn signal(&self) -> Option<OutflowValveSignal> {
         if self.timer > Duration::from_secs(55) {
-            Some(PressureValveSignal::Open)
+            Some(OutflowValveSignal::new_open())
         } else {
             None
         }
@@ -972,6 +992,8 @@ mod tests {
         ac_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
         ac_2_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
+        dc_bat_bus: ElectricalBus,
     }
 
     impl TestAircraft {
@@ -1007,6 +1029,8 @@ mod tests {
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
                 ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+                dc_bat_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentBattery),
             };
             test_aircraft
                 .a380_cabin_air
@@ -1039,6 +1063,8 @@ mod tests {
             electricity.flow(&self.powered_ac_source_1, &self.ac_1_bus);
             electricity.flow(&self.powered_dc_source_2, &self.dc_2_bus);
             electricity.flow(&self.powered_ac_source_2, &self.ac_2_bus);
+            electricity.flow(&self.powered_dc_source_1, &self.dc_ess_bus);
+            electricity.flow(&self.powered_dc_source_1, &self.dc_bat_bus);
         }
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.pneumatic.update(
