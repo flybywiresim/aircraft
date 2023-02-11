@@ -18,7 +18,7 @@ use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3, 2>,
+    a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
 }
 
 impl A320AirConditioning {
@@ -51,7 +51,7 @@ impl A320AirConditioning {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<2>,
         pressurization: &impl CabinAir,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -82,8 +82,8 @@ impl A320AirConditioning {
     }
 }
 
-impl PackFlowControllers<3> for A320AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+impl PackFlowControllers<3, 2> for A320AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 2> {
         self.a320_air_conditioning_system
             .pack_flow_controller(pack_id)
     }

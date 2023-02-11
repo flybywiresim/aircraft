@@ -196,8 +196,8 @@ pub trait EngineStartState {
     fn engine_mode_selector(&self) -> EngineModeSelector;
 }
 
-pub trait EngineBleedPushbutton {
-    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2];
+pub trait EngineBleedPushbutton<const N: usize> {
+    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; N];
 }
 
 pub trait PackFlowValveState {
