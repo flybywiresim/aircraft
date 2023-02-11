@@ -5743,19 +5743,27 @@ impl TrimmableHorizontalStabilizerSystemHydraulicController {
     }
 
     fn update_ths_controllers_positions(&mut self) {
-        self.controllers[ThsMotorPosition::Green as usize].set_requested_position(
-            self.position_requests_from_fbw[ThsMotorPosition::Green as usize],
-        );
-        self.controllers[ThsMotorPosition::Yellow as usize].set_requested_position(
-            self.position_requests_from_fbw[ThsMotorPosition::Yellow as usize],
-        );
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Green as usize]
+            .set_requested_position(
+                self.position_requests_from_fbw
+                    [TrimmableHorizontalStabilizerMotorPosition::Green as usize],
+            );
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Yellow as usize]
+            .set_requested_position(
+                self.position_requests_from_fbw
+                    [TrimmableHorizontalStabilizerMotorPosition::Yellow as usize],
+            );
     }
 
     fn update_ths_controllers_solenoids(&mut self) {
-        self.controllers[ThsMotorPosition::Green as usize]
-            .set_mode(self.solenoid_energized_from_fbw[ThsMotorPosition::Green as usize]);
-        self.controllers[ThsMotorPosition::Yellow as usize]
-            .set_mode(self.solenoid_energized_from_fbw[ThsMotorPosition::Yellow as usize]);
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Green as usize].set_mode(
+            self.solenoid_energized_from_fbw
+                [TrimmableHorizontalStabilizerMotorPosition::Green as usize],
+        );
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Yellow as usize].set_mode(
+            self.solenoid_energized_from_fbw
+                [TrimmableHorizontalStabilizerMotorPosition::Yellow as usize],
+        );
     }
 }
 impl SimulationElement for TrimmableHorizontalStabilizerSystemHydraulicController {
@@ -6099,7 +6107,7 @@ enum ElevatorPanelPosition {
     Inward = 1,
 }
 
-enum ThsMotorPosition {
+enum TrimmableHorizontalStabilizerMotorPosition {
     Green = 0,
     Yellow = 1,
 }
