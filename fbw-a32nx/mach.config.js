@@ -3,8 +3,6 @@ const postCssPlugin = require('esbuild-style-plugin');
 const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 
-require('dotenv').config();
-
 /** @type { import('@synaptic-simulations/mach').MachConfig } */
 module.exports = {
     packageName: 'A32NX',
