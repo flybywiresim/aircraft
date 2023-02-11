@@ -17,8 +17,8 @@
 #include "IDGenerator.h"
 #include "Units.h"
 
-#include "DataDefinitionVariable.h"
-#include "ClientDataAreaVariable.h"
+#include "DataDefinitionVariable.hpp"
+#include "ClientDataAreaVariable.hpp"
 
 // Forward declarations
 class MsfsHandler;
