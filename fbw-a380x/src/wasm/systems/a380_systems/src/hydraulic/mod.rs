@@ -39,7 +39,7 @@ use systems::{
         },
         pumps::PumpCharacteristics,
         trimmable_horizontal_stabilizer::{
-            ThsMotorController, TrimmableHorizontalStabilizerActuator,
+            TrimmableHorizontalStabilizerActuator, TrimmableHorizontalStabilizerMotorController,
         },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PriorityValve,
@@ -1569,7 +1569,7 @@ pub(super) struct A380Hydraulic {
     gear_system_hydraulic_controller: A380GearHydraulicController,
     gear_system: HydraulicGearSystem,
 
-    ths_system_controller: ThsSystemHydraulicController,
+    ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController,
     ths: TrimmableHorizontalStabilizerActuator,
 
     epump_auto_logic: A380ElectricPumpAutoLogic,
@@ -1858,7 +1858,9 @@ impl A380Hydraulic {
             gear_system_hydraulic_controller: A380GearHydraulicController::new(),
             gear_system: A380GearSystemFactory::a380_gear_system(context),
 
-            ths_system_controller: ThsSystemHydraulicController::new(context),
+            ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController::new(
+                context,
+            ),
             ths: TrimmableHorizontalStabilizerActuator::new(
                 context,
                 Angle::new::<degree>(-2.),
@@ -5661,11 +5663,11 @@ impl SimulationElement for ElevatorSystemHydraulicController {
 }
 
 #[derive(Clone, Copy, PartialEq)]
-struct ThsMotorElectricalController {
+struct TrimmableHorizontalStabilizerMotorElectricalController {
     should_motor_activate: bool,
     requested_position: Angle,
 }
-impl ThsMotorElectricalController {
+impl TrimmableHorizontalStabilizerMotorElectricalController {
     fn new() -> Self {
         Self {
             should_motor_activate: false,
@@ -5683,7 +5685,9 @@ impl ThsMotorElectricalController {
         self.requested_position = requested_position;
     }
 }
-impl ThsMotorController for ThsMotorElectricalController {
+impl TrimmableHorizontalStabilizerMotorController
+    for TrimmableHorizontalStabilizerMotorElectricalController
+{
     fn motor_should_activate(&self) -> bool {
         self.should_motor_activate
     }
@@ -5693,7 +5697,7 @@ impl ThsMotorController for ThsMotorElectricalController {
     }
 }
 
-struct ThsSystemHydraulicController {
+struct TrimmableHorizontalStabilizerSystemHydraulicController {
     ths_green_actuator_solenoid_id: VariableIdentifier,
     ths_yellow_actuator_solenoid_id: VariableIdentifier,
 
@@ -5703,9 +5707,9 @@ struct ThsSystemHydraulicController {
     position_requests_from_fbw: [Angle; 2],
     solenoid_energized_from_fbw: [bool; 2],
 
-    controllers: [ThsMotorElectricalController; 2],
+    controllers: [TrimmableHorizontalStabilizerMotorElectricalController; 2],
 }
-impl ThsSystemHydraulicController {
+impl TrimmableHorizontalStabilizerSystemHydraulicController {
     fn new(context: &mut InitContext) -> Self {
         Self {
             ths_green_actuator_solenoid_id: context
@@ -5723,13 +5727,13 @@ impl ThsSystemHydraulicController {
 
             // Controllers are in green->yellow order
             controllers: [
-                ThsMotorElectricalController::new(),
-                ThsMotorElectricalController::new(),
+                TrimmableHorizontalStabilizerMotorElectricalController::new(),
+                TrimmableHorizontalStabilizerMotorElectricalController::new(),
             ],
         }
     }
 
-    fn controllers(&self) -> &[ThsMotorElectricalController; 2] {
+    fn controllers(&self) -> &[TrimmableHorizontalStabilizerMotorElectricalController; 2] {
         &self.controllers
     }
 
@@ -5754,7 +5758,7 @@ impl ThsSystemHydraulicController {
             .set_mode(self.solenoid_energized_from_fbw[ThsMotorPosition::Yellow as usize]);
     }
 }
-impl SimulationElement for ThsSystemHydraulicController {
+impl SimulationElement for TrimmableHorizontalStabilizerSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.position_requests_from_fbw = [
             -Angle::new::<degree>(reader.read(&self.ths_green_actuator_position_demand_id)),

@@ -207,7 +207,7 @@ impl SimulationElement for ElectricDriveMotor {
     }
 }
 
-pub trait ThsMotorController {
+pub trait TrimmableHorizontalStabilizerMotorController {
     fn motor_should_activate(&self) -> bool;
     fn requested_position(&self) -> Angle;
 }
@@ -523,11 +523,11 @@ impl SimulationElement for PitchTrimActuator {
 }
 
 #[derive(Clone, Copy, PartialEq)]
-struct ThsMotorMechanicalController {
+struct TrimmableHorizontalStabilizerMotorMechanicalController {
     should_motor_activate: bool,
     requested_position: Angle,
 }
-impl ThsMotorMechanicalController {
+impl TrimmableHorizontalStabilizerMotorMechanicalController {
     fn new() -> Self {
         Self {
             should_motor_activate: false,
@@ -541,7 +541,9 @@ impl ThsMotorMechanicalController {
         self.requested_position = requested_position;
     }
 }
-impl ThsMotorController for ThsMotorMechanicalController {
+impl TrimmableHorizontalStabilizerMotorController
+    for TrimmableHorizontalStabilizerMotorMechanicalController
+{
     fn motor_should_activate(&self) -> bool {
         self.should_motor_activate
     }
@@ -556,7 +558,7 @@ pub struct TrimmableHorizontalStabilizerAssembly {
     trim_wheel: TrimWheels,
     ths_hydraulics: TrimmableHorizontalStabilizerActuator,
 
-    controllers: [ThsMotorMechanicalController; 2],
+    controllers: [TrimmableHorizontalStabilizerMotorMechanicalController; 2],
 
     min_ths_deflection: Angle,
     ths_deflection_range: Angle,
@@ -602,8 +604,8 @@ impl TrimmableHorizontalStabilizerAssembly {
             ),
             // Controllers are in green->yellow order
             controllers: [
-                ThsMotorMechanicalController::new(),
-                ThsMotorMechanicalController::new(),
+                TrimmableHorizontalStabilizerMotorMechanicalController::new(),
+                TrimmableHorizontalStabilizerMotorMechanicalController::new(),
             ],
             min_ths_deflection,
             ths_deflection_range,
@@ -727,7 +729,7 @@ impl TrimmableHorizontalStabilizerActuator {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        controllers: &[impl ThsMotorController; 2],
+        controllers: &[impl TrimmableHorizontalStabilizerMotorController; 2],
         pressures: [Pressure; 2],
     ) {
         // Both controllers send the same position command for the A320, which is the aircraft that will use the
