@@ -173,7 +173,7 @@ impl<const N: usize> GeneratorControlUnit<N> {
                 self.current_speed.get::<revolution_per_minute>(),
             ))
         } else {
-            Power::new::<watt>(0.)
+            Power::default()
         }
     }
 }
