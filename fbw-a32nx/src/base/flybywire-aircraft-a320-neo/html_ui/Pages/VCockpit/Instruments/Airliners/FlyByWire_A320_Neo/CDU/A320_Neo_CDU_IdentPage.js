@@ -66,37 +66,20 @@ function calculateSecDate(date) {
     }
 }
 
-function switchDataBase(mcdu) {
+async function switchDataBase(mcdu) {
     // Only performing a reset of the MCDU for now, no secondary database
     // Speed AP returns to selected
     const isSelected = Simplane.getAutoPilotAirspeedSelected();
-    if (isSelected == false) SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
+    if (isSelected == false)
+        SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
     // flight plan
     mcdu.resetCoroute();
     mcdu.atsu.atc.resetAtisAutoUpdate();
-    mcdu.flightPlanManager.clearFlightPlan().then(() => {
-        // stored data
-        mcdu.dataManager.deleteAllStoredWaypoints();
-        // Fuel reset
-        mcdu.zeroFuelWeight = undefined;
-        mcdu.zeroFuelWeightMassCenter = undefined ;
-        mcdu._blockFuelEntered = false;
-        mcdu._fuelPlanningPhase = mcdu._fuelPlanningPhases.PLANNING;
-        mcdu._zeroFuelWeightZFWCGEntered= false;
-        mcdu._blockFuelEntered = false;
-        mcdu.blockFuel = undefined;
-        mcdu.taxiFuelWeight = undefined;
-        // other data
-        mcdu.costIndex = undefined;
-        mcdu.costIndexSet = false;
-        mcdu.flightNumber = undefined
-        mcdu._cruiseEntered = false
-        mcdu._cruiseFlightLevel = undefined;
-        // position loss
-        // TODO:
-        // Internal FMC position shall also be lost so that navigation Display is blanked and speed prediction in Navigation.ts
-        // Must be done when the navigation system implements an internal position.
-    });
+    await mcdu.flightPlanManager.clearFlightPlan();
+    // stored data
+    mcdu.dataManager.deleteAllStoredWaypoints();
+    // Reset MCDU apart from TakeOff config
+    mcdu.initVariables(false);
 }
 
 const ConfirmType = {
@@ -127,7 +110,7 @@ class CDUIdentPage {
             storedDeleteCell = (confirmType === ConfirmType.DeleteStored) ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}';
 
             // DELETE ALL
-            mcdu.onRightInput[4] = () =>                {
+            mcdu.onRightInput[4] = () => {
                 if (confirmType == ConfirmType.DeleteStored) {
                     const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
                     if (!allDeleted) {
@@ -144,12 +127,18 @@ class CDUIdentPage {
 
         //Potential future message in case we switch to a newer version of the FMS
         if (confirmDataBaseSwitch) {
-            secondaryDBTopLine = (confirmType == ConfirmType.SwitchDataBase) ? "{red}{small} " + calculateSecDate(date) + "{end}" : "\xa0SECOND NAV DATA BASE";
-            secondaryDBSubLine = (confirmType == ConfirmType.SwitchDataBase) ? '{amber}{CANCEL   SWAP  CONFIRM*{end}' : "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
-        }
-        else {
+            secondaryDBTopLine =
+                confirmType == ConfirmType.SwitchDataBase
+                    ? "{red}{small} " + calculateSecDate(date) + "{end}"
+                    : "\xa0SECOND NAV DATA BASE";
+            secondaryDBSubLine =
+                confirmType == ConfirmType.SwitchDataBase
+                    ? "{amber}{CANCEL   SWAP  CONFIRM*{end}"
+                    : "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
+        } else {
             secondaryDBTopLine = "\xa0SECOND NAV DATA BASE";
-            secondaryDBSubLine = "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
+            secondaryDBSubLine =
+                "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
         }
 
         mcdu.leftInputDelay[2] = () => {
@@ -161,11 +150,12 @@ class CDUIdentPage {
                 if (confirmType === ConfirmType.SwitchDataBase) {
                     CDUIdentPage.ShowPage(mcdu);
                 } else {
-                    CDUIdentPage.ShowPage(mcdu,ConfirmType.SwitchDataBase);
+                    CDUIdentPage.ShowPage(mcdu, ConfirmType.SwitchDataBase);
                 }
             } else {
-                switchDataBase(mcdu);
-                CDUIdentPage.ShowPage(mcdu);}
+                switchDataBase(mcdu).then(() => {
+                    CDUIdentPage.ShowPage(mcdu);
+                });
             }
 
         mcdu.rightInputDelay[2] = () => {
@@ -174,8 +164,9 @@ class CDUIdentPage {
 
         mcdu.onRightInput[2] = () => {
             if (confirmType === ConfirmType.SwitchDataBase) {
-                switchDataBase(mcdu);
-                CDUIdentPage.ShowPage(mcdu);
+                switchDataBase(mcdu).then(() => {
+                    CDUIdentPage.ShowPage(mcdu);
+                });
             }
         }
 
