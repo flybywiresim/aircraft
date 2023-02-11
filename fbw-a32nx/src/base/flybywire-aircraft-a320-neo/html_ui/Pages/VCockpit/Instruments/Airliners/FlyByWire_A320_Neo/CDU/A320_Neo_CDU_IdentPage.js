@@ -93,7 +93,7 @@ function switchDataBase(mcdu)
     mcdu.flightNumber = undefined
     mcdu._cruiseEntered =false
     mcdu._cruiseFlightLevel = undefined;
-    //position loss
+    // position loss
     // Missing FEATURE
     // Internal FMC position shall also be lost so that navigation Display is blanked and speed prediction in Navigation.ts
     // Must be done when the navigation system implements an internal position.
