@@ -86,17 +86,15 @@ impl WindTurbine {
     }
 
     fn update_friction_torque(&mut self, resistant_torque: Torque) {
-        let mut pump_torque = 0.;
-        if self.is_low_speed() {
-            pump_torque -= self.speed().get::<radian_per_second>() * 0.25;
+        let pump_torque = if self.is_low_speed() {
+            self.speed().get::<radian_per_second>() * 0.25
         } else {
-            pump_torque -= 20.
-                + (self.speed().get::<radian_per_second>()
-                    * self.speed().get::<radian_per_second>())
-                    * Self::FRICTION_COEFFICIENT;
-        }
+            20. + (self.speed().get::<radian_per_second>()
+                * self.speed().get::<radian_per_second>())
+                * Self::FRICTION_COEFFICIENT
+        };
 
-        self.torque_sum += resistant_torque.get::<newton_meter>() + pump_torque;
+        self.torque_sum += resistant_torque.get::<newton_meter>() - pump_torque;
     }
 
     fn update_physics(&mut self, delta_time: &Duration) {
