@@ -80,7 +80,10 @@ export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUI
         </Route>
 
         {allChapters.map((chapter) => (
-            <Route path={`/failures/comfort/${chapter.toString()}`}>
+            <Route
+                key={chapter}
+                path={`/failures/comfort/${chapter.toString()}`}
+            >
                 <AtaChapterPage chapter={chapter} failures={failures} />
             </Route>
         ))}
