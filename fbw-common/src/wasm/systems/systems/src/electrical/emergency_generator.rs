@@ -62,7 +62,7 @@ impl EmergencyGenerator {
         self.generated_power = if gcu.motor_speed() > self.min_rpm_to_supply_power {
             self.demand.min(gcu.max_allowed_power())
         } else {
-            Power::new::<watt>(0.)
+            Power::default()
         };
     }
 }
