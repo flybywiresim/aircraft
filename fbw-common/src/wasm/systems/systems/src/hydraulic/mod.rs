@@ -2936,6 +2936,7 @@ impl RamAirTurbine {
                 * displacement.get::<gallon>().max(0.35)
                 * 2.;
         } else {
+            // TODO wrong unit here, whole rat system needs a power/torque/rotation speed tuning and check
             pump_torque -=
                 pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI);
         }
