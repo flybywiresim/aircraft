@@ -319,14 +319,13 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
     }
 
-    initVariables() {
+    initVariables(resetTakeoffData = true) {
         this.currentFlightPlanWaypointIndex = -1;
         this.costIndex = 0;
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.resetCoroute();
-        this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
         this._routeFinalFuelWeight = 0;
@@ -341,13 +340,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
-        this.v1Speed = undefined;
-        this.vRSpeed = undefined;
-        this.v2Speed = undefined;
-        this._v1Checked = true;
-        this._vRChecked = true;
-        this._v2Checked = true;
-        this._toFlexChecked = true;
         this.toRunway = "";
         this.vApp = NaN;
         this.perfApprMDA = NaN;
@@ -370,24 +362,18 @@ class FMCMainDisplay extends BaseAirliners {
         this._adf2Frequency = 0;
         this._debug = 0;
         this._checkFlightPlan = 0;
-        this.thrustReductionAltitude = NaN;
         this.thrustReductionAltitudeGoaround = NaN;
-        this.thrustReductionAltitudeIsPilotEntered = false;
-        this.accelerationAltitude = NaN;
         this.accelerationAltitudeGoaround = NaN;
-        this.accelerationAltitudeIsPilotEntered = false;
         this.accelerationAltitudeGoaroundIsPilotEntered = false;
-        this.engineOutAccelerationAltitude = NaN;
         this.engineOutAccelerationAltitudeGoaround = NaN;
-        this.engineOutAccelerationAltitudeIsPilotEntered = false;
         this._windDirections = {
-            TAILWIND : "TL",
-            HEADWIND : "HD"
+            TAILWIND: "TL",
+            HEADWIND: "HD",
         };
         this._fuelPlanningPhases = {
-            PLANNING : 1,
-            IN_PROGRESS : 2,
-            COMPLETED : 3
+            PLANNING: 1,
+            IN_PROGRESS: 2,
+            COMPLETED: 3,
         };
         this._zeroFuelWeightZFWCGEntered = false;
         this._taxiEntered = false;
@@ -442,14 +428,14 @@ class FMCMainDisplay extends BaseAirliners {
             inTime: "",
             offTime: "",
             taxiFuel: "",
-            tripFuel: ""
+            tripFuel: "",
         };
         this.aocWeight = {
             blockFuel: undefined,
             estZfw: undefined,
             taxiFuel: undefined,
             tripFuel: undefined,
-            payload: undefined
+            payload: undefined,
         };
         this.aocTimes = {
             doors: 0,
@@ -462,11 +448,8 @@ class FMCMainDisplay extends BaseAirliners {
             climb: [],
             cruise: [],
             des: [],
-            alternate: null
+            alternate: null,
         };
-        this.computedVgd = undefined;
-        this.computedVfs = undefined;
-        this.computedVss = undefined;
         this.computedVls = undefined;
         this.approachSpeeds = undefined; // based on selected config, not current config
         this._cruiseEntered = false;
@@ -499,19 +482,17 @@ class FMCMainDisplay extends BaseAirliners {
         this.descentSpeedLimitPilot = false;
         this.managedSpeedClimb = 290;
         this.managedSpeedClimbIsPilotEntered = false;
-        this.managedSpeedClimbMach = .78;
+        this.managedSpeedClimbMach = 0.78;
         // this.managedSpeedClimbMachIsPilotEntered = false;
         this.managedSpeedCruise = 290;
         this.managedSpeedCruiseIsPilotEntered = false;
-        this.managedSpeedCruiseMach = .78;
+        this.managedSpeedCruiseMach = 0.78;
         // this.managedSpeedCruiseMachIsPilotEntered = false;
         this.managedSpeedDescend = 290;
         this.managedSpeedDescendIsPilotEntered = false;
-        this.managedSpeedDescendMach = .78;
+        this.managedSpeedDescendMach = 0.78;
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
-        this.flaps = NaN;
-        this.ths = NaN;
         this.ilsAutoFrequency = undefined;
         this.ilsAutoIcao = undefined;
         this.ilsAutoIdent = undefined;
@@ -539,47 +520,82 @@ class FMCMainDisplay extends BaseAirliners {
         this.destinationLatitude = undefined;
         this.destinationLongitude = undefined;
 
-        this.onAirport = () => { };
+        this.onAirport = () => {};
 
         if (this.navigation) {
             this.navigation.requiredPerformance.clearPilotRnp();
         }
 
-        // FMGC Message Queue
-        this._messageQueue.resetQueue();
-
         // ATSU data
         this.atsu = new Atsu.Atsu(this);
 
         // Reset SimVars
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-
-        CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
-        CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
-        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
-        SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", this.engineOutAccelerationAltitude);
-
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
 
-        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
-        SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+        SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+        SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
 
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
         SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
 
-        SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", this.constraintAlt);
+        SimVar.SetSimVarValue(
+            "L:A32NX_FG_ALTITUDE_CONSTRAINT",
+            "feet",
+            this.constraintAlt
+        );
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
-        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number" , 0);
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", 0);
 
-        if (SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISABLED", "number") === 1) {
+        if (
+            SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISABLED", "number") === 1
+        ) {
             SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
         }
 
         SimVar.SetSimVarValue("L:A32NX_PFD_MSG_SET_HOLD_SPEED", "bool", false);
+
+        if (resetTakeoffData) {
+            // FMGC Message Queue
+            this._messageQueue.resetQueue();
+
+            this.computedVgd = undefined;
+            this.computedVfs = undefined;
+            this.computedVss = undefined;
+            this.perfTOTemp = NaN;
+            this.flaps = NaN;
+            this.ths = NaN;
+            this.v1Speed = undefined;
+            this.vRSpeed = undefined;
+            this.v2Speed = undefined;
+            this._v1Checked = true;
+            this._vRChecked = true;
+            this._v2Checked = true;
+            this._toFlexChecked = true;
+            this.thrustReductionAltitude = NaN;
+            this.thrustReductionAltitudeIsPilotEntered = false;
+            this.engineOutAccelerationAltitude = NaN;
+            this.engineOutAccelerationAltitudeIsPilotEntered = false;
+            this.accelerationAltitude = NaN;
+            this.accelerationAltitudeIsPilotEntered = false;
+            // Reset SimVars
+            SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
+            SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
+            SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+            CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
+            SimVar.SetSimVarValue(
+                "L:AIRLINER_THR_RED_ALT",
+                "Number",
+                this.thrustReductionAltitude
+            );
+            SimVar.SetSimVarValue(
+                "L:A32NX_ENG_OUT_ACC_ALT",
+                "feet",
+                this.engineOutAccelerationAltitude
+            );
+        }
     }
 
     onUpdate(_deltaTime) {
