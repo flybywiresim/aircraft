@@ -39,6 +39,7 @@
 1. [FMGC] Constraints for waypoints behind the aircraft are no longer sent - @tracernz (Mike)
 1. [HYD] RAT code refactor to allow for hyd or elec rat design - @Crocket63 (crocket)
 
+
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
