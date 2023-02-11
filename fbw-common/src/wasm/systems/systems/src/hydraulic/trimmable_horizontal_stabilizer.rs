@@ -626,9 +626,9 @@ impl TrimmableHorizontalStabilizerAssembly {
 
         self.trim_wheel.update(&self.pitch_trim_actuator);
 
-        for (controller_index, controller) in self.controllers.iter_mut().enumerate() {
+        for (controller_index, pressure) in self.controllers.iter_mut().zip(pressures) {
             controller.update(
-                pressures[controller_index],
+                pressure,
                 self.ths_deflection_range
                     * self
                         .pitch_trim_actuator
@@ -735,13 +735,18 @@ impl TrimmableHorizontalStabilizerActuator {
         // So, we just use the first controller position.
         self.update_spool_valve_lock_position(controllers[0].requested_position());
 
-        for (motor_index, motor) in self.hydraulic_motors.iter_mut().enumerate() {
+        for ((motor, controller), pressure) in self
+            .hydraulic_motors
+            .iter_mut()
+            .zip(controllers)
+            .zip(pressures)
+        {
             motor.update(
                 context,
-                controllers[motor_index].motor_should_activate(),
+                controller.motor_should_activate(),
                 self.actual_deflection,
-                controllers[motor_index].requested_position(),
-                pressures[motor_index],
+                controller.requested_position(),
+                pressure,
             );
         }
 
