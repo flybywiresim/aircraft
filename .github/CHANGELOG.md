@@ -7,7 +7,6 @@
 
 ## 0.10.0
 
-1. [MCDU] Reset of flight plan and stored data on Database switch - @Maverickwoe (Garoomf#4683)
 1. [ADIRU] Implemented wind speed computation from TAS/GS/HDG - @tracernz (Mike)
 1. [FMGC] Show proper transition names and final approach slope from AAU1 - @tracernz (Mike)
 1. [FMGC] Don't accept blank input or / for hold distance - @tracernz (Mike)
@@ -38,6 +37,7 @@
 1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
 1. [CLOCK] Ported Clock to MSFS Avionics Framework for better performance - @MicahBCode (Mischa Binder)
 1. [FMGC] Constraints for waypoints behind the aircraft are no longer sent - @tracernz (Mike)
+1. [MCDU] Reset of flight plan and stored data on Database switch - @Maverickwoe (Garoomf#4683)
 
 ## 0.9.0
 
