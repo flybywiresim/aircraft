@@ -626,7 +626,7 @@ impl TrimmableHorizontalStabilizerAssembly {
 
         self.trim_wheel.update(&self.pitch_trim_actuator);
 
-        for (controller_index, pressure) in self.controllers.iter_mut().zip(pressures) {
+        for (controller, pressure) in self.controllers.iter_mut().zip(pressures) {
             controller.update(
                 pressure,
                 self.ths_deflection_range
