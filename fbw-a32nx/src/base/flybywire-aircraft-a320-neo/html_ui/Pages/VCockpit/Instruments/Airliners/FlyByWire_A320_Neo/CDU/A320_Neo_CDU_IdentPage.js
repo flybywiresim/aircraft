@@ -1,6 +1,6 @@
 const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-//use this config to display newest versions of FMC instead
+// Honeywell H4+ feature only
 const confirmDataBaseSwitch = false;
 
 function findNewMonthIndex(index) {
