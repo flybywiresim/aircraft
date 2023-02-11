@@ -69,9 +69,9 @@ function calculateSecDate(date) {
 async function switchDataBase(mcdu) {
     // Only performing a reset of the MCDU for now, no secondary database
     // Speed AP returns to selected
-    const isSelected = Simplane.getAutoPilotAirspeedSelected();
-    if (isSelected == false)
-        SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
+    //const isSelected = Simplane.getAutoPilotAirspeedSelected();
+    //if (isSelected == false)
+    //    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
     // flight plan
     mcdu.resetCoroute();
     mcdu.atsu.atc.resetAtisAutoUpdate();
@@ -157,6 +157,7 @@ class CDUIdentPage {
                     CDUIdentPage.ShowPage(mcdu);
                 });
             }
+        }
 
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
