@@ -24,6 +24,8 @@ export const SimOptionsPage = () => {
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+    const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
+    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -36,6 +38,8 @@ export const SimOptionsPage = () => {
         { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
         { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
     ];
+
+    const isGSXSyncEnabled = () => !!gsxFuelSyncEnabled || !!gsxPayloadSyncEnabled;
 
     return (
         <>
@@ -114,7 +118,7 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
+                    <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')} disabled={isGSXSyncEnabled()}>
                         <Toggle
                             value={wheelChocksEnabled === 1}
                             onToggle={(value) => {
@@ -123,7 +127,7 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
+                    <SettingItem name={t('Settings.SimOptions.ConesEnabled')} disabled={isGSXSyncEnabled()}>
                         <Toggle
                             value={conesEnabled === 1}
                             onToggle={(value) => {
