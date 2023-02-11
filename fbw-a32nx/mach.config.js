@@ -23,6 +23,7 @@ module.exports = {
     ],
     instruments: [
         msfsAvionicsInstrument('PFD'),
+        msfsAvionicsInstrument('Clock'),
 
         reactInstrument('ND', ['/JS/A32NX_Util.js']),
         reactInstrument('EWD'),
@@ -33,7 +34,6 @@ module.exports = {
         reactInstrument('ISIS'),
         reactInstrument('BAT'),
         reactInstrument('ATC'),
-        reactInstrument('Clock'),
         reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
     ],
 };
