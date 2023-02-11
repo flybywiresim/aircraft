@@ -171,11 +171,10 @@ class CDUIdentPage {
         };
 
         mcdu.onRightInput[2] = () => {
-            if (confirmType == ConfirmType.SwitchDataBase) {
-            switchDataBase(mcdu);
-            CDUIdentPage.ShowPage(mcdu);
+            if (confirmType === ConfirmType.SwitchDataBase) {
+                switchDataBase(mcdu);
+                CDUIdentPage.ShowPage(mcdu);
             }
-
         }
 
         mcdu.setTemplate([
