@@ -1,8 +1,7 @@
-// const { sassPlugin } = require('esbuild-sass-plugin');
 const imagePlugin = require('esbuild-plugin-inline-image');
 const postCssPlugin = require('esbuild-style-plugin');
 const tailwind = require('tailwindcss');
-const postcssColorHsl = require('postcss-color-hsl');
+const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 
 require('dotenv').config();
 
@@ -11,14 +10,13 @@ module.exports = {
     packageName: 'A32NX',
     packageDir: 'out/flybywire-aircraft-a320-neo',
     plugins: [
-        // sassPlugin(),
         imagePlugin({ limit: -1 }),
         postCssPlugin({
             extract: true,
             postcss: {
                 plugins: [
                     tailwind('src/systems/instruments/src/EFB/tailwind.config.js'),
-                    postcssColorHsl(),
+                    postCssColorFunctionalNotation(),
                 ],
             }
         }),
