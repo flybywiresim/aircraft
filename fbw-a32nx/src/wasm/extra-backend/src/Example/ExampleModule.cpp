@@ -188,51 +188,62 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     [[maybe_unused]] const UINT64 tickCounter = msfsHandler->getTickCounter();
 
     // difference if using different units
-    /*     debugLVAR3Ptr->setAndWriteToSim(msfsHandler->getTickCounter());
-            LOG_INFO("--- DEBUG_LVAR");
-            LOG_INFO("timeStamp = " + std::to_string(timeStamp)
-                     + "/ ticks = " + std::to_string(msfsHandler->getTickCounter()));
-            LOG_INFO("debugLVARPtr  DEBUG_LVAR "
-                     + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
-                     + std::to_string(debugLVARPtr->updateFromSim(timeStamp, tickCounter)));
-            LOG_INFO("debugLVAR2Ptr DEBUG_LVAR " + std::to_string(debugLVAR2Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
-            LOG_INFO("debugLVAR3Ptr DEBUG_LVAR " + std::to_string(debugLVAR3Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
-         this second read of the duplicate should not trigger a read from the sim*/
-    /*        LOG_INFO("debugLVAR4Ptr DEBUG_LVAR "
-                     + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
-                     + std::to_string(debugLVAR4Ptr->updateFromSim(timeStamp, tickCounter)));
+    /*
+      debugLVAR3Ptr->setAndWriteToSim(msfsHandler->getTickCounter());
+      LOG_INFO("--- DEBUG_LVAR");
+      LOG_INFO("timeStamp = " + std::to_string(timeStamp)
+               + "/ ticks = " + std::to_string(msfsHandler->getTickCounter()));
+      LOG_INFO("debugLVARPtr  DEBUG_LVAR "
+               + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
+               + std::to_string(debugLVARPtr->updateFromSim(timeStamp, tickCounter)));
+      LOG_INFO("debugLVAR2Ptr DEBUG_LVAR " + std::to_string(debugLVAR2Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
+      LOG_INFO("debugLVAR3Ptr DEBUG_LVAR " + std::to_string(debugLVAR3Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
+    */
+         // this second read of the duplicate should not trigger a read from the sim
+    /*
+      LOG_INFO("debugLVAR4Ptr DEBUG_LVAR "
+               + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
+               + std::to_string(debugLVAR4Ptr->updateFromSim(timeStamp, tickCounter)));
 
-            LOG_INFO("beaconLightSwitchPtr  DEBUG_BEACON " + std::to_string(beaconLightSwitchPtr->rawReadFromSim()));
-            LOG_INFO("beaconLightSwitch2Ptr DEBUG_BEACON " + std::to_string(beaconLightSwitch2Ptr->rawReadFromSim()));
-            LOG_INFO("beaconLightSwitch3Ptr DEBUG_BEACON " + std::to_string(beaconLightSwitch3Ptr->rawReadFromSim()));
-            LOG_INFO("--- DEBUG_BEACON");*/
+      LOG_INFO("beaconLightSwitchPtr  DEBUG_BEACON " + std::to_string(beaconLightSwitchPtr->rawReadFromSim()));
+      LOG_INFO("beaconLightSwitch2Ptr DEBUG_BEACON " + std::to_string(beaconLightSwitch2Ptr->rawReadFromSim()));
+      LOG_INFO("beaconLightSwitch3Ptr DEBUG_BEACON " + std::to_string(beaconLightSwitch3Ptr->rawReadFromSim()));
+      LOG_INFO("--- DEBUG_BEACON");
+    */
 
     // testing removing an event callback
-    /*        if (msfsHandler->getTimeStamp() >= 30 && msfsHandler->getTimeStamp() < 31) {
-              lightPotentiometerSetEvent2Ptr->removeCallback(lightPotentiometerSetCallback2ID);
-            }*/
+    /*
+      if (msfsHandler->getTimeStamp() >= 30 && msfsHandler->getTimeStamp() < 31) {
+        lightPotentiometerSetEvent2Ptr->removeCallback(lightPotentiometerSetCallback2ID);
+      }
+    */
 
     // testing doubled LVARs
-    /*        std::cout << *debugLVARPtr << std::endl;
-                std::cout << *debugLVAR2Ptr << std::endl;
-                std::cout << "TESTING 1212" << std::endl;*/
+    /*
+      std::cout << *debugLVARPtr << std::endl;
+      std::cout << *debugLVAR2Ptr << std::endl;
+      std::cout << "TESTING 1212" << std::endl;
+     */
 
     // testing aircraft variables
     // std::cout << beaconLightSwitchPtr->str() << std::endl;
 
     // testing data definition variables
-    /*        LOG_INFO("--- DEBUG SIMOBJECT DATA");
-            std::cout << exampleDataPtr->str() << std::endl;
-            exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
-            std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
-            std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
-            std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;
-            exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
-            std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
-            std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
-            std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;*/
+    /*
+      LOG_INFO("--- TEST SIMOBJECT DATA");
+      std::cout << exampleDataPtr->str() << std::endl;
+      exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
+      std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
+      std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
+      std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;
+      exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
+      std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
+      std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
+      std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;
+    */
 
-    // testing client data variables
+    // Testing client data variables
+    // Can be tested together with https://github.com/frankkopp/fbw-cpp-framework-test
 
     // This local data sent to other clients
     LOG_INFO("--- EXAMPLE CLIENT DATA (Owning - sending)");
@@ -308,7 +319,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
                << " time = " << msfsHandler->getTimeStamp()
                << " tick = " << msfsHandler->getTickCounter()
                << std::endl;
-*/
+  */
 
     LOG_INFO("--- DataDefinition Example)");
     std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
@@ -328,17 +339,19 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     //    debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
 
     // Test writing an aircraft variable by toggling the beacon light switch
-    /*     Immediate write
-            beaconLightSwitchPtr->setAndWriteToSim(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
-            beaconLightSetKeyEventPtr->trigger_ex1(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
-         autoWrite in postUpdate
-            beaconLightSwitch2Ptr->set(beaconLightSwitch2Ptr->get() == 0.0 ? 1.0 : 0.0);
+    // Immediate write
+    /*
+      beaconLightSwitchPtr->setAndWriteToSim(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
+      beaconLightSetKeyEventPtr->trigger_ex1(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
+    // autoWrite in postUpdate
+      beaconLightSwitch2Ptr->set(beaconLightSwitch2Ptr->get() == 0.0 ? 1.0 : 0.0);
 
-         Test writing a data definition variable by toggling the strobe light switch
-            exampleDataStruct.strobeLightSwitch = exampleDataStruct.strobeLightSwitch == 0.0 ? 1.0 : 0.0;
-            exampleDataPtr->writeDataToSim();*/
+    // Test writing a data definition variable by toggling the strobe light switch
+      exampleDataStruct.strobeLightSwitch = exampleDataStruct.strobeLightSwitch == 0.0 ? 1.0 : 0.0;
+      exampleDataPtr->writeDataToSim();
+    */
 
-  } // throttle
+  } // update throttle
 
   return true;
 }
