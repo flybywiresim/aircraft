@@ -806,7 +806,6 @@ class FMCMainDisplay extends BaseAirliners {
 
                 this.flightPlanManager.clearFlightPlan().then(() => {
                     this.initVariables();
-                    this.initMcduVariables();
                     this.dataManager.deleteAllStoredWaypoints();
                     this.setScratchpadText('');
                     SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {

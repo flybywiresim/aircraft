@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 
 import { useSimVar } from '@instruments/common/simVars';
+import { toast } from 'react-toastify';
 import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
@@ -18,12 +19,16 @@ export const SimOptionsPage = () => {
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
+    const [simbridgeRemote, setSimbridgeRemoteStatus] = usePersistentProperty('CONFIG_SIMBRIDGE_REMOTE', 'local');
+    const [simbridgeIp, setSimbridgeIp] = usePersistentProperty('CONFIG_SIMBRIDGE_IP', 'localhost');
     const [simbridgePort, setSimbridgePort] = usePersistentProperty('CONFIG_SIMBRIDGE_PORT', '8380');
     const [simbridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
+    const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
+    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -36,6 +41,8 @@ export const SimOptionsPage = () => {
         { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
         { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
     ];
+
+    const isGSXSyncEnabled = () => !!gsxFuelSyncEnabled || !!gsxPayloadSyncEnabled;
 
     return (
         <>
@@ -90,6 +97,52 @@ export const SimOptionsPage = () => {
                         </div>
                     </SettingItem>
 
+                    <SettingItem name="SimBridge Host Machine">
+                        <SelectGroup>
+                            <SelectItem
+                                className="text-center color-red"
+                                onSelect={
+                                    () => {
+                                        setSimbridgeRemoteStatus('local');
+                                    }
+                                }
+                                selected={simbridgeRemote === 'local'}
+                            >
+                                This PC
+                            </SelectItem>
+                            <SelectItem
+                                onSelect={
+                                    () => {
+                                        setSimbridgeRemoteStatus('remote');
+                                    }
+                                }
+                                selected={simbridgeRemote === 'remote'}
+                            >
+                                Remote PC
+                            </SelectItem>
+                        </SelectGroup>
+                        {simbridgeRemote === 'remote'
+                        && (
+                            <div className="pt-2 text-center">
+                                <SimpleInput
+                                    className="text-center w-30"
+                                    value={simbridgeIp}
+                                    onChange={(event) => {
+                                        // Error on empty string
+                                        if (event === '') {
+                                            toast.error('SimBridge Remote IP Address cannot be empty!');
+                                            // Reset to previous value
+                                            setSimbridgeIp(simbridgeIp);
+                                            return;
+                                        }
+                                        // Remove whitespace
+                                        setSimbridgeIp(event.replace(/\s/g, ''));
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </SettingItem>
+
                     <SettingItem name={t('Settings.SimOptions.SimBridgePort')}>
                         <SimpleInput
                             className="text-center w-30"
@@ -114,7 +167,7 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
+                    <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')} disabled={isGSXSyncEnabled()}>
                         <Toggle
                             value={wheelChocksEnabled === 1}
                             onToggle={(value) => {
@@ -123,7 +176,7 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
+                    <SettingItem name={t('Settings.SimOptions.ConesEnabled')} disabled={isGSXSyncEnabled()}>
                         <Toggle
                             value={conesEnabled === 1}
                             onToggle={(value) => {
