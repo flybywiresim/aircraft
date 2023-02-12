@@ -155,7 +155,9 @@ export default new TaskOfTasks("all", [
 
         new TaskOfTasks("preparation", [
             new ExecTask("copy-base-files", [
-                "npm run build-a380x:copy-base-files"
+                "npm run build-a380x:copy-base-files",
+                // temporary until folder exists
+                "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/"
             ])
         ], true),
 

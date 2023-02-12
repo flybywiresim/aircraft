@@ -51,7 +51,7 @@ message("")
 
 project(extra-backend-a380x)
 
-set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../../../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/${PROJECT_NAME}.wasm\"")
+set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../../../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/${PROJECT_NAME}.wasm\"")
 
 # add all cpp source-files here
 set(SOURCES src/Gauge_Extra_Backend.cpp

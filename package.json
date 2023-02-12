@@ -53,9 +53,9 @@
 
     "build-a380x:instruments": "mach build --config fbw-a380x/mach.config.js --work-in-config-dir",
 
-    "build-a380x:systems": "cargo build -p a380_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 --signext-lowering --enable-bulk-memory -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/systems.wasm /external/target/wasm32-wasi/release/a380_systems_wasm.wasm",
-    "build-a380x:fadec": "cd fbw-a380x/src/wasm/fadec_a380 && ./build.sh && wasm-opt -O1 --signext-lowering  -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fadec.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fadec.wasm",
-    "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh && wasm-opt -O1 --signext-lowering  -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fbw.wasm",
+    "build-a380x:systems": "cargo build -p a380_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 --signext-lowering --enable-bulk-memory -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm /external/target/wasm32-wasi/release/a380_systems_wasm.wasm",
+    "build-a380x:fadec": "cd fbw-a380x/src/wasm/fadec_a380 && ./build.sh && wasm-opt -O1 --signext-lowering  -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm",
+    "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh && wasm-opt -O1 --signext-lowering  -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm",
 
     "build-a380x:extra-backend-cmake":       "fbw-a380x/src/wasm/extra-backend/build-cmake.sh",
     "build-a380x:extra-backend-cmake-debug": "fbw-a380x/src/wasm/extra-backend/build-cmake.sh --debug",
