@@ -19,6 +19,11 @@ export class Aoc {
         this.datalink = datalink;
     }
 
+    private async updateMessageCount(): Promise<unknown> {
+        const msgCount = this.messageQueue.reduce((c, m) => (!m.Confirmed && m.Direction === AtsuMessageDirection.Uplink ? c + 1 : c), 0);
+        return SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number', msgCount);
+    }
+
     public static isRelevantMessage(message: AtsuMessage): boolean {
         return message.Type < AtsuMessageType.AOC;
     }
@@ -35,6 +40,7 @@ export class Aoc {
         if (index !== -1) {
             this.messageQueue.splice(index, 1);
         }
+        this.updateMessageCount();
         return index !== -1;
     }
 
@@ -49,13 +55,9 @@ export class Aoc {
     public messageRead(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
-            if (this.messageQueue[index].Confirmed === false) {
-                const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-                SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
-            }
-
             this.messageQueue[index].Confirmed = true;
         }
+        this.updateMessageCount();
 
         return index !== -1;
     }
@@ -79,12 +81,7 @@ export class Aoc {
     public insertMessages(messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             this.messageQueue.unshift(message);
-
-            if (message.Direction === AtsuMessageDirection.Uplink) {
-            // increase the company message counter
-                const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-                SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
-            }
         });
+        this.updateMessageCount();
     }
 }
