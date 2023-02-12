@@ -138,10 +138,6 @@ export class PseudoFWC {
 
     private readonly sec3FaultLine123Display = Subject.create(false);
 
-    private readonly showLandingInhibit = Subject.create(false);
-
-    private readonly showTakeoffInhibit = Subject.create(false);
-
     private readonly slatsAngle = Subject.create(0);
 
     private readonly speedBrakeCommand = Subject.create(false);
@@ -197,6 +193,10 @@ export class PseudoFWC {
     private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
 
     private readonly toInhibitTimer = new NXLogicConfirmNode(3);
+
+    private readonly fwc1Normal = Subject.create(false);
+
+    private readonly fwc2Normal = Subject.create(false);
 
     /* LANDING GEAR AND LIGHTS */
 
@@ -279,6 +279,10 @@ export class PseudoFWC {
     private readonly toMemo = Subject.create(0);
 
     private readonly ldgMemo = Subject.create(0);
+
+    private readonly toInhibit = Subject.create(false);
+
+    private readonly ldgInhibit = Subject.create(false);
 
     private readonly autoBrake = Subject.create(0);
 
@@ -527,14 +531,33 @@ export class PseudoFWC {
     }
 
     onUpdate(deltaTime) {
+        this.fwc1Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_1_NORMAL', 'bool'));
+        this.fwc2Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_2_NORMAL', 'bool'));
+
+        if (!this.fwc1Normal.get() && !this.fwc2Normal.get()) {
+            this.memoMessageLeft.set([
+                '0',
+                '310000701',
+                '310000702',
+                '310000703',
+            ]);
+            this.memoMessageRight.set([
+                '310000704',
+                '310000705',
+                '310000706',
+                '310000707',
+                '310000708',
+                '310000709',
+            ]);
+            this.recallFailures = [];
+            return;
+        }
+
         // Inputs update
 
         const flightPhaseInhibitOverride = SimVar.GetSimVarValue('L:A32NX_FWC_INHIBOVRD', 'bool');
 
         this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
-
-        this.showTakeoffInhibit.set(this.toInhibitTimer.write([3, 4, 5].includes(this.fwcFlightPhase.get()) && !flightPhaseInhibitOverride, deltaTime));
-        this.showLandingInhibit.set(this.ldgInhibitTimer.write([7, 8].includes(this.fwcFlightPhase.get()) && !flightPhaseInhibitOverride, deltaTime));
 
         this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
@@ -562,11 +585,14 @@ export class PseudoFWC {
 
         this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
-        this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
+        this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWS_TOMEMO', 'bool'));
+
+        this.toInhibit.set(SimVar.GetSimVarValue('L:A32NX_FWS_TOINHIBIT', 'bool'));
+        this.ldgInhibit.set(SimVar.GetSimVarValue('L:A32NX_FWS_LDGINHIBIT', 'bool'));
 
         this.autoBrake.set(SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum'));
 
-        this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool'));
+        this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWS_LDGMEMO', 'bool'));
 
         this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
         this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
@@ -930,7 +956,7 @@ export class PseudoFWC {
 
         // Update failuresLeft list in case failure has been resolved
         for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-            if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+            if (!value.simVarIsActive.get()) {
                 failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
                 recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
             }
@@ -941,7 +967,7 @@ export class PseudoFWC {
 
         // Failures first
         for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-            if (value.simVarIsActive.get() && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
+            if (value.simVarIsActive.get() && !value.flightPhaseInhib.some((e) => (e === flightPhase) || flightPhaseInhibitOverride)) {
                 if (value.side === 'LEFT') {
                     allFailureKeys.push(key);
                 }
@@ -1728,6 +1754,26 @@ export class PseudoFWC {
             sysPage: 4,
             side: 'RIGHT',
         },
+        3100010: { // FWC 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([fwc1Normal, acESSBusPowered]) => !fwc1Normal && acESSBusPowered, this.fwc1Normal, this.acESSBusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['310001001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3100011: { // FWC 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([fwc2Normal, ac2BusPowered]) => !fwc2Normal && ac2BusPowered, this.fwc2Normal, this.ac2BusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['310001101'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
     }
 
     ewdMessageMemos: EWDMessageDict = {
@@ -1752,7 +1798,7 @@ export class PseudoFWC {
         },
         '0000020': { // LANDING MEMO
             flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
-            simVarIsActive: this.ldgMemo.map((t) => !!t),
+            simVarIsActive: MappedSubject.create((ldgmemo, tomemo) => !!ldgmemo && !tomemo, this.ldgMemo, this.toMemo),
             whichCodeToReturn: () => [
                 SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool') ? 1 : 0,
                 SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum') !== 2
@@ -1897,7 +1943,7 @@ export class PseudoFWC {
         },
         '0000140': { // T.O. INHIBIT
             flightPhaseInhib: [],
-            simVarIsActive: this.showTakeoffInhibit,
+            simVarIsActive: this.toInhibit,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000014001'],
             memoInhibit: () => false,
@@ -1907,7 +1953,7 @@ export class PseudoFWC {
         },
         '0000150': { // LDG INHIBIT
             flightPhaseInhib: [],
-            simVarIsActive: this.showLandingInhibit,
+            simVarIsActive: this.ldgInhibit,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000015001'],
             memoInhibit: () => false,
