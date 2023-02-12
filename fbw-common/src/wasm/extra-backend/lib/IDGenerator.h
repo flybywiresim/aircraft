@@ -4,10 +4,6 @@
 #ifndef FLYBYWIRE_IDGENERATOR_H
 #define FLYBYWIRE_IDGENERATOR_H
 
-#include <cstdint>
-
-#include <MSFS/Legacy/gauges.h>
-
 /**
  * This class is used to generate unique IDs for the modules.
  * Uniqueness is only guaranteed within the same instance of this class.
