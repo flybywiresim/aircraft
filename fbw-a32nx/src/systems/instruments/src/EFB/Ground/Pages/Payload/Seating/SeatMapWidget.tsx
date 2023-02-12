@@ -65,9 +65,11 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
-    const addXOffset = (xOff: number, station: number, row: number) => {
+    const addXOffsetRow = (xOff: number, station: number, row: number) => {
         let seatType: number = TYPE.NB_ECO;
-        xOff += seatMap[station].rows[row].xOffset;
+        if (seatMap[station].rows[row].xOffset !== undefined) {
+            xOff += seatMap[station].rows[row].xOffset;
+        }
         for (let seat = 0; seat < seatMap[station].rows[row].seats.length; seat++) {
             if (seatType < seatMap[station].rows[row].seats[seat].type) {
                 seatType = seatMap[station].rows[row].seats[seat].type;
@@ -79,9 +81,12 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         return xOff;
     };
 
-    const addYOffset = (yOff: number, station: number, row: number, seat: number) => {
-        yOff += seatMap[station].rows[row].yOffset;
-        yOff += seatMap[station].rows[row].seats[seat].yOffset;
+    const addYOffsetSeat = (yOff: number, station: number, row: number, seat: number) => {
+        if (seatMap[station].rows[row].yOffset !== undefined
+            && seatMap[station].rows[row].seats[seat].yOffset !== undefined) {
+            yOff += seatMap[station].rows[row].yOffset;
+            yOff += seatMap[station].rows[row].seats[seat].yOffset;
+        }
         const seatType = seatMap[station].rows[row].seats[seat].type;
         if (seat !== 0) {
             yOff += (SeatConstants[seatType].padY + SeatConstants[seatType].wid);
@@ -99,7 +104,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             for (let station = 0; station < seatMap.length; station++) {
                 let seatId = 0;
                 for (let row = 0; row < seatMap[station].rows.length; row++) {
-                    xOff = addXOffset(xOff, station, row);
+                    xOff = addXOffsetRow(xOff, station, row);
                     drawRow(xOff, station, row, seatMap[station].rows[row], seatId);
                     seatId += seatMap[station].rows[row].seats.length;
                 }
@@ -111,7 +116,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const drawRow = (x: number, station: number, rowI: number, rowInfo: RowInfo, seatId: number) => {
         const seatsInfo: SeatInfo[] = rowInfo.seats;
         for (let seat = 0, yOff = 0; seat < seatsInfo.length; seat++) {
-            yOff = addYOffset(yOff, station, rowI, seat);
+            yOff = addYOffsetSeat(yOff, station, rowI, seat);
             if (!xYMap[station]) {
                 xYMap[station] = [];
             }

@@ -6,16 +6,16 @@ export const CanvasConst = Object.freeze({
 });
 export interface SeatInfo {
     type: number,
-    x: number,
-    y: number,
-    yOffset: number
+    x?: number,
+    y?: number,
+    yOffset?: number
 }
 
 export interface RowInfo {
-    x: number,
-    y: number,
-    xOffset: number,
-    yOffset: number,
+    x?: number,
+    y?: number,
+    xOffset?: number,
+    yOffset?: number,
     seats: SeatInfo[],
 }
 
