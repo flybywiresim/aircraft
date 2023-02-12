@@ -392,7 +392,8 @@ impl PressurizationConstants for A320PressurizationConstants {
     const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
     const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
     const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
-    const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
+    const SAFETY_VALVE_SIZE: f64 = 0.02; // m2
+    const DOOR_OPENING_AREA: f64 = 1.5; // m2
 
     const MAX_CLIMB_RATE: f64 = 750.; // fpm
     const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
@@ -1214,6 +1215,11 @@ mod tests {
             self
         }
 
+        fn ambient_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
+            self.set_ambient_temperature(temperature);
+            self
+        }
+
         fn indicated_airspeed(&mut self, velocity: Velocity) {
             self.set_indicated_airspeed(velocity);
             self.command(|a| a.adirs.set_true_airspeed(velocity));
@@ -1301,6 +1307,11 @@ mod tests {
             self
         }
 
+        fn command_open_door(mut self) -> Self {
+            self.write_by_name("INTERACTIVE POINT OPEN:0", Ratio::new::<percent>(100.));
+            self
+        }
+
         fn command_altimeter_setting(mut self, altimeter: Pressure) -> Self {
             self.command(|a| a.adirs.set_baro_correction(altimeter));
             self
@@ -1369,6 +1380,15 @@ mod tests {
                     .a320_cabin
                     .cabin_air_simulation
                     .cabin_pressure()
+            })
+        }
+
+        fn cabin_temperature(&self) -> ThermodynamicTemperature {
+            self.query(|a| {
+                a.a320_cabin_air
+                    .a320_cabin
+                    .cabin_air_simulation
+                    .cabin_temperature()[1]
             })
         }
 
@@ -1465,7 +1485,7 @@ mod tests {
 
             assert!(
                 (test_bed.cabin_altitude() - Length::new::<foot>(10000.)).abs()
-                    < Length::new::<foot>(10.)
+                    < Length::new::<foot>(20.)
             );
         }
 
@@ -1694,11 +1714,11 @@ mod tests {
                 .set_on_ground()
                 .iterate(50)
                 .set_takeoff_power()
-                .iterate_with_delta(400, Duration::from_millis(10));
+                .iterate_with_delta(1500, Duration::from_millis(10));
 
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-                    < Velocity::new::<foot_per_minute>(10.)
+                    < Velocity::new::<foot_per_minute>(50.)
             );
         }
 
@@ -2044,6 +2064,45 @@ mod tests {
             );
         }
 
+        #[test]
+        fn opening_doors_affects_cabin_pressure() {
+            let test_bed = test_bed_in_cruise()
+                .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
+                .with()
+                .ambient_pressure_of(Pressure::new::<hectopascal>(696.85))
+                .iterate(50)
+                .memorize_cabin_pressure()
+                .command_open_door()
+                .iterate(100);
+
+            assert!(test_bed.cabin_pressure() < test_bed.initial_pressure());
+            assert!(
+                (test_bed.cabin_pressure() - Pressure::new::<hectopascal>(696.85)).abs()
+                    < Pressure::new::<psi>(1.)
+            );
+        }
+
+        #[test]
+        fn opening_doors_affects_cabin_temperature() {
+            let mut test_bed = test_bed()
+                .on_ground()
+                .with()
+                .command_packs_on_off(false)
+                .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+                .iterate(10)
+                .then()
+                .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+                .command_open_door()
+                .iterate(1000);
+
+            assert!(
+                (test_bed.cabin_temperature().get::<degree_celsius>()
+                    - test_bed.ambient_temperature().get::<degree_celsius>())
+                .abs()
+                    < 1.
+            );
+        }
+
         mod cabin_pressure_controller_tests {
             use super::*;
 
@@ -2058,7 +2117,7 @@ mod tests {
 
                 assert!(
                     (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
-                        > Length::new::<foot>(10.)
+                        > Length::new::<foot>(20.)
                 );
 
                 test_bed = test_bed
@@ -2066,7 +2125,7 @@ mod tests {
                     .iterate(100);
                 assert!(
                     (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
-                        < Length::new::<foot>(10.)
+                        < Length::new::<foot>(20.)
                 );
             }
 

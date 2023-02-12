@@ -135,9 +135,11 @@ where
 
         // Calculate flow out properties
         self.filtered_exterior_pressure = self.exterior_pressure_low_pass_filter(context);
-        self.air_out.set_flow_rate(
-            self.calculate_cabin_flow_out(outflow_valve_open_amount, safety_valve_open_amount),
-        );
+        self.air_out.set_flow_rate(self.calculate_cabin_flow_out(
+            outflow_valve_open_amount,
+            safety_valve_open_amount,
+            number_of_open_doors,
+        ));
 
         // Calculate internal air properties
         let mass_change = (self.air_in.flow_rate().get::<kilogram_per_second>()
@@ -207,8 +209,8 @@ where
     }
 
     fn flow_coefficient_calculation(&self, pressure_ratio: f64) -> f64 {
-        const STABILITY_COEFFICIENT: f64 = 1e6;
-        const STABILITY_MARGIN: f64 = 1e-3;
+        const STABILITY_COEFFICIENT: f64 = 4e4;
+        const STABILITY_MARGIN: f64 = 5e-3;
 
         let flow_direction: f64 = if pressure_ratio > 1. { -1. } else { 1. };
 
@@ -259,12 +261,14 @@ where
         &self,
         outflow_valve_open_amount: Ratio,
         safety_valve_open_amount: Ratio,
+        number_of_open_doors: u8,
     ) -> MassRate {
         const TRANSONIC_PR_VALUE: f64 = 0.53;
 
         let outflow_valve_area = C::OUTFLOW_VALVE_SIZE * outflow_valve_open_amount.get::<ratio>(); // sq m
-        let leakage_area =
-            C::CABIN_LEAKAGE_AREA + C::SAFETY_VALVE_SIZE * safety_valve_open_amount.get::<ratio>(); // sq m
+        let leakage_area = C::CABIN_LEAKAGE_AREA
+            + C::SAFETY_VALVE_SIZE * safety_valve_open_amount.get::<ratio>()
+            + number_of_open_doors as f64 * C::DOOR_OPENING_AREA; // sq m
 
         let pressure_ratio =
             (self.filtered_exterior_pressure / self.internal_air.pressure()).get::<ratio>();
@@ -710,6 +714,7 @@ mod cabin_air_tests {
         const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
         const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
+        const DOOR_OPENING_AREA: f64 = 1.5; // m2
 
         const MAX_CLIMB_RATE: f64 = 750.; // fpm
         const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
@@ -731,7 +736,6 @@ mod cabin_air_tests {
         air_conditioning_system: TestAirConditioningSystem,
 
         number_of_passengers: u8,
-        number_of_open_doors: u8,
         cabin_air_simulation: CabinAirSimulation<TestConstants, 2>,
     }
 
@@ -741,7 +745,6 @@ mod cabin_air_tests {
                 air_conditioning_system: TestAirConditioningSystem::new(),
 
                 number_of_passengers: 0,
-                number_of_open_doors: 0,
                 cabin_air_simulation: CabinAirSimulation::new(
                     context,
                     TestConstants,
@@ -762,10 +765,6 @@ mod cabin_air_tests {
         fn set_passengers(&mut self, passengers: u8) {
             self.number_of_passengers = passengers;
         }
-
-        fn open_number_of_doors(&mut self, number_of_open_doors: u8) {
-            self.number_of_open_doors = number_of_open_doors;
-        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -776,7 +775,7 @@ mod cabin_air_tests {
                 Ratio::new::<percent>(0.),
                 true,
                 [2, self.number_of_passengers],
-                self.number_of_open_doors,
+                0u8,
             );
         }
     }
@@ -846,16 +845,6 @@ mod cabin_air_tests {
 
         fn ambient_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
             self.set_ambient_temperature(temperature);
-            self
-        }
-
-        // fn ambient_pressure_of(mut self, pressure: Pressure) -> Self {
-        //     self.set_ambient_pressure(pressure);
-        //     self
-        // }
-
-        fn command_open_door(mut self) -> Self {
-            self.command(|a| a.open_number_of_doors(1));
             self
         }
 
@@ -1050,67 +1039,5 @@ mod cabin_air_tests {
                 - test_bed.cabin_temperature().get::<degree_celsius>();
 
         assert!(first_temperature_differential < second_temperature_differential);
-    }
-
-    // #[test]
-    // fn increasing_altitude_reduces_heat_transfer() {
-    //     let test_bed = test_bed_with()
-    //         .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
-    //         .and()
-    //         .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
-    //         .iterate(1)
-    //         .then()
-    //         .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
-    //         .and()
-    //         .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
-    //         .memorize_cabin_temperature()
-    //         .and()
-    //         .iterate_with_delta(100, Duration::from_secs(10));
-
-    //     let first_temperature_differential = test_bed.initial_temperature().get::<degree_celsius>()
-    //         - test_bed.cabin_temperature().get::<degree_celsius>();
-
-    //     let test_bed = test_bed_with()
-    //         .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
-    //         .and()
-    //         .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
-    //         .ambient_pressure_of(Pressure::new::<pascal>(45000.))
-    //         .iterate(50)
-    //         .then()
-    //         .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
-    //         .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
-    //         .and()
-    //         .memorize_cabin_temperature()
-    //         .and()
-    //         .iterate_with_delta(100, Duration::from_secs(10));
-
-    //     let second_temperature_differential =
-    //         test_bed.initial_temperature().get::<degree_celsius>()
-    //             - test_bed.cabin_temperature().get::<degree_celsius>();
-    //     println!(
-    //         "first temp diff: {}, second temp diff: {}",
-    //         first_temperature_differential, second_temperature_differential
-    //     );
-    //     assert!(first_temperature_differential > second_temperature_differential);
-    // }
-
-    #[test]
-    fn opening_doors_affects_cabin_temp() {
-        let mut test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
-            .iterate(1)
-            .then()
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
-            .command_open_door()
-            .and()
-            .iterate(1000);
-
-        assert!(
-            (test_bed.cabin_temperature().get::<degree_celsius>()
-                - test_bed.ambient_temperature().get::<degree_celsius>())
-            .abs()
-                < 1.
-        );
     }
 }
