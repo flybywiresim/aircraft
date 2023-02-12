@@ -39,6 +39,7 @@ private:
 
   // DataDefinition variables
   struct ExampleData {
+    [[maybe_unused]] char aircraftTTitle[256] = "";
     [[maybe_unused]] FLOAT64 strobeLightSwitch;
     [[maybe_unused]] FLOAT64 wingLightSwitch;
     [[maybe_unused]] FLOAT64 zuluTime; // E:ZULU TIME

@@ -73,7 +73,7 @@ bool MsfsHandler::initialize() {
   a32nxIsDevelopmentState = dataManager.make_named_var("DEVELOPER_STATE", UNITS.Bool, true);
   a32nxIsReady = dataManager.make_named_var("IS_READY", UNITS.Bool, true);
   // base sim data mainly for pause detection
-  std::vector<SimObjectBase::DataDefinition> baseDataDef = {{"SIMULATION TIME", 0, UNITS.Number},};
+  std::vector<DataDefinition> baseDataDef = {{"SIMULATION TIME", 0, UNITS.Number},};
   baseSimData = dataManager.make_datadefinition_var<BaseSimData>("BASE DATA", baseDataDef);
 
   isInitialized = result;

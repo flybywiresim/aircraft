@@ -127,18 +127,20 @@ bool ExampleModule::initialize() {
                                                       beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
 
   // Data definition variables
-  std::vector<SimObjectBase::DataDefinition> exampleDataDef = {
-    {"LIGHT STROBE",  0, UNITS.Bool},
-    {"LIGHT WING",    0, UNITS.Bool},
-    {"ZULU TIME",     0, UNITS.Number},
-    {"LOCAL TIME",    0, UNITS.Number},
-    {"ABSOLUTE TIME", 0, UNITS.Number},
+  std::vector <DataDefinition> exampleDataDef = {
+    {"TITLE",        0, UNITS.None, SIMCONNECT_DATATYPE_STRING256},
+    {"LIGHT STROBE", 0, UNITS.Bool},
+    {"LIGHT WING",   0, UNITS.Bool},
+    {"ZULU TIME"},
+    {"LOCAL TIME"},
+    {"ABSOLUTE TIME"},
   };
   exampleDataPtr = dataManager
-    ->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, false, false, 0, 0);
+    ->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, true, false, 0, 0);
 
   // Alternative to use autoRead it is possible to set the SIMCONNECT_PERIOD.
   // this is probably very efficient for data definitions areas if every change needs to be read
+  // or if the sim should only send data when it has changed.
   // See https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm?rhhlterm=SIMCONNECT_CLIENT_DATA_PERIOD&rhsearch=SIMCONNECT_CLIENT_DATA_PERIOD
   //  if (!exampleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME)) {
   //    LOG_ERROR("Failed to request periodic data from sim");
@@ -252,9 +254,9 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     // This is external data from an external client
     LOG_INFO("--- EXAMPLE 2 CLIENT DATA (External - reading)");
     std::cout << exampleClientData2Ptr->str() << std::endl;
-    /*        if (!exampleClientData2Ptr->requestUpdateFromSim(timeStamp, tickCounter)) {
-              LOG_ERROR("ExampleModule::update() - exampleClientData2Ptr->requestUpdateFromSim() failed");
-            }*/
+    // if (!exampleClientData2Ptr->requestUpdateFromSim(timeStamp, tickCounter)) {
+    //    LOG_ERROR("ExampleModule::update() - exampleClientData2Ptr->requestUpdateFromSim() failed");
+    // }
     std::cout << "INT8       " << int(exampleClientData2Ptr->data().anInt8) << std::endl;
     std::cout << "INT16      " << exampleClientData2Ptr->data().anInt16 << std::endl;
     std::cout << "INT32      " << exampleClientData2Ptr->data().anInt32 << std::endl;
@@ -264,11 +266,6 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
 
     // Read vars which auto update each tick
-    std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
-              << (debugLVARPtr->hasChanged() ? "yes" : "no")
-              << " debugLVARPtr  time = " << msfsHandler->getTimeStamp()
-              << " tick = " << msfsHandler->getTickCounter()
-              << std::endl;
     /*
      std::cout << "debugLVAR2Ptr = " << debugLVAR2Ptr->get() << " changed? "
                << (debugLVAR2Ptr->hasChanged() ? "yes" : "no")
@@ -311,27 +308,22 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
                << " time = " << msfsHandler->getTimeStamp()
                << " tick = " << msfsHandler->getTickCounter()
                << std::endl;
-
-     std::cout << "zuluTime =  " << exampleDataStruct.zuluTime
-               << " time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "localTime =  " << exampleDataStruct.localTime
-               << " time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "absoluteTime =  " << static_cast<UINT64>(exampleDataStruct.absoluteTime)
-               << " time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "strobeLightSwitch =  " << exampleDataStruct.strobeLightSwitch
-               << " (time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter() << ")"
-               << std::endl;
 */
+
+    LOG_INFO("--- DataDefinition Example)");
+    std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
+    std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().strobeLightSwitch << std::endl;
+    std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().wingLightSwitch << std::endl;
+    std::cout << "zuluTime =  " << exampleDataPtr->data().zuluTime << std::endl;
+    std::cout << "localTime =  " << exampleDataPtr->data().localTime << std::endl;
+    std::cout << "absoluteTime =  " << INT64(exampleDataPtr->data().absoluteTime) << std::endl;
+
+    LOG_INFO("--- LVAR Example)");
+    std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
+              << (debugLVARPtr->hasChanged() ? "yes" : "no")
+              << " debugLVARPtr  time = " << msfsHandler->getTimeStamp()
+              << " tick = " << msfsHandler->getTickCounter()
+              << std::endl;
     // Set a variable which does not auto write
     //    debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
 

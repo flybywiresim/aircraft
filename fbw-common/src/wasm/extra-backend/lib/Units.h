@@ -32,6 +32,8 @@ public:
 class Units {
 public:
   // Selected commonly used units
+
+  const Unit None{""}; // special case for no unit (e.g. in conjunction with a data type)
   const Unit Bool{"Bool"};
   const Unit Celsius{"Celsius"};
   const Unit Feet{"Feet"};

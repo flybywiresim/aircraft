@@ -53,7 +53,7 @@ bool Pushback::initialize() {
   windVelBodyZ = dataManager->make_simple_aircraft_var("RELATIVE WIND VELOCITY BODY Z");
 
   // Data definitions for PushbackDataID
-  std::vector<SimObjectBase::DataDefinition> pushBackDataDef = {
+  std::vector<DataDefinition> pushBackDataDef = {
     {"Pushback Wait",                0, UNITS.Bool},
     {"VELOCITY BODY Z",              0, UNITS.FeetSec},
     {"ROTATION VELOCITY BODY Y",     0, UNITS.FeetSec},

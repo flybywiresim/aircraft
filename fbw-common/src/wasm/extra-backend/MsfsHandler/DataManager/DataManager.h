@@ -26,6 +26,7 @@ class CacheableVariable;
 class NamedVariable;
 class AircraftVariable;
 class SimObjectBase;
+struct DataDefinition;
 class Event;
 
 // convenience typedefs
@@ -217,7 +218,7 @@ public:
   template<typename T>
   std::shared_ptr<DataDefinitionVariable<T>> make_datadefinition_var(
     const std::string &name,
-    std::vector<SimObjectBase::DataDefinition> &dataDefinitions,
+    std::vector<DataDefinition> &dataDefinitions,
     bool autoReading = false,
     bool autoWriting = false,
     FLOAT64 maxAgeTime = 0.0,

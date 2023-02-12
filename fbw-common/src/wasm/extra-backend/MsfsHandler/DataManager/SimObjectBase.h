@@ -85,18 +85,6 @@ protected:
 
 public:
 
-  /**
-   * DataDefinition to be used to register a data definition with the sim. <p/>
-   * @field name: the name of the variable <br/>
-   * @field index: the index of the variable <br/>
-   * @field unit: the unit of the variable <br/>
-   */
-  struct DataDefinition {
-    std::string name;
-    int index;
-    Unit unit;
-  };
-
   SimObjectBase() = delete; // no default constructor
   SimObjectBase(const SimObjectBase &) = delete; // no copy constructor
   SimObjectBase &operator=(const SimObjectBase &) = delete; // no copy assignment
@@ -126,6 +114,8 @@ public:
   /**
    * Called by the DataManager when a SIMCONNECT_RECV_ID_SIMOBJECT_DATA
    * or SIMCONNECT_RECV_ID_CLIENT_DATA message for this variables request ID is received.
+   * If skipChangeCheck is false, the dataChanged flag is set to true if the data is not identical.
+   * The dataChanged flag can be checked by the external class to determine if the data has changed.
    * @param pointer to the SIMCONNECT_RECV_SIMOBJECT_DATA of SIMCONNECT_RECV_CLIENT_DATA structure
    * @param simTime the current sim time (taken from the sim update event)
    * @param tickCounter the current tick counter (taken from a custom counter at each update event)
@@ -134,7 +124,7 @@ public:
   virtual void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) = 0;
 
   /**
-   * Writes the data object to the sim.
+   * Writes the data object to the sim and sets the dataChanged flag to false.
    * @return true if the write was successful, false otherwise
    */
   virtual bool writeDataToSim() = 0;

@@ -263,7 +263,9 @@ sim variables (objects) to a container of data definitions (custom SimObject).
 
 It requires a local data struct as a template type which is used to hold the data.
 
-It is based on the SimObjectBase class - see above.
+The class is based on ManagedDataObjectBase and therefore supports auto reading and writing of
+the data to the sim. It also supports using the SIMCONNECT_PERIOD flags to update the
+data by using this method to request the data: requestPeriodicUpdateFromSim().<p/>
 
 As data definition sim objects use memory mapped data between clients they are 
 very efficient but a bit harder to set up and use.
@@ -277,7 +279,7 @@ See the DataDefinitionVariable class documentation for more details.
 
 A DataDefinitionVariable requires unique IDs for the data definition and the
 request. These IDs are used to identify the data definition and the data received 
-from the sim. Make sure these IDs are unique with the gauge.
+from the sim. Make sure these IDs are unique within the gauge.
 
 Use the DataManager to create these variables, and it will automatically assign
 unique IDs.
@@ -286,12 +288,36 @@ Also see:
 - Example and Pushback modules for examples of custom writable sim objects
 - [MSFS SDK Documentation: SimConnect Data Definition](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm)
 
-#### ClientDataAreaVariable (Custom SimObject)
-<span style="color:yellow">Not yet implemented</span>
+#### ClientDataAreaVariable (Custom Data Area)
 THe MSFS SDK also allows to define custom SimObjects using memory mapped data 
 between clients to send and receive arbitrary data to and from the sim.
 
-#### Events
+It requires a local data struct as a template type which is used to hold the data.
+
+The client owning the data area is responsible for creating and managing the 
+data area whereas the other clients can only read and write to the data area.
+
+As client data areas use memory mapped data between clients they are
+very efficient but a bit harder to set up and use.
+
+The class is based on ManagedDataObjectBase and therefore supports auto reading and writing of
+the data to the sim. It also supports using the SIMCONNECT_PERIOD flags to update the
+data by using this method to request the data: requestPeriodicUpdateFromSim().<p/>
+
+See the ClientDataAreaVariable class documentation for more details.
+
+A ClientDataAreaVariable requires unique IDs for the data area, the data definition 
+and the request. These IDs are used to identify the data definition and the data 
+received from the sim. Make sure these IDs are unique within the gauge.
+
+Use the DataManager to create these variables, and it will automatically assign
+unique IDs.
+
+Also see:
+- Example and Pushback modules for examples of custom writable sim objects
+- [MSFS SDK Documentation: SimConnect_MapClientDataNameToID](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientDataNameToID.htm)
+
+#### Event
 The Event class is a  wrapper around the SimConnect event API. It allows 
 to map client events to sim events via registering the clients event id with
 the sim.
@@ -301,6 +327,12 @@ events from the sim. Callbacks can be added to the Event object to handle the
 events.
 
 For details see class documentation. 
+
+#### Key Event
+<span style="color:yellow">**To be implemented**</span>                
+
+#### Input Event
+<span style="color:yellow">**To be implemented**</span>                
 
 ## Example Code
 Good examples of how to use the framework can be found in the modules:
@@ -323,7 +355,8 @@ Good examples of how to use the framework can be found in the modules:
 
 - ExampleModule
   - Is used to demonstrate various features of the framework and also to debug 
-    and test it.
+    and test it. It is not meant to be used as a real module but rather as a 
+    playground to test and learn how to use the framework.
   
 ## Building
 Assuming you are able to build the aircraft as a whole this describes how to add

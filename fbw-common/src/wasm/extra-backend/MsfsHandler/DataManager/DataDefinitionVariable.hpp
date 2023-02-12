@@ -4,36 +4,63 @@
 #ifndef FLYBYWIRE_DATADEFINITIONVARIABLE_H
 #define FLYBYWIRE_DATADEFINITIONVARIABLE_H
 
-#include <vector>
-#include <sstream>
 #include <memory>
 
-#include <MSFS/Legacy/gauges.h>
-#include <SimConnect.h>
-
 #include "logging.h"
-#include "simple_assert.h"
-#include "IDGenerator.h"
 #include "SimObjectBase.h"
-#include "ManagedDataObjectBase.h"
 
 #define quote(x) #x
 
 /**
- * A class that represents a data definition variable (custom sim object).<br/>
+ * DataDefinition to be used to register a data definition with the sim.<p/>
+ * @field name: the name of the variable
+ * @field index: the index of the variable (default: 0)
+ * @field unit: the unit of the variable (default: Number).
+ *              This should be set to UNITS.None if a dataType is used
+ * @field dataType: the data type of the variable (default: SIMCONNECT_DATATYPE_FLOAT64).
+ *                 Set unit to UNITS.None if a dataType is used
+ * @field epsilon: the epsilon value to be used to compare the data value with the current value
+ *                 when using the SIMCONNECT_DATA_REQUEST_FLAG_CHANGED flag (default: 0)
+ */
+struct DataDefinition {
+  std::string name;
+  int index{0};
+  Unit unit{UNITS.Number};
+  SIMCONNECT_DATATYPE dataType{SIMCONNECT_DATATYPE_FLOAT64};
+  float epsilon{0.0};
+};
+
+/**
+ * A DataDefinitionVariable represents a sim variable usually defined by one ore more
+ * SimConnect data definitions (SimConnect_AddToDataDefinition)<p/>
  *
- * Data definition variables are used to define a sim data objects that can be used to retrieve and
- * write data from and to the sim.<br/>
+ * DataDefinitionVariables are used to define sim data objects that can be used to retrieve and
+ * write simulation variables from and to the sim.<p/>
  *
- * For this a memory area needs to be reserved e.g. via a data struct instance. This data struct
- * needs to be passed a template parameter to this class.
+ * The difference between DataDefinitionVariable and ClientDataAreaVariable is that this class is used
+ * to read and write simulation variables that are defined by one or more SimConnect data definitions
+ * whereas the ClientDataAreaVariable is to read and write arbitrary data structs to the sim.<p/>
  *
- * Usage in three steps:<br/>
- * 1. a vector of data definitions will be registered with the sim as data definitions (provided in
- *    the constructor)<br/>
- * 2. a data request will be send to the sim to have the sim prepare the requested data<br/>
- * 3. the sim will send an message (SIMCONNECT_RECV_ID_SIMOBJECT_DATA) to signal that the data is
- *    ready to be read. This event also contains a pointer to the provided data. <br/>
+ * A local data struct is used to store the sim's data when received from the sim. This data struct
+ * needs to be passed a template parameter to this class and an instance of the struct is created
+ * to store the actual data.<p/>
+ *
+ * Usage: <br/>
+ * - Create a data struct that will be used to store the data from the sim. <br/>
+ * - Create a vector of DataDefinitions that will be used to define the sim data mapped to the data
+ *   struct.<br/>
+ * - Create a DataDefinitionVariable instance and pass the data struct type and the vector of
+ *   DataDefinitions as template parameters.<p/>
+ *
+ * The class is based on ManagedDataObjectBase and therefore supports auto reading and writing of
+ * the data to the sim. It also supports using the SimConnect SIMCONNECT_PERIOD flags to update the
+ * data by using this method to request the data: requestPeriodicUpdateFromSim().<p/>
+ *
+ * @tparam T The data struct type that will be used to store the data from the sim.
+ * @see requestPeriodicUpdateFromSim()
+ * @see DataDefinition
+ * @see SimObjectBase
+ * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToDataDefinition.htm
  */
 template<typename T>
 class DataDefinitionVariable : public SimObjectBase {
@@ -54,17 +81,9 @@ public:
   // no copy assignment
   DataDefinitionVariable<T> &operator=(const DataDefinitionVariable &) = delete;
 
-  ~DataDefinitionVariable<T>() override {
-    // Clear the client data definition
-    LOG_INFO("DataDefinitionVariable: Clearing client data definition: " + name);
-    if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
-      LOG_ERROR("DataDefinitionVariable: Clearing client data definition failed: " + name);
-    }
-  };
-
   /**
    * Creates a new instance of a DataDefinitionVariable.
-   * @typename T: the data struct type that will be used to store the data from the sim.
+   * @typename T: the data struct type that will be used to store the data
    * @param hSimConnect Handle to the SimConnect object.
    * @param name Arbitrary name for the data definition variable for debugging purposes
    * @param dataDefinitions List of data definitions to add to the sim object data
@@ -94,20 +113,31 @@ public:
 
     for (auto &ddef: dataDefinitions) {
       std::string fullVarName = ddef.name;
-      if (ddef.index != 0) {
-        fullVarName += ":" + std::to_string(ddef.index);
-      }
+      if (ddef.index != 0) fullVarName += ":" + std::to_string(ddef.index);
       if (!SUCCEEDED(SimConnect_AddToDataDefinition(
         hSimConnect,
         dataDefId,
         fullVarName.c_str(),
         ddef.unit.name,
-        SIMCONNECT_DATATYPE_FLOAT64))
+        ddef.dataType,
+        ddef.epsilon))
         ) {
         LOG_ERROR("Failed to add " + ddef.name + " to data definition.");
       }
     }
   }
+
+  /**
+   * Destructor - clears the client data definition but does not free any sim memory. The sim memory
+   * is freed when the sim is closed.
+   */
+  ~DataDefinitionVariable<T>() override {
+    // Clear the client data definition
+    LOG_INFO("DataDefinitionVariable: Clearing client data definition: " + name);
+    if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
+      LOG_ERROR("DataDefinitionVariable: Clearing client data definition failed: " + name);
+    }
+  };
 
   [[nodiscard]] bool requestDataFromSim() const override {
     if (!SUCCEEDED(SimConnect_RequestDataOnSimObject(
@@ -124,15 +154,31 @@ public:
   };
 
   /**
-   * Sends a data request to the sim to have the sim prepare the requested data.
+   * Sends a data request to the sim to have the sim prepare the requested data.<p/>
    * This is an alternative to autoRead which is used by the DataManager to request data from the
    * sim.<p/>
+   * This method can be very efficient as the sim will only send the data when it is required and
+   * the DataManager will not have to manage the updates.<p/>
    * If this is used make sure to have autoRead set to false otherwise this will throw an error.
    * @param period the SIMCONNECT_PERIOD with which the sim should send the data
+   * @param periodFlags the SIMCONNECT_DATA_REQUEST_FLAG with which the sim should send the data
+   * @param origin The number of Period events that should elapse before transmission of the data
+   *               begins. The default is zero, which means transmissions will start immediately.
+   * @param interval The number of Period events that should elapse between transmissions of the
+   *                 data. The default is zero, which means the data is transmitted every Period.
+   * @param limit The number of times the data should be transmitted before this communication is
+   *              ended. The default is zero, which means the data should be transmitted endlessly.
    * @return true if the request was successful, false otherwise
-   * @See https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm?rhhlterm=SIMCONNECT_CLIENT_DATA_PERIOD&rhsearch=SIMCONNECT_CLIENT_DATA_PERIOD
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RequestDataOnSimObject.htm
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_PERIOD.htm
    */
-  [[nodiscard]] bool requestPeriodicDataFromSim(SIMCONNECT_PERIOD period) const {
+  [[nodiscard]] bool requestPeriodicDataFromSim(
+    SIMCONNECT_PERIOD period,
+    DWORD periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
+    DWORD origin = 0,
+    DWORD interval = 0,
+    DWORD limit = 0
+  ) const {
     if (autoRead && period >= SIMCONNECT_PERIOD_ONCE) {
       LOG_ERROR("DataDefinitionVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;
@@ -142,8 +188,12 @@ public:
       requestId,
       dataDefId,
       SIMCONNECT_OBJECT_ID_USER,
-      period))) {
-
+      period,
+      periodFlags,
+      origin,
+      interval,
+      limit))
+      ) {
       LOG_ERROR("DataDefinitionVariable: Failed to request data from sim: " + name);
       return false;
     }
@@ -187,11 +237,15 @@ public:
                 + std::to_string(dataDefId) + " failed!");
       return false;
     }
+    setDataChanged(false);
     return true;
   };
 
   // Getters and setters
 
+  /**
+   * @return a constant reference to the data definition vector
+   */
   [[maybe_unused]] [[nodiscard]]
   const std::vector<DataDefinition> &getDataDefinitions() const { return dataDefinitions; }
 
