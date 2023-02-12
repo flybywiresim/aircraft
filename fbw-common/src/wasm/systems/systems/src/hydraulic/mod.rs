@@ -2930,16 +2930,14 @@ impl RamAirTurbine {
     }
 
     fn resistant_torque(&mut self, displacement: Volume, pressure: Pressure) -> Torque {
-        let mut pump_torque = 0.;
-        if self.wind_turbine.is_low_speed() {
-            pump_torque += (self.wind_turbine.position().get::<radian>() * 4.).cos()
+        let pump_torque = if self.wind_turbine.is_low_speed() {
+            (self.wind_turbine.position().get::<radian>() * 4.).cos()
                 * displacement.get::<gallon>().max(0.35)
-                * 2.;
+                * 2.
         } else {
             // TODO wrong unit here, whole rat system needs a power/torque/rotation speed tuning and check
-            pump_torque -=
-                pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI);
-        }
+            -pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI)
+        };
 
         Torque::new::<newton_meter>(pump_torque)
     }
