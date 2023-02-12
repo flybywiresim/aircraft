@@ -55,7 +55,7 @@ public:
   DataDefinitionVariable<T> &operator=(const DataDefinitionVariable &) = delete;
 
   ~DataDefinitionVariable<T>() override {
-    // TODO: is this needed? Couldn't find a clear data area function in the docs
+    // Clear the client data definition
     LOG_INFO("DataDefinitionVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
       LOG_ERROR("DataDefinitionVariable: Clearing client data definition failed: " + name);

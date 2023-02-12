@@ -82,7 +82,8 @@ public:
   }
 
   ~ClientDataAreaVariable<T>() override {
-    // TODO: is this needed? Couldn't find a clear data area function in the docs
+    // Clear the client data definition - the data area memory itself cannot be cleared or deleted.
+    // It is cleared when the sim is closed.
     LOG_INFO("ClientDataAreaVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
       LOG_ERROR("ClientDataAreaVariable: Clearing client data definition failed: " + name);

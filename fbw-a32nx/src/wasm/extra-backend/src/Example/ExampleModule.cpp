@@ -232,8 +232,8 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     // testing client data variables
 
-    // This is read from the sim
-    LOG_INFO("--- EXAMPLE CLIENT DATA");
+    // This local data sent to other clients
+    LOG_INFO("--- EXAMPLE CLIENT DATA (Owning - sending)");
     std::cout << exampleClientDataPtr->str() << std::endl;
     std::cout << "FLOAT64    " << exampleClientDataPtr->data().aFloat64 << std::endl;
     std::cout << "FLOAT32    " << exampleClientDataPtr->data().aFloat32 << std::endl;
@@ -249,8 +249,8 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     exampleClientDataPtr->data().anInt8++;
     // exampleClientDataPtr->writeDataToSim();
 
-    // This is sent to the sim
-    LOG_INFO("--- EXAMPLE 2 CLIENT DATA");
+    // This is external data from an external client
+    LOG_INFO("--- EXAMPLE 2 CLIENT DATA (External - reading)");
     std::cout << exampleClientData2Ptr->str() << std::endl;
     /*        if (!exampleClientData2Ptr->requestUpdateFromSim(timeStamp, tickCounter)) {
               LOG_ERROR("ExampleModule::update() - exampleClientData2Ptr->requestUpdateFromSim() failed");
