@@ -173,6 +173,15 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             32_025,
             FailureType::GearActuatorJammed(GearActuatorId::GearDoorRight),
         ),
+        (
+            32_100,
+            FailureType::BrakeHydraulicLeak(HydraulicColor::Green),
+        ),
+        (
+            32_101,
+            FailureType::BrakeHydraulicLeak(HydraulicColor::Yellow),
+        ),
+        (32_150, FailureType::BrakeAccumulatorGasLeak),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
     ])
