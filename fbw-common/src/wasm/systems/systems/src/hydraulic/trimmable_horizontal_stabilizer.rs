@@ -4,7 +4,7 @@ use uom::si::{
     f64::*,
     pressure::psi,
     ratio::ratio,
-    volume::gallon,
+    volume::{cubic_inch, gallon},
     volume_rate::gallon_per_minute,
 };
 
@@ -207,9 +207,17 @@ impl SimulationElement for ElectricDriveMotor {
     }
 }
 
+pub trait TrimmableHorizontalStabilizerMotorController {
+    fn motor_should_activate(&self) -> bool;
+    fn requested_position(&self) -> Angle;
+}
+
 #[derive(Clone, Copy)]
 struct HydraulicDriveMotor {
     max_speed: AngularVelocity,
+    max_speed_hyd_pressure: Pressure,
+    displacement: Volume,
+
     motor: DriveMotor,
 
     total_volume_to_actuator: Volume,
@@ -217,19 +225,20 @@ struct HydraulicDriveMotor {
 }
 impl HydraulicDriveMotor {
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
-    const DISPLACEMENT_CUBIC_INCH: f64 = 0.4;
-
-    // Hyd pressure at which motor has its max speed
-    const MAX_SPEED_HYD_PRESSURE_PSI: f64 = 3000.;
 
     fn new(
         max_speed: AngularVelocity,
+        max_speed_hyd_pressure: Pressure,
+        displacement: Volume,
 
         speed_error_breakpoint: [f64; 7],
         speed_regulation_coef_map: [f64; 7],
     ) -> Self {
         Self {
             max_speed,
+            max_speed_hyd_pressure,
+            displacement,
+
             motor: DriveMotor::new(max_speed, speed_error_breakpoint, speed_regulation_coef_map),
 
             total_volume_to_actuator: Volume::default(),
@@ -240,12 +249,12 @@ impl HydraulicDriveMotor {
     fn update(
         &mut self,
         context: &UpdateContext,
+        motor_active: bool,
         measured_position: Angle,
         position_requested: Angle,
         pressure: Pressure,
     ) {
-        self.motor
-            .set_active_state(pressure > Pressure::new::<psi>(1450.));
+        self.motor.set_active_state(motor_active);
 
         self.motor
             .set_max_speed(self.current_max_speed_from_hydraulic_pressure(pressure));
@@ -263,9 +272,8 @@ impl HydraulicDriveMotor {
     }
 
     fn current_max_speed_from_hydraulic_pressure(&self, pressure: Pressure) -> AngularVelocity {
-        let pressure_coefficient = (pressure.get::<psi>() / Self::MAX_SPEED_HYD_PRESSURE_PSI)
-            .min(1.)
-            .max(0.);
+        let pressure_coefficient =
+            (pressure.get::<psi>() / self.max_speed_hyd_pressure.get::<psi>()).clamp(0., 1.);
 
         self.max_speed * pressure_coefficient
     }
@@ -276,7 +284,7 @@ impl HydraulicDriveMotor {
 
     fn flow(&self) -> VolumeRate {
         VolumeRate::new::<gallon_per_minute>(
-            self.speed().get::<revolution_per_minute>() * Self::DISPLACEMENT_CUBIC_INCH
+            self.speed().get::<revolution_per_minute>() * self.displacement.get::<cubic_inch>()
                 / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM,
         )
     }
@@ -405,7 +413,7 @@ impl PitchTrimActuator {
         context: &UpdateContext,
         electric_controller: &impl PitchTrimActuatorController,
         manual_controller: &impl ManualPitchTrimController,
-        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerActuator,
     ) {
         self.update_clutches_state(electric_controller);
         self.update_motors(context, electric_controller, ths_hydraulic_assembly);
@@ -429,7 +437,7 @@ impl PitchTrimActuator {
     fn update_speed_and_override(
         &mut self,
         manual_controller: &impl ManualPitchTrimController,
-        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerActuator,
     ) {
         let elec_drive_speed = self.elec_motor_drive_total_speed();
 
@@ -475,7 +483,7 @@ impl PitchTrimActuator {
         &mut self,
         context: &UpdateContext,
         controller: &impl PitchTrimActuatorController,
-        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerHydraulics,
+        ths_hydraulic_assembly: &TrimmableHorizontalStabilizerActuator,
     ) {
         for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
             motor.set_active_state(controller.energised_motor()[motor_index]);
@@ -514,10 +522,46 @@ impl SimulationElement for PitchTrimActuator {
     }
 }
 
+#[derive(Clone, Copy, PartialEq)]
+struct TrimmableHorizontalStabilizerMotorMechanicalController {
+    should_motor_activate: bool,
+    requested_position: Angle,
+}
+impl TrimmableHorizontalStabilizerMotorMechanicalController {
+    fn new() -> Self {
+        Self {
+            should_motor_activate: false,
+
+            requested_position: Angle::default(),
+        }
+    }
+
+    fn update(&mut self, pressure: Pressure, requested_position: Angle) {
+        self.should_motor_activate = pressure > Pressure::new::<psi>(1450.);
+        self.requested_position = requested_position;
+    }
+}
+impl TrimmableHorizontalStabilizerMotorController
+    for TrimmableHorizontalStabilizerMotorMechanicalController
+{
+    fn motor_should_activate(&self) -> bool {
+        self.should_motor_activate
+    }
+
+    fn requested_position(&self) -> Angle {
+        self.requested_position
+    }
+}
+
 pub struct TrimmableHorizontalStabilizerAssembly {
     pitch_trim_actuator: PitchTrimActuator,
     trim_wheel: TrimWheels,
-    ths_hydraulics: TrimmableHorizontalStabilizerHydraulics,
+    ths_hydraulics: TrimmableHorizontalStabilizerActuator,
+
+    controllers: [TrimmableHorizontalStabilizerMotorMechanicalController; 2],
+
+    min_ths_deflection: Angle,
+    ths_deflection_range: Angle,
 }
 impl TrimmableHorizontalStabilizerAssembly {
     pub fn new(
@@ -549,11 +593,22 @@ impl TrimmableHorizontalStabilizerAssembly {
                 min_trim_wheel_angle,
                 total_trim_wheel_range_angle,
             ),
-            ths_hydraulics: TrimmableHorizontalStabilizerHydraulics::new(
+            ths_hydraulics: TrimmableHorizontalStabilizerActuator::new(
                 context,
                 min_ths_deflection,
                 ths_deflection_range,
+                AngularVelocity::new::<revolution_per_minute>(2500.),
+                Pressure::new::<psi>(3000.),
+                Volume::new::<cubic_inch>(0.4),
+                0.000085,
             ),
+            // Controllers are in green->yellow order
+            controllers: [
+                TrimmableHorizontalStabilizerMotorMechanicalController::new(),
+                TrimmableHorizontalStabilizerMotorMechanicalController::new(),
+            ],
+            min_ths_deflection,
+            ths_deflection_range,
         }
     }
 
@@ -573,11 +628,20 @@ impl TrimmableHorizontalStabilizerAssembly {
 
         self.trim_wheel.update(&self.pitch_trim_actuator);
 
-        self.ths_hydraulics.update(
-            context,
-            pressures,
-            self.pitch_trim_actuator.position_normalized(),
-        )
+        for (controller, pressure) in self.controllers.iter_mut().zip(pressures) {
+            controller.update(
+                pressure,
+                self.ths_deflection_range
+                    * self
+                        .pitch_trim_actuator
+                        .position_normalized()
+                        .get::<ratio>()
+                    + self.min_ths_deflection,
+            );
+        }
+
+        self.ths_hydraulics
+            .update(context, &self.controllers, pressures);
     }
 
     pub fn position_normalized(&self) -> Ratio {
@@ -609,7 +673,7 @@ impl TrimmableHorizontalStabilizer for TrimmableHorizontalStabilizerAssembly {
     }
 }
 
-struct TrimmableHorizontalStabilizerHydraulics {
+pub struct TrimmableHorizontalStabilizerActuator {
     deflection_id: VariableIdentifier,
     hydraulic_motors: [HydraulicDriveMotor; 2],
 
@@ -619,25 +683,33 @@ struct TrimmableHorizontalStabilizerHydraulics {
     min_deflection: Angle,
     max_deflection: Angle,
     deflection_range: Angle,
+    motor_to_ths_gearing_ratio: f64,
 
     is_at_max_up_spool_valve: bool,
     is_at_max_down_spool_valve: bool,
 }
-impl TrimmableHorizontalStabilizerHydraulics {
+impl TrimmableHorizontalStabilizerActuator {
     const HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] =
         [-50., -0.5, -0.1, 0., 0.1, 0.5, 50.];
     const HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.6, 0., 0.6, 1., 1.];
 
-    // Gain to convert hyd motor speed to ths deflection speed
-    const HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN: f64 = 0.000085;
-
     const MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES: f64 = 0.4;
 
-    pub fn new(context: &mut InitContext, min_deflection: Angle, deflection_range: Angle) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        min_deflection: Angle,
+        deflection_range: Angle,
+        motor_max_speed: AngularVelocity,
+        motor_max_speed_hyd_pressure: Pressure,
+        motor_displacement: Volume,
+        motor_to_ths_gearing_ratio: f64,
+    ) -> Self {
         Self {
             deflection_id: context.get_identifier("HYD_FINAL_THS_DEFLECTION".to_owned()),
             hydraulic_motors: [HydraulicDriveMotor::new(
-                AngularVelocity::new::<revolution_per_minute>(2500.),
+                motor_max_speed,
+                motor_max_speed_hyd_pressure,
+                motor_displacement,
                 Self::HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT,
                 Self::HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP,
             ); 2],
@@ -647,6 +719,7 @@ impl TrimmableHorizontalStabilizerHydraulics {
             min_deflection,
             max_deflection: min_deflection + deflection_range,
             deflection_range,
+            motor_to_ths_gearing_ratio,
 
             is_at_max_up_spool_valve: false,
             is_at_max_down_spool_valve: false,
@@ -656,22 +729,27 @@ impl TrimmableHorizontalStabilizerHydraulics {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        controllers: &[impl TrimmableHorizontalStabilizerMotorController; 2],
         pressures: [Pressure; 2],
-        trim_actuator_output_position_normalized: Ratio,
     ) {
-        let deflection_demand = self.deflection_range
-            * trim_actuator_output_position_normalized.get::<ratio>()
-            + self.min_deflection;
+        // Both controllers send the same position command for the A320, which is the aircraft that will use the
+        // spool valve lock position. The A380 will not use it, since it doesn't have a manual trim wheel.
+        // So, we just use the first controller position.
+        self.update_spool_valve_lock_position(controllers[0].requested_position());
 
-        self.update_spool_valve_lock_position(deflection_demand);
-
-        for (motor_index, motor) in self.hydraulic_motors.iter_mut().enumerate() {
+        for ((motor, controller), pressure) in self
+            .hydraulic_motors
+            .iter_mut()
+            .zip(controllers)
+            .zip(pressures)
+        {
             motor.update(
                 context,
+                controller.motor_should_activate(),
                 self.actual_deflection,
-                deflection_demand,
-                pressures[motor_index],
-            )
+                controller.requested_position(),
+                pressure,
+            );
         }
 
         self.update_speed();
@@ -683,7 +761,7 @@ impl TrimmableHorizontalStabilizerHydraulics {
         let mut sum_of_speeds = AngularVelocity::default();
 
         for motor in self.hydraulic_motors {
-            sum_of_speeds += motor.speed() * Self::HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN;
+            sum_of_speeds += motor.speed() * self.motor_to_ths_gearing_ratio;
         }
 
         self.speed = sum_of_speeds;
@@ -724,7 +802,7 @@ impl TrimmableHorizontalStabilizerHydraulics {
         self.actual_deflection
     }
 }
-impl SimulationElement for TrimmableHorizontalStabilizerHydraulics {
+impl SimulationElement for TrimmableHorizontalStabilizerActuator {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.deflection_id, self.actual_deflection.get::<degree>());
     }
