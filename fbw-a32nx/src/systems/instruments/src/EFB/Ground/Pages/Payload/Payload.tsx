@@ -405,8 +405,8 @@ export const Payload = () => {
         for (let i = 0; i < cargoMap.length; i++) {
             cargoSize.push(0);
         }
-        cargoMap.forEach((station) => {
-            cargoSize[station.index] = station.weight;
+        cargoMap.forEach((station, index) => {
+            cargoSize[index] = station.weight;
         });
         setCargoStationWeight(cargoSize);
     }, [cargoMap]);
@@ -560,7 +560,7 @@ export const Payload = () => {
         <div>
             <div className="relative h-content-section-reduced">
                 <div className="mb-10">
-                    <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} />
+                    <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} canvasX={243} canvasY={78} />
                 </div>
                 <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationWeights} onClickCargo={onClickCargo} />
 

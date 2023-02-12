@@ -1,8 +1,6 @@
 export const TYPE = Object.freeze({ NB_ECO: 0, NB_ECO_EMERG: 1, WB_ECO: 2, WB_ECO_EMERG: 3 });
 
 export const CanvasConst = Object.freeze({
-    xTransform: '243px',
-    yTransform: '78px',
     width: 1000,
     height: 150,
 });
@@ -26,7 +24,6 @@ export interface PaxStationInfo {
     capacity: number,
     rows: RowInfo[],
     simVar: string,
-    index: number,
     fill: number,
     stationIndex: number,
     position: number,
@@ -36,7 +33,6 @@ export interface CargoStationInfo {
     name: string,
     weight: number,
     simVar: string,
-    index: number,
     stationIndex: number,
     progressBarWidth: number,
     position: number,

@@ -287,7 +287,6 @@
                     "yOffset": 0
                 }
             ],
-            "index": 0,
             "stationIndex": 1,
             "position": 20.0,
             "fill": 0.19,
@@ -606,7 +605,6 @@
                     "yOffset": 0
                 }
             ],
-            "index": 1,
             "stationIndex": 2,
             "position": 0.9,
             "fill": 0.25,
@@ -969,7 +967,6 @@
                     "yOffset": 0
                 }
             ],
-            "index": 2,
             "stationIndex": 3,
             "position": -17.3,
             "fill": 0.28,
@@ -1333,7 +1330,6 @@
                 }
             ],
             "fill": 0.28,
-            "index": 3,
             "stationIndex": 4,
             "position": -36.3,
             "simVar": "A32NX_PAX_FLAGS_D"
@@ -1343,7 +1339,6 @@
         {
             "name": "FWD BAGGAGE/CONTAINER",
             "weight": 3402,
-            "index": 0,
             "stationIndex": 5,
             "position": 16.3,
             "progressBarWidth": 160,
@@ -1352,7 +1347,6 @@
         {
             "name": "AFT CONTAINER",
             "weight": 2426,
-            "index": 1,
             "stationIndex": 6,
             "position": -25.1,
             "progressBarWidth": 100,
@@ -1361,7 +1355,6 @@
         {
             "name": "AFT BAGGAGE",
             "weight": 2110,
-            "index": 2,
             "stationIndex": 7,
             "position": -35.1,
             "progressBarWidth": 100,
@@ -1370,7 +1363,6 @@
         {
             "name": "AFT BULK/LOOSE",
             "weight": 1497,
-            "index": 3,
             "stationIndex": 8,
             "position": -44.4,
             "progressBarWidth": 100,
@@ -1526,7 +1518,7 @@
         },
         "chartLimits": {
             "weight": {
-                "min": 40000,
+                "min": 35000,
                 "max": 80000,
                 "lines": 9,
                 "scale": 5000,

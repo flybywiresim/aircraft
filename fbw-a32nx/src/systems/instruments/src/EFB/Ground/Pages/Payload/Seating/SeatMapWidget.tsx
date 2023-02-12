@@ -10,6 +10,8 @@ interface SeatMapProps {
     seatMap: PaxStationInfo[],
     desiredFlags: BitFlags[],
     activeFlags: BitFlags[],
+    canvasX: number,
+    canvasY: number,
     onClickSeat: (paxStation: number, section: number) => void,
 }
 
@@ -23,7 +25,7 @@ const useCanvasEvent = (canvas: HTMLCanvasElement | null, event: string, handler
     });
 };
 
-export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, onClickSeat }) => {
+export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, onClickSeat }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
@@ -194,7 +196,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     return (
         <div className="flex relative flex-col">
             <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
-            <canvas className="absolute cursor-pointer" ref={canvasRef} style={{ transform: `translateX(${CanvasConst.xTransform}) translateY(${CanvasConst.yTransform})` }} />
+            <canvas className="absolute cursor-pointer" ref={canvasRef} style={{ transform: `translateX(${canvasX}px) translateY(${canvasY}px)` }} />
         </div>
     );
 };

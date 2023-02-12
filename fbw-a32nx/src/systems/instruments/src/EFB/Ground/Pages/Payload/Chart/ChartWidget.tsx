@@ -96,8 +96,8 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
                     ctx.lineWidth = cgPercent % limits.cg.highlight ? 0.25 : 1;
                     ctx.strokeStyle = cgPercent % limits.cg.highlight ? '#2B313B' : '#394049';
 
-                    const [x1, y1] = cgWeightToXY(cgPercent, 35000);
-                    const [x2, y2] = cgWeightToXY(cgPercent, 80000);
+                    const [x1, y1] = cgWeightToXY(cgPercent, limits.weight.min);
+                    const [x2, y2] = cgWeightToXY(cgPercent, limits.weight.max);
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
                     ctx.lineTo(x2, y2);
