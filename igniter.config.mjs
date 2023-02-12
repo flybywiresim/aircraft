@@ -119,9 +119,7 @@ export default new TaskOfTasks("all", [
 
         new TaskOfTasks("preparation", [
             new ExecTask("copy-base-files", [
-                "npm run build-a380x:copy-base-files",
-                // temporary until folder exists
-                "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/"
+                "npm run build-a380x:copy-base-files"
             ])
         ], true),
 
@@ -133,7 +131,7 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/systems",
                     "Cargo.lock",
                     "Cargo.toml",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/systems.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm"
                 ]),
             new ExecTask("systems-fadec",
                 "npm run build-a380x:fadec",
@@ -141,21 +139,21 @@ export default new TaskOfTasks("all", [
                     "fbw-a380x/src/wasm/fadec_a380",
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-common/src/wasm/fadec_common",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/fadec.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm"
                 ]),
             new ExecTask("systems-fbw",
                 "npm run build-a380x:fbw",
                 [
                     "fbw-a380x/src/wasm/fbw_a380",
                     "fbw-common/src/wasm/fbw_common",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/fbw.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm"
                 ]),
             new ExecTask("flypad-backend",
                 "npm run build-a380x:flypad-backend",
                 [
                     "fbw-a380x/src/wasm/flypad-backend",
                     "fbw-common/src/wasm/fbw_common",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/flypad-backend.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm"
                 ])
         ], true)
     ])
