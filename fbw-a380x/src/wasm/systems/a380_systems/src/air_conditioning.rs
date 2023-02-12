@@ -2094,7 +2094,7 @@ mod tests {
 
             assert!(
                 (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
-                    > Length::new::<foot>(10.)
+                    > Length::new::<foot>(20.)
             );
 
             test_bed = test_bed
@@ -2103,10 +2103,39 @@ mod tests {
                 .iterate(100);
             assert!(
                 (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
-                    > Length::new::<foot>(10.)
+                    > Length::new::<foot>(20.)
             );
             assert!(
-                (test_bed.cabin_altitude() - initial_altitude).abs() < Length::new::<foot>(10.)
+                (test_bed.cabin_altitude() - initial_altitude).abs() < Length::new::<foot>(20.)
+            );
+        }
+
+        #[test]
+        fn altitude_calculation_uses_standard_if_man_mode_is_on() {
+            let mut test_bed = test_bed()
+                .on_ground()
+                .run_and()
+                .command_packs_on_off(false)
+                .ambient_pressure_of(Pressure::new::<hectopascal>(1020.)) // Equivalent to 10,000ft from tables
+                .iterate(100);
+
+            let initial_altitude = test_bed.cabin_altitude();
+
+            assert!(
+                (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
+                    > Length::new::<foot>(20.)
+            );
+
+            test_bed = test_bed
+                .command_altimeter_setting(Pressure::new::<hectopascal>(1020.))
+                .command_mode_sel_pb_man()
+                .iterate(100);
+            assert!(
+                (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
+                    > Length::new::<foot>(20.)
+            );
+            assert!(
+                (test_bed.cabin_altitude() - initial_altitude).abs() < Length::new::<foot>(20.)
             );
         }
     }
