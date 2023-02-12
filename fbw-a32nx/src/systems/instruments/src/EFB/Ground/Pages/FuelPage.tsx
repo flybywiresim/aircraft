@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
 import { Units } from '@shared/units';
 import { t } from '../../translation';
@@ -91,6 +91,10 @@ export const FuelPage = () => {
     const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
 
+    // GSX
+    const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
+    const [gsxFuelHoseConnected] = useSimVar('L:FSDT_GSX_FUELHOSE_CONNECTED', 'Number');
+
     const { units } = useAppSelector((state) => state.simbrief.data);
     const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);
     const simbriefDataLoaded = isSimbriefDataLoaded();
@@ -107,6 +111,19 @@ export const FuelPage = () => {
             if (!isAirplaneCnD()) {
                 setRefuelRate('2');
             }
+        }
+
+        if (gsxFuelSyncEnabled === 1) {
+            if (gsxFuelHoseConnected === 1) {
+                return true;
+            }
+
+            // In-flight refueling with GSX Sync enabled
+            if (!isAirplaneCnD() && refuelRate === '2') {
+                return true;
+            }
+
+            return false;
         }
         return true;
     };
