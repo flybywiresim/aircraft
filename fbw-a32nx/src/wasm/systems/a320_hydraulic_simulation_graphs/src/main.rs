@@ -349,7 +349,9 @@ fn blue_circuit_epump(path: &str) {
 
 fn hydraulic_loop(context: &mut InitContext, loop_color: HydraulicColor) -> HydraulicCircuit {
     match loop_color {
-        HydraulicColor::Yellow => A320HydraulicCircuitFactory::new_yellow_circuit(context),
+        HydraulicColor::Yellow => {
+            A320HydraulicCircuitFactory::new_yellow_circuit(context, Volume::default())
+        }
         HydraulicColor::Blue => A320HydraulicCircuitFactory::new_blue_circuit(context),
         HydraulicColor::Green => A320HydraulicCircuitFactory::new_green_circuit(context),
     }

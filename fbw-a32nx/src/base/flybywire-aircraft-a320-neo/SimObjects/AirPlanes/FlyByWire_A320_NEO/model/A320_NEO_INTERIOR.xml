@@ -4589,7 +4589,7 @@
                     <ANIM_DURATION>1</ANIM_DURATION>
                     <ANIM_CODE>
                         (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
-                            (L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS, number) 4000 /
+                            (L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS, number) 3700 /
                         } els{
                             0
                         }
