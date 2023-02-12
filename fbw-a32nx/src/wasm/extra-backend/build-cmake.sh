@@ -33,10 +33,21 @@ while [ $# -gt 0 ]; do
 shift
 done
 
-echo "Building extra-backend with CMAKE..."
+#echo "Environment:"
+#env
+#echo ""
 
+echo "Toolchain versions:"
+cmake --version
+clang++ --version
+wasm-ld --version
+echo ""
+
+echo "Building extra-backend with CMAKE..."
 cmake -B${OUTPUT_DIR} -DCMAKE_BUILD_TYPE=${CONFIG} || (echo "CMake config failed" && exit 1)
 cmake --build ${OUTPUT_DIR} --config ${CONFIG} ${CLEAN} -j ${PARALLEL} || (echo "CMake build failed" && exit 1)
+echo ""
 
 echo "WASM module built successfully!"
+echo ""
 exit 0

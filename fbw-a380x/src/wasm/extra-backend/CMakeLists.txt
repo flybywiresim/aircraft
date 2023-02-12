@@ -1,22 +1,21 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(CMAKE_CXX_STANDARD 20)
-
-set(FBW_ROOT "../../../..")
+# this is set in the compiler flags
+# set(CMAKE_CXX_STANDARD 20)
 
 # Configure the build as required
+set(FBW_ROOT "../../../..")
 set(AIRCRAFT "A380X")
 set(EXAMPLES "NO_EXAMPLES") # EXAMPLES, NO_EXAMPLES
-# ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
-set(LOG_LEVEL 4)
+set(LOG_LEVEL 4) # ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
 set(LOGGING "LOG_LEVEL=${LOG_LEVEL}")
 
 # Configure the build for the current OS - local on Windows or CI/dev-env on Linux
 if (WIN32)
     message("OS: Windows")
     set(MSFS_SDK "C:\\MSFS SDK")
-    set(CMAKE_C_COMPILER "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/x64/bin/clang.exe")
-    set(CMAKE_CXX_COMPILER "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/x64/bin/clang++.exe")
+    set(CMAKE_C_COMPILER "C:/Program Files/LLVM/bin/clang.exe")
+    set(CMAKE_CXX_COMPILER "C:/Program Files/LLVM/bin/clang++.exe")
     set(CMAKE_GENERATOR "Ninja")
 else ()
     message("OS: Other")
