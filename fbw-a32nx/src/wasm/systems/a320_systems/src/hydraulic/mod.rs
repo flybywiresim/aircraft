@@ -23,8 +23,8 @@ use systems::{
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
         brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
-            BrakeCircuitController,
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
+            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
@@ -46,7 +46,7 @@ use systems::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
         },
-        ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
+        Accumulator, ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
         HydraulicCircuitController, HydraulicPressureSensors, PowerTransferUnit,
         PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
         PressureSwitchType, PriorityValve, PumpController, RamAirTurbine, Reservoir,
@@ -117,13 +117,16 @@ impl A320HydraulicReservoirFactory {
         )
     }
 
-    fn new_yellow_reservoir(context: &mut InitContext) -> Reservoir {
+    fn new_yellow_reservoir(
+        context: &mut InitContext,
+        fluid_volume_in_brake_accumulator: Volume,
+    ) -> Reservoir {
         Reservoir::new(
             context,
             HydraulicColor::Yellow,
             Volume::new::<liter>(20.),
             Volume::new::<liter>(18.),
-            Volume::new::<gallon>(3.6),
+            Volume::new::<gallon>(3.8) - fluid_volume_in_brake_accumulator,
             vec![PressureSwitch::new(
                 Pressure::new::<psi>(25.),
                 Pressure::new::<psi>(22.),
@@ -206,8 +209,14 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    pub fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
-        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
+    pub fn new_yellow_circuit(
+        context: &mut InitContext,
+        fluid_volume_in_brake_accumulator: Volume,
+    ) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(
+            context,
+            fluid_volume_in_brake_accumulator,
+        );
         HydraulicCircuit::new(
             context,
             HydraulicColor::Yellow,
@@ -1552,10 +1561,19 @@ impl A320Hydraulic {
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(2);
 
+    const ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
+
     // Refresh rate of core hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub(super) fn new(context: &mut InitContext) -> A320Hydraulic {
+        let brake_accumulator_charac = BrakeAccumulatorCharacteristics::new(
+            Volume::new::<gallon>(1.0),
+            Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Ratio::new::<ratio>(0.03),
+        );
+
         A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
@@ -1583,7 +1601,10 @@ impl A320Hydraulic {
                 Some(1),
                 HydraulicColor::Green,
             ),
-            yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
+            yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(
+                context,
+                brake_accumulator_charac.volume_at_init(),
+            ),
             yellow_circuit_controller: A320HydraulicCircuitController::new(
                 Some(2),
                 HydraulicColor::Yellow,
@@ -1659,10 +1680,9 @@ impl A320Hydraulic {
             braking_circuit_norm: BrakeCircuit::new(
                 context,
                 "NORM",
-                Volume::new::<gallon>(0.),
-                Volume::new::<gallon>(0.),
+                HydraulicColor::Green,
+                None,
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1671,10 +1691,9 @@ impl A320Hydraulic {
             braking_circuit_altn: BrakeCircuit::new(
                 context,
                 "ALTN",
-                Volume::new::<gallon>(1.0),
-                Volume::new::<gallon>(0.4),
+                HydraulicColor::Yellow,
+                Some(Accumulator::new_brake_accumulator(brake_accumulator_charac)),
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A320BrakingForce::new(context),
@@ -1716,6 +1735,7 @@ impl A320Hydraulic {
             ),
 
             emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
+
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -8626,7 +8646,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             // Getting accumulator pressure on cold start
             let mut accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
@@ -8704,7 +8724,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             // Getting accumulator pressure on cold start
             let accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
