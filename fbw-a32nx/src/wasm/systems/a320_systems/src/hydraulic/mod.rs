@@ -7320,6 +7320,24 @@ mod tests {
                 self
             }
 
+            fn load_brake_accumulator(mut self) -> Self {
+                let mut number_of_loops = 0;
+                while self.get_brake_yellow_accumulator_pressure().get::<psi>() <= 2900. {
+                    self = self
+                        .set_yellow_e_pump(false)
+                        .run_waiting_for(Duration::from_secs(2));
+                    number_of_loops += 1;
+                    assert!(number_of_loops < 50);
+                }
+
+                // Let yellow epump spool down
+                self = self
+                    .set_yellow_e_pump(true)
+                    .run_waiting_for(Duration::from_secs(5));
+
+                self
+            }
+
             fn turn_emergency_gear_extension_n_turns(mut self, number_of_turns: u8) -> Self {
                 self.write_by_name("GRAVITYGEAR_ROTATE_PCT", number_of_turns as f64 * 100.);
                 self
@@ -9048,6 +9066,7 @@ mod tests {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
+                .load_brake_accumulator()
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
@@ -9964,6 +9983,7 @@ mod tests {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
+                .load_brake_accumulator()
                 .set_cold_dark_inputs()
                 .run_waiting_for(Duration::from_secs(5));
 
@@ -10649,6 +10669,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_ptu_state(true)
+                .load_brake_accumulator()
                 .set_yellow_e_pump(false)
                 .set_blue_e_pump_ovrd_pressed(true)
                 .run_one_tick();
@@ -10869,6 +10890,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
+                .load_brake_accumulator()
                 .set_yellow_e_pump(false)
                 .run_one_tick();
 
@@ -11106,6 +11128,7 @@ mod tests {
         fn spoilers_move_to_requested_position() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
+                .load_brake_accumulator()
                 .set_blue_e_pump_ovrd_pressed(true)
                 .set_yellow_e_pump(false)
                 .run_waiting_for(Duration::from_secs_f64(5.));
