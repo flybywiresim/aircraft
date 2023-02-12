@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 
 import { useSimVar } from '@instruments/common/simVars';
+import { toast } from 'react-toastify';
 import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
@@ -18,6 +19,8 @@ export const SimOptionsPage = () => {
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
+    const [simbridgeRemote, setSimbridgeRemoteStatus] = usePersistentProperty('CONFIG_SIMBRIDGE_REMOTE', 'local');
+    const [simbridgeIp, setSimbridgeIp] = usePersistentProperty('CONFIG_SIMBRIDGE_IP', 'localhost');
     const [simbridgePort, setSimbridgePort] = usePersistentProperty('CONFIG_SIMBRIDGE_PORT', '8380');
     const [simbridgeEnabled, setSimbridgeEnabled] = usePersistentProperty('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
@@ -92,6 +95,52 @@ export const SimOptionsPage = () => {
                         <div className="pt-2 text-center">
                             {simbridgeEnabled === 'AUTO ON' ? t('Settings.SimOptions.Active') : t('Settings.SimOptions.Inactive')}
                         </div>
+                    </SettingItem>
+
+                    <SettingItem name="SimBridge Host Machine">
+                        <SelectGroup>
+                            <SelectItem
+                                className="text-center color-red"
+                                onSelect={
+                                    () => {
+                                        setSimbridgeRemoteStatus('local');
+                                    }
+                                }
+                                selected={simbridgeRemote === 'local'}
+                            >
+                                This PC
+                            </SelectItem>
+                            <SelectItem
+                                onSelect={
+                                    () => {
+                                        setSimbridgeRemoteStatus('remote');
+                                    }
+                                }
+                                selected={simbridgeRemote === 'remote'}
+                            >
+                                Remote PC
+                            </SelectItem>
+                        </SelectGroup>
+                        {simbridgeRemote === 'remote'
+                        && (
+                            <div className="pt-2 text-center">
+                                <SimpleInput
+                                    className="text-center w-30"
+                                    value={simbridgeIp}
+                                    onChange={(event) => {
+                                        // Error on empty string
+                                        if (event === '') {
+                                            toast.error('SimBridge Remote IP Address cannot be empty!');
+                                            // Reset to previous value
+                                            setSimbridgeIp(simbridgeIp);
+                                            return;
+                                        }
+                                        // Remove whitespace
+                                        setSimbridgeIp(event.replace(/\s/g, ''));
+                                    }}
+                                />
+                            </div>
+                        )}
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.SimBridgePort')}>

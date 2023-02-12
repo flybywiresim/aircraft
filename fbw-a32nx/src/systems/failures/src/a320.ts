@@ -57,6 +57,10 @@ export const A320Failure = Object.freeze({
     GearActuatorJammedGearDoorLeft: 32024,
     GearActuatorJammedGearDoorRight: 32025,
 
+    GreenBrakeHydraulicLeak: 32100,
+    YellowBrakeHydraulicLeak: 32101,
+    YellowBrakeAccumulatorGasLeak: 32150,
+
     RadioAltimeter1: 34000,
     RadioAltimeter2: 34001,
 });

@@ -68,6 +68,10 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [32, A320Failure.GearActuatorJammedGearDoorLeft, 'Main left gear door jammed actuator'],
     [32, A320Failure.GearActuatorJammedGearDoorRight, 'Main right gear door jammed actuator'],
 
+    [32, A320Failure.GreenBrakeHydraulicLeak, 'Green brakes circuit leak'],
+    [32, A320Failure.YellowBrakeHydraulicLeak, 'Yellow brakes circuit leak'],
+    [32, A320Failure.YellowBrakeAccumulatorGasLeak, 'Yellow brake accumulator gas leak'],
+
     [34, A320Failure.RadioAltimeter1, 'RA 1'],
     [34, A320Failure.RadioAltimeter2, 'RA 2'],
 ]);
