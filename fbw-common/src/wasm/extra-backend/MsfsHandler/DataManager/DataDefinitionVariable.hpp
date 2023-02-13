@@ -17,8 +17,11 @@
  * @field index: the index of the variable (default: 0)
  * @field unit: the unit of the variable (default: Number).
  *              This should be set to UNITS.None if a dataType is used
- * @field dataType: the data type of the variable (default: SIMCONNECT_DATATYPE_FLOAT64).
- *                 Set unit to UNITS.None if a dataType is used
+ * @field dataType: the data type of the variable (default: SIMCONNECT_DATATYPE_FLOAT64).<br/>
+ *                 Set unit to UNITS.None if a dataType is used.<br/>
+ *                 OBS: If you use a string type, the string must be null terminated and the size
+ *                 of the string must be less than the data type's length. If the string is longer
+ *                 the sim will crash.
  * @field epsilon: the epsilon value to be used to compare the data value with the current value
  *                 when using the SIMCONNECT_DATA_REQUEST_FLAG_CHANGED flag (default: 0)
  */

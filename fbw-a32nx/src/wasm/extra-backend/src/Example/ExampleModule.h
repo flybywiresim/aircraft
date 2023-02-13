@@ -39,12 +39,16 @@ private:
 
   // DataDefinition variables
   struct ExampleData {
-    [[maybe_unused]] char aircraftTTitle[256] = "";
     [[maybe_unused]] FLOAT64 strobeLightSwitch;
     [[maybe_unused]] FLOAT64 wingLightSwitch;
     [[maybe_unused]] FLOAT64 zuluTime; // E:ZULU TIME
     [[maybe_unused]] FLOAT64 localTime; // E:LOCAL TIME
     [[maybe_unused]] FLOAT64 absoluteTime; // E:ABSOLUTE TIME
+    // if the string is longer than 256 characters, it will overwrite the subsequent variables
+    // and the sim might crash. It seems to be ok when the string is last in the struct.
+    // Then the string is truncated to the size but seem to have no other effect (due to the memcpy
+    // being restricted to the size of the struct).
+    [[maybe_unused]] char aircraftTTitle[256] = "";
   };
   std::shared_ptr<DataDefinitionVariable<ExampleData>> exampleDataPtr;
 

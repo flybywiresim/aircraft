@@ -128,12 +128,13 @@ bool ExampleModule::initialize() {
 
   // Data definition variables
   std::vector <DataDefinition> exampleDataDef = {
-    {"TITLE",        0, UNITS.None, SIMCONNECT_DATATYPE_STRING256},
     {"LIGHT STROBE", 0, UNITS.Bool},
     {"LIGHT WING",   0, UNITS.Bool},
     {"ZULU TIME"},
     {"LOCAL TIME"},
     {"ABSOLUTE TIME"},
+    // The sim crashes if the string datatype is too short for the string
+    {"TITLE",        0, UNITS.None, SIMCONNECT_DATATYPE_STRING256},
   };
   exampleDataPtr = dataManager
     ->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, true, false, 0, 0);
@@ -322,12 +323,14 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   */
 
     LOG_INFO("--- DataDefinition Example)");
-    std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
+    // TODO: the char array might need a check for null termination - it could have overwritten
+    //  the rest of the struct and beyond
     std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().strobeLightSwitch << std::endl;
-    std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().wingLightSwitch << std::endl;
+    std::cout << "wingLightSwitch =  " << exampleDataPtr->data().wingLightSwitch << std::endl;
     std::cout << "zuluTime =  " << exampleDataPtr->data().zuluTime << std::endl;
     std::cout << "localTime =  " << exampleDataPtr->data().localTime << std::endl;
     std::cout << "absoluteTime =  " << INT64(exampleDataPtr->data().absoluteTime) << std::endl;
+    std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
 
     LOG_INFO("--- LVAR Example)");
     std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
