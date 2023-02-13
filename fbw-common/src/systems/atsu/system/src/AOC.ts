@@ -45,7 +45,7 @@ export class Aoc {
         let index = this.messageQueueUplink.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             // decrease the company message counter
-            if (this.messageQueueDownlink.at(index).Confirmed === false) {
+            if (this.messageQueueUplink.at(index).Confirmed === false) {
                 const cMsgCnt = this.atsu.digitalInputs.CompanyMessageCount;
                 this.atsu.digitalOutputs.FwcBus.setCompanyMessageCount(Math.max(0, cMsgCnt - 1));
             }
