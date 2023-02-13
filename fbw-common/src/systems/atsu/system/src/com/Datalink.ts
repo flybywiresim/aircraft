@@ -14,12 +14,16 @@ import {
     MetarMessage,
     TafMessage,
     WeatherMessage,
+    FreetextMessage,
 } from '@atsu/common';
 import { NXDataStore } from '@shared/persistence';
 import { Vdl } from './vhf/VDL';
-import { Atsu } from '../ATSU';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
+import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { DatalinkMessages, DatalinkOutputBus } from '../databus/DatalinkBus';
+import { DigitalInputs } from '../DigitalInputs';
+import { DigitalOutputs } from '../DigitalOutputs';
 
 enum ActiveCommunicationInterface {
     None,
@@ -29,6 +33,10 @@ enum ActiveCommunicationInterface {
 };
 
 export class Datalink {
+    private readonly subscriber: EventSubscriber<DatalinkMessages>;
+
+    private readonly publisher: Publisher<DatalinkMessages>;
+
     private communicationInterface: ActiveCommunicationInterface = ActiveCommunicationInterface.None;
 
     private vdl: Vdl = new Vdl();
@@ -41,7 +49,7 @@ export class Datalink {
 
     private firstPollHoppie = true;
 
-    private enqueueReceivedMessages(atsu: Atsu, messages: AtsuMessage[]): void {
+    private enqueueReceivedMessages(messages: AtsuMessage[]): void {
         switch (this.communicationInterface) {
         case ActiveCommunicationInterface.VHF:
             messages.forEach((message) => {
@@ -50,7 +58,14 @@ export class Datalink {
                     const transmissionTime = this.vdl.enqueueInboundMessage(message);
                     setTimeout(() => {
                         this.vdl.dequeueInboundMessage(transmissionTime);
-                        atsu.registerMessages([message]);
+
+                        if (message.Type === AtsuMessageType.Freetext) {
+                            this.publisher.pub('receivedFreetextMessage', message as FreetextMessage, this.synchronizedBuses, false);
+                        } else if (message.Type === AtsuMessageType.CPDLC) {
+                            this.publisher.pub('receivedCpdlcMessage', message as CpdlcMessage, this.synchronizedBuses, false);
+                        } else {
+                            console.log('ERROR: Unknown message received in datalink');
+                        }
                     }, transmissionTime);
                 }
             });
@@ -63,12 +78,52 @@ export class Datalink {
         }
     }
 
-    constructor(atsu: Atsu) {
+    constructor(
+        private readonly bus: EventBus,
+        private readonly synchronizedBuses: boolean,
+        private readonly digitalInputs: DigitalInputs,
+        private readonly digitalOutputs: DigitalOutputs,
+    ) {
         HoppieConnector.activateHoppie();
+
+        this.subscriber = this.bus.getSubscriber<DatalinkMessages>();
+        this.publisher = this.bus.getPublisher<DatalinkMessages>();
+
+        this.subscriber.on('connect').handle((request) => {
+            Datalink.connect(request.callsign).then((status) => this.publisher.pub('managementResponse', { requestId: request.requestId, status }, true, false));
+        });
+        this.subscriber.on('disconnect').handle((requestId: number) => {
+            Datalink.disconnect().then((status) => this.publisher.pub('managementResponse', { requestId, status }, true, false));
+        });
+        this.subscriber.on('requestStationAvailable').handle((request) => {
+            this.isStationAvailable(request.callsign).then((status) => {
+                this.publisher.pub('managementResponse', { requestId: request.requestId, status }, true, false);
+            });
+        });
+        this.subscriber.on('sendFreetextMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
+        this.subscriber.on('sendCpdlcMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
+        this.subscriber.on('sendDclMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
+        this.subscriber.on('sendOclMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
+
+        this.subscriber.on('requestAtis').handle((request) => {
+            if (this.communicationInterface === ActiveCommunicationInterface.None) {
+                this.publisher.pub('receivedWeather', { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedBuses, false);
+            }
+
+            const message = new AtisMessage();
+            NXApiConnector.receiveAtis(request.icao, request.type, message).then(() => {
+                this.simulateWeatherRequestResponse(
+                    [AtsuStatusCodes.Ok, message],
+                    () => this.publisher.pub('requestSent', request.requestId, this.synchronizedBuses, false),
+                ).then((data) => this.publisher.pub('receivedWeather', { requestId: request.requestId, response: data }, this.synchronizedBuses, false));
+            });
+        });
+        this.subscriber.on('requestMetar').handle((request) => this.receiveWeather(request.requestId, true, request.icaos));
+        this.subscriber.on('requestTaf').handle((request) => this.receiveWeather(request.requestId, false, request.icaos));
 
         setInterval(() => {
             // update the communication interface states
-            this.vdl.vhf3.updateDatalinkStates(atsu.digitalInputs.RmpData.vhf3Powered, atsu.digitalInputs.RmpData.vhf3DataMode);
+            this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.RmpData.vhf3Powered, this.digitalInputs.RmpData.vhf3DataMode);
 
             // find the best communication
             if (this.vdl.vhf3.datalinkStatus === DatalinkStatusCode.DlkAvail) {
@@ -78,21 +133,21 @@ export class Datalink {
             }
 
             if (this.waitedComUpdate <= 30000) {
-                this.vdl.simulateTransmissionTimes(atsu.flightPhase());
+                this.vdl.simulateTransmissionTimes(this.digitalInputs.FlightPhase);
                 this.waitedComUpdate = 0;
             } else {
                 this.waitedComUpdate += 5000;
             }
 
-            atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
-                this.vhfDatalinkStatus(),
+            this.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
+                this.vdl.vhf3.datalinkStatus,
                 this.satcomDatalinkStatus(),
-                this.hfDatalinkStatus(),
+                DatalinkStatusCode.NotInstalled,
             );
-            atsu.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
-                this.vhfDatalinkMode(),
-                this.satcomDatalinkMode(),
-                this.hfDatalinkMode(),
+            this.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
+                this.vdl.vhf3.datalinkMode,
+                DatalinkModeCode.None,
+                DatalinkModeCode.None,
             );
 
             if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
@@ -100,7 +155,7 @@ export class Datalink {
                     if (retval[0] === AtsuStatusCodes.Ok) {
                         // delete all data in the first call (Hoppie stores old data)
                         if (!this.firstPollHoppie) {
-                            this.enqueueReceivedMessages(atsu, retval[1]);
+                            this.enqueueReceivedMessages(retval[1]);
                         }
                         this.firstPollHoppie = false;
                     }
@@ -113,7 +168,7 @@ export class Datalink {
             if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
                 NXApiConnector.poll().then((retval) => {
                     if (retval[0] === AtsuStatusCodes.Ok) {
-                        this.enqueueReceivedMessages(atsu, retval[1]);
+                        this.enqueueReceivedMessages(retval[1]);
                     }
                 });
                 this.waitedTimeNXApi = 0;
@@ -123,7 +178,7 @@ export class Datalink {
         }, 5000);
     }
 
-    public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
+    private static async connect(flightNo: string): Promise<AtsuStatusCodes> {
         return NXApiConnector.connect(flightNo).then((code) => {
             if (code === AtsuStatusCodes.TelexDisabled) code = AtsuStatusCodes.Ok;
 
@@ -138,7 +193,7 @@ export class Datalink {
         });
     }
 
-    public static async disconnect(): Promise<AtsuStatusCodes> {
+    private static async disconnect(): Promise<AtsuStatusCodes> {
         let retvalNXApi = await NXApiConnector.disconnect();
         if (retvalNXApi === AtsuStatusCodes.TelexDisabled) retvalNXApi = AtsuStatusCodes.Ok;
 
@@ -186,9 +241,9 @@ export class Datalink {
         });
     }
 
-    public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+    private receiveWeather(requestId: number, requestMetar: boolean, icaos: string[]): void {
         if (this.communicationInterface === ActiveCommunicationInterface.None) {
-            return [AtsuStatusCodes.ComFailed, null];
+            this.publisher.pub('receivedWeather', { requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedBuses, false);
         }
 
         let message = undefined;
@@ -198,73 +253,56 @@ export class Datalink {
             message = new TafMessage();
         }
 
-        return this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => this.simulateWeatherRequestResponse([code, message], sentCallback));
+        this.receiveWeatherData(requestMetar, icaos, 0, message)
+            .then((code) => {
+                this.simulateWeatherRequestResponse(
+                    [code, message],
+                    () => this.publisher.pub('requestSent', requestId, this.synchronizedBuses, false),
+                ).then((data) => this.publisher.pub('receivedWeather', { requestId, response: data }, this.synchronizedBuses, false));
+            });
     }
 
-    public async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
+    private async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return HoppieConnector.isStationAvailable(callsign);
     }
 
-    public async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+    private sendMessage(requestId: number, message: AtsuMessage, force: boolean): void {
         if (this.communicationInterface === ActiveCommunicationInterface.None) {
-            return [AtsuStatusCodes.ComFailed, null];
+            this.publisher.pub('sendMessageResponse', { requestId, status: AtsuStatusCodes.ComFailed });
+            return;
         }
 
-        const message = new AtisMessage();
-        return NXApiConnector.receiveAtis(icao, type, message).then(() => this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], sentCallback));
-    }
-
-    public async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
-        if (this.communicationInterface === ActiveCommunicationInterface.None) {
-            return AtsuStatusCodes.ComFailed;
-        }
-
-        return new Promise((resolve, _reject) => {
-            const timeout = this.vdl.enqueueOutboundMessage(message);
-            setTimeout(() => {
-                this.vdl.dequeueOutboundMessage(timeout);
-
-                if (message.Type < AtsuMessageType.AOC) {
-                    if (message.Network === AtsuMessageNetwork.FBW) {
-                        NXApiConnector.sendTelexMessage(message).then((code) => resolve(code));
-                    } else {
-                        HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
-                    }
-                } else if (message.Type === AtsuMessageType.DCL) {
-                    HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
-                } else if (message.Type < AtsuMessageType.ATC) {
-                    HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
+        const timeout = this.vdl.enqueueOutboundMessage(message);
+        setTimeout(() => {
+            this.vdl.dequeueOutboundMessage(timeout);
+            if (message.Type < AtsuMessageType.AOC) {
+                if (message.Network === AtsuMessageNetwork.FBW) {
+                    NXApiConnector.sendTelexMessage(message).then((status) => {
+                        this.publisher.pub('sendMessageResponse', { requestId, status });
+                    });
                 } else {
-                    resolve(AtsuStatusCodes.UnknownMessage);
+                    HoppieConnector.sendTelexMessage(message, force).then((status) => {
+                        this.publisher.pub('sendMessageResponse', { requestId, status });
+                    });
                 }
-            }, timeout);
-        });
+            } else if (message.Type === AtsuMessageType.DCL) {
+                HoppieConnector.sendTelexMessage(message, force).then((status) => {
+                    this.publisher.pub('sendMessageResponse', { requestId, status });
+                });
+            } else if (message.Type < AtsuMessageType.ATC) {
+                HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((status) => {
+                    this.publisher.pub('sendMessageResponse', { requestId, status });
+                });
+            } else {
+                this.publisher.pub('sendMessageResponse', { requestId, status: AtsuStatusCodes.UnknownMessage });
+            }
+        }, timeout);
     }
 
-    public vhfDatalinkStatus(): DatalinkStatusCode {
-        return this.vdl.vhf3.datalinkStatus;
-    }
-
-    public vhfDatalinkMode(): DatalinkModeCode {
-        return this.vdl.vhf3.datalinkMode;
-    }
-
-    public satcomDatalinkStatus(): DatalinkStatusCode {
+    private satcomDatalinkStatus(): DatalinkStatusCode {
         if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
             return DatalinkStatusCode.DlkNotAvail;
         }
         return DatalinkStatusCode.NotInstalled;
-    }
-
-    public satcomDatalinkMode(): DatalinkModeCode {
-        return DatalinkModeCode.None;
-    }
-
-    public hfDatalinkStatus(): DatalinkStatusCode {
-        return DatalinkStatusCode.NotInstalled;
-    }
-
-    public hfDatalinkMode(): DatalinkModeCode {
-        return DatalinkModeCode.None;
     }
 }

@@ -58,7 +58,8 @@ export class Aoc {
     }
 
     public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
-        return this.atsu.datalink.receiveWeather(requestMetar, icaos, sentCallback);
+        if (requestMetar) return this.atsu.datalink.receiveMetar(icaos, sentCallback);
+        this.atsu.datalink.receiveTaf(icaos, sentCallback);
     }
 
     public async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {

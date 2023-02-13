@@ -44,9 +44,9 @@ export class DatalinkInputBus {
 
     private subscriber: EventSubscriber<DatalinkMessages>;
 
-    private managementCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
+    private managementCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
-    private sendMessageCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
+    private sendMessageCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
     private requestSentCallbacks: ((requestId: number) => boolean)[] = [];
 
@@ -101,7 +101,7 @@ export class DatalinkInputBus {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('connect', { requestId, callsign }, this.synchronized, false);
-            this.managementCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.managementCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
@@ -112,7 +112,7 @@ export class DatalinkInputBus {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('disconnect', requestId, this.synchronized, false);
-            this.managementCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.managementCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
@@ -123,7 +123,7 @@ export class DatalinkInputBus {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('requestStationAvailable', { requestId, callsign }, this.synchronized, false);
-            this.managementCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.managementCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
@@ -134,7 +134,7 @@ export class DatalinkInputBus {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('sendFreetextMessage', { requestId, message, force }, this.synchronized, false);
-            this.sendMessageCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
@@ -145,7 +145,7 @@ export class DatalinkInputBus {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('sendCpdlcMessage', { requestId, message, force }, this.synchronized, false);
-            this.sendMessageCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
@@ -156,7 +156,7 @@ export class DatalinkInputBus {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('sendDclMessage', { requestId, message, force }, this.synchronized, false);
-            this.sendMessageCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
@@ -167,7 +167,7 @@ export class DatalinkInputBus {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('sendOclMessage', { requestId, message, force }, this.synchronized, false);
-            this.sendMessageCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });

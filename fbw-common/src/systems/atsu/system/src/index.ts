@@ -3,5 +3,6 @@ export * from './AOC';
 export * from './ATC';
 export * from './com/webinterfaces/HoppieConnector';
 export * from './components/UplinkMessageStateMachine';
+export * from './com/Datalink';
 export * from './DigitalInputs';
 export * from './DigitalOutputs';

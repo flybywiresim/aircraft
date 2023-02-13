@@ -14,18 +14,21 @@ import {
     PositionReportData,
     AtsuTimestamp,
 } from '@atsu/common';
+import { EventBus } from 'msfssdk';
 import { Aoc } from './AOC';
 import { Atc } from './ATC';
-import { Datalink } from './com/Datalink';
 import { ATS623 } from './components/ATS623';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
+import { DatalinkInputBus, DatalinkOutputBus } from './databus/DatalinkBus';
 
 /**
  * Defines the ATSU
  */
 export class Atsu {
-    public datalink: Datalink = null;
+    public datalink: DatalinkInputBus = null;
+
+    private datalinkOutputBus: DatalinkOutputBus = null;
 
     private poweredUp: boolean = false;
 
@@ -247,11 +250,12 @@ export class Atsu {
         };
     }
 
-    constructor(digitalInputs: DigitalInputs, digitalOutputs: DigitalOutputs) {
+    constructor(bus: EventBus, digitalInputs: DigitalInputs, digitalOutputs: DigitalOutputs) {
         this.digitalInputs = digitalInputs;
         this.digitalOutputs = digitalOutputs;
 
-        this.datalink = new Datalink(this);
+        this.datalink = new DatalinkInputBus(bus, false);
+        this.datalinkOutputBus = new DatalinkOutputBus(bus, false);
         this.ats623 = new ATS623(this);
         this.aoc = new Aoc(this);
         this.atc = new Atc(this);
@@ -278,6 +282,9 @@ export class Atsu {
         this.digitalInputs.fmsBus.addDataCallback('removeMessage', (uid) => this.removeMessage(uid));
         this.digitalInputs.fmsBus.addDataCallback('cleanupAtcMessages', () => this.atc.cleanupMessages());
         this.digitalInputs.fmsBus.addDataCallback('resetAtisAutoUpdate', () => this.atc.resetAtisAutoUpdate());
+
+        this.datalinkOutputBus.addDataCallback('receivedFreetextMessage', (message) => this.registerMessages([message]));
+        this.datalinkOutputBus.addDataCallback('receivedCpdlcMessage', (message) => this.registerMessages([message]));
     }
 
     public async connectToNetworks(flightNo: string): Promise<AtsuStatusCodes> {
@@ -287,7 +294,7 @@ export class Atsu {
             return AtsuStatusCodes.Ok;
         }
 
-        const code = await Datalink.connect(flightNo);
+        const code = await this.datalink.connect(flightNo);
         if (code === AtsuStatusCodes.Ok) {
             console.log(`ATSU: Callsign switch from ${this.fltNo} to ${flightNo}`);
             this.fltNo = flightNo;
@@ -306,7 +313,7 @@ export class Atsu {
         console.log('ATSU: Reset of callsign');
         this.fltNo = '';
 
-        return Datalink.disconnect();
+        return this.datalink.disconnect();
     }
 
     public flightNumber(): string {
