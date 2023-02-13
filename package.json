@@ -52,6 +52,12 @@
 
     "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend",
 
+    "====== INGAMEPANELS CHECKLIST FIX ====": "==========================================",
+
+    "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
+    "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",
+    "build-ingamepanels-checklist-fix:manifest": "node scripts/build_ingamepanels_checklist_fix.js",
+
     "====== COMMON ================": "==========================================",
 
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
