@@ -44,6 +44,12 @@ export class Aoc {
     public removeMessage(uid: number): boolean {
         let index = this.messageQueueUplink.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
+            // decrease the company message counter
+            if (this.messageQueueDownlink.at(index).Confirmed === false) {
+                const cMsgCnt = this.atsu.digitalInputs.CompanyMessageCount;
+                this.atsu.digitalOutputs.FwcBus.setCompanyMessageCount(Math.max(0, cMsgCnt - 1));
+            }
+
             this.messageQueueUplink.splice(index, 1);
             this.atsu.digitalOutputs.FmsBus.deleteMessage(uid);
         } else {
