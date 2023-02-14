@@ -1,5 +1,4 @@
-@import "../Common/definitions";
-@import "../Common/gauges";
+@import "../MsfsAvionicsCommon/definitions";
 
 @mixin GenericPulsingFill($color) {
   @keyframes pulsing {

@@ -103,8 +103,9 @@
                         let indicatorActive = #INDICATOR_CODE, bool#;
                         let indicatorsPowered = #INDICATOR_POWERED, bool#;
                         alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
+                        alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
                         let emissiveDim = if annunciatorLight == 2 { 0.1 } else { 1 };
-                        (if (indicatorActive or annunciatorLight == 0) and indicatorsPowered {
+                        (if (indicatorActive or ((annunciatorLight == 0) and dc2Powered)) and indicatorsPowered {
                             1 * emissiveDim
                         } else {
                             0
