@@ -3,14 +3,14 @@
  * The purpose is to reduce the amount of string allocations caused by `.toLowerCase()`
  */
 
-const latlonaltRegEx = new RegExp(/latlonalt/i);
-const latlonaltpbhRegex = new RegExp(/latlonaltpbh/i);
-const pbhRegex = new RegExp(/pbh/i);
-const pid_structRegex = new RegExp(/pid_struct/i);
-const xyzRegex = new RegExp(/xyz/i);
-const stringRegex = new RegExp(/string/i);
-const boolRegex = new RegExp(/boolean|bool/i);
-const numberRegex = new RegExp(/number/i);
+const latlonaltRegEx = /^latlonalt$/i;
+const latlonaltpbhRegex = /^latlonaltpbh$/i;
+const pbhRegex = /^pbh$/i;
+const pid_structRegex = /^pid_struct$/i;
+const xyzRegex = /^xyz$/i;
+const stringRegex = /^string$/i;
+const boolRegex = /^boolean$|^bool$/i;
+const numberRegex = /^number$/i;
 const defaultSource = '';
 
 SimVar.GetSimVarValue = (name, unit, dataSource = defaultSource) => {
