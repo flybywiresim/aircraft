@@ -197,7 +197,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 break;
             }
             case 'error': {
-                console.log(`[MCDU] Websocket connection to SimBridge error. (${SimBridgeClient.McduServerClient.url()}): ${event.get()}`);
+                console.log(`[MCDU] Websocket connection to SimBridge error. (${SimBridgeClient.McduServerClient.url()})`);
                 break;
             }
             case 'message': {
