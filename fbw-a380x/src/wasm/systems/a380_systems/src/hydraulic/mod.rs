@@ -22,8 +22,8 @@ use systems::{
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
         brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
-            BrakeCircuitController,
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
+            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
@@ -42,7 +42,7 @@ use systems::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
         },
-        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
+        Accumulator, ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PriorityValve,
         PumpController, Reservoir,
     },
@@ -1605,10 +1605,18 @@ impl A380Hydraulic {
 
     const EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
-    // Refresh rate of core hydraulic simulation
+    const ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
+                                                                    // Refresh rate of core hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub fn new(context: &mut InitContext) -> A380Hydraulic {
+        let brake_accumulator_charac = BrakeAccumulatorCharacteristics::new(
+            Volume::new::<gallon>(1.0),
+            Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Ratio::new::<ratio>(0.01),
+        );
+
         A380Hydraulic {
             nose_steering: SteeringActuator::new(
                 context,
@@ -1776,10 +1784,9 @@ impl A380Hydraulic {
             braking_circuit_norm: BrakeCircuit::new(
                 context,
                 "NORM",
-                Volume::new::<gallon>(0.),
-                Volume::new::<gallon>(0.),
+                HydraulicColor::Green,
+                None,
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1788,10 +1795,9 @@ impl A380Hydraulic {
             braking_circuit_altn: BrakeCircuit::new(
                 context,
                 "ALTN",
-                Volume::new::<gallon>(1.0),
-                Volume::new::<gallon>(0.4),
+                HydraulicColor::Yellow,
+                Some(Accumulator::new_brake_accumulator(brake_accumulator_charac)),
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A380BrakingForce::new(context),
