@@ -24,7 +24,7 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
 
         NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', ((_k, v) => {
             this.usingMetric.set(v === '1');
-        }));
+        }), '1');
     }
 
     render(): VNode {
