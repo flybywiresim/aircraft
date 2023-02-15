@@ -35,6 +35,10 @@ export class ElapsedTime extends DisplayComponent<ElapsedTimeProps> {
 
     private readonly elapsedKnobPos = Subject.create(1);
 
+    private ltsState: number;
+
+    private dc2IsPowered: boolean;
+
     private dcEssIsPowered: boolean;
 
     private prevTime: number;
@@ -43,7 +47,15 @@ export class ElapsedTime extends DisplayComponent<ElapsedTimeProps> {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<ClockSimvars>();
-        sub.on('ltsTest').whenChanged().handle((ltsTest) => this.ltsTest.set(ltsTest === 0));
+        sub.on('ltsTest').whenChanged().handle((ltsTest) => {
+            this.ltsState = ltsTest;
+            this.ltsTest.set(ltsTest === 0 && this.dc2IsPowered);
+        });
+
+        sub.on('dc2IsPowered').whenChanged().handle((dc2IsPowered) => {
+            this.dc2IsPowered = dc2IsPowered;
+            this.ltsTest.set(this.ltsState === 0 && dc2IsPowered);
+        });
 
         sub.on('dcHot1IsPowered').whenChanged().handle((dcHot1IsPowered) => {
             if (!dcHot1IsPowered) {

@@ -186,8 +186,8 @@
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE> (L:#SIMVAR_UNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE> (L:#SIMVAR_DOWNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE> (L:#SIMVAR_UNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE> (L:#SIMVAR_DOWNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -485,7 +485,7 @@
                     #GROUP_INDEX# -1 &gt; if{
                         (L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) #GROUP_INDEX# ==
                     }
-                    (L:A32NX_OVHD_INTLT_ANN) 0 == or
+                    (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>

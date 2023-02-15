@@ -152,11 +152,37 @@ export class PseudoFWC {
 
     /* FUEL */
 
+    private readonly centerFuelPump1Auto = Subject.create(false);
+
+    private readonly centerFuelPump2Auto = Subject.create(false);
+
+    private readonly centerFuelQuantity = Subject.create(0);
+
     private readonly fuelXFeedPBOn = Subject.create(false);
 
     private readonly leftOuterInnerValve = Subject.create(0);
 
+    private readonly leftFuelLow = Subject.create(false);
+
+    private readonly leftFuelLowConfirm = new NXLogicConfirmNode(30, true);
+
+    private readonly leftFuelPump1Auto = Subject.create(false);
+
+    private readonly leftFuelPump2Auto = Subject.create(false);
+
+    private readonly lrTankLow = Subject.create(false);
+
+    private readonly lrTankLowConfirm = new NXLogicConfirmNode(30, true);
+
     private readonly rightOuterInnerValve = Subject.create(0);
+
+    private readonly rightFuelLow = Subject.create(false);
+
+    private readonly rightFuelLowConfirm = new NXLogicConfirmNode(30, true);
+
+    private readonly rightFuelPump1Auto = Subject.create(false);
+
+    private readonly rightFuelPump2Auto = Subject.create(false);
 
     /* HYDRAULICS */
 
@@ -694,9 +720,25 @@ export class PseudoFWC {
         this.voiceVhf3.set(SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', 'number'));
 
         /* FUEL */
-        this.leftOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:4', 'Bool'));
+        const fuelGallonsToKg = SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilogram');
+        this.centerFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:1', 'Enum'));
+        this.centerFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:4', 'Enum'));
+        this.centerFuelQuantity.set(SimVar.GetSimVarValue('FUEL TANK CENTER QUANTITY', 'gallons') * fuelGallonsToKg);
         this.fuelXFeedPBOn.set(SimVar.GetSimVarValue('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool'));
+        this.leftOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:4', 'Bool'));
+        this.leftFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:2', 'Enum'));
+        this.leftFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:5', 'Enum'));
         this.rightOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:5', 'Bool'));
+        this.rightFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:3', 'Enum'));
+        this.rightFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:6', 'Enum'));
+
+        const leftInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK LEFT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
+        const rightInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK RIGHT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
+        const leftFuelLow = leftInnerFuelQuantity < 750;
+        const rightFuelLow = rightInnerFuelQuantity < 750;
+        this.lrTankLow.set(this.lrTankLowConfirm.write(leftFuelLow && rightFuelLow, deltaTime));
+        this.leftFuelLow.set(this.leftFuelLowConfirm.write(leftFuelLow && !this.lrTankLow.get(), deltaTime));
+        this.rightFuelLow.set(this.rightFuelLowConfirm.write(rightFuelLow && !this.lrTankLow.get(), deltaTime));
 
         /* F/CTL */
         const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
@@ -1727,6 +1769,68 @@ export class PseudoFWC {
             failure: 2,
             sysPage: 4,
             side: 'RIGHT',
+        },
+        2800145: { // L+R WING TK LO LVL
+            flightPhaseInhib: [3, 4, 5, 7, 8, 9],
+            simVarIsActive: this.lrTankLow,
+            whichCodeToReturn: () => [
+                0,
+                1,
+                !this.leftFuelPump1Auto.get() ? 2 : null,
+                !this.leftFuelPump2Auto.get() ? 3 : null,
+                this.centerFuelQuantity.get() > 250 && !this.centerFuelPump1Auto.get() ? 4 : null,
+                this.centerFuelQuantity.get() > 250 && !this.centerFuelPump1Auto.get() ? 5 : null,
+                this.rightFuelPump1Auto.get() ? null : 6,
+                this.rightFuelPump2Auto.get() ? null : 7,
+                this.centerFuelQuantity.get() > 250 && !this.centerFuelPump2Auto.get() ? 8 : null,
+                this.centerFuelQuantity.get() > 250 && !this.centerFuelPump2Auto.get() ? 9 : null,
+                !this.fuelXFeedPBOn.get() ? 10 : null,
+                !this.fuelXFeedPBOn.get() ? 11 : null,
+                this.fuelXFeedPBOn.get() ? 12 : null, // TODO: Gravity feed signals
+                this.fuelXFeedPBOn.get() ? 13 : null, // TODO: Gravity feed signals
+            ],
+            codesToReturn: ['280014501', '280014502', '280014503', '280014504', '280014505', '280014506', '280014507', '280014508', '280014509',
+                '280014510', '280014511', '280014512', '280014513', '280014514'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 5,
+            side: 'LEFT',
+        },
+        2800130: { // L WING TK LO LVL
+            flightPhaseInhib: [3, 4, 5, 7, 8, 9],
+            simVarIsActive: this.leftFuelLow,
+            whichCodeToReturn: () => [
+                0,
+                1,
+                !this.fuelXFeedPBOn.get() ? 2 : null,
+                !this.fuelXFeedPBOn.get() ? 3 : null,
+                !this.fuelXFeedPBOn.get() ? 4 : null,
+                this.leftFuelPump1Auto.get() ? 5 : null,
+                this.leftFuelPump2Auto.get() ? 6 : null,
+            ],
+            codesToReturn: ['280013001', '280013002', '280013003', '280013004', '280013005', '280013006', '280013007'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 5,
+            side: 'LEFT',
+        },
+        2800140: { // R WING TK LO LVL
+            flightPhaseInhib: [3, 4, 5, 7, 8, 9],
+            simVarIsActive: this.rightFuelLow,
+            whichCodeToReturn: () => [
+                0,
+                1,
+                !this.fuelXFeedPBOn.get() ? 2 : null,
+                !this.fuelXFeedPBOn.get() ? 3 : null,
+                !this.fuelXFeedPBOn.get() ? 4 : null,
+                this.rightFuelPump1Auto.get() ? 5 : null,
+                this.rightFuelPump2Auto.get() ? 6 : null,
+            ],
+            codesToReturn: ['280014001', '280014002', '280014003', '280014004', '280014005', '280014006', '280014007'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 5,
+            side: 'LEFT',
         },
     }
 
