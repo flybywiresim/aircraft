@@ -163,7 +163,7 @@ export class Datalink {
             this.communicationInterface = ActiveCommunicationInterface.None;
         }
 
-        if (this.waitedComUpdate <= 30000) {
+        if (this.waitedComUpdate >= 30000) {
             this.vdl.simulateTransmissionTimes(this.digitalInputs.FlightPhase);
             this.waitedComUpdate = 0;
         } else if (this.lastUpdateTime >= 0) {
