@@ -248,7 +248,7 @@ export class DatalinkOutputBus {
         receivedCpdlcMessage: null,
     };
 
-    constructor(private readonly bus: EventBus, private readonly synchronized: boolean) {
+    constructor(private readonly bus: EventBus) {
         this.subscriber = this.bus.getSubscriber<DatalinkMessages>();
 
         this.subscriber.on('receivedFreetextMessage').handle((data) => {

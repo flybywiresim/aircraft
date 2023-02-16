@@ -22,6 +22,7 @@ import { Atsu } from './ATSU';
 import { MailboxBus } from './databus/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
 import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
+import { EventBus } from 'msfssdk';
 
 /*
  * Defines the ATC system for CPDLC communication
@@ -120,9 +121,9 @@ export class Atc {
         this.poweredUp = false;
     }
 
-    constructor(atsu: Atsu) {
+    constructor(private readonly bus: EventBus, atsu: Atsu) {
         this.atsu = atsu;
-        this.mailboxBus = new MailboxBus(atsu, this);
+        this.mailboxBus = new MailboxBus(bus, atsu, this);
     }
 
     public async disconnect(): Promise<void> {

@@ -52,18 +52,18 @@ export class ClockInputBus {
         this.publisher = this.bus.getPublisher<ClockDataBusTypes>();
         this.subscriber = this.bus.getSubscriber<ClockSimvars>();
 
-        this.subscriber.on('msfsUtcYear').whenChanged().handle((year: number) => this.publisher.pub('utcYear', year));
-        this.subscriber.on('msfsUtcMonth').whenChanged().handle((month: number) => this.publisher.pub('utcMonth', month));
-        this.subscriber.on('msfsUtcDayOfMonth').whenChanged().handle((day: number) => this.publisher.pub('utcDayOfMonth', day));
-        this.subscriber.on('msfsUtcSeconds').whenChanged().handle((seconds: number) => {
+        this.subscriber.on('msfsUtcYear').handle((year: number) => this.publisher.pub('utcYear', year, false, false));
+        this.subscriber.on('msfsUtcMonth').handle((month: number) => this.publisher.pub('utcMonth', month, false, false));
+        this.subscriber.on('msfsUtcDayOfMonth').handle((day: number) => this.publisher.pub('utcDayOfMonth', day, false, false));
+        this.subscriber.on('msfsUtcSeconds').handle((seconds: number) => {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor(seconds / 60) % 60;
             const secondsOfMinute = Math.floor(seconds) - hours * 3600 + minutes * 60;
 
-            this.publisher.pub('utcHour', hours);
-            this.publisher.pub('utcMinute', minutes);
-            this.publisher.pub('utcSecond', secondsOfMinute);
-            this.publisher.pub('utcSecondsOfDay', seconds);
+            this.publisher.pub('utcHour', hours, false, false);
+            this.publisher.pub('utcMinute', minutes, false, false);
+            this.publisher.pub('utcSecond', secondsOfMinute, false, false);
+            this.publisher.pub('utcSecondsOfDay', seconds, false, false);
         });
     }
 

@@ -56,8 +56,8 @@ export class AtcMessageButtonInputBus {
     public initialize(): void {
         this.subscriber = this.bus.getSubscriber<AtcMessageButtonSimvars>();
 
-        this.subscriber.on('msfsButtonActive').whenChanged().handle((active: boolean) => this.buttonActive = active);
-        this.subscriber.on('msfsButtonPressed').whenChanged().handle((pressed: number) => {
+        this.subscriber.on('msfsButtonActive').handle((active: boolean) => this.buttonActive = active);
+        this.subscriber.on('msfsButtonPressed').handle((pressed: number) => {
             if (pressed) {
                 if (this.poweredUp && this.buttonActive && this.callbacks.onButtonPressed !== null) {
                     this.callbacks.onButtonPressed();

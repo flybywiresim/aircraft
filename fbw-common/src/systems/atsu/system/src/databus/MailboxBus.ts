@@ -36,11 +36,9 @@ class MailboxMessage {
 export class MailboxBus {
     private static MaxMailboxFileSize = 5;
 
-    private mailboxBus: EventBus = new EventBus();
+    private publisher: Publisher<AtsuMailboxMessages> = null;
 
-    private mailboxPublisher: Publisher<AtsuMailboxMessages> = null;
-
-    private mailboxSubscriber: EventSubscriber<AtsuMailboxMessages> = null;
+    private subscriber: EventSubscriber<AtsuMailboxMessages> = null;
 
     private atsu: Atsu = null;
 
@@ -64,13 +62,13 @@ export class MailboxBus {
         if (messages.length !== 0) {
             switch (messages[0].Type) {
             case AtsuMessageType.CPDLC:
-                this.mailboxPublisher.pub('cpdlcMessages', messages, true, false);
+                this.publisher.pub('cpdlcMessages', messages, true, false);
                 break;
             case AtsuMessageType.DCL:
-                this.mailboxPublisher.pub('dclMessages', messages as DclMessage[], true, false);
+                this.publisher.pub('dclMessages', messages as DclMessage[], true, false);
                 break;
             case AtsuMessageType.OCL:
-                this.mailboxPublisher.pub('oclMessages', messages as OclMessage[], true, false);
+                this.publisher.pub('oclMessages', messages as OclMessage[], true, false);
                 break;
             default:
                 break;
@@ -124,15 +122,15 @@ export class MailboxBus {
         return idx !== -1;
     }
 
-    constructor(atsu: Atsu, atc: Atc) {
+    constructor(private readonly bus: EventBus, atsu: Atsu, atc: Atc) {
         this.atsu = atsu;
         this.atc = atc;
 
         this.atsu.digitalInputs.atcMessageButtonBus.addDataCallback('onButtonPressed', () => this.cleanupNotifications());
-        this.mailboxPublisher = this.mailboxBus.getPublisher<AtsuMailboxMessages>();
-        this.mailboxSubscriber = this.mailboxBus.getSubscriber<AtsuMailboxMessages>();
+        this.publisher = this.bus.getPublisher<AtsuMailboxMessages>();
+        this.subscriber = this.bus.getSubscriber<AtsuMailboxMessages>();
 
-        this.mailboxSubscriber.on('deleteMessage').handle((uid: number) => {
+        this.subscriber.on('deleteMessage').handle((uid: number) => {
             let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 this.uplinkMessages[idx].forEach((message) => {
@@ -148,7 +146,7 @@ export class MailboxBus {
             }
         });
 
-        this.mailboxSubscriber.on('uplinkResponse').handle((data: { uid: number; responseId: number }) => {
+        this.subscriber.on('uplinkResponse').handle((data: { uid: number; responseId: number }) => {
             if (!this.poweredUp) return;
 
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === data.uid);
@@ -161,7 +159,7 @@ export class MailboxBus {
             }
         });
 
-        this.mailboxSubscriber.on('downlinkTransmit').handle((uid: number) => {
+        this.subscriber.on('downlinkTransmit').handle((uid: number) => {
             if (!this.poweredUp) return;
 
             let idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
@@ -196,7 +194,7 @@ export class MailboxBus {
             }
         });
 
-        this.mailboxSubscriber.on('modifyMessage').handle((uid: number) => {
+        this.subscriber.on('modifyMessage').handle((uid: number) => {
             if (!this.poweredUp) return;
 
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
@@ -208,28 +206,28 @@ export class MailboxBus {
             }
         });
 
-        this.mailboxSubscriber.on('printMessage').handle((uid: number) => {
+        this.subscriber.on('printMessage').handle((uid: number) => {
             if (!this.poweredUp) return;
 
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
-                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.Printing, true, false);
+                this.publisher.pub('systemStatus', MailboxStatusMessage.Printing, true, false);
                 this.atsu.printMessage(message);
                 setTimeout(() => {
                     if (this.currentMessageStatus(uid) === MailboxStatusMessage.Printing) {
-                        this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.NoMessage, true, false);
+                        this.publisher.pub('systemStatus', MailboxStatusMessage.NoMessage, true, false);
                     }
                 }, 4500);
             }
         });
 
-        this.mailboxSubscriber.on('closeMessage').handle((uid: number) => {
+        this.subscriber.on('closeMessage').handle((uid: number) => {
             if (!this.closeMessage(this.uplinkMessages, this.bufferedUplinkMessages, uid, true)) {
                 this.closeMessage(this.downlinkMessages, this.bufferedDownlinkMessages, uid, false);
             }
         });
 
-        this.mailboxSubscriber.on('updateMessageMonitoring').handle((uid: number) => {
+        this.subscriber.on('updateMessageMonitoring').handle((uid: number) => {
             if (!this.poweredUp) return;
 
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
@@ -237,22 +235,22 @@ export class MailboxBus {
             this.update(message as CpdlcMessage);
         });
 
-        this.mailboxSubscriber.on('stopMessageMonitoring').handle((uid: number) => {
+        this.subscriber.on('stopMessageMonitoring').handle((uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
             this.update(message as CpdlcMessage);
         });
 
-        this.mailboxSubscriber.on('recallMessage').handle(() => {
+        this.subscriber.on('recallMessage').handle(() => {
             if (!this.poweredUp) return;
 
             if (!this.lastClosedMessage) {
-                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.RecallEmpty, true, false);
+                this.publisher.pub('systemStatus', MailboxStatusMessage.RecallEmpty, true, false);
             } else {
                 const currentStamp = new Date().getTime();
                 // timed out after five minutes
                 if (currentStamp - this.lastClosedMessage[1] > 300000) {
-                    this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.RecallEmpty, true, false);
+                    this.publisher.pub('systemStatus', MailboxStatusMessage.RecallEmpty, true, false);
                     this.lastClosedMessage = undefined;
                 } else {
                     const messages : CpdlcMessage[] = [];
@@ -276,7 +274,7 @@ export class MailboxBus {
             }
         });
 
-        this.mailboxSubscriber.on('readMessage').handle((uid: number) => {
+        this.subscriber.on('readMessage').handle((uid: number) => {
             if (!this.poweredUp) return;
 
             const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
@@ -286,7 +284,7 @@ export class MailboxBus {
             }
         });
 
-        this.mailboxSubscriber.on('invertSemanticResponse').handle((uid: number) => {
+        this.subscriber.on('invertSemanticResponse').handle((uid: number) => {
             if (!this.poweredUp) return;
 
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
@@ -357,11 +355,11 @@ export class MailboxBus {
     }
 
     public reset() {
-        this.mailboxPublisher.pub('resetSystem', true, true, false);
+        this.publisher.pub('resetSystem', true, true, false);
     }
 
     public setAtcLogonMessage(message: string) {
-        this.mailboxPublisher.pub('logonMessage', message, true, false);
+        this.publisher.pub('logonMessage', message, true, false);
     }
 
     public enqueue(messages: AtsuMessage[]) {
@@ -389,11 +387,11 @@ export class MailboxBus {
         } else {
             if (mailboxBlocks[0].Direction === AtsuMessageDirection.Downlink) {
                 this.bufferedDownlinkMessages.push(mailboxBlocks);
-                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.MaximumDownlinkMessages, true, false);
+                this.publisher.pub('systemStatus', MailboxStatusMessage.MaximumDownlinkMessages, true, false);
                 this.atsu.publishAtsuStatusCode(AtsuStatusCodes.MailboxFull);
             } else {
                 this.bufferedUplinkMessages.push(mailboxBlocks);
-                this.mailboxPublisher.pub('systemStatus', MailboxStatusMessage.AnswerRequired, true, false);
+                this.publisher.pub('systemStatus', MailboxStatusMessage.AnswerRequired, true, false);
             }
             return;
         }
@@ -452,11 +450,11 @@ export class MailboxBus {
         // the assumption is that the first message in the block is the UID for the complete block
         let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
-            this.mailboxPublisher.pub('deleteMessage', uid, true, false);
+            this.publisher.pub('deleteMessage', uid, true, false);
         } else {
             idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx !== -1) {
-                this.mailboxPublisher.pub('deleteMessage', uid, true, false);
+                this.publisher.pub('deleteMessage', uid, true, false);
             }
         }
     }
@@ -466,14 +464,14 @@ export class MailboxBus {
         const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (uplinkIdx !== -1) {
             this.uplinkMessages[uplinkIdx][0].Status = status;
-            this.mailboxPublisher.pub('messageStatus', { uid, status }, true, false);
+            this.publisher.pub('messageStatus', { uid, status }, true, false);
             return;
         }
 
         const downlinkIdx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (downlinkIdx !== -1) {
             this.downlinkMessages[downlinkIdx][0].Status = status;
-            this.mailboxPublisher.pub('messageStatus', { uid, status }, true, false);
+            this.publisher.pub('messageStatus', { uid, status }, true, false);
         }
     }
 

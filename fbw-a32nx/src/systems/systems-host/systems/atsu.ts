@@ -20,7 +20,7 @@ export class AtsuSystem {
         this.datalink = new Datalink(this.bus, false, this.digitalInputs, this.digitalOutputs);
 
         this.powerSupply = this.bus.getSubscriber<PowerSupplyBusTypes>();
-        this.powerSupply.on('acBus1').whenChanged().handle((powered: boolean) => {
+        this.powerSupply.on('acBus1').handle((powered: boolean) => {
             if (powered) {
                 this.atsu.powerUp();
                 this.digitalInputs.powerUp();

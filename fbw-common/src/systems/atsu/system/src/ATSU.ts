@@ -255,10 +255,10 @@ export class Atsu {
         this.digitalOutputs = digitalOutputs;
 
         this.datalink = new DatalinkInputBus(bus, false);
-        this.datalinkOutputBus = new DatalinkOutputBus(bus, false);
+        this.datalinkOutputBus = new DatalinkOutputBus(bus);
         this.ats623 = new ATS623(this);
         this.aoc = new Aoc(this);
-        this.atc = new Atc(this);
+        this.atc = new Atc(bus, this);
 
         // register all input callbacks
         this.digitalInputs.fmsBus.addDataCallback('routeData', (route) => this.newRouteReceived(route));
