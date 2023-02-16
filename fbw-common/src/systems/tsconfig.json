@@ -4,7 +4,7 @@
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "typeRoots": [
-      "../../../fbw-common/src/typings",
+      "../typings",
       "../../../node_modules/@types"
     ],
     "moduleResolution": "node",
