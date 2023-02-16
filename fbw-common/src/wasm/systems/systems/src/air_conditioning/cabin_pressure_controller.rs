@@ -233,67 +233,64 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
         match self.pressure_schedule_manager {
             Some(PressureScheduleManager::Ground(_)) => {
-                if self.cabin_delta_p() > error_margin {
-                    Velocity::new::<foot_per_minute>(C::DEPRESS_RATE)
+                Velocity::new::<foot_per_minute>(if self.cabin_delta_p() > error_margin {
+                    C::DEPRESS_RATE
                 } else if self.cabin_delta_p() < -error_margin {
-                    Velocity::new::<foot_per_minute>(-C::DEPRESS_RATE)
+                    -C::DEPRESS_RATE
                 } else {
-                    Velocity::new::<foot_per_minute>(0.)
-                }
+                    0.
+                })
             }
-            Some(PressureScheduleManager::TakeOff(_)) => {
+            Some(PressureScheduleManager::TakeOff(_)) => Velocity::new::<foot_per_minute>(
                 if self.cabin_delta_p() < Pressure::new::<psi>(C::MAX_TAKEOFF_DELTA_P) {
-                    Velocity::new::<foot_per_minute>(C::TAKEOFF_RATE)
+                    C::TAKEOFF_RATE
                 } else {
-                    Velocity::new::<foot_per_minute>(0.)
-                }
-            }
+                    0.
+                },
+            ),
             Some(PressureScheduleManager::ClimbInternal(_)) => {
                 // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
-                let target_vs = Velocity::new::<foot_per_minute>(
-                    self.exterior_vertical_speed.get::<foot_per_minute>()
-                        * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
-                );
-                if self.cabin_delta_p() >= Pressure::new::<psi>(C::MAX_CLIMB_DELTA_P) {
-                    Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE)
-                } else if self.cabin_altitude() >= Length::new::<foot>(C::MAX_CLIMB_CABIN_ALTITUDE)
-                {
-                    Velocity::new::<foot_per_minute>(0.)
-                } else if target_vs <= Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE)
-                } else {
-                    target_vs
-                }
+                let target_vs_fpm = self.exterior_vertical_speed.get::<foot_per_minute>()
+                    * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09);
+                Velocity::new::<foot_per_minute>(
+                    if self.cabin_delta_p() >= Pressure::new::<psi>(C::MAX_CLIMB_DELTA_P) {
+                        C::MAX_CLIMB_RATE
+                    } else if self.cabin_altitude()
+                        >= Length::new::<foot>(C::MAX_CLIMB_CABIN_ALTITUDE)
+                    {
+                        0.
+                    } else if target_vs_fpm <= C::MAX_DESCENT_RATE {
+                        C::MAX_DESCENT_RATE
+                    } else {
+                        target_vs_fpm
+                    },
+                )
             }
             Some(PressureScheduleManager::Cruise(_)) => Velocity::new::<foot_per_minute>(0.),
             Some(PressureScheduleManager::DescentInternal(_)) => {
                 let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev(context).get::<foot>();
-                let target_vs = Velocity::new::<foot_per_minute>(
-                    self.get_int_diff_with_ldg_elev().get::<foot>()
-                        * self.exterior_vertical_speed.get::<foot_per_minute>()
-                        / ext_diff_with_ldg_elev,
-                );
-                if ext_diff_with_ldg_elev <= 0. {
-                    Velocity::new::<foot_per_minute>(0.)
-                } else if target_vs <= Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE)
-                } else if target_vs
-                    >= Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE_IN_DESCENT)
-                {
-                    Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE_IN_DESCENT)
+                let target_vs_fpm = self.get_int_diff_with_ldg_elev().get::<foot>()
+                    * self.exterior_vertical_speed.get::<foot_per_minute>()
+                    / ext_diff_with_ldg_elev;
+                Velocity::new::<foot_per_minute>(if ext_diff_with_ldg_elev <= 0. {
+                    0.
+                } else if target_vs_fpm <= C::MAX_DESCENT_RATE {
+                    C::MAX_DESCENT_RATE
+                } else if target_vs_fpm >= C::MAX_CLIMB_RATE_IN_DESCENT {
+                    C::MAX_CLIMB_RATE_IN_DESCENT
                 } else {
-                    target_vs
-                }
+                    target_vs_fpm
+                })
             }
-            Some(PressureScheduleManager::Abort(_)) => {
+            Some(PressureScheduleManager::Abort(_)) => Velocity::new::<foot_per_minute>(
                 if self.cabin_altitude()
                     > self.departure_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF)
                 {
-                    Velocity::new::<foot_per_minute>(C::MAX_ABORT_DESCENT_RATE)
+                    C::MAX_ABORT_DESCENT_RATE
                 } else {
-                    Velocity::new::<foot_per_minute>(0.)
-                }
-            }
+                    0.
+                },
+            ),
             None => Velocity::new::<foot_per_minute>(0.),
         }
     }

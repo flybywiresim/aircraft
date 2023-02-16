@@ -511,11 +511,11 @@ impl<const ZONES: usize> ZoneController<ZONES> {
             // If unpowered or failed, the pack controller would take over and deliver a fixed 20deg
             // for the cockpit and 10 for the cabin
             // Simulated here until packs are modelled
-            if self.zone_id == 0 {
-                ThermodynamicTemperature::new::<degree_celsius>(20.)
+            ThermodynamicTemperature::new::<degree_celsius>(if self.zone_id == 0 {
+                20.
             } else {
-                ThermodynamicTemperature::new::<degree_celsius>(10.)
-            }
+                10.
+            })
         } else {
             self.calculate_duct_temp_demand(context, pressurization, zone_measured_temperature)
         };
@@ -553,62 +553,66 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         &self,
         zone_measured_temperature: ThermodynamicTemperature,
     ) -> ThermodynamicTemperature {
-        if zone_measured_temperature
-            > ThermodynamicTemperature::new::<degree_celsius>(
-                Self::UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS,
-            )
-        {
-            ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN)
-        } else if zone_measured_temperature
-            < ThermodynamicTemperature::new::<degree_celsius>(
-                Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
-            )
-        {
-            ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
-        } else {
-            let interpolation = (Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN
-                - Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
-                / (Self::UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
-                    - Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
-                * (zone_measured_temperature.get::<kelvin>()
-                    - ThermodynamicTemperature::new::<degree_celsius>(
-                        Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
-                    )
-                    .get::<kelvin>())
-                + Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
-            ThermodynamicTemperature::new::<kelvin>(interpolation)
-        }
+        ThermodynamicTemperature::new::<kelvin>(
+            if zone_measured_temperature
+                > ThermodynamicTemperature::new::<degree_celsius>(
+                    Self::UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS,
+                )
+            {
+                Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN
+            } else if zone_measured_temperature
+                < ThermodynamicTemperature::new::<degree_celsius>(
+                    Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+                )
+            {
+                Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN
+            } else {
+                let interpolation = (Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN
+                    - Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
+                    / (Self::UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
+                        - Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
+                    * (zone_measured_temperature.get::<kelvin>()
+                        - ThermodynamicTemperature::new::<degree_celsius>(
+                            Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+                        )
+                        .get::<kelvin>())
+                    + Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
+                interpolation
+            },
+        )
     }
 
     fn calculate_duct_temp_lower_limit(
         &self,
         zone_measured_temperature: ThermodynamicTemperature,
     ) -> ThermodynamicTemperature {
-        if zone_measured_temperature
-            > ThermodynamicTemperature::new::<degree_celsius>(
-                Self::LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS,
-            )
-        {
-            ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN)
-        } else if zone_measured_temperature
-            < ThermodynamicTemperature::new::<degree_celsius>(
-                Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
-            )
-        {
-            ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
-        } else {
-            let interpolation = (Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN
-                - Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
-                / (Self::LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
-                    - Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
-                * (zone_measured_temperature.get::<kelvin>()
-                    - ThermodynamicTemperature::new::<degree_celsius>(
-                        Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
-                    )
-                    .get::<kelvin>())
-                + Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
-            ThermodynamicTemperature::new::<kelvin>(interpolation)
-        }
+        ThermodynamicTemperature::new::<kelvin>(
+            if zone_measured_temperature
+                > ThermodynamicTemperature::new::<degree_celsius>(
+                    Self::LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS,
+                )
+            {
+                Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN
+            } else if zone_measured_temperature
+                < ThermodynamicTemperature::new::<degree_celsius>(
+                    Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+                )
+            {
+                Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN
+            } else {
+                let interpolation = (Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN
+                    - Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
+                    / (Self::LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
+                        - Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
+                    * (zone_measured_temperature.get::<kelvin>()
+                        - ThermodynamicTemperature::new::<degree_celsius>(
+                            Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+                        )
+                        .get::<kelvin>())
+                    + Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
+                interpolation
+            },
+        )
     }
 
     fn duct_demand_temperature(&self) -> ThermodynamicTemperature {
@@ -873,11 +877,11 @@ impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowContr
     fn signal(&self) -> Option<PackFlowValveSignal> {
         // Only send signal to move the valve if the computer is powered
         if !matches!(self.operation_mode, ACSCActiveComputer::None) {
-            let target_open: Ratio = if self.should_open_fcv {
-                Ratio::new::<ratio>(self.pid.output())
+            let target_open: Ratio = Ratio::new::<ratio>(if self.should_open_fcv {
+                self.pid.output()
             } else {
-                Ratio::new::<ratio>(0.)
-            };
+                0.
+            });
             Some(PackFlowValveSignal::new(target_open))
         } else {
             None

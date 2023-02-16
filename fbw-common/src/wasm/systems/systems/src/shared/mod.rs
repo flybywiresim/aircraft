@@ -743,11 +743,7 @@ impl Average for Pressure {
             count += 1;
         }
 
-        if count > 0 {
-            Pressure::new::<hectopascal>(sum / (count as f64))
-        } else {
-            Pressure::new::<hectopascal>(0.)
-        }
+        Pressure::new::<hectopascal>(if count > 0 { sum / (count as f64) } else { 0. })
     }
 }
 
@@ -756,19 +752,15 @@ impl Average for MassRate {
     where
         I: Iterator<Item = MassRate>,
     {
-        let mut sum: MassRate = MassRate::new::<kilogram_per_second>(0.);
+        let mut sum = 0.0;
         let mut count: usize = 0;
 
         for v in iter {
-            sum += v;
+            sum += v.get::<kilogram_per_second>();
             count += 1;
         }
 
-        if count > 0 {
-            sum / (count as f64)
-        } else {
-            MassRate::new::<kilogram_per_second>(0.)
-        }
+        MassRate::new::<kilogram_per_second>(if count > 0 { sum / (count as f64) } else { 0. })
     }
 }
 
@@ -785,11 +777,7 @@ impl Average for ThermodynamicTemperature {
             count += 1;
         }
 
-        if count > 0 {
-            ThermodynamicTemperature::new::<kelvin>(sum / (count as f64))
-        } else {
-            ThermodynamicTemperature::new::<kelvin>(0.)
-        }
+        ThermodynamicTemperature::new::<kelvin>(if count > 0 { sum / (count as f64) } else { 0. })
     }
 }
 
@@ -798,19 +786,15 @@ impl Average for Ratio {
     where
         I: Iterator<Item = Ratio>,
     {
-        let mut sum: Ratio = Ratio::new::<ratio>(0.);
+        let mut sum = 0.0;
         let mut count: usize = 0;
 
         for v in iter {
-            sum += v;
+            sum += v.get::<ratio>();
             count += 1;
         }
 
-        if count > 0 {
-            sum / (count as f64)
-        } else {
-            Ratio::new::<ratio>(0.)
-        }
+        Ratio::new::<ratio>(if count > 0 { sum / (count as f64) } else { 0. })
     }
 }
 
