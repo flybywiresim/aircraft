@@ -14,13 +14,13 @@ import {
     PositionReportData,
     AtsuTimestamp,
 } from '@atsu/common';
+import { DatalinkInputBus, DatalinkOutputBus } from '@atsu/communication';
 import { EventBus } from 'msfssdk';
 import { Aoc } from './AOC';
 import { Atc } from './ATC';
 import { ATS623 } from './components/ATS623';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
-import { DatalinkInputBus, DatalinkOutputBus } from './databus/DatalinkBus';
 
 /**
  * Defines the ATSU

@@ -10,20 +10,18 @@ import {
     AtsuMessageNetwork,
     AtsuMessageType,
     AtisMessage,
-    AtisType,
     MetarMessage,
     TafMessage,
     WeatherMessage,
     FreetextMessage,
 } from '@atsu/common';
+import { DigitalInputs, DigitalOutputs } from '@atsu/system';
 import { NXDataStore } from '@shared/persistence';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
-import { DatalinkMessages, DatalinkOutputBus } from '../databus/DatalinkBus';
-import { DigitalInputs } from '../DigitalInputs';
-import { DigitalOutputs } from '../DigitalOutputs';
+import { DatalinkMessages } from './databus/DatalinkBus';
 
 enum ActiveCommunicationInterface {
     None,

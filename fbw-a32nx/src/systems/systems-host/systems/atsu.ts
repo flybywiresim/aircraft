@@ -1,4 +1,5 @@
-import { Atsu, Datalink, DigitalInputs, DigitalOutputs } from '@atsu/system';
+import { Datalink } from '@atsu/communication';
+import { Atsu, DigitalInputs, DigitalOutputs } from '@atsu/system';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 
