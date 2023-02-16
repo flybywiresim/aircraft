@@ -121,7 +121,7 @@ export class Atc {
         this.poweredUp = false;
     }
 
-    constructor(private readonly bus: EventBus, atsu: Atsu) {
+    constructor(bus: EventBus, atsu: Atsu) {
         this.atsu = atsu;
         this.mailboxBus = new MailboxBus(bus, atsu, this);
     }
