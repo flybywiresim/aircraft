@@ -27,7 +27,7 @@ use uom::si::{f64::*, pressure::hectopascal, ratio::percent, velocity::knot};
 
 pub(super) struct A380AirConditioning {
     a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3, 2>,
+    a320_air_conditioning_system: AirConditioningSystem<3, 2, 4>,
     a320_pressurization_system: A320PressurizationSystem,
 
     pressurization_updater: MaxStepLoop,
@@ -65,10 +65,10 @@ impl A380AirConditioning {
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsSignalInterface,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization_overhead: &A380PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
@@ -95,11 +95,14 @@ impl A380AirConditioning {
                 &self.a320_pressurization_system,
             );
 
+            // Temporary array until pressurization is done for A380
+            let temp_engines = [engines[0], engines[1]];
+
             self.a320_pressurization_system.update(
                 &context.with_delta(cur_time_step),
                 adirs,
                 pressurization_overhead,
-                engines,
+                temp_engines,
                 lgciu,
                 &self.a320_cabin,
             );
@@ -112,8 +115,8 @@ impl A380AirConditioning {
     }
 }
 
-impl PackFlowControllers<3> for A380AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+impl PackFlowControllers<3, 4> for A380AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 4> {
         self.a320_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
@@ -703,7 +706,7 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<3>,
+            pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -868,7 +871,7 @@ mod tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<3>,
+            pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
         ) {
             self.pack_flow_valve.update_open_amount(
                 &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
@@ -929,9 +932,14 @@ mod tests {
             }
         }
     }
-    impl EngineBleedPushbutton for TestPneumaticOverhead {
-        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
-            [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
+    impl EngineBleedPushbutton<4> for TestPneumaticOverhead {
+        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 4] {
+            [
+                self.engine_1_bleed.is_auto(),
+                self.engine_2_bleed.is_auto(),
+                self.engine_1_bleed.is_auto(),
+                self.engine_2_bleed.is_auto(),
+            ]
         }
     }
 
@@ -1076,7 +1084,12 @@ mod tests {
             self.a380_cabin_air.update(
                 context,
                 &self.adirs,
-                [&self.engine_1, &self.engine_2],
+                [
+                    &self.engine_1,
+                    &self.engine_2,
+                    &self.engine_1,
+                    &self.engine_2,
+                ],
                 &self.engine_fire_push_buttons,
                 &self.pneumatic,
                 &self.pneumatic_overhead,

@@ -22,8 +22,8 @@ use systems::{
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
         brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
-            BrakeCircuitController,
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
+            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
@@ -39,10 +39,9 @@ use systems::{
         },
         pumps::PumpCharacteristics,
         trimmable_horizontal_stabilizer::{
-            ManualPitchTrimController, PitchTrimActuatorController,
-            TrimmableHorizontalStabilizerAssembly,
+            TrimmableHorizontalStabilizerActuator, TrimmableHorizontalStabilizerMotorController,
         },
-        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
+        Accumulator, ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PriorityValve,
         PumpController, Reservoir,
     },
@@ -1570,9 +1569,8 @@ pub(super) struct A380Hydraulic {
     gear_system_hydraulic_controller: A380GearHydraulicController,
     gear_system: HydraulicGearSystem,
 
-    trim_controller: A380TrimInputController,
-
-    trim_assembly: TrimmableHorizontalStabilizerAssembly,
+    ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController,
+    ths: TrimmableHorizontalStabilizerActuator,
 
     epump_auto_logic: A380ElectricPumpAutoLogic,
 
@@ -1605,10 +1603,18 @@ impl A380Hydraulic {
 
     const EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
-    // Refresh rate of core hydraulic simulation
+    const ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
+                                                                    // Refresh rate of core hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub fn new(context: &mut InitContext) -> A380Hydraulic {
+        let brake_accumulator_charac = BrakeAccumulatorCharacteristics::new(
+            Volume::new::<gallon>(1.0),
+            Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
+            Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Ratio::new::<ratio>(0.01),
+        );
+
         A380Hydraulic {
             nose_steering: SteeringActuator::new(
                 context,
@@ -1776,10 +1782,9 @@ impl A380Hydraulic {
             braking_circuit_norm: BrakeCircuit::new(
                 context,
                 "NORM",
-                Volume::new::<gallon>(0.),
-                Volume::new::<gallon>(0.),
+                HydraulicColor::Green,
+                None,
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1788,10 +1793,9 @@ impl A380Hydraulic {
             braking_circuit_altn: BrakeCircuit::new(
                 context,
                 "ALTN",
-                Volume::new::<gallon>(1.0),
-                Volume::new::<gallon>(0.4),
+                HydraulicColor::Yellow,
+                Some(Accumulator::new_brake_accumulator(brake_accumulator_charac)),
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A380BrakingForce::new(context),
@@ -1860,17 +1864,17 @@ impl A380Hydraulic {
             gear_system_hydraulic_controller: A380GearHydraulicController::new(),
             gear_system: A380GearSystemFactory::a380_gear_system(context),
 
-            trim_controller: A380TrimInputController::new(context),
-            trim_assembly: TrimmableHorizontalStabilizerAssembly::new(
+            ths_system_controller: TrimmableHorizontalStabilizerSystemHydraulicController::new(
                 context,
-                Angle::new::<degree>(360. * -1.4),
-                Angle::new::<degree>(360. * 6.13),
-                Angle::new::<degree>(360. * -1.87),
-                Angle::new::<degree>(360. * 8.19), // 1.87 rotations down 6.32 up,
+            ),
+            ths: TrimmableHorizontalStabilizerActuator::new(
+                context,
+                Angle::new::<degree>(-2.),
+                Angle::new::<degree>(12.),
                 AngularVelocity::new::<revolution_per_minute>(5000.),
-                Ratio::new::<ratio>(2035. / 6.13),
-                Angle::new::<degree>(-4.),
-                Angle::new::<degree>(17.5),
+                Pressure::new::<psi>(5000.),
+                Volume::new::<cubic_inch>(0.4), // This value is just copied from the A320s THS. No idea about the real value
+                0.00005,
             ),
 
             epump_auto_logic: A380ElectricPumpAutoLogic::default(),
@@ -1988,10 +1992,9 @@ impl A380Hydraulic {
             &self.gear_system_gravity_extension_controller,
         );
 
-        self.trim_assembly.update(
+        self.ths.update(
             context,
-            &self.trim_controller,
-            &self.trim_controller,
+            self.ths_system_controller.controllers(),
             [
                 self.green_circuit
                     .system_section()
@@ -2133,6 +2136,8 @@ impl A380Hydraulic {
         self.aileron_system_controller.update();
 
         self.elevator_system_controller.update();
+
+        self.ths_system_controller.update();
 
         self.rudder_system_controller.update();
 
@@ -2328,7 +2333,7 @@ impl A380Hydraulic {
         }
 
         self.green_circuit
-            .update_system_actuator_volumes(self.trim_assembly.left_motor());
+            .update_system_actuator_volumes(self.ths.left_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -2433,7 +2438,7 @@ impl A380Hydraulic {
             .update_system_actuator_volumes(self.right_spoilers.actuator(6));
 
         self.yellow_circuit
-            .update_system_actuator_volumes(self.trim_assembly.right_motor());
+            .update_system_actuator_volumes(self.ths.right_motor());
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
@@ -2798,8 +2803,8 @@ impl SimulationElement for A380Hydraulic {
             .accept(visitor);
         self.gear_system.accept(visitor);
 
-        self.trim_controller.accept(visitor);
-        self.trim_assembly.accept(visitor);
+        self.ths_system_controller.accept(visitor);
+        self.ths.accept(visitor);
 
         self.tilting_gears.accept(visitor);
 
@@ -5664,6 +5669,123 @@ impl SimulationElement for ElevatorSystemHydraulicController {
 }
 
 #[derive(Clone, Copy, PartialEq)]
+struct TrimmableHorizontalStabilizerMotorElectricalController {
+    should_motor_activate: bool,
+    requested_position: Angle,
+}
+impl TrimmableHorizontalStabilizerMotorElectricalController {
+    fn new() -> Self {
+        Self {
+            should_motor_activate: false,
+
+            requested_position: Angle::default(),
+        }
+    }
+
+    fn set_mode(&mut self, should_motor_activate: bool) {
+        self.should_motor_activate = should_motor_activate;
+    }
+
+    /// Receives a [0;1] position request, 0 is down 1 is up
+    fn set_requested_position(&mut self, requested_position: Angle) {
+        self.requested_position = requested_position;
+    }
+}
+impl TrimmableHorizontalStabilizerMotorController
+    for TrimmableHorizontalStabilizerMotorElectricalController
+{
+    fn motor_should_activate(&self) -> bool {
+        self.should_motor_activate
+    }
+
+    fn requested_position(&self) -> Angle {
+        self.requested_position
+    }
+}
+
+struct TrimmableHorizontalStabilizerSystemHydraulicController {
+    ths_green_actuator_solenoid_id: VariableIdentifier,
+    ths_yellow_actuator_solenoid_id: VariableIdentifier,
+
+    ths_green_actuator_position_demand_id: VariableIdentifier,
+    ths_yellow_actuator_position_demand_id: VariableIdentifier,
+
+    position_requests_from_fbw: [Angle; 2],
+    solenoid_energized_from_fbw: [bool; 2],
+
+    controllers: [TrimmableHorizontalStabilizerMotorElectricalController; 2],
+}
+impl TrimmableHorizontalStabilizerSystemHydraulicController {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            ths_green_actuator_solenoid_id: context
+                .get_identifier("THS_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            ths_yellow_actuator_solenoid_id: context
+                .get_identifier("THS_YELLOW_SERVO_SOLENOID_ENERGIZED".to_owned()),
+
+            ths_green_actuator_position_demand_id: context
+                .get_identifier("THS_GREEN_COMMANDED_POSITION".to_owned()),
+            ths_yellow_actuator_position_demand_id: context
+                .get_identifier("THS_YELLOW_COMMANDED_POSITION".to_owned()),
+
+            position_requests_from_fbw: [Angle::default(); 2],
+            solenoid_energized_from_fbw: [false; 2],
+
+            // Controllers are in green->yellow order
+            controllers: [
+                TrimmableHorizontalStabilizerMotorElectricalController::new(),
+                TrimmableHorizontalStabilizerMotorElectricalController::new(),
+            ],
+        }
+    }
+
+    fn controllers(&self) -> &[TrimmableHorizontalStabilizerMotorElectricalController; 2] {
+        &self.controllers
+    }
+
+    fn update(&mut self) {
+        self.update_ths_controllers_positions();
+        self.update_ths_controllers_solenoids();
+    }
+
+    fn update_ths_controllers_positions(&mut self) {
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Green as usize]
+            .set_requested_position(
+                self.position_requests_from_fbw
+                    [TrimmableHorizontalStabilizerMotorPosition::Green as usize],
+            );
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Yellow as usize]
+            .set_requested_position(
+                self.position_requests_from_fbw
+                    [TrimmableHorizontalStabilizerMotorPosition::Yellow as usize],
+            );
+    }
+
+    fn update_ths_controllers_solenoids(&mut self) {
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Green as usize].set_mode(
+            self.solenoid_energized_from_fbw
+                [TrimmableHorizontalStabilizerMotorPosition::Green as usize],
+        );
+        self.controllers[TrimmableHorizontalStabilizerMotorPosition::Yellow as usize].set_mode(
+            self.solenoid_energized_from_fbw
+                [TrimmableHorizontalStabilizerMotorPosition::Yellow as usize],
+        );
+    }
+}
+impl SimulationElement for TrimmableHorizontalStabilizerSystemHydraulicController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.position_requests_from_fbw = [
+            -Angle::new::<degree>(reader.read(&self.ths_green_actuator_position_demand_id)),
+            -Angle::new::<degree>(reader.read(&self.ths_yellow_actuator_position_demand_id)),
+        ];
+        self.solenoid_energized_from_fbw = [
+            reader.read(&self.ths_green_actuator_solenoid_id),
+            reader.read(&self.ths_yellow_actuator_solenoid_id),
+        ];
+    }
+}
+
+#[derive(Clone, Copy, PartialEq)]
 struct RudderController {
     mode: LinearActuatorMode,
     electric_mode_active: bool,
@@ -5989,6 +6111,11 @@ enum ElevatorActuatorPosition {
 enum ElevatorPanelPosition {
     Outward = 0,
     Inward = 1,
+}
+
+enum TrimmableHorizontalStabilizerMotorPosition {
+    Green = 0,
+    Yellow = 1,
 }
 
 struct AileronAssembly {
@@ -6534,86 +6661,6 @@ impl SimulationElement for A380GravityExtension {
         self.handle_angle = Angle::new::<degree>(handle_percent * 3.6)
             .max(Angle::new::<degree>(0.))
             .min(Angle::new::<degree>(360. * 3.));
-    }
-}
-
-struct A380TrimInputController {
-    motor1_active_id: VariableIdentifier,
-    motor2_active_id: VariableIdentifier,
-    motor3_active_id: VariableIdentifier,
-
-    motor1_position_id: VariableIdentifier,
-    motor2_position_id: VariableIdentifier,
-    motor3_position_id: VariableIdentifier,
-
-    manual_control_active_id: VariableIdentifier,
-    manual_control_speed_id: VariableIdentifier,
-
-    motor_active: [bool; 3],
-    motor_position: [Angle; 3],
-
-    manual_control: bool,
-    manual_control_speed: AngularVelocity,
-}
-impl A380TrimInputController {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            motor1_active_id: context.get_identifier("THS_1_ACTIVE_MODE_COMMANDED".to_owned()),
-            motor2_active_id: context.get_identifier("THS_2_ACTIVE_MODE_COMMANDED".to_owned()),
-            motor3_active_id: context.get_identifier("THS_3_ACTIVE_MODE_COMMANDED".to_owned()),
-
-            motor1_position_id: context.get_identifier("THS_1_COMMANDED_POSITION".to_owned()),
-            motor2_position_id: context.get_identifier("THS_2_COMMANDED_POSITION".to_owned()),
-            motor3_position_id: context.get_identifier("THS_3_COMMANDED_POSITION".to_owned()),
-
-            manual_control_active_id: context
-                .get_identifier("THS_MANUAL_CONTROL_ACTIVE".to_owned()),
-            manual_control_speed_id: context.get_identifier("THS_MANUAL_CONTROL_SPEED".to_owned()),
-
-            motor_active: [false; 3],
-            motor_position: [Angle::default(); 3],
-
-            manual_control: false,
-            manual_control_speed: AngularVelocity::default(),
-        }
-    }
-}
-impl PitchTrimActuatorController for A380TrimInputController {
-    fn commanded_position(&self) -> Angle {
-        for (idx, motor_active) in self.motor_active.iter().enumerate() {
-            if *motor_active {
-                return self.motor_position[idx];
-            }
-        }
-
-        Angle::default()
-    }
-
-    fn energised_motor(&self) -> [bool; 3] {
-        self.motor_active
-    }
-}
-impl ManualPitchTrimController for A380TrimInputController {
-    fn is_manually_moved(&self) -> bool {
-        self.manual_control || self.manual_control_speed.get::<radian_per_second>() != 0.
-    }
-
-    fn moving_speed(&self) -> AngularVelocity {
-        self.manual_control_speed
-    }
-}
-impl SimulationElement for A380TrimInputController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.motor_active[0] = reader.read(&self.motor1_active_id);
-        self.motor_active[1] = reader.read(&self.motor2_active_id);
-        self.motor_active[2] = reader.read(&self.motor3_active_id);
-
-        self.motor_position[0] = reader.read(&self.motor1_position_id);
-        self.motor_position[1] = reader.read(&self.motor2_position_id);
-        self.motor_position[2] = reader.read(&self.motor3_position_id);
-
-        self.manual_control = reader.read(&self.manual_control_active_id);
-        self.manual_control_speed = reader.read(&self.manual_control_speed_id);
     }
 }
 

@@ -27,7 +27,7 @@ use uom::si::{f64::*, pressure::hectopascal, ratio::percent, velocity::knot};
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3, 2>,
+    a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
     a320_pressurization_system: A320PressurizationSystem,
 
     pressurization_updater: MaxStepLoop,
@@ -68,7 +68,7 @@ impl A320AirConditioning {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton,
+        pneumatic_overhead: &impl EngineBleedPushbutton<2>,
         pressurization_overhead: &A320PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
@@ -112,8 +112,8 @@ impl A320AirConditioning {
     }
 }
 
-impl PackFlowControllers<3> for A320AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3> {
+impl PackFlowControllers<3, 2> for A320AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 2> {
         self.a320_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
@@ -705,7 +705,7 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<3>,
+            pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -870,7 +870,7 @@ mod tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<3>,
+            pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
         ) {
             self.pack_flow_valve.update_open_amount(
                 &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
@@ -931,7 +931,7 @@ mod tests {
             }
         }
     }
-    impl EngineBleedPushbutton for TestPneumaticOverhead {
+    impl EngineBleedPushbutton<2> for TestPneumaticOverhead {
         fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
             [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
         }
