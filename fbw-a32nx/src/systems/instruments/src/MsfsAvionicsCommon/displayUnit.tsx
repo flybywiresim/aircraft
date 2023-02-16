@@ -12,7 +12,9 @@ export const getDisplayIndex = () => {
 
 type DisplayUnitProps = {
     bus: EventBus,
-    failed?: Subscribable<boolean>;
+    failed?: Subscribable<boolean>,
+    powered?: Subscribable<boolean>,
+    brightness?: Subscribable<number>;
 }
 
 enum DisplayUnitState {
@@ -25,10 +27,6 @@ enum DisplayUnitState {
 export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
     private state: DisplayUnitState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? DisplayUnitState.Off : DisplayUnitState.Standby;
 
-    private electricityState: number = 0;
-
-    private potentiometer: number = 0;
-
     private timeOut: number = 0;
 
     private selfTestRef = FSComponent.createRef<SVGElement>();
@@ -39,23 +37,16 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
     private isHomeCockpitMode = false;
 
+    private brightness: number = 0;
+
     private failed = false;
+
+    private powered = false;
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<DisplayVars & ClockEvents>();
-        const isCaptainSide = getDisplayIndex() === 1;
-
-        sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
-            this.potentiometer = value;
-            this.updateState();
-        });
-
-        sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
-            this.electricityState = value;
-            this.updateState();
-        });
 
         sub.on('realTime').atFrequency(1).handle((_t) => {
             // override MSFS menu animations setting for this instrument
@@ -64,8 +55,18 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             }
         });
 
+        this.props.brightness?.sub((f) => {
+            this.brightness = f;
+            this.updateState();
+        });
+
         this.props.failed?.sub((f) => {
             this.failed = f;
+            this.updateState();
+        });
+
+        this.props.powered?.sub((f) => {
+            this.powered = f;
             this.updateState();
         });
 
@@ -90,16 +91,16 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
         if (this.state !== DisplayUnitState.Off && this.failed) {
             this.state = DisplayUnitState.Off;
             clearTimeout(this.timeOut);
-        } else if (this.state === DisplayUnitState.On && (this.potentiometer === 0 || this.electricityState === 0)) {
+        } else if (this.state === DisplayUnitState.On && (this.brightness === 0 || !this.powered)) {
             this.state = DisplayUnitState.Standby;
             this.setTimer(10);
-        } else if (this.state === DisplayUnitState.Standby && (this.potentiometer !== 0 && this.electricityState !== 0)) {
+        } else if (this.state === DisplayUnitState.Standby && (this.brightness !== 0 && this.powered)) {
             this.state = DisplayUnitState.On;
             clearTimeout(this.timeOut);
-        } else if (this.state === DisplayUnitState.Off && (this.potentiometer !== 0 && this.electricityState !== 0 && !this.failed)) {
+        } else if (this.state === DisplayUnitState.Off && (this.brightness !== 0 && this.powered && !this.failed)) {
             this.state = DisplayUnitState.Selftest;
             this.setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
-        } else if (this.state === DisplayUnitState.Selftest && (this.potentiometer === 0 || this.electricityState === 0)) {
+        } else if (this.state === DisplayUnitState.Selftest && (this.brightness === 0 || !this.powered)) {
             this.state = DisplayUnitState.Off;
             clearTimeout(this.timeOut);
         }

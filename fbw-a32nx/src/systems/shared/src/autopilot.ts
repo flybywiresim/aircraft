@@ -57,6 +57,24 @@ function isArmed(bitmask, armedBit: ArmedVerticalMode | ArmedLateralMode): boole
     return ((bitmask >> armedBit) & 1) === 1;
 }
 
+enum AutoThrustMode {
+    NONE = 0,
+    MAN_TOGA = 1,
+    MAN_GA_SOFT = 2,
+    MAN_FLEX = 3,
+    MAN_DTO = 4,
+    MAN_MCT = 5,
+    MAN_THR = 6,
+    SPEED = 7,
+    MACH = 8,
+    THR_MCT = 9,
+    THR_CLB = 10,
+    THR_LVR = 11,
+    THR_IDLE = 12,
+    A_FLOOR = 13,
+    TOGA_LK = 14,
+}
+
 export {
     ControlLaw,
     LateralMode,
@@ -64,4 +82,5 @@ export {
     VerticalMode,
     ArmedVerticalMode,
     isArmed,
+    AutoThrustMode,
 };

@@ -1,0 +1,397 @@
+@charset "UTF-8";
+/** This mixin makes a single line element fit exactly on the Roboto font for easier integration. */
+/**
+ * Forces z-index above other siblings during a focused parent.
+*/
+checklist-checkpoint-line-group .condensed-interactive.Focused.line {
+  --outlineWidth: var(--quartMargin);
+}
+checklist-checkpoint-line-group .selected.condensed-interactive.Focused.line:before {
+  border-width: var(--minimalBorderWidth) !important;
+}
+checklist-checkpoint-line-group .condensed-interactive.Focused.line:before {
+  animation: outlineFocusAppear 0.1s backwards;
+}
+
+checklist-checkpoint-line-group .Focused.line {
+  --outlineWidth: var(--halfMargin);
+  --outlineOffset: calc(-1 * var(--outlineWidth));
+  position: relative;
+}
+checklist-checkpoint-line-group [no-focus-white].Focused.line:before {
+  background-color: transparent !important;
+}
+checklist-checkpoint-line-group .Focused.line:before {
+  transform: rotateX(0);
+  content: "";
+  display: block;
+  pointer-events: none;
+  position: absolute;
+  left: var(--outlineOffset);
+  top: var(--outlineOffset);
+  right: var(--outlineOffset);
+  bottom: var(--outlineOffset);
+  border: var(--outlineWidth) solid var(--enabledHoverBackgroundColor);
+  background-color: var(--color-white-op30);
+  z-index: 2;
+  animation: outlineFocusAppear 0.2s backwards;
+}
+checklist-checkpoint-line-group .selected.Focused.line:before {
+  border-width: var(--quartMargin);
+}
+checklist-checkpoint-line-group .Focused.line > .parent-is-highlighted {
+  position: relative;
+  z-index: 4;
+}
+
+checklist-checkpoint-line {
+  --lineHeight: calc(var(--screenHeight) * (60px / 2160) );
+  --baseColor: white;
+  --bgc: transparent;
+  --tc: var(--enabledColor);
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: calc(var(--screenHeight) * (60px / 2160) );
+  line-height: var(--lineHeight);
+  color: var(--tc);
+  margin: var(--quartMargin) 0;
+}
+checklist-checkpoint-line:after {
+  content: "";
+  display: block;
+  background-color: var(--listSeparatorColor);
+  bottom: calc(var(--screenHeight) * (-3px / 1080) );
+  height: var(--minimalBorderWidth);
+  width: 100%;
+  position: absolute;
+}
+checklist-checkpoint-line.clicked {
+  --bgc: var(--activeBackGroundColor);
+  --tc: var(--activeColor);
+}
+checklist-checkpoint-line.disabled {
+  --bgc: rgba(0,0,0,0.3);
+  --tc: var(--disabledColor);
+  pointer-events: none;
+}
+checklist-checkpoint-line.unselectable {
+  pointer-events: none;
+}
+checklist-checkpoint-line p {
+  font-size: var(--fontSizeParagraph);
+}
+checklist-checkpoint-line .background {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+checklist-checkpoint-line .background .select-zone {
+  min-width: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex: auto;
+  margin-right: var(--quartMargin);
+}
+checklist-checkpoint-line .background .select-zone.selected {
+  background-color: var(--selectedBackgroundColor);
+  --tc: var(--selectedColor);
+}
+checklist-checkpoint-line .background .select-zone.selected .Checkbox {
+  background-color: white;
+}
+checklist-checkpoint-line .background .select-zone.selected .Checkbox::after {
+  color: var(--selectedColor) !important;
+  z-index: 2;
+}
+checklist-checkpoint-line .background .select-zone .Subject icon-element {
+  --iconColor: var(--tc);
+  display: none;
+  height: calc(var(--screenHeight) * (44px / 2160) );
+  width: calc(var(--screenHeight) * (44px / 2160) );
+  min-width: calc(var(--screenHeight) * (44px / 2160) );
+  margin-left: auto;
+  justify-content: center;
+  flex: 0 0;
+  align-items: center;
+}
+checklist-checkpoint-line .background .select-zone .Subject icon-element svg {
+  height: calc(var(--screenHeight) * (34px / 2160) );
+  width: calc(var(--screenHeight) * (34px / 2160) );
+}
+checklist-checkpoint-line .background .select-zone .Expectation {
+  top: 0;
+  bottom: 0;
+  text-align: left;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex: 0 0 45%;
+  margin-left: var(--baseMargin);
+  min-width: 0;
+}
+checklist-checkpoint-line .background .select-zone .Expectation p {
+  line-height: unset;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--tc);
+}
+checklist-checkpoint-line .background .Eye {
+  flex: none;
+  right: 0;
+  top: 0;
+  --width: calc(var(--screenHeight) * (30px / 1080) );
+  --height: calc(var(--screenHeight) * (30px / 1080) );
+}
+checklist-checkpoint-line:not(.copilotAvailable) .background .Subject .warning {
+  display: flex;
+}
+checklist-checkpoint-line.cursor-on:not(.checked).copilotAvailable .Checkbox .cursor-logo {
+  animation: rotate 2s infinite linear;
+  width: calc(var(--screenHeight) * (60px / 2160) );
+  --iconColor: var(--tc);
+  height: calc(var(--screenHeight) * (60px / 2160) );
+  margin: calc(var(--screenHeight) * (6px / 2160) );
+}
+checklist-checkpoint-line.cursor-on:not(.checked).copilotAvailable .blocked-logo {
+  display: none;
+}
+checklist-checkpoint-line.cursor-on:not(.checked):not(.copilotAvailable) .cursor-logo {
+  display: none;
+}
+checklist-checkpoint-line.cursor-on:not(.checked):not(.copilotAvailable) .blocked-logo {
+  width: calc(var(--screenHeight) * (22px / 1080) );
+  height: calc(var(--screenHeight) * (22px / 1080) );
+  margin: calc(var(--screenHeight) * (12px / 2160) );
+  --iconColor: var(--tc);
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+checklist-checkpoint-line:not(.cursor-on) .Checkbox .cursor-logo, checklist-checkpoint-line.checked .Checkbox .cursor-logo {
+  animation: none;
+  display: none;
+}
+checklist-checkpoint-line.checked .Checkbox {
+  display: flex;
+  width: calc(var(--screenHeight) * (60px / 2160) );
+}
+checklist-checkpoint-line.checked .Checkbox::after {
+  font-family: "ui-icon-font" !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  background-color: unset;
+  content: "";
+  font-size: var(--fontSizeParagraph);
+  /*text-transform: uppercase;*/
+  color: white;
+  display: block;
+  position: unset;
+}
+
+checklist-checkpoint-line.inGroup[depth="1"] .Checkbox {
+  margin-left: calc((var(--screenHeight) * (68px / 2160)) + ((var(--screenHeight) * (60px / 2160) ) * 0));
+}
+checklist-checkpoint-line.inGroup[depth="2"] .Checkbox {
+  margin-left: calc((var(--screenHeight) * (68px / 2160)) + ((var(--screenHeight) * (60px / 2160) ) * 1));
+}
+checklist-checkpoint-line.inGroup[depth="3"] .Checkbox {
+  margin-left: calc((var(--screenHeight) * (68px / 2160)) + ((var(--screenHeight) * (60px / 2160) ) * 2));
+}
+checklist-checkpoint-line.inGroup[depth="4"] .Checkbox {
+  margin-left: calc((var(--screenHeight) * (68px / 2160)) + ((var(--screenHeight) * (60px / 2160) ) * 3));
+}
+checklist-checkpoint-line.inGroup[depth="5"] .Checkbox {
+  margin-left: calc((var(--screenHeight) * (68px / 2160)) + ((var(--screenHeight) * (60px / 2160) ) * 4));
+}
+checklist-checkpoint-line.inGroup[depth="6"] .Checkbox {
+  margin-left: calc((var(--screenHeight) * (68px / 2160)) + ((var(--screenHeight) * (60px / 2160) ) * 5));
+}
+
+checklist-checkpoint-line-group.inGroup[depth="1"] > ui-button {
+  padding-left: calc(var(--screenHeight) * (60px / 2160)  * 1);
+}
+checklist-checkpoint-line-group.inGroup[depth="2"] > ui-button {
+  padding-left: calc(var(--screenHeight) * (60px / 2160) * 2);
+}
+checklist-checkpoint-line-group.inGroup[depth="3"] > ui-button {
+  padding-left: calc(var(--screenHeight) * (60px / 2160) * 3);
+}
+checklist-checkpoint-line-group.inGroup[depth="4"] > ui-button {
+  padding-left: calc(var(--screenHeight) * (60px / 2160) * 4);
+}
+checklist-checkpoint-line-group.inGroup[depth="5"] > ui-button {
+  padding-left: calc(var(--screenHeight) * (60px / 2160) * 5);
+}
+checklist-checkpoint-line-group.inGroup[depth="6"] > ui-button {
+  padding-left: calc(var(--screenHeight) * (60px / 2160) * 6);
+}
+
+checklist-checkpoint-line .Checkbox,
+checklist-checkpoint-line-group .Checkbox {
+  --checkBoxSize: calc(var(--screenHeight) * (36px / 2160) );
+  top: 0;
+  left: 0;
+  border-radius: 0;
+  background-color: unset;
+  border: 0;
+  height: calc(var(--screenHeight) * (60px / 2160) );
+  width: calc(var(--screenHeight) * (60px / 2160) );
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+checklist-checkpoint-line .Checkbox:after,
+checklist-checkpoint-line-group .Checkbox:after {
+  right: calc(var(--screenHeight) * (10px / 2160) );
+  top: calc((var(--lineHeight) - var(--checkBoxSize)) * 0.5);
+}
+checklist-checkpoint-line .Subject,
+checklist-checkpoint-line-group .Subject {
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: var(--lineHeight);
+  flex: 1 1 55%;
+  min-width: 0;
+}
+checklist-checkpoint-line .Subject p,
+checklist-checkpoint-line-group .Subject p {
+  font-size: var(--fontSizeParagraph);
+  /*text-transform: uppercase;*/
+  color: var(--tc);
+  line-height: 1.4em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+checklist-checkpoint-line:not(.cursor-on) .Checkbox .cursor-logo, checklist-checkpoint-line.checked .Checkbox .cursor-logo,
+checklist-checkpoint-line-group:not(.cursor-on) .Checkbox .cursor-logo,
+checklist-checkpoint-line-group.checked .Checkbox .cursor-logo {
+  animation: none;
+  display: none;
+}
+checklist-checkpoint-line:not(.cursor-on) .Checkbox .blocked-logo, checklist-checkpoint-line.checked .Checkbox .blocked-logo,
+checklist-checkpoint-line-group:not(.cursor-on) .Checkbox .blocked-logo,
+checklist-checkpoint-line-group.checked .Checkbox .blocked-logo {
+  display: none;
+}
+checklist-checkpoint-line.checked .Checkbox,
+checklist-checkpoint-line-group.checked .Checkbox {
+  display: flex;
+  width: calc(var(--screenHeight) * (74px / 2160) );
+}
+checklist-checkpoint-line.checked .Checkbox::after,
+checklist-checkpoint-line-group.checked .Checkbox::after {
+  font-family: "ui-icon-font" !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  background-color: unset;
+  content: "";
+  font-size: var(--fontSizeParagraph);
+  /*text-transform: uppercase;*/
+  color: white;
+  display: block;
+  position: unset;
+  margin-top: calc(var(--screenHeight) * (4px / 2160) );
+}
+
+checklist-checkpoint-line-group {
+  --lineHeight: calc(var(--screenHeight) * (72px / 2160) );
+  --baseColor: white;
+  display: block;
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: calc(var(--screenHeight) * (74px / 2160) );
+  line-height: var(--lineHeight);
+  --bgc: transparent;
+  --tc: var(--enabledColor);
+  color: var(--tc);
+}
+checklist-checkpoint-line-group.Focused .background:hover ~ .Subject {
+  --tc: var(--enabledHoverColor);
+}
+checklist-checkpoint-line-group.disabled {
+  --bgc: rgba(0,0,0,0.3);
+  --tc: var(--disabledColor);
+}
+checklist-checkpoint-line-group .line {
+  width: 100%;
+  height: calc(var(--screenHeight) * (72px / 2160) );
+  background-color: var(--bgc);
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+checklist-checkpoint-line-group .line icon-button {
+  height: calc(var(--screenHeight) * (40px / 2160) );
+  width: calc(var(--screenHeight) * (40px / 2160) );
+  transform: rotate(180deg);
+  margin-right: calc(var(--screenHeight) * (12px / 2160) );
+  background-color: transparent;
+  --iconColor: white;
+  -coherent-layer-clip-aa: var(--coherentAA);
+}
+checklist-checkpoint-line-group .line icon-button circle, checklist-checkpoint-line-group .line icon-button path {
+  -coherent-layer-clip-aa: var(--coherentAA);
+}
+checklist-checkpoint-line-group .line .Subject {
+  flex: 1 1 auto;
+}
+checklist-checkpoint-line-group .Children {
+  position: relative;
+  width: 100%;
+}
+checklist-checkpoint-line-group icon-stack {
+  --iconColor2: var(--enabledColor);
+  --iconColor1: var(--enabledBackGroundColor);
+  --width: calc(var(--screenHeight) * (24px / 1080) );
+  --height: calc(var(--screenHeight) * (24px / 1080) );
+  flex: 0 0 auto;
+  margin-right: var(--halfMargin);
+  transform: rotate(-180deg);
+}
+checklist-checkpoint-line-group.collapse {
+  height: var(--lineHeight);
+}
+checklist-checkpoint-line-group.collapse .Expand {
+  transform: rotate(0deg);
+}
+checklist-checkpoint-line-group.collapse .Children {
+  display: none;
+}
+checklist-checkpoint-line-group:not(:active):not(.selected) .line:not(:hover) {
+  border-bottom: var(--minimalBorderWidth) solid var(--listSeparatorColor);
+}
+
+checklist-page {
+  padding-left: calc(var(--screenHeight) * (3px / 1080) );
+  display: flex;
+  flex-direction: column;
+}
+
+/*# sourceMappingURL=ChecklistCheckpointLine.css.map */
