@@ -209,8 +209,8 @@ where
     }
 
     fn flow_coefficient_calculation(&self, pressure_ratio: f64) -> f64 {
-        const STABILITY_COEFFICIENT: f64 = 4e4;
-        const STABILITY_MARGIN: f64 = 5e-3;
+        const STABILITY_COEFFICIENT: f64 = 2.5e5;
+        const STABILITY_MARGIN: f64 = 2e-3;
 
         let flow_direction: f64 = if pressure_ratio > 1. { -1. } else { 1. };
 

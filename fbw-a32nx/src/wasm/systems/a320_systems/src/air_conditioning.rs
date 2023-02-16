@@ -262,6 +262,7 @@ impl A320PressurizationSystem {
                 CabinPressureController::new(context, A320PressurizationConstants),
                 CabinPressureController::new(context, A320PressurizationConstants),
             ],
+            // Sub-buses 206PP, 401PP (auto) and 301PP (manual)
             outflow_valve: [OutflowValve::new(
                 vec![
                     ElectricalBusType::DirectCurrentEssential,
@@ -1163,14 +1164,6 @@ mod tests {
 
         fn iterate(mut self, iterations: usize) -> Self {
             for _ in 0..iterations {
-                // println!(
-                //     "{}, {}, {}, {}, {}",
-                //     self.outflow_valve_open_amount().get::<percent>(),
-                //     self.cabin_vs().get::<foot_per_minute>(),
-                //     self.safety_valve_open_amount().get::<percent>(),
-                //     self.cabin_delta_p().get::<psi>(),
-                //     self.cabin_altitude().get::<foot>(),
-                // );
                 self.run();
             }
             self
@@ -1178,14 +1171,6 @@ mod tests {
 
         fn iterate_with_delta(mut self, iterations: usize, delta: Duration) -> Self {
             for _ in 0..iterations {
-                // println!(
-                //     "{}, {}, {}, {}, {}",
-                //     self.outflow_valve_open_amount().get::<percent>(),
-                //     self.cabin_vs().get::<foot_per_minute>(),
-                //     self.safety_valve_open_amount().get::<percent>(),
-                //     self.cabin_delta_p().get::<psi>(),
-                //     self.cabin_altitude().get::<foot>(),
-                // );
                 self.run_with_delta(delta);
             }
             self
@@ -1539,6 +1524,40 @@ mod tests {
         }
 
         #[test]
+        fn going_to_ground_and_ground_again_resets_valve_opening() {
+            let mut test_bed = test_bed_in_descent()
+                .indicated_airspeed_of(Velocity::new::<knot>(99.))
+                .then()
+                .set_on_ground()
+                .iterate(54);
+
+            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+
+            test_bed = test_bed.iterate(5);
+
+            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+
+            test_bed.command_on_ground(false);
+            test_bed = test_bed
+                .indicated_airspeed_of(Velocity::new::<knot>(101.))
+                .iterate(5);
+
+            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+
+            test_bed = test_bed
+                .indicated_airspeed_of(Velocity::new::<knot>(99.))
+                .then()
+                .set_on_ground()
+                .iterate(54);
+
+            assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
+
+            test_bed = test_bed.iterate(61);
+
+            assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
+        }
+
+        #[test]
         fn outflow_valve_closes_when_ditching_pb_is_on() {
             let mut test_bed = test_bed().iterate(50);
 
@@ -1714,11 +1733,11 @@ mod tests {
                 .set_on_ground()
                 .iterate(50)
                 .set_takeoff_power()
-                .iterate_with_delta(1500, Duration::from_millis(10));
+                .iterate_with_delta(400, Duration::from_millis(10));
 
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-                    < Velocity::new::<foot_per_minute>(50.)
+                    < Velocity::new::<foot_per_minute>(20.)
             );
         }
 
@@ -1774,6 +1793,25 @@ mod tests {
             let test_bed = test_bed_in_cruise().iterate_with_delta(200, Duration::from_millis(100));
 
             assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
+        }
+
+        #[test]
+        fn cabin_vs_maintains_stability_in_cruise() {
+            let mut test_bed = test_bed_in_cruise().iterate(400);
+
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+
+            test_bed = test_bed.iterate(200);
+
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+
+            test_bed = test_bed.iterate(3000);
+
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+
+            test_bed = test_bed.iterate(10000);
+
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
         }
 
         #[test]
@@ -2100,6 +2138,21 @@ mod tests {
                     - test_bed.ambient_temperature().get::<degree_celsius>())
                 .abs()
                     < 1.
+            );
+        }
+
+        #[test]
+        fn when_on_ground_pressure_diff_is_less_than_excessive() {
+            let test_bed = test_bed()
+                .on_ground()
+                .command_packs_on_off(true)
+                .iterate(100);
+
+            assert!(
+                test_bed.cabin_delta_p()
+                    < Pressure::new::<psi>(
+                        A320PressurizationConstants::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
+                    )
             );
         }
 

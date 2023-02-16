@@ -78,6 +78,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
 
     const VERTICAL_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+    // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+    const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
     pub fn new(context: &mut InitContext, aircraft: C) -> Self {
         Self {
@@ -145,24 +147,19 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
         }
 
-        // If the adirs are not working, the pressure manager can't update and the VS is zero
         let (adirs_airspeed, adirs_ambient_pressure): (Option<Velocity>, Option<Pressure>) =
             self.adirs_values_calculation(adirs);
 
-        if let (Some(airspeed), Some(ambient_pressure)) = (adirs_airspeed, adirs_ambient_pressure) {
-            if let Some(manager) = self.pressure_schedule_manager.take() {
-                self.pressure_schedule_manager = Some(manager.update(
-                    context,
-                    airspeed,
-                    ambient_pressure,
-                    engines,
-                    lgciu_gears_compressed,
-                ));
-            }
-            self.cabin_target_vs = self.calculate_cabin_target_vs(context);
-        } else {
-            self.cabin_target_vs = Velocity::new::<foot_per_minute>(0.);
+        if let Some(manager) = self.pressure_schedule_manager.take() {
+            self.pressure_schedule_manager = Some(manager.update(
+                context,
+                adirs_airspeed.unwrap_or_default(),
+                adirs_ambient_pressure.unwrap_or_default(),
+                engines,
+                lgciu_gears_compressed,
+            ));
         }
+        self.cabin_target_vs = self.calculate_cabin_target_vs(context);
 
         let new_reference_pressure =
             self.calculate_reference_pressure(context, adirs, press_overhead);
@@ -289,11 +286,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 }
             }
             Some(PressureScheduleManager::Abort(_)) => {
-                // Altitude in ft equivalent to 0.1 PSI delta P at sea level
-                const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
-
                 if self.cabin_altitude()
-                    > self.departure_elevation - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
+                    > self.departure_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF)
                 {
                     Velocity::new::<foot_per_minute>(C::MAX_ABORT_DESCENT_RATE)
                 } else {
@@ -305,16 +299,13 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     fn get_ext_diff_with_ldg_elev(&self, context: &UpdateContext) -> Length {
-        // Altitude in ft equivalent to 0.1 PSI delta P at sea level
-        const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
-
         context.indicated_altitude()
-            - self.landing_elevation
-            - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
+            - (self.landing_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF))
     }
 
     fn get_int_diff_with_ldg_elev(&self) -> Length {
-        self.cabin_alt - self.landing_elevation
+        self.cabin_alt
+            - (self.landing_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF))
     }
 
     /// In decent the reference pressure is based on the local QNH when below 5000ft from arrival airport, ISA when above.
@@ -380,24 +371,16 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         new_cabin_alt: Length,
         new_reference_pressure: Pressure,
     ) -> Velocity {
-        // When on the ground with outflow valve open V/S is always zero
         // When the reference pressure changes, V/S is the same as previous to avoid a jump
-        let speed_meter_second = if matches!(
-            self.pressure_schedule_manager,
-            Some(PressureScheduleManager::Ground(_))
-        ) && self.outflow_valve_open_amount
-            == Ratio::new::<percent>(100.)
-        {
-            0.
-        } else if new_reference_pressure != self.reference_pressure {
-            self.cabin_vertical_speed.get::<meter_per_second>()
+        if new_reference_pressure != self.reference_pressure {
+            self.cabin_vertical_speed
         } else {
             // Distance over time :)
-            (new_cabin_alt.get::<meter>() - self.cabin_alt.get::<meter>())
-                / context.delta_as_secs_f64()
-        };
-
-        Velocity::new::<meter_per_second>(speed_meter_second)
+            Velocity::new::<meter_per_second>(
+                (new_cabin_alt.get::<meter>() - self.cabin_alt.get::<meter>())
+                    / context.delta_as_secs_f64(),
+            )
+        }
     }
 
     fn calculate_cabin_altitude(&self, new_reference_pressure: Pressure) -> Length {
@@ -449,8 +432,17 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     pub fn cabin_vertical_speed(&self) -> Velocity {
+        // When on the ground with outflow valve open, V/S is always zero
         // Vertical speed word range is from -6400 to +6400 fpm (AMM)
-        if self.cabin_filtered_vertical_speed.output() > Velocity::new::<foot_per_minute>(6400.) {
+        if matches!(
+            self.pressure_schedule_manager,
+            Some(PressureScheduleManager::Ground(_))
+        ) && self.outflow_valve_open_amount == Ratio::new::<percent>(100.)
+        {
+            Velocity::new::<foot_per_minute>(0.)
+        } else if self.cabin_filtered_vertical_speed.output()
+            > Velocity::new::<foot_per_minute>(6400.)
+        {
             Velocity::new::<foot_per_minute>(6400.)
         } else if self.cabin_filtered_vertical_speed.output()
             < Velocity::new::<foot_per_minute>(-6400.)
