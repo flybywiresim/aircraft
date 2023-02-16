@@ -1,5 +1,5 @@
 class CDUAtcConnectionStatus {
-    static ShowPage(mcdu, store = { "disconnectInProgress": false, "disconnectAvail": false }) {
+    static ShowPage(mcdu, store = { "disconnectInProgress": false, "disconnectAvail": false, "disconnectConfirm": false }) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCConnectionStatus;
 
@@ -10,12 +10,19 @@ class CDUAtcConnectionStatus {
         }, mcdu.PageTimeout.Default);
 
         let currentStation = "-----------[color]white";
+        let atcDisconnectHeadline = "ALL ATC\xa0[color]cyan";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
         if (!store["disconnectInProgress"]) {
             if (mcdu.atsu.currentStation() !== "") {
                 currentStation = `${mcdu.atsu.currentStation()}[color]green`;
-                atcDisconnect = "DISCONNECT*[color]cyan";
                 store["disconnectAvail"] = true;
+
+                if (!store["disconnectConfirm"]) {
+                    atcDisconnect = "DISCONNECT*[color]cyan";
+                } else {
+                    atcDisconnectHeadline = "DISCONNECT\xa0[color]amber";
+                    atcDisconnect = "CONFIRM*[color]amber";
+                }
             } else {
                 store["disconnectAvail"] = false;
             }
@@ -30,7 +37,7 @@ class CDUAtcConnectionStatus {
             ["CONNECTION STATUS"],
             ["\xa0ACTIVE ATC"],
             [currentStation],
-            ["\xa0NEXT ATC", "ALL ATC\xa0[color]cyan"],
+            ["\xa0NEXT ATC", atcDisconnectHeadline],
             [nextStation, atcDisconnect],
             [""],
             [""],
@@ -55,6 +62,9 @@ class CDUAtcConnectionStatus {
         mcdu.onRightInput[1] = () => {
             if (!store["disconnectAvail"]) {
                 mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
+            } else if (!store["disconnectConfirm"]) {
+                store["disconnectConfirm"] = true;
+                CDUAtcConnectionStatus.ShowPage(mcdu, store);
             } else if (!store["disconnectInProgress"]) {
                 store["disconnectInProgress"] = true;
                 store["disconnectAvail"] = false;
