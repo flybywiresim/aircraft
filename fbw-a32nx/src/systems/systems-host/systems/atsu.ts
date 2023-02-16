@@ -22,11 +22,13 @@ export class AtsuSystem {
         this.powerSupply = this.bus.getSubscriber<PowerSupplyBusTypes>();
         this.powerSupply.on('acBus1').handle((powered: boolean) => {
             if (powered) {
+                this.datalink.powerUp();
                 this.atsu.powerUp();
                 this.digitalInputs.powerUp();
             } else {
                 this.digitalInputs.powerDown();
                 this.atsu.powerDown();
+                this.datalink.powerDown();
             }
         });
     }

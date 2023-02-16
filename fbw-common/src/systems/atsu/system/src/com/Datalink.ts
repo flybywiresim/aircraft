@@ -49,6 +49,15 @@ export class Datalink {
 
     private firstPollHoppie = true;
 
+    private transmissionSimulationTimeouts: NodeJS.Timeout[] = [];
+
+    private poweredUp: boolean = false;
+
+    private removeTransmissionTimeout(timeout: NodeJS.Timeout): void {
+        const index = this.transmissionSimulationTimeouts.findIndex((value) => value === timeout);
+        if (index >= 0) this.transmissionSimulationTimeouts.splice(index, 1);
+    }
+
     private enqueueReceivedMessages(messages: AtsuMessage[]): void {
         switch (this.communicationInterface) {
         case ActiveCommunicationInterface.VHF:
@@ -56,17 +65,23 @@ export class Datalink {
                 // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
                 if (message.Message.length !== 0) {
                     const transmissionTime = this.vdl.enqueueInboundMessage(message);
-                    setTimeout(() => {
+
+                    const timeout = setTimeout(() => {
                         this.vdl.dequeueInboundMessage(transmissionTime);
 
-                        if (message.Type === AtsuMessageType.Freetext) {
-                            this.publisher.pub('receivedFreetextMessage', message as FreetextMessage, this.synchronizedBuses, false);
-                        } else if (message.Type === AtsuMessageType.CPDLC) {
-                            this.publisher.pub('receivedCpdlcMessage', message as CpdlcMessage, this.synchronizedBuses, false);
-                        } else {
-                            console.log('ERROR: Unknown message received in datalink');
+                        if (this.poweredUp) {
+                            if (message.Type === AtsuMessageType.Freetext) {
+                                this.publisher.pub('receivedFreetextMessage', message as FreetextMessage, this.synchronizedBuses, false);
+                            } else if (message.Type === AtsuMessageType.CPDLC) {
+                                this.publisher.pub('receivedCpdlcMessage', message as CpdlcMessage, this.synchronizedBuses, false);
+                            } else {
+                                console.log('ERROR: Unknown message received in datalink');
+                            }
                         }
+
+                        this.removeTransmissionTimeout(timeout);
                     }, transmissionTime);
+                    this.transmissionSimulationTimeouts.push(timeout);
                 }
             });
             break;
@@ -106,7 +121,7 @@ export class Datalink {
         this.subscriber.on('sendOclMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
 
         this.subscriber.on('requestAtis').handle((request) => {
-            if (this.communicationInterface === ActiveCommunicationInterface.None) {
+            if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
                 this.publisher.pub('receivedWeather', { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedBuses, false);
             }
 
@@ -126,7 +141,7 @@ export class Datalink {
             this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.RmpData.vhf3Powered, this.digitalInputs.RmpData.vhf3DataMode);
 
             // find the best communication
-            if (this.vdl.vhf3.datalinkStatus === DatalinkStatusCode.DlkAvail) {
+            if (this.vdl.vhf3.datalinkStatus === DatalinkStatusCode.DlkAvail && this.poweredUp) {
                 this.communicationInterface = ActiveCommunicationInterface.VHF;
             } else {
                 this.communicationInterface = ActiveCommunicationInterface.None;
@@ -140,12 +155,12 @@ export class Datalink {
             }
 
             this.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
-                this.vdl.vhf3.datalinkStatus,
+                this.vhf3DatalinkStatus(),
                 this.satcomDatalinkStatus(),
                 DatalinkStatusCode.NotInstalled,
             );
             this.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
-                this.vdl.vhf3.datalinkMode,
+                this.vhf3DatalinkMode(),
                 DatalinkModeCode.None,
                 DatalinkModeCode.None,
             );
@@ -154,7 +169,7 @@ export class Datalink {
                 HoppieConnector.poll().then((retval) => {
                     if (retval[0] === AtsuStatusCodes.Ok) {
                         // delete all data in the first call (Hoppie stores old data)
-                        if (!this.firstPollHoppie) {
+                        if (!this.firstPollHoppie && this.poweredUp) {
                             this.enqueueReceivedMessages(retval[1]);
                         }
                         this.firstPollHoppie = false;
@@ -167,7 +182,7 @@ export class Datalink {
 
             if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
                 NXApiConnector.poll().then((retval) => {
-                    if (retval[0] === AtsuStatusCodes.Ok) {
+                    if (retval[0] === AtsuStatusCodes.Ok && this.poweredUp) {
                         this.enqueueReceivedMessages(retval[1]);
                     }
                 });
@@ -176,6 +191,19 @@ export class Datalink {
                 this.waitedTimeNXApi += 5000;
             }
         }, 5000);
+    }
+
+    public powerUp(): void {
+        this.poweredUp = true;
+    }
+
+    public powerDown(): void {
+        this.poweredUp = false;
+
+        this.transmissionSimulationTimeouts.forEach((timeout) => clearTimeout(timeout));
+        this.transmissionSimulationTimeouts = [];
+
+        this.vdl.reinitialize();
     }
 
     private static async connect(flightNo: string): Promise<AtsuStatusCodes> {
@@ -222,27 +250,41 @@ export class Datalink {
         return new Promise((resolve, _reject) => {
             // simulate the request transmission
             const requestTimeout = this.vdl.enqueueOutboundPacket();
-            setTimeout(() => {
+            let timeout = setTimeout(() => {
                 this.vdl.dequeueOutboundMessage(requestTimeout);
+                this.removeTransmissionTimeout(timeout);
+
+                if (!this.poweredUp) return;
+
                 sentCallback();
 
                 const processingTimeout = 300 + Math.floor(Math.random() * 500);
 
                 // simulate some remote processing time
-                setTimeout(() => {
+                timeout = setTimeout(() => {
+                    this.removeTransmissionTimeout(timeout);
+
                     // simulate the response transmission
                     const responseTimeout = this.vdl.enqueueInboundMessage(data[1]);
-                    setTimeout(() => {
+                    timeout = setTimeout(() => {
                         this.vdl.dequeueInboundMessage(responseTimeout);
-                        resolve(data);
+                        this.removeTransmissionTimeout(timeout);
+
+                        if (this.poweredUp) resolve(data);
                     }, responseTimeout);
+
+                    this.transmissionSimulationTimeouts.push(timeout);
                 }, processingTimeout);
+
+                this.transmissionSimulationTimeouts.push(timeout);
             }, requestTimeout);
+
+            this.transmissionSimulationTimeouts.push(timeout);
         });
     }
 
     private receiveWeather(requestId: number, requestMetar: boolean, icaos: string[]): void {
-        if (this.communicationInterface === ActiveCommunicationInterface.None) {
+        if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
             this.publisher.pub('receivedWeather', { requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedBuses, false);
         }
 
@@ -267,14 +309,14 @@ export class Datalink {
     }
 
     private sendMessage(requestId: number, message: AtsuMessage, force: boolean): void {
-        if (this.communicationInterface === ActiveCommunicationInterface.None) {
+        if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
             this.publisher.pub('sendMessageResponse', { requestId, status: AtsuStatusCodes.ComFailed });
             return;
         }
 
-        const timeout = this.vdl.enqueueOutboundMessage(message);
-        setTimeout(() => {
-            this.vdl.dequeueOutboundMessage(timeout);
+        const transmissionTime = this.vdl.enqueueOutboundMessage(message);
+        const timeout = setTimeout(() => {
+            this.vdl.dequeueOutboundMessage(transmissionTime);
             if (message.Type < AtsuMessageType.AOC) {
                 if (message.Network === AtsuMessageNetwork.FBW) {
                     NXApiConnector.sendTelexMessage(message).then((status) => {
@@ -296,7 +338,22 @@ export class Datalink {
             } else {
                 this.publisher.pub('sendMessageResponse', { requestId, status: AtsuStatusCodes.UnknownMessage });
             }
-        }, timeout);
+
+            this.removeTransmissionTimeout(timeout);
+        }, transmissionTime);
+
+        // register the transmission simulation for later management
+        this.transmissionSimulationTimeouts.push(timeout);
+    }
+
+    private vhf3DatalinkStatus(): DatalinkStatusCode {
+        if (!this.poweredUp) return DatalinkStatusCode.Inop;
+        return this.vdl.vhf3.datalinkStatus;
+    }
+
+    private vhf3DatalinkMode(): DatalinkModeCode {
+        if (!this.poweredUp) return DatalinkModeCode.None;
+        return this.vdl.vhf3.datalinkMode;
     }
 
     private satcomDatalinkStatus(): DatalinkStatusCode {

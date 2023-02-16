@@ -156,6 +156,14 @@ export class Vdl {
     }
 
     /**
+     * reinitializes all internal structures
+     */
+    public reinitialize(): void {
+        this.inboundDelay = { updateTime: 0, messages: 0, delay: 0 };
+        this.outboundDelay = { updateTime: 0, messages: 0, delay: 0 };
+    }
+
+    /**
      * enqueues an inbound message and returns the required transmission time
      * @param message The enqueued message
      * @returns The overall transmission time
