@@ -9,7 +9,7 @@ import { PseudoWaypoints } from '@fmgc/guidance/lnav/PseudoWaypoints';
 import { EfisVectors } from '@fmgc/efis/EfisVectors';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisState } from '@fmgc/guidance/FmsState';
-import { EfisSide, Mode, rangeSettings } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
@@ -20,7 +20,6 @@ import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ApproachType } from 'msfs-navdata';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
@@ -150,7 +149,7 @@ export class GuidanceController {
     }
 
     private updateEfisState(side: EfisSide, state: EfisState): void {
-        const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as Mode;
+        const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
         const ndRange = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
 
         if (state?.mode !== ndMode || state?.range !== ndRange) {
@@ -295,8 +294,8 @@ export class GuidanceController {
         this.lnavDriver.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.lnavDriver.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-        this.leftEfisState = { mode: Mode.ARC, range: 10, dataLimitReached: false, legsCulled: false };
-        this.rightEfisState = { mode: Mode.ARC, range: 10, dataLimitReached: false, legsCulled: false };
+        this.leftEfisState = { mode: EfisNdMode.ARC, range: 10, dataLimitReached: false, legsCulled: false };
+        this.rightEfisState = { mode: EfisNdMode.ARC, range: 10, dataLimitReached: false, legsCulled: false };
         this.efisStateForSide = {
             L: this.leftEfisState,
             R: this.rightEfisState,

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
+import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, rangeSettings, EfisNdRangeValue } from '@shared/NavigationDisplay';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -157,7 +157,7 @@ export class EfisSymbols {
 
         for (const side of EfisSymbols.sides) {
             const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
-            const mode: Mode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
+            const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 
             const rangeChange = this.lastRange[side] !== range;
@@ -172,7 +172,7 @@ export class EfisSymbols {
                 continue;
             }
 
-            if (mode === Mode.PLAN && !planCentre) {
+            if (mode === EfisNdMode.PLAN && !planCentre) {
                 this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
                 return;
             }
@@ -186,9 +186,9 @@ export class EfisSymbols {
                     return true;
                 }
 
-                const dist = distanceTo(mode === Mode.PLAN ? termination : ppos, ll);
-                let bearing = bearingTo(mode === Mode.PLAN ? termination : ppos, ll);
-                if (mode !== Mode.PLAN) {
+                const dist = distanceTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
+                let bearing = bearingTo(mode === EfisNdMode.PLAN ? termination : ppos, ll);
+                if (mode !== EfisNdMode.PLAN) {
                     bearing = MathUtils.clampAngle(bearing - trueHeading);
                 }
                 bearing = bearing * Math.PI / 180;
@@ -694,9 +694,9 @@ export class EfisSymbols {
         return undefined;
     }
 
-    private calculateEditArea(range: RangeSetting, mode: Mode): [number, number, number] {
+    private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
         switch (mode) {
-        case Mode.ARC:
+        case EfisNdMode.ARC:
             if (range <= 10) {
                 return [10.5, 3.5, 8.3];
             }
@@ -713,7 +713,7 @@ export class EfisSymbols {
                 return [160.5, 56, 132.8];
             }
             return [320.5, 112, 265.6];
-        case Mode.ROSE_NAV:
+        case EfisNdMode.ROSE_NAV:
             if (range <= 10) {
                 return [7.6, 7.1, 7.1];
             }
@@ -730,7 +730,7 @@ export class EfisSymbols {
                 return [114.1, 113.6, 113.6];
             }
             return [227.7, 227.2, 227.2];
-        case Mode.PLAN:
+        case EfisNdMode.PLAN:
             if (range <= 10) {
                 return [7, 7, 7];
             }
