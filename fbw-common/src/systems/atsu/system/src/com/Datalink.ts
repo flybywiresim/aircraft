@@ -53,6 +53,8 @@ export class Datalink {
 
     private poweredUp: boolean = false;
 
+    private lastUpdateTime: number = -1;
+
     private removeTransmissionTimeout(timeout: NodeJS.Timeout): void {
         const index = this.transmissionSimulationTimeouts.findIndex((value) => value === timeout);
         if (index >= 0) this.transmissionSimulationTimeouts.splice(index, 1);
@@ -135,62 +137,6 @@ export class Datalink {
         });
         this.subscriber.on('requestMetar').handle((request) => this.receiveWeather(request.requestId, true, request.icaos));
         this.subscriber.on('requestTaf').handle((request) => this.receiveWeather(request.requestId, false, request.icaos));
-
-        setInterval(() => {
-            // update the communication interface states
-            this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.RmpData.vhf3Powered, this.digitalInputs.RmpData.vhf3DataMode);
-
-            // find the best communication
-            if (this.vdl.vhf3.datalinkStatus === DatalinkStatusCode.DlkAvail && this.poweredUp) {
-                this.communicationInterface = ActiveCommunicationInterface.VHF;
-            } else {
-                this.communicationInterface = ActiveCommunicationInterface.None;
-            }
-
-            if (this.waitedComUpdate <= 30000) {
-                this.vdl.simulateTransmissionTimes(this.digitalInputs.FlightPhase);
-                this.waitedComUpdate = 0;
-            } else {
-                this.waitedComUpdate += 5000;
-            }
-
-            this.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
-                this.vhf3DatalinkStatus(),
-                this.satcomDatalinkStatus(),
-                DatalinkStatusCode.NotInstalled,
-            );
-            this.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
-                this.vhf3DatalinkMode(),
-                DatalinkModeCode.None,
-                DatalinkModeCode.None,
-            );
-
-            if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
-                HoppieConnector.poll().then((retval) => {
-                    if (retval[0] === AtsuStatusCodes.Ok) {
-                        // delete all data in the first call (Hoppie stores old data)
-                        if (!this.firstPollHoppie && this.poweredUp) {
-                            this.enqueueReceivedMessages(retval[1]);
-                        }
-                        this.firstPollHoppie = false;
-                    }
-                });
-                this.waitedTimeHoppie = 0;
-            } else {
-                this.waitedTimeHoppie += 5000;
-            }
-
-            if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
-                NXApiConnector.poll().then((retval) => {
-                    if (retval[0] === AtsuStatusCodes.Ok && this.poweredUp) {
-                        this.enqueueReceivedMessages(retval[1]);
-                    }
-                });
-                this.waitedTimeNXApi = 0;
-            } else {
-                this.waitedTimeNXApi += 5000;
-            }
-        }, 5000);
     }
 
     public powerUp(): void {
@@ -204,6 +150,66 @@ export class Datalink {
         this.transmissionSimulationTimeouts = [];
 
         this.vdl.reinitialize();
+    }
+
+    public update(): void {
+        const currentTimestamp = new Date().getTime();
+
+        // update the communication interface states
+        this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.RmpData.vhf3Powered, this.digitalInputs.RmpData.vhf3DataMode);
+
+        // find the best communication
+        if (this.vdl.vhf3.datalinkStatus === DatalinkStatusCode.DlkAvail && this.poweredUp) {
+            this.communicationInterface = ActiveCommunicationInterface.VHF;
+        } else {
+            this.communicationInterface = ActiveCommunicationInterface.None;
+        }
+
+        if (this.waitedComUpdate <= 30000) {
+            this.vdl.simulateTransmissionTimes(this.digitalInputs.FlightPhase);
+            this.waitedComUpdate = 0;
+        } else if (this.lastUpdateTime >= 0) {
+            this.waitedComUpdate += currentTimestamp - this.lastUpdateTime;
+        }
+
+        this.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
+            this.vhf3DatalinkStatus(),
+            this.satcomDatalinkStatus(),
+            DatalinkStatusCode.NotInstalled,
+        );
+        this.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
+            this.vhf3DatalinkMode(),
+            DatalinkModeCode.None,
+            DatalinkModeCode.None,
+        );
+
+        if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
+            HoppieConnector.poll().then((retval) => {
+                if (retval[0] === AtsuStatusCodes.Ok) {
+                    // delete all data in the first call (Hoppie stores old data)
+                    if (!this.firstPollHoppie && this.poweredUp) {
+                        this.enqueueReceivedMessages(retval[1]);
+                    }
+                    this.firstPollHoppie = false;
+                }
+            });
+            this.waitedTimeHoppie = 0;
+        } else if (this.lastUpdateTime >= 0) {
+            this.waitedTimeHoppie += currentTimestamp - this.lastUpdateTime;
+        }
+
+        if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
+            NXApiConnector.poll().then((retval) => {
+                if (retval[0] === AtsuStatusCodes.Ok && this.poweredUp) {
+                    this.enqueueReceivedMessages(retval[1]);
+                }
+            });
+            this.waitedTimeNXApi = 0;
+        } else if (this.lastUpdateTime >= 0) {
+            this.waitedTimeNXApi += currentTimestamp - this.lastUpdateTime;
+        }
+
+        this.lastUpdateTime = currentTimestamp;
     }
 
     private static async connect(flightNo: string): Promise<AtsuStatusCodes> {

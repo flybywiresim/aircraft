@@ -44,5 +44,6 @@ export class AtsuSystem {
 
     public update(): void {
         this.digitalInputs.update();
+        this.datalink.update();
     }
 }
