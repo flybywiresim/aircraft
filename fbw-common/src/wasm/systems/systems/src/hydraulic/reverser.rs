@@ -2,7 +2,10 @@ use std::time::Duration;
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
 
 use crate::{
-    shared::{low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses},
+    shared::{
+        low_pass_filter::LowPassFilter, random_from_normal_distribution, ElectricalBusType,
+        ElectricalBuses,
+    },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -14,17 +17,24 @@ use super::{PressureSwitch, PressureSwitchState, PressureSwitchType};
 struct ReverserActuator {
     position: Ratio,
     current_speed: LowPassFilter<Ratio>,
+    nominal_speed: f64,
 
     nominal_pressure: Pressure,
 }
 impl ReverserActuator {
-    const NOMINAL_SPEED_RATIO_PER_S: f64 = 0.7;
+    const NOMINAL_SPEED_RATIO_PER_S: f64 = 0.6;
+    const SPEED_RATIO_STD_DEVIATION: f64 = 0.05;
+
     const SPEED_TIME_CONSTANT: Duration = Duration::from_millis(250);
 
     fn new(nominal_pressure: Pressure) -> Self {
         Self {
             position: Ratio::default(),
             current_speed: LowPassFilter::new(Self::SPEED_TIME_CONSTANT),
+            nominal_speed: random_from_normal_distribution(
+                Self::NOMINAL_SPEED_RATIO_PER_S,
+                Self::SPEED_RATIO_STD_DEVIATION,
+            ),
             nominal_pressure,
         }
     }
@@ -75,7 +85,7 @@ impl ReverserActuator {
     fn max_speed_from_pressure(&self, pressure: Pressure) -> Ratio {
         let pressure_ratio: Ratio = pressure / self.nominal_pressure;
 
-        pressure_ratio * Self::NOMINAL_SPEED_RATIO_PER_S
+        pressure_ratio * self.nominal_speed
     }
 
     fn position(&self) -> Ratio {
@@ -253,10 +263,17 @@ impl SimulationElement for DirectionalValve {
     }
 }
 
-trait ReverserInterface {
+pub trait ReverserInterface {
     fn should_unlock(&self) -> bool;
     fn should_isolate_hydraulics(&self) -> bool;
     fn should_deploy_reverser(&self) -> bool;
+}
+
+pub trait ReverserFeedback {
+    fn position_sensor(&self) -> Ratio;
+    fn proximity_sensor_stowed(&self) -> bool;
+    fn pressure_switch_pressurised(&self) -> bool;
+    fn tertiary_lock_is_locked(&self) -> bool;
 }
 
 struct ReverserHydraulicManifold {
@@ -322,13 +339,13 @@ impl SimulationElement for ReverserHydraulicManifold {
     }
 }
 
-struct ReverserAssembly {
+pub struct ReverserAssembly {
     electrical_lock: ElectricalLock,
     hydraulic_manifold: ReverserHydraulicManifold,
     actuator: ReverserActuator,
 }
 impl ReverserAssembly {
-    fn new(
+    pub fn new(
         nominal_hydraulic_pressure: Pressure,
         switch_high_threshold_pressure: Pressure,
         switch_low_threshold_pressure: Pressure,
@@ -346,7 +363,7 @@ impl ReverserAssembly {
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         controller: &impl ReverserInterface,
@@ -365,7 +382,7 @@ impl ReverserAssembly {
         );
     }
 
-    fn reverser_position(&self) -> Ratio {
+    pub fn reverser_position(&self) -> Ratio {
         self.actuator.position()
     }
 }

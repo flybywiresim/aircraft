@@ -39,6 +39,7 @@ use systems::{
             SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
+        reverser::{ReverserAssembly, ReverserFeedback, ReverserInterface},
         rudder_control::{
             AngularPositioningController, RudderMechanicalControl, YawDamperActuatorController,
         },
@@ -62,9 +63,9 @@ use systems::{
         AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorPower,
-        EngineFirePushButtons, GearWheel, HydraulicColor, HydraulicGeneratorControlUnit,
-        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure,
-        SectionPressure, TrimmableHorizontalStabilizer,
+        EngineCorrectedN1, EngineFirePushButtons, GearWheel, HydraulicColor,
+        HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
+        ReservoirAirPressure, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -5950,6 +5951,128 @@ impl SimulationElement for A320TrimInputController {
 
         self.manual_control = reader.read(&self.manual_control_active_id);
         self.manual_control_speed = reader.read(&self.manual_control_speed_id);
+    }
+}
+
+struct A320ReverserController {
+    is_stowed: bool,
+}
+impl A320ReverserController {
+    fn new() -> Self {
+        Self { is_stowed: true }
+    }
+
+    fn update(
+        &mut self,
+        engine: &impl Engine,
+        lgciu: &impl LgciuWeightOnWheels,
+        reverser_feedback: &impl ReverserFeedback,
+    ) {
+        let is_confirmed_stowed_available_for_deploy =
+            reverser_feedback.position_sensor().get::<ratio>() <= 0.1
+                && reverser_feedback.proximity_sensor_stowed()
+                && !reverser_feedback.pressure_switch_pressurised()
+                && reverser_feedback.tertiary_lock_is_locked();
+
+        let deploy_authorized = engine.corrected_n2().get::<percent>() > 50.
+            && lgciu.left_and_right_gear_compressed(false);
+
+        let should_deploy = false;
+    }
+}
+impl ReverserInterface for A320ReverserController {}
+
+struct A320Reversers {
+    reverser1_position_id: VariableIdentifier,
+    reverser2_position_id: VariableIdentifier,
+
+    reversers: [ReverserAssembly; 2],
+}
+impl A320Reversers {
+    //TODO Check busses
+    const REVERSER1_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
+    const REVERSER2_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
+
+    const REVERSER1_ISOLATION_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrent(1);
+    const REVERSER1_DIRECTIONAL_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrent(2);
+
+    const REVERSER2_ISOLATION_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrent(1);
+    const REVERSER2_DIRECTIONAL_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrent(2);
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            reverser1_position_id: context.get_identifier("REVERSER1_POSITION".to_owned()),
+            reverser2_position_id: context.get_identifier("REVERSER2_POSITION".to_owned()),
+            reversers: [
+                ReverserAssembly::new(
+                    Pressure::new::<psi>(
+                        A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI,
+                    ),
+                    Pressure::new::<psi>(
+                        A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_HI_HYST,
+                    ),
+                    Pressure::new::<psi>(
+                        A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
+                    ),
+                    Self::REVERSER1_SUPPLY_POWER_BUS,
+                    Self::REVERSER1_ISOLATION_VALVE_SUPPLY_POWER_BUS,
+                ),
+                ReverserAssembly::new(
+                    Pressure::new::<psi>(
+                        A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI,
+                    ),
+                    Pressure::new::<psi>(
+                        A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_HI_HYST,
+                    ),
+                    Pressure::new::<psi>(
+                        A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
+                    ),
+                    Self::REVERSER2_SUPPLY_POWER_BUS,
+                    Self::REVERSER2_ISOLATION_VALVE_SUPPLY_POWER_BUS,
+                ),
+            ],
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        reverser_controllers: &[impl ReverserInterface; 2],
+        left_reverser_section: &impl SectionPressure,
+        right_reverser_section: &impl SectionPressure,
+    ) {
+        self.reversers[0].update(
+            context,
+            &reverser_controllers[0],
+            left_reverser_section.pressure(),
+        );
+        self.reversers[1].update(
+            context,
+            &reverser_controllers[1],
+            right_reverser_section.pressure(),
+        );
+    }
+}
+impl SimulationElement for A320Reversers {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.reversers, visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.reverser1_position_id,
+            self.reversers[0].reverser_position().get::<ratio>(),
+        );
+        writer.write(
+            &self.reverser2_position_id,
+            self.reversers[1].reverser_position().get::<ratio>(),
+        );
     }
 }
 
