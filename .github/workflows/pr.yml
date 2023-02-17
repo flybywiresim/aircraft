@@ -62,10 +62,12 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
   pr-artifact:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
       - name: Generate install.json
         run: |
           ./scripts/dev-env/run.sh node ./scripts/fragment.js
-
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           ./scripts/dev-env/run.sh node ./scripts/install-source.js
         needs: build
