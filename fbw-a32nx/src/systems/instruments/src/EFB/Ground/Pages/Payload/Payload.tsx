@@ -172,7 +172,6 @@ export const Payload = () => {
             totalMissedPax += stationMissedPax(paxDDesired, setPaxDDesired);
             console.info('pax missing plane: %d', totalMissedPax);
         }
-
     };
 
     const setSimBriefValues = () => {
@@ -506,29 +505,28 @@ export const Payload = () => {
         }
     }, [stationSize]);
 
-const adjustDesiredSeats = (paxDesired)=> {
-    paxDesired.forEach((stationNumPax:number, stationIndex:number) => {
-        const paxCount = returnNumSeats(stationIndex, false, desiredFlags);
-        if (!clicked && stationNumPax !== paxCount) {
-            const seatOptions = calculateSeatOptions(stationIndex, stationNumPax > paxCount);
-            const seatDelta = Math.abs(paxCount - stationNumPax);
-
-            if (seatOptions.length >= seatDelta) {
-                chooseDesiredSeats(stationIndex, seatOptions, seatDelta);
-            } else if (seatOptions.length && seatOptions.length < seatDelta) {
-                // Fallback if we don't have enough seat options using desired as reference
-                const leftOver = seatDelta - seatOptions.length;
-                chooseDesiredSeats(stationIndex, seatOptions, seatOptions.length);
-                const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
-                chooseDesiredSeats(stationIndex, seats, leftOver);
-            } else {
-                // Fallback if no seat options using desired as reference
-                const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
-                chooseDesiredSeats(stationIndex, seats, seatDelta);
+    const adjustDesiredSeats = (paxDesired) => {
+        paxDesired.forEach((stationNumPax: number, stationIndex: number) => {
+            const paxCount = returnNumSeats(stationIndex, false, desiredFlags);
+            if (!clicked && stationNumPax !== paxCount) {
+                const seatOptions = calculateSeatOptions(stationIndex, stationNumPax > paxCount);
+                const seatDelta = Math.abs(paxCount - stationNumPax);
+                if (seatOptions.length >= seatDelta) {
+                    chooseDesiredSeats(stationIndex, seatOptions, seatDelta);
+                } else if (seatOptions.length && seatOptions.length < seatDelta) {
+                    // Fallback if we don't have enough seat options using desired as reference
+                    const leftOver = seatDelta - seatOptions.length;
+                    chooseDesiredSeats(stationIndex, seatOptions, seatOptions.length);
+                    const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
+                    chooseDesiredSeats(stationIndex, seats, leftOver);
+                } else {
+                    // Fallback if no seat options using desired as reference
+                    const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
+                    chooseDesiredSeats(stationIndex, seats, seatDelta);
+                }
             }
-        }
-    });
-};
+        });
+    };
 
     // Adjusted desired passenger seating layout to match station passenger count on change
     useEffect(() => {
@@ -563,7 +561,10 @@ const adjustDesiredSeats = (paxDesired)=> {
 
     useEffect(() => {
         // Sync desired seats to paxDesired as it was frozen during boarding
-        if (!boardingStarted) adjustDesiredSeats(paxDesired);
+        if (!boardingStarted) {
+            adjustDesiredSeats(paxDesired);
+            updateAllWeights();
+        }
         pax.forEach((stationNumPax: number, stationIndex: number) => {
             // Sync active to desired layout if pax is equal to desired
             if (stationNumPax === parseInt(paxDesired[stationIndex])) {
@@ -632,36 +633,38 @@ const adjustDesiredSeats = (paxDesired)=> {
         setShowSimbriefButton(simbriefStatus);
     }, [simbriefDataLoaded, boardingStarted, gsxPayloadSyncEnabled]);
 
-    useEffect(() => {
+    const updateAllWeights = () => {
         const centerTankMoment = -4.5;
         const innerTankMoment = -8;
         const outerTankMoment = -17.6;
         // Adjust ZFW CG Values based on payload
         const newZfw = emptyWeight + totalPax * paxWeight + totalCargo;
-        const newZfwDesired = emptyWeight + totalPaxDesired * paxWeight + totalCargoDesired;
         const newZfwMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
-        const newZfwDesiredMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxDesiredMoment() + calculateCargoDesiredMoment();
         const newZfwCg = calculateCg(newZfw, newZfwMoment);
-        const newZfwDesiredCg = calculateCg(newZfwDesired, newZfwDesiredMoment);
         const totalFuel = round(totalCurrentGallon * galToKg);
-
         const totalFuelMoment = centerCurrent * galToKg * centerTankMoment + (LOutCurrent + ROutCurrent) * galToKg * outerTankMoment + (LInnCurrent + RInnCurrent) * galToKg * innerTankMoment;
         const newTotalWeight = newZfw + totalFuel;
         const newTotalMoment = newZfwMoment + totalFuelMoment;
         const newCg = calculateCg(newTotalWeight, newTotalMoment);
 
+        setZfw(newZfw);
+        setZfwCg(newZfwCg);
+        setTotalWeight(newTotalWeight);
+        setCg(newCg);
+
+        // desired
+        const newZfwDesired = emptyWeight + totalPaxDesired * paxWeight + totalCargoDesired;
+        const newZfwDesiredMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxDesiredMoment() + calculateCargoDesiredMoment();
         const newTotalWeightDesired = newZfwDesired + totalFuel;
         const newTotalDesiredMoment = newZfwDesiredMoment + totalFuelMoment;
         const newDesiredCg = calculateCg(newTotalWeightDesired, newTotalDesiredMoment);
-
-        setZfw(newZfw);
-        setZfwCg(newZfwCg);
-        setZfwDesired(newZfwDesired);
-        setZfwDesiredCg(newZfwDesiredCg);
-        setTotalWeight(newTotalWeight);
-        setCg(newCg);
-        setTotalDesiredWeight(newTotalWeightDesired);
-        setDesiredCg(newDesiredCg);
+        if (!boardingStarted) {
+            const newZfwDesiredCg = calculateCg(newZfwDesired, newZfwDesiredMoment);
+            setZfwDesired(newZfwDesired);
+            setZfwDesiredCg(newZfwDesiredCg);
+            setTotalDesiredWeight(newTotalWeightDesired);
+            setDesiredCg(newDesiredCg);
+        }
 
         // TODO: Better fuel burn algorithm for estimation - consider this placeholder logic
         // Adjust MLW CG values based on estimated fuel burn
@@ -686,22 +689,26 @@ const adjustDesiredSeats = (paxDesired)=> {
             const newMlw = newZfw + destEfob;
             const destFuelMoment = centerTank * centerTankMoment + outerTanks * outerTankMoment + innerTanks * innerTankMoment;
             const newMlwMoment = newZfwMoment + destFuelMoment;
-            const newMlwDesired = newZfwDesired + destEfob;
-            const newMlwDesiredMoment = newZfwDesiredMoment + destFuelMoment;
-
             const newMlwCg = calculateCg(newMlw, newMlwMoment);
-            const newMlwDesiredCg = calculateCg(newMlwDesired, newMlwDesiredMoment);
-
+            if (!boardingStarted) {
+                const newMlwDesired = newZfwDesired + destEfob;
+                const newMlwDesiredMoment = newZfwDesiredMoment + destFuelMoment;
+                const newMlwDesiredCg = calculateCg(newMlwDesired, newMlwDesiredMoment);
+                setMlwDesired(newMlwDesired);
+                setMlwDesiredCg(newMlwDesiredCg);
+            }
             setMlw(newMlw);
             setMlwCg(newMlwCg);
-            setMlwDesired(newMlwDesired);
-            setMlwDesiredCg(newMlwDesiredCg);
         } else {
             setMlw(newTotalWeight);
             setMlwCg(newCg);
             setMlwDesired(newTotalWeightDesired);
             setMlwDesiredCg(newDesiredCg);
         }
+    };
+
+    useEffect(() => {
+        updateAllWeights();
     }, [
         ...pax, ...paxDesired,
         ...cargo, ...cargoDesired,
