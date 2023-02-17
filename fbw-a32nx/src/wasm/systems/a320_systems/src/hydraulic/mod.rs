@@ -2452,7 +2452,7 @@ impl A320Hydraulic {
             self.brake_steer_computer.alternate_controller(),
         );
 
-        println!("REV CONTROL1: {:?}", self.engine_reverser_control[0]);
+        // println!("REV CONTROL1: {:?}", self.engine_reverser_control[0]);
         // TODO CHECK LGCIU USAGE
         self.engine_reverser_control[0].update(
             context,
@@ -6033,40 +6033,26 @@ impl A320ReverserController {
                 && reverser_feedback.proximity_sensor_stowed()
                 && !reverser_feedback.pressure_switch_pressurised();
 
-        println!(
-            "CONFIRMED STOW {:?}",
-            is_confirmed_stowed_available_for_deploy
-        );
+        let deploy_authorized = engine.corrected_n2().get::<percent>() > 50.
+            && lgciu.left_and_right_gear_compressed(false);
 
         let allow_power_to_valves = self.throttle_lever_angle.get::<degree>() <= -3.8
             && lgciu.left_and_right_gear_compressed(false);
 
-        println!("allow_power_to_valves {:?}", allow_power_to_valves);
-
         let allow_isolation_valve_to_open = self.throttle_lever_angle.get::<degree>() <= -4.3;
-        println!(
-            "allow_isolation_valve_to_open {:?}",
-            allow_isolation_valve_to_open
-        );
 
         let allow_directional_valve_to_deploy =
             allow_isolation_valve_to_open && reverser_feedback.pressure_switch_pressurised();
-        println!(
-            "allow_directional_valve_to_deploy {:?}",
-            allow_directional_valve_to_deploy
-        );
-
-        let deploy_authorized = engine.corrected_n2().get::<percent>() > 50.
-            && lgciu.left_and_right_gear_compressed(false);
-
-        println!("deploy_authorized {:?}", deploy_authorized);
 
         self.tertiary_lock_from_sec_should_unlock
             .update(context, self.throttle_lever_angle.get::<degree>() <= -3.);
 
         self.state = match self.state {
             ReverserControlState::StowedOff => {
-                if is_confirmed_stowed_available_for_deploy && allow_power_to_valves {
+                if deploy_authorized
+                    && is_confirmed_stowed_available_for_deploy
+                    && allow_power_to_valves
+                {
                     ReverserControlState::StowedOn
                 } else {
                     self.state
@@ -6130,6 +6116,7 @@ impl ReverserInterface for A320ReverserController {
 
     fn should_deploy_reverser(&self) -> bool {
         self.state == ReverserControlState::TransitOpening
+            || self.state == ReverserControlState::FullyOpened
     }
 }
 impl Debug for A320ReverserController {
@@ -6211,12 +6198,6 @@ impl A320Reversers {
             context,
             &reverser_controllers[0],
             left_reverser_section.pressure(),
-        );
-
-        println!(
-            "REV CONTROL1: position{:?} pressurized {:?}",
-            self.reversers[0].position_sensor().get::<ratio>(),
-            self.reversers[0].pressure_switch_pressurised()
         );
 
         self.reversers[1].update(
@@ -6967,6 +6948,14 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
             }
 
+            fn get_reverser_1_position(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("REVERSER1_POSITION"))
+            }
+
+            fn get_reverser_2_position(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("REVERSER2_POSITION"))
+            }
+
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
             }
@@ -7159,6 +7148,7 @@ mod tests {
             fn start_eng1(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
                 self.write_by_name("ENGINE_N2:1", n2);
+                self.write_by_name("TURB ENG CORRECTED N2:1", n2);
 
                 self
             }
@@ -7166,6 +7156,7 @@ mod tests {
             fn start_eng2(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
                 self.write_by_name("ENGINE_N2:2", n2);
+                self.write_by_name("TURB ENG CORRECTED N2:2", n2);
 
                 self
             }
@@ -7173,6 +7164,7 @@ mod tests {
             fn stop_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 0.);
+                self.write_by_name("TURB ENG CORRECTED N2:1", 0.);
 
                 self
             }
@@ -7180,6 +7172,7 @@ mod tests {
             fn stopping_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 25.);
+                self.write_by_name("TURB ENG CORRECTED N2:1", 25.);
 
                 self
             }
@@ -7187,6 +7180,7 @@ mod tests {
             fn stop_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 0.);
+                self.write_by_name("TURB ENG CORRECTED N2:2", 0.);
 
                 self
             }
@@ -11914,18 +11908,51 @@ mod tests {
                 .eng1_throttle_reverse_full()
                 .eng2_throttle_reverse_full()
                 .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() < 0.01);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() < 0.01);
         }
 
         #[test]
-        fn reversers_deploy_on_ground_with_eng_on() {
+        fn reversers_deploy_and_retract_on_ground_with_eng_on() {
             let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .start_eng1(Ratio::new::<percent>(60.))
                 .start_eng2(Ratio::new::<percent>(60.))
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            test_bed = test_bed
                 .eng1_throttle_reverse_full()
                 .eng2_throttle_reverse_full()
-                .run_waiting_for(Duration::from_secs_f64(1.));
+                .run_waiting_for(Duration::from_secs_f64(3.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() > 0.99);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() > 0.99);
+
+            test_bed = test_bed
+                .set_throttles_idle()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() < 0.01);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() < 0.01);
+        }
+
+        #[test]
+        fn reversers_do_not_deploy_on_ground_with_pressure_but_eng_off() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            test_bed = test_bed
+                .eng1_throttle_reverse_full()
+                .eng2_throttle_reverse_full()
+                .run_waiting_for(Duration::from_secs_f64(3.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() < 0.01);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() < 0.01);
         }
     }
 }

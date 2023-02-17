@@ -47,12 +47,13 @@ impl ReverserActuator {
     ) {
         self.update_current_speed(context, pressure, is_mechanically_locked);
 
-        println!(
-            "ACTUATOR: islocked{:?} speed {:.2} position {:.3}",
-            is_mechanically_locked,
-            self.current_speed.output().get::<ratio>(),
-            self.position.get::<ratio>()
-        );
+        // println!(
+        //     "ACTUATOR: islocked{:?} speed {:.2} position {:.3} pressure {:.0}",
+        //     is_mechanically_locked,
+        //     self.current_speed.output().get::<ratio>(),
+        //     self.position.get::<ratio>(),
+        //     pressure.get::<psi>()
+        // );
 
         self.position += context.delta_as_secs_f64() * self.current_speed.output();
 
@@ -320,7 +321,22 @@ impl ReverserHydraulicManifold {
             context,
             !controller.should_deploy_reverser() || !controller.should_power_valves(),
             self.isolation_valve.pressure_output(),
-        )
+        );
+
+        // println!(
+        //     "MANIFOLD: isolationPos{:?} pressures {:.0}/{:.0} PressureSwithc {:?}",
+        //     self.isolation_valve.position.output().get::<ratio>(),
+        //     pressure.get::<psi>(),
+        //     self.isolation_valve.pressure_output().get::<psi>(),
+        //     self.pressure_switch.state_is_pressurised
+        // );
+
+        // println!(
+        //     "MANIFOLD: directionalPos{:?} pressures {:.0}/{:.0}",
+        //     self.directional_valve.position.output().get::<ratio>(),
+        //     self.isolation_valve.pressure_output().get::<psi>(),
+        //     self.directional_valve.pressure_output().get::<psi>(),
+        // );
     }
 
     fn manifold_pressure(&self) -> Pressure {
