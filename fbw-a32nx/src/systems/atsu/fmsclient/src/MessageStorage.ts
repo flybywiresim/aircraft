@@ -1,3 +1,4 @@
+import { AocFmsMessages } from '@atsu/aoc';
 import {
     AtsuFmsMessages,
     AtisMessage,
@@ -55,13 +56,12 @@ export class MessageStorage {
         return index !== -1;
     }
 
-    private deleteMessage(uid: number): void {
+    private deleteAocMessage(uid: number): void {
         if (this.deleteMessageFromQueue(uid, this.aocDownlinkMessages)) return;
-        if (this.deleteMessageFromQueue(uid, this.aocUplinkMessages)) return;
-        this.deleteMessageFromQueue(uid, this.atcMessagesBuffer);
+        this.deleteMessageFromQueue(uid, this.aocUplinkMessages);
     }
 
-    constructor(private readonly subscriber: EventSubscriber<AtsuFmsMessages>) {
+    constructor(private readonly subscriber: EventSubscriber<AtsuFmsMessages & AocFmsMessages>) {
         this.subscriber.on('atcAtisReports').handle((reports) => {
             this.atisReports = new Map();
 
@@ -78,19 +78,23 @@ export class MessageStorage {
             this.atcMonitoredMessages = [];
             messages.forEach((message) => this.atcMonitoredMessages.push(Conversion.messageDataToMessage(message) as CpdlcMessage));
         });
-        this.subscriber.on('resynchronizeAocWeatherMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
-        this.subscriber.on('resynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
+        this.subscriber.on('aocResynchronizeWeatherMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
+        this.subscriber.on('aocResynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
         this.subscriber.on('resynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as CpdlcMessage));
         this.subscriber.on('resynchronizeDclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as DclMessage));
         this.subscriber.on('resynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as OclMessage));
-        this.subscriber.on('deleteMessage').handle((uid) => this.deleteMessage(uid));
+        this.subscriber.on('deleteMessage').handle((uid) => this.deleteMessageFromQueue(uid, this.atcMessagesBuffer));
+        this.subscriber.on('aocDeleteMessage').handle((uid) => this.deleteAocMessage(uid));
     }
 
-    public reset(): void {
+    public resetAocData(): void {
+        this.aocUplinkMessages = [];
+        this.aocDownlinkMessages = [];
+    }
+
+    public resetAtcData(): void {
         this.atisReports = new Map();
         this.atcMessagesBuffer = [];
         this.atcMonitoredMessages = [];
-        this.aocUplinkMessages = [];
-        this.aocDownlinkMessages = [];
     }
 }

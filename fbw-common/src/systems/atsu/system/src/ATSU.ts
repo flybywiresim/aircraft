@@ -42,8 +42,6 @@ export class Atsu {
 
     private ats623: ATS623 = null;
 
-    public aoc: Aoc = null;
-
     public atc: Atc = null;
 
     destinationWaypoint(): any {
@@ -56,7 +54,6 @@ export class Atsu {
 
     public powerUp(): void {
         this.digitalOutputs.FmsBus.powerUp();
-        this.aoc.powerUp();
         this.atc.powerUp();
         this.poweredUp = true;
     }
@@ -64,7 +61,6 @@ export class Atsu {
     public powerDown(): void {
         this.digitalOutputs.FwcBus.setCompanyMessageCount(0);
         this.digitalOutputs.FmsBus.powerDown();
-        this.aoc.powerDown();
         this.atc.powerDown();
         this.poweredUp = false;
     }
@@ -257,7 +253,6 @@ export class Atsu {
         this.datalink = new DatalinkInputBus(bus, false);
         this.datalinkOutputBus = new DatalinkOutputBus(bus);
         this.ats623 = new ATS623(this);
-        this.aoc = new Aoc(this);
         this.atc = new Atc(bus, this);
 
         // register all input callbacks
@@ -273,9 +268,7 @@ export class Atsu {
         this.digitalInputs.fmsBus.addDataCallback('togglePrintAtisReportsPrint', () => this.atc.togglePrintAtisReports());
         this.digitalInputs.fmsBus.addDataCallback('setMaxUplinkDelay', (delay) => this.atc.setMaxUplinkDelay(delay));
         this.digitalInputs.fmsBus.addDataCallback('toggleAutomaticPositionReport', () => this.atc.toggleAutomaticPositionReportActive());
-        this.digitalInputs.fmsBus.addDataCallback('requestAocAtis', (icao, type, sentCallback) => this.aoc.receiveAtis(icao, type, sentCallback));
         this.digitalInputs.fmsBus.addDataCallback('requestAtcAtis', (icao, type) => this.atc.receiveAtis(icao, type));
-        this.digitalInputs.fmsBus.addDataCallback('requestWeather', (icaos, requestMetar, sentCallback) => this.aoc.receiveWeather(requestMetar, icaos, sentCallback));
         this.digitalInputs.fmsBus.addDataCallback('positionReportData', () => this.createPositionReportData());
         this.digitalInputs.fmsBus.addDataCallback('registerMessages', (messages) => this.registerMessages(messages));
         this.digitalInputs.fmsBus.addDataCallback('messageRead', (uid) => this.messageRead(uid));
@@ -325,12 +318,7 @@ export class Atsu {
 
         message.Timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
 
-        if (Aoc.isRelevantMessage(message)) {
-            retval = await this.aoc.sendMessage(message);
-            if (retval === AtsuStatusCodes.Ok) {
-                this.registerMessages([message]);
-            }
-        } else if (Atc.isRelevantMessage(message)) {
+        if (Atc.isRelevantMessage(message)) {
             retval = await this.atc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessages([message]);
@@ -343,8 +331,6 @@ export class Atsu {
     public removeMessage(uid: number): void {
         if (this.atc.removeMessage(uid) === true) {
             this.atc.mailboxBus.dequeue(uid);
-        } else {
-            this.aoc.removeMessage(uid);
         }
     }
 
@@ -358,15 +344,12 @@ export class Atsu {
 
         if (this.ats623.isRelevantMessage(messages[0])) {
             this.ats623.insertMessages(messages);
-        } else if (Aoc.isRelevantMessage(messages[0])) {
-            this.aoc.insertMessages(messages);
         } else if (Atc.isRelevantMessage(messages[0])) {
             this.atc.insertMessages(messages);
         }
     }
 
     public messageRead(uid: number): void {
-        this.aoc.messageRead(uid);
         this.atc.messageRead(uid);
     }
 

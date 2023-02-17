@@ -1,3 +1,4 @@
+import { AocFmsMessages, FmsAocMessages } from '@atsu/aoc';
 import {
     AtsuFmsMessages,
     FmsAtsuMessages,
@@ -33,9 +34,9 @@ export class FmsClient {
 
     private readonly flightPlan: FlightPlanSynchronization;
 
-    private readonly publisher: Publisher<FmsAtsuMessages>;
+    private readonly publisher: Publisher<FmsAtsuMessages & FmsAocMessages>;
 
-    private readonly subscriber: EventSubscriber<AtsuFmsMessages>;
+    private readonly subscriber: EventSubscriber<AtsuFmsMessages & AocFmsMessages>;
 
     private requestId: number = 0;
 
@@ -81,8 +82,8 @@ export class FmsClient {
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.bus = new EventBus();
-        this.publisher = this.bus.getPublisher<FmsAtsuMessages>();
-        this.subscriber = this.bus.getSubscriber<AtsuFmsMessages>();
+        this.publisher = this.bus.getPublisher<FmsAtsuMessages & FmsAocMessages>();
+        this.subscriber = this.bus.getSubscriber<AtsuFmsMessages & AocFmsMessages>();
 
         this.fms = fms;
         this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
@@ -90,8 +91,9 @@ export class FmsClient {
 
         // register the system control handlers
         this.subscriber.on('poweredUp').handle((poweredUp: boolean) => this.poweredUp = poweredUp);
+        this.subscriber.on('aocResetData').handle(() => this.messageStorage.resetAocData());
         this.subscriber.on('resetData').handle(() => {
-            this.messageStorage.reset();
+            this.messageStorage.resetAtcData();
             this.atisAutoUpdates = [];
             this.atisReportsPrintActive = false;
             this.automaticPositionReportIsActive = false;
@@ -119,8 +121,10 @@ export class FmsClient {
 
         // register the streaming handlers
         this.subscriber.on('atsuSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
+        this.subscriber.on('aocSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
         this.subscriber.on('messageModify').handle((message) => this.modificationMessage = message);
         this.subscriber.on('printMessage').handle((message) => this.printMessage(message));
+        this.subscriber.on('aocPrintMessage').handle((message) => this.printMessage(message));
         this.subscriber.on('activeAtisAutoUpdates').handle((airports) => this.atisAutoUpdates = airports);
         this.subscriber.on('printAtisReportsPrint').handle((active) => this.atisReportsPrintActive = active);
         this.subscriber.on('atcStationStatus').handle((status) => this.atcStationStatus = status);
@@ -148,6 +152,24 @@ export class FmsClient {
                 return true;
             });
         });
+        this.subscriber.on('aocTransmissionResponse').handle((response) => {
+            this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
+                if (callback(response.status, response.requestId)) {
+                    this.requestAtsuStatusCodeCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
+        this.subscriber.on('aocRequestSentToGround').handle((response) => {
+            this.requestSentToGroundCallbacks.every((callback, index) => {
+                if (callback(response)) {
+                    this.requestSentToGroundCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
         this.subscriber.on('requestSentToGround').handle((response) => {
             this.requestSentToGroundCallbacks.every((callback, index) => {
                 if (callback(response)) {
@@ -158,6 +180,15 @@ export class FmsClient {
             });
         });
         this.subscriber.on('weatherResponse').handle((response) => {
+            this.weatherResponseCallbacks.every((callback, index) => {
+                if (callback(response.data, response.requestId)) {
+                    this.weatherResponseCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
+        this.subscriber.on('aocWeatherResponse').handle((response) => {
             this.weatherResponseCallbacks.every((callback, index) => {
                 if (callback(response.data, response.requestId)) {
                     this.weatherResponseCallbacks.splice(index, 1);
@@ -185,7 +216,7 @@ export class FmsClient {
         if (this.poweredUp) {
             return new Promise<AtsuStatusCodes>((resolve, _reject) => {
                 const requestId = this.requestId++;
-                this.publisher.pub('sendFreetextMessage', { message: message as FreetextMessage, requestId }, true, false);
+                this.publisher.pub('sendAocFreetextMessage', { message: message as FreetextMessage, requestId }, true, false);
                 this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
                     if (id === requestId) resolve(code);
                     return id === requestId;
@@ -262,7 +293,7 @@ export class FmsClient {
 
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestWeather', { icaos, requestMetar, requestId }, true, false);
+            this.publisher.pub('requestAocWeather', { icaos, requestMetar, requestId }, true, false);
 
             this.requestSentToGroundCallbacks.push((id: number) => {
                 if (id === requestId) sentCallback();
@@ -287,7 +318,7 @@ export class FmsClient {
         } else if (messages[0].Type === AtsuMessageType.OCL) {
             this.publisher.pub('registerOclMessages', messages as OclMessage[], true, false);
         } else if (messages[0].Type === AtsuMessageType.METAR || messages[0].Type === AtsuMessageType.TAF) {
-            this.publisher.pub('registerWeatherMessages', messages as WeatherMessage[], true, false);
+            this.publisher.pub('registerAocWeatherMessages', messages as WeatherMessage[], true, false);
         }
     }
 
