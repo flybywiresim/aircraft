@@ -1,2 +1,3 @@
-export * from './Fms';
+export * from './ClockBus';
+export * from './FmgcBus';
 export * from './Mailbox';

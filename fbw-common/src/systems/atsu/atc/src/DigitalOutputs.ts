@@ -1,4 +1,5 @@
-import { AtsuMessage } from '@atsu/common';
+import { CpdlcMessage } from '@atsu/common';
+import { AtcAocRouterBus } from '@atsu/communication';
 import { EventBus } from 'msfssdk';
 import { AtcMessageButtonOutputBus } from './databus/AtcMessageButtonBus';
 import { AtcFmsBus } from './databus/FmsBus';
@@ -11,9 +12,12 @@ export class DigitalOutputs {
 
     public FmsBus: AtcFmsBus = null;
 
-    constructor(private readonly bus: EventBus) {
+    public RouterBus: AtcAocRouterBus = null;
+
+    constructor(private readonly bus: EventBus, synchronizedRouter: boolean) {
         this.AtcMessageButtonsBus = new AtcMessageButtonOutputBus(this.bus);
         this.FwcBus = new FwcOutputBus();
         this.FmsBus = new AtcFmsBus(this.bus);
+        this.RouterBus = new AtcAocRouterBus(this.bus, synchronizedRouter);
     }
 }

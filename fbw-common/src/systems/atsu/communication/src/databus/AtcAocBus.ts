@@ -11,40 +11,34 @@ import {
 } from '@atsu/common';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 
-export interface DatalinkMessages {
-    // general management messages
-    connect: { requestId: number, callsign: string };
-    disconnect: number;
-    requestStationAvailable: { requestId: number, callsign: string };
-    managementResponse: { requestId: number, status: AtsuStatusCodes };
-
+export interface AtcAocRouterMessages {
     // streams to send several messages
-    sendFreetextMessage: { requestId: number, message: FreetextMessage, force: boolean };
-    sendCpdlcMessage: { requestId: number, message: CpdlcMessage, force: boolean };
-    sendDclMessage: { requestId: number, message: DclMessage, force: boolean };
-    sendOclMessage: { requestId: number, message: OclMessage, force: boolean };
-    sendMessageResponse: { requestId: number, status: AtsuStatusCodes };
+    routerSendFreetextMessage: { requestId: number, message: FreetextMessage, force: boolean };
+    routerSendCpdlcMessage: { requestId: number, message: CpdlcMessage, force: boolean };
+    routerSendDclMessage: { requestId: number, message: DclMessage, force: boolean };
+    routerSendOclMessage: { requestId: number, message: OclMessage, force: boolean };
+    routerSendMessageResponse: { requestId: number, status: AtsuStatusCodes };
 
     // streams to request specific data
-    requestAtis: { requestId: number, icao: string, type: AtisType };
-    requestMetar: { requestId: number, icaos: string[] };
-    requestTaf: { requestId: number, icaos: string[] };
-    requestSent: number;
-    receivedWeather: { requestId: number, response: [AtsuStatusCodes, WeatherMessage] };
-
-    // streams to read specific messages
-    receivedFreetextMessage: FreetextMessage;
-    receivedCpdlcMessage: CpdlcMessage;
+    routerRequestAtis: { requestId: number, icao: string, type: AtisType };
+    routerRequestMetar: { requestId: number, icaos: string[] };
+    routerRequestTaf: { requestId: number, icaos: string[] };
+    routerRequestSent: number;
+    routerReceivedWeather: { requestId: number, response: [AtsuStatusCodes, WeatherMessage] };
 };
 
-export class DatalinkInputBus {
+export interface RouterAtcAocMessages {
+    // streams to read specific messages
+    routerReceivedFreetextMessage: FreetextMessage;
+    routerReceivedCpdlcMessage: CpdlcMessage;
+}
+
+export class AtcAocRouterBus {
     private requestId: number = 0;
 
-    private publisher: Publisher<DatalinkMessages>;
+    private publisher: Publisher<AtcAocRouterMessages>;
 
-    private subscriber: EventSubscriber<DatalinkMessages>;
-
-    private managementCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
+    private subscriber: EventSubscriber<AtcAocRouterMessages>;
 
     private sendMessageCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
@@ -53,20 +47,10 @@ export class DatalinkInputBus {
     private weatherResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, WeatherMessage]) => boolean)[] = [];
 
     constructor(private readonly bus: EventBus, private readonly synchronized: boolean) {
-        this.publisher = this.bus.getPublisher<DatalinkMessages>();
-        this.subscriber = this.bus.getSubscriber<DatalinkMessages>();
+        this.publisher = this.bus.getPublisher<AtcAocRouterMessages>();
+        this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
 
-        this.subscriber.on('managementResponse').handle((response) => {
-            this.managementCallbacks.every((callback, index) => {
-                if (callback(response.requestId, response.status)) {
-                    this.managementCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
-
-        this.subscriber.on('sendMessageResponse').handle((response) => {
+        this.subscriber.on('routerSendMessageResponse').handle((response) => {
             this.sendMessageCallbacks.every((callback, index) => {
                 if (callback(response.requestId, response.status)) {
                     this.sendMessageCallbacks.splice(index, 1);
@@ -76,7 +60,7 @@ export class DatalinkInputBus {
             });
         });
 
-        this.subscriber.on('requestSent').handle((response) => {
+        this.subscriber.on('routerRequestSent').handle((response) => {
             this.requestSentCallbacks.every((callback, index) => {
                 if (callback(response)) {
                     this.requestSentCallbacks.splice(index, 1);
@@ -86,7 +70,7 @@ export class DatalinkInputBus {
             });
         });
 
-        this.subscriber.on('receivedWeather').handle((response) => {
+        this.subscriber.on('routerReceivedWeather').handle((response) => {
             this.weatherResponseCallbacks.every((callback, index) => {
                 if (callback(response.requestId, response.response)) {
                     this.weatherResponseCallbacks.splice(index, 1);
@@ -97,43 +81,10 @@ export class DatalinkInputBus {
         });
     }
 
-    public connect(callsign: string): Promise<AtsuStatusCodes> {
-        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            const requestId = this.requestId++;
-            this.publisher.pub('connect', { requestId, callsign }, this.synchronized, false);
-            this.managementCallbacks.push((id: number, code: AtsuStatusCodes) => {
-                if (id === requestId) resolve(code);
-                return id === requestId;
-            });
-        });
-    }
-
-    public disconnect(): Promise<AtsuStatusCodes> {
-        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            const requestId = this.requestId++;
-            this.publisher.pub('disconnect', requestId, this.synchronized, false);
-            this.managementCallbacks.push((id: number, code: AtsuStatusCodes) => {
-                if (id === requestId) resolve(code);
-                return id === requestId;
-            });
-        });
-    }
-
-    public isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
-        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            const requestId = this.requestId++;
-            this.publisher.pub('requestStationAvailable', { requestId, callsign }, this.synchronized, false);
-            this.managementCallbacks.push((id: number, code: AtsuStatusCodes) => {
-                if (id === requestId) resolve(code);
-                return id === requestId;
-            });
-        });
-    }
-
     private sendFreetextMessage(message: FreetextMessage, force: boolean): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('sendFreetextMessage', { requestId, message, force }, this.synchronized, false);
+            this.publisher.pub('routerSendFreetextMessage', { requestId, message, force }, this.synchronized, false);
             this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
@@ -144,7 +95,7 @@ export class DatalinkInputBus {
     private sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('sendCpdlcMessage', { requestId, message, force }, this.synchronized, false);
+            this.publisher.pub('routerSendCpdlcMessage', { requestId, message, force }, this.synchronized, false);
             this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
@@ -155,7 +106,7 @@ export class DatalinkInputBus {
     private sendDclMessage(message: DclMessage, force: boolean): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('sendDclMessage', { requestId, message, force }, this.synchronized, false);
+            this.publisher.pub('routerSendDclMessage', { requestId, message, force }, this.synchronized, false);
             this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
@@ -166,7 +117,7 @@ export class DatalinkInputBus {
     private sendOclMessage(message: OclMessage, force: boolean): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('sendOclMessage', { requestId, message, force }, this.synchronized, false);
+            this.publisher.pub('routerSendOclMessage', { requestId, message, force }, this.synchronized, false);
             this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
@@ -192,7 +143,7 @@ export class DatalinkInputBus {
     public receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestAtis', { requestId, icao, type }, this.synchronized, false);
+            this.publisher.pub('routerRequestAtis', { requestId, icao, type }, this.synchronized, false);
             this.requestSentCallbacks.push((id: number) => {
                 if (id === requestId) sentCallback();
                 return id === requestId;
@@ -207,7 +158,7 @@ export class DatalinkInputBus {
     public receiveMetar(icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestMetar', { requestId, icaos }, this.synchronized, false);
+            this.publisher.pub('routerRequestMetar', { requestId, icaos }, this.synchronized, false);
             this.requestSentCallbacks.push((id: number) => {
                 if (id === requestId) sentCallback();
                 return id === requestId;
@@ -222,7 +173,7 @@ export class DatalinkInputBus {
     public receiveTaf(icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('requestTaf', { requestId, icaos }, this.synchronized, false);
+            this.publisher.pub('routerRequestTaf', { requestId, icaos }, this.synchronized, false);
             this.requestSentCallbacks.push((id: number) => {
                 if (id === requestId) sentCallback();
                 return id === requestId;
@@ -240,8 +191,8 @@ export type DatalinkOutpuBusCallbacks = {
     receivedCpdlcMessage: (message: CpdlcMessage) => void;
 }
 
-export class DatalinkOutputBus {
-    private subscriber: EventSubscriber<DatalinkMessages>;
+export class RouterAtcAocBus {
+    private subscriber: EventSubscriber<RouterAtcAocMessages>;
 
     private callbacks: DatalinkOutpuBusCallbacks = {
         receivedFreetextMessage: null,
@@ -249,14 +200,14 @@ export class DatalinkOutputBus {
     };
 
     constructor(private readonly bus: EventBus) {
-        this.subscriber = this.bus.getSubscriber<DatalinkMessages>();
+        this.subscriber = this.bus.getSubscriber<RouterAtcAocMessages>();
 
-        this.subscriber.on('receivedFreetextMessage').handle((data) => {
+        this.subscriber.on('routerReceivedFreetextMessage').handle((data) => {
             if (this.callbacks.receivedFreetextMessage !== null) {
                 this.callbacks.receivedFreetextMessage(data);
             }
         });
-        this.subscriber.on('receivedCpdlcMessage').handle((data) => {
+        this.subscriber.on('routerReceivedCpdlcMessage').handle((data) => {
             if (this.callbacks.receivedCpdlcMessage !== null) {
                 this.callbacks.receivedCpdlcMessage(data);
             }

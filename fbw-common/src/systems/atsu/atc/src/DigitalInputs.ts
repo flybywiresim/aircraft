@@ -1,12 +1,17 @@
-import { Clock } from '@atsu/common';
+import { Clock, CpdlcMessage, FmgcDataBusTypes, FmgcInputBus, FreetextMessage } from '@atsu/common';
+import { RouterAtcAocMessages } from '@atsu/communication';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus } from './databus/AtcMessageButtonBus';
-import { ClockDataBusTypes, ClockInputBus } from './databus/ClockBus';
-import { FmgcDataBusTypes, FmgcInputBus } from './databus/FmgcBus';
+import { ClockDataBusTypes, ClockInputBus } from '../../common/src/databus/ClockBus';
 import { FmsAtcBus, FmsAtcMessages, FmsRouteData } from './databus/FmsBus';
 import { RmpDataBusTypes, RmpInputBus } from './databus/RmpBus';
+
+export type DigitalInputCallbacks = {
+    receivedFreetextMessage: (message: FreetextMessage) => void;
+    receivedCpdlcMessage: (message: CpdlcMessage) => void;
+}
 
 export class DigitalInputs {
     private subscriber: EventSubscriber<
@@ -14,10 +19,16 @@ export class DigitalInputs {
         ClockDataBusTypes &
         FmgcDataBusTypes &
         FmsAtcMessages &
-        RmpDataBusTypes
+        RmpDataBusTypes &
+        RouterAtcAocMessages
     > = null;
 
     private poweredUp: boolean = false;
+
+    private callbacks: DigitalInputCallbacks = {
+        receivedFreetextMessage: null,
+        receivedCpdlcMessage: null,
+    };
 
     public UtcClock: Clock;
 
@@ -134,7 +145,8 @@ export class DigitalInputs {
             ClockDataBusTypes &
             FmgcDataBusTypes &
             FmsAtcMessages &
-            RmpDataBusTypes
+            RmpDataBusTypes &
+            RouterAtcAocMessages
         >();
     }
 
@@ -261,6 +273,17 @@ export class DigitalInputs {
                 this.FlightRoute.destination = route.destination;
             }
         });
+
+        this.subscriber.on('routerReceivedFreetextMessage').handle((message: FreetextMessage) => {
+            if (this.callbacks.receivedFreetextMessage !== null) {
+                this.callbacks.receivedFreetextMessage(message);
+            }
+        });
+        this.subscriber.on('routerReceivedCpdlcMessage').handle((message: CpdlcMessage) => {
+            if (this.callbacks.receivedCpdlcMessage !== null) {
+                this.callbacks.receivedCpdlcMessage(message);
+            }
+        });
     }
 
     public startPublish(): void {
@@ -287,5 +310,9 @@ export class DigitalInputs {
         this.clockBus.update();
         this.fmgcBus.update();
         this.rmpBus.update();
+    }
+
+    public addDataCallback<K extends keyof DigitalInputCallbacks>(event: K, callback: DigitalInputCallbacks[K]): void {
+        this.callbacks[event] = callback;
     }
 }

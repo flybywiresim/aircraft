@@ -19,8 +19,9 @@ import { NXDataStore } from '@shared/persistence';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
-import { DatalinkMessages } from './databus/DatalinkBus';
+import { EventBus } from 'msfssdk';
+import { DigitalInputs } from './DigitalInputs';
+import { DigitalOutputs } from './DigitalOutputs';
 
 enum ActiveCommunicationInterface {
     None,
@@ -30,9 +31,9 @@ enum ActiveCommunicationInterface {
 };
 
 export class Datalink {
-    private readonly subscriber: EventSubscriber<DatalinkMessages>;
+    private readonly digitalInputs: DigitalInputs;
 
-    private readonly publisher: Publisher<DatalinkMessages>;
+    private readonly digitalOutputs: DigitalOutputs;
 
     private communicationInterface: ActiveCommunicationInterface = ActiveCommunicationInterface.None;
 
@@ -95,20 +96,13 @@ export class Datalink {
     constructor(private readonly bus: EventBus, private readonly synchronizedBuses: boolean) {
         HoppieConnector.activateHoppie();
 
-        this.subscriber = this.bus.getSubscriber<DatalinkMessages>();
-        this.publisher = this.bus.getPublisher<DatalinkMessages>();
+        this.digitalInputs = new DigitalInputs(this.bus);
+        this.digitalOutputs = new DigitalOutputs(this.bus);
 
-        this.subscriber.on('connect').handle((request) => {
-            Datalink.connect(request.callsign).then((status) => this.publisher.pub('managementResponse', { requestId: request.requestId, status }, true, false));
-        });
-        this.subscriber.on('disconnect').handle((requestId: number) => {
-            Datalink.disconnect().then((status) => this.publisher.pub('managementResponse', { requestId, status }, true, false));
-        });
-        this.subscriber.on('requestStationAvailable').handle((request) => {
-            this.isStationAvailable(request.callsign).then((status) => {
-                this.publisher.pub('managementResponse', { requestId: request.requestId, status }, true, false);
-            });
-        });
+        this.digitalInputs.fmsBus.addDataCallback('connect', (callsign: string) => Datalink.connect(callsign));
+        this.digitalInputs.fmsBus.addDataCallback('disconnect', () => Datalink.disconnect());
+        this.digitalInputs.fmsBus.addDataCallback('stationAvailable', (callsign: string) => this.isStationAvailable(callsign));
+
         this.subscriber.on('sendFreetextMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
         this.subscriber.on('sendCpdlcMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
         this.subscriber.on('sendDclMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
@@ -131,6 +125,15 @@ export class Datalink {
         this.subscriber.on('requestTaf').handle((request) => this.receiveWeather(request.requestId, false, request.icaos));
     }
 
+    public initialize(): void {
+        this.digitalInputs.initialize();
+        this.digitalInputs.connectedCallback();
+    }
+
+    public startPublish(): void {
+        this.digitalInputs.startPublish();
+    }
+
     public powerUp(): void {
         this.poweredUp = true;
     }
@@ -148,7 +151,7 @@ export class Datalink {
         const currentTimestamp = new Date().getTime();
 
         // update the communication interface states
-        this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.RmpData.vhf3Powered, this.digitalInputs.RmpData.vhf3DataMode);
+        this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.Vhf3Powered, this.digitalInputs.Vhf3DataMode);
 
         // find the best communication
         if (this.vdl.vhf3.datalinkStatus === DatalinkStatusCode.DlkAvail && this.poweredUp) {
@@ -164,16 +167,16 @@ export class Datalink {
             this.waitedComUpdate += currentTimestamp - this.lastUpdateTime;
         }
 
-        this.digitalOutputs.FmsBus.sendDatalinkCommunicationStatus(
-            this.vhf3DatalinkStatus(),
-            this.satcomDatalinkStatus(),
-            DatalinkStatusCode.NotInstalled,
-        );
-        this.digitalOutputs.FmsBus.sendDatalinkCommunicationMode(
-            this.vhf3DatalinkMode(),
-            DatalinkModeCode.None,
-            DatalinkModeCode.None,
-        );
+        this.digitalOutputs.FmsBus.sendDatalinkStatus({
+            vhf: this.vhf3DatalinkStatus(),
+            satellite: this.satcomDatalinkStatus(),
+            hf: DatalinkStatusCode.NotInstalled,
+    }   );
+        this.digitalOutputs.FmsBus.sendDatalinkMode({
+            vhf: this.vhf3DatalinkMode(),
+            satellite: DatalinkModeCode.None,
+            hf: DatalinkModeCode.None,
+        });
 
         if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
             HoppieConnector.poll().then((retval) => {

@@ -23,6 +23,7 @@ import {
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { FmsRouterMessages, RouterFmsMessages } from '@atsu/communication';
 import { FlightPlanSynchronization } from './FlightPlanSynchronization';
 import { MessageStorage } from './MessageStorage';
 
@@ -33,13 +34,11 @@ export class FmsClient {
 
     private readonly flightPlan: FlightPlanSynchronization;
 
-    private readonly publisher: Publisher<FmsAtcMessages & FmsAocMessages>;
+    private readonly publisher: Publisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>;
 
-    private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages>;
+    private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages>;
 
     private requestId: number = 0;
-
-    private poweredUp: boolean = false;
 
     private genericRequestResponseCallbacks: ((requestId: number) => boolean)[] = [];
 
@@ -81,8 +80,8 @@ export class FmsClient {
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.bus = new EventBus();
-        this.publisher = this.bus.getPublisher<FmsAtcMessages & FmsAocMessages>();
-        this.subscriber = this.bus.getSubscriber<AtcFmsMessages & AocFmsMessages>();
+        this.publisher = this.bus.getPublisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>();
+        this.subscriber = this.bus.getSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages>();
 
         this.fms = fms;
         this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
@@ -128,8 +127,8 @@ export class FmsClient {
         this.subscriber.on('atcStationStatus').handle((status) => this.atcStationStatus = status);
         this.subscriber.on('atcMaxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('atcAutomaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
-        this.subscriber.on('datalinkCommunicationStatus').handle((data) => this.datalinkStatus = data);
-        this.subscriber.on('datalinkCommunicationMode').handle((data) => this.datalinkMode = data);
+        this.subscriber.on('routerDatalinkStatus').handle((data) => this.datalinkStatus = data);
+        this.subscriber.on('routerDatalinkMode').handle((data) => this.datalinkMode = data);
 
         // register the response handlers
         this.subscriber.on('atcGenericRequestResponse').handle((response) => {
@@ -193,19 +192,13 @@ export class FmsClient {
     public modificationMessage: CpdlcMessage = null;
 
     public sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
-        if (this.poweredUp) {
-            return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-                const requestId = this.requestId++;
-                this.publisher.pub('aocSendFreetextMessage', { message: message as FreetextMessage, requestId }, true, false);
-                this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
-                    if (id === requestId) resolve(code);
-                    return id === requestId;
-                });
-            });
-        }
-
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
+            const requestId = this.requestId++;
+            this.publisher.pub('aocSendFreetextMessage', { message: message as FreetextMessage, requestId }, true, false);
+            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                if (id === requestId) resolve(code);
+                return id === requestId;
+            });
         });
     }
 
@@ -214,10 +207,8 @@ export class FmsClient {
     }
 
     public printMessage(message: AtsuMessage): void {
-        if (this.poweredUp) {
-            const text = message.serialize(AtsuMessageSerializationFormat.Printer);
-            this.fms.printPage(text.split('\n'));
-        }
+        const text = message.serialize(AtsuMessageSerializationFormat.Printer);
+        this.fms.printPage(text.split('\n'));
     }
 
     public removeMessage(uid: number, aocMessage: boolean): void {
@@ -225,12 +216,6 @@ export class FmsClient {
     }
 
     public receiveAocAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
-        if (!this.poweredUp) {
-            return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
-                setTimeout(() => resolve([AtsuStatusCodes.ComFailed, null]), 5000);
-            });
-        }
-
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('aocRequestAtis', { icao: airport, type, requestId }, true, false);
@@ -247,12 +232,6 @@ export class FmsClient {
     }
 
     public receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
-        if (!this.poweredUp) {
-            return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            });
-        }
-
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcRequestAtis', { icao: airport, type, requestId }, true, false);
@@ -265,12 +244,6 @@ export class FmsClient {
     }
 
     public receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
-        if (!this.poweredUp) {
-            return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
-                setTimeout(() => resolve([AtsuStatusCodes.ComFailed, null]), 5000);
-            });
-        }
-
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('aocRequestWeather', { icaos, requestMetar, requestId }, true, false);
@@ -287,8 +260,6 @@ export class FmsClient {
     }
 
     public registerMessages(messages: AtsuMessage[]): void {
-        if (!this.poweredUp) return;
-
         if (messages[0].Type === AtsuMessageType.ATIS) {
             this.publisher.pub('atcRegisterAtisMessages', messages as AtisMessage[], true, false);
         } else if (messages[0].Type === AtsuMessageType.CPDLC) {
@@ -308,31 +279,23 @@ export class FmsClient {
 
     public deactivateAtisAutoUpdate(icao: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            if (!this.poweredUp) {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            } else {
-                const requestId = this.requestId++;
-                this.publisher.pub('atcDeactivateAtisAutoUpdate', { icao, requestId }, true, false);
-                this.genericRequestResponseCallbacks.push((id: number) => {
-                    if (id === requestId) resolve(AtsuStatusCodes.Ok);
-                    return id === requestId;
-                });
-            }
+            const requestId = this.requestId++;
+            this.publisher.pub('atcDeactivateAtisAutoUpdate', { icao, requestId }, true, false);
+            this.genericRequestResponseCallbacks.push((id: number) => {
+                if (id === requestId) resolve(AtsuStatusCodes.Ok);
+                return id === requestId;
+            });
         });
     }
 
     public activateAtisAutoUpdate(icao: string, type: AtisType): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            if (!this.poweredUp) {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            } else {
-                const requestId = this.requestId++;
-                this.publisher.pub('atcActivateAtisAutoUpdate', { icao, type, requestId }, true, false);
-                this.genericRequestResponseCallbacks.push((id: number) => {
-                    if (id === requestId) resolve(AtsuStatusCodes.Ok);
-                    return id === requestId;
-                });
-            }
+            const requestId = this.requestId++;
+            this.publisher.pub('atcActivateAtisAutoUpdate', { icao, type, requestId }, true, false);
+            this.genericRequestResponseCallbacks.push((id: number) => {
+                if (id === requestId) resolve(AtsuStatusCodes.Ok);
+                return id === requestId;
+            });
         });
     }
 
@@ -349,16 +312,12 @@ export class FmsClient {
 
     public togglePrintAtisReports(): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            if (!this.poweredUp) {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            } else {
-                const requestId = this.requestId++;
-                this.publisher.pub('atcTogglePrintAtisReportsPrint', requestId, true, false);
-                this.genericRequestResponseCallbacks.push((id: number) => {
-                    if (id === requestId) resolve(AtsuStatusCodes.Ok);
-                    return id === requestId;
-                });
-            }
+            const requestId = this.requestId++;
+            this.publisher.pub('atcTogglePrintAtisReportsPrint', requestId, true, false);
+            this.genericRequestResponseCallbacks.push((id: number) => {
+                if (id === requestId) resolve(AtsuStatusCodes.Ok);
+                return id === requestId;
+            });
         });
     }
 
@@ -387,12 +346,6 @@ export class FmsClient {
     }
 
     public logon(callsign: string): Promise<AtsuStatusCodes> {
-        if (!this.poweredUp) {
-            return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            });
-        }
-
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcLogon', { station: callsign, requestId }, true, false);
@@ -404,12 +357,6 @@ export class FmsClient {
     }
 
     public logoff(): Promise<AtsuStatusCodes> {
-        if (!this.poweredUp) {
-            return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            });
-        }
-
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcLogoff', requestId, true, false);
@@ -421,15 +368,9 @@ export class FmsClient {
     }
 
     public isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
-        if (!this.poweredUp) {
-            return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            });
-        }
-
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('remoteStationAvailable', { station: callsign, requestId }, true, false);
+            this.publisher.pub('routerRequestStationAvailable', { callsign, requestId }, true, false);
             this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
@@ -467,16 +408,12 @@ export class FmsClient {
 
     public setMaxUplinkDelay(delay: number): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            if (!this.poweredUp) {
-                resolve(AtsuStatusCodes.ComFailed);
-            } else {
-                const requestId = this.requestId++;
-                this.publisher.pub('atcSetMaxUplinkDelay', { delay, requestId }, true, false);
-                this.genericRequestResponseCallbacks.push((id: number) => {
-                    if (id === requestId) resolve(AtsuStatusCodes.Ok);
-                    return id === requestId;
-                });
-            }
+            const requestId = this.requestId++;
+            this.publisher.pub('atcSetMaxUplinkDelay', { delay, requestId }, true, false);
+            this.genericRequestResponseCallbacks.push((id: number) => {
+                if (id === requestId) resolve(AtsuStatusCodes.Ok);
+                return id === requestId;
+            });
         });
     }
 
@@ -486,16 +423,12 @@ export class FmsClient {
 
     public toggleAutomaticPositionReport(): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            if (!this.poweredUp) {
-                setTimeout(() => resolve(AtsuStatusCodes.ComFailed), 5000);
-            } else {
-                const requestId = this.requestId++;
-                this.publisher.pub('atcToggleAutomaticPositionReport', requestId, true, false);
-                this.genericRequestResponseCallbacks.push((id: number) => {
-                    if (id === requestId) resolve(AtsuStatusCodes.Ok);
-                    return id === requestId;
-                });
-            }
+            const requestId = this.requestId++;
+            this.publisher.pub('atcToggleAutomaticPositionReport', requestId, true, false);
+            this.genericRequestResponseCallbacks.push((id: number) => {
+                if (id === requestId) resolve(AtsuStatusCodes.Ok);
+                return id === requestId;
+            });
         });
     }
 
@@ -516,10 +449,21 @@ export class FmsClient {
 
     public connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            const requestId = this.requestId++;
-            this.publisher.pub('connectToNetworks', { callsign, requestId }, true, false);
+            let requestId = this.requestId++;
+            this.publisher.pub('routerDisconnect', requestId, true, false);
             this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
-                if (id === requestId) resolve(code);
+                if (id === requestId) {
+                    if (code === AtsuStatusCodes.Ok) {
+                        requestId = this.requestId++;
+                        this.publisher.pub('routerConnect', { callsign, requestId }, true, false);
+                        this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                            if (id === requestId) resolve(code);
+                            return id === requestId;
+                        });
+                    } else {
+                        resolve(code);
+                    }
+                }
                 return id === requestId;
             });
         });

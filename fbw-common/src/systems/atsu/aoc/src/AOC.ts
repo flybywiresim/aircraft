@@ -1,9 +1,14 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes, AtsuMessageDirection, AtsuMessage, AtsuMessageType, WeatherMessage, AtisType } from '@atsu/common';
-import { DatalinkInputBus, DatalinkOutputBus } from '@atsu/communication';
-import { AtcAocBus } from '@atsu/atc';
+import {
+    AtsuStatusCodes,
+    AtsuMessageDirection,
+    AtsuMessage,
+    WeatherMessage,
+    AtisType,
+    AtsuTimestamp,
+} from '@atsu/common';
 import { EventBus } from 'msfssdk';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
@@ -14,15 +19,11 @@ import { DigitalOutputs } from './DigitalOutputs';
 export class Aoc {
     private poweredUp: boolean = false;
 
-    private atcAocBus: AtcAocBus = null;
+    private messageCounter: number = 0;
 
     private digitalInputs: DigitalInputs = null;
 
     private digitalOutputs: DigitalOutputs = null;
-
-    private datalinkInput: DatalinkInputBus = null;
-
-    private datalinkOutput: DatalinkOutputBus = null;
 
     private messageQueueUplink: AtsuMessage[] = [];
 
@@ -30,12 +31,9 @@ export class Aoc {
 
     private blacklistedMessageIds: number[] = [];
 
-    constructor(private bus: EventBus, private readonly synchronizedDatalink: boolean, synchronizedAtc: boolean) {
-        this.datalinkInput = new DatalinkInputBus(this.bus, this.synchronizedDatalink);
-        this.datalinkOutput = new DatalinkOutputBus(this.bus);
-        this.digitalInputs = new DigitalInputs(this.bus);
-        this.digitalOutputs = new DigitalOutputs(this.bus);
-        this.atcAocBus = new AtcAocBus(this.bus, synchronizedAtc, false);
+    constructor(private bus: EventBus, synchronizedRouter: boolean, synchronizedAtc: boolean) {
+        this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc);
+        this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedRouter);
 
         this.digitalInputs.fmsBus.addDataCallback('sendFreetextMessage', (message) => this.sendMessage(message));
         this.digitalInputs.fmsBus.addDataCallback('requestAtis', (icao, type, sentCallback) => this.receiveAtis(icao, type, sentCallback));
@@ -43,8 +41,8 @@ export class Aoc {
         this.digitalInputs.fmsBus.addDataCallback('registerMessages', (messages) => this.insertMessages(messages));
         this.digitalInputs.fmsBus.addDataCallback('messageRead', (messageId) => this.messageRead(messageId));
         this.digitalInputs.fmsBus.addDataCallback('removeMessage', (messageId) => this.removeMessage(messageId));
-        this.datalinkOutput.addDataCallback('receivedFreetextMessage', (message) => this.insertMessages([message]));
-        this.atcAocBus.addDataCallback('ignoreIncomingMessage', (uid: number) => {
+        this.digitalInputs.routerBus.addDataCallback('receivedFreetextMessage', (message) => this.insertMessages([message]));
+        this.digitalInputs.atcAocBus.addDataCallback('ignoreIncomingMessage', (uid: number) => {
             const index = this.messageQueueUplink.findIndex((message) => message.UniqueMessageID === uid);
             if (index !== -1) {
                 this.removeMessage(uid);
@@ -82,11 +80,12 @@ export class Aoc {
 
     private async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (this.poweredUp) {
-            return this.datalinkInput.sendMessage(message, false).then((code) => {
+            return this.digitalOutputs.RouterBus.sendMessage(message, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) this.insertMessages([message]);
                 return code;
             });
         }
+
         return AtsuStatusCodes.ComFailed;
     }
 
@@ -112,13 +111,13 @@ export class Aoc {
 
     private async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
-        if (requestMetar) return this.datalinkInput.receiveMetar(icaos, sentCallback);
-        this.datalinkInput.receiveTaf(icaos, sentCallback);
+        if (requestMetar) return this.digitalOutputs.RouterBus.receiveMetar(icaos, sentCallback);
+        this.digitalOutputs.RouterBus.receiveTaf(icaos, sentCallback);
     }
 
     private async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
-        return this.datalinkInput.receiveAtis(icao, type, sentCallback);
+        return this.digitalOutputs.RouterBus.receiveAtis(icao, type, sentCallback);
     }
 
     private messageRead(uid: number): void {
@@ -136,6 +135,9 @@ export class Aoc {
 
     private insertMessages(messages: AtsuMessage[]): void {
         messages.forEach((message) => {
+            message.UniqueMessageID = ++this.messageCounter;
+            message.Timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
+
             if (message.Direction === AtsuMessageDirection.Uplink) {
                 const index = this.blacklistedMessageIds.findIndex((uid) => uid === message.UniqueMessageID);
 
