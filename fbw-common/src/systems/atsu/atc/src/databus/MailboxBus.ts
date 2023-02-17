@@ -13,7 +13,6 @@ import {
     OclMessage,
 } from '@atsu/common';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
-import { Atsu } from '../ATSU';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from '../components/UplinkMessageStateMachine';
 
@@ -39,8 +38,6 @@ export class MailboxBus {
     private publisher: Publisher<AtsuMailboxMessages> = null;
 
     private subscriber: EventSubscriber<AtsuMailboxMessages> = null;
-
-    private atsu: Atsu = null;
 
     private atc: Atc = null;
 
@@ -122,11 +119,10 @@ export class MailboxBus {
         return idx !== -1;
     }
 
-    constructor(private readonly bus: EventBus, atsu: Atsu, atc: Atc) {
-        this.atsu = atsu;
+    constructor(private readonly bus: EventBus, atc: Atc) {
         this.atc = atc;
 
-        this.atsu.digitalInputs.atcMessageButtonBus.addDataCallback('onButtonPressed', () => this.cleanupNotifications());
+        this.atc.digitalInputs.atcMessageButtonBus.addDataCallback('onButtonPressed', () => this.cleanupNotifications());
         this.publisher = this.bus.getPublisher<AtsuMailboxMessages>();
         this.subscriber = this.bus.getSubscriber<AtsuMailboxMessages>();
 
@@ -172,7 +168,7 @@ export class MailboxBus {
                         if (message.Direction === AtsuMessageDirection.Downlink) {
                             this.atc.sendMessage(message).then((code) => {
                                 if (code !== AtsuStatusCodes.Ok) {
-                                    this.atsu.publishAtsuStatusCode(code);
+                                    this.atc.digitalOutputs.FmsBus.sendSystemStatus(code);
                                 }
                             });
                         }
@@ -201,7 +197,7 @@ export class MailboxBus {
             if (idx > -1) {
                 const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
                 if (message !== undefined) {
-                    this.atsu.modifyMailboxMessage(message as CpdlcMessage);
+                    this.atc.digitalOutputs.FmsBus.sendMessageModify(message as CpdlcMessage);
                 }
             }
         });
@@ -212,7 +208,7 @@ export class MailboxBus {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
                 this.publisher.pub('systemStatus', MailboxStatusMessage.Printing, true, false);
-                this.atsu.printMessage(message);
+                this.atc.digitalOutputs.FmsBus.sendPrintMessage(message);
                 setTimeout(() => {
                     if (this.currentMessageStatus(uid) === MailboxStatusMessage.Printing) {
                         this.publisher.pub('systemStatus', MailboxStatusMessage.NoMessage, true, false);
@@ -231,13 +227,13 @@ export class MailboxBus {
             if (!this.poweredUp) return;
 
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
-            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, true);
+            UplinkMessageStateMachine.update(this.atc, message as CpdlcMessage, true, true);
             this.update(message as CpdlcMessage);
         });
 
         this.subscriber.on('stopMessageMonitoring').handle((uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
-            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
+            UplinkMessageStateMachine.update(this.atc, message as CpdlcMessage, true, false);
             this.update(message as CpdlcMessage);
         });
 
@@ -289,7 +285,7 @@ export class MailboxBus {
 
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
-                UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
+                UplinkMessageStateMachine.update(this.atc, message as CpdlcMessage, true, false);
                 this.uploadMessagesToMailbox([message as CpdlcMessage]);
             }
         });
@@ -326,7 +322,7 @@ export class MailboxBus {
     }
 
     private cleanupNotifications() {
-        this.atsu.digitalOutputs.AtcMessageButtonsBus.resetButton();
+        this.atc.digitalOutputs.AtcMessageButtonsBus.resetButton();
 
         if (this.atcRingInterval) {
             clearInterval(this.atcRingInterval);
@@ -340,10 +336,10 @@ export class MailboxBus {
         }
 
         // call the first ring tone
-        this.atsu.digitalOutputs.FwcBus.activateAtcRing();
+        this.atc.digitalOutputs.FwcBus.activateAtcRing();
 
         // start the ring tone interval
-        this.atcRingInterval = setInterval(() => this.atsu.digitalOutputs.FwcBus.activateAtcRing(), this.estimateRingInterval());
+        this.atcRingInterval = setInterval(() => this.atc.digitalOutputs.FwcBus.activateAtcRing(), this.estimateRingInterval());
     }
 
     public powerUp(): void {
@@ -382,13 +378,13 @@ export class MailboxBus {
             this.downlinkMessages.push(mailboxBlocks);
         } else if (mailboxBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < MailboxBus.MaxMailboxFileSize) {
             this.uplinkMessages.push(mailboxBlocks);
-            this.atsu.digitalOutputs.AtcMessageButtonsBus.activateButton();
+            this.atc.digitalOutputs.AtcMessageButtonsBus.activateButton();
             this.setupIntervals();
         } else {
             if (mailboxBlocks[0].Direction === AtsuMessageDirection.Downlink) {
                 this.bufferedDownlinkMessages.push(mailboxBlocks);
                 this.publisher.pub('systemStatus', MailboxStatusMessage.MaximumDownlinkMessages, true, false);
-                this.atsu.publishAtsuStatusCode(AtsuStatusCodes.MailboxFull);
+                this.atc.digitalOutputs.FmsBus.sendSystemStatus(AtsuStatusCodes.MailboxFull);
             } else {
                 this.bufferedUplinkMessages.push(mailboxBlocks);
                 this.publisher.pub('systemStatus', MailboxStatusMessage.AnswerRequired, true, false);

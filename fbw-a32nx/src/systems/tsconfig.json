@@ -12,6 +12,7 @@
     "jsx": "react",
     "paths": {
       "@atsu/aoc": ["../../../fbw-common/src/systems/atsu/aoc/src/index.ts"],
+      "@atsu/atc": ["../../../fbw-common/src/systems/atsu/atc/src/index.ts"],
       "@atsu/common": ["../../../fbw-common/src/systems/atsu/common/src/index.ts"],
       "@atsu/communication": ["../../../fbw-common/src/systems/atsu/communication/src/index.ts"],
       "@atsu/system": ["../../../fbw-common/src/systems/atsu/system/src/index.ts"],

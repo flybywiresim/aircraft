@@ -15,7 +15,6 @@ import {
     WeatherMessage,
     FreetextMessage,
 } from '@atsu/common';
-import { DigitalInputs, DigitalOutputs } from '@atsu/system';
 import { NXDataStore } from '@shared/persistence';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
@@ -93,12 +92,7 @@ export class Datalink {
         }
     }
 
-    constructor(
-        private readonly bus: EventBus,
-        private readonly synchronizedBuses: boolean,
-        private readonly digitalInputs: DigitalInputs,
-        private readonly digitalOutputs: DigitalOutputs,
-    ) {
+    constructor(private readonly bus: EventBus, private readonly synchronizedBuses: boolean) {
         HoppieConnector.activateHoppie();
 
         this.subscriber = this.bus.getSubscriber<DatalinkMessages>();

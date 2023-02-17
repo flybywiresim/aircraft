@@ -1,6 +1,7 @@
+import { AtsuMessage } from '@atsu/common';
 import { EventBus } from 'msfssdk';
 import { AtcMessageButtonOutputBus } from './databus/AtcMessageButtonBus';
-import { FmsOutputBus } from './databus/FmsBus';
+import { AtcFmsBus } from './databus/FmsBus';
 import { FwcOutputBus } from './databus/FwcBus';
 
 export class DigitalOutputs {
@@ -8,11 +9,11 @@ export class DigitalOutputs {
 
     public FwcBus: FwcOutputBus = null;
 
-    public FmsBus: FmsOutputBus = null;
+    public FmsBus: AtcFmsBus = null;
 
     constructor(private readonly bus: EventBus) {
         this.AtcMessageButtonsBus = new AtcMessageButtonOutputBus(this.bus);
-        this.FwcBus = new FwcOutputBus(this.bus);
-        this.FmsBus = new FmsOutputBus(this.bus);
+        this.FwcBus = new FwcOutputBus();
+        this.FmsBus = new AtcFmsBus(this.bus);
     }
 }

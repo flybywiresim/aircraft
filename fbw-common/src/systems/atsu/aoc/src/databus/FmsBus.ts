@@ -24,13 +24,13 @@ export interface AocFmsMessages {
 }
 
 export interface FmsAocMessages {
-    sendAocFreetextMessage: { message: FreetextMessage; requestId: number };
-    requestAocAtis: { icao: string; type: AtisType; requestId: number };
-    requestAocWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
-    registerAocWeatherMessages: WeatherMessage[];
-    registerAocFreetextMessages: FreetextMessage[];
+    aocSendFreetextMessage: { message: FreetextMessage; requestId: number };
+    aocRequestAtis: { icao: string; type: AtisType; requestId: number };
+    aocRequestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
+    aocRegisterWeatherMessages: WeatherMessage[];
+    aocRegisterFreetextMessages: FreetextMessage[];
     aocMessageRead: number;
-    removeAocMessage: number;
+    aocRemoveMessage: number;
 }
 
 export type FmsAocBusCallbacks = {
@@ -62,33 +62,33 @@ export class FmsAocBus {
     }
 
     public initialize(): void {
-        this.subscriber.on('sendAocFreetextMessage').handle((data) => {
+        this.subscriber.on('aocSendFreetextMessage').handle((data) => {
             if (this.callbacks.sendFreetextMessage !== null) {
                 this.callbacks.sendFreetextMessage(data.message).then((status) => {
                     this.publisher.pub('aocTransmissionResponse', { requestId: data.requestId, status }, true, false);
                 });
             }
         });
-        this.subscriber.on('requestAocAtis').handle((data) => {
+        this.subscriber.on('aocRequestAtis').handle((data) => {
             if (this.callbacks.requestAtis !== null) {
                 this.callbacks.requestAtis(data.icao, data.type, () => this.publisher.pub('aocRequestSentToGround', data.requestId, true, false)).then((response) => {
                     this.publisher.pub('aocWeatherResponse', { requestId: data.requestId, data: response }, true, false);
                 });
             }
         });
-        this.subscriber.on('requestAocWeather').handle((data) => {
+        this.subscriber.on('aocRequestWeather').handle((data) => {
             if (this.callbacks.requestWeather !== null) {
                 this.callbacks.requestWeather(data.icaos, data.requestMetar, () => this.publisher.pub('aocRequestSentToGround', data.requestId, true, false)).then((response) => {
                     this.publisher.pub('aocWeatherResponse', { requestId: data.requestId, data: response }, true, false);
                 });
             }
         });
-        this.subscriber.on('registerAocFreetextMessages').handle((messages) => {
+        this.subscriber.on('aocRegisterFreetextMessages').handle((messages) => {
             if (this.callbacks.registerMessages !== null) {
                 this.callbacks.registerMessages(messages);
             }
         });
-        this.subscriber.on('registerAocWeatherMessages').handle((messages) => {
+        this.subscriber.on('aocRegisterWeatherMessages').handle((messages) => {
             if (this.callbacks.registerMessages !== null) {
                 this.callbacks.registerMessages(messages);
             }
@@ -98,7 +98,7 @@ export class FmsAocBus {
                 this.callbacks.messageRead(messageId);
             }
         });
-        this.subscriber.on('removeAocMessage').handle((messageId) => {
+        this.subscriber.on('aocRemoveMessage').handle((messageId) => {
             if (this.callbacks.removeMessage !== null) {
                 this.callbacks.removeMessage(messageId);
             }

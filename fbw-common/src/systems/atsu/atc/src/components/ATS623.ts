@@ -7,17 +7,20 @@ import {
     DclMessage,
     OclMessage,
 } from '@atsu/common';
-import { Atsu } from '../ATSU';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { EventBus } from 'msfssdk';
+import { AtcAocBus } from '../databus/AtcAocBus';
+import { Atc } from '../ATC';
 
 // TODO reset internal states if flight state changes
 
 export class ATS623 {
-    private atsu: Atsu = null;
+    private atcAocBus: AtcAocBus = null;
 
     private clearanceRequest: CpdlcMessage = null;
 
-    constructor(atsu: Atsu) {
-        this.atsu = atsu;
+    constructor(bus: EventBus, private readonly atc: Atc, synchronized: boolean) {
+        this.atcAocBus = new AtcAocBus(bus, synchronized, true);
     }
 
     public isRelevantMessage(message: AtsuMessage): boolean {
@@ -57,7 +60,7 @@ export class ATS623 {
                 processedMessage.Message = message.Message;
                 (processedMessage as CpdlcMessage).MailboxRelevantMessage = true;
                 (processedMessage as CpdlcMessage).PreviousTransmissionId = this.clearanceRequest.CurrentTransmissionId;
-                if (this.atsu.atc.fansMode() === FansMode.FansA) {
+                if (this.atc.fansMode() === FansMode.FansA) {
                     (processedMessage as CpdlcMessage).Content = [CpdlcMessagesUplink.UM169[1].deepCopy()];
                 } else {
                     (processedMessage as CpdlcMessage).Content = [CpdlcMessagesUplink.UM183[1].deepCopy()];
@@ -69,11 +72,11 @@ export class ATS623 {
             if (message instanceof DclMessage || message instanceof OclMessage) {
                 // new clearance request sent
                 this.clearanceRequest = message as CpdlcMessage;
-            } else if (this.clearanceRequest instanceof DclMessage && this.atsu.destinationWaypoint()) {
+            } else if (this.clearanceRequest instanceof DclMessage && this.atc.digitalInputs.FlightRoute && this.atc.digitalInputs.FlightRoute.destination) {
                 (processedMessage as CpdlcMessage).CloseAutomatically = false;
 
                 // expect some clearance with TO DEST or SQWK/SQUAWK/SQK XXXX -> stop ATS run
-                const regex = new RegExp(`.*TO @?(${this.atsu.destinationWaypoint().ident}){1}@?.*(SQWK|SQUAWK){1}.*`);
+                const regex = new RegExp(`.*TO @?(${this.atc.digitalInputs.FlightRoute.destination.ident}){1}@?.*(SQWK|SQUAWK){1}.*`);
                 if (regex.test(processedMessage.Message)) {
                     if ((processedMessage as CpdlcMessage).Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
                         (processedMessage as CpdlcMessage).Content[0].ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
@@ -83,11 +86,11 @@ export class ATS623 {
                     // ignore "CLEARANCE DELIVERED VIA TELEX" in the Mailbox
                     (processedMessage as CpdlcMessage).MailboxRelevantMessage = false;
                 }
-            } else if (this.atsu.destinationWaypoint()) {
+            } else if (this.atc.digitalInputs.FlightRoute && this.atc.digitalInputs.FlightRoute.destination) {
                 (processedMessage as CpdlcMessage).CloseAutomatically = false;
 
                 // oceanic clearance with CLRD TO -> stop ATS run
-                const regex = new RegExp(`.*TO @?(${this.atsu.destinationWaypoint().ident}){1}@?`);
+                const regex = new RegExp(`.*TO @?(${this.atc.digitalInputs.FlightRoute.destination.ident}){1}@?`);
                 if (regex.test(processedMessage.Message)) {
                     if ((processedMessage as CpdlcMessage).Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
                         (processedMessage as CpdlcMessage).Content[0].ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
@@ -97,8 +100,9 @@ export class ATS623 {
             }
 
             handledMessages.push(processedMessage as CpdlcMessage);
+            this.atcAocBus.sendMessageId(processedMessage.UniqueMessageID);
         });
 
-        this.atsu.atc.insertMessages(handledMessages);
+        this.atc.insertMessages(handledMessages);
     }
 }

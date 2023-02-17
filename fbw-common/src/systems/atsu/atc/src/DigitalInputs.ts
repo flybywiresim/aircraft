@@ -1,12 +1,11 @@
-import { FmsAtsuMessages, FmsRouteData, Clock } from '@atsu/common';
+import { Clock } from '@atsu/common';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus } from './databus/AtcMessageButtonBus';
 import { ClockDataBusTypes, ClockInputBus } from './databus/ClockBus';
 import { FmgcDataBusTypes, FmgcInputBus } from './databus/FmgcBus';
-import { FmsInputBus } from './databus/FmsBus';
-import { FwcDataBusTypes, FwcInputBus } from './databus/FwcBus';
+import { FmsAtcBus, FmsAtcMessages, FmsRouteData } from './databus/FmsBus';
 import { RmpDataBusTypes, RmpInputBus } from './databus/RmpBus';
 
 export class DigitalInputs {
@@ -14,8 +13,7 @@ export class DigitalInputs {
         AtcMessageButtonBusTypes &
         ClockDataBusTypes &
         FmgcDataBusTypes &
-        FwcDataBusTypes &
-        FmsAtsuMessages &
+        FmsAtcMessages &
         RmpDataBusTypes
     > = null;
 
@@ -53,15 +51,9 @@ export class DigitalInputs {
         selectedAltitude: number,
     };
 
-    public RmpData: {
-        transponderCode: number,
-        vhf3Powered: boolean,
-        vhf3DataMode: boolean,
-    };
+    public TransponderCode: number;
 
     public FlightPhase: FmgcFlightPhase = FmgcFlightPhase.Preflight;
-
-    public CompanyMessageCount: number = 0;
 
     public FlightRoute: FmsRouteData;
 
@@ -71,9 +63,7 @@ export class DigitalInputs {
 
     public readonly fmgcBus: FmgcInputBus;
 
-    public readonly fwcBus: FwcInputBus;
-
-    public readonly fmsBus: FmsInputBus;
+    public readonly fmsBus: FmsAtcBus;
 
     public readonly rmpBus: RmpInputBus;
 
@@ -110,15 +100,9 @@ export class DigitalInputs {
             selectedAltitude: 0,
         };
 
-        this.RmpData = {
-            transponderCode: 2000,
-            vhf3Powered: false,
-            vhf3DataMode: false,
-        }
+        this.TransponderCode = 2000;
 
         this.FlightPhase = FmgcFlightPhase.Preflight;
-
-        this.CompanyMessageCount = 0;
 
         this.FlightRoute = {
             lastWaypoint: null,
@@ -134,8 +118,7 @@ export class DigitalInputs {
         this.atcMessageButtonBus = new AtcMessageButtonInputBus(this.bus);
         this.clockBus = new ClockInputBus(this.bus);
         this.fmgcBus = new FmgcInputBus(this.bus);
-        this.fwcBus = new FwcInputBus(this.bus);
-        this.fmsBus = new FmsInputBus(this.bus);
+        this.fmsBus = new FmsAtcBus(this.bus);
         this.rmpBus = new RmpInputBus(this.bus);
     }
 
@@ -143,7 +126,6 @@ export class DigitalInputs {
         this.atcMessageButtonBus.initialize();
         this.clockBus.initialize();
         this.fmgcBus.initialize();
-        this.fwcBus.initialize();
         this.fmsBus.initialize();
         this.rmpBus.initialize();
 
@@ -151,8 +133,7 @@ export class DigitalInputs {
             AtcMessageButtonBusTypes &
             ClockDataBusTypes &
             FmgcDataBusTypes &
-            FwcDataBusTypes &
-            FmsAtsuMessages &
+            FmsAtcMessages &
             RmpDataBusTypes
         >();
     }
@@ -161,7 +142,6 @@ export class DigitalInputs {
         this.atcMessageButtonBus.connectedCallback();
         this.clockBus.connectedCallback();
         this.fmgcBus.connectedCallback();
-        this.fwcBus.connectedCallback();
         this.rmpBus.connectedCallback();
 
         this.subscriber.on('utcYear').handle((year: number) => {
@@ -244,10 +224,6 @@ export class DigitalInputs {
             if (this.poweredUp) this.AutopilotData.selectedSpeed = selectedSpeed;
         });
 
-        this.subscriber.on('companyMessageCount').handle((count: number) => {
-            if (this.poweredUp) this.CompanyMessageCount = count;
-        });
-
         this.subscriber.on('flightPhase').handle((phase: Arinc429Word) => {
             if (this.poweredUp) {
                 if (phase.isNormalOperation()) {
@@ -259,14 +235,10 @@ export class DigitalInputs {
         });
 
         this.subscriber.on('transponderCode').handle((code: number) => {
-            if (this.poweredUp) this.RmpData.transponderCode = code;
-        });
-        this.subscriber.on('vhf3Powered').handle((powered: boolean) => this.RmpData.vhf3Powered = powered);
-        this.subscriber.on('vhf3DataMode').handle((active: boolean) => {
-            if (this.poweredUp) this.RmpData.vhf3DataMode = active;
+            if (this.poweredUp) this.TransponderCode = code;
         });
 
-        this.subscriber.on('routeData').handle((route) => {
+        this.subscriber.on('atcRouteData').handle((route) => {
             if (!this.poweredUp) return;
 
             this.fmsBus.newRouteDataReceived(route);
@@ -295,7 +267,6 @@ export class DigitalInputs {
         this.atcMessageButtonBus.startPublish();
         this.clockBus.startPublish();
         this.fmgcBus.startPublish();
-        this.fwcBus.startPublish();
         this.rmpBus.startPublish();
     }
 
@@ -315,7 +286,6 @@ export class DigitalInputs {
         this.atcMessageButtonBus.update();
         this.clockBus.update();
         this.fmgcBus.update();
-        this.fwcBus.update();
         this.rmpBus.update();
     }
 }

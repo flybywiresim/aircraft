@@ -11,9 +11,10 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "paths": {
+      "@atsu/aoc": ["atsu/aoc/src/index.ts"],
+      "@atsu/atc": ["atsu/atc/src/index.ts"],
       "@atsu/common": ["atsu/common/src/index.ts"],
       "@atsu/communication": ["atsu/communication/src/index.ts"],
-      "@atsu/system": ["atsu/system/src/index.ts"],
       "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
       "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
       "@typings/*": ["../typings/*"],

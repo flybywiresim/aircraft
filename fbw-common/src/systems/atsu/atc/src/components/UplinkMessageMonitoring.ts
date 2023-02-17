@@ -1,19 +1,15 @@
 import { AtsuMessageComStatus, CpdlcMessage, UplinkMonitor } from '@atsu/common';
-import { Atsu } from '../ATSU';
+import { Atc } from '../ATC';
 
 export class UplinkMessageMonitoring {
     private monitoredMessages: UplinkMonitor[] = [];
 
-    private atsu: Atsu = null;
-
-    constructor(atsu: Atsu) {
-        this.atsu = atsu;
-    }
+    constructor(private readonly atc: Atc) { }
 
     public monitorMessage(message: CpdlcMessage): boolean {
         if (UplinkMonitor.relevantMessage(message)) {
             this.monitoredMessages.push(UplinkMonitor.createMessageMonitor(message));
-            this.atsu.digitalOutputs.FmsBus.sendMonitoredMessages(this.atsu.atc.monitoredMessages());
+            this.atc.digitalOutputs.FmsBus.sendMonitoredMessages(this.atc.monitoredMessages());
             return true;
         }
         return false;
@@ -23,7 +19,7 @@ export class UplinkMessageMonitoring {
         const idx = this.monitoredMessages.findIndex((message) => message.messageId === uid);
         if (idx > -1) {
             this.monitoredMessages.splice(idx, 1);
-            this.atsu.digitalOutputs.FmsBus.sendMonitoredMessages(this.atsu.atc.monitoredMessages());
+            this.atc.digitalOutputs.FmsBus.sendMonitoredMessages(this.atc.monitoredMessages());
         }
     }
 
@@ -34,7 +30,7 @@ export class UplinkMessageMonitoring {
     }
 
     private findAtcMessage(uid: number): CpdlcMessage | undefined {
-        for (const message of this.atsu.atc.messages()) {
+        for (const message of this.atc.messages()) {
             if (message.UniqueMessageID === uid) {
                 return message as CpdlcMessage;
             }
@@ -45,9 +41,9 @@ export class UplinkMessageMonitoring {
     public checkMessageConditions(): number[] {
         const ids = [];
 
-        const currentTime = this.atsu.digitalInputs.UtcClock;
-        const currentAltitude = this.atsu.digitalInputs.PresentPosition.altitude.value;
-        const currentWaypoint = this.atsu.digitalInputs.FlightRoute.lastWaypoint;
+        const currentTime = this.atc.digitalInputs.UtcClock;
+        const currentAltitude = this.atc.digitalInputs.PresentPosition.altitude.value;
+        const currentWaypoint = this.atc.digitalInputs.FlightRoute.lastWaypoint;
 
         let idx = this.monitoredMessages.length - 1;
         while (idx >= 0) {

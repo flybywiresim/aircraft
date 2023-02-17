@@ -1,10 +1,15 @@
-import { CpdlcMessage, CpdlcMessageMonitoringState, AtsuMessageComStatus, AtsuTimestamp } from '@atsu/common';
-import { Atsu } from '../ATSU';
-import { UplinkMonitor } from '../../../common/src/components/UplinkMonitor';
-import { UplinkMessageInterpretation } from '../../../common/src/components/UplinkMessageInterpretation';
+import {
+    CpdlcMessage,
+    CpdlcMessageMonitoringState,
+    AtsuMessageComStatus,
+    AtsuTimestamp,
+    UplinkMonitor,
+    UplinkMessageInterpretation,
+} from '@atsu/common';
+import { Atc } from '../ATC';
 
 export class UplinkMessageStateMachine {
-    public static initialize(atsu: Atsu, message: CpdlcMessage): void {
+    public static initialize(atc: Atc, message: CpdlcMessage): void {
         message.CloseAutomatically = !UplinkMessageInterpretation.MessageRemainsOnMailbox(message);
 
         if (UplinkMonitor.relevantMessage(message)) {
@@ -14,19 +19,19 @@ export class UplinkMessageStateMachine {
             message.MessageMonitoring = CpdlcMessageMonitoringState.Ignored;
             message.SemanticResponseRequired = UplinkMessageInterpretation.SemanticAnswerRequired(message);
             if (message.SemanticResponseRequired) {
-                UplinkMessageInterpretation.AppendSemanticAnswer(atsu, true, message);
+                UplinkMessageInterpretation.AppendSemanticAnswer(atc, true, message);
             }
         }
     }
 
-    public static update(atsu: Atsu, message: CpdlcMessage, uiEvent: boolean, positive: boolean): void {
+    public static update(atc: Atc, message: CpdlcMessage, uiEvent: boolean, positive: boolean): void {
         if (positive) {
             if (message.MessageMonitoring === CpdlcMessageMonitoringState.Required) {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Monitoring;
-                atsu.atc.messageMonitoring.monitorMessage(message);
+                atc.messageMonitoring.monitorMessage(message);
             } else if (!uiEvent && message.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Finished;
-                message.ReminderTimestamp = AtsuTimestamp.fromClock(atsu.digitalInputs.UtcClock);
+                message.ReminderTimestamp = AtsuTimestamp.fromClock(atc.digitalInputs.UtcClock);
                 message.SemanticResponseRequired = UplinkMessageInterpretation.SemanticAnswerRequired(message);
             }
         } else if (message.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
@@ -35,11 +40,11 @@ export class UplinkMessageStateMachine {
             } else {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Required;
             }
-            atsu.atc.messageMonitoring.removeMessage(message.UniqueMessageID);
+            atc.messageMonitoring.removeMessage(message.UniqueMessageID);
         }
 
         if (message.SemanticResponseRequired) {
-            UplinkMessageInterpretation.AppendSemanticAnswer(atsu, positive, message);
+            UplinkMessageInterpretation.AppendSemanticAnswer(atc, positive, message);
         }
     }
 }

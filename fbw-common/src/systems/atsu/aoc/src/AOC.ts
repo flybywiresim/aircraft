@@ -3,6 +3,7 @@
 
 import { AtsuStatusCodes, AtsuMessageDirection, AtsuMessage, AtsuMessageType, WeatherMessage, AtisType } from '@atsu/common';
 import { DatalinkInputBus, DatalinkOutputBus } from '@atsu/communication';
+import { AtcAocBus } from '@atsu/atc';
 import { EventBus } from 'msfssdk';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
@@ -12,6 +13,8 @@ import { DigitalOutputs } from './DigitalOutputs';
  */
 export class Aoc {
     private poweredUp: boolean = false;
+
+    private atcAocBus: AtcAocBus = null;
 
     private digitalInputs: DigitalInputs = null;
 
@@ -25,11 +28,14 @@ export class Aoc {
 
     private messageQueueDownlink: AtsuMessage[] = [];
 
-    constructor(private bus: EventBus, private readonly synchronizedDatalink) {
+    private blacklistedMessageIds: number[] = [];
+
+    constructor(private bus: EventBus, private readonly synchronizedDatalink: boolean, synchronizedAtc: boolean) {
         this.datalinkInput = new DatalinkInputBus(this.bus, this.synchronizedDatalink);
         this.datalinkOutput = new DatalinkOutputBus(this.bus);
         this.digitalInputs = new DigitalInputs(this.bus);
         this.digitalOutputs = new DigitalOutputs(this.bus);
+        this.atcAocBus = new AtcAocBus(this.bus, synchronizedAtc, false);
 
         this.digitalInputs.fmsBus.addDataCallback('sendFreetextMessage', (message) => this.sendMessage(message));
         this.digitalInputs.fmsBus.addDataCallback('requestAtis', (icao, type, sentCallback) => this.receiveAtis(icao, type, sentCallback));
@@ -38,6 +44,14 @@ export class Aoc {
         this.digitalInputs.fmsBus.addDataCallback('messageRead', (messageId) => this.messageRead(messageId));
         this.digitalInputs.fmsBus.addDataCallback('removeMessage', (messageId) => this.removeMessage(messageId));
         this.datalinkOutput.addDataCallback('receivedFreetextMessage', (message) => this.insertMessages([message]));
+        this.atcAocBus.addDataCallback('ignoreIncomingMessage', (uid: number) => {
+            const index = this.messageQueueUplink.findIndex((message) => message.UniqueMessageID === uid);
+            if (index !== -1) {
+                this.removeMessage(uid);
+            } else {
+                this.blacklistedMessageIds.push(uid);
+            }
+        });
     }
 
     public powerUp(): void {
@@ -123,11 +137,17 @@ export class Aoc {
     private insertMessages(messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             if (message.Direction === AtsuMessageDirection.Uplink) {
-                this.messageQueueUplink.unshift(message);
+                const index = this.blacklistedMessageIds.findIndex((uid) => uid === message.UniqueMessageID);
 
-                // increase the company message counter
-                const cMsgCnt = this.digitalInputs.CompanyMessageCount;
-                this.digitalOutputs.FwcBus.setCompanyMessageCount(cMsgCnt + 1);
+                if (index === -1) {
+                    this.messageQueueUplink.unshift(message);
+
+                    // increase the company message counter
+                    const cMsgCnt = this.digitalInputs.CompanyMessageCount;
+                    this.digitalOutputs.FwcBus.setCompanyMessageCount(cMsgCnt + 1);
+                } else {
+                    this.blacklistedMessageIds.splice(index, 1);
+                }
             } else {
                 this.messageQueueDownlink.unshift(message);
             }
