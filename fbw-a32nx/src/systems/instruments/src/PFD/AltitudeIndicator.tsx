@@ -774,7 +774,7 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
                     this.metricAltTargetText.instance.classList.replace('Magenta', 'Cyan');
                 }
 
-                if (this.state.altitude.value > this.state.MDA) {
+                if (this.state.altitude.value < this.state.MDA) {
                     this.metricAltText.instance.classList.replace('Green', 'Amber');
                 } else {
                     this.metricAltText.instance.classList.replace('Amber', 'Green');
@@ -788,9 +788,9 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
             <g id="MetricAltGroup" ref={this.metricAlt}>
                 <path class="NormalStroke Yellow" d="m116.56 140.22h29.213v7.0556h-29.213z" />
                 <text class="FontMedium Cyan MiddleAlign" x="142.03537" y="145.8689">M</text>
-                <text ref={this.metricAltText} id="MetricAltText" class="FontMedium Cyan MiddleAlign" x="128.64708" y="145.86191">0</text>
+                <text ref={this.metricAltText} id="MetricAltText" class="FontMedium Green MiddleAlign" x="128.64708" y="145.86191">0</text>
                 <g id="MetricAltTargetGroup">
-                    <text id="MetricAltTargetText" ref={this.metricAltTargetText} class="FontSmallest Green MiddleAlign" x="94.088852" y="37.926617">0</text>
+                    <text id="MetricAltTargetText" ref={this.metricAltTargetText} class="FontSmallest Cyan MiddleAlign" x="94.088852" y="37.926617">0</text>
                     <text class="FontSmallest Cyan MiddleAlign" x="105.25774" y="37.872921">M</text>
                 </g>
             </g>
