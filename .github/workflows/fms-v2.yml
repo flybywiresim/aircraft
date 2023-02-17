@@ -39,4 +39,4 @@ jobs:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
           CDN_BUCKET_DESTINATION: addons/a32nx/fms-v2
         run: |
-          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./build-modules
+          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
