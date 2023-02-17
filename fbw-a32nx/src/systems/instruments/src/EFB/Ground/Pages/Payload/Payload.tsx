@@ -152,6 +152,28 @@ export const Payload = () => {
         COMPLETED: 6,
     };
 
+    const stationMissedPax = (stationPaxDesired:number, setPax:(a:number)=>void) => {
+        let stationMissedPax = 0;
+        for (let i = 0; i < stationPaxDesired; i++) {
+            if (Math.random() <= 0.10) stationMissedPax++;
+        }
+        console.info('station pax missing: %d', stationMissedPax);
+        setPax(stationPaxDesired - stationMissedPax);
+        return stationMissedPax;
+    };
+
+    const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
+        let totalMissedPax = 0;
+        if (desiredBoardingState) {
+            totalMissedPax += stationMissedPax(paxADesired, setPaxADesired);
+            totalMissedPax += stationMissedPax(paxBDesired, setPaxBDesired);
+            totalMissedPax += stationMissedPax(paxCDesired, setPaxCDesired);
+            totalMissedPax += stationMissedPax(paxDDesired, setPaxDDesired);
+            console.info('pax missing plane: %d', totalMissedPax);
+        }
+        setBoardingStarted(desiredBoardingState);
+    };
+
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
             const perBagWeight = Units.kilogramToUser(simbriefBagWeight);
@@ -870,7 +892,7 @@ export const Payload = () => {
                                                     type="button"
                                                     className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12
                                                         ${boardingStatusClass} bg-current`}
-                                                    onClick={() => setBoardingStarted(!boardingStarted)}
+                                                    onClick={() => boardingChangeStateOperations(!boardingStarted)}
                                                 >
                                                     <div className="text-theme-body">
                                                         <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
