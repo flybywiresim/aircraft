@@ -547,7 +547,7 @@
 
 <Template Name="FBW_HANDLING_Gear_Lever_Template">
         <DefaultTemplateParameters>
-            <TOOLTIPID>TT_Package.LANDING_GEAR_LEVER_GEAR_TITLE</TOOLTIPID>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPSV2.LANDING_GEAR_LEVER_GEAR_TITLE</TOOLTIPID>
             <ANIM_NAME>lever_landing_gear</ANIM_NAME>
             <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
             <PART_ID>LEVER_LANDINGGEAR</PART_ID>

@@ -14,6 +14,7 @@ import { RealismPage } from './Pages/RealismPage';
 import { AtsuAocPage } from './Pages/AtsuAocPage';
 import { AudioPage } from './Pages/AudioPage';
 import { FlyPadPage } from './Pages/FlyPadPage';
+import { ThirdPartyOptionsPage } from './Pages/ThirdPartyOptionsPage';
 
 export type ButtonType = {
     name: string,
@@ -45,6 +46,7 @@ export const Settings = () => {
         { alias: t('Settings.AircraftOptionsPinPrograms.Title'), name: 'Aircraft Options / Pin Programs', component: <AircraftOptionsPinProgramsPage /> },
         { alias: t('Settings.SimOptions.Title'), name: 'Sim Options', component: <SimOptionsPage /> },
         { alias: t('Settings.Realism.Title'), name: 'Realism', component: <RealismPage /> },
+        { alias: t('Settings.ThirdPartyOptions.Title'), name: '3rd Party Options', component: <ThirdPartyOptionsPage /> },
         { alias: t('Settings.AtsuAoc.Title'), name: 'ATSU / AOC', component: <AtsuAocPage /> },
         { alias: t('Settings.Audio.Title'), name: 'Audio', component: <AudioPage /> },
         { alias: t('Settings.flyPad.Title'), name: 'flyPad', component: <FlyPadPage /> },

@@ -10,7 +10,7 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
 import { round } from 'lodash';
@@ -130,12 +130,27 @@ export const Payload = () => {
 
     const totalCurrentGallon = useMemo(() => round(Math.max(LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent, 0)), [fuel]);
 
+    const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
     const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
     const simbriefPax = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerCount));
     const simbriefBag = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagCount));
     const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
+
+    // GSX
+    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
+    const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number');
+    const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number');
+    const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number');
+    const gsxStates = {
+        AVAILABLE: 1,
+        NOT_AVAILABLE: 2,
+        BYPASSED: 3,
+        REQUESTED: 4,
+        PERFORMING: 5,
+        COMPLETED: 6,
+    };
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
@@ -220,6 +235,8 @@ export const Payload = () => {
     }, [...activeFlags, ...desiredFlags]);
 
     const setTargetPax = useCallback((numOfPax: number) => {
+        setGsxNumPassengers(numOfPax);
+
         if (!stationSize || numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
 
         let paxRemaining = numOfPax;
@@ -307,11 +324,17 @@ export const Payload = () => {
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
+        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+            return;
+        }
         const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
         setCargoDesired[cargoStation](Math.round(Units.kilogramToUser(cargoMap[cargoStation].weight) * cargoPercent));
     }, [cargoMap]);
 
     const onClickSeat = useCallback((station: number, seatId: number) => {
+        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+            return;
+        }
         setClicked(true);
         let newPax = totalPaxDesired;
         // TODO FIXME: This calculation does not work correctly if user clicks on many seats in rapid succession
@@ -519,6 +542,66 @@ export const Payload = () => {
     }, [boardingStarted]);
 
     useEffect(() => {
+        if (gsxPayloadSyncEnabled === 1) {
+            switch (gsxBoardingState) {
+            // If boarding has been requested, performed or completed
+            case gsxStates.REQUESTED:
+            case gsxStates.PERFORMING:
+            case gsxStates.COMPLETED:
+                setBoardingStarted(true);
+                break;
+            default:
+                break;
+            }
+        }
+    }, [gsxBoardingState]);
+
+    useEffect(() => {
+        if (gsxPayloadSyncEnabled === 1) {
+            switch (gsxDeBoardingState) {
+            case gsxStates.REQUESTED:
+                // If Deboarding has been requested, set target pax to 0 for boarding backend
+                setTargetPax(0);
+                setTargetCargo(0, 0);
+                setBoardingStarted(true);
+                break;
+            case gsxStates.PERFORMING:
+                // If deboarding is being performed
+                setBoardingStarted(true);
+                break;
+            case gsxStates.COMPLETED:
+                // If deboarding is completed
+                setBoardingStarted(false);
+                break;
+            default:
+                break;
+            }
+        }
+    }, [gsxDeBoardingState]);
+
+    useEffect(() => {
+        const simbriefStatus = (simbriefDataLoaded
+            && (
+                simbriefPax !== totalPaxDesired
+                || simbriefFreight + simbriefBag * simbriefBagWeight !== totalCargoDesired
+                || simbriefPaxWeight !== paxWeight
+                || simbriefBagWeight !== paxBagWeight
+            )
+        );
+
+        if (gsxPayloadSyncEnabled === 1) {
+            if (boardingStarted) {
+                setShowSimbriefButton(false);
+                return;
+            }
+
+            setShowSimbriefButton(simbriefStatus);
+            return;
+        }
+        setShowSimbriefButton(simbriefStatus);
+    }, [simbriefDataLoaded, boardingStarted, gsxPayloadSyncEnabled]);
+
+    useEffect(() => {
         const centerTankMoment = -4.5;
         const innerTankMoment = -8;
         const outerTankMoment = -17.6;
@@ -636,7 +719,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
-                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxPax > 0 ? maxPax : 999}
@@ -648,6 +731,7 @@ export const Payload = () => {
                                                                 }
                                                             }}
                                                             unit="PAX"
+                                                            disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
                                                         />
                                                     </div>
                                                 </TooltipWrapper>
@@ -663,7 +747,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${maxCargo.toFixed(0)} ${massUnitForDisplay}`}>
-                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxCargo > 0 ? Math.round(maxCargo) : 99999}
@@ -674,6 +758,7 @@ export const Payload = () => {
                                                                 }
                                                             }}
                                                             unit={massUnitForDisplay}
+                                                            disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
                                                         />
                                                     </div>
                                                 </TooltipWrapper>
@@ -689,7 +774,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
-                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                         <PayloadValueInput
                                                             min={Math.round(emptyWeight)}
                                                             max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxZfw))}
@@ -698,6 +783,7 @@ export const Payload = () => {
                                                                 if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(parseInt(x));
                                                             }}
                                                             unit={massUnitForDisplay}
+                                                            disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
                                                         />
                                                     </div>
                                                 </TooltipWrapper>
@@ -743,10 +829,10 @@ export const Payload = () => {
 
                                 <div className="flex flex-row justify-start items-center">
                                     <TooltipWrapper text={t('Ground.Payload.TT.PerPaxWeight')}>
-                                        <div className="flex relative flex-row items-center font-light text-medium">
+                                        <div className={`flex relative flex-row items-center font-light text-medium ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                             <PersonFill size={25} className="mx-3" />
                                             <SimpleInput
-                                                className="w-24"
+                                                className={`w-24 ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'cursor-not-allowed placeholder-theme-body text-theme-body' : ''}`}
                                                 number
                                                 min={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.minPaxWeight))}
                                                 max={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.maxPaxWeight))}
@@ -761,10 +847,10 @@ export const Payload = () => {
                                     </TooltipWrapper>
 
                                     <TooltipWrapper text={t('Ground.Payload.TT.PerPaxBagWeight')}>
-                                        <div className="flex relative flex-row items-center ml-4 font-light text-medium">
+                                        <div className={`flex relative flex-row items-center font-light text-medium ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                             <BriefcaseFill size={25} className="mx-3" />
                                             <SimpleInput
-                                                className="w-24"
+                                                className={`w-24 ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'cursor-not-allowed placeholder-theme-body text-theme-body' : ''}`}
                                                 number
                                                 min={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.minBagWeight))}
                                                 max={Math.round(Units.kilogramToUser(Loadsheet.specs.pax.maxBagWeight))}
@@ -777,43 +863,41 @@ export const Payload = () => {
                                             <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
                                         </div>
                                     </TooltipWrapper>
-
-                                    <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
-                                        <button
-                                            type="button"
-                                            className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12
+                                    {gsxPayloadSyncEnabled !== 1 && (
+                                        <>
+                                            <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
+                                                <button
+                                                    type="button"
+                                                    className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12
                                                         ${boardingStatusClass} bg-current`}
-                                            onClick={() => setBoardingStarted(!boardingStarted)}
-                                        >
-                                            <div className="text-theme-body">
-                                                <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
-                                                <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
-                                            </div>
-                                        </button>
-                                    </TooltipWrapper>
+                                                    onClick={() => setBoardingStarted(!boardingStarted)}
+                                                >
+                                                    <div className="text-theme-body">
+                                                        <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
+                                                        <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
+                                                    </div>
+                                                </button>
+                                            </TooltipWrapper>
 
-                                    <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
-                                        <button
-                                            type="button"
-                                            className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg
+                                            <TooltipWrapper text={t('Ground.Payload.TT.StartDeboarding')}>
+                                                <button
+                                                    type="button"
+                                                    className={`flex justify-center items-center ml-1 w-16 h-12 text-theme-highlight bg-current rounded-lg
                                                         ${totalPax === 0 && totalCargo === 0 && 'opacity-20 pointer-events-none'}`}
-                                            onClick={() => handleDeboarding()}
-                                        >
-                                            <div className="text-theme-body">
-                                                {' '}
-                                                <BoxArrowRight size={32} className={`${boardingStarted && 'opacity-20 pointer-events-none'} : ''}`} />
-                                            </div>
-                                        </button>
-                                    </TooltipWrapper>
-
+                                                    onClick={() => handleDeboarding()}
+                                                >
+                                                    <div className="text-theme-body">
+                                                        {' '}
+                                                        <BoxArrowRight size={32} className={`${boardingStarted && 'opacity-20 pointer-events-none'} : ''}`} />
+                                                    </div>
+                                                </button>
+                                            </TooltipWrapper>
+                                        </>
+                                    )}
                                 </div>
                             </Card>
 
-                            {simbriefDataLoaded
-                                && (simbriefPax !== totalPaxDesired
-                                    || simbriefFreight + simbriefBag * simbriefBagWeight !== totalCargoDesired
-                                    || simbriefPaxWeight !== paxWeight
-                                    || simbriefBagWeight !== paxBagWeight)
+                            {showSimbriefButton
                                 && (
                                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                         <div
@@ -827,58 +911,59 @@ export const Payload = () => {
                                     </TooltipWrapper>
                                 )}
                         </div>
+                        {(gsxPayloadSyncEnabled !== 1) && (
+                            <div className="flex flex-row mt-4">
+                                <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
+                                    <div className="flex flex-row justify-between items-center">
+                                        <div className="flex font-medium">
+                                            {t('Ground.Payload.BoardingTime')}
+                                            <span className="flex relative flex-row items-center ml-2 text-sm font-light">
+                                                (
+                                                {remainingTimeString()}
+                                                )
+                                            </span>
+                                        </div>
 
-                        <div className="flex flex-row mt-4">
-                            <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
-                                <div className="flex flex-row justify-between items-center">
-                                    <div className="flex font-medium">
-                                        {t('Ground.Payload.BoardingTime')}
-                                        <span className="flex relative flex-row items-center ml-2 text-sm font-light">
-                                            (
-                                            {remainingTimeString()}
-                                            )
-                                        </span>
-                                    </div>
+                                        <SelectGroup>
+                                            <SelectItem
+                                                selected={boardingRate === 'INSTANT'}
+                                                onSelect={() => setBoardingRate('INSTANT')}
+                                            >
+                                                {t('Settings.Instant')}
+                                            </SelectItem>
 
-                                    <SelectGroup>
-                                        <SelectItem
-                                            selected={boardingRate === 'INSTANT'}
-                                            onSelect={() => setBoardingRate('INSTANT')}
-                                        >
-                                            {t('Settings.Instant')}
-                                        </SelectItem>
+                                            <TooltipWrapper text={`${!coldAndDark ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
+                                                <div>
+                                                    <SelectItem
+                                                        className={`${!coldAndDark && 'opacity-20'}`}
+                                                        selected={boardingRate === 'FAST'}
+                                                        disabled={!coldAndDark}
+                                                        onSelect={() => setBoardingRate('FAST')}
+                                                    >
+                                                        {t('Settings.Fast')}
+                                                    </SelectItem>
+                                                </div>
+                                            </TooltipWrapper>
 
-                                        <TooltipWrapper text={`${!coldAndDark ? t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes') : ''}`}>
                                             <div>
                                                 <SelectItem
                                                     className={`${!coldAndDark && 'opacity-20'}`}
-                                                    selected={boardingRate === 'FAST'}
+                                                    selected={boardingRate === 'REAL'}
                                                     disabled={!coldAndDark}
-                                                    onSelect={() => setBoardingRate('FAST')}
+                                                    onSelect={() => setBoardingRate('REAL')}
                                                 >
-                                                    {t('Settings.Fast')}
+                                                    {t('Settings.Real')}
                                                 </SelectItem>
                                             </div>
-                                        </TooltipWrapper>
+                                        </SelectGroup>
+                                    </div>
+                                </Card>
 
-                                        <div>
-                                            <SelectItem
-                                                className={`${!coldAndDark && 'opacity-20'}`}
-                                                selected={boardingRate === 'REAL'}
-                                                disabled={!coldAndDark}
-                                                onSelect={() => setBoardingRate('REAL')}
-                                            >
-                                                {t('Settings.Real')}
-                                            </SelectItem>
-                                        </div>
-                                    </SelectGroup>
-                                </div>
-                            </Card>
-
-                            {/* <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none"> */}
-                            {/* */}
-                            {/* </Card> */}
-                        </div>
+                                {/* <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none"> */}
+                                {/* */}
+                                {/* </Card> */}
+                            </div>
+                        )}
                     </div>
                     <div className="border border-theme-accent col-1">
                         <ChartWidget
@@ -906,12 +991,13 @@ interface PayloadValueInputProps {
     value: number
     onBlur: (v: string) => void,
     unit: string,
+    disabled?: boolean
 }
 
-const PayloadValueInput: FC<PayloadValueInputProps> = ({ min, max, value, onBlur, unit }) => (
+const PayloadValueInput: FC<PayloadValueInputProps> = ({ min, max, value, onBlur, unit, disabled }) => (
     <div className="relative w-44">
         <SimpleInput
-            className="my-2 w-full font-mono"
+            className={`my-2 w-full font-mono ${(disabled ? 'cursor-not-allowed placeholder-theme-body text-theme-body' : '')}`}
             fontSizeClassName="text-2xl"
             number
             min={min}
