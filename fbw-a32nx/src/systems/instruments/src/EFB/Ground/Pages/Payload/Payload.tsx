@@ -152,7 +152,7 @@ export const Payload = () => {
         COMPLETED: 6,
     };
 
-    const stationMissedPax = (stationPaxDesired:number, setPax:(a:number)=>void) => {
+    const stationMissedPax = (stationPaxDesired:number, setPax:(numberToSet:number)=>void) => {
         let stationMissedPax = 0;
         for (let i = 0; i < stationPaxDesired; i++) {
             if (Math.random() <= 0.10) stationMissedPax++;
@@ -164,6 +164,7 @@ export const Payload = () => {
 
     const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
         let totalMissedPax = 0;
+        setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState) {
             totalMissedPax += stationMissedPax(paxADesired, setPaxADesired);
             totalMissedPax += stationMissedPax(paxBDesired, setPaxBDesired);
@@ -171,7 +172,7 @@ export const Payload = () => {
             totalMissedPax += stationMissedPax(paxDDesired, setPaxDDesired);
             console.info('pax missing plane: %d', totalMissedPax);
         }
-        setBoardingStarted(desiredBoardingState);
+
     };
 
     const setSimBriefValues = () => {
@@ -505,29 +506,35 @@ export const Payload = () => {
         }
     }, [stationSize]);
 
+const adjustDesiredSeats = (paxDesired)=> {
+    paxDesired.forEach((stationNumPax:number, stationIndex:number) => {
+        const paxCount = returnNumSeats(stationIndex, false, desiredFlags);
+        if (!clicked && stationNumPax !== paxCount) {
+            const seatOptions = calculateSeatOptions(stationIndex, stationNumPax > paxCount);
+            const seatDelta = Math.abs(paxCount - stationNumPax);
+
+            if (seatOptions.length >= seatDelta) {
+                chooseDesiredSeats(stationIndex, seatOptions, seatDelta);
+            } else if (seatOptions.length && seatOptions.length < seatDelta) {
+                // Fallback if we don't have enough seat options using desired as reference
+                const leftOver = seatDelta - seatOptions.length;
+                chooseDesiredSeats(stationIndex, seatOptions, seatOptions.length);
+                const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
+                chooseDesiredSeats(stationIndex, seats, leftOver);
+            } else {
+                // Fallback if no seat options using desired as reference
+                const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
+                chooseDesiredSeats(stationIndex, seats, seatDelta);
+            }
+        }
+    });
+};
+
     // Adjusted desired passenger seating layout to match station passenger count on change
     useEffect(() => {
-        paxDesired.forEach((stationNumPax, stationIndex) => {
-            const paxCount = returnNumSeats(stationIndex, false, desiredFlags);
-            if (!clicked && stationNumPax !== paxCount) {
-                const seatOptions = calculateSeatOptions(stationIndex, stationNumPax > paxCount);
-                const seatDelta = Math.abs(paxCount - stationNumPax);
-
-                if (seatOptions.length >= seatDelta) {
-                    chooseDesiredSeats(stationIndex, seatOptions, seatDelta);
-                } else if (seatOptions.length && seatOptions.length < seatDelta) {
-                    // Fallback if we don't have enough seat options using desired as reference
-                    const leftOver = seatDelta - seatOptions.length;
-                    chooseDesiredSeats(stationIndex, seatOptions, seatOptions.length);
-                    const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
-                    chooseDesiredSeats(stationIndex, seats, leftOver);
-                } else {
-                    // Fallback if no seat options using desired as reference
-                    const seats: number[] = returnSeats(stationIndex, stationNumPax > paxCount, desiredFlags);
-                    chooseDesiredSeats(stationIndex, seats, seatDelta);
-                }
-            }
-        });
+        if (!boardingStarted) {
+            adjustDesiredSeats(paxDesired);
+        }
     }, [...paxDesired]);
 
     // Adjust actual passenger seating layout to match station passenger count on change
@@ -555,6 +562,8 @@ export const Payload = () => {
     }, [...pax]);
 
     useEffect(() => {
+        // Sync desired seats to paxDesired as it was frozen during boarding
+        if (!boardingStarted) adjustDesiredSeats(paxDesired);
         pax.forEach((stationNumPax: number, stationIndex: number) => {
             // Sync active to desired layout if pax is equal to desired
             if (stationNumPax === parseInt(paxDesired[stationIndex])) {
