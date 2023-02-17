@@ -69,6 +69,7 @@ export default new TaskOfTasks("all", [
                     new ExecTask("PFD", "npm run build-a32nx:pfd", ["fbw-a32nx/src/systems/instruments/src/PFD", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD"]),
                     new ExecTask("Clock", "npm run build-a32nx:clock", ["fbw-a32nx/src/systems/instruments/src/Clock", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock"]),
                     new ExecTask("EWD", "npm run build-a32nx:ewd", ["fbw-a32nx/src/systems/instruments/src/EWD", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EWD"]),
+                    new ExecTask("ISIS2", "npm run build-a32nx:isis", ["fbw-a32nx/src/systems/instruments/src/ISISv2", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ISIS"]),
                 ],
                 true)
         ], true),

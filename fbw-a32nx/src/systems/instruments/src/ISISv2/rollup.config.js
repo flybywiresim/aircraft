@@ -1,20 +1,26 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 'use strict';
 
 import ts from 'rollup-plugin-typescript2';
 import resolve from '@rollup/plugin-node-resolve';
 import scss from 'rollup-plugin-scss';
-import commonjs from '@rollup/plugin-commonjs';
 
 const { join } = require('path');
+
+const root = join(__dirname, '..', '..', '..', '..', '..', '..');
+console.log('Root: ', root);
 
 export default {
     input: join(__dirname, 'instrument.tsx'),
     output: {
-        dir: '../../../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ISIS',
+        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ISIS/instrument.js'),
         format: 'es',
     },
-    plugins: [scss(
-        { output: '../../../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ISIS/isis.css' },
-    ),
-    resolve(), commonjs({ include: /node_modules/ }), ts()],
+    plugins: [
+        scss({ output: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ISIS/isis.css') }),
+        resolve(),
+        ts(),
+    ],
 };

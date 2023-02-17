@@ -109,11 +109,11 @@ export class ISISDisplayUnit extends DisplayComponent<({ bus: EventBus })> {
                 <svg id="SelfTest" ref={this.selfTestRef} style="backgroundColor: 'black'" class="SelfTest" version="1.1" viewBox="0 0 512 512">
                     <g id="AttFlag">
                         <rect id="AttTest" class="FillYellow" width="84" height="40" x="214" y="174" />
-                        <text id="AltTestTxt" class="TextBackground" textAnchor="middle" x="256" y="206">ATT</text>
+                        <text id="AltTestTxt" class="TextBackground" text-anchor="middle" x="256" y="206">ATT</text>
                     </g>
                     <g id="SpeedFlag">
                         <rect id="SpeedTest" class="FillYellow" width="84" height="40" x="70" y="244" />
-                        <text id="SpeedTestTxt" class="TextBackground" textAnchor="middle" x="112" y="276">SPD</text>
+                        <text id="SpeedTestTxt" class="TextBackground" text-anchor="middle" x="112" y="276">SPD</text>
                     </g>
                     <g id="AltFlag">
                         <rect id="AltTest" class="FillYellow" width="84" height="40" x="358" y="244" />
@@ -122,7 +122,7 @@ export class ISISDisplayUnit extends DisplayComponent<({ bus: EventBus })> {
                     <g id="TimerFlag">
                         <rect id="TmrTest" class="FillYellow" width="160" height="40" x="178" y="332" />
                         <text id="TmrTestTxt" class="TextBackground" x="186" y="366">INIT</text>
-                        <text id="TmrTestCountdown" class="TextBackground" textAnchor="end" x="330" y="366">
+                        <text id="TmrTestCountdown" class="TextBackground" text-anchor="end" x="330" y="366">
                             {this.timer.map((t) => `${Math.max(0, Math.ceil(t!))}\ns`)}
                         </text>
                     </g>
