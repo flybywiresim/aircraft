@@ -359,20 +359,17 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private textSub = Subject.create('');
 
-    private isManaged = false;
-
     private activeVerticalMode = 0;
 
     private handleAltManagedChange() {
         // TODO find proper logic for this (what happens when a constraint is sent by the fms but vertical mode is not managed)
-        const clbActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES
+        const isSelectedModeActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES
                             && this.activeVerticalMode !== VerticalMode.VS && this.activeVerticalMode !== VerticalMode.FPA;
+        const hasConstraint = this.constraint > 0 && isSelectedModeActive;
 
         const selectedAltIgnored = this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT || this.activeVerticalMode === VerticalMode.FINAL;
 
-        this.isManaged = this.constraint > 0 && clbActive;
-
-        this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
+        this.shownTargetAltitude = hasConstraint && !selectedAltIgnored ? this.constraint : this.targetAltitudeSelected;
 
         if (selectedAltIgnored) {
             this.selectedAltLowerFLText.instance.classList.remove('Cyan');
@@ -398,7 +395,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.targetSymbolRef.instance.classList.remove('Magenta');
 
             this.targetSymbolRef.instance.classList.add('White');
-        } else if (this.isManaged) {
+        } else if (hasConstraint) {
             this.selectedAltLowerFLText.instance.classList.remove('Cyan');
             this.selectedAltLowerFLText.instance.classList.remove('White');
             this.selectedAltLowerFLText.instance.classList.add('Magenta');
@@ -497,10 +494,6 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.handleAltitudeDisplay();
             this.setText();
         });
-    }
-
-    private updateTargetAltitude(targetAltitude: number, isManaged: boolean, constraint: number) {
-        return isManaged ? constraint : targetAltitude;
     }
 
     private handleAltitudeDisplay() {
