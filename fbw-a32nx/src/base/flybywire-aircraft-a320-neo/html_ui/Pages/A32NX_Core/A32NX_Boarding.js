@@ -1,3 +1,5 @@
+const { random } = require("lodash");
+
 function airplaneCanBoard() {
     const busDC2 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool");
     const busDCHot1 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED", "Bool");
@@ -30,6 +32,7 @@ class A32NX_Boarding {
         this.passengersLeftToFillOrEmpty = 0;
         this.prevBoardedOrDeboarded = 0;
         this.prevCargoDeboardedPercentage = 0;
+        this.totalMissedPax = 0;
 
         this.gsxStates = {
             AVAILABLE: 1,
@@ -151,22 +154,44 @@ class A32NX_Boarding {
             case this.gsxStates.PERFORMING:
                 await SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", currentPax > 0);
                 const gsxBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", "Number");
-                this.passengersLeftToFillOrEmpty = gsxBoardingTotal - this.prevBoardedOrDeboarded;
+                this.passengersLeftToFillOrEmpty = gsxBoardingTotal - this.prevBoardedOrDeboarded - this.totalMissedPax;
 
-                for (const paxStation of Object.values(this.paxStations).reverse()) {
-                    const stationCurrentPax = SimVar.GetSimVarValue(`L:${paxStation.simVar}`, "Number");
-                    const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
+                for (const paxStation of Object.values(
+                    this.paxStations
+                ).reverse()) {
+                    const stationCurrentPax = SimVar.GetSimVarValue(
+                        `L:${paxStation.simVar}`,
+                        "Number"
+                    );
+                    const stationCurrentPaxTarget = SimVar.GetSimVarValue(
+                        `L:${paxStation.simVar}_DESIRED`,
+                        "Number"
+                    );
                     if (this.passengersLeftToFillOrEmpty <= 0) {
                         break;
                     }
 
-                    const loadAmount = Math.min(this.passengersLeftToFillOrEmpty, paxStation.seats);
+                    const loadAmount = Math.min(
+                        this.passengersLeftToFillOrEmpty,
+                        paxStation.seats
+                    );
+                    console.info("I'm here");
                     if (stationCurrentPax < stationCurrentPaxTarget) {
-                        this.fillPaxStation(paxStation, stationCurrentPax + loadAmount);
+                        let stationMissedPax = 0;
+                        for (let i=0;i<loadAmount;i++)
+                        {
+                            if (random(0)<=0.10) stationMissedPax++;
+                            console.info(stationMissedPax);
+                        }
+                            this.fillPaxStation(
+                                paxStation,
+                                stationCurrentPax + loadAmount - missedPax
+                            );
                         this.passengersLeftToFillOrEmpty -= loadAmount;
+                        this.totalMissedPax += stationMissedPax;
                     }
                 }
-                this.prevBoardedOrDeboarded = gsxBoardingTotal;
+                this.prevBoardedOrDeboarded = gsxBoardingTotal - this.totalMissedPax;
 
                 const gsxCargoPercentage = SimVar.GetSimVarValue("L:FSDT_GSX_BOARDING_CARGO_PERCENT", "Number");
                 for (const loadStation of Object.values(this.cargoStations)) {
