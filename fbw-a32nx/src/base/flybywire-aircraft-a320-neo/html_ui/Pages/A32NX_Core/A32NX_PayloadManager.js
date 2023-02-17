@@ -8,9 +8,9 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(3024)),
                 stationIndex: 0 + 1,
                 position: 20.0,
-                simVar: "A32NX_PAX_FLAGS_A",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_A', 'Number'), 36),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_A_DESIRED', 'Number'), 36),
+                simVar: "A32NX_PAX_A",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_A', 'Number'), 36),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_A_DESIRED', 'Number'), 36),
 
             },
             rows7_13: {
@@ -19,9 +19,9 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(3530)),
                 stationIndex: 1 + 1,
                 position: 0.9,
-                simVar: "A32NX_PAX_FLAGS_B",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_B', 'Number'), 42),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_B_DESIRED', 'Number'), 42),
+                simVar: "A32NX_PAX_B",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_B', 'Number'), 42),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_B_DESIRED', 'Number'), 42),
             },
             rows14_21: {
                 name: 'ROWS [14-21]',
@@ -29,9 +29,9 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(4032)),
                 stationIndex: 2 + 1,
                 position: -17.3,
-                simVar: "A32NX_PAX_FLAGS_C",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_C', 'Number'), 48),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_C_DESIRED', 'Number'), 48),
+                simVar: "A32NX_PAX_C",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_C', 'Number'), 48),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_C_DESIRED', 'Number'), 48),
             },
             rows22_29: {
                 name: 'ROWS [22-29]',
@@ -39,9 +39,9 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(4032)),
                 stationIndex: 3 + 1,
                 position: -36.3,
-                simVar: "A32NX_PAX_FLAGS_D",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_D', 'Number'), 48),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_FLAGS_D_DESIRED', 'Number'), 48),
+                simVar: "A32NX_PAX_D",
+                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_D', 'Number'), 48),
+                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_D_DESIRED', 'Number'), 48),
             },
         };
 

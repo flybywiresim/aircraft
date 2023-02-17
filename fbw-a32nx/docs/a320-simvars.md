@@ -1398,7 +1398,7 @@
     - Bool
     - Indicates current pax/cargo loading state
 
-- A32NX_PAX_FLAGS_{station}
+- A32NX_PAX_{station}
     - Bitwise
     - Indicates the current pax in the selected rows (max 53 bits)
     - {station}
@@ -1407,7 +1407,7 @@
         - C
         - D
 
-- A32NX_PAX_FLAGS_{station}_DESIRED
+- A32NX_PAX_{station}_DESIRED
     - Bitwise
     - Indicates the target number of pax in the selected rows (max 53 bits)
     - {rows}

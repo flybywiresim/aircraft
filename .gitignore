@@ -132,3 +132,4 @@ target/
 #!/src/**
 #!/scripts/**
 #!/typings/**
+fbw-a32nx/src/systems/instruments/buildSrc/custom/*

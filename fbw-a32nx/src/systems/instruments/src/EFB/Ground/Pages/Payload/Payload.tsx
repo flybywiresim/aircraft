@@ -666,13 +666,14 @@ export const Payload = () => {
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 {t('Ground.Payload.ZFWCG')}
+                                                {' / CG'}
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFWCG')} ${40}%`}>
                                                     <div className="px-4 font-light whitespace-nowrap text-md">
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
-                                                            {`${zfwDesiredCg.toFixed(2)} %`}
+                                                            {`${zfwDesiredCg.toFixed(2)} / ${desiredCg.toFixed(2)} %`}
                                                         </div>
                                                         {/*
                                                             <SimpleInput
@@ -689,7 +690,7 @@ export const Payload = () => {
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${zfwCg.toFixed(2)} %`}
+                                                {`${zfwCg.toFixed(2)} / ${cg.toFixed(2)} %`}
                                             </td>
                                         </tr>
                                     </tbody>

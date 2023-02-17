@@ -4,7 +4,7 @@ Module to handle loading of passengers and cargo payload.
  - Based on Loadsheet Pax and Cargo Stations
  - Serialisation of passenger seating configuration into bits (u64) via bitwise manipulation
  - Syncs between boarding related L:Vars and A:Vars for Payload Station Weights.
-    - i.e. PAX_FLAGS_A (kg) syncs with A:PAYLOAD STATION WEIGHTS:1 (lbs)
+    - i.e. PAX_A (kg) syncs with A:PAYLOAD STATION WEIGHTS:1 (lbs)
  - Acts in a read-only mode when GSX 3rd party integration is enabled.
 
 ## Dependencies

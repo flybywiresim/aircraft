@@ -47,7 +47,7 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         let passenger_stations_id = if let Some(rows) = passenger_stations {
             let mut row_id_vec = Vec::new();
             for r in rows.iter() {
-                row_id_vec.push(context.get_identifier(format!("PAX_FLAGS_{}", r)));
+                row_id_vec.push(context.get_identifier(format!("PAX_{}", r)));
             }
             Some(row_id_vec)
         } else {
@@ -111,8 +111,8 @@ impl<const ROWS: usize> SimulationElement for CabinZone<ROWS> {
         let zone_passengers: u8 = if let Some(rows) = &self.passenger_stations_id {
             let mut zone_sum_passengers: u8 = 0;
             for r in rows.iter() {
-                let pax_flags: u64 = reader.read(r);
-                let passengers: u8 = u64::count_ones(pax_flags) as u8;
+                let PAX_: u64 = reader.read(r);
+                let passengers: u8 = u64::count_ones(PAX_) as u8;
                 zone_sum_passengers += passengers;
             }
             zone_sum_passengers
@@ -541,8 +541,8 @@ mod cabin_air_tests {
             for b in 0..station_quantity_b {
                 pax_flag_b ^= 1 << b;
             }
-            self.write_by_name("PAX_FLAGS_A", pax_flag_a);
-            self.write_by_name("PAX_FLAGS_B", pax_flag_b);
+            self.write_by_name("PAX_A", pax_flag_a);
+            self.write_by_name("PAX_B", pax_flag_b);
             self.command(|a| a.set_passengers(pax_quantity));
             self
         }
