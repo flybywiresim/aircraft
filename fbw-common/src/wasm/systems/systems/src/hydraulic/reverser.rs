@@ -265,6 +265,7 @@ impl SimulationElement for DirectionalValve {
 
 pub trait ReverserInterface {
     fn should_unlock(&self) -> bool;
+    fn should_power_valves(&self) -> bool;
     fn should_isolate_hydraulics(&self) -> bool;
     fn should_deploy_reverser(&self) -> bool;
 }
@@ -272,6 +273,7 @@ pub trait ReverserInterface {
 pub trait ReverserFeedback {
     fn position_sensor(&self) -> Ratio;
     fn proximity_sensor_stowed(&self) -> bool;
+    fn proximity_sensor_all_opened(&self) -> bool;
     fn pressure_switch_pressurised(&self) -> bool;
     fn tertiary_lock_is_locked(&self) -> bool;
 }
@@ -305,15 +307,18 @@ impl ReverserHydraulicManifold {
         pressure: Pressure,
         controller: &impl ReverserInterface,
     ) {
-        self.isolation_valve
-            .update(context, !controller.should_isolate_hydraulics(), pressure);
+        self.isolation_valve.update(
+            context,
+            !controller.should_isolate_hydraulics() && controller.should_power_valves(),
+            pressure,
+        );
 
         self.pressure_switch
             .update(context, self.isolation_valve.pressure_output());
 
         self.directional_valve.update(
             context,
-            !controller.should_deploy_reverser(),
+            !controller.should_deploy_reverser() || !controller.should_power_valves(),
             self.isolation_valve.pressure_output(),
         )
     }
@@ -384,6 +389,27 @@ impl ReverserAssembly {
 
     pub fn reverser_position(&self) -> Ratio {
         self.actuator.position()
+    }
+}
+impl ReverserFeedback for ReverserAssembly {
+    fn position_sensor(&self) -> Ratio {
+        self.reverser_position()
+    }
+
+    fn proximity_sensor_stowed(&self) -> bool {
+        self.reverser_position().get::<ratio>() < 0.05
+    }
+
+    fn proximity_sensor_all_opened(&self) -> bool {
+        self.reverser_position().get::<ratio>() > 0.99
+    }
+
+    fn pressure_switch_pressurised(&self) -> bool {
+        self.hydraulic_manifold.pressure_switch_pressurised()
+    }
+
+    fn tertiary_lock_is_locked(&self) -> bool {
+        self.electrical_lock.is_locked()
     }
 }
 impl SimulationElement for ReverserAssembly {

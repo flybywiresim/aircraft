@@ -1,6 +1,6 @@
 use nalgebra::Vector3;
 
-use std::{fmt::Display, time::Duration};
+use std::{fmt::Debug, fmt::Display, time::Duration};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -1517,6 +1517,9 @@ pub(super) struct A320Hydraulic {
     trim_controller: A320TrimInputController,
 
     trim_assembly: TrimmableHorizontalStabilizerAssembly,
+
+    engine_reverser_control: [A320ReverserController; 2],
+    reversers_assembly: A320Reversers,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
@@ -1790,6 +1793,12 @@ impl A320Hydraulic {
                 Angle::new::<degree>(-4.),
                 Angle::new::<degree>(17.5),
             ),
+
+            engine_reverser_control: [
+                A320ReverserController::new(context, 1),
+                A320ReverserController::new(context, 2),
+            ],
+            reversers_assembly: A320Reversers::new(context),
         }
     }
 
@@ -2442,6 +2451,28 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
             self.brake_steer_computer.alternate_controller(),
         );
+
+        println!("REV CONTROL1: {:?}", self.engine_reverser_control[0]);
+        // TODO CHECK LGCIU USAGE
+        self.engine_reverser_control[0].update(
+            context,
+            engine1,
+            lgciu1,
+            self.reversers_assembly.reverser_feedback(0),
+        );
+        self.engine_reverser_control[1].update(
+            context,
+            engine2,
+            lgciu2,
+            self.reversers_assembly.reverser_feedback(1),
+        );
+
+        self.reversers_assembly.update(
+            context,
+            &self.engine_reverser_control,
+            self.green_circuit.system_section(),
+            self.yellow_circuit.system_section(),
+        )
     }
 
     // Actual logic of HYD PTU memo computed here until done within FWS
@@ -2562,6 +2593,9 @@ impl SimulationElement for A320Hydraulic {
 
         self.trim_controller.accept(visitor);
         self.trim_assembly.accept(visitor);
+
+        accept_iterable!(self.engine_reverser_control, visitor);
+        self.reversers_assembly.accept(visitor);
 
         visitor.visit(self);
     }
@@ -5954,16 +5988,42 @@ impl SimulationElement for A320TrimInputController {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum ReverserControlState {
+    StowedOff,
+    StowedOn,
+    TransitOpening,
+    TransitClosing,
+    FullyOpened,
+}
+
 struct A320ReverserController {
-    is_stowed: bool,
+    throttle_lever_angle_id: VariableIdentifier,
+
+    throttle_lever_angle: Angle,
+
+    state: ReverserControlState,
+
+    tertiary_lock_from_sec_should_unlock: DelayedFalseLogicGate,
 }
 impl A320ReverserController {
-    fn new() -> Self {
-        Self { is_stowed: true }
+    fn new(context: &mut InitContext, engine_number: usize) -> Self {
+        Self {
+            throttle_lever_angle_id: context
+                .get_identifier(format!("AUTOTHRUST_TLA:{}", engine_number)),
+
+            throttle_lever_angle: Angle::default(),
+            state: ReverserControlState::StowedOff,
+
+            tertiary_lock_from_sec_should_unlock: DelayedFalseLogicGate::new(Duration::from_secs(
+                40,
+            )),
+        }
     }
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         engine: &impl Engine,
         lgciu: &impl LgciuWeightOnWheels,
         reverser_feedback: &impl ReverserFeedback,
@@ -5971,16 +6031,118 @@ impl A320ReverserController {
         let is_confirmed_stowed_available_for_deploy =
             reverser_feedback.position_sensor().get::<ratio>() <= 0.1
                 && reverser_feedback.proximity_sensor_stowed()
-                && !reverser_feedback.pressure_switch_pressurised()
-                && reverser_feedback.tertiary_lock_is_locked();
+                && !reverser_feedback.pressure_switch_pressurised();
+
+        println!(
+            "CONFIRMED STOW {:?}",
+            is_confirmed_stowed_available_for_deploy
+        );
+
+        let allow_power_to_valves = self.throttle_lever_angle.get::<degree>() <= -3.8
+            && lgciu.left_and_right_gear_compressed(false);
+
+        println!("allow_power_to_valves {:?}", allow_power_to_valves);
+
+        let allow_isolation_valve_to_open = self.throttle_lever_angle.get::<degree>() <= -4.3;
+        println!(
+            "allow_isolation_valve_to_open {:?}",
+            allow_isolation_valve_to_open
+        );
+
+        let allow_directional_valve_to_deploy =
+            allow_isolation_valve_to_open && reverser_feedback.pressure_switch_pressurised();
+        println!(
+            "allow_directional_valve_to_deploy {:?}",
+            allow_directional_valve_to_deploy
+        );
 
         let deploy_authorized = engine.corrected_n2().get::<percent>() > 50.
             && lgciu.left_and_right_gear_compressed(false);
 
-        let should_deploy = false;
+        println!("deploy_authorized {:?}", deploy_authorized);
+
+        self.tertiary_lock_from_sec_should_unlock
+            .update(context, self.throttle_lever_angle.get::<degree>() <= -3.);
+
+        self.state = match self.state {
+            ReverserControlState::StowedOff => {
+                if is_confirmed_stowed_available_for_deploy && allow_power_to_valves {
+                    ReverserControlState::StowedOn
+                } else {
+                    self.state
+                }
+            }
+            ReverserControlState::StowedOn => {
+                if !allow_power_to_valves {
+                    ReverserControlState::StowedOff
+                } else if allow_isolation_valve_to_open {
+                    ReverserControlState::TransitOpening
+                } else {
+                    self.state
+                }
+            }
+            ReverserControlState::TransitOpening => {
+                if reverser_feedback.proximity_sensor_all_opened() {
+                    ReverserControlState::FullyOpened
+                } else if !deploy_authorized || !allow_power_to_valves {
+                    ReverserControlState::TransitClosing
+                } else {
+                    self.state
+                }
+            }
+            ReverserControlState::TransitClosing => {
+                if reverser_feedback.proximity_sensor_stowed() {
+                    ReverserControlState::StowedOff
+                } else if allow_directional_valve_to_deploy && deploy_authorized {
+                    ReverserControlState::TransitOpening
+                } else {
+                    self.state
+                }
+            }
+            ReverserControlState::FullyOpened => {
+                if !deploy_authorized || !allow_power_to_valves {
+                    ReverserControlState::TransitClosing
+                } else {
+                    self.state
+                }
+            }
+        };
     }
 }
-impl ReverserInterface for A320ReverserController {}
+impl SimulationElement for A320ReverserController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.throttle_lever_angle = reader.read(&self.throttle_lever_angle_id);
+    }
+}
+impl ReverserInterface for A320ReverserController {
+    fn should_unlock(&self) -> bool {
+        self.tertiary_lock_from_sec_should_unlock.output()
+    }
+
+    fn should_power_valves(&self) -> bool {
+        self.state != ReverserControlState::StowedOff
+    }
+
+    fn should_isolate_hydraulics(&self) -> bool {
+        self.state == ReverserControlState::StowedOff
+            || self.state == ReverserControlState::StowedOn
+    }
+
+    fn should_deploy_reverser(&self) -> bool {
+        self.state == ReverserControlState::TransitOpening
+    }
+}
+impl Debug for A320ReverserController {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\nREV Controller => STATE: {:?}/ should_unlock {:?}/  should_power_valves {:?} / should_isolate_hydraulics {:?} / should_deploy_reverser{:?}",
+            self.state, self.should_unlock(),
+            self.should_power_valves(),
+            self.should_isolate_hydraulics(),self.should_deploy_reverser(),
+        )
+    }
+}
 
 struct A320Reversers {
     reverser1_position_id: VariableIdentifier,
@@ -6050,11 +6212,22 @@ impl A320Reversers {
             &reverser_controllers[0],
             left_reverser_section.pressure(),
         );
+
+        println!(
+            "REV CONTROL1: position{:?} pressurized {:?}",
+            self.reversers[0].position_sensor().get::<ratio>(),
+            self.reversers[0].pressure_switch_pressurised()
+        );
+
         self.reversers[1].update(
             context,
             &reverser_controllers[1],
             right_reverser_section.pressure(),
         );
+    }
+
+    fn reverser_feedback(&self, reverser_index: usize) -> &impl ReverserFeedback {
+        &self.reversers[reverser_index]
     }
 }
 impl SimulationElement for A320Reversers {
@@ -6873,6 +7046,7 @@ mod tests {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
+
                 self
             }
 
@@ -7013,6 +7187,37 @@ mod tests {
             fn stop_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 0.);
+
+                self
+            }
+
+            fn set_throttles_idle(mut self) -> Self {
+                self.write_by_name("AUTOTHRUST_TLA:1", 0.);
+                self.write_by_name("AUTOTHRUST_TLA:2", 0.);
+
+                self
+            }
+
+            fn eng1_throttle_reverse_idle(mut self) -> Self {
+                self.write_by_name("AUTOTHRUST_TLA:1", -6.);
+
+                self
+            }
+
+            fn eng1_throttle_reverse_full(mut self) -> Self {
+                self.write_by_name("AUTOTHRUST_TLA:1", -20.);
+
+                self
+            }
+
+            fn eng2_throttle_reverse_idle(mut self) -> Self {
+                self.write_by_name("AUTOTHRUST_TLA:2", -6.);
+
+                self
+            }
+
+            fn eng2_throttle_reverse_full(mut self) -> Self {
+                self.write_by_name("AUTOTHRUST_TLA:2", -20.);
 
                 self
             }
@@ -7199,6 +7404,7 @@ mod tests {
                     .set_elac1_actuators_energized()
                     .set_ailerons_neutral()
                     .set_elevator_neutral()
+                    .set_throttles_idle()
             }
 
             fn set_left_brake(mut self, position: Ratio) -> Self {
@@ -11698,6 +11904,28 @@ mod tests {
 
             assert!(test_bed.is_all_doors_really_up());
             assert!(test_bed.is_all_gears_really_down());
+        }
+
+        #[test]
+        fn reversers_do_not_deploy_in_flight() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .eng1_throttle_reverse_full()
+                .eng2_throttle_reverse_full()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+        }
+
+        #[test]
+        fn reversers_deploy_on_ground_with_eng_on() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(60.))
+                .start_eng2(Ratio::new::<percent>(60.))
+                .eng1_throttle_reverse_full()
+                .eng2_throttle_reverse_full()
+                .run_waiting_for(Duration::from_secs_f64(1.));
         }
     }
 }
