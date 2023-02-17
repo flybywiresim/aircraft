@@ -151,13 +151,14 @@
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
+                    alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
 
                     let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
                     let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
 
-                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
+                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or ((annunciatorLight == 0) and dc2Powered)) and indicatorsPowered {
                         1 * emissiveDim
                     } else {
                         0
@@ -177,13 +178,14 @@
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
+                    alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
 
                     let rmpLeftAbnormal = id == 1 and (selectedModeLeft == 2 or selectedModeLeft == 3 or selectedModeRight == 1);
                     let rmpRightAbnormal = id == 2 and (selectedModeRight == 1 or selectedModeRight == 3 or selectedModeLeft == 2);
 
-                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
+                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or ((annunciatorLight == 0) and dc2Powered)) and indicatorsPowered {
                         1 * emissiveDim
                     } else {
                         0
@@ -310,8 +312,9 @@
                     alias selectedMode = (L:A32NX_RMP_#SIDE#_SELECTED_MODE, number);
                     alias navButtonPressed = (L:A32NX_RMP_#SIDE#_NAV_BUTTON_SELECTED, bool);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
+                    alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
-                    (if ((!inop and toggleSwitch and ((selectedMode == modeId) or (modeId == 12 and navButtonPressed))) or (annunciatorLight == 0)) and indicatorsPowered  {
+                    (if ((!inop and toggleSwitch and ((selectedMode == modeId) or (modeId == 12 and navButtonPressed))) or ((annunciatorLight == 0) and dc2Powered)) and indicatorsPowered  {
                         1 * emissiveDim
                     } else {
                         0

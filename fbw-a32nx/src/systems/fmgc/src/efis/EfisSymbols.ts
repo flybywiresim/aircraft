@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
+import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, EfisNdRangeValue, rangeSettings } from '@shared/NavigationDisplay';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
@@ -18,6 +18,9 @@ import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes
 import { NearbyFacilities } from './NearbyFacilities';
 
 export class EfisSymbols {
+    /** these types of legs are current not integrated into the normal symbol drawing routines */
+    static readonly LEG_MANAGED_TYPES = [LegType.CA, LegType.CR, LegType.CI, LegType.FM, LegType.PI, LegType.VA, LegType.VI, LegType.VM];
+
     private blockUpdate = false;
 
     private flightPlanManager: FlightPlanManager;
@@ -115,7 +118,7 @@ export class EfisSymbols {
 
         for (const side of EfisSymbols.sides) {
             const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
-            const mode: Mode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
+            const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 
             const rangeChange = this.lastRange[side] !== range;
@@ -130,7 +133,7 @@ export class EfisSymbols {
                 continue;
             }
 
-            if (mode === Mode.PLAN && !planCentre) {
+            if (mode === EfisNdMode.PLAN && !planCentre) {
                 this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
                 return;
             }
@@ -139,9 +142,9 @@ export class EfisSymbols {
 
             // eslint-disable-next-line no-loop-func
             const withinEditArea = (ll): boolean => {
-                const dist = Avionics.Utils.computeGreatCircleDistance(mode === Mode.PLAN ? planCentre : ppos, ll);
-                let bearing = Avionics.Utils.computeGreatCircleHeading(mode === Mode.PLAN ? planCentre : ppos, ll);
-                if (mode !== Mode.PLAN) {
+                const dist = Avionics.Utils.computeGreatCircleDistance(mode === EfisNdMode.PLAN ? planCentre : ppos, ll);
+                let bearing = Avionics.Utils.computeGreatCircleHeading(mode === EfisNdMode.PLAN ? planCentre : ppos, ll);
+                if (mode !== EfisNdMode.PLAN) {
                     bearing = Avionics.Utils.clampAngle(bearing - trueHeading);
                 }
                 bearing = bearing * Math.PI / 180;
@@ -301,15 +304,15 @@ export class EfisSymbols {
             {
                 for (let i = activeFp.length - 1; i >= (activeFp.activeWaypointIndex - 1) && i >= 0; i--) {
                     const wp = activeFp.getWaypoint(i);
+                    if (!wp) {
+                        continue;
+                    }
 
-                    // Managed by legs
+                    const isFromWp = i < activeFp.activeWaypointIndex;
+
                     // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
                     const legType = wp.additionalData.legType;
-                    if (
-                        legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
-                        || legType === LegType.FM || legType === LegType.PI
-                        || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
-                    ) {
+                    if (EfisSymbols.LEG_MANAGED_TYPES.includes(legType)) {
                         continue;
                     }
 
@@ -354,12 +357,12 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
-                    // TODO vnav to predict
+                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !isFromWp) {
+                        // TODO vnav to predict
                         type |= NdSymbolTypeFlags.ConstraintUnknown;
                     }
 
-                    if (efisOption === EfisOption.Constraints) {
+                    if (efisOption === EfisOption.Constraints && !isFromWp) {
                         const descent = wp.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
@@ -392,6 +395,20 @@ export class EfisSymbols {
                         constraints: constraints.length > 0 ? constraints : undefined,
                         direction,
                     });
+                }
+            }
+
+            // we can only send 2 constraint predictions, so filter out any past the 2 close to the AC
+            let constraintPredictions = 0;
+            const constraintFlags = NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed;
+            for (let i = symbols.length - 1; i >= 0; i--) {
+                if ((symbols[i].type & constraintFlags) === 0) {
+                    continue;
+                }
+                if (constraintPredictions >= 2) {
+                    symbols[i].type &= ~constraintFlags;
+                } else {
+                    constraintPredictions++;
                 }
             }
 
@@ -521,9 +538,9 @@ export class EfisSymbols {
         return undefined;
     }
 
-    private calculateEditArea(range: RangeSetting, mode: Mode): [number, number, number] {
+    private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
         switch (mode) {
-        case Mode.ARC:
+        case EfisNdMode.ARC:
             if (range <= 10) {
                 return [10.5, 3.5, 8.3];
             }
@@ -540,7 +557,7 @@ export class EfisSymbols {
                 return [160.5, 56, 132.8];
             }
             return [320.5, 112, 265.6];
-        case Mode.ROSE_NAV:
+        case EfisNdMode.ROSE_NAV:
             if (range <= 10) {
                 return [7.6, 7.1, 7.1];
             }
@@ -557,7 +574,7 @@ export class EfisSymbols {
                 return [114.1, 113.6, 113.6];
             }
             return [227.7, 227.2, 227.2];
-        case Mode.PLAN:
+        case EfisNdMode.PLAN:
             if (range <= 10) {
                 return [7, 7, 7];
             }

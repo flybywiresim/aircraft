@@ -16,6 +16,8 @@ pub enum FailureType {
     LgciuInternalError(LgciuId),
     GearProxSensorDamage(ProximityDetectorId),
     GearActuatorJammed(GearActuatorId),
+    BrakeHydraulicLeak(HydraulicColor),
+    BrakeAccumulatorGasLeak,
     RadioAltimeter(usize),
 }
 

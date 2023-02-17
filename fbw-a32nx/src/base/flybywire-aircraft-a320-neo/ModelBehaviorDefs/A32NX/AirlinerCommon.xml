@@ -4,64 +4,6 @@
 <ModelBehaviors>
     <Include ModelBehaviorFile="Asobo\TRANSPONDER\Transponder.xml"/>
 
-    <Template Name="ASOBO_AIRLINER_ATC_Transponder_Mode_Knob_Template">
-        <DefaultTemplateParameters>
-            <NODE_ID>AIRLINER_ATC_Transponder_Mode_Knob</NODE_ID>
-            <ANIM_NAME>AIRLINER_ATC_Transponder_Mode_Knob</ANIM_NAME>
-            <SET_TRANSPONDER_STATE>(&gt;A:TRANSPONDER STATE:1, Enum)</SET_TRANSPONDER_STATE>
-            <GET_TRANSPONDER_STATE>(A:TRANSPONDER STATE:1, Enum)</GET_TRANSPONDER_STATE>
-            <ENUM_VAL_STBY>1</ENUM_VAL_STBY>
-            <ENUM_VAL_ALT>4</ENUM_VAL_ALT>
-            <ENUM_VAL_ON>3</ENUM_VAL_ON>
-            <CODE_POS_STBY>0</CODE_POS_STBY>
-            <CODE_POS_XPNDR>1</CODE_POS_XPNDR>
-            <CODE_POS_TA>2</CODE_POS_TA>
-            <CODE_POS_TARA>3</CODE_POS_TARA>
-            <CODE_POS_ALT>4</CODE_POS_ALT>
-        </DefaultTemplateParameters>
-
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Switch_5States">
-                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-                <LEFTARROW>TurnLeft</LEFTARROW>
-                <RIGHTARROW>TurnRight</RIGHTARROW>
-                <CODE_POS_#CODE_POS_STBY#>
-                #ENUM_VAL_STBY# #SET_TRANSPONDER_STATE#
-                0 (&gt;I:XMLVAR_IDENT_Shutdown_Time)
-                0 (&gt;L:XMLVAR_Transponder_Mode)
-                </CODE_POS_#CODE_POS_STBY#>
-                <CODE_POS_#CODE_POS_XPNDR#>
-                #ENUM_VAL_ALT# #SET_TRANSPONDER_STATE#
-                1 (&gt;L:XMLVAR_Transponder_Mode)
-                </CODE_POS_#CODE_POS_XPNDR#>
-                <CODE_POS_#CODE_POS_TA#>
-                #ENUM_VAL_ALT# #SET_TRANSPONDER_STATE#
-                2 (&gt;L:XMLVAR_Transponder_Mode)
-                </CODE_POS_#CODE_POS_TA#>
-                <CODE_POS_#CODE_POS_TARA#>
-                #ENUM_VAL_ALT# #SET_TRANSPONDER_STATE#
-                3 (&gt;L:XMLVAR_Transponder_Mode)
-                </CODE_POS_#CODE_POS_TARA#>
-                <CODE_POS_#CODE_POS_ALT#>
-                #ENUM_VAL_ON# #SET_TRANSPONDER_STATE#
-                0 (&gt;L:XMLVAR_Transponder_Mode)
-                </CODE_POS_#CODE_POS_ALT#>
-                <STATE#CODE_POS_STBY#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_STBY# ==</STATE#CODE_POS_STBY#_TEST>
-                <STATE#CODE_POS_XPNDR#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 1 == and</STATE#CODE_POS_XPNDR#_TEST>
-                <STATE#CODE_POS_TA#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 2 == and</STATE#CODE_POS_TA#_TEST>
-                <STATE#CODE_POS_TARA#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 3 == and</STATE#CODE_POS_TARA#_TEST>
-                <STATE#CODE_POS_ALT#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ON# ==</STATE#CODE_POS_ALT#_TEST>
-
-                <ANIMTIP_#CODE_POS_STBY#>TT:COCKPIT.TOOLTIPS.XPDR_SBY</ANIMTIP_#CODE_POS_STBY#>
-                <ANIMTIP_#CODE_POS_XPNDR#>TT:COCKPIT.TOOLTIPS.XPDR_XPDR</ANIMTIP_#CODE_POS_XPNDR#>
-                <ANIMTIP_#CODE_POS_TA#>TT:COCKPIT.TOOLTIPS.XPDR_TA_ONLY</ANIMTIP_#CODE_POS_TA#>
-                <ANIMTIP_#CODE_POS_TARA#>TT:COCKPIT.TOOLTIPS.XPDR_TA_RA</ANIMTIP_#CODE_POS_TARA#>
-                <ANIMTIP_#CODE_POS_ALT#>TT:COCKPIT.TOOLTIPS.XPDR_ALT_RPTG_OFF</ANIMTIP_#CODE_POS_ALT#>
-            </UseTemplate>
-            <PartID>TRANSPONDER_KNOB</PartID>
-        </Component>
-    </Template>
-
     <!-- Never call this template directly -->
     <Template Name="FBW_AIRLINER_SubNodes_Setter_Template">
         <DefaultTemplateParameters>
@@ -77,7 +19,7 @@
         <UseTemplate Name="#TEMPLATE_TO_CALL#">
             <Condition Check="SEQ1_EMISSIVE_CODE">
                 <True>
-                    <SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #BLOCK_SEQ1# ! and #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+                    <SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #BLOCK_SEQ1# ! and #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
                 </True>
                 <False>
                     <SEQ1_EMISSIVE_CODE>#BLOCK_SEQ1# ! #SEQ1_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
@@ -85,7 +27,7 @@
             </Condition>
             <Condition Check="SEQ2_EMISSIVE_CODE">
                 <True>
-                    <SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == or #BLOCK_SEQ2# ! and #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+                    <SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #BLOCK_SEQ2# ! and #SEQ2_POWERED# and #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
                 </True>
                 <False>
                     <SEQ2_EMISSIVE_CODE>#BLOCK_SEQ2# ! #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
@@ -682,7 +624,7 @@
                 #SEQ1_POWERED# ! if{
                     0
                 } els{
-                    1 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
+                    1 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or if{
                         3.0 #EMISSIVE_DIM# *
                     } els{
                         0.1 #EMISSIVE_DIM# *
@@ -726,13 +668,13 @@
                     <!-- Green light -->
                     <SEQ1_EMISSIVE_CODE>
                         #SEQ1_POWERED# if{
-                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #EMISSIVE_DIM# *
                         }
                     </SEQ1_EMISSIVE_CODE>
                      <!-- Button name light (for example CALL or MECH)-->
                     <SEQ2_EMISSIVE_CODE>
                         #SEQ1_POWERED# if{
-                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                            #TRANSMIT_ID# (L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) == (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #EMISSIVE_DIM# *
                         }
                     </SEQ2_EMISSIVE_CODE>
                     <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
@@ -784,7 +726,7 @@
                 </LEFT_SINGLE_CODE>
                 <SEQ1_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        1 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        1 (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) == (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #EMISSIVE_DIM# *
                     }
                 </SEQ1_EMISSIVE_CODE>
                 <WWISE_EVENT></WWISE_EVENT>
@@ -823,7 +765,7 @@
                 #AUDIO_KNOB_POWERED# ! if{
                     0
                 } els{
-                    (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
+                    (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or if{
                         3.0 #EMISSIVE_DIM# *
                     } els{
                         0.1 #EMISSIVE_DIM# *

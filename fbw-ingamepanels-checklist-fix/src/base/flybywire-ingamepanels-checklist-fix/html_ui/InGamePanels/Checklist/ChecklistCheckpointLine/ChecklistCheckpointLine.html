@@ -1,0 +1,39 @@
+﻿<link rel="stylesheet" href="./ChecklistCheckpointLine.css" />
+<script type="text/html" id="ChecklistCheckpointLineTemplate" not-pad-interactive>
+    <div class="background">
+        <ui-button default-click class="select-zone condensed-interactive">
+            <div class="Checkbox">
+                <icon-element class="cursor-logo" data-url="/icons/checklist/ICON_LOADING.svg"></icon-element>
+                <icon-element class="blocked-logo" data-url="/icons/checklist/ICON_WARNING.svg"></icon-element>
+            </div>
+            <div class="Cursor"></div>
+            <div class="Subject">
+                <p></p>
+                <icon-element class="warning hide" data-url="/icons/checklist/ICON_CHECKLIST_MANUAL.svg"></icon-element>
+            </div>
+            <div class="Expectation"><p></p></div>
+        </ui-button>
+        <icon-button data-url="/icons/checklist/ICON_EYE.svg" icon-tooltip="TT:GAME.PANEL_CHECKLIST_TOGGLE_COCKPIT_HIGHLIGHT" class="Eye HasBorder condensed-interactive"></icon-button>
+    </div>
+</script>
+
+<script type="text/html" id="ChecklistPageTemplate" vertical-navigation="checklist-checkpoint-line-group,checklist-checkpoint-line" auto-inside>    
+</script>
+
+<script type="text/html" id="ChecklistCheckpointLineGroupTemplate">
+    <ui-button class="line condensed-interactive" default-click>
+        <div class="Checkbox">
+            <icon-element class="cursor-logo" data-url="/icons/checklist/ICON_LOADING.svg"></icon-element>
+        </div>
+        <div class="Cursor"></div>
+        <icon-stack class="Expand">
+            <icon-element class="ICON_MAP_DROPLIST_ARROW" data-url="/icons/ICON_MAP_CIRCLE.svg"></icon-element>
+            <icon-element class="ICON_MAP_DROPLIST_ARROW" data-url="/icons/ICON_MAP_DROPLIST_ARROW_NEW.svg"></icon-element>
+        </icon-stack>
+        <div class="Subject"><p></p></div>
+    </ui-button>
+    <div class="border"></div>
+    <div class="Children"></div>
+</script>
+
+<script type="text/javascript" src="./ChecklistCheckpointLine.js"></script>
