@@ -76,7 +76,7 @@ class CDUAocMessagesReceived {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID, true);
                         CDUAocMessagesReceived.ShowPage(mcdu, null, page);
                     } else {
                         CDUAocRequestsMessage.ShowPage(mcdu, messages, offset - 5 + i);

@@ -45,7 +45,7 @@ class CDUAtcMessage {
         const lines = message.serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplay).split("\n");
 
         // mark message as read
-        mcdu.atsu.messageRead(message.UniqueMessageID);
+        mcdu.atsu.messageRead(message.UniqueMessageID, false);
 
         const msgArrows = messages.length > 1 ? " {}" : "";
 

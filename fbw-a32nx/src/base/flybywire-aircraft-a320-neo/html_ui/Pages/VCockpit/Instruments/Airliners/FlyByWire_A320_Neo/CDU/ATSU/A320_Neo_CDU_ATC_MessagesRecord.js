@@ -117,7 +117,7 @@ class CDUAtcMessagesRecord {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID, false);
                         CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
                     } else {
                         CDUAtcMessage.ShowPage(mcdu, messages, offset + i, true);

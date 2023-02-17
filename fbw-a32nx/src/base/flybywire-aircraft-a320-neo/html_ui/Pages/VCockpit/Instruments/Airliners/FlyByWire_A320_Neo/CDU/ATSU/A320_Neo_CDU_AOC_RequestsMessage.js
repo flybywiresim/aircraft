@@ -5,7 +5,7 @@ class CDUAocRequestsMessage {
         const lines = message.serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplay).split("\n");
 
         // mark message as read
-        mcdu.atsu.messageRead(message.UniqueMessageID);
+        mcdu.atsu.messageRead(message.UniqueMessageID, true);
 
         const msgArrows = messages.length > 1 ? " {}" : "";
 

@@ -178,7 +178,7 @@ class CDUAocRequestsAtis {
 
                     // print the message
                     if (store.formatID === 0) {
-                        mcdu.atsu.messageRead(retval[1].UniqueMessageID);
+                        mcdu.atsu.messageRead(retval[1].UniqueMessageID, true);
                         mcdu.atsu.printMessage(retval[1]);
                     }
                 } else {
