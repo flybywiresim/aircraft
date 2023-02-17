@@ -8,7 +8,7 @@
 
 Event::Event(
   HANDLE hdlSimConnect, const std::string &eventName, DWORD eventClientId, bool maskEvent)
-  : hSimConnect(hdlSimConnect), eventName(eventName), eventClientID(eventClientId),
+  : hSimConnect(hdlSimConnect), eventName(std::move(eventName)), eventClientID(eventClientId),
     maskEvent(maskEvent) {
 
   if (!SUCCEEDED(SimConnect_MapClientEventToSimEvent(hSimConnect, eventClientID, eventName.c_str()))) {
@@ -58,7 +58,7 @@ void Event::trigger_ex1(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWOR
             + std::to_string(data3) + ", " + std::to_string(data4));
 }
 
-CallbackID Event::addCallback(const CallbackFunction &callback) {
+CallbackID Event::addCallback(const EventCallbackFunction &callback) {
   const auto id = callbackIdGen.getNextId();
   callbacks.insert({id, callback});
   if (!isSubscribedToSim) {

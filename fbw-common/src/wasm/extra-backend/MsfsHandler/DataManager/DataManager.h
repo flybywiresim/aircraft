@@ -62,7 +62,7 @@ private:
   std::map<SIMCONNECT_CLIENT_EVENT_ID, EventPtr> events{};
 
   // Backreference to the MsfsHandler instance.
-  MsfsHandler *msfsHandler;
+  MsfsHandler* msfsHandler;
 
   // Handle to the simconnect instance.
   HANDLE hSimConnect{};
@@ -81,7 +81,7 @@ public:
   /**
    * Creates an instance of the DataManager.
    */
-  explicit DataManager(MsfsHandler *msfsHdl) : msfsHandler(msfsHdl) {}
+  explicit DataManager(MsfsHandler* msfsHdl) : msfsHandler(msfsHdl) {}
 
   DataManager() = delete; // no default constructor
   DataManager(const DataManager &) = delete; // no copy constructor
@@ -151,7 +151,7 @@ public:
    * @see Units.h for available units
    */
   NamedVariablePtr make_named_var(
-    const std::string &varName,
+    const std::string varName,
     Unit unit = UNITS.Number,
     bool autoReading = false,
     bool autoWriting = false,
@@ -175,9 +175,9 @@ public:
    * @see Units.h for available units
    */
   AircraftVariablePtr make_aircraft_var(
-    const std::string &varName,
+    const std::string varName,
     int index = 0,
-    const std::string &setterEventName = "",
+    const std::string setterEventName = "",
     EventPtr setterEvent = nullptr,
     Unit unit = UNITS.Number,
     bool autoReading = false,
@@ -198,7 +198,7 @@ public:
    * @see Units.h for available units
    */
   AircraftVariablePtr make_simple_aircraft_var(
-    const std::string &varName,
+    const std::string varName,
     Unit unit = UNITS.Number,
     bool autoReading = false,
     FLOAT64 maxAgeTime = 0.0,
@@ -217,17 +217,17 @@ public:
    */
   template<typename T>
   std::shared_ptr<DataDefinitionVariable<T>> make_datadefinition_var(
-    const std::string &name,
-    std::vector<DataDefinition> &dataDefinitions,
+    const std::string name,
+    std::vector<DataDefinition>&dataDefinitions,
     bool autoReading = false,
-    bool autoWriting = false,
-    FLOAT64 maxAgeTime = 0.0,
-    UINT64 maxAgeTicks = 0) {
+    bool autoWriting = false, FLOAT64
+    maxAgeTime = 0.0, UINT64
+    maxAgeTicks = 0) {
 
-    std::shared_ptr<DataDefinitionVariable<T>> var =
-      std::make_shared<DataDefinitionVariable<T>>(
+    std::shared_ptr<DataDefinitionVariable<T>>
+      var = std::make_shared<DataDefinitionVariable<T>> (
         hSimConnect,
-        name,
+        std::move(name),
         dataDefinitions,
         dataDefIDGen.getNextId(),
         dataReqIDGen.getNextId(),
@@ -237,9 +237,7 @@ public:
         maxAgeTicks);
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
-
     simObjects.insert({var->getRequestId(), var});
-
     return var;
   }
 
@@ -261,16 +259,16 @@ public:
    */
   template<typename T>
   std::shared_ptr<ClientDataAreaVariable<T>> make_clientdataarea_var(
-    const std::string &clientDataName,
+    const std::string clientDataName,
     bool autoReading = false,
     bool autoWriting = false,
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0) {
 
-    std::shared_ptr<ClientDataAreaVariable<T>> var =
-      std::make_shared<ClientDataAreaVariable<T>>(
+    std::shared_ptr <ClientDataAreaVariable<T>>
+      var = std::make_shared<ClientDataAreaVariable<T>> (
         hSimConnect,
-        clientDataName,
+        std::move(clientDataName),
         clientDataIDGen.getNextId(),
         dataDefIDGen.getNextId(),
         dataReqIDGen.getNextId(),
@@ -280,9 +278,7 @@ public:
         maxAgeTicks);
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
-
     simObjects.insert({var->getRequestId(), var});
-
     return var;
   }
 

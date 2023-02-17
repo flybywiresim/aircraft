@@ -19,6 +19,7 @@
 class DataObjectBase {
 
 protected:
+
   /**
    * The name of the variable in the sim
    */

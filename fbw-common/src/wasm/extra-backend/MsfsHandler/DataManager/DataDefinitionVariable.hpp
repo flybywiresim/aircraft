@@ -99,7 +99,7 @@ public:
    */
   DataDefinitionVariable<T>(
     HANDLE hSimConnect,
-    const std::string &varName,
+    const std::string varName,
     const std::vector<DataDefinition> &dataDefinitions,
     SIMCONNECT_DATA_DEFINITION_ID dataDefId,
     SIMCONNECT_DATA_REQUEST_ID requestId,
@@ -108,11 +108,8 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0
   )
-    : SimObjectBase(hSimConnect, varName, dataDefId, requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
+    : SimObjectBase(hSimConnect, std::move(varName), dataDefId, requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
       dataDefinitions(dataDefinitions), dataStruct{} {
-
-    SIMPLE_ASSERT(sizeof(T) == dataDefinitions.size() * sizeof(FLOAT64),
-                  "DataDefinitionVariable::processSimData: Struct size mismatch")
 
     for (auto &ddef: dataDefinitions) {
       std::string fullVarName = ddef.name;
@@ -148,8 +145,8 @@ public:
       requestId,
       dataDefId,
       SIMCONNECT_OBJECT_ID_USER,
-      SIMCONNECT_PERIOD_ONCE))) {
-
+      SIMCONNECT_PERIOD_ONCE))
+      ) {
       LOG_ERROR("DataDefinitionVariable: Failed to request data from sim: " + name);
       return false;
     }
@@ -216,19 +213,20 @@ public:
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_TRACE("DataDefinitionVariable: Received client data: " + name);
     const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
-    SIMPLE_ASSERT(sizeof(T) == pSimobjectData->dwDefineCount * sizeof(FLOAT64),
-                  "DataDefinitionVariable::processSimData: Struct size mismatch")
-    SIMPLE_ASSERT(pSimobjectData->dwRequestID == requestId,
-                  "DataDefinitionVariable::processSimData: Request ID mismatch")
+
+   SIMPLE_ASSERT(pSimobjectData->dwRequestID == requestId,
+           "DataDefinitionVariable::processSimData: Request ID mismatch: " + name);
+
     // if not required then skip the rather expensive check for change
-    dataChanged = skipChangeCheck || std::memcmp(&pSimobjectData->dwData, &this->dataStruct, sizeof(T)) != 0;
-    if (dataChanged) {
+    if (skipChangeCheck || std::memcmp(&pSimobjectData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       LOG_TRACE("DataDefinitionVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pSimobjectData->dwData, sizeof(T));
       timeStampSimTime = simTime;
       tickStamp = tickCounter;
+      setChanged(true);
       return;
     }
+    setChanged(false);
     LOG_TRACE("DataDefinitionVariable: Data has not changed: " + name);
   };
 
@@ -240,7 +238,6 @@ public:
                 + std::to_string(dataDefId) + " failed!");
       return false;
     }
-    setDataChanged(false);
     return true;
   };
 
@@ -277,7 +274,7 @@ public:
     ss << ", timeStamp: " << timeStampSimTime;
     ss << ", tickStamp: " << tickStamp;
     ss << ", skipChangeCheck: " << skipChangeCheck;
-    ss << ", dataChanged: " << dataChanged;
+    ss << ", dataChanged: " << hasChanged();
     ss << ", autoRead: " << autoRead;
     ss << ", autoWrite: " << autoWrite;
     ss << ", maxAgeTime: " << maxAgeTime;

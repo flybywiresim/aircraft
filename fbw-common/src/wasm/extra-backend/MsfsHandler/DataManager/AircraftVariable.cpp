@@ -97,7 +97,7 @@ std::string AircraftVariable::str() const {
   ss << "AircraftVariable: [" << name << (index ? ":" + std::to_string(index) : "");
   ss << ", value: " << (cachedValue.has_value() ? std::to_string(cachedValue.value()) : "N/A");
   ss << ", unit: " << unit.name;
-  ss << ", changed: " << changed;
+  ss << ", changed: " << hasChanged();
   ss << ", dirty: " << dirty;
   ss << ", timeStamp: " << timeStampSimTime;
   ss << ", tickStamp: " << tickStamp;

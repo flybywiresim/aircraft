@@ -21,17 +21,14 @@ FLOAT64 CacheableVariable::get() const {
 
 FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) {
   if (cachedValue.has_value() && !needsUpdateFromSim(timeStamp, tickCounter)) {
-    changed = false;
+    setChanged(false);
     LOG_TRACE("CacheableVariable::updateFromSim() - from cache "
               + this->name
               + " " + str()
     );
     return cachedValue.value();
   }
-  LOG_TRACE("CacheableVariable::updateFromSim() - read from sim "
-            + this->name
-            + " " + str()
-  );
+  LOG_TRACE("CacheableVariable::updateFromSim() - read from sim " + this->name + " " + str());
   // update the value from the sim
   timeStampSimTime = timeStamp;
   tickStamp = tickCounter;
@@ -40,20 +37,12 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
 
 FLOAT64 CacheableVariable::readFromSim() {
   const FLOAT64 fromSim = rawReadFromSim();
-
   // compare the value from the sim with the cached value
-  changed = !cachedValue.has_value()
+  bool changed = skipChangeCheck || !cachedValue.has_value()
             || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
-
-  // Handling of "changed" - two options
-  // 1. new field to remember the last value marked as changed and compare it to the new value
-  // 2. do not update the cache value and discard the sim read (which is a bit of waste)
-  // Option 2 has been chosen for now as it is simpler and doesn't need the extra field.
-  if (changed) {
-    cachedValue = fromSim;
-  }
-
+  if (changed) cachedValue = fromSim;
   dirty = false;
+  setChanged(changed);
   return cachedValue.value();
 }
 
@@ -61,6 +50,7 @@ void CacheableVariable::set(FLOAT64 value) {
   if (cachedValue.has_value() && cachedValue.value() == value) {
     return;
   }
+  // TODO: should hasChanged be set to true here? Would call all subscribers' callbacks
   cachedValue = value;
   dirty = true;
 }
@@ -79,7 +69,6 @@ void CacheableVariable::setAndWriteToSim(FLOAT64 value) {
 
 void CacheableVariable::writeToSim() {
   if (cachedValue.has_value()) {
-    changed = false;
     dirty = false;
     rawWriteToSim();
     return;

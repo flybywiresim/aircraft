@@ -47,7 +47,7 @@
  */
 template<typename T>
 class ClientDataAreaVariable : public SimObjectBase {
-private:
+protected:
   // The client data area ID
   SIMCONNECT_CLIENT_DATA_ID clientDataId;
 
@@ -74,22 +74,28 @@ public:
    * @param clientDataDefinitionId A unique ID for the client data definition, specified by the client.
    *                               This class only supports one definition per client data area,
    *                               the definition given by the template parameter type
-   * @param requestId Each request for sim object data requires a unique id so the sim can provide the request ID in the response (message
-   *                  SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
-   * @param autoReading Used by external classes to determine if the variable should updated from the sim when a sim update call occurs.
-   * @param autoWriting Used by external classes to determine if the variable should written to the sim when a sim update call occurs.
-   * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by the requestUpdateFromSim() method.
-   * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
+   * @param requestId Each request for sim object data requires a unique id so the sim can provide
+*                     the request ID in the response (message SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
+   * @param autoReading Used by external classes to determine if the variable should updated from
+   *                    the sim when a sim update call occurs.
+   * @param autoWriting Used by external classes to determine if the variable should written to the
+ *                      sim when a sim update call occurs.
+   * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by
+   *                   the requestUpdateFromSim() method.
+   * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by
+   *                    the requestUpdateFromSim() method.
    */
-  ClientDataAreaVariable<T>(HANDLE hSimConnect, const std::string &clientDataName,
-                            SIMCONNECT_CLIENT_DATA_ID clientDataId,
-                            SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
-                            SIMCONNECT_DATA_REQUEST_ID requestId,
-                            bool autoRead = false,
-                            bool autoWrite = false,
-                            FLOAT64 maxAgeTime = 0.0,
-                            UINT64 maxAgeTicks = 0)
-    : SimObjectBase(hSimConnect, clientDataName, clientDataDefinitionId, requestId,
+  ClientDataAreaVariable<T>(
+    HANDLE hSimConnect,
+    const std::string clientDataName,
+    SIMCONNECT_CLIENT_DATA_ID clientDataId,
+    SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
+    SIMCONNECT_DATA_REQUEST_ID requestId,
+    bool autoRead = false,
+    bool autoWrite = false,
+    FLOAT64 maxAgeTime = 0.0,
+    UINT64 maxAgeTicks = 0)
+    : SimObjectBase(hSimConnect, std::move(clientDataName), clientDataDefinitionId, requestId,
                     autoRead, autoWrite, maxAgeTime, maxAgeTicks),
       clientDataId(clientDataId) {
 
@@ -113,8 +119,6 @@ public:
       hSimConnect, clientDataDefinitionId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(T)))) {
       LOG_ERROR("ClientDataAreaVariable: Adding to client data definition failed: " + name);
     }
-
-    setDataChanged(false);
   }
 
   /**
@@ -149,8 +153,11 @@ public:
   }
 
   [[nodiscard]] bool requestDataFromSim() const override {
-    if (!SUCCEEDED(SimConnect_RequestClientData(hSimConnect, clientDataId, requestId, dataDefId, SIMCONNECT_CLIENT_DATA_PERIOD_ONCE,
-                                                SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT))) {
+    if (!SUCCEEDED(SimConnect_RequestClientData(
+      hSimConnect, clientDataId, requestId, dataDefId,
+      SIMCONNECT_CLIENT_DATA_PERIOD_ONCE,
+      SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT))
+      ) {
       LOG_ERROR("ClientDataAreaVariable: Requesting client data failed: " + name);
       return false;
     }
@@ -181,11 +188,11 @@ public:
    */
   [[nodiscard]] bool requestPeriodicDataFromSim(
     SIMCONNECT_CLIENT_DATA_PERIOD period,
-    SIMCONNECT_CLIENT_DATA_REQUEST_FLAG  periodFlags = SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT,
+    SIMCONNECT_CLIENT_DATA_REQUEST_FLAG periodFlags = SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT,
     DWORD origin = 0,
     DWORD interval = 0,
     DWORD limit = 0
-    ) const {
+  ) const {
     if (autoRead && period >= SIMCONNECT_CLIENT_DATA_PERIOD_ONCE) {
       LOG_ERROR("ClientDataAreaVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;
@@ -218,19 +225,22 @@ public:
   }
 
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
-    LOG_INFO("ClientDataAreaVariable: Received client data: " + name);
+    LOG_TRACE("ClientDataAreaVariable: Received client data: " + name);
     const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
-    SIMPLE_ASSERT(pClientData->dwRequestID == requestId,
-                  "DataDefinitionVariable::processSimData: Request ID mismatch")
+
+   SIMPLE_ASSERT(pClientData->dwRequestID == requestId,
+                  "ClientDataAreaVariable::processSimData: Request ID mismatch: " + name);
+
     // if not required then skip the rather expensive check for change
-    dataChanged = skipChangeCheck || std::memcmp(&pClientData->dwData, &this->dataStruct, sizeof(T)) != 0;
-    if (dataChanged) {
+    if (skipChangeCheck || std::memcmp(&pClientData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       LOG_TRACE("ClientDataAreaVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pClientData->dwData, sizeof(T));
       timeStampSimTime = simTime;
       tickStamp = tickCounter;
+      setChanged(true);
       return;
     }
+    setChanged(false);
     LOG_TRACE("ClientDataAreaVariable: Data has not changed: " + name);
   }
 
@@ -238,13 +248,12 @@ public:
     if (!SUCCEEDED(SimConnect_SetClientData(hSimConnect, clientDataId, dataDefId,
                                             SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT,
                                             0, sizeof(T), &this->dataStruct))) {
-      LOG_ERROR("DataDefinitionVariable: Setting data to sim for " + name
+      LOG_ERROR("ClientDataAreaVariable: Setting data to sim for " + name
                 + " with dataDefId=" + std::to_string(dataDefId) + " failed!");
       return false;
     }
-    LOG_TRACE("DataDefinitionVariable: Setting data to sim for " + name
+    LOG_TRACE("ClientDataAreaVariable: Setting data to sim for " + name
               + " with dataDefId=" + std::to_string(dataDefId) + " succeeded.");
-    setDataChanged(false);
     return true;
   }
 
@@ -252,18 +261,18 @@ public:
    * Returns a modifiable reference to the data container
    * @return T& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]] T &data() { return dataStruct; }
+  T &data() { return dataStruct; }
 
   /**
    * Returns a constant reference to the data container
    * @return std::vector<T>& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]] const T &data() const { return dataStruct; }
+  const T &data() const { return dataStruct; }
 
   [[nodiscard]] std::string str() const
   override {
     std::stringstream ss;
-    ss << "DataDefinition[ name=" << getName();
+    ss << "ClientDataAreaVariable[ name=" << getName();
     ss << ", clientDataId=" << clientDataId;
     ss << ", dataDefId=" << dataDefId;
     ss << ", requestId=" << requestId;
@@ -271,7 +280,7 @@ public:
     ss << ", timeStamp: " << timeStampSimTime;
     ss << ", tickStamp: " << tickStamp;
     ss << ", skipChangeCheck: " << skipChangeCheck;
-    ss << ", dataChanged: " << dataChanged;
+    ss << ", dataChanged: " << hasChanged();
     ss << ", autoRead: " << autoRead;
     ss << ", autoWrite: " << autoWrite;
     ss << ", maxAgeTime: " << maxAgeTime;

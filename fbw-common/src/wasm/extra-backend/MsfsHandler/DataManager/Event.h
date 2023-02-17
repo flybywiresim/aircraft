@@ -23,7 +23,7 @@ typedef uint64_t CallbackID;
  */
 typedef std::function<void(
   int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
-  DWORD param4)> CallbackFunction;
+  DWORD param4)> EventCallbackFunction;
 
 /**
  * Event class to wrap SimConnect events providing trigger and callback registration.
@@ -56,7 +56,7 @@ private:
   /**
    * Map of callbacks to be called when the event is triggered in the sim.
    */
-  std::map<CallbackID, CallbackFunction> callbacks;
+  std::map<CallbackID, EventCallbackFunction> callbacks;
 
   /**
    * Flag to indicate if the event is registered with the sim.
@@ -127,7 +127,7 @@ public:
    * @return The ID of the callback required for removing a callback.
    */
   [[nodiscard]]
-  CallbackID addCallback(const CallbackFunction &callback);
+  CallbackID addCallback(const EventCallbackFunction &callback);
 
   /**
    * Removes a callback from the event.

@@ -39,7 +39,7 @@ public:
    * @param maxAgeTicks The maximum age of an auto updated variable in sim ticks.
    */
   explicit NamedVariable(
-    const std::string &varName,
+    const std::string& varName,
     Unit unit = UNITS.Number,
     bool autoReading = false,
     bool autoWriting = false,

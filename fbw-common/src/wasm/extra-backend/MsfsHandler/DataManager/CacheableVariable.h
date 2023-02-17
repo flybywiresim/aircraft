@@ -50,11 +50,6 @@ protected:
   bool dirty = false;
 
   /**
-   * Flag to indicate if the variable has changed compared to the last read/write from the sim.
-   */
-  bool changed = false;
-
-  /**
    * The epsilon required to change a variable after a read from the sim. This is used to
    * set the changed flag and cache the new value if it is different by >epsilon from the last
    * cached value.
@@ -80,13 +75,13 @@ protected:
    * @param maxAgeTicks The maximum age of the variable in ticks when using updateDataToSim()
    */
   CacheableVariable(
-    const std::string &varName,
+    const std::string varName,
     const Unit &unit,
     bool autoRead,
     bool autoWrite,
     FLOAT64 maxAgeTime,
     UINT64 maxAgeTicks)
-    : ManagedDataObjectBase(varName, autoRead, autoWrite, maxAgeTime, maxAgeTicks), unit(unit) {}
+    : ManagedDataObjectBase(std::move(varName), autoRead, autoWrite, maxAgeTime, maxAgeTicks), unit(unit) {}
 
 public:
   CacheableVariable() = delete; // no default constructor
@@ -224,12 +219,6 @@ public:
    * @param i the value to set
    */
   void setAsInt64(UINT64 i) { set(static_cast<FLOAT64>(i)); }
-
-  /**
-   * @return true if the value has changed since the last read from the sim.
-   */
-  [[nodiscard]]
-  bool hasChanged() const { return changed; }
 
   /**
    * @return Epsilon used for comparing floating point values. Variables are considered equal if the

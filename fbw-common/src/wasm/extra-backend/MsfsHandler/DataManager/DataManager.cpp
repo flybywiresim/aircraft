@@ -30,11 +30,11 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (var.second->isAutoRead()) {
       var.second->updateFromSim(timeStamp, tickCounter);
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
-                    << var.second->getName() << " = " << var.second->get()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
+                  << var.second->getName() << " = " << var.second->get()
+                  << std::endl;
+      })
     }
   }
 
@@ -46,11 +46,11 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
                   + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::preUpdate() - auto read simobjects: "
-                    << ddv.second->getName()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::preUpdate() - auto read simobjects: "
+                  << ddv.second->getName()
+                  << std::endl;
+      })
     }
   }
 
@@ -82,11 +82,11 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (var.second->isAutoWrite()) {
       var.second->updateToSim();
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
-                    << var.second->getName() << " = " << var.second->get()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
+                  << var.second->getName() << " = " << var.second->get()
+                  << std::endl;
+      })
     }
   }
 
@@ -98,11 +98,11 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
                   + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::postUpdate() - auto write simobjects"
-                    << ddv.second->getName()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::postUpdate() - auto write simobjects"
+                  << ddv.second->getName()
+                  << std::endl;
+      })
     }
   }
 
@@ -159,7 +159,7 @@ void DataManager::processKeyEvent(
   //           + " userdata=" + std::to_string((UINT64) userdata));
 }
 
-NamedVariablePtr DataManager::make_named_var(const std::string &varName,
+NamedVariablePtr DataManager::make_named_var(const std::string varName,
                                              Unit unit,
                                              bool autoReading,
                                              bool autoWriting,
@@ -168,7 +168,7 @@ NamedVariablePtr DataManager::make_named_var(const std::string &varName,
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
   // used in different places with different expected values via Units.
-  const std::string uniqueName = varName + ":" + unit.name;
+  const std::string uniqueName{varName + ":" + unit.name};
 
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
@@ -192,7 +192,7 @@ NamedVariablePtr DataManager::make_named_var(const std::string &varName,
 
   // Create new var and store it in the map
   NamedVariablePtr var
-    = std::make_shared<NamedVariable>(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks);
+    = std::make_shared<NamedVariable>(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks);
 
   variables[uniqueName] = var;
 
@@ -201,9 +201,9 @@ NamedVariablePtr DataManager::make_named_var(const std::string &varName,
   return var;
 }
 
-AircraftVariablePtr DataManager::make_aircraft_var(const std::string &varName,
+AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
                                                    int index,
-                                                   const std::string &setterEventName,
+                                                   const std::string setterEventName,
                                                    EventPtr setterEvent,
                                                    Unit unit,
                                                    bool autoReading,
@@ -213,7 +213,7 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string &varName,
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
   // used in different places with different expected values via Index and Units.
-  const std::string uniqueName = varName + ":" + std::to_string(index) + ":" + unit.name;
+  const std::string uniqueName{varName + ":" + std::to_string(index) + ":" + unit.name};
 
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
@@ -236,15 +236,14 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string &varName,
 
     return std::dynamic_pointer_cast<AircraftVariable>(pair->second);
   }
+
   // Create new var and store it in the map
   AircraftVariablePtr var;
-  if (setterEventName.empty()) {
-    var = setterEventName.empty() ? std::make_shared<AircraftVariable>(varName, index, std::move(setterEvent), unit, autoReading,
-                                                                       autoWriting, maxAgeTime, maxAgeTicks)
-                                  : std::make_shared<AircraftVariable>(varName, index, setterEventName, unit, autoReading, autoWriting,
-                                                                       maxAgeTime, maxAgeTicks);
-  }
-
+  var = setterEventName.empty()
+        ? std::make_shared<AircraftVariable>(std::move(varName), index, setterEvent,
+                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks)
+        : std::make_shared<AircraftVariable>(std::move(varName), index, std::move(setterEventName),
+                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks);
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_aircraft_var(): created variable " + var->str());
@@ -252,11 +251,13 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string &varName,
   return var;
 }
 
-AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string &varName,
-                                                          Unit unit,
-                                                          bool autoReading,
-                                                          FLOAT64 maxAgeTime,
-                                                          UINT64 maxAgeTicks) {
+AircraftVariablePtr DataManager::make_simple_aircraft_var(
+  const std::string varName,
+  Unit unit,
+  bool autoReading,
+  FLOAT64 maxAgeTime,
+  UINT64 maxAgeTicks) {
+
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
   // used in different places with different expected values via Index and Units.
@@ -280,7 +281,7 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string &var
   }
 
   // Create new var and store it in the map
-  AircraftVariablePtr var = std::make_shared<AircraftVariable>(varName, 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks);
+  AircraftVariablePtr var = std::make_shared<AircraftVariable>(std::move(varName), 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks);
 
   variables[uniqueName] = var;
 
@@ -301,7 +302,7 @@ EventPtr DataManager::make_event(
   }
 
   const SIMCONNECT_CLIENT_EVENT_ID id = eventIDGen.getNextId();
-  EventPtr event = std::make_shared<Event>(hSimConnect, eventName, id, maksEvent);
+  EventPtr event = std::make_shared<Event>(hSimConnect, std::move(eventName), id, maksEvent);
 
   events[id] = event;
 
@@ -315,14 +316,8 @@ EventPtr DataManager::make_event(
 
 void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]] DWORD* cbData) {
   switch (pRecv->dwID) {
-    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
-      // fallthrough
+    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: // fallthrough
     case SIMCONNECT_RECV_ID_CLIENT_DATA:
-      // We are using the same callback for both SIMOBJECT_DATA and CLIENT_DATA
-      // as SIMCONNECT_RECV_CLIENT_DATA is a specialization of SIMCONNECT_RECV_SIMOBJECT_DATA,
-      // and we do not need to distinguish between them here.
-      // Alternatively, we could have used SIMCONNECT_RECV and then cast to the appropriate type
-      // later.
       processSimObjectData(pRecv);
       break;
 
@@ -385,3 +380,4 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) {
   LOG_WARN("DataManager::processEvent() - unknown event id: "
            + std::to_string(pRecv->uEventID));
 }
+

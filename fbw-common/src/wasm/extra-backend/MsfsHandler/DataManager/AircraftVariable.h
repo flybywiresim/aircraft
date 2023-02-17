@@ -59,7 +59,7 @@ public:
    * @param setterEventName The calculator code to write to the variable.
    */
   explicit AircraftVariable(
-    const std::string &varName,
+    const std::string varName,
     int varIndex = 0,
     std::string setterEventName = "",
     Unit unit = UNITS.Number,
@@ -67,7 +67,7 @@ public:
     bool autoWriting = false,
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0)
-    : CacheableVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
+    : CacheableVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
       index(varIndex), setterEventName(std::move(setterEventName)), setterEvent(nullptr) {
 
     dataID = get_aircraft_var_enum(varName.c_str());

@@ -5,21 +5,10 @@
 
 #include <MSFS/Legacy/gauges.h>
 
-#include "logging.h"
 #include "NamedVariable.h"
 
 FLOAT64 NamedVariable::rawReadFromSim() {
-  const FLOAT64 d = get_named_variable_typed_value(dataID, unit.id);
-  // DEBUG
-  //  if (name == "A32NX_DEBUG_LVAR") {
-  //    LOG_DEBUG("NamedVariable::rawReadFromSim() "
-  //              + this->name
-  //              + " fromSim = " + std::to_string(d)
-  //              + " cached  = " + std::to_string(cachedValue.value_or(-999999))
-  //              + " as " + unit.name
-  //    );
-  //  }
-  return d;
+  return get_named_variable_typed_value(dataID, unit.id);
 }
 
 void NamedVariable::rawWriteToSim() {
@@ -31,7 +20,7 @@ std::string NamedVariable::str() const {
   ss << "NamedVariable: [" << name;
   ss << ", value: " << (cachedValue.has_value() ? std::to_string(cachedValue.value()) : "N/A");
   ss << ", unit: " << unit.name;
-  ss << ", changed: " << changed;
+  ss << ", changed: " << hasChanged();
   ss << ", dirty: " << dirty;
   ss << ", timeStamp: " << timeStampSimTime;
   ss << ", tickStamp: " << tickStamp;

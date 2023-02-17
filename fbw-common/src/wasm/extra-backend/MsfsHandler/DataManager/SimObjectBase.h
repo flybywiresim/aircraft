@@ -39,18 +39,6 @@ protected:
   SIMCONNECT_DATA_REQUEST_ID requestId = 0;
 
   /**
-   * Flag to indicate if the check for data changes should be skipped to save performance when the
-   * check is not required.
-   */
-  bool skipChangeCheck = false;
-
-  /**
-   * Flag to indicate if the data has been changed compared to the corrent data held in the
-   * datastruct.
-   */
-  bool dataChanged = false;
-
-  /**
   * Creates a new instance of a DataDefinitionVariable.
   * @param hSimConnect Handle to the SimConnect object.
   * @param name Arbitrary name for the data definition variable for debugging purposes
@@ -63,25 +51,15 @@ protected:
   */
   SimObjectBase(
     HANDLE hSimConnect,
-    const std::string &varName,
+    const std::string varName,
     DWORD dataDefId,
     DWORD requestId,
     bool autoRead = false,
     bool autoWrite = false,
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0)
-    : ManagedDataObjectBase(varName, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
+    : ManagedDataObjectBase(std::move(varName), autoRead, autoWrite, maxAgeTime, maxAgeTicks),
       hSimConnect(hSimConnect), dataDefId(dataDefId), requestId(requestId) {}
-
-
-  /**
-   * Sets the data changed flag after a reading from the sim which is not identical to the current
-   * data in the datastruct.
-   * @param hasChanged true if the data has changed, false otherwise
-   */
-  void setDataChanged(bool hasChanged) {
-    SimObjectBase::dataChanged = hasChanged;
-  }
 
 public:
 
@@ -140,23 +118,6 @@ public:
    */
   [[nodiscard]]
   DWORD getRequestId() const { return requestId; }
-
-  /**
-   * @return true if the data is not identical to the current data in the struct, false otherwise
-   */
-  [[nodiscard]] bool hasDataChanged() const { return dataChanged; }
-
-  /**
-   * @return true if the check for data changes should be skipped to save performance when the check is not required, false otherwise
-   */
-  [[nodiscard]] bool isSkipChangeCheck() const { return skipChangeCheck; }
-
-  /**
-   * Sets the flag to skip the check for data changes to save performance when the check is not required.
-   * @param changeCheck
-   */
-  void setSkipChangeCheck(bool changeCheck) { SimObjectBase::skipChangeCheck = changeCheck; }
-
 
 };
 
