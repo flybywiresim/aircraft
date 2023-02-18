@@ -70,11 +70,16 @@ bool MsfsHandler::initialize() {
   }
 
   // initialize all data variables needed for the MsfsHandler itself
-  a32nxIsDevelopmentState = dataManager.make_named_var("DEVELOPER_STATE", UNITS.Bool, true);
-  a32nxIsReady = dataManager.make_named_var("IS_READY", UNITS.Bool, true);
+  a32nxIsDevelopmentState = dataManager.make_named_var("DEVELOPER_STATE", UNITS.Number);
+  a32nxIsReady = dataManager.make_named_var("IS_READY", UNITS.Bool);
+
   // base sim data mainly for pause detection
   std::vector<DataDefinition> baseDataDef = {{"SIMULATION TIME", 0, UNITS.Number},};
   baseSimData = dataManager.make_datadefinition_var<BaseSimData>("BASE DATA", baseDataDef);
+  if (!SUCCEEDED(baseSimData->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME))) {
+    LOG_ERROR(simConnectName + ": Failed to request periodic data for base sim data");
+    return false;
+  }
 
   isInitialized = result;
   return result;
@@ -86,9 +91,17 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
     return false;
   }
 
+  a32nxIsReady->readFromSim();
+  a32nxIsDevelopmentState->readFromSim();
+
+  // initial request of data from sim to retrieve all requests which have
+  // periodic updates enabled. This includes the base sim data for pause detection.
+  // Other data without periodic updates are requested either in the data manager or
+  // in the modules.
+  dataManager.getRequestedData();
+
   // detect pause - uses the base sim data definition to retrieve the SIMULATION TIME
   // and run a separate pair of getRequestedData() and requestPeriodicDataFromSim() for it
-  if (baseSimData->requestDataFromSim()) dataManager.getRequestedData();
   if ((baseSimData->data().simulationTime) == timeStamp) return true;
 
   // get a new timestamp and increase the tick counter
