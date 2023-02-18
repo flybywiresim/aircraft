@@ -28,6 +28,8 @@ import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../UtilComponents/Modals/Modals';
 import { useAppSelector } from '../../../Store/store';
 
+let totalMissedPax = 0;
+
 export const Payload = () => {
     const { usingMetric } = Units;
     const { showModal } = useModals();
@@ -67,7 +69,12 @@ export const Payload = () => {
 
     const paxDesired = [paxADesired, paxBDesired, paxCDesired, paxDDesired];
     const [setPaxDesired] = useState([setPaxADesired, setPaxBDesired, setPaxCDesired, setPaxDDesired]);
-    const totalPaxDesired = useMemo(() => (paxDesired && paxDesired.length > 0 && paxDesired.reduce((a, b) => parseInt(a) + parseInt(b))), [...paxDesired]);
+
+    const totalPaxDesired = useMemo(() => {
+        const paxDesiredWithMissed = (paxDesired.reduce((a, b) => parseInt(a) + parseInt(b)) + totalMissedPax);
+        console.info('pax desired : %d with %d missed', paxDesiredWithMissed, totalMissedPax);
+        return (paxDesired && paxDesired.length > 0 && paxDesiredWithMissed);
+    }, [...paxDesired, totalMissedPax]);
 
     const [aFlagsDesired, setAFlagsDesired] = useBitFlags('PAX_FLAGS_A_DESIRED');
     const [bFlagsDesired, setBFlagsDesired] = useBitFlags('PAX_FLAGS_B_DESIRED');
@@ -152,24 +159,24 @@ export const Payload = () => {
         COMPLETED: 6,
     };
 
-    const stationMissedPax = (stationPaxDesired:number, setPax:(numberToSet:number)=>void) => {
+    const stationMissedPax = (stationPax:number, stationPaxDesired:number, setPax:(numberToSet:number)=>void) => {
         let stationMissedPax = 0;
-        for (let i = 0; i < stationPaxDesired; i++) {
+        for (let i = stationPax; i < stationPaxDesired; i++) {
             if (Math.random() <= 0.10) stationMissedPax++;
         }
         console.info('station pax missing: %d', stationMissedPax);
+        totalMissedPax += stationMissedPax;
         setPax(stationPaxDesired - stationMissedPax);
-        return stationMissedPax;
     };
 
     const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
-        let totalMissedPax = 0;
+        totalMissedPax = 0;
         setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState) {
-            totalMissedPax += stationMissedPax(paxADesired, setPaxADesired);
-            totalMissedPax += stationMissedPax(paxBDesired, setPaxBDesired);
-            totalMissedPax += stationMissedPax(paxCDesired, setPaxCDesired);
-            totalMissedPax += stationMissedPax(paxDDesired, setPaxDDesired);
+            stationMissedPax(paxA, paxADesired, setPaxADesired);
+            stationMissedPax(paxB, paxBDesired, setPaxBDesired);
+            stationMissedPax(paxC, paxCDesired, setPaxCDesired);
+            stationMissedPax(paxD, paxDDesired, setPaxDDesired);
             console.info('pax missing plane: %d', totalMissedPax);
         }
     };
@@ -560,8 +567,9 @@ export const Payload = () => {
     }, [...pax]);
 
     useEffect(() => {
-        // Sync desired seats to paxDesired as it was frozen during boarding
+        // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
+            totalMissedPax = 0;
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
         }
