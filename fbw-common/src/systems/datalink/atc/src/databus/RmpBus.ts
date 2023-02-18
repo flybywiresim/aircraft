@@ -2,8 +2,6 @@ import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher
 
 interface RmpSimvars {
     msfsTransponderCode: number,
-    msfsVhf3Powered: number,
-    msfsVhf3Frequency: number,
 }
 
 enum RmpSimvarSources {
@@ -39,7 +37,7 @@ export class RmpInputBus {
         this.publisher = this.bus.getPublisher<RmpDataBusTypes>();
         this.subscriber = this.bus.getSubscriber<RmpSimvars>();
 
-        this.subscriber.on('msfsTransponderCode').handle((code: number) => this.publisher.pub('transponderCode', code, true, false));
+        this.subscriber.on('msfsTransponderCode').handle((code: number) => this.publisher.pub('transponderCode', code, false, false));
     }
 
     public connectedCallback(): void {

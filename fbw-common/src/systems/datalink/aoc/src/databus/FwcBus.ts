@@ -37,7 +37,7 @@ export class FwcAocBus {
         this.publisher = this.bus.getPublisher<FwcDataBusTypes>();
         this.subscriber = this.bus.getSubscriber<FwcSimvars>();
 
-        this.subscriber.on('msfsCompanyMessageCount').handle((count: number) => this.publisher.pub('companyMessageCount', count, true, false));
+        this.subscriber.on('msfsCompanyMessageCount').handle((count: number) => this.publisher.pub('companyMessageCount', count, false, false));
     }
 
     public connectedCallback(): void {

@@ -42,8 +42,8 @@ export class RmpInputBus {
         this.publisher = this.bus.getPublisher<RmpDataBusTypes>();
         this.subscriber = this.bus.getSubscriber<RmpSimvars>();
 
-        this.subscriber.on('msfsVhf3Powered').handle((powered: number) => this.publisher.pub('vhf3Powered', powered !== 0, true, false));
-        this.subscriber.on('msfsVhf3Frequency').handle((frequency: number) => this.publisher.pub('vhf3DataMode', frequency === 0, true, false));
+        this.subscriber.on('msfsVhf3Powered').handle((powered: number) => this.publisher.pub('vhf3Powered', powered !== 0, false, false));
+        this.subscriber.on('msfsVhf3Frequency').handle((frequency: number) => this.publisher.pub('vhf3DataMode', frequency === 0, false, false));
     }
 
     public connectedCallback(): void {
