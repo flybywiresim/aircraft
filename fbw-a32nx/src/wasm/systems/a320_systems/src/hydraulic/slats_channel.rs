@@ -104,7 +104,7 @@ impl SlatsChannel {
         cas: Option<Velocity>,
     ) {
         if !(cas.unwrap_or_default() >= self.kts_60 || lgciu.left_and_right_gear_extended(false)) {
-            println!("Exiting update_slat_lock");
+            // println!("Exiting update_slat_lock");
             self.slat_alpha_lock_engaged = false;
             return;
         }
@@ -118,27 +118,27 @@ impl SlatsChannel {
                         self.conf1_slats,
                     ) =>
             {
-                println!("S2");
+                // println!("S2");
                 self.slat_alpha_lock_engaged = true;
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
-                println!("S3");
+                // println!("S3");
                 self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
             }
             Some(aoa)
                 if aoa < self.slat_lock_low_aoa
                     && flaps_handle.current_position() == CSUPosition::Conf0 && self.slat_alpha_lock_engaged =>
             {
-                println!("S4");
+                // println!("S4");
                 self.slat_alpha_lock_engaged = false;
             }
             None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
-                println!("S6");
+                // println!("S6");
                 self.slat_alpha_lock_engaged = false;
             }
             // Verify if it shall be false or true!
             _ => {
-                println!("S8");
+                // println!("S8");
                 self.slat_alpha_lock_engaged = false;
             }
             // panic!(
@@ -152,22 +152,22 @@ impl SlatsChannel {
             self.slat_lock_command_angle = self.conf1_slats
         }
 
-        println!(
-            "CAS_MAX {}\tAOA {}",
-            cas.unwrap_or_default().get::<knot>(),
-            aoa.unwrap_or_default().get::<degree>()
-        );
+        // println!(
+        //     "CAS_MAX {}\tAOA {}",
+        //     cas.unwrap_or_default().get::<knot>(),
+        //     aoa.unwrap_or_default().get::<degree>()
+        // );
     }
 
     fn update_slat_baulk(
         &mut self,
         lgciu: &impl LgciuWeightOnWheels,
         flaps_handle: &impl FlapsHandle,
-        aoa: Option<Angle>,
+        _aoa: Option<Angle>,
         cas: Option<Velocity>,
     ) {
         if !(cas.unwrap_or_default() >= self.kts_60 || lgciu.left_and_right_gear_extended(false)) {
-            println!("Exiting update_slat_lock");
+            // println!("Exiting update_slat_lock");
             self.slat_baulk_engaged = false;
             return;
         }
@@ -181,27 +181,27 @@ impl SlatsChannel {
                         self.conf1_slats,
                     ) =>
             {
-                println!("S9");
+                // println!("S9");
                 self.slat_baulk_engaged = true;
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
-                println!("S10");
+                // println!("S10");
                 self.slat_baulk_engaged = self.slat_baulk_engaged;
             }
             Some(cas)
                 if cas > self.slat_lock_high_cas
                     && flaps_handle.current_position() == CSUPosition::Conf0 && self.slat_baulk_engaged =>
             {
-                println!("S11");
+                // println!("S11");
                 self.slat_baulk_engaged = false;
             }
             None if flaps_handle.last_valid_position() == CSUPosition::Conf0 => {
-                println!("S12");
+                // println!("S12");
                 self.slat_baulk_engaged = false;
             }
             // Verify if it shall be false or true!
             _ => {
-                println!("S13");
+                // println!("S13");
                 self.slat_baulk_engaged = false;
             }
             // panic!(
@@ -215,11 +215,11 @@ impl SlatsChannel {
             self.slat_lock_command_angle = self.conf1_slats
         }
 
-        println!(
-            "CAS_MAX {}\tAOA {}",
-            cas.unwrap_or_default().get::<knot>(),
-            aoa.unwrap_or_default().get::<degree>()
-        );
+        // println!(
+        //     "CAS_MAX {}\tAOA {}",
+        //     cas.unwrap_or_default().get::<knot>(),
+        //     aoa.unwrap_or_default().get::<degree>()
+        // );
     }
 
     pub fn powerup_reset(
@@ -231,7 +231,7 @@ impl SlatsChannel {
     ) {
         self.slats_feedback_angle = slats_feedback_angle.fppu_angle();
 
-        println!("powerup_reset");
+        // println!("powerup_reset");
 
         if flaps_handle.current_position() != CSUPosition::Conf0 {
             self.slat_baulk_engaged = false;

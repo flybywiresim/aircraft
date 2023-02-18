@@ -123,6 +123,11 @@ impl VariablesToObject for FlapsSurface {
     set_data_on_sim_object!();
 }
 
+/*
+    [LEFT | RIGHT] [INBOARD | OUTBOARD] FLAP
+    [LEFT | RIGHT] {1..5}               SLAT
+*/
+
 #[sim_connect::data_definition]
 struct SlatsSurface {
     #[name = "LEADING EDGE FLAPS LEFT PERCENT"]

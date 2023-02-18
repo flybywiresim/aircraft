@@ -80,7 +80,7 @@ impl A380FlapSlatFactory {
     const MAX_FLOW_HYDRAULIC_MOTOR: f64 = 22.22; // Litre per minute
     const HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH: f64 = 0.32;
     const HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY: f64 = 0.95;
-    const UNLOCK_POB_PRESSURE_BAR: f64 = 200.;
+    const UNLOCK_POB_PRESSURE_BAR: f64 = 500.; // No references, can someone check?
     const DIFFERENTIAL_GEAR_RATIO: f64 = 16.632;
     const INTERMEDIATE_GEAR_RATIO: f64 = 140.;
     const DRIVE_LEVER_GEAR_RATIO: f64 = 314.98;
@@ -6767,7 +6767,10 @@ mod tests {
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
             failures::FailureType,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
-            shared::{EmergencyElectricalState, LgciuId, PotentialOrigin},
+            shared::{
+                arinc429::{Arinc429Word, SignStatus},
+                EmergencyElectricalState, LgciuId, PotentialOrigin,
+            },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
                 Aircraft, InitContext,
@@ -6784,10 +6787,12 @@ mod tests {
         #[derive(Default)]
         struct A380TestAdirus {
             airspeed: Velocity,
+            aoa: Angle,
         }
         impl A380TestAdirus {
             fn update(&mut self, context: &UpdateContext) {
-                self.airspeed = context.true_airspeed()
+                self.airspeed = context.true_airspeed();
+                self.aoa = context.alpha();
             }
         }
         impl AdirsDiscreteOutputs for A380TestAdirus {
@@ -6805,6 +6810,15 @@ mod tests {
 
             fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 260.
+            }
+        }
+        impl AirDataSource for A380TestAdirus {
+            fn computed_airspeed(&self, _: usize) -> Arinc429Word<Velocity> {
+                Arinc429Word::new(self.airspeed, SignStatus::NormalOperation)
+            }
+
+            fn alpha(&self, _: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(self.aoa, SignStatus::NormalOperation)
             }
         }
 
@@ -9864,6 +9878,31 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+        }
+
+        #[test]
+        fn flaps_and_slats_simvars() {
+            let test_bed = test_bed_on_ground_with().run_one_tick();
+
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("IS_FLAPS_MOVING"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("SLATS_IPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("IS_SLATS_MOVING"));
         }
 
         #[test]

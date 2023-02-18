@@ -89,7 +89,7 @@ impl A320FlapSlatFactory {
     const MAX_FLOW_HYDRAULIC_MOTOR: f64 = 22.22; // Litre per minute
     const HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH: f64 = 0.32;
     const HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY: f64 = 0.95;
-    const UNLOCK_POB_PRESSURE_BAR: f64 = 200.;
+    const UNLOCK_POB_PRESSURE_BAR: f64 = 500.; // No references, can someone check?
     const DIFFERENTIAL_GEAR_RATIO: f64 = 16.632;
     const INTERMEDIATE_GEAR_RATIO: f64 = 140.;
     const DRIVE_LEVER_GEAR_RATIO: f64 = 314.98;
@@ -10037,6 +10037,31 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+        }
+
+        #[test]
+        fn flaps_and_slats_simvars() {
+            let test_bed = test_bed_on_ground_with().run_one_tick();
+
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("IS_FLAPS_MOVING"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("SLATS_IPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("IS_SLATS_MOVING"));
         }
 
         #[test]

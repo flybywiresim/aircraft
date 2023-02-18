@@ -63,7 +63,6 @@ impl FlapsHandle for CommandSensorUnit {
 // completeness of the CSUPosition enum I included the OutOfDetent position.
 impl SimulationElement for CommandSensorUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        println!("Reading!...");
         self.previous_position = self.current_position;
 
         let new_position = CSUPosition::from(Read::<u8>::read(reader, &self.handle_position_id));

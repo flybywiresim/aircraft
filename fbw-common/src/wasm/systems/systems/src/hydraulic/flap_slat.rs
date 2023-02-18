@@ -163,12 +163,12 @@ impl HydraulicMotor {
             }
             (SolenoidStatus::Energised, SolenoidStatus::Energised) => {
                 // Should never be here, yet!
-                println!("retract_solenoid and extend_solenoid energised!");
+                //println!("retract_solenoid and extend_solenoid energised!");
                 self.position = self.position;
                 self.speed = AngularVelocity::default();
             }
             (SolenoidStatus::DeEnergised, SolenoidStatus::DeEnergised) => {
-                println!("retract_solenoid and extend_solenoid de-energised!");
+                //println!("retract_solenoid and extend_solenoid de-energised!");
                 self.position = self.position;
                 self.speed = AngularVelocity::default();
             }
@@ -373,6 +373,8 @@ pub struct FlapSlatAssy<const N: usize> {
 
     ippu_angle_id: VariableIdentifier,
     fppu_angle_id: VariableIdentifier,
+    left_appu_angle_id: VariableIdentifier,
+    right_appu_angle_id: VariableIdentifier,
 
     is_moving_id: VariableIdentifier,
 
@@ -419,6 +421,8 @@ impl<const N: usize> FlapSlatAssy<N> {
 
             ippu_angle_id: context.get_identifier(format!("{}_IPPU_ANGLE", id)),
             fppu_angle_id: context.get_identifier(format!("{}_FPPU_ANGLE", id)),
+            left_appu_angle_id: context.get_identifier(format!("LEFT_{}_APPU_ANGLE", id)),
+            right_appu_angle_id: context.get_identifier(format!("RIGHT_{}_APPU_ANGLE", id)),
 
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
@@ -471,15 +475,15 @@ impl<const N: usize> FlapSlatAssy<N> {
     ) {
         self.power_control_units[0].update(context, left_pressure, pcu1_commands);
         self.power_control_units[1].update(context, right_pressure, pcu2_commands);
-        println!("----------------------------------");
+        //println!("----------------------------------");
         for pcu in self.power_control_units.iter() {
             // Can't use the motor position directly because motors may not move synchronously
             // with the differential gear
             let motor_speed = pcu.get_motor_speed().get::<radian_per_second>();
-            println!(
-                "motor_speed\t\t{:.2}",
-                pcu.get_motor_speed().get::<revolution_per_minute>()
-            );
+            // println!(
+            //     "motor_speed\t\t{:.2}",
+            //     pcu.get_motor_speed().get::<revolution_per_minute>()
+            // );
             let delta_time = context.delta_as_secs_f64();
             let motor_delta_position = Angle::new::<radian>(motor_speed * delta_time);
             self.differential_gear +=
@@ -492,10 +496,10 @@ impl<const N: usize> FlapSlatAssy<N> {
                 / context.delta_as_secs_f64(),
         );
         self.intermediate_gear = intermediate_gear;
-        println!(
-            "intermediate_gear\t{:.2}",
-            self.intermediate_gear.get::<degree>()
-        );
+        // println!(
+        //     "intermediate_gear\t{:.2}",
+        //     self.intermediate_gear.get::<degree>()
+        // );
         self.drive_lever =
             self.differential_gear / self.differential_to_drive_lever_gear_ratio.get::<ratio>();
         let surface_position = Angle::new::<degree>(interpolation(
@@ -503,14 +507,14 @@ impl<const N: usize> FlapSlatAssy<N> {
             &self.surface_position_breakpoints,
             self.fppu_angle().get::<degree>(),
         ));
-        let flaps_speed = (surface_position - self.surface_position).get::<degree>()
-            / context.delta_as_secs_f64();
-        println!("flaps_speed\t\t{:.4}", flaps_speed);
+        // let flaps_speed = (surface_position - self.surface_position).get::<degree>()
+        //     / context.delta_as_secs_f64();
+        // println!("flaps_speed\t\t{:.4}", flaps_speed);
         self.surface_position = surface_position;
-        println!(
-            "surface_position\t{:.2}",
-            self.surface_position.get::<degree>()
-        );
+        // println!(
+        //     "surface_position\t{:.2}",
+        //     self.surface_position.get::<degree>()
+        // );
     }
 
     pub fn get_surface_position(&self) -> Angle {
@@ -560,6 +564,14 @@ impl<const N: usize> SimulationElement for FlapSlatAssy<N> {
 
         writer.write(&self.ippu_angle_id, self.ippu_angle().get::<degree>());
         writer.write(&self.fppu_angle_id, self.fppu_angle().get::<degree>());
+        writer.write(
+            &self.left_appu_angle_id,
+            self.appu_left_angle().get::<degree>(),
+        );
+        writer.write(
+            &self.right_appu_angle_id,
+            self.appu_right_angle().get::<degree>(),
+        );
 
         writer.write(&self.is_moving_id, self.is_surface_jammed());
     }
@@ -776,7 +788,7 @@ mod tests {
         const MAX_FLOW_HYDRAULIC_MOTOR: f64 = 22.22; // Litre per minute
         const HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH: f64 = 0.32;
         const HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY: f64 = 0.95;
-        const UNLOCK_POB_PRESSURE_BAR: f64 = 200.;
+        const UNLOCK_POB_PRESSURE_BAR: f64 = 500.;
         const DIFFERENTIAL_GEAR_RATIO: f64 = 16.632;
         const INTERMEDIATE_GEAR_RATIO: f64 = 140.;
         const DRIVE_LEVER_GEAR_RATIO: f64 = 314.98;

@@ -7,8 +7,8 @@ use systems::{
         LgciuWeightOnWheels, PositionPickoffUnit, PowerControlUnitInterface, SFCCChannel,
     },
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
     },
 };
 
@@ -245,7 +245,7 @@ impl SlatFlapControlComputer {
         self.update_aoa(adiru);
 
         if self.recovered_power {
-            println!("RECOVERED!");
+            // println!("RECOVERED!");
             if self.power_off_length > self.transparency_time {
                 self.flap_channel.powerup_reset(
                     flaps_handle,
@@ -647,7 +647,7 @@ mod tests {
         shared::PotentialOrigin,
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
-            Aircraft,
+            Aircraft, Read, SimulatorReader,
         },
     };
 
@@ -717,19 +717,13 @@ mod tests {
         current_angle: Angle,
         speed: AngularVelocity,
         max_angle: Angle,
-        left_position_percent_id: VariableIdentifier,
-        right_position_percent_id: VariableIdentifier,
-        left_position_angle_id: VariableIdentifier,
-        right_position_angle_id: VariableIdentifier,
-        ippu_angle_id: VariableIdentifier,
-        fppu_angle_id: VariableIdentifier,
         surface_type: String,
     }
     impl SlatFlapGear {
         const ANGLE_DELTA_DEGREE: f64 = 0.01;
 
         fn new(
-            context: &mut InitContext,
+            _context: &mut InitContext,
             speed: AngularVelocity,
             max_angle: Angle,
             surface_type: &str,
@@ -738,20 +732,6 @@ mod tests {
                 current_angle: Angle::new::<degree>(0.),
                 speed,
                 max_angle,
-
-                left_position_percent_id: context
-                    .get_identifier(format!("LEFT_{}_POSITION_PERCENT", surface_type)),
-                right_position_percent_id: context
-                    .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", surface_type)),
-
-                left_position_angle_id: context
-                    .get_identifier(format!("LEFT_{}_ANGLE", surface_type)),
-                right_position_angle_id: context
-                    .get_identifier(format!("RIGHT_{}_ANGLE", surface_type)),
-
-                ippu_angle_id: context.get_identifier(format!("{}_IPPU_ANGLE", surface_type)),
-                fppu_angle_id: context.get_identifier(format!("{}_FPPU_ANGLE", surface_type)),
-
                 surface_type: surface_type.to_string(),
             }
         }
@@ -797,6 +777,7 @@ mod tests {
                     }
                 }
             }
+            self.current_angle = self.current_angle.min(self.max_angle);
         }
     }
     impl PositionPickoffUnit for SlatFlapGear {
@@ -811,22 +792,6 @@ mod tests {
         }
         fn ippu_angle(&self) -> Angle {
             self.current_angle
-        }
-    }
-    impl SimulationElement for SlatFlapGear {
-        fn write(&self, writer: &mut SimulatorWriter) {
-            writer.write(
-                &self.left_position_percent_id,
-                self.current_angle / self.max_angle,
-            );
-            writer.write(
-                &self.right_position_percent_id,
-                self.current_angle / self.max_angle,
-            );
-            writer.write(&self.ippu_angle_id, self.current_angle);
-            writer.write(&self.fppu_angle_id, self.current_angle);
-            writer.write(&self.left_position_angle_id, self.current_angle);
-            writer.write(&self.right_position_angle_id, self.current_angle);
         }
     }
 
@@ -951,8 +916,6 @@ mod tests {
     impl SimulationElement for A320FlapsTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.slats_flaps_complex.accept(visitor);
-            self.flap_system.accept(visitor);
-            self.slat_system.accept(visitor);
             visitor.visit(self);
         }
 
@@ -1163,23 +1126,8 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_ACTUAL_POSITION_WORD"));
         assert!(test_bed.contains_variable_with_name("SFCC_2_FLAP_ACTUAL_POSITION_WORD"));
 
-        assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
-        assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
-        assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
-        assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_POSITION_PERCENT"));
-
-        assert!(test_bed.contains_variable_with_name("LEFT_SLATS_ANGLE"));
-        assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_ANGLE"));
-        assert!(test_bed.contains_variable_with_name("LEFT_SLATS_POSITION_PERCENT"));
-        assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
-
         assert!(test_bed.contains_variable_with_name("FLAPS_CONF_INDEX"));
         assert!(test_bed.contains_variable_with_name("ALPHA_LOCK_ENGAGED"));
-
-        assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
-        assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
-        assert!(test_bed.contains_variable_with_name("SLATS_IPPU_ANGLE"));
-        assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
     }
 
     #[test]
