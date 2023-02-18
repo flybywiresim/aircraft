@@ -33,7 +33,7 @@ export class AtsuSystem {
     }
 
     public connectedCallback(): void {
-        this.router.startPublish();
+        this.router.initialize();
         this.atc.initialize();
         this.aoc.initialize();
     }
