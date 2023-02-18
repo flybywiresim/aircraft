@@ -1512,7 +1512,15 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
-    - The altitude.
+    - The pressure altitude in feet.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTED_ALTITUDE_{side}
+    - Arinc429Word<Feet>
+    - The baro corrected altitude in feet.
+    - TODO currently returns pressure altitude when STD mode is selected
+    - {side}
+        - 1: Captain
+        - 2: First Officer
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
     - Arinc429Word<Knots>
@@ -1537,10 +1545,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
     - Arinc429Word<Celsius>
     - The total air temperature (TAT).
-
-- A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
-    - Arinc429Word<Celsius>
-    - The delta (deviation) from international standard atmosphere temperature.
 
 - A32NX_ADIRS_ADR_{number}_ANGLE_OF_ATTACK
     - Arinc429Word<Degrees>
