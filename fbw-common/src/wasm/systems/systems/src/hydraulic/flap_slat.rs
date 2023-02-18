@@ -10,6 +10,7 @@ use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
+use num_traits::Zero;
 use uom::si::angular_velocity::degree_per_second;
 use uom::si::volume_rate::gallon_per_minute;
 use uom::si::{
@@ -23,7 +24,7 @@ use uom::si::{
 use std::time::Duration;
 
 pub trait HydraulicValve {
-    fn get_flow(&self) -> VolumeRate;
+    fn get_max_flow(&self) -> VolumeRate;
 }
 
 pub struct PressureMaintainingValve<const N: usize> {
@@ -31,9 +32,6 @@ pub struct PressureMaintainingValve<const N: usize> {
     flow: VolumeRate,
     motor_flow_breakpoints: [f64; N],
     hydraulic_pressure_breakpoints: [f64; N],
-
-    total_volume_to_actuator: Volume,
-    total_volume_returned_to_reservoir: Volume,
 }
 impl<const N: usize> PressureMaintainingValve<N> {
     pub fn new(
@@ -45,12 +43,10 @@ impl<const N: usize> PressureMaintainingValve<N> {
             flow: VolumeRate::default(),
             motor_flow_breakpoints,
             hydraulic_pressure_breakpoints,
-            total_volume_to_actuator: Volume::default(),
-            total_volume_returned_to_reservoir: Volume::default(),
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, pressure: Pressure) {
+    pub fn update(&mut self, _context: &UpdateContext, pressure: Pressure) {
         let fluid_pressure = pressure.get::<newton_per_square_millimeter>();
 
         // Add interpolation for fluid temperature
@@ -62,10 +58,6 @@ impl<const N: usize> PressureMaintainingValve<N> {
 
         // Calculate valve_ratio
         self.flow = VolumeRate::new::<litre_per_minute>(flow_f64);
-
-        // Account for hydraulic liquid leak
-        self.total_volume_to_actuator += self.flow * context.delta_as_time();
-        self.total_volume_returned_to_reservoir += self.flow * context.delta_as_time();
     }
 
     pub fn get_valve_position(&self) -> Ratio {
@@ -73,20 +65,10 @@ impl<const N: usize> PressureMaintainingValve<N> {
     }
 }
 impl<const N: usize> HydraulicValve for PressureMaintainingValve<N> {
-    fn get_flow(&self) -> VolumeRate {
+    // This is the max possible flow at given pressure. The actual flow will
+    // be 0 when motor movement isn't demanded
+    fn get_max_flow(&self) -> VolumeRate {
         self.flow
-    }
-}
-impl<const N: usize> Actuator for PressureMaintainingValve<N> {
-    fn used_volume(&self) -> Volume {
-        self.total_volume_to_actuator
-    }
-    fn reservoir_return(&self) -> Volume {
-        self.total_volume_returned_to_reservoir
-    }
-    fn reset_volumes(&mut self) {
-        self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
-        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -131,7 +113,7 @@ impl HydraulicMotor {
                 let correction_factor = self.motor_volumetric_efficiency.get::<ratio>();
                 let displacement = self.motor_displacement.get::<cubic_inch>();
                 let flow = valve
-                    .get_flow()
+                    .get_max_flow()
                     .min(self.max_flow)
                     .get::<gallon_per_minute>();
                 return AngularVelocity::new::<revolution_per_minute>(
@@ -246,11 +228,18 @@ pub enum SolenoidStatus {
     Energised,
     DeEnergised,
 }
+
+// Connect solenoids to electrical bus!
 pub struct ValveBlock<const N: usize> {
     control_valve: PressureMaintainingValve<N>,
     retract_solenoid: SolenoidStatus,
     extend_solenoid: SolenoidStatus,
     enable_solenoid: SolenoidStatus, // When de-energised, the brake locks the motor
+
+    flow: VolumeRate,
+
+    total_volume_to_actuator: Volume,
+    total_volume_returned_to_reservoir: Volume,
 }
 impl<const N: usize> ValveBlock<N> {
     pub fn new(motor_flow_breakpoints: [f64; N], hydraulic_pressure_breakpoints: [f64; N]) -> Self {
@@ -262,6 +251,11 @@ impl<const N: usize> ValveBlock<N> {
             retract_solenoid: SolenoidStatus::DeEnergised,
             extend_solenoid: SolenoidStatus::DeEnergised,
             enable_solenoid: SolenoidStatus::DeEnergised,
+
+            flow: VolumeRate::default(),
+
+            total_volume_to_actuator: Volume::default(),
+            total_volume_returned_to_reservoir: Volume::default(),
         }
     }
 
@@ -295,6 +289,45 @@ impl<const N: usize> ValveBlock<N> {
         self.extend_solenoid = pcu_commands.extend_energise();
         self.enable_solenoid = pcu_commands.pob_energise();
         self.control_valve.update(context, pressure);
+
+        // Add hydraulic liquid leak
+        if self.retract_solenoid == SolenoidStatus::Energised
+            || self.extend_solenoid == SolenoidStatus::Energised
+        {
+            self.flow = self.control_valve.get_max_flow();
+        } else {
+            // Motor movement isn't demanded, the fluid sets still
+            self.flow = VolumeRate::zero();
+        }
+
+        self.total_volume_to_actuator += self.flow * context.delta_as_time();
+        self.total_volume_returned_to_reservoir = self.total_volume_to_actuator;
+
+        // if self.total_volume_to_actuator != Volume::zero() {
+        //     println!(
+        //         "USED {:.3}gal\tRETURNED {:.3}gal\tFLOW {:.3}l/mn\tDELTA {:.0}ms",
+        //         self.total_volume_to_actuator.get::<gallon>(),
+        //         self.total_volume_returned_to_reservoir.get::<gallon>(),
+        //         flow_f64,
+        //         context.delta_as_time().get::<millisecond>()
+        //     );
+        // }
+    }
+
+    pub fn get_flow(&self) -> VolumeRate {
+        self.flow
+    }
+}
+impl<const N: usize> Actuator for ValveBlock<N> {
+    fn used_volume(&self) -> Volume {
+        self.total_volume_to_actuator
+    }
+    fn reservoir_return(&self) -> Volume {
+        self.total_volume_returned_to_reservoir
+    }
+    fn reset_volumes(&mut self) {
+        self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -495,6 +528,10 @@ impl<const N: usize> FlapSlatAssy<N> {
             (intermediate_gear - self.intermediate_gear).get::<degree>()
                 / context.delta_as_secs_f64(),
         );
+        // println!(
+        //     "fppu_speed\t{:.2}",
+        //     self.fppu_speed.get::<degree_per_second>()
+        // );
         self.intermediate_gear = intermediate_gear;
         // println!(
         //     "intermediate_gear\t{:.2}",
@@ -530,11 +567,11 @@ impl<const N: usize> FlapSlatAssy<N> {
     }
 
     pub fn left_motor(&mut self) -> &mut impl Actuator {
-        &mut self.power_control_units[0].valve_block.control_valve
+        &mut self.power_control_units[0].valve_block
     }
 
     pub fn right_motor(&mut self) -> &mut impl Actuator {
-        &mut self.power_control_units[1].valve_block.control_valve
+        &mut self.power_control_units[1].valve_block
     }
 }
 impl<const N: usize> PositionPickoffUnit for FlapSlatAssy<N> {
@@ -553,12 +590,12 @@ impl<const N: usize> PositionPickoffUnit for FlapSlatAssy<N> {
 }
 impl<const N: usize> SimulationElement for FlapSlatAssy<N> {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let flaps_surface_angle = self.get_surface_position().get::<degree>();
-        writer.write(&self.angle_left_id, flaps_surface_angle);
-        writer.write(&self.angle_right_id, flaps_surface_angle);
+        let surface_angle = self.get_surface_position().get::<degree>();
+        writer.write(&self.angle_left_id, surface_angle);
+        writer.write(&self.angle_right_id, surface_angle);
 
         let position_percent =
-            flaps_surface_angle / self.surface_position_breakpoints.last().unwrap() * 100.;
+            (surface_angle / self.surface_position_breakpoints.last().unwrap()) * 100.;
         writer.write(&self.position_left_percent_id, position_percent);
         writer.write(&self.position_right_percent_id, position_percent);
 

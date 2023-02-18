@@ -61,9 +61,10 @@ use systems::{
         AdirsDiscreteOutputs, AirDataSource, AirbusElectricPumpId, AirbusEngineDrivenPumpId,
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
-        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
-        HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, RamAirTurbineController,
-        ReservoirAirPressure, SFCCChannel, SectionPressure, TrimmableHorizontalStabilizer,
+        EmergencyGeneratorControlUnit, EmergencyGeneratorPower, EngineFirePushButtons, GearWheel,
+        HydraulicColor, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
+        RamAirTurbineController, ReservoirAirPressure, SFCCChannel, SectionPressure,
+        TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -6018,7 +6019,6 @@ mod tests {
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{
                 arinc429::{Arinc429Word, SignStatus},
-                EmergencyElectricalState, HydraulicGeneratorControlUnit, LgciuId, PotentialOrigin,
                 EmergencyElectricalState, EmergencyGeneratorControlUnit, LgciuId, PotentialOrigin,
             },
             simulation::{
@@ -8213,6 +8213,7 @@ mod tests {
 
             // No more fault LOW expected
             assert!(test_bed.is_blue_pressure_switch_pressurised());
+            println!("{}", test_bed.blue_pressure().get::<psi>());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2900.));
             assert!(!test_bed.is_blue_epump_press_low());
 
@@ -10110,7 +10111,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(90));
+                .run_waiting_for(Duration::from_secs(150));
 
             assert!(test_bed.get_flaps_left_position_percent() > 99.);
             assert!(test_bed.get_flaps_right_position_percent() > 99.);
