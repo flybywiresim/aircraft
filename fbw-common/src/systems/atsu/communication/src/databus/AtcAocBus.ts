@@ -186,7 +186,7 @@ export class AtcAocRouterBus {
     }
 }
 
-export type DatalinkOutpuBusCallbacks = {
+export type RouterOutpuBusCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
     receivedCpdlcMessage: (message: CpdlcMessage) => void;
 }
@@ -194,7 +194,7 @@ export type DatalinkOutpuBusCallbacks = {
 export class RouterAtcAocBus {
     private subscriber: EventSubscriber<RouterAtcAocMessages>;
 
-    private callbacks: DatalinkOutpuBusCallbacks = {
+    private callbacks: RouterOutpuBusCallbacks = {
         receivedFreetextMessage: null,
         receivedCpdlcMessage: null,
     };
@@ -214,7 +214,7 @@ export class RouterAtcAocBus {
         });
     }
 
-    public addDataCallback<K extends keyof DatalinkOutpuBusCallbacks>(event: K, callback: DatalinkOutpuBusCallbacks[K]): void {
+    public addDataCallback<K extends keyof RouterOutpuBusCallbacks>(event: K, callback: RouterOutpuBusCallbacks[K]): void {
         this.callbacks[event] = callback;
     }
 }

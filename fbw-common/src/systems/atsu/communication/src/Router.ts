@@ -30,7 +30,7 @@ enum ActiveCommunicationInterface {
     SATCOM,
 };
 
-export class Datalink {
+export class Router {
     private readonly digitalInputs: DigitalInputs;
 
     private readonly digitalOutputs: DigitalOutputs;
