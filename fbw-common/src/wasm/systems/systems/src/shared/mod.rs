@@ -62,7 +62,7 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait HydraulicGeneratorControlUnit {
+pub trait EmergencyGeneratorControlUnit {
     fn max_allowed_power(&self) -> Power;
     fn motor_speed(&self) -> AngularVelocity;
 }
@@ -228,6 +228,18 @@ impl From<u8> for FlapsConf {
 pub trait HandlePositionMemory {
     fn position(&self) -> u8;
     fn previous_position(&self) -> u8;
+}
+
+pub trait RamAirTurbineController {
+    fn should_deploy(&self) -> bool;
+}
+
+pub trait AngularSpeedSensor {
+    fn speed(&self) -> AngularVelocity;
+}
+
+pub trait FeedbackPositionPickoffUnit {
+    fn angle(&self) -> Angle;
 }
 
 pub trait LgciuWeightOnWheels {
