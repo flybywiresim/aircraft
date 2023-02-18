@@ -1,7 +1,7 @@
 import { Subject, Subscribable, MappedSubject, ArraySubject, DebounceTimer } from 'msfssdk';
 
 import { Arinc429Word } from '@shared/arinc429';
-import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
+import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@instruments/common/NXLogic';
 import { NXDataStore } from '@shared/persistence';
 
 
@@ -262,13 +262,60 @@ export class PseudoFWC {
 
     private readonly yepumpPBisAuto = Subject.create(false);
 
-    /* FWS */
+    /* 31 - FWS */
 
     private readonly fwcFlightPhase = Subject.create(-1);
+
+    private readonly flightPhase23 = Subject.create(false);
+
+    private readonly flightPhase34 = Subject.create(false);
+
+    private readonly flightPhase345 = Subject.create(false);
+
+    private readonly flightPhase129 = Subject.create(false);
+
+    private readonly flightPhase78 = Subject.create(false);
 
     private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
 
     private readonly toInhibitTimer = new NXLogicConfirmNode(3);
+
+    /** TO CONFIG TEST raw button input */
+    private toConfigTestRaw = false;
+
+    /** TO CONFIG TEST pulse with 0.5s monostable trigger */
+    private toConfigTest = false;
+
+    private readonly toConfigPulseNode = new NXLogicPulseNode();
+
+    private readonly toConfigTriggerNode = new NXLogicTriggeredMonostableNode(0.5, true);
+
+    private readonly toConfigTestHeldMin1s5PulseNode = new NXLogicTriggeredMonostableNode(1.5, true);
+
+    /** this will be true whenever the TO CONFIG TEST button is pressed, and stays on for a minimum of 1.5s */
+    private readonly toConfigTestHeldMin1s5Pulse = Subject.create(false);
+
+    private toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
+
+    private readonly clr1PulseNode = new NXLogicPulseNode();
+
+    private readonly clr2PulseNode = new NXLogicPulseNode();
+
+    private readonly clrPulseUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+
+    private clrTriggerRisingEdge = false;
+
+    private readonly rclUpPulseNode = new NXLogicPulseNode();
+
+    private readonly rclUpTriggerNode = new NXLogicTriggeredMonostableNode(0.5, true);
+
+    private recallTriggerRisingEdge = false;
+
+    private readonly flightPhase3PulseNode = new NXLogicPulseNode();
+
+    private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
+
+    private readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
 
     /* LANDING GEAR AND LIGHTS */
 
@@ -605,15 +652,56 @@ export class PseudoFWC {
         return rowChoice;
     }
 
-    onUpdate(deltaTime) {
+    /**
+     * Periodic update
+     * @param deltaTime Time since the last update in ms
+     */
+    onUpdate(deltaTime: number) {
         // Inputs update
 
-        const flightPhaseInhibitOverride = SimVar.GetSimVarValue('L:A32NX_FWC_INHIBOVRD', 'bool');
+        this.flightPhaseEndedPulseNode.write(false, deltaTime);
 
         this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
+        this.flightPhase3PulseNode.write(this.fwcFlightPhase.get() === 3, deltaTime);
+        // flight phase convenience vars
+        this.flightPhase23.set([2, 3].includes(this.fwcFlightPhase.get()));
+        this.flightPhase34.set([3, 4].includes(this.fwcFlightPhase.get()));
+        this.flightPhase345.set(this.flightPhase34.get() || this.fwcFlightPhase.get() === 5);
+        this.flightPhase129.set([1, 2, 9].includes(this.fwcFlightPhase.get()));
+        this.flightPhase78.set([7, 8].includes(this.fwcFlightPhase.get()));
 
-        this.showTakeoffInhibit.set(this.toInhibitTimer.write([3, 4, 5].includes(this.fwcFlightPhase.get()) && !flightPhaseInhibitOverride, deltaTime));
-        this.showLandingInhibit.set(this.ldgInhibitTimer.write([7, 8].includes(this.fwcFlightPhase.get()) && !flightPhaseInhibitOverride, deltaTime));
+        // TO CONFIG button
+        this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
+        this.toConfigPulseNode.write(this.toConfigTestRaw, deltaTime);
+        const toConfigTest = this.toConfigTriggerNode.write(this.toConfigPulseNode.read(), deltaTime);
+        if (toConfigTest !== this.toConfigTest) {
+            // temporary var for the old FWC stuff
+            SimVar.SetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean', toConfigTest);
+            this.toConfigTest = toConfigTest;
+        }
+        this.toConfigTestHeldMin1s5Pulse.set(this.toConfigTestHeldMin1s5PulseNode.write(this.toConfigTestRaw, deltaTime) || this.toConfigTestRaw);
+
+        // CLR buttons
+        const clearButtonLeft = SimVar.GetSimVarValue('L:A32NX_BTN_CLR', 'bool');
+        const clearButtonRight = SimVar.GetSimVarValue('L:A32NX_BTN_CLR2', 'bool');
+        this.clr1PulseNode.write(clearButtonLeft, deltaTime);
+        this.clr2PulseNode.write(clearButtonRight, deltaTime);
+        const previousClrPulseUpTrigger = this.clrPulseUpTrigger.read();
+        this.clrPulseUpTrigger.write(this.clr1PulseNode.read() || this.clr2PulseNode.read(), deltaTime);
+        this.clrTriggerRisingEdge = !previousClrPulseUpTrigger && this.clrPulseUpTrigger.read();
+
+        // RCL button
+        const recallButton = SimVar.GetSimVarValue('L:A32NX_BTN_RCL', 'bool');
+        this.rclUpPulseNode.write(recallButton, deltaTime);
+        const previousRclUpTriggerNode = this.rclUpTriggerNode.read();
+        this.rclUpTriggerNode.write(recallButton, deltaTime);
+
+        this.recallTriggerRisingEdge = !previousRclUpTriggerNode && this.rclUpTriggerNode.read();
+
+        this.flightPhaseInhibitOverrideNode.write(this.rclUpPulseNode.read(), this.flightPhaseEndedPulseNode.read());
+
+        this.showTakeoffInhibit.set(this.toInhibitTimer.write(this.flightPhase345.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime));
+        this.showLandingInhibit.set(this.ldgInhibitTimer.write(this.flightPhase78.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime));
 
         this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
@@ -946,51 +1034,34 @@ export class PseudoFWC {
 
         /* T.O. CONFIG CHECK */
 
-        const toConfigBtn = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool');
-        if (this.toMemo.get() && toConfigBtn === 1) {
+        if (this.toMemo.get() && this.toConfigTestRaw) {
             // TODO Note that fuel tank low pressure and gravity feed warnings are not included
             const systemStatus = this.engine1Generator.get() && this.engine2Generator.get()
                 && !this.greenLP.get() && !this.yellowLP.get() && !this.blueLP.get()
                 && this.eng1pumpPBisAuto.get() && this.eng2pumpPBisAuto.get();
 
-            const v1Speed = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
-            const vrSpeed = SimVar.GetSimVarValue('L:AIRLINER_VR_SPEED', 'knots');
-            const v2Speed = SimVar.GetSimVarValue('L:AIRLINER_V2_SPEED', 'knots');
             const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
             const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
             const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
             const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
             const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
 
-            const speeds = !!(v1Speed <= vrSpeed && vrSpeed <= v2Speed);
+            const speeds = !toSpeedsTooLow && !toV2VRV2Disagree && !fmToSpeedsNotInserted;
             const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
-            const flapsAgree = !this.flapsMcduEntered.get() || this.flapsHandle.get() === this.flapsMcdu.get();
-            const sb = !this.speedBrakeCommand.get();
+            const surfacesNotTo = flapsNotInToPos || slatsNotInToPos || this.speedbrakesNotTo.get() || this.rudderTrimNotTo.get() || this.pitchTrimNotTo.get();
 
-            if (systemStatus && speeds && !brakesHot && doors && flapsAgree && sb) {
-                SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 1);
-                this.toConfigFail.set(false);
-            } else {
-                SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 0);
-                this.toConfigFail.set(true);
-            }
+            const toConfigNormal = systemStatus && speeds && !brakesHot && doors && !this.flapsMcduDisagree.get() && !surfacesNotTo;
+
+            this.toConfigNormal.set(this.toConfigNormalConf.write(toConfigNormal, deltaTime));
         }
-        this.toConfigNormal.set(SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool'));
 
         /* CLEAR AND RECALL */
-
-        const clearButtonLeft = SimVar.GetSimVarValue('L:A32NX_BTN_CLR', 'bool');
-        const clearButtonRight = SimVar.GetSimVarValue('L:A32NX_BTN_CLR2', 'bool');
-        const recallButton = SimVar.GetSimVarValue('L:A32NX_BTN_RCL', 'bool');
-
-        if (clearButtonLeft === 1 || clearButtonRight === 1) {
+        if (this.clrTriggerRisingEdge) {
             this.failuresLeft.shift();
             this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
-            SimVar.SetSimVarValue('L:A32NX_BTN_CLR', 'Bool', 0);
-            SimVar.SetSimVarValue('L:A32NX_BTN_CLR2', 'Bool', 0);
         }
 
-        if (recallButton === 1) {
+        if (this.recallTriggerRisingEdge) {
             if (this.recallFailures.length > 0) {
                 this.failuresLeft.push(this.recallFailures.shift());
             }
@@ -1958,9 +2029,7 @@ export class PseudoFWC {
                 && SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1 ? 3 : 2,
                 SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
                 this.spoilersArmed.get() ? 7 : 6,
-                SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') >= 1
-                && SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') <= 3 ? 9 : 8,
-                SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool') ? 11 : 10,
+                this.toConfigNormal.get() ? 11 : 10,
             ],
             codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
             memoInhibit: () => false,
@@ -2219,7 +2288,7 @@ export class PseudoFWC {
         '0000540': { // PRED W/S OFF
             flightPhaseInhib: [],
             simVarIsActive: MappedSubject.create(([predWSOn, fwcFlightPhase]) => !predWSOn && ![1, 10].includes(fwcFlightPhase), this.predWSOn, this.fwcFlightPhase),
-            whichCodeToReturn: () => [[3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool') ? 1 : 0],
+            whichCodeToReturn: () => [[3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 1 : 0],
             codesToReturn: ['000054001', '000054002'],
             memoInhibit: () => false,
             failure: 0,
@@ -2229,7 +2298,7 @@ export class PseudoFWC {
         '0000545': { // TERR OFF
             flightPhaseInhib: [1, 10],
             simVarIsActive: this.gpwsTerrOff,
-            whichCodeToReturn: () => [[3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool') ? 1 : 0],
+            whichCodeToReturn: () => [[3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 1 : 0],
             codesToReturn: ['000054501', '000054502'],
             memoInhibit: () => false,
             failure: 0,

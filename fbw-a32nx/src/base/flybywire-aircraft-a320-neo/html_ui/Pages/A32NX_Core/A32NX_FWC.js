@@ -2,7 +2,6 @@ class A32NX_FWC {
     constructor() {
         // momentary
         this.toConfigTest = null; // WTOCT
-        this.flightPhaseEndedPulse = false; // ESLD 1.0.155
 
         // persistent
         this.flightPhase = null;
@@ -38,9 +37,6 @@ class A32NX_FWC {
         this.phase5Memo = new NXLogic_TriggeredMonostableNode(120); // MTRIG 01
         this.phase67Memo = new NXLogic_TriggeredMonostableNode(180); // MTRIG 02
 
-        // ESDL 1. 0.115
-        this.memoFlightPhaseInhibOvrd_memo = new NXLogic_MemoryNode(false);
-
         // ESDL 1. 0.180
         this.memoTo_conf01 = new NXLogic_ConfirmNode(120, true); // CONF 01
         this.memoTo_memo = new NXLogic_MemoryNode(false);
@@ -70,8 +66,6 @@ class A32NX_FWC {
     }
 
     update(_deltaTime, _core) {
-        this._resetPulses();
-
         this._updateFlightPhase(_deltaTime);
         this._updateButtons(_deltaTime);
         this._updateTakeoffMemo(_deltaTime);
@@ -79,28 +73,8 @@ class A32NX_FWC {
         this._updateAltitudeWarning();
     }
 
-    _resetPulses() {
-        this.flightPhaseEndedPulse = false;
-    }
-
     _updateButtons(_deltaTime) {
-        if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool")) {
-            SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
-            this.toConfigTest = true;
-            SimVar.SetSimVarValue("L:A32NX_FWC_TOCONFIG", "Bool", 1);
-        } else if (this.toConfigTest) {
-            this.toConfigTest = false;
-        }
-
-        let recall = false;
-        if (SimVar.GetSimVarValue("L:A32NX_BTN_RCL", "Bool")) {
-            SimVar.SetSimVarValue("L:A32NX_BTN_RCL", "Bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_FWC_RECALL", "Bool", 1);
-            recall = true;
-        }
-
-        const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
-        SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
+        this.toConfigTest = SimVar.GetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean');
 
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
             this.warningPressed = true;
@@ -271,11 +245,6 @@ class A32NX_FWC {
     _setFlightPhase(flightPhase) {
         if (flightPhase === this.flightPhase) {
             return;
-        }
-
-        // ESDL 1.0.115
-        if (this.flightPhase !== null) {
-            this.flightPhaseEndedPulse = true;
         }
 
         // update flight phase
