@@ -13,7 +13,7 @@ esbuild.build({
 
     define: { DEBUG: 'false' },
 
-    entryPoints: [ path.join(rootDir,  '../fbw-common/src/systems/atsu/common/src/index.ts')],
+    entryPoints: [ path.join(rootDir,  '../fbw-common/src/systems/datalink/common/src/index.ts')],
     bundle: true,
     treeShaking: false,
     minify: isProductionBuild,
