@@ -122,7 +122,6 @@ protected:
   /**
    * Sets the changed flag to the given value and triggers the registered callbacks
    * if the value has changed.
-   * TODO: Implement listener registration and callbacks
    * @param changed the new value for the changed flag
    */
   void setChanged(bool changed) {
@@ -140,8 +139,7 @@ public:
   ManagedDataObjectBase &operator=(const ManagedDataObjectBase &) = delete; // no copy assignment
 
   /**
-   * Adds a callback function to be called when the event is triggered in the sim.
-   * The first callback also registers the event to the sim.
+   * Adds a callback function to be called when the data object's data changed.<p/>
    * @param callback
    * @return The ID of the callback required for removing a callback.
    */
@@ -153,8 +151,7 @@ public:
   }
 
   /**
-   * Removes a callback from the event.
-   * The last callback also unregisters the event from the sim.
+   * Removes a callback from the data object.
    * @param callbackId The ID receive when adding the callback.
    */
   bool removeCallback(CallbackID callbackId) {

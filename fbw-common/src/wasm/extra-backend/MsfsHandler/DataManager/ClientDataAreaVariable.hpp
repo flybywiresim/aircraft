@@ -172,7 +172,9 @@ public:
    * sim.<p/>
    * This method can be very efficient as the sim will only send the data when it is required and
    * the DataManager will not have to manage the updates.<p/>
-   * If this is used make sure to have autoRead set to false otherwise this will throw an error.
+   * If this is used make sure to have autoRead set to false otherwise this will throw an error.<p/>
+   * OBS: If a repeating periodic update is requested the data will be updated and callbacks will
+   * be called even if the sim if paused
    * @param period the SIMCONNECT_CLIENT_DATA_PERIOD with which the sim should send the data
    * @param periodFlags the SIMCONNECT_CLIENT_DATA_REQUEST_FLAG with which the sim should send the data
    * @param origin The number of Period events that should elapse before transmission of the data
@@ -226,10 +228,8 @@ public:
 
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_TRACE("ClientDataAreaVariable: Received client data: " + name);
-    const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
 
-   SIMPLE_ASSERT(pClientData->dwRequestID == requestId,
-                  "ClientDataAreaVariable::processSimData: Request ID mismatch: " + name);
+    const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
 
     // if not required then skip the rather expensive check for change
     if (skipChangeCheck || std::memcmp(&pClientData->dwData, &this->dataStruct, sizeof(T)) != 0) {

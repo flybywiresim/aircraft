@@ -28,3 +28,5 @@ add_subdirectory(fbw-a380x/src/wasm/fbw_a380)
 
 add_subdirectory(fbw-a32nx/src/wasm/extra-backend)
 add_subdirectory(fbw-a380x/src/wasm/extra-backend)
+
+add_subdirectory(fbw-a32nx/src/wasm/terronnd)

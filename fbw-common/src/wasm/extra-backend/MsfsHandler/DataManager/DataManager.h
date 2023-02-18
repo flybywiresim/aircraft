@@ -19,6 +19,7 @@
 
 #include "DataDefinitionVariable.hpp"
 #include "ClientDataAreaVariable.hpp"
+#include "ClientDataBufferedAreaVariable.hpp"
 
 // Forward declarations
 class MsfsHandler;
@@ -128,7 +129,8 @@ public:
   bool shutdown();
 
   /**
-   * Must be called to retrieve requested sim object data (data definition variables) from the sim.
+   * Must be called to retrieve requested sim data.
+   * It will loop until all requested data has been received for this tick.
    * Will be called at the end of preUpdate() whenever preUpdate() is called.
    * Request data by calling any of the DataDefinitions::request...() methods
    * on the data definition variable.
@@ -278,6 +280,31 @@ public:
         maxAgeTicks);
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
+    simObjects.insert({var->getRequestId(), var});
+    return var;
+  }
+
+  template<typename T, std::size_t ChunkSize>
+  std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>> make_clientdatabufferedarea_var(
+    const std::string clientDataName,
+    bool autoReading = false,
+    bool autoWriting = false,
+    FLOAT64 maxAgeTime = 0.0,
+    UINT64 maxAgeTicks = 0) {
+
+    std::shared_ptr <ClientDataBufferedAreaVariable<T, ChunkSize>>
+      var = std::make_shared<ClientDataBufferedAreaVariable<T, ChunkSize>> (
+        hSimConnect,
+        std::move(clientDataName),
+        clientDataIDGen.getNextId(),
+        dataDefIDGen.getNextId(),
+        dataReqIDGen.getNextId(),
+        autoReading,
+        autoWriting,
+        maxAgeTime,
+        maxAgeTicks);
+
+    LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
     return var;
   }

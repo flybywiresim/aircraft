@@ -159,7 +159,10 @@ public:
    * sim.<p/>
    * This method can be very efficient as the sim will only send the data when it is required and
    * the DataManager will not have to manage the updates.<p/>
-   * If this is used make sure to have autoRead set to false otherwise this will throw an error.
+   * If this is used make sure to have autoRead set to false otherwise this will throw an error.<p/>
+   * OBS: If a repeating periodic update is requested the data will be updated and callbacks will
+   * be called even if the sim if paused
+   *
    * @param period the SIMCONNECT_PERIOD with which the sim should send the data
    * @param periodFlags the SIMCONNECT_DATA_REQUEST_FLAG with which the sim should send the data
    * @param origin The number of Period events that should elapse before transmission of the data

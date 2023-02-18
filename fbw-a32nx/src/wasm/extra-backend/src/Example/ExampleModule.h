@@ -6,6 +6,8 @@
 #ifndef FLYBYWIRE_EXAMPLEMODULE_H
 #define FLYBYWIRE_EXAMPLEMODULE_H
 
+#include <array>
+
 #include "Module.h"
 #include "DataManager.h"
 #include "Event.h"
@@ -74,6 +76,22 @@ private:
   } __attribute__((packed));
   std::shared_ptr<ClientDataAreaVariable<ExampleClientData2>> exampleClientData2Ptr;
 
+  // ClientDataArea variable for testing
+  struct BigClientData {
+    std::array<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE> dataChunk;
+  } __attribute__((packed));
+  std::shared_ptr<ClientDataAreaVariable<BigClientData>> bigClientDataPtr;
+
+  // ClientDataArea variable for meta data for ClientDataBufferedAreaVariable
+  struct BufferedAreaMetaData {
+    UINT64 size;
+    UINT64 hash;
+  } __attribute__((packed));
+  std::shared_ptr<ClientDataAreaVariable<BufferedAreaMetaData>> metaDataPtr;
+
+  // ClientDataBufferedArea variable for testing
+  std::shared_ptr<ClientDataBufferedAreaVariable<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
+
   // Events
   EventPtr beaconLightSetEventPtr;
   [[maybe_unused]] CallbackID beaconLightSetCallbackID{};
@@ -98,6 +116,20 @@ public:
   bool update(sGaugeDrawData* pData) override;
   bool postUpdate(sGaugeDrawData* pData) override;
   bool shutdown() override;
+
+private:
+
+  // Fowler-Noll-Vo hash function
+  uint64_t fingerPrintFVN(std::vector<BYTE> &data) {
+    const uint64_t FNV_offset_basis = 14695981039346656037ULL;
+    const uint64_t FNV_prime = 1099511628211ULL;
+    uint64_t hash = FNV_offset_basis;
+    for (BYTE c: data) {
+      hash ^= static_cast<uint64_t>(c);
+      hash *= FNV_prime;
+    }
+    return hash;
+  }
 
 };
 

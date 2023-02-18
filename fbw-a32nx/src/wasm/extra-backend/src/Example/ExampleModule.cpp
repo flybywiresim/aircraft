@@ -3,6 +3,8 @@
 
 #ifdef EXAMPLES
 
+#include <string>
+
 #include "logging.h"
 #include "ExampleModule.h"
 #include "NamedVariable.h"
@@ -127,7 +129,7 @@ bool ExampleModule::initialize() {
                                                       beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
 
   // Data definition variables
-  std::vector <DataDefinition> exampleDataDef = {
+  std::vector<DataDefinition> exampleDataDef = {
     {"LIGHT STROBE", 0, UNITS.Bool},
     {"LIGHT WING",   0, UNITS.Bool},
     {"ZULU TIME"},
@@ -161,6 +163,64 @@ bool ExampleModule::initialize() {
     LOG_ERROR("Failed to request periodic data from sim");
   }
 
+  // Big client data area owned by an external module
+  bigClientDataPtr =
+    dataManager->make_clientdataarea_var<BigClientData>("BIG CLIENT DATA");
+  bigClientDataPtr->setSkipChangeCheck(true);
+  bigClientDataPtr->addCallback([=]() {
+    // Big Client Data
+    LOG_INFO_BLOCK(
+      std::cout << "--- CALLBACK: BIG CLIENT DATA (External - reading)" << std::endl;
+      std::cout << bigClientDataPtr->str() << std::endl;
+      std::cout << "Bid Client Data data: " << std::endl;
+      auto s = std::string_view((const char*) &bigClientDataPtr->data().dataChunk, 100);
+      std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s
+                << " ... " << std::endl;
+    )
+  });
+  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
+
+  // Metadata for the ClientDataBufferedAreaVariable test
+  metaDataPtr =
+    dataManager->make_clientdataarea_var<BufferedAreaMetaData>("HUGE CLIENT DATA META DATA");
+  metaDataPtr->setSkipChangeCheck(true);
+  metaDataPtr->addCallback([=]() {
+    hugeClientDataPtr->reserve(metaDataPtr->data().size);
+    // Huge Client Data Meta Data
+    LOG_INFO_BLOCK(
+      std::cout << "--- CALLBACK: HUGE CLIENT META DATA (External - reading)" << std::endl;
+    std::cout << metaDataPtr->str() << std::endl;
+    std::cout << "HUGE CLIENT DATA META DATA size = " << metaDataPtr->data().size
+              << " fingerprint = " << metaDataPtr->data().hash << std::endl;
+    std::cout << std::endl;
+    );
+  });
+  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
+
+  // ClientDataBufferedAreaVariable test
+  hugeClientDataPtr =
+    dataManager->make_clientdatabufferedarea_var<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
+  hugeClientDataPtr->setSkipChangeCheck(true);
+  hugeClientDataPtr->addCallback([=]() {
+    LOG_INFO_BLOCK(
+      std::cout << "--- CALLBACK: HUGE CLIENT DATA (External - reading)" << std::endl;
+    std::cout << hugeClientDataPtr->str() << std::endl;
+    const uint64_t fingerPrintFvn = fingerPrintFVN(hugeClientDataPtr->getData());
+    std::cout << "HUGE CLIENT DATA size = " << hugeClientDataPtr->getData().size()
+              << " fingerprint = " << fingerPrintFvn
+              << " fingerprint match = " << std::boolalpha
+              << (fingerPrintFvn == metaDataPtr->data().hash) << std::endl;
+    std::cout << std::endl;
+    )
+  });
+  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
+
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
   return true;
@@ -181,12 +241,33 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   // It is ready after the click on "READY TO FLY"
   if (!msfsHandler->getA32NxIsReady()) return true;
 
+  // Un-throttled tests
+  //  if (metaDataPtr->hasChanged()) {
+  //    // Huge Client Data Meta Data
+  //    LOG_INFO("--- HUGE CLIENT META DATA (External - reading)");
+  //    hugeClientDataPtr->reserve(metaDataPtr->data().size);
+  //    std::cout << metaDataPtr->str() << std::endl;
+  //    std::cout << "Huge client data size: " << metaDataPtr->data().size << std::endl;
+  //    std::cout << "Huge client data hash: " << metaDataPtr->data().hash << std::endl;
+  //  }
+
+  //  if (hugeClientDataPtr->hasChanged()) {
+  //    LOG_INFO("--- HUGE CLIENT DATA (External - reading)");
+  //    std::cout << hugeClientDataPtr->str() << std::endl;
+  //    std::cout << "Huge client data size: " << hugeClientDataPtr->getData().size() << std::endl;
+  //    std::string s(hugeClientDataPtr->getData().data(), hugeClientDataPtr->getData().size());
+  //    auto fingerprint = fingerPrintFVN(s);
+  //    std::cout << "Fingerprint: " << fingerprint << std::endl;
+  //    std::cout << "Fingerprint is " << (fingerprint == metaDataPtr->data().hash ? "equal" : "not equal") << std::endl;
+  //  }
 
   // Use this to throttle output frequency while you are debugging
   if (msfsHandler->getTickCounter() % 100 == 0) {
 
     [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
     [[maybe_unused]] const UINT64 tickCounter = msfsHandler->getTickCounter();
+
+
 
     // difference if using different units
     /*
@@ -200,7 +281,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
       LOG_INFO("debugLVAR2Ptr DEBUG_LVAR " + std::to_string(debugLVAR2Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
       LOG_INFO("debugLVAR3Ptr DEBUG_LVAR " + std::to_string(debugLVAR3Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
     */
-         // this second read of the duplicate should not trigger a read from the sim
+    // this second read of the duplicate should not trigger a read from the sim
     /*
       LOG_INFO("debugLVAR4Ptr DEBUG_LVAR "
                + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
@@ -246,6 +327,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     // Testing client data variables
     // Can be tested together with https://github.com/frankkopp/fbw-cpp-framework-test
 
+    /*
     // This local data sent to other clients
     LOG_INFO("--- EXAMPLE CLIENT DATA (Owning - sending)");
     std::cout << exampleClientDataPtr->str() << std::endl;
@@ -262,7 +344,9 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     exampleClientDataPtr->data().anInt16++;
     exampleClientDataPtr->data().anInt8++;
     // exampleClientDataPtr->writeDataToSim();
+    */
 
+    /*
     // This is external data from an external client
     LOG_INFO("--- EXAMPLE 2 CLIENT DATA (External - reading)");
     std::cout << exampleClientData2Ptr->str() << std::endl;
@@ -275,7 +359,28 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     std::cout << "INT64      " << exampleClientData2Ptr->data().anInt64 << std::endl;
     std::cout << "FLOAT32    " << exampleClientData2Ptr->data().aFloat32 << std::endl;
     std::cout << "FLOAT64    " << exampleClientData2Ptr->data().aFloat64 << std::endl;
+    */
 
+    /*
+    LOG_INFO("--- DataDefinition Example)");
+    std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().strobeLightSwitch << std::endl;
+    std::cout << "wingLightSwitch =  " << exampleDataPtr->data().wingLightSwitch << std::endl;
+    std::cout << "zuluTime =  " << exampleDataPtr->data().zuluTime << std::endl;
+    std::cout << "localTime =  " << exampleDataPtr->data().localTime << std::endl;
+    std::cout << "absoluteTime =  " << INT64(exampleDataPtr->data().absoluteTime) << std::endl;
+    std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
+    */
+
+    /*
+    LOG_INFO("--- LVAR Example)");
+    std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
+              << (debugLVARPtr->hasChanged() ? "yes" : "no")
+              << " debugLVARPtr  time = " << msfsHandler->getTimeStamp()
+              << " tick = " << msfsHandler->getTickCounter()
+              << std::endl;
+    // Set a variable which does not auto write
+    //    debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
+    */
 
     // Read vars which auto update each tick
     /*
@@ -321,25 +426,6 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
                << " tick = " << msfsHandler->getTickCounter()
                << std::endl;
   */
-
-    LOG_INFO("--- DataDefinition Example)");
-    // TODO: the char array might need a check for null termination - it could have overwritten
-    //  the rest of the struct and beyond
-    std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().strobeLightSwitch << std::endl;
-    std::cout << "wingLightSwitch =  " << exampleDataPtr->data().wingLightSwitch << std::endl;
-    std::cout << "zuluTime =  " << exampleDataPtr->data().zuluTime << std::endl;
-    std::cout << "localTime =  " << exampleDataPtr->data().localTime << std::endl;
-    std::cout << "absoluteTime =  " << INT64(exampleDataPtr->data().absoluteTime) << std::endl;
-    std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
-
-    LOG_INFO("--- LVAR Example)");
-    std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
-              << (debugLVARPtr->hasChanged() ? "yes" : "no")
-              << " debugLVARPtr  time = " << msfsHandler->getTimeStamp()
-              << " tick = " << msfsHandler->getTickCounter()
-              << std::endl;
-    // Set a variable which does not auto write
-    //    debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
 
     // Test writing an aircraft variable by toggling the beacon light switch
     // Immediate write

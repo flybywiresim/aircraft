@@ -121,8 +121,9 @@ public:
   void trigger_ex1(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWORD data4) const ;
 
   /**
-   * Adds a callback function to be called when the event is triggered in the sim.
-   * The first callback also registers the event to the sim.
+   * Adds a callback function to be called when the event is triggered in the sim.<br/>
+   * The first callback also registers the event to the sim.<br/>
+   * OBS: The callback will be called even if the sim is paused.
    * @param callback
    * @return The ID of the callback required for removing a callback.
    */
