@@ -71,9 +71,9 @@ export class Datalink {
 
                         if (this.poweredUp) {
                             if (message.Type === AtsuMessageType.Freetext) {
-                                this.publisher.pub('receivedFreetextMessage', message as FreetextMessage, this.synchronizedBuses, false);
+                                this.digitalOutputs.receivedFreetextMesage(message as FreetextMessage);
                             } else if (message.Type === AtsuMessageType.CPDLC) {
-                                this.publisher.pub('receivedCpdlcMessage', message as CpdlcMessage, this.synchronizedBuses, false);
+                                this.digitalOutputs.receivedCpdlcMessage(message as CpdlcMessage);
                             } else {
                                 console.log('ERROR: Unknown message received in datalink');
                             }
@@ -93,36 +93,30 @@ export class Datalink {
         }
     }
 
-    constructor(private readonly bus: EventBus, private readonly synchronizedBuses: boolean) {
+    constructor(private readonly bus: EventBus, synchronizedAtc: boolean, synchronizedAoc: boolean) {
         HoppieConnector.activateHoppie();
 
-        this.digitalInputs = new DigitalInputs(this.bus);
-        this.digitalOutputs = new DigitalOutputs(this.bus);
+        this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
+        this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedAtc, synchronizedAoc);
 
         this.digitalInputs.fmsBus.addDataCallback('connect', (callsign: string) => Datalink.connect(callsign));
         this.digitalInputs.fmsBus.addDataCallback('disconnect', () => Datalink.disconnect());
         this.digitalInputs.fmsBus.addDataCallback('stationAvailable', (callsign: string) => this.isStationAvailable(callsign));
-
-        this.subscriber.on('sendFreetextMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
-        this.subscriber.on('sendCpdlcMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
-        this.subscriber.on('sendDclMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
-        this.subscriber.on('sendOclMessage').handle((request) => this.sendMessage(request.requestId, request.message, request.force));
-
-        this.subscriber.on('requestAtis').handle((request) => {
+        this.digitalInputs.addDataCallback('sendFreetextMessage', (message, force) => this.sendMessage(message, force));
+        this.digitalInputs.addDataCallback('sendCpdlcMessage', (message, force) => this.sendMessage(message, force));
+        this.digitalInputs.addDataCallback('sendDclMessage', (message, force) => this.sendMessage(message, force));
+        this.digitalInputs.addDataCallback('sendOclMessage', (message, force) => this.sendMessage(message, force));
+        this.digitalInputs.addDataCallback('requestAtis', async (icao, type, requestSent): Promise<[AtsuStatusCodes, WeatherMessage]> => {
             if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-                this.publisher.pub('receivedWeather', { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedBuses, false);
+                return [AtsuStatusCodes.ComFailed, null];
             }
 
             const message = new AtisMessage();
-            NXApiConnector.receiveAtis(request.icao, request.type, message).then(() => {
-                this.simulateWeatherRequestResponse(
-                    [AtsuStatusCodes.Ok, message],
-                    () => this.publisher.pub('requestSent', request.requestId, this.synchronizedBuses, false),
-                ).then((data) => this.publisher.pub('receivedWeather', { requestId: request.requestId, response: data }, this.synchronizedBuses, false));
-            });
+            return NXApiConnector.receiveAtis(icao, type, message).then(() => {
+                return this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], requestSent);
+            }).catch((_err) => [AtsuStatusCodes.ComFailed, null]);
         });
-        this.subscriber.on('requestMetar').handle((request) => this.receiveWeather(request.requestId, true, request.icaos));
-        this.subscriber.on('requestTaf').handle((request) => this.receiveWeather(request.requestId, false, request.icaos));
+        this.digitalInputs.addDataCallback('requestWeather', async (icaos, metar, requestSent) => this.receiveWeather(metar, icaos, requestSent));
     }
 
     public initialize(): void {
@@ -284,9 +278,9 @@ export class Datalink {
         });
     }
 
-    private receiveWeather(requestId: number, requestMetar: boolean, icaos: string[]): void {
+    private async receiveWeather(requestMetar: boolean, icaos: string[], requestSent: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-            this.publisher.pub('receivedWeather', { requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedBuses, false);
+            return [AtsuStatusCodes.ComFailed, null];
         }
 
         let message = undefined;
@@ -296,51 +290,38 @@ export class Datalink {
             message = new TafMessage();
         }
 
-        this.receiveWeatherData(requestMetar, icaos, 0, message)
-            .then((code) => {
-                this.simulateWeatherRequestResponse(
-                    [code, message],
-                    () => this.publisher.pub('requestSent', requestId, this.synchronizedBuses, false),
-                ).then((data) => this.publisher.pub('receivedWeather', { requestId, response: data }, this.synchronizedBuses, false));
-            });
+        return this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => {
+            return this.simulateWeatherRequestResponse([code, message], requestSent);
+        });
     }
 
     private async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return HoppieConnector.isStationAvailable(callsign);
     }
 
-    private sendMessage(requestId: number, message: AtsuMessage, force: boolean): void {
+    private async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
         if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-            this.publisher.pub('sendMessageResponse', { requestId, status: AtsuStatusCodes.ComFailed });
-            return;
+            return AtsuStatusCodes.ComFailed;
         }
 
         const transmissionTime = this.vdl.enqueueOutboundMessage(message);
         const timeout = setTimeout(() => {
             this.vdl.dequeueOutboundMessage(transmissionTime);
+            this.removeTransmissionTimeout(timeout);
+
             if (message.Type < AtsuMessageType.AOC) {
                 if (message.Network === AtsuMessageNetwork.FBW) {
-                    NXApiConnector.sendTelexMessage(message).then((status) => {
-                        this.publisher.pub('sendMessageResponse', { requestId, status });
-                    });
+                    return NXApiConnector.sendTelexMessage(message);
                 } else {
-                    HoppieConnector.sendTelexMessage(message, force).then((status) => {
-                        this.publisher.pub('sendMessageResponse', { requestId, status });
-                    });
+                    return HoppieConnector.sendTelexMessage(message, force);
                 }
             } else if (message.Type === AtsuMessageType.DCL) {
-                HoppieConnector.sendTelexMessage(message, force).then((status) => {
-                    this.publisher.pub('sendMessageResponse', { requestId, status });
-                });
+                return HoppieConnector.sendTelexMessage(message, force);
             } else if (message.Type < AtsuMessageType.ATC) {
-                HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((status) => {
-                    this.publisher.pub('sendMessageResponse', { requestId, status });
-                });
+                return HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force);
             } else {
-                this.publisher.pub('sendMessageResponse', { requestId, status: AtsuStatusCodes.UnknownMessage });
+                return AtsuStatusCodes.UnknownMessage;
             }
-
-            this.removeTransmissionTimeout(timeout);
         }, transmissionTime);
 
         // register the transmission simulation for later management
