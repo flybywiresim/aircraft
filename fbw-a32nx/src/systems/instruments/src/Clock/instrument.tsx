@@ -52,6 +52,8 @@ class A32NX_Clock extends BaseInstrument {
 
         this.simVarPublisher.subscribe('elapsedKnobPos');
 
+        this.simVarPublisher.subscribe('dc2IsPowered');
+
         FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
     }
 

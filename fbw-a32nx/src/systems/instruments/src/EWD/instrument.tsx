@@ -1,4 +1,4 @@
-import { Clock, ClockEvents, EventBus, FSComponent } from 'msfssdk';
+import { Clock, EventBus, FSComponent } from 'msfssdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdComponent } from './EWD';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
@@ -137,6 +137,7 @@ class A32NX_EWD extends BaseInstrument {
         } else {
             this.simVarPublisher.onUpdate();
             this.clock.onUpdate();
+            this.pseudoFwc.onUpdate(this.deltaTime);
         }
     }
 }

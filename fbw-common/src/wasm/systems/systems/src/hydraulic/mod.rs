@@ -5,11 +5,12 @@ use crate::hydraulic::{
     electrical_pump_physics::ElectricalPumpPhysics, pumps::PumpCharacteristics,
 };
 use crate::pneumatic::PressurizeableReservoir;
+use crate::wind_turbine::WindTurbine;
 
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
     random_from_range, AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedTrueLogicGate,
-    ElectricalBusType, ElectricalBuses, HydraulicColor, SectionPressure,
+    ElectricalBusType, ElectricalBuses, HydraulicColor, RamAirTurbineController, SectionPressure,
 };
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -18,14 +19,15 @@ use crate::simulation::{
 use nalgebra::Vector3;
 
 use std::time::Duration;
+
 use uom::si::{
+    angle::radian,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     mass::kilogram,
     pressure::{pascal, psi},
     ratio::ratio,
     torque::newton_meter,
-    velocity::knot,
     volume::{cubic_inch, cubic_meter, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
@@ -2903,108 +2905,6 @@ impl HeatingElement for EngineDrivenPump {
 }
 impl HeatingPressureSource for EngineDrivenPump {}
 
-struct WindTurbine {
-    rpm_id: VariableIdentifier,
-
-    position: f64,
-    speed: AngularVelocity,
-    acceleration: f64,
-    torque_sum: f64,
-}
-impl WindTurbine {
-    // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
-    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 15.;
-    const STOWED_ANGLE: f64 = std::f64::consts::PI / 2.;
-    const PROPELLER_INERTIA: f64 = 0.2;
-    const FRICTION_COEFFICIENT: f64 = 0.0002;
-    const AIR_LIFT_COEFFICIENT: f64 = 0.018;
-
-    const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-        0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
-    ];
-    const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
-
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            rpm_id: context.get_identifier("HYD_RAT_RPM".to_owned()),
-
-            position: Self::STOWED_ANGLE,
-            speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            acceleration: 0.,
-            torque_sum: 0.,
-        }
-    }
-
-    fn speed(&self) -> AngularVelocity {
-        self.speed
-    }
-
-    fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
-        let cur_alpha = interpolation(
-            &Self::RPM_GOVERNOR_BREAKPTS,
-            &Self::PROP_ALPHA_MAP,
-            self.speed().get::<revolution_per_minute>(),
-        );
-
-        // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
-        let air_speed_torque = cur_alpha.to_radians().sin()
-            * (indicated_speed.get::<knot>()
-                * indicated_speed.get::<knot>()
-                * Self::AIR_LIFT_COEFFICIENT)
-            * 0.5
-            * (std::f64::consts::PI / 2. * stow_pos).sin();
-
-        self.torque_sum += air_speed_torque;
-    }
-
-    fn update_friction_torque(&mut self, displacement: Volume, pressure: Pressure) {
-        let mut pump_torque = 0.;
-        if self.speed.get::<revolution_per_minute>() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
-            pump_torque += (self.position * 4.).cos() * displacement.get::<gallon>().max(0.35) * 2.;
-            pump_torque -= self.speed.get::<radian_per_second>() * 0.25;
-        } else {
-            pump_torque -=
-                pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI);
-            pump_torque -= 20.
-                + (self.speed.get::<radian_per_second>() * self.speed.get::<radian_per_second>())
-                    * Self::FRICTION_COEFFICIENT;
-        }
-
-        self.torque_sum += pump_torque;
-    }
-
-    fn update_physics(&mut self, delta_time: &Duration) {
-        self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
-        self.speed +=
-            AngularVelocity::new::<radian_per_second>(self.acceleration * delta_time.as_secs_f64());
-        self.position += self.speed.get::<radian_per_second>() * delta_time.as_secs_f64();
-
-        // Reset torque accumulator at end of update
-        self.torque_sum = 0.;
-    }
-
-    fn update(
-        &mut self,
-        delta_time: &Duration,
-        indicated_speed: Velocity,
-        stow_pos: f64,
-        displacement: Volume,
-        pressure: Pressure,
-    ) {
-        if stow_pos > 0.1 {
-            // Do not update anything on the propeller if still stowed
-            self.update_generated_torque(indicated_speed, stow_pos);
-            self.update_friction_torque(displacement, pressure);
-            self.update_physics(delta_time);
-        }
-    }
-}
-impl SimulationElement for WindTurbine {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.rpm_id, self.speed());
-    }
-}
-
 struct AlwaysPressurisePumpController {}
 impl AlwaysPressurisePumpController {
     fn new() -> Self {
@@ -3022,10 +2922,6 @@ impl Default for AlwaysPressurisePumpController {
     }
 }
 
-pub trait RamAirTurbineController {
-    fn should_deploy(&self) -> bool;
-}
-
 pub struct RamAirTurbine {
     stow_position_id: VariableIdentifier,
 
@@ -3041,7 +2937,7 @@ impl RamAirTurbine {
 
     pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
-            stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
+            stow_position_id: context.get_identifier("RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
             pump: Pump::new(pump_characteristics),
@@ -3076,12 +2972,12 @@ impl RamAirTurbine {
         indicated_airspeed: Velocity,
         pressure: &impl SectionPressure,
     ) {
+        let resistant_torque = self.resistant_torque(self.delta_vol_max(), pressure.pressure());
         self.wind_turbine.update(
             delta_time,
             indicated_airspeed,
             self.position,
-            self.delta_vol_max(),
-            pressure.pressure(),
+            resistant_torque,
         );
     }
 
@@ -3096,6 +2992,19 @@ impl RamAirTurbine {
                 self.position = 1.;
             }
         }
+    }
+
+    fn resistant_torque(&mut self, displacement: Volume, pressure: Pressure) -> Torque {
+        let pump_torque = if self.wind_turbine.is_low_speed() {
+            (self.wind_turbine.position().get::<radian>() * 4.).cos()
+                * displacement.get::<gallon>().max(0.35)
+                * 2.
+        } else {
+            // TODO wrong unit here, whole rat system needs a power/torque/rotation speed tuning and check
+            -pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI)
+        };
+
+        Torque::new::<newton_meter>(pump_torque)
     }
 }
 impl PressureSource for RamAirTurbine {
