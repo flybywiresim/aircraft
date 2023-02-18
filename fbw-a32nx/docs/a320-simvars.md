@@ -436,13 +436,9 @@
     - Bool
     - If the ILS is tuned via the RMP
 
-- A32NX_TO_CONFIG_FLAPS_ENTERED
-    - Bool
-    - True if the pilot has entered a FLAPS value in the PERF TAKE OFF takeoff
-
 - A32NX_TO_CONFIG_FLAPS
     - Enum
-    - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry.
+    - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry, -1 if not entered
 
 - A32NX_TO_CONFIG_THS_ENTERED
     - Bool
@@ -3472,7 +3468,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
-
 ## Radio Altimeter (ATA 34)
 
 - A32NX_RA_{number}_RADIO_ALTITUDE

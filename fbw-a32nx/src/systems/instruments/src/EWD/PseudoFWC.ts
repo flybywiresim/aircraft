@@ -4,6 +4,9 @@ import { Arinc429Word } from '@shared/arinc429';
 import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@instruments/common/NXLogic';
 import { NXDataStore } from '@shared/persistence';
 
+export function xor(a: boolean, b: boolean): boolean {
+    return !!((a ? 1 : 0) ^ (b ? 1 : 0));
+}
 
 interface EWDItem {
     flightPhaseInhib: number[],
@@ -106,7 +109,23 @@ export class PseudoFWC {
 
     private readonly packOffNotFailed2Status = Subject.create(false);
 
-    /* ELECTRICAL */
+    /* 22 - AUTOFLIGHT */
+
+    private readonly toConfigAndNoToSpeedsPulseNode = new NXLogicPulseNode();
+
+    /** TO speeds not inserted RS */
+    private toSpeedsNotInserted = false;
+
+    private toSpeedsNotInsertedWarning = Subject.create(false);
+
+    /** TO CONF pressed in phase 2 or 3 SR */
+    private toConfigCheckedInPhase2Or3 = false;
+
+    private toSpeedsTooLowWarning = Subject.create(false);
+
+    private toV2VRV2DisagreeWarning = Subject.create(false);
+
+    /* 24 - ELECTRICAL */
 
     private readonly ac1BusPowered = Subject.create(false);
 
@@ -118,7 +137,7 @@ export class PseudoFWC {
 
     private readonly dc2BusPowered = Subject.create(false);
 
-    /* FLIGHT CONTROLS */
+    /* 27 - FLIGHT CONTROLS */
 
     private readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
 
@@ -164,10 +183,6 @@ export class PseudoFWC {
 
     private readonly flapsHandle = Subject.create(0);
 
-    private readonly flapsMcdu = Subject.create(0);
-
-    private readonly flapsMcduEntered = Subject.create(false);
-
     private readonly lrElevFaultCondition = Subject.create(false);
 
     private readonly sec1FaultCondition = Subject.create(false);
@@ -194,7 +209,75 @@ export class PseudoFWC {
 
     private readonly spoilersArmed = Subject.create(false);
 
-    private readonly toConfigFail = Subject.create(false);
+    private slatFlapSelectionS0F0 = false;
+
+    private slatFlapSelectionS18F10 = false;
+
+    private slatFlapSelectionS22F15 = false;
+
+    private slatFlapSelectionS22F20 = false;
+
+    private readonly flapsInferiorToPositionA = Subject.create(false);
+
+    private readonly flapsSuperiorToPositionF = Subject.create(false);
+
+    private readonly slatsInferiorToPositionD = Subject.create(false);
+
+    private readonly slatsSuperiorToPositionG = Subject.create(false);
+
+    private readonly flapsNotTo = Subject.create(false);
+
+    private readonly flapsNotToMemo = Subject.create(false);
+
+    private readonly flapConfigSr = new NXLogicMemoryNode(true);
+
+    private readonly flapConfigAural = Subject.create(false);
+
+    private readonly flapConfigWarning = Subject.create(false);
+
+    private readonly slatsNotTo = Subject.create(false);
+
+    private readonly slatConfigSr = new NXLogicMemoryNode(true);
+
+    private readonly slatConfigAural = Subject.create(false);
+
+    private readonly slatConfigWarning = Subject.create(false);
+
+    private readonly speedbrakesNotTo = Subject.create(false);
+
+    private readonly speedbrakesConfigSr = new NXLogicMemoryNode(true);
+
+    private readonly speedbrakesConfigAural = Subject.create(false);
+
+    private readonly speedbrakesConfigWarning = Subject.create(false);
+
+    private readonly flapsMcduDisagree = Subject.create(false);
+
+    private readonly flapsAndPitchMcduDisagreeEnable = Subject.create(false);
+
+    private readonly pitchConfigInPhase3or4Sr = new NXLogicMemoryNode(true);
+
+    private readonly pitchTrimNotTo = Subject.create(false);
+
+    private readonly pitchTrimNotToAudio = Subject.create(false);
+
+    private readonly pitchTrimNotToWarning = Subject.create(false);
+
+    private readonly pitchTrimMcduCgDisagree = Subject.create(false);
+
+    private readonly trimDisagreeMcduStab1Conf = new NXLogicConfirmNode(1, true);
+
+    private readonly trimDisagreeMcduStab2Conf = new NXLogicConfirmNode(1, true);
+
+    private readonly rudderTrimConfigInPhase3or4Sr = new NXLogicMemoryNode(true);
+
+    private readonly rudderTrimNotTo = Subject.create(false);
+
+    private readonly rudderTrimNotToAudio = Subject.create(false);
+
+    private readonly rudderTrimNotToWarning = Subject.create(false);
+
+    private readonly flapsLeverNotZeroWarning = Subject.create(false);
 
     /* FUEL */
 
@@ -781,7 +864,10 @@ export class PseudoFWC {
 
         this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
-        const adirsAlt: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
+        const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
+        const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
+        const adr3PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
+        const pressureAltitude = adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.value;
         this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
         this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
         this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
@@ -807,6 +893,57 @@ export class PseudoFWC {
         this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
         this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
+        /* 22 - AUTOFLIGHT */
+        const fm1DiscreteWord3 = SimVar.GetSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3', 'number');
+        const fm2DiscreteWord3 = SimVar.GetSimVarValue('L:A32NX_FM2_DISCRETE_WORD_3', 'number');
+
+        if (!([2, 3].includes(this.fwcFlightPhase.get()))) {
+            this.toConfigCheckedInPhase2Or3 = false;
+        } else if (this.toConfigTestRaw) {
+            this.toConfigCheckedInPhase2Or3 = true;
+        }
+
+        // TO SPEEDS NOT INSERTED
+        const fmToSpeedsNotInserted = ((fm1DiscreteWord3 & fm2DiscreteWord3 & 1 << 18) > 0);
+
+        this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && this.toConfigTestRaw, deltaTime);
+
+        if (fmToSpeedsNotInserted && (this.toConfigTestRaw || this.fwcFlightPhase.get() === 3) && !this.toSpeedsNotInserted) {
+            this.toSpeedsNotInserted = true;
+        }
+        if (!([2, 3].includes(this.fwcFlightPhase.get()) && fmToSpeedsNotInserted) && this.toSpeedsNotInserted) {
+            this.toSpeedsNotInserted = false;
+        }
+
+        this.toSpeedsNotInsertedWarning.set(!this.toConfigAndNoToSpeedsPulseNode.read() && this.toSpeedsNotInserted && !this.flightPhase3PulseNode.read());
+
+        // TO SPEEDS TOO LOW
+        const toSpeedsTooLow = ((fm1DiscreteWord3 & fm2DiscreteWord3 & 1 << 17) > 0);
+        this.toSpeedsTooLowWarning.set(
+            (this.toConfigCheckedInPhase2Or3 || this.fwcFlightPhase.get() === 3)
+            && !this.toConfigPulseNode.read() && !this.flightPhase3PulseNode.read() && toSpeedsTooLow,
+        );
+
+        // TO V1/VR/V2 DISAGREE
+        const toV2VRV2Disagree = ((fm1DiscreteWord3 & fm2DiscreteWord3 & 1 << 16) > 0);
+        this.toV2VRV2DisagreeWarning.set(
+            (this.toConfigCheckedInPhase2Or3 || this.fwcFlightPhase.get() === 3)
+            && !this.toConfigPulseNode.read() && !this.flightPhase3PulseNode.read() && toV2VRV2Disagree,
+        );
+
+        // FMS takeoff flap settings
+        const fm1DiscreteWord2 = SimVar.GetSimVarValue('L:A32NX_FM1_DISCRETE_WORD_2', 'number');
+        const fm2DiscreteWord2 = SimVar.GetSimVarValue('L:A32NX_FM2_DISCRETE_WORD_2', 'number');
+
+        /** MCDU TO CONF 0 selected */
+        const mcduToFlapPos0 = (fm1DiscreteWord2 & 1 << 13) > 0 || (fm2DiscreteWord2 & 1 << 13) > 0;
+        /** MCDU TO CONF 1 selected */
+        const mcduToFlapPos1 = (fm1DiscreteWord2 & 1 << 14) > 0 || (fm2DiscreteWord2 & 1 << 14) > 0;
+        /** MCDU TO CONF 2 selected */
+        const mcduToFlapPos2 = (fm1DiscreteWord2 & 1 << 15) > 0 || (fm2DiscreteWord2 & 1 << 15) > 0;
+        /** MCDU TO CONF 3 selected */
+        const mcduToFlapPos3 = (fm1DiscreteWord2 & 1 << 16) > 0 || (fm2DiscreteWord2 & 1 << 16) > 0;
+
         /* ELECTRICAL */
 
         this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool'));
@@ -829,10 +966,10 @@ export class PseudoFWC {
 
         this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
         this.cabAltSetResetState1.set(
-            this.cabAltSetReset1.write(adirsAlt.value > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
+            this.cabAltSetReset1.write(pressureAltitude > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
         this.cabAltSetResetState2.set(
-            this.cabAltSetReset2.write(adirsAlt.value > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
+            this.cabAltSetReset2.write(pressureAltitude > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
         this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || crossfeed === 1, deltaTime);
         this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || crossfeed === 1, deltaTime);
@@ -966,10 +1103,112 @@ export class PseudoFWC {
         this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
         this.speedBrakeCommand.set(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false));
         this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
-        this.flapsMcdu.set(SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS', 'number'));
-        this.flapsMcduEntered.set(SimVar.GetSimVarValue('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool'));
         this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
         this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
+
+        // FIXME these should be split between the two systems and the two sides
+        const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD');
+        const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD');
+
+        // WARNING these vary for other variants... A320 CFM LEAP values here
+        // flap/slat internal signals
+        this.flapsInferiorToPositionA.set(flapsPos.isNormalOperation() && flapsPos.value < 65);
+        this.flapsSuperiorToPositionF.set(flapsPos.isNormalOperation() && flapsPos.value > 179);
+        this.slatsInferiorToPositionD.set(slatsPos.isNormalOperation() && slatsPos.value < 210.46);
+        this.slatsSuperiorToPositionG.set(slatsPos.isNormalOperation() && slatsPos.value > 309.53);
+
+        // flap, slat and speedbrake config warning logic
+        const flapsNotInToPos = this.flapsSuperiorToPositionF.get() || this.flapsInferiorToPositionA.get();
+        this.flapConfigSr.write(this.flightPhase34.get() && flapsNotInToPos, !flapsNotInToPos || this.fwcFlightPhase.get() === 5);
+        this.flapsNotTo.set(this.flightPhase129.get() && flapsNotInToPos);
+        this.flapsNotToMemo.set(this.flapConfigSr.read() || this.flapsNotTo.get());
+        this.flapConfigAural.set((this.toConfigTestHeldMin1s5Pulse.get() && this.flapsNotTo.get()) || (this.flightPhase34.get() && flapsNotInToPos));
+        this.flapConfigWarning.set((this.toConfigTestHeldMin1s5Pulse.get() && this.flapsNotTo.get()) || this.slatConfigSr.read());
+
+        const slatsNotInToPos = this.slatsInferiorToPositionD.get() || this.slatsSuperiorToPositionG.get();
+        this.slatConfigSr.write(this.flightPhase34.get() && slatsNotInToPos, !slatsNotInToPos || this.fwcFlightPhase.get() === 5);
+        this.slatsNotTo.set(this.flightPhase129.get() && slatsNotInToPos);
+        this.slatConfigAural.set((this.toConfigTestHeldMin1s5Pulse.get() && this.slatsNotTo.get()) || (this.flightPhase34.get() && slatsNotInToPos));
+        this.slatConfigWarning.set((this.toConfigTestHeldMin1s5Pulse.get() && this.slatsNotTo.get()) || this.slatConfigSr.read());
+
+        const speedbrakesNotInToPos = fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false);
+        this.speedbrakesConfigSr.write(this.flightPhase34.get() && speedbrakesNotInToPos, !speedbrakesNotInToPos || this.fwcFlightPhase.get() === 5);
+        this.speedbrakesNotTo.set(this.flightPhase129.get() && speedbrakesNotInToPos);
+        this.speedbrakesConfigAural.set((this.toConfigTestHeldMin1s5Pulse.get() && this.speedbrakesNotTo.get()) || (this.flightPhase34.get() && speedbrakesNotInToPos));
+        this.speedbrakesConfigWarning.set((this.toConfigTestHeldMin1s5Pulse.get() && this.speedbrakesNotTo.get()) || this.speedbrakesConfigSr.read());
+
+        // flap/slat MCDU disagree
+        // FIXME should come from SDAC via ARINC429
+        this.slatFlapSelectionS0F0 = this.flapsHandle.get() === 0;
+        this.slatFlapSelectionS18F10 = this.flapsHandle.get() === 1; // FIXME assuming 1+F and not considering 1
+        this.slatFlapSelectionS22F15 = this.flapsHandle.get() === 2;
+        this.slatFlapSelectionS22F20 = this.flapsHandle.get() === 3;
+
+        const flapsMcduPos1Disagree = xor(this.slatFlapSelectionS18F10, mcduToFlapPos1);
+        const flapsMcduPos2Disagree = xor(this.slatFlapSelectionS22F15, mcduToFlapPos2);
+        const flapsMcduPos3Disagree = xor(this.slatFlapSelectionS22F20, mcduToFlapPos3);
+
+        this.flapsMcduDisagree.set((flapsMcduPos1Disagree || flapsMcduPos2Disagree || flapsMcduPos3Disagree) && (mcduToFlapPos0 || mcduToFlapPos1 || mcduToFlapPos2 || mcduToFlapPos3));
+
+        this.flapsAndPitchMcduDisagreeEnable.set(!this.flightPhase3PulseNode.read() && !this.toConfigPulseNode.read() && (this.fwcFlightPhase.get() === 3 || this.toConfigCheckedInPhase2Or3));
+
+        // pitch trim not takeoff
+        const fcdc1Stab1Pos = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_ELEVATOR_TRIM_POS');
+        const fcdc2Stab1Pos = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_ELEVATOR_TRIM_POS');
+        const fcdc1Stab2Pos = fcdc1Stab1Pos;
+        const fcdc2Stab2Pos = fcdc2Stab1Pos;
+
+        // TODO stab1Pos proper logic
+        const stab1Pos = fcdc1Stab1Pos.value;
+        const stab1PosInvalid = !fcdc1Stab1Pos.isNormalOperation();
+        const stab2Pos = fcdc2Stab2Pos.value;
+        const stab2PosInvalid = !fcdc2Stab2Pos.isNormalOperation();
+
+        // A320neo config
+        const pitchConfig1 = fcdc1Stab1Pos.valueOr(0) > 2.6 || fcdc1Stab1Pos.valueOr(0) < -3.9 || fcdc2Stab1Pos.valueOr(0) > 2.6 || fcdc2Stab1Pos.valueOr(0) < -3.9;
+        const pitchConfig2 = fcdc1Stab2Pos.valueOr(0) > 2.6 || fcdc1Stab2Pos.valueOr(0) < -3.9 || fcdc2Stab2Pos.valueOr(0) > 2.6 || fcdc2Stab2Pos.valueOr(0) < -3.9;
+        const pitchConfig = pitchConfig1 || pitchConfig2;
+
+        this.pitchTrimNotTo.set(this.flightPhase129.get() && pitchConfig);
+        const pitchConfigTestInPhase129 = pitchConfig && this.toConfigTestHeldMin1s5Pulse.get() && this.flightPhase129.get();
+        const pitchConfigInPhase3or4 = this.flightPhase34.get() && pitchConfig;
+        this.pitchConfigInPhase3or4Sr.write(pitchConfigInPhase3or4, this.fwcFlightPhase.get() === 5 || !pitchConfig);
+        this.pitchTrimNotToAudio.set(pitchConfigTestInPhase129 || pitchConfigInPhase3or4);
+        this.pitchTrimNotToWarning.set(pitchConfigTestInPhase129 || this.pitchConfigInPhase3or4Sr.read());
+
+        // pitch trim/mcdu disagree
+        // we don't check the trim calculated from CG as it's not available yet
+        const fm1PitchTrim = new Arinc429Word(0);
+        fm1PitchTrim.value = SimVar.GetSimVarValue('L:A32NX_FM1_TO_PITCH_TRIM', 'number');
+        fm1PitchTrim.ssm = SimVar.GetSimVarValue('L:A32NX_FM1_TO_PITCH_TRIM_SSM', 'number');
+        const fm2PitchTrim = new Arinc429Word(0);
+        fm2PitchTrim.value = SimVar.GetSimVarValue('L:A32NX_FM2_TO_PITCH_TRIM', 'number');
+        fm2PitchTrim.ssm = SimVar.GetSimVarValue('L:A32NX_FM2_TO_PITCH_TRIM_SSM', 'number');
+        const fmPitchTrim = !fm1PitchTrim.isNormalOperation() && fm2PitchTrim.isNormalOperation() ? fm2PitchTrim : fm1PitchTrim;
+        this.trimDisagreeMcduStab1Conf.write(!stab1PosInvalid && fmPitchTrim.isNormalOperation() && Math.abs(fmPitchTrim.value - stab1Pos) > 1.2, deltaTime);
+        this.trimDisagreeMcduStab2Conf.write(!stab2PosInvalid && fmPitchTrim.isNormalOperation() && Math.abs(fmPitchTrim.value - stab2Pos) > 1.2, deltaTime);
+        this.pitchTrimMcduCgDisagree.set(!this.pitchTrimNotToWarning.get() && (this.trimDisagreeMcduStab1Conf.read() || this.trimDisagreeMcduStab2Conf.read()));
+
+        // rudder trim not takeoff
+        const fac1RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_1_RUDDER_TRIM_POS');
+        const fac2RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_2_RUDDER_TRIM_POS');
+        const fac1Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_1_HEALTHY', 'boolean') > 0;
+        const fac2Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_2_HEALTHY', 'boolean') > 0;
+
+        const rudderTrimConfig = (fac1Healthy && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) || (fac2Healthy && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
+
+        this.rudderTrimNotTo.set(this.flightPhase129.get() && rudderTrimConfig);
+        const rudderTrimConfigTestInPhase129 = this.toConfigTestHeldMin1s5Pulse.get() && this.flightPhase129.get() && rudderTrimConfig;
+        const rudderTrimConfigInPhase3or4 = this.flightPhase34.get() && rudderTrimConfig;
+        this.rudderTrimConfigInPhase3or4Sr.write(rudderTrimConfigInPhase3or4, this.fwcFlightPhase.get() === 5 || !rudderTrimConfig);
+        this.rudderTrimNotToAudio.set(rudderTrimConfigTestInPhase129 || rudderTrimConfigInPhase3or4);
+        this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4Sr.read());
+
+        // flaps lvr not zero
+        this.flapsLeverNotZeroWarning.set(
+            (adr1PressureAltitude.valueOr(0) >= 22000 || adr2PressureAltitude.valueOr(0) >= 22000 || adr3PressureAltitude.valueOr(0) >= 22000)
+            && this.fwcFlightPhase.get() === 6 && !this.slatFlapSelectionS0F0,
+        );
 
         /* FIRE */
 
@@ -1314,6 +1553,38 @@ export class PseudoFWC {
     }
 
     ewdMessageFailures: EWDMessageDict = {
+        // 22 - AUTOFLIGHT
+        2210700: { // TO SPEEDS TOO LOW
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: this.toSpeedsTooLowWarning,
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['221070001', '221070002'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2210710: { // TO V1/VR/V2 DISAGREE
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: this.toV2VRV2DisagreeWarning,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['221071001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2210720: { // TO SPEEDS NOT INSERTED
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: this.toSpeedsNotInsertedWarning,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['221072001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        // 34 - NAVIGATION & SURVEILLANCE
         3400210: { // OVERSPEED FLAPS FULL
             flightPhaseInhib: [2, 3, 4, 8, 9, 10],
             simVarIsActive: MappedSubject
@@ -1466,14 +1737,20 @@ export class PseudoFWC {
             sysPage: 6,
             side: 'LEFT',
         },
+        2700052: { // FLAP LVR NOT ZERO
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.flapsLeverNotZeroWarning,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['270005201'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
         2700085: { // SLATS NOT IN TO CONFIG
             flightPhaseInhib: [5, 6, 7, 8],
-            simVarIsActive: MappedSubject.create(
-                ([flapsMcdu, flapsMcduEntered, flapsHandle, fwcFlightPhase, toConfigFail, slatsAngle]) => (
-                    (flapsMcduEntered && flapsHandle !== flapsMcdu && [1, 2, 9].includes(fwcFlightPhase) && toConfigFail)
-                    || ([3, 4, 5].includes(fwcFlightPhase) && (slatsAngle <= 17 || slatsAngle >= 25))
-                ), this.flapsMcdu, this.flapsMcduEntered, this.flapsHandle, this.fwcFlightPhase, this.toConfigFail, this.slatsAngle,
-            ),
+            auralWarning: this.slatConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+            simVarIsActive: this.slatConfigWarning,
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['270008501', '270008502'],
             memoInhibit: () => false,
@@ -1483,12 +1760,8 @@ export class PseudoFWC {
         },
         2700090: { // FLAPS NOT IN TO CONFIG
             flightPhaseInhib: [5, 6, 7, 8],
-            simVarIsActive: MappedSubject.create(
-                ([flapsMcdu, flapsMcduEntered, flapsHandle, fwcFlightPhase, toConfigFail, flapsAngle]) => (
-                    (flapsMcduEntered && flapsHandle !== flapsMcdu && [1, 2, 9].includes(fwcFlightPhase) && toConfigFail)
-                    || ([3, 4, 5].includes(fwcFlightPhase) && (flapsAngle <= 2 || flapsAngle >= 24))
-                ), this.flapsMcdu, this.flapsMcduEntered, this.flapsHandle, this.fwcFlightPhase, this.toConfigFail, this.flapsAngle,
-            ),
+            auralWarning: this.flapConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+            simVarIsActive: this.flapConfigWarning,
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['270009001', '270009002'],
             memoInhibit: () => false,
@@ -1576,6 +1849,28 @@ export class PseudoFWC {
             sysPage: 10,
             side: 'LEFT',
         },
+        2700240: { // PITCH TRIM CONFIG
+            flightPhaseInhib: [5, 6, 7, 8],
+            auralWarning: this.pitchTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+            simVarIsActive: this.pitchTrimNotToWarning,
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['270024001', '270024002'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700340: { // SPD BRK NOT RETRACTED
+            flightPhaseInhib: [5, 6, 7, 8],
+            auralWarning: this.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+            simVarIsActive: this.speedbrakesConfigWarning,
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['270034001', '270034002'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: 10,
+            side: 'LEFT',
+        },
         2700360: { // FCDC 1+2 FAULT
             flightPhaseInhib: [3, 4, 5, 7],
             simVarIsActive: this.fcdc12FaultCondition,
@@ -1593,6 +1888,17 @@ export class PseudoFWC {
             codesToReturn: ['270036501', '270036502', '270036503', '270036504', '270036505', '270036506', '270036507', '270036508'],
             memoInhibit: () => false,
             failure: 2,
+            sysPage: 10,
+            side: 'LEFT',
+        },
+        2700373: { // RUDDER TRIM CONFIG
+            flightPhaseInhib: [5, 6, 7, 8],
+            auralWarning: this.rudderTrimNotToAudio.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+            simVarIsActive: this.rudderTrimNotToWarning,
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['270037301', '270037302'],
+            memoInhibit: () => false,
+            failure: 3,
             sysPage: 10,
             side: 'LEFT',
         },
@@ -1624,6 +1930,35 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 3,
             sysPage: 10,
+            side: 'LEFT',
+        },
+        2700460: { // PITCH TRIM/MCDU/CG DISAGREE
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: MappedSubject.create(
+                ([pitchTrimMcduCgDisagree, flapsAndPitchMcduDisagreeEnable]) => pitchTrimMcduCgDisagree && flapsAndPitchMcduDisagreeEnable,
+                this.pitchTrimMcduCgDisagree,
+                this.flapsAndPitchMcduDisagreeEnable,
+            ),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['270046001', '270046002'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2700466: { // FLAPS/MCDU DISGREE
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: MappedSubject.create(
+                ([flapsMcduDisagree, flapsNotToMemo, flapsAndPitchMcduDisagreeEnable]) => flapsMcduDisagree && !flapsNotToMemo && flapsAndPitchMcduDisagreeEnable,
+                this.flapsMcduDisagree,
+                this.flapsNotToMemo,
+                this.flapsAndPitchMcduDisagreeEnable,
+            ),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['270046501'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
             side: 'LEFT',
         },
         2700555: { // FCDC 1 FAULT
@@ -2029,6 +2364,7 @@ export class PseudoFWC {
                 && SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1 ? 3 : 2,
                 SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
                 this.spoilersArmed.get() ? 7 : 6,
+                this.slatFlapSelectionS18F10 || this.slatFlapSelectionS22F15 || this.slatFlapSelectionS22F20 ? 9 : 8,
                 this.toConfigNormal.get() ? 11 : 10,
             ],
             codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
