@@ -354,9 +354,9 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
     private handleAltManagedChange() {
         // TODO find proper logic for this (what happens when a constraint is sent by the fms but vertical mode is not managed)
-        const isSelectedModeActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES
+        const isManagedModeActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES
                             && this.activeVerticalMode !== VerticalMode.VS && this.activeVerticalMode !== VerticalMode.FPA;
-        const hasConstraint = this.constraint > 0 && isSelectedModeActive;
+        const hasConstraint = this.constraint > 0 && isManagedModeActive;
 
         const selectedAltIgnored = this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT || this.activeVerticalMode === VerticalMode.FINAL;
 
@@ -408,79 +408,29 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     private textSub = Subject.create('');
 
     private updateAltitudeColor(color: TargetAltitudeColor) {
-        if (color === TargetAltitudeColor.White) {
-            this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-            this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-            this.selectedAltLowerFLText.instance.classList.add('White');
+        this.selectedAltLowerFLText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltLowerFLText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltLowerFLText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-            this.selectedAltLowerText.instance.classList.remove('Cyan');
-            this.selectedAltLowerText.instance.classList.remove('Magenta');
-            this.selectedAltLowerText.instance.classList.add('White');
+        this.selectedAltLowerText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltLowerText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltLowerText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-            this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-            this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-            this.selectedAltUpperFLText.instance.classList.add('White');
+        this.selectedAltUpperFLText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltUpperFLText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltUpperFLText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-            this.selectedAltUpperText.instance.classList.remove('Cyan');
-            this.selectedAltUpperText.instance.classList.remove('Magenta');
-            this.selectedAltUpperText.instance.classList.add('White');
+        this.selectedAltUpperText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltUpperText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltUpperText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-            this.altTapeTargetText.instance.classList.remove('Cyan');
-            this.altTapeTargetText.instance.classList.add('White');
+        this.altTapeTargetText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.altTapeTargetText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.altTapeTargetText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-            this.targetSymbolRef.instance.classList.remove('Cyan');
-            this.targetSymbolRef.instance.classList.remove('Magenta');
-
-            this.targetSymbolRef.instance.classList.add('White');
-        } else if (color === TargetAltitudeColor.Magenta) {
-            this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-            this.selectedAltLowerFLText.instance.classList.remove('White');
-            this.selectedAltLowerFLText.instance.classList.add('Magenta');
-
-            this.selectedAltLowerText.instance.classList.remove('Cyan');
-            this.selectedAltLowerText.instance.classList.remove('White');
-            this.selectedAltLowerText.instance.classList.add('Magenta');
-
-            this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-            this.selectedAltUpperFLText.instance.classList.remove('White');
-            this.selectedAltUpperFLText.instance.classList.add('Magenta');
-
-            this.selectedAltUpperText.instance.classList.remove('Cyan');
-            this.selectedAltUpperText.instance.classList.remove('White');
-            this.selectedAltUpperText.instance.classList.add('Magenta');
-
-            this.altTapeTargetText.instance.classList.remove('Cyan');
-            this.altTapeTargetText.instance.classList.remove('White');
-            this.altTapeTargetText.instance.classList.add('Magenta');
-
-            this.targetSymbolRef.instance.classList.remove('Cyan');
-            this.targetSymbolRef.instance.classList.remove('White');
-            this.targetSymbolRef.instance.classList.add('Magenta');
-        } else {
-            this.selectedAltLowerFLText.instance.classList.add('Cyan');
-            this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-            this.selectedAltLowerFLText.instance.classList.remove('White');
-
-            this.selectedAltLowerText.instance.classList.add('Cyan');
-            this.selectedAltLowerText.instance.classList.remove('Magenta');
-            this.selectedAltLowerText.instance.classList.remove('White');
-
-            this.selectedAltUpperFLText.instance.classList.add('Cyan');
-            this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-            this.selectedAltUpperFLText.instance.classList.remove('White');
-
-            this.selectedAltUpperText.instance.classList.add('Cyan');
-            this.selectedAltUpperText.instance.classList.remove('Magenta');
-            this.selectedAltUpperText.instance.classList.remove('White');
-
-            this.altTapeTargetText.instance.classList.add('Cyan');
-            this.altTapeTargetText.instance.classList.remove('Magenta');
-            this.altTapeTargetText.instance.classList.remove('White');
-
-            this.targetSymbolRef.instance.classList.add('Cyan');
-            this.targetSymbolRef.instance.classList.remove('Magenta');
-            this.targetSymbolRef.instance.classList.remove('White');
-        }
+        this.targetSymbolRef.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.targetSymbolRef.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.targetSymbolRef.instance.classList.toggle('White', color === TargetAltitudeColor.White);
     }
 
     onAfterRender(node: VNode): void {
@@ -777,19 +727,9 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
     }
 
     private updateAltitudeColor() {
-        if (this.state.altitudeColor === TargetAltitudeColor.White) {
-            this.metricAltTargetText.instance.classList.remove('Cyan');
-            this.metricAltTargetText.instance.classList.remove('Magenta');
-            this.metricAltTargetText.instance.classList.add('White');
-        } else if (this.state.altitudeColor === TargetAltitudeColor.Magenta) {
-            this.metricAltTargetText.instance.classList.remove('Cyan');
-            this.metricAltTargetText.instance.classList.remove('White');
-            this.metricAltTargetText.instance.classList.add('Magenta');
-        } else {
-            this.metricAltTargetText.instance.classList.remove('Magenta');
-            this.metricAltTargetText.instance.classList.remove('White');
-            this.metricAltTargetText.instance.classList.add('Cyan');
-        }
+        this.metricAltTargetText.instance.classList.toggle('Cyan', this.state.altitudeColor === TargetAltitudeColor.Cyan);
+        this.metricAltTargetText.instance.classList.toggle('Magenta', this.state.altitudeColor === TargetAltitudeColor.Magenta);
+        this.metricAltTargetText.instance.classList.toggle('White', this.state.altitudeColor === TargetAltitudeColor.White);
     }
 
     private updateState(_time: number) {
