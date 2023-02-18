@@ -99,8 +99,8 @@ export class Router {
         this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
         this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedAtc, synchronizedAoc);
 
-        this.digitalInputs.fmsBus.addDataCallback('connect', (callsign: string) => Datalink.connect(callsign));
-        this.digitalInputs.fmsBus.addDataCallback('disconnect', () => Datalink.disconnect());
+        this.digitalInputs.fmsBus.addDataCallback('connect', (callsign: string) => Router.connect(callsign));
+        this.digitalInputs.fmsBus.addDataCallback('disconnect', () => Router.disconnect());
         this.digitalInputs.fmsBus.addDataCallback('stationAvailable', (callsign: string) => this.isStationAvailable(callsign));
         this.digitalInputs.addDataCallback('sendFreetextMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendCpdlcMessage', (message, force) => this.sendMessage(message, force));
