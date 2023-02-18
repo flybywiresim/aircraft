@@ -23,8 +23,8 @@ export const StatusArea = () => {
 
     const [isaVisible, setIsaVisible] = useState(false);
 
-    const [airDataReferenceSource, setAirDataSource] = useState(0);
-    const [inertialReferenceSource, setInertialSource] = useState(0);
+    const [airDataReferenceSource, setAirDataSource] = useState(1);
+    const [inertialReferenceSource, setInertialSource] = useState(1);
     const [loadFactorVisibleElement, setLoadFactorVisibleElement] = useState(false);
     const [loadFactorText, setLoadFactorText] = useState('');
 
