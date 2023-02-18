@@ -142,6 +142,8 @@ export class Router {
     }
 
     public update(): void {
+        this.digitalInputs.update();
+
         const currentTimestamp = new Date().getTime();
 
         // update the communication interface states
