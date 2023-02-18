@@ -11,6 +11,7 @@ export interface ClockSimvars {
     monthOfYear: number;
     year: number;
     elapsedKnobPos: number;
+    dc2IsPowered: boolean;
 }
 
 export enum ClockVars {
@@ -24,6 +25,7 @@ export enum ClockVars {
     monthOfYear = 'E:ZULU MONTH OF YEAR',
     year = 'E:ZULU YEAR',
     elapsedKnobPos = 'L:A32NX_CHRONO_ET_SWITCH_POS',
+    dc2IsPowered = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
 }
 
 export class ClockSimvarPublisher extends SimVarPublisher<ClockSimvars> {
@@ -38,6 +40,7 @@ export class ClockSimvarPublisher extends SimVarPublisher<ClockSimvars> {
         ['monthOfYear', { name: ClockVars.monthOfYear, type: SimVarValueType.Number }],
         ['year', { name: ClockVars.year, type: SimVarValueType.Number }],
         ['elapsedKnobPos', { name: ClockVars.elapsedKnobPos, type: SimVarValueType.Number }],
+        ['dc2IsPowered', { name: ClockVars.dc2IsPowered, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {

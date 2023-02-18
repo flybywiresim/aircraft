@@ -411,7 +411,7 @@
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
     - Hz
     - The ADF active frequency that is saved for display for the left/right RMP.
-   
+
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
     - Hz
     - The VOR standby frequency that is saved for display for the left/right RMP.
@@ -966,13 +966,21 @@
     - Bool
     - Deploys the RAT manually
 
-- A32NX_HYD_RAT_STOW_POSITION
+- A32NX_RAT_STOW_POSITION
     - Percent over 100
     - RAT position, from fully stowed (0) to fully deployed (1)
 
-- A32NX_HYD_RAT_RPM
+- A32NX_RAT_RPM
     - Rpm
     - RAT propeller current RPM
+
+- A32NX_RAT_ANGULAR_POSITION
+    - Degrees
+    - RAT propeller angular position
+
+- A32NX_RAT_PROPELLER_ANGLE
+    - Percent over 100
+    - RAT propeller pitch angle (0 to 1 normalized)
 
 - A32NX_HYD_BRAKE_NORM_{brake_side}_PRESS
     - Psi

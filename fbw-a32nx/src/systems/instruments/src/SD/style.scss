@@ -1,3 +1,5 @@
+@import "../Common/definitions";
+
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
@@ -10,6 +12,8 @@
   visibility: visible !important;
 
   font-family: "Ecam", monospace !important;
+
+  background: $display-background;
 }
 
 :root {
