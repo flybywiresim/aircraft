@@ -1,12 +1,16 @@
-import { Subject, Subscribable, MappedSubject, ArraySubject } from 'msfssdk';
+import { Subject, Subscribable, MappedSubject, ArraySubject, DebounceTimer } from 'msfssdk';
 
 import { Arinc429Word } from '@shared/arinc429';
 import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
 import { NXDataStore } from '@shared/persistence';
 
+
 interface EWDItem {
     flightPhaseInhib: number[],
+    /** warning is active */
     simVarIsActive: Subscribable<boolean>,
+    /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
+    auralWarning?: Subscribable<FwcAuralWarning>,
     whichCodeToReturn: () => any[],
     codesToReturn: string[],
     memoInhibit: () => boolean,
@@ -19,7 +23,19 @@ interface EWDMessageDict {
     [key: string] : EWDItem
 }
 
+enum FwcAuralWarning {
+    None,
+    SingleChime,
+    Crc,
+}
+
 export class PseudoFWC {
+    /** Time to inhibit SCs after one is trigger in ms */
+    private static readonly AURAL_SC_INHIBIT_TIME = 2000;
+
+    /** The time to play the single chime sound in ms */
+    private static readonly AURAL_SC_PLAY_TIME = 500;
+
     /* PSEUDO FWC VARIABLES */
 
     private readonly allCurrentFailures: string[] = [];
@@ -33,6 +49,36 @@ export class PseudoFWC {
     private memoMessageRight: ArraySubject<string> = ArraySubject.create([]);
 
     private recallFailures: string[] = [];
+
+    private auralCrcKeys: string[] = [];
+
+    private auralScKeys: string[] = [];
+
+    private readonly auralCrcActive = Subject.create(false);
+
+    private auralSingleChimePending = false;
+
+    private readonly auralSingleChimeInhibitTimer = new DebounceTimer();
+
+    private readonly auralSingleChimePlayingTimer = new DebounceTimer();
+
+    private readonly masterWarning = Subject.create(false);
+
+    private readonly masterCaution = Subject.create(false);
+
+    private readonly fireActive = Subject.create(false);
+
+    private readonly masterWarningOutput = MappedSubject.create(
+        ([masterWarning, fireActive]) => masterWarning || fireActive,
+        this.masterWarning,
+        this.fireActive,
+    );
+
+    private readonly auralCrcOutput = MappedSubject.create(
+        ([auralCrc, fireActive]) => auralCrc || fireActive,
+        this.auralCrcActive,
+        this.fireActive,
+    );
 
     /* PRESSURIZATION */
 
@@ -468,14 +514,21 @@ export class PseudoFWC {
         SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
     }
 
-    masterWarning(toggle: number) {
-        SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', toggle);
-        SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', toggle);
-    }
+    init(): void {
+        this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
+        this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
-    masterCaution(toggle: number) {
-        SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'Bool', toggle);
-        SimVar.SetSimVarValue('L:Generic_Master_Caution_Active', 'Bool', toggle);
+        this.auralCrcOutput.sub((crc) => SimVar.SetSimVarValue('L:A32NX_FWC_CRC', 'bool', crc));
+
+        this.masterCaution.sub((caution) => {
+            SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
+            SimVar.SetSimVarValue('L:Generic_Master_Caution_Active', 'bool', caution);
+        });
+
+        this.masterWarningOutput.sub((warning) => {
+            SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', warning);
+            SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', warning);
+        });
     }
 
     mapOrder(array, order): [] {
@@ -883,10 +936,12 @@ export class PseudoFWC {
         const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
         const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
         if (masterCautionButtonLeft || masterCautionButtonRight) {
-            this.masterCaution(0);
+            this.masterCaution.set(false);
+            this.auralSingleChimePending = false;
         }
         if (masterWarningButtonLeft || masterWarningButtonRight) {
-            this.masterWarning(0);
+            this.masterWarning.set(false);
+            this.auralCrcActive.set(false);
         }
 
         /* T.O. CONFIG CHECK */
@@ -958,6 +1013,9 @@ export class PseudoFWC {
                 || (this.greenLP.get() && this.blueLP.get())
             ));
 
+        // fire always forces the master warning and SC aural on
+        this.fireActive.set([this.eng1FireTest.get(), this.eng2FireTest.get(), this.apuFireTest.get(), this.cargoFireTest.get()].some((e) => e));
+
         const flightPhase = this.fwcFlightPhase.get();
         let tempMemoArrayLeft:string[] = [];
         let tempMemoArrayRight:string[] = [];
@@ -969,6 +1027,8 @@ export class PseudoFWC {
         const failureKeysRight: string[] = this.failuresRight;
         let leftFailureSystemCount = 0;
         let rightFailureSystemCount = 0;
+        const auralCrcKeys: string[] = [];
+        const auralScKeys: string[] = [];
 
         // Update failuresLeft list in case failure has been resolved
         for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
@@ -983,12 +1043,15 @@ export class PseudoFWC {
 
         // Failures first
         for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-            if (value.simVarIsActive.get() && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
-                if (value.side === 'LEFT') {
-                    allFailureKeys.push(key);
-                }
+            if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
+                continue;
+            }
 
-                if ((value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) || (value.side === 'RIGHT' && !this.failuresRight.includes(key))) {
+            // new warning?
+            const newWarning = (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) || (value.side === 'RIGHT' && !this.failuresRight.includes(key));
+
+            if (value.simVarIsActive.get()) {
+                if (newWarning) {
                     if (value.side === 'LEFT') {
                         failureKeysLeft.push(key);
                     } else {
@@ -996,13 +1059,29 @@ export class PseudoFWC {
                     }
 
                     if (value.failure === 3) {
-                        this.masterWarning(1);
+                        this.masterWarning.set(true);
                     }
                     if (value.failure === 2) {
-                        this.masterCaution(1);
+                        this.masterCaution.set(true);
                     }
-                } else if (![this.eng1FireTest.get(), this.eng2FireTest.get(), this.apuFireTest.get(), this.cargoFireTest.get()].every((e) => !e)) {
-                    this.masterWarning(1);
+                }
+
+                // if the warning is the same as the aural
+                if (value.auralWarning === undefined && value.failure === 3) {
+                    if (newWarning) {
+                        this.auralCrcActive.set(true);
+                    }
+                    auralCrcKeys.push(key);
+                }
+                if (value.auralWarning === undefined && value.failure === 2) {
+                    if (newWarning) {
+                        this.auralSingleChimePending = true;
+                    }
+                    auralScKeys.push(key);
+                }
+
+                if (value.side === 'LEFT') {
+                    allFailureKeys.push(key);
                 }
 
                 const newCode: string[] = [];
@@ -1031,6 +1110,31 @@ export class PseudoFWC {
                     SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
                 }
             }
+
+            if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
+                if (!this.auralCrcKeys.includes(key)) {
+                    this.auralCrcActive.set(true);
+                }
+                auralCrcKeys.push(key);
+            }
+
+            if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
+                if (!this.auralScKeys.includes(key)) {
+                    this.auralSingleChimePending = true;
+                }
+                auralScKeys.push(key);
+            }
+        }
+
+        this.auralCrcKeys = auralCrcKeys;
+        this.auralScKeys = auralScKeys;
+
+        if (this.auralCrcKeys.length === 0) {
+            this.auralCrcActive.set(false);
+        }
+
+        if (this.auralScKeys.length === 0) {
+            this.auralSingleChimePending = false;
         }
 
         const failLeft = tempFailureArrayLeft.length > 0;
@@ -1103,8 +1207,8 @@ export class PseudoFWC {
             this.memoMessageLeft.set(orderedMemoArrayLeft);
 
             if (orderedFailureArrayRight.length === 0) {
-                this.masterCaution(0);
-                this.masterWarning(0);
+                this.masterCaution.set(false);
+                this.masterWarning.set(false);
             }
         }
 
@@ -1126,6 +1230,16 @@ export class PseudoFWC {
         }
 
         this.memoMessageRight.set(orderedMemoArrayRight);
+
+        // This does not consider interrupting c-chord, priority of synthetic voice etc.
+        // We shall wait for the rust FWC for those nice things!
+        if (this.auralSingleChimePending && !this.auralCrcActive.get() && !this.auralSingleChimeInhibitTimer.isPending()) {
+            this.auralSingleChimePending = false;
+            SimVar.SetSimVarValue('L:A32NX_FWC_SC', 'bool', true);
+            // there can only be one SC per 2 seconds, non-cumulative, so clear any pending ones at the end of that inhibit period
+            this.auralSingleChimeInhibitTimer.schedule(() => this.auralSingleChimePending = false, PseudoFWC.AURAL_SC_INHIBIT_TIME);
+            this.auralSingleChimePlayingTimer.schedule(() => SimVar.SetSimVarValue('L:A32NX_FWC_SC', 'bool', false), PseudoFWC.AURAL_SC_PLAY_TIME);
+        }
     }
 
     ewdMessageFailures: EWDMessageDict = {
