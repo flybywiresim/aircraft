@@ -229,3 +229,34 @@ export class NXLogicClockNode {
         return this.output;
     }
 }
+
+export class NXLogicPulseNode {
+    private output = false;
+
+    private lastInput = false;
+
+    private remainingTime = 0;
+
+    constructor(private risingEdge = true, private time = 0.1) {}
+
+    write(input: boolean, deltaTime: number): boolean {
+        if (this.output) {
+            this.remainingTime -= deltaTime / 1000;
+            if (this.remainingTime <= 0) {
+                this.output = false;
+            }
+        }
+
+        if ((this.risingEdge && input && !this.lastInput) || (!this.risingEdge && !input && this.lastInput)) {
+            this.remainingTime = this.time;
+            this.output = true;
+        }
+
+        this.lastInput = input;
+        return this.output;
+    }
+
+    read(): boolean {
+        return this.output;
+    }
+}
