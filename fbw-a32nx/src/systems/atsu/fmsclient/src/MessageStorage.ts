@@ -1,6 +1,6 @@
-import { AocFmsMessages } from '@atsu/aoc';
+import { AocFmsMessages } from '@datalink/aoc';
+import { AtcFmsMessages } from '@datalink/atc';
 import {
-    AtsuFmsMessages,
     AtisMessage,
     AtsuMessage,
     AtsuMessageDirection,
@@ -8,7 +8,7 @@ import {
     CpdlcMessage,
     DclMessage,
     OclMessage,
-} from '@atsu/common';
+} from '@datalink/common';
 import { EventSubscriber } from 'msfssdk';
 
 export class MessageStorage {
@@ -61,7 +61,7 @@ export class MessageStorage {
         this.deleteMessageFromQueue(uid, this.aocUplinkMessages);
     }
 
-    constructor(private readonly subscriber: EventSubscriber<AtsuFmsMessages & AocFmsMessages>) {
+    constructor(private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & AocFmsMessages>) {
         this.subscriber.on('atcAtisReports').handle((reports) => {
             this.atisReports = new Map();
 
@@ -74,16 +74,16 @@ export class MessageStorage {
                 }
             });
         });
-        this.subscriber.on('monitoredMessages').handle((messages) => {
+        this.subscriber.on('atcMonitoredMessages').handle((messages) => {
             this.atcMonitoredMessages = [];
             messages.forEach((message) => this.atcMonitoredMessages.push(Conversion.messageDataToMessage(message) as CpdlcMessage));
         });
         this.subscriber.on('aocResynchronizeWeatherMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
         this.subscriber.on('aocResynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
-        this.subscriber.on('resynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as CpdlcMessage));
-        this.subscriber.on('resynchronizeDclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as DclMessage));
-        this.subscriber.on('resynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as OclMessage));
-        this.subscriber.on('deleteMessage').handle((uid) => this.deleteMessageFromQueue(uid, this.atcMessagesBuffer));
+        this.subscriber.on('atcResynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as CpdlcMessage));
+        this.subscriber.on('atcResynchronizeDclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as DclMessage));
+        this.subscriber.on('atcResynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as OclMessage));
+        this.subscriber.on('atcDeleteMessage').handle((uid) => this.deleteMessageFromQueue(uid, this.atcMessagesBuffer));
         this.subscriber.on('aocDeleteMessage').handle((uid) => this.deleteAocMessage(uid));
     }
 

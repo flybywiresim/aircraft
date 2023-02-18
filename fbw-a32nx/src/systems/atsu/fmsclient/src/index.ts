@@ -1,5 +1,5 @@
-import { AocFmsMessages, FmsAocMessages } from '@atsu/aoc';
-import { AtcFmsMessages, FmsAtcMessages } from '@atsu/atc';
+import { AocFmsMessages, FmsAocMessages } from '@datalink/aoc';
+import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
 import {
     AtsuStatusCodes,
     FansMode,
@@ -19,11 +19,11 @@ import {
     EnvironmentData,
     FlightStateData,
     PositionReportData,
-} from '@atsu/common';
+} from '@datalink/common';
+import { FmsRouterMessages, RouterFmsMessages } from '@datalink/communication';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
-import { FmsRouterMessages, RouterFmsMessages } from '@atsu/communication';
 import { FlightPlanSynchronization } from './FlightPlanSynchronization';
 import { MessageStorage } from './MessageStorage';
 

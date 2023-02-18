@@ -1,4 +1,5 @@
-import { FmsAtsuMessages, Waypoint } from '@atsu/common';
+import { FmsAtcMessages } from '@datalink/atc';
+import { Waypoint } from '@datalink/common';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanManager, ManagedFlightPlan } from '@fmgc/wtsdk';
@@ -7,7 +8,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from 'msfssdk';
 
 export class FlightPlanSynchronization {
-    private readonly publisher: Publisher<FmsAtsuMessages>;
+    private readonly publisher: Publisher<FmsAtcMessages>;
 
     private originIdent: string = '';
 
@@ -89,7 +90,7 @@ export class FlightPlanSynchronization {
         private readonly flightPlanManager: FlightPlanManager,
         private readonly flightPhaseManager: FlightPhaseManager,
     ) {
-        this.publisher = this.bus.getPublisher<FmsAtsuMessages>();
+        this.publisher = this.bus.getPublisher<FmsAtcMessages>();
 
         // FIXME use the non-guidance FMGC to get the flightplan data
         setInterval(() => {
@@ -122,7 +123,7 @@ export class FlightPlanSynchronization {
                 if (origin) {
                     if (origin.ident !== this.originIdent || destination.ident !== this.destination.ident) {
                         // new route entered -> reset ATIS updater
-                        this.publisher.pub('resetAtisAutoUpdate', true, true, false);
+                        this.publisher.pub('atcResetAtisAutoUpdate', true, true, false);
                     }
 
                     // check if we need to update the route data
@@ -134,7 +135,7 @@ export class FlightPlanSynchronization {
                         || Math.abs(this.nextWaypoint.utc - nextWaypoint.utc) >= 60;
 
                     if (updateRoute) {
-                        this.publisher.pub('routeData', {
+                        this.publisher.pub('atcRouteData', {
                             lastWaypoint,
                             activeWaypoint,
                             nextWaypoint,
