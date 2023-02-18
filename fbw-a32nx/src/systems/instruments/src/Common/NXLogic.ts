@@ -10,22 +10,25 @@
  * after the detection. It is not retriggerable, so a rising/falling edge within t will not reset the timer.
  */
 export class NXLogicTriggeredMonostableNode {
-        t: number;
+        private timer = 0;
 
-        risingEdge: boolean;
+        private previousValue: null | boolean = null;
 
-        timer: number;
+        private previousOutput = false;
 
-        previousValue: any;
+        /**
+         * Constructors a new Monostable Trigger Node
+         * @param t The time constant in seconds
+         * @param risingEdge Whether to detect a rising edge, or falling edge
+         */
+        constructor(private readonly t: number, private readonly risingEdge = true) {}
 
-        constructor(t, risingEdge = true) {
-            this.t = t;
-            this.risingEdge = risingEdge;
-            this.timer = 0;
-            this.previousValue = null;
+        private setOutput(output: boolean): boolean {
+            this.previousOutput = output;
+            return output;
         }
 
-        write(value, _deltaTime) {
+        write(value: boolean, _deltaTime: number) {
             if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
                 this.previousValue = value;
             }
@@ -33,25 +36,29 @@ export class NXLogicTriggeredMonostableNode {
                 if (this.timer > 0) {
                     this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
                     this.previousValue = value;
-                    return true;
+                    return this.setOutput(true);
                 } if (!this.previousValue && value) {
                     this.timer = this.t;
                     this.previousValue = value;
-                    return true;
+                    return this.setOutput(true);
                 }
             } else {
                 if (this.timer > 0) {
                     this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
                     this.previousValue = value;
-                    return true;
+                    return this.setOutput(true);
                 } if (this.previousValue && !value) {
                     this.timer = this.t;
                     this.previousValue = value;
-                    return true;
+                    return this.setOutput(true);
                 }
             }
             this.previousValue = value;
-            return false;
+            return this.setOutput(false);
+        }
+
+        read(): boolean {
+            return this.previousOutput;
         }
 }
 
