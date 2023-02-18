@@ -164,11 +164,11 @@ export class DigitalInputs {
 
     public powerUp(): void {
         this.poweredUp = true;
-        this.resetData();
     }
 
     public powerDown(): void {
         this.poweredUp = false;
+        this.resetData();
     }
 
     public update(): void {
