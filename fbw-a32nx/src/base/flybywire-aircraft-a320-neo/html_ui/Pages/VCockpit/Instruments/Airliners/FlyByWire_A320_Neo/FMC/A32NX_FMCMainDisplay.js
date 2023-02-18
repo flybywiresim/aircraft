@@ -2981,7 +2981,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
             || this.vRSpeed < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
             || this.v2Speed < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
-            || (isFinite(tow) && this.v2Speed < Math.trunc(1.2 * NXSpeedsUtils.getVs1g(tow, conf, true)))
+            || (isFinite(tow) && this.v2Speed < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, conf, true)))
         );
     }
 
