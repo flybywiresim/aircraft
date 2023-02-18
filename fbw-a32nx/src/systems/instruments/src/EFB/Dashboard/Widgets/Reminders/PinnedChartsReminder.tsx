@@ -11,7 +11,12 @@ export const PinnedChartsReminder = () => {
         <RemindersSection title={t('Dashboard.ImportantInformation.PinnedCharts.Title')} pageLinkPath="/navigation">
             <div className="grid grid-cols-2">
                 {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map((pinnedChart, index) => (
-                    <PinnedChartCard pinnedChart={pinnedChart} className={`${index && index % 2 !== 0 && 'ml-4'} mt-4`} key={pinnedChart.chartId} />
+                    <PinnedChartCard
+                        pinnedChart={pinnedChart}
+                        className={`${index && index % 2 !== 0 && 'ml-4'} mt-4`}
+                        key={pinnedChart.chartId}
+                        showDelete={false}
+                    />
                 ))}
             </div>
 

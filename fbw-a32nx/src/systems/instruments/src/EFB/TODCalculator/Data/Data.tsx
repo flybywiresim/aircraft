@@ -113,7 +113,7 @@ export const Data = ({ className }: {className: string}) => {
             <div className="w-full h-1 bg-theme-accent rounded-full" />
 
             {calculationTypes.map(({ label, placeholder, type, syncValue }) => (!calculationInput || calculationType === type) && (
-                <div>
+                <div key={type}>
                     <p>{label}</p>
                     <div className="flex flex-row">
                         <SimpleInput

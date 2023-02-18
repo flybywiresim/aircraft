@@ -326,7 +326,7 @@ export namespace FSComponent {
         props.children = children;
       }
 
-      if (typeof type === 'function' && type.name === 'Fragment') {
+      if (typeof type === 'function' && type.name === Fragment.name) {
         let childNodes = (type as FragmentFactory)(props as any) as VNode[] | null;
 
         //Handle the case where the single fragment children is an array of nodes passsed down from above
