@@ -6,12 +6,9 @@ use super::{
     ProvidePotential,
 };
 use crate::shared::{
-    EmergencyGeneratorPower, HydraulicGeneratorControlUnit, PowerConsumptionReport,
+    EmergencyGeneratorControlUnit, EmergencyGeneratorPower, PowerConsumptionReport,
 };
-use uom::si::{
-    angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, frequency::hertz,
-    power::watt,
-};
+use uom::si::{electric_potential::volt, f64::*, frequency::hertz, power::watt};
 
 pub struct EmergencyGenerator {
     identifier: ElectricalElementIdentifier,
@@ -21,12 +18,15 @@ pub struct EmergencyGenerator {
     output_potential: ElectricPotential,
     generated_power: Power,
     demand: Power,
+    min_rpm_to_supply_power: AngularVelocity,
 }
 impl EmergencyGenerator {
-    const MIN_RPM_TO_SUPPLY_POWER: f64 = 10000.;
     const MIN_POWER_TO_DECLARE_SUPPLYING_WATT: f64 = 100.;
 
-    pub fn new(context: &mut InitContext) -> EmergencyGenerator {
+    pub fn new(
+        context: &mut InitContext,
+        min_rpm_to_supply_power: AngularVelocity,
+    ) -> EmergencyGenerator {
         EmergencyGenerator {
             identifier: context.next_electrical_identifier(),
             writer: ElectricalStateWriter::new(context, "EMER_GEN"),
@@ -35,16 +35,16 @@ impl EmergencyGenerator {
             output_potential: ElectricPotential::new::<volt>(0.),
             generated_power: Power::new::<watt>(0.),
             demand: Power::new::<watt>(0.),
+            min_rpm_to_supply_power,
         }
     }
 
-    pub fn update(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
+    pub fn update(&mut self, gcu: &impl EmergencyGeneratorControlUnit) {
         self.update_generated_power(gcu);
 
         self.supplying = self.generated_power
             > Power::new::<watt>(Self::MIN_POWER_TO_DECLARE_SUPPLYING_WATT)
-            || (gcu.motor_speed()
-                > AngularVelocity::new::<revolution_per_minute>(Self::MIN_RPM_TO_SUPPLY_POWER));
+            || (gcu.motor_speed() > self.min_rpm_to_supply_power);
     }
 
     /// Indicates if the provided electricity's potential and frequency
@@ -58,13 +58,12 @@ impl EmergencyGenerator {
         self.supplying
     }
 
-    fn update_generated_power(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
-        self.generated_power =
-            if gcu.motor_speed().get::<revolution_per_minute>() > Self::MIN_RPM_TO_SUPPLY_POWER {
-                self.demand.min(gcu.max_allowed_power())
-            } else {
-                Power::new::<watt>(0.)
-            };
+    fn update_generated_power(&mut self, gcu: &impl EmergencyGeneratorControlUnit) {
+        self.generated_power = if gcu.motor_speed() > self.min_rpm_to_supply_power {
+            self.demand.min(gcu.max_allowed_power())
+        } else {
+            Power::default()
+        };
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
@@ -137,6 +136,8 @@ mod emergency_generator_tests {
         },
     };
 
+    use uom::si::angular_velocity::revolution_per_minute;
+
     struct EmergencyGeneratorTestBed {
         test_bed: SimulationTestBed<TestAircraft>,
     }
@@ -185,7 +186,7 @@ mod emergency_generator_tests {
             self.motor_speed = speed;
         }
     }
-    impl HydraulicGeneratorControlUnit for TestHydraulicSystem {
+    impl EmergencyGeneratorControlUnit for TestHydraulicSystem {
         fn max_allowed_power(&self) -> Power {
             if self.motor_speed.get::<revolution_per_minute>() > 10000. {
                 Power::new::<watt>(5000.)
@@ -206,11 +207,13 @@ mod emergency_generator_tests {
         generator_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
+        const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 10000.;
+
         fn new(context: &mut InitContext) -> Self {
             Self {
                 supplied_bus: ElectricalBus::new(context,ElectricalBusType::AlternatingCurrent(1)),
                 consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
-                emer_gen: EmergencyGenerator::new(context),
+                emer_gen: EmergencyGenerator::new(context, AngularVelocity::new::<revolution_per_minute>(Self::MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY)),
                 hydraulic: TestHydraulicSystem::new(),
                 generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
