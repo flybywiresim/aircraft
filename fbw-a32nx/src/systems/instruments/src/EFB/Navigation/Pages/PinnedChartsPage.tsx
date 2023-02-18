@@ -236,15 +236,17 @@ export const PinnedChartUI = () => {
                     />
 
                     <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.ChangeChartProvider')}>
-                        <SelectInput
-                            className="w-56"
-                            options={Object.values(providerTabs).map(({ alias, provider }) => ({ displayValue: alias, value: provider }))}
-                            value={selectedProvider}
-                            onChange={(value) => dispatch(editTabProperty({
-                                tab: NavigationTab.PINNED_CHARTS,
-                                selectedProvider: value as ChartProvider | 'ALL',
-                            }))}
-                        />
+                        <div>
+                            <SelectInput
+                                className="w-56"
+                                options={Object.values(providerTabs).map(({ alias, provider }) => ({ key: alias, displayValue: alias, value: provider }))}
+                                value={selectedProvider}
+                                onChange={(value) => dispatch(editTabProperty({
+                                    tab: NavigationTab.PINNED_CHARTS,
+                                    selectedProvider: value as ChartProvider | 'ALL',
+                                }))}
+                            />
+                        </div>
                     </TooltipWrapper>
 
                     <SelectGroup>
@@ -268,6 +270,7 @@ export const PinnedChartUI = () => {
                         <SelectGroup className="flex-grow">
                             {filterTabs.map(({ alias }, index) => (
                                 <SelectItem
+                                    key={alias}
                                     className="w-full"
                                     selected={chartTypeIndex === index}
                                     onSelect={() => {
@@ -299,18 +302,20 @@ export const PinnedChartUI = () => {
                     )}
 
                     <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.ChangeChartSortMethod')}>
-                        <SelectInput
-                            className="w-64"
-                            options={[
-                                { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.None'), value: PinSort.NONE },
-                                { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.FirstAccessed'), value: PinSort.FIRST_ACCESSED },
-                                { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.LastAccessed'), value: PinSort.LAST_ACCESSED },
-                                { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.AlphabeticalAZ'), value: PinSort.ALPHABETICAL_FIRST_LAST },
-                                { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.AlphabeticalZA'), value: PinSort.ALPHABETICAL_LAST_FIRST },
-                            ]}
-                            value={sortTypeIndex}
-                            onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, sortTypeIndex: value as PinSort }))}
-                        />
+                        <div>
+                            <SelectInput
+                                className="w-64"
+                                options={[
+                                    { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.None'), value: PinSort.NONE },
+                                    { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.FirstAccessed'), value: PinSort.FIRST_ACCESSED },
+                                    { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.LastAccessed'), value: PinSort.LAST_ACCESSED },
+                                    { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.AlphabeticalAZ'), value: PinSort.ALPHABETICAL_FIRST_LAST },
+                                    { displayValue: t('NavigationAndCharts.PinnedCharts.SortMethods.AlphabeticalZA'), value: PinSort.ALPHABETICAL_LAST_FIRST },
+                                ]}
+                                value={sortTypeIndex}
+                                onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, sortTypeIndex: value as PinSort }))}
+                            />
+                        </div>
                     </TooltipWrapper>
 
                 </div>
@@ -320,7 +325,10 @@ export const PinnedChartUI = () => {
                 <ScrollableContainer height={44}>
                     <div className="grid grid-cols-4 auto-rows-auto">
                         {sortedCharts.map((pinnedChart, index) => (
-                            <div className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} flex flex-col`}>
+                            <div
+                                key={pinnedChart.chartId}
+                                className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} flex flex-col`}
+                            >
                                 <PinnedChartCard
                                     pinnedChart={pinnedChart}
                                     className="h-full"

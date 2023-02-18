@@ -51,12 +51,14 @@ jobs:
         uses: actions/checkout@v2
       - name: Create .env file
         run: |
-          echo A32NX_PRODUCTION_BUILD=1 >> .env
-          echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
-          echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
-          echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
-          echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
+          echo A32NX_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a32nx/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo VITE_BUILD=false >> .env
+          cat fbw-a32nx/.env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
