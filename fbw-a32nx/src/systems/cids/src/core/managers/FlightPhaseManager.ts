@@ -160,13 +160,11 @@ export class FlightPhaseManager implements Manager {
         ];
 
         for (const current of flightPhases) {
-            console.log('current fp iteration:', current);
-            console.log('current shouldActivate():', current.shouldActivate());
             if (current.shouldActivate()) {
-                console.log('activating fp:', current.getValue());
                 this.setActiveFlightPhase(current);
                 return;
             }
         }
+        console.error(`[CIDS/FPM${this.directorId}] Could not detect flight phase...`);
     }
 }
