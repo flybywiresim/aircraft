@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import {
+    Shuffle,
     ArrowLeftRight,
     BoxArrowRight,
     BriefcaseFill,
@@ -114,6 +115,7 @@ export const Payload = () => {
     const [zfwDesired, setZfwDesired] = useState(0);
     const [zfwDesiredCg, setZfwDesiredCg] = useState(0);
     const [gw, setGw] = useState(emptyWeight);
+    const [gwDesired, setGwDesired] = useState(emptyWeight);
     const [cg, setCg] = useState(25);
     const [totalDesiredWeight, setTotalDesiredWeight] = useState(0);
     const [desiredCg, setDesiredCg] = useState(0);
@@ -135,8 +137,7 @@ export const Payload = () => {
     const simbriefBag = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagCount));
     const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
 
-    const [displayZfw] = useState(true);
-    // const [displayZfw, setDisplayZfw] = useState(true);
+    const [displayZfw, setDisplayZfw] = useState(true);
 
     // GSX
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
@@ -504,6 +505,7 @@ export const Payload = () => {
 
         const totalFuelMoment = centerCurrent * galToKg * centerTankMoment + (LOutCurrent + ROutCurrent) * galToKg * outerTankMoment + (LInnCurrent + RInnCurrent) * galToKg * innerTankMoment;
         const newGw = newZfw + totalFuel;
+        const newGwDesired = newZfwDesired + totalFuel;
         const newTotalMoment = newZfwMoment + totalFuelMoment;
         const newCg = calculateCg(newGw, newTotalMoment);
 
@@ -516,6 +518,7 @@ export const Payload = () => {
         setZfwDesired(newZfwDesired);
         setZfwDesiredCg(newZfwDesiredCg);
         setGw(newGw);
+        setGwDesired(newGwDesired);
         setCg(newCg);
         setTotalDesiredWeight(newTotalWeightDesired);
         setDesiredCg(newDesiredCg);
@@ -586,13 +589,16 @@ export const Payload = () => {
                     <div className="flex flex-col flex-grow pr-24">
                         <div className="flex flex-row w-full">
                             <Card className="w-full col-1" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
-                                <table className="w-full">
-                                    <thead className="w-full border-b">
+                                <table className="w-full table-fixed">
+                                    <thead className="px-8 mx-2 w-full border-b">
                                         <tr className="py-2">
-                                            <th scope="col" colSpan={2} className="py-2 px-4 w-full font-medium text-center text-md">
+                                            <th scope="col" className="py-2 px-4 w-2/5 font-medium text-left text-md">
+                                                {' '}
+                                            </th>
+                                            <th scope="col" className="py-2 px-4 w-1/2 font-medium text-left text-md">
                                                 {t('Ground.Payload.Planned')}
                                             </th>
-                                            <th scope="col" className="py-2 px-4 w-full font-medium text-center text-md">
+                                            <th scope="col" className="py-2 px-4 w-1/4 font-medium text-left text-md">
                                                 {t('Ground.Payload.Current')}
                                             </th>
                                         </tr>
@@ -600,12 +606,11 @@ export const Payload = () => {
 
                                     <tbody>
                                         <tr className="h-2" />
-
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 {t('Ground.Payload.Passengers')}
                                             </td>
-                                            <td>
+                                            <td className="mx-8">
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxPassengers')} ${maxPax}`}>
                                                     <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                         <PayloadValueInput
@@ -684,7 +689,7 @@ export const Payload = () => {
                                                                 <PayloadValueInput
                                                                     min={Math.round(usingMetric ? emptyWeight : Units.kilogramToPound(emptyWeight))}
                                                                     max={Math.round(usingMetric ? Loadsheet.specs.weights.maxZfw : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw))}
-                                                                    value={usingMetric ? zfwDesired : Units.kilogramToPound(zfwDesired)}
+                                                                    value={usingMetric ? gwDesired : Units.kilogramToPound(gwDesired)}
                                                                     onBlur={(x) => {
                                                                         if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
                                                                     }}
@@ -701,16 +706,44 @@ export const Payload = () => {
                                             </td>
                                         </tr>
 
+                                        {/*
+                                            <td className="flex flex-col justify-center items-center px-4 font-light whitespace-nowrap text-md">
+                                                <div className="flex-auto align-middle">
+                                                    <span>
+                                                        {t(displayZfw ? 'Ground.Payload.ZFWCG' : 'Ground.Payload.GWCG')}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-auto align-middle">
+                                                    <Shuffle size={20} />
+                                                </div>
+                                            </td>
+                                        */}
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {t(displayZfw ? 'Ground.Payload.ZFWCG' : 'Ground.Payload.GWCG')}
+                                                <div className="flex relative flex-row justify-start items-center">
+                                                    <div>
+                                                        {t(displayZfw ? 'Ground.Payload.ZFWCG' : 'Ground.Payload.GWCG')}
+                                                    </div>
+                                                    <div className="ml-auto">
+                                                        <button
+                                                            type="button"
+                                                            className={`flex justify-center rounded-lg items-center ml-auto w-12 h-8
+                                                                text-theme-highlight bg-current`}
+                                                            onClick={() => setDisplayZfw(!displayZfw)}
+                                                        >
+                                                            <div className="text-theme-body">
+                                                                <Shuffle size={24} />
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFWCG')} ${40}%`}>
                                                     <div className="px-4 font-light whitespace-nowrap text-md">
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
-                                                            {`${displayZfw ? zfwDesiredCg.toFixed(2) : desiredCg.toFixed(2)} %`}
+                                                            <PayloadPercentUnitDisplay value={displayZfw ? zfwDesiredCg : desiredCg} />
                                                         </div>
                                                         {/*
                                                             <SimpleInput
@@ -727,7 +760,7 @@ export const Payload = () => {
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${displayZfw ? zfwCg.toFixed(2) : cg.toFixed(2)} %`}
+                                                <PayloadPercentUnitDisplay value={displayZfw ? zfwCg : cg} />
                                             </td>
                                         </tr>
                                     </tbody>
@@ -946,6 +979,20 @@ const PayloadValueUnitDisplay: FC<NumberUnitDisplayProps> = ({ value, padTo, uni
             </span>
             {' '}
             <span className="text-2xl text-gray-500">{unit}</span>
+        </span>
+    );
+};
+
+const PayloadPercentUnitDisplay: FC<{value: number}> = ({ value }) => {
+    const fixedValue = value.toFixed(2);
+
+    return (
+        <span className="flex items-center">
+            <span className="flex justify-end pr-2 w-20 text-2xl">
+                {fixedValue}
+            </span>
+            {' '}
+            <span className="text-2xl text-gray-500">%</span>
         </span>
     );
 };
