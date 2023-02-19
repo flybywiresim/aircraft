@@ -411,7 +411,7 @@
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
     - Hz
     - The ADF active frequency that is saved for display for the left/right RMP.
-   
+
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
     - Hz
     - The VOR standby frequency that is saved for display for the left/right RMP.
@@ -966,13 +966,21 @@
     - Bool
     - Deploys the RAT manually
 
-- A32NX_HYD_RAT_STOW_POSITION
+- A32NX_RAT_STOW_POSITION
     - Percent over 100
     - RAT position, from fully stowed (0) to fully deployed (1)
 
-- A32NX_HYD_RAT_RPM
+- A32NX_RAT_RPM
     - Rpm
     - RAT propeller current RPM
+
+- A32NX_RAT_ANGULAR_POSITION
+    - Degrees
+    - RAT propeller angular position
+
+- A32NX_RAT_PROPELLER_ANGLE
+    - Percent over 100
+    - RAT propeller pitch angle (0 to 1 normalized)
 
 - A32NX_HYD_BRAKE_NORM_{brake_side}_PRESS
     - Psi
@@ -2568,6 +2576,25 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE:
+    - Pressure measured at the intermediate pressure transducer, -1 if no output
+    - psi
+
+- A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
+    - Pressure measured at the transfer pressure transducer, -1 if no output
+    - psi
+    - Only on the A380X
+
+- A32NX_PNEU_ENG_{number}_REGULATED_TRANSDUCER_PRESSURE
+    - Pressure measured at the regulated pressure transducer, -1 if no output
+    - psi
+    - Only on the A380X
+
+- A32NX_PNEU_ENG_{number}_DIFFERENTIAL_TRANSDUCER_PRESSURE
+    - Pressure measured at the differential pressure transducer, -1 if no output
+    - psi
+    - Only on the A380X
+
 - A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
     - Temperature in intermediate pressure compression chamber
     - Degree celsius
@@ -3458,13 +3485,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Boolean
     - Read/Write
     - Whether the pushback system is enabled
-    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system 
+    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system
       has no impact on the aircraft
 
 - A32NX_PUSHBACK_SPD_FACTOR
     - Number
     - Read/Write
-    - Determines the speed of the pushback tug from -100% to 100% 
+    - Determines the speed of the pushback tug from -100% to 100%
     - {number}
         - -1.0
         - 1.0
@@ -3472,7 +3499,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PUSHBACK_HDG_FACTOR
     - Number
     - Read/Write
-    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0) 
+    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0)
     - {number}
         - -1.0
         - 1.0

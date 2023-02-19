@@ -11,8 +11,8 @@
 #include "SimConnectData.h"
 
 #include "../model/A380PrimComputer_types.h"
+#include "../model/A380SecComputer_types.h"
 #include "../model/FacComputer_types.h"
-// #include "../model/SecComputer_types.h"
 
 class SimConnectInterface {
  public:
@@ -38,6 +38,10 @@ class SimConnectInterface {
     ELEVATOR_SET,
     ELEV_DOWN,
     ELEV_UP,
+    ELEV_TRIM_DN,
+    ELEV_TRIM_UP,
+    ELEVATOR_TRIM_SET,
+    AXIS_ELEV_TRIM_SET,
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
@@ -233,6 +237,8 @@ class SimConnectInterface {
 
   bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust output);
 
+  void resetSimInputPitchTrim();
+
   void resetSimInputRudderTrim();
 
   void resetSimInputAutopilot();
@@ -244,6 +250,8 @@ class SimConnectInterface {
   SimInput getSimInput();
 
   SimInputAutopilot getSimInputAutopilot();
+
+  SimInputPitchTrim getSimInputPitchTrim();
 
   SimInputRudderTrim getSimInputRudderTrim();
 
@@ -270,13 +278,13 @@ class SimConnectInterface {
   base_prim_analog_outputs getClientDataPrimAnalogsOutput();
   base_prim_out_bus getClientDataPrimBusOutput();
 
-  // bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
-  // bool setClientDataSecAnalog(base_sec_analog_inputs output);
-  // bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
-  //
-  // base_sec_discrete_outputs getClientDataSecDiscretesOutput();
-  // base_sec_analog_outputs getClientDataSecAnalogsOutput();
-  // base_sec_out_bus getClientDataSecBusOutput();
+  bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
+  bool setClientDataSecAnalog(base_sec_analog_inputs output);
+  bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
+
+  base_sec_discrete_outputs getClientDataSecDiscretesOutput();
+  base_sec_analog_outputs getClientDataSecAnalogsOutput();
+  base_sec_out_bus getClientDataSecBusOutput();
 
   bool setClientDataFacDiscretes(base_fac_discrete_inputs output);
   bool setClientDataFacAnalog(base_fac_analog_inputs output);
@@ -369,6 +377,7 @@ class SimConnectInterface {
   SimData simData = {};
   // change to non-static when aileron events can be processed via SimConnect
   static SimInput simInput;
+  SimInputPitchTrim simInputPitchTrim = {};
   SimInputRudderTrim simInputRudderTrim = {};
   SimInputAutopilot simInputAutopilot = {};
 
@@ -386,9 +395,9 @@ class SimConnectInterface {
   base_prim_analog_outputs clientDataPrimAnalogOutputs = {};
   base_prim_out_bus clientDataPrimBusOutputs = {};
 
-  // base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
-  // base_sec_analog_outputs clientDataSecAnalogOutputs = {};
-  // base_sec_out_bus clientDataSecBusOutputs = {};
+  base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
+  base_sec_analog_outputs clientDataSecAnalogOutputs = {};
+  base_sec_out_bus clientDataSecBusOutputs = {};
 
   base_fac_discrete_outputs clientDataFacDiscreteOutputs = {};
   base_fac_analog_outputs clientDataFacAnalogOutputs = {};

@@ -39,6 +39,7 @@ const FailureGroup = ({ title, failures }: FailureGroupProps) => {
             <div className="grid grid-cols-4 auto-rows-auto">
                 {failures.map((failure, index) => (
                     <FailureButton
+                        key={failure.identifier}
                         name={failure.name}
                         isActive={activeFailures.has(failure.identifier)}
                         isChanging={changingFailures.has(failure.identifier)}
@@ -68,7 +69,11 @@ export const CompactUI = ({ chapters, failures }: CompactUIProps) => {
                     <FailureGroup title="Active Failures" failures={allFailures.filter((failure) => activeFailures.has(failure.identifier))} />
                 )}
                 {chapters.map((chapter) => (
-                    <FailureGroup title={AtaChaptersTitle[chapter]} failures={failures.filter((failure) => failure.ata === chapter)} />
+                    <FailureGroup
+                        key={chapter}
+                        title={AtaChaptersTitle[chapter]}
+                        failures={failures.filter((failure) => failure.ata === chapter)}
+                    />
                 ))}
                 {failures.length === 0 && (
                     <div className="flex justify-center items-center rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>

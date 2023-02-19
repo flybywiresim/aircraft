@@ -23,8 +23,8 @@ use systems::{
     hydraulic::{
         aerodynamic_model::AerodynamicModel,
         brake_circuit::{
-            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
-            BrakeCircuitController,
+            AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
+            BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
@@ -46,11 +46,10 @@ use systems::{
             ManualPitchTrimController, PitchTrimActuatorController,
             TrimmableHorizontalStabilizerAssembly,
         },
-        ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
+        Accumulator, ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
         HydraulicCircuitController, HydraulicPressureSensors, PowerTransferUnit,
         PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
-        PressureSwitchType, PriorityValve, PumpController, RamAirTurbine, RamAirTurbineController,
-        Reservoir,
+        PressureSwitchType, PriorityValve, PumpController, RamAirTurbine, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
@@ -61,10 +60,10 @@ use systems::{
         random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
         AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorPower,
-        EngineFirePushButtons, GearWheel, HydraulicColor, HydraulicGeneratorControlUnit,
-        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure,
-        SectionPressure, TrimmableHorizontalStabilizer,
+        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
+        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
+        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, RamAirTurbineController,
+        ReservoirAirPressure, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -118,13 +117,16 @@ impl A320HydraulicReservoirFactory {
         )
     }
 
-    fn new_yellow_reservoir(context: &mut InitContext) -> Reservoir {
+    fn new_yellow_reservoir(
+        context: &mut InitContext,
+        fluid_volume_in_brake_accumulator: Volume,
+    ) -> Reservoir {
         Reservoir::new(
             context,
             HydraulicColor::Yellow,
             Volume::new::<liter>(20.),
             Volume::new::<liter>(18.),
-            Volume::new::<gallon>(3.6),
+            Volume::new::<gallon>(3.8) - fluid_volume_in_brake_accumulator,
             vec![PressureSwitch::new(
                 Pressure::new::<psi>(25.),
                 Pressure::new::<psi>(22.),
@@ -207,8 +209,14 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    pub fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
-        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
+    pub fn new_yellow_circuit(
+        context: &mut InitContext,
+        fluid_volume_in_brake_accumulator: Volume,
+    ) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(
+            context,
+            fluid_volume_in_brake_accumulator,
+        );
         HydraulicCircuit::new(
             context,
             HydraulicColor::Yellow,
@@ -1553,10 +1561,19 @@ impl A320Hydraulic {
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(2);
 
+    const ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
+
     // Refresh rate of core hydraulic simulation
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub(super) fn new(context: &mut InitContext) -> A320Hydraulic {
+        let brake_accumulator_charac = BrakeAccumulatorCharacteristics::new(
+            Volume::new::<gallon>(1.0),
+            Pressure::new::<psi>(Self::ALTERNATE_BRAKE_ACCUMULATOR_GAS_PRE_CHARGE),
+            Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
+            Ratio::new::<ratio>(0.03),
+        );
+
         A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
@@ -1584,7 +1601,10 @@ impl A320Hydraulic {
                 Some(1),
                 HydraulicColor::Green,
             ),
-            yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
+            yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(
+                context,
+                brake_accumulator_charac.volume_at_init(),
+            ),
             yellow_circuit_controller: A320HydraulicCircuitController::new(
                 Some(2),
                 HydraulicColor::Yellow,
@@ -1660,10 +1680,9 @@ impl A320Hydraulic {
             braking_circuit_norm: BrakeCircuit::new(
                 context,
                 "NORM",
-                Volume::new::<gallon>(0.),
-                Volume::new::<gallon>(0.),
+                HydraulicColor::Green,
+                None,
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             // Alternate brakes accumulator in real A320 is 1.5 gal capacity.
@@ -1672,10 +1691,9 @@ impl A320Hydraulic {
             braking_circuit_altn: BrakeCircuit::new(
                 context,
                 "ALTN",
-                Volume::new::<gallon>(1.0),
-                Volume::new::<gallon>(0.4),
+                HydraulicColor::Yellow,
+                Some(Accumulator::new_brake_accumulator(brake_accumulator_charac)),
                 Volume::new::<gallon>(0.13),
-                Pressure::new::<psi>(A320HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
             ),
 
             braking_force: A320BrakingForce::new(context),
@@ -1717,6 +1735,7 @@ impl A320Hydraulic {
             ),
 
             emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
+
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -2564,7 +2583,7 @@ impl SimulationElement for A320Hydraulic {
         );
     }
 }
-impl HydraulicGeneratorControlUnit for A320Hydraulic {
+impl EmergencyGeneratorControlUnit for A320Hydraulic {
     fn max_allowed_power(&self) -> Power {
         self.gcu.max_allowed_power()
     }
@@ -5949,7 +5968,7 @@ mod tests {
             hydraulic::electrical_generator::TestGenerator,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{
-                EmergencyElectricalState, HydraulicGeneratorControlUnit, LgciuId, PotentialOrigin,
+                EmergencyElectricalState, EmergencyGeneratorControlUnit, LgciuId, PotentialOrigin,
             },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -6067,7 +6086,7 @@ mod tests {
 
             fn update(
                 &mut self,
-                gcu: &impl HydraulicGeneratorControlUnit,
+                gcu: &impl EmergencyGeneratorControlUnit,
                 context: &UpdateContext,
             ) {
                 self.airspeed = context.indicated_airspeed();
@@ -6602,11 +6621,11 @@ mod tests {
             }
 
             fn get_rat_position(&mut self) -> f64 {
-                self.read_by_name("HYD_RAT_STOW_POSITION")
+                self.read_by_name("RAT_STOW_POSITION")
             }
 
             fn get_rat_rpm(&mut self) -> f64 {
-                self.read_by_name("A32NX_HYD_RAT_RPM")
+                self.read_by_name("A32NX_RAT_RPM")
             }
 
             fn get_left_aileron_position(&mut self) -> Ratio {
@@ -7296,6 +7315,24 @@ mod tests {
                     .set_left_brake(Ratio::new::<percent>(0.))
                     .set_right_brake(Ratio::new::<percent>(0.))
                     .run_waiting_for(Duration::from_secs(1));
+
+                self
+            }
+
+            fn load_brake_accumulator(mut self) -> Self {
+                let mut number_of_loops = 0;
+                while self.get_brake_yellow_accumulator_pressure().get::<psi>() <= 2900. {
+                    self = self
+                        .set_yellow_e_pump(false)
+                        .run_waiting_for(Duration::from_secs(2));
+                    number_of_loops += 1;
+                    assert!(number_of_loops < 50);
+                }
+
+                // Let yellow epump spool down
+                self = self
+                    .set_yellow_e_pump(true)
+                    .run_waiting_for(Duration::from_secs(5));
 
                 self
             }
@@ -8627,7 +8664,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             // Getting accumulator pressure on cold start
             let mut accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
@@ -8705,7 +8742,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_secs(5));
 
             // Getting accumulator pressure on cold start
             let accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
@@ -9028,6 +9065,7 @@ mod tests {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
+                .load_brake_accumulator()
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
@@ -9944,6 +9982,7 @@ mod tests {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
+                .load_brake_accumulator()
                 .set_cold_dark_inputs()
                 .run_waiting_for(Duration::from_secs(5));
 
@@ -10629,6 +10668,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_ptu_state(true)
+                .load_brake_accumulator()
                 .set_yellow_e_pump(false)
                 .set_blue_e_pump_ovrd_pressed(true)
                 .run_one_tick();
@@ -10849,6 +10889,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
+                .load_brake_accumulator()
                 .set_yellow_e_pump(false)
                 .run_one_tick();
 
@@ -11086,6 +11127,7 @@ mod tests {
         fn spoilers_move_to_requested_position() {
             let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
+                .load_brake_accumulator()
                 .set_blue_e_pump_ovrd_pressed(true)
                 .set_yellow_e_pump(false)
                 .run_waiting_for(Duration::from_secs_f64(5.));

@@ -1,11 +1,12 @@
 #include "Sec.h"
 #include <iostream>
+#include "../Arinc429Utils.h"
 
-Sec::Sec(bool isUnit1, bool isUnit3) : isUnit1(isUnit1), isUnit3(isUnit3) {
+Sec::Sec(bool isUnit1, bool isUnit2, bool isUnit3) : isUnit1(isUnit1), isUnit2(isUnit2), isUnit3(isUnit3) {
   secComputer.initialize();
 }
 
-Sec::Sec(const Sec& obj) : isUnit1(obj.isUnit1), isUnit3(obj.isUnit3) {
+Sec::Sec(const Sec& obj) : isUnit1(obj.isUnit1), isUnit2(obj.isUnit2), isUnit3(obj.isUnit3) {
   secComputer.initialize();
 }
 
@@ -44,12 +45,12 @@ void Sec::monitorSelf(bool faultActive) {
     modelInputs.in.sim_data.computer_running = false;
   }
 
-  bool shouldReset = cpuStopped && resetPulseNode.update(modelInputs.in.discrete_inputs.sec_engaged_from_switch) && !powerSupplyFault;
+  bool shouldReset = cpuStopped && resetPulseNode.update(modelInputs.in.discrete_inputs.sec_overhead_button_pressed) && !powerSupplyFault;
   if (shouldReset) {
     initSelfTests();
   }
 
-  monitoringHealthy = !cpuStopped && !powerSupplyFault && modelInputs.in.discrete_inputs.sec_engaged_from_switch;
+  monitoringHealthy = !cpuStopped && !powerSupplyFault && modelInputs.in.discrete_inputs.sec_overhead_button_pressed;
 }
 
 // Monitor the power supply and record the outage time (used for self test and healthy logic).
@@ -93,23 +94,31 @@ base_sec_out_bus Sec::getBusOutputs() {
   base_sec_out_bus output = {};
 
   if (!monitoringHealthy) {
-    output.left_spoiler_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_spoiler_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_spoiler_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.left_elevator_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.right_elevator_position_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.ths_position_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.left_sidestick_pitch_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.right_sidestick_pitch_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.left_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.right_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.speed_brake_lever_command_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.thrust_lever_angle_1_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.thrust_lever_angle_2_deg.SSM = Arinc429SignStatus::FailureWarning;
-    output.discrete_status_word_1.SSM = Arinc429SignStatus::FailureWarning;
-    output.discrete_status_word_2.SSM = Arinc429SignStatus::FailureWarning;
-
+    output.rudder_pedal_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.aileron_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_aileron_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_aileron_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_aileron_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_aileron_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.spoiler_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_spoiler_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_spoiler_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.left_spoiler_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.right_spoiler_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.elevator_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.elevator_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.elevator_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.elevator_3_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.ths_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.rudder_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.rudder_1_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.rudder_2_position_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.fctl_law_status_word.SSM = Arinc429SignStatus::FailureWarning;
+    output.misc_data_status_word.SSM = Arinc429SignStatus::FailureWarning;
     return output;
   }
 
@@ -122,16 +131,21 @@ base_sec_out_bus Sec::getBusOutputs() {
 base_sec_discrete_outputs Sec::getDiscreteOutputs() {
   base_sec_discrete_outputs output = {};
 
-  output.sec_failed = !monitoringHealthy;
+  output.sec_healthy = monitoringHealthy;
   if (!monitoringHealthy) {
-    output.thr_reverse_selected = false;
-    output.left_elevator_ok = false;
-    output.right_elevator_ok = false;
-    output.ground_spoiler_out = false;
-    output.left_elevator_damping_mode = false;
-    output.right_elevator_damping_mode = false;
-    output.ths_active = false;
-    output.batt_power_supply = false;
+    output.elevator_1_active_mode = false;
+    output.elevator_2_active_mode = false;
+    output.elevator_3_active_mode = false;
+    output.ths_active_mode = false;
+    output.left_aileron_1_active_mode = false;
+    output.left_aileron_2_active_mode = false;
+    output.right_aileron_1_active_mode = false;
+    output.right_aileron_2_active_mode = false;
+    output.rudder_1_hydraulic_active_mode = false;
+    output.rudder_1_electric_active_mode = false;
+    output.rudder_2_hydraulic_active_mode = false;
+    output.rudder_2_electric_active_mode = false;
+    output.rudder_trim_active_mode = false;
   } else {
     output = modelOutputs.discrete_outputs;
   }
@@ -144,13 +158,21 @@ base_sec_analog_outputs Sec::getAnalogOutputs() {
   base_sec_analog_outputs output = {};
 
   if (!monitoringHealthy) {
-    output.left_elev_pos_order_deg = 0;
-    output.right_elev_pos_order_deg = 0;
+    output.elevator_1_pos_order_deg = 0;
+    output.elevator_2_pos_order_deg = 0;
+    output.elevator_3_pos_order_deg = 0;
     output.ths_pos_order_deg = 0;
+    output.left_aileron_1_pos_order_deg = 0;
+    output.left_aileron_2_pos_order_deg = 0;
+    output.right_aileron_1_pos_order_deg = 0;
+    output.right_aileron_2_pos_order_deg = 0;
     output.left_spoiler_1_pos_order_deg = 0;
     output.right_spoiler_1_pos_order_deg = 0;
     output.left_spoiler_2_pos_order_deg = 0;
     output.right_spoiler_2_pos_order_deg = 0;
+    output.rudder_1_pos_order_deg = 0;
+    output.rudder_2_pos_order_deg = 0;
+    output.rudder_trim_pos_order_deg = 0;
   } else {
     output = modelOutputs.analog_outputs;
   }

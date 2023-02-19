@@ -37,8 +37,14 @@
 1. [COND] Add mixer unit and recirculation fans to air conditioning system - @mjuhe (Miquel Juhe)
 1. [COND] Add trim air valves to air conditioning system - @mjuhe (Miquel Juhe)
 1. [CLOCK] Ported Clock to MSFS Avionics Framework for better performance - @MicahBCode (Mischa Binder)
+1. [FMGC] Constraints for waypoints behind the aircraft are no longer sent - @tracernz (Mike)
+1. [EFB] GSX Integration - Lucky38i (Lucky38#3550)
+1. [EWD] Updated EWD to use MSFS Avionics framework - @Eearslya (Eearslya#7831)
+1. [HYD] Realistic randomized yellow accumulator starting state - @Crocket63 (crocket)
+1. [HYD] RAT code refactor to allow for hyd or elec rat design - @Crocket63 (crocket)
 1. [SYSTEM] Introduce Typescript based systems in VCockpit17 - @svengcz (Sven)
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
+1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
 
 ## 0.9.0
 
