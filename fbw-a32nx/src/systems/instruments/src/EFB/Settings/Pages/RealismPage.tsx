@@ -50,7 +50,7 @@ export const RealismPage = () => {
     const missedPaxRealismButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.None'), setting: 'NONE' , simVarValue: 0},
         { name: t('Settings.Typical'), setting: 'TYPICAL' , simVarValue: 1},
-        { name: t('Settings.ConnectingFlights'), setting: 'CONNECTING FLIGHTS', simVarValue: 2 },
+        { name: t('Settings.Realism.ConnectingFlights'), setting: 'CONNECTING FLIGHTS', simVarValue: 2 },
         { name: t('Settings.Frequent'), setting: 'FREQUENT', simVarValue: 3 },
     ];
 

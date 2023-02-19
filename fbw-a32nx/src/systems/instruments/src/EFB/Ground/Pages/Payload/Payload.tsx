@@ -41,6 +41,7 @@ export const Payload = () => {
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number', 200);
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 2_000);
     const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
+    const [missedPaxRealismSimVar] = useSimVar('L:A32NX_CONFIG_MISSED_PAX', 'Enum', 0);
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds', 2_000);
 
@@ -102,6 +103,20 @@ export const Payload = () => {
     const [aftContMissed, setAftContMissed] = useState<number>(0);
     const [aftBagMissed, setAftBagMissed] = useState<number>(0);
     const [aftBulkMissed, setAftBulkMissed] = useState<number>(0);
+
+    const chancesOfMissedConnection = useMemo(() => missedPaxRealismSimVar === 2 ? 0.1 : 0, [missedPaxRealismSimVar]);
+    const chancheOfPaxMissingWhenMissedConnection = 0.15;
+    const chancesOfPaxMissing = useMemo(() => {
+        const typicalChance = 0.02;
+        switch (missedPaxRealismSimVar) {
+            case 0: return 0;
+            case 1: return typicalChance;
+            case 2: return Math.max(0, typicalChance - chancesOfMissedConnection * chancheOfPaxMissingWhenMissedConnection);
+            case 3: return 0.25;
+            default: return 0;
+        }
+    }, [chancesOfMissedConnection, missedPaxRealismSimVar]);
+
 
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
     const cargoMissed = [fwdBagMissed, aftContMissed, aftBagMissed, aftBulkMissed];
@@ -193,7 +208,7 @@ export const Payload = () => {
         setTotalMissedPax(0);
         setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState) {
-            const chancesToMissBoarding = (Math.random() <= 0.05) ? 0.5 : 0.1;
+            const chancesToMissBoarding = (Math.random() <= chancesOfMissedConnection) ? chancheOfPaxMissingWhenMissedConnection : chancesOfPaxMissing;
             console.info('chances to miss: %d%%', chancesToMissBoarding * 100);
             let tempTotalMissed : number = 0;
             for (let station = 0 ; station < pax.length ; station++ ) tempTotalMissed += stationMissedPax(pax[station], paxDesired[station], setPaxDesired[station], chancesToMissBoarding);
