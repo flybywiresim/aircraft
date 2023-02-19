@@ -191,6 +191,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
+    .provides_aircraft_variable("KOHLSMAN SETTING MB:1", "Millibars", 0)?
+    .provides_aircraft_variable("KOHLSMAN SETTING HG:1", "inHg", 0)?
+    .provides_aircraft_variable("KOHLSMAN SETTING MB:2", "Millibars", 0)?
+    .provides_aircraft_variable("KOHLSMAN SETTING HG:2", "inHg", 0)?
     .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?
     .provides_aircraft_variable("LIGHT BEACON ON", "Bool", 0)?
     .provides_aircraft_variable("PLANE ALT ABOVE GROUND", "Feet", 0)?

@@ -411,7 +411,7 @@
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
     - Hz
     - The ADF active frequency that is saved for display for the left/right RMP.
-   
+
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
     - Hz
     - The VOR standby frequency that is saved for display for the left/right RMP.
@@ -1502,9 +1502,21 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<hPa>
     - The corrected average static pressure.
 
-- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_HPA
     - Arinc429Word<hPa>
     - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_HPA
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the first officer side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_HPA
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the first officer side.
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
