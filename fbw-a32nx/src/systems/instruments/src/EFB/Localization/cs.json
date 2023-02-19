@@ -560,7 +560,7 @@
       "Off": "Vypnuto",
       "Save": "Uložit",
       "Side": "Strana",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Externí hostitelská adresa SimBridge",
       "SimBridgePort": "Externí port SimBridge",
       "SyncMsfsFlightPlan": "Synchronizace letového plánu MSFS",
       "ThrottleDetents": "Zarážky plynu",
@@ -570,9 +570,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX synchronizace paliva",
+      "GsxPayloadEnabled": "GSX synchronizace cestujících a nákladu",
+      "Title": "Nastavení třetích stran"
     },
     "ThrottleConfig": {
       "Apply": "Použít",
