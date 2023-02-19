@@ -9,7 +9,7 @@ interface ChartWidgetProps {
     height: number,
     envelope: PerformanceEnvelope,
     limits: ChartLimits,
-    totalWeight: number,
+    gw: number,
     cg: number,
     mldw: number,
     mldwCg: number,
@@ -19,7 +19,7 @@ interface ChartWidgetProps {
 
 export const ChartWidget: React.FC<ChartWidgetProps> = ({
     width, height, envelope, limits,
-    totalWeight, cg,
+    gw, cg,
     mldw, mldwCg,
     zfw, zfwCg,
 }) => {
@@ -185,7 +185,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
             // MLW
             drawDiamond(mldwCg, mldw, secondary);
             // MTOW
-            drawDiamond(cg, totalWeight, primary);
+            drawDiamond(cg, gw, primary);
             // MZFW
             drawDiamond(zfwCg, zfw, base);
         };

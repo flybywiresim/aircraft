@@ -173,7 +173,9 @@
       },
       "Title": "Payload",
       "ZFW": "ZFW",
-      "ZFWCG": "ZFWCG"
+      "GW": "GW",
+      "ZFWCG": "ZFWCG",
+      "GWCG": "GWCG"
     },
     "Pushback": {
       "Title": "Pushback"

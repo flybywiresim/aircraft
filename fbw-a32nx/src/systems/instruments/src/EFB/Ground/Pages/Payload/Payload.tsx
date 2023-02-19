@@ -113,7 +113,7 @@ export const Payload = () => {
     const [zfwCg, setZfwCg] = useState(0);
     const [zfwDesired, setZfwDesired] = useState(0);
     const [zfwDesiredCg, setZfwDesiredCg] = useState(0);
-    const [totalWeight, setTotalWeight] = useState(emptyWeight);
+    const [gw, setGw] = useState(emptyWeight);
     const [cg, setCg] = useState(25);
     const [totalDesiredWeight, setTotalDesiredWeight] = useState(0);
     const [desiredCg, setDesiredCg] = useState(0);
@@ -134,6 +134,9 @@ export const Payload = () => {
     const simbriefPax = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerCount));
     const simbriefBag = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagCount));
     const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
+
+    const [displayZfw] = useState(true);
+    // const [displayZfw, setDisplayZfw] = useState(true);
 
     // GSX
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
@@ -277,6 +280,21 @@ export const Payload = () => {
         setTargetPax(newPax);
         setTargetCargo(newPax, newCargo);
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo]);
+
+    const processGw = useCallback((newGw) => {
+        const totalFuel = round(totalCurrentGallon * galToKg);
+        let paxCargoWeight = newGw - emptyWeight - totalFuel;
+
+        // Load pax first
+        const pWeight = paxWeight + paxBagWeight;
+        const newPax = Math.min(Math.round(paxCargoWeight / pWeight), maxPax);
+
+        paxCargoWeight -= newPax * pWeight;
+        const newCargo = Math.min(paxCargoWeight, maxCargo);
+
+        setTargetPax(newPax);
+        setTargetCargo(newPax, newCargo);
+    }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, totalCurrentGallon]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
         if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
@@ -485,9 +503,9 @@ export const Payload = () => {
         const totalFuel = round(totalCurrentGallon * galToKg);
 
         const totalFuelMoment = centerCurrent * galToKg * centerTankMoment + (LOutCurrent + ROutCurrent) * galToKg * outerTankMoment + (LInnCurrent + RInnCurrent) * galToKg * innerTankMoment;
-        const newTotalWeight = newZfw + totalFuel;
+        const newGw = newZfw + totalFuel;
         const newTotalMoment = newZfwMoment + totalFuelMoment;
-        const newCg = calculateCg(newTotalWeight, newTotalMoment);
+        const newCg = calculateCg(newGw, newTotalMoment);
 
         const newTotalWeightDesired = newZfwDesired + totalFuel;
         const newTotalDesiredMoment = newZfwDesiredMoment + totalFuelMoment;
@@ -497,7 +515,7 @@ export const Payload = () => {
         setZfwCg(newZfwCg);
         setZfwDesired(newZfwDesired);
         setZfwDesiredCg(newZfwDesiredCg);
-        setTotalWeight(newTotalWeight);
+        setGw(newGw);
         setCg(newCg);
         setTotalDesiredWeight(newTotalWeightDesired);
         setDesiredCg(newDesiredCg);
@@ -536,7 +554,7 @@ export const Payload = () => {
             setMlwDesired(newMlwDesired);
             setMlwDesiredCg(newMlwDesiredCg);
         } else {
-            setMlw(newTotalWeight);
+            setMlw(newGw);
             setMlwCg(newCg);
             setMlwDesired(newTotalWeightDesired);
             setMlwDesiredCg(newDesiredCg);
@@ -640,40 +658,59 @@ export const Payload = () => {
 
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {t('Ground.Payload.ZFW')}
+                                                {displayZfw ? t('Ground.Payload.ZFW') : t('Ground.Payload.GW')}
                                             </td>
                                             <td>
-                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${usingMetric ? Loadsheet.specs.weights.maxZfw.toFixed(0) : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
-                                                    <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
-                                                        <PayloadValueInput
-                                                            min={Math.round(usingMetric ? emptyWeight : Units.kilogramToPound(emptyWeight))}
-                                                            max={Math.round(usingMetric ? Loadsheet.specs.weights.maxZfw : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw))}
-                                                            value={usingMetric ? zfwDesired : Units.kilogramToPound(zfwDesired)}
-                                                            onBlur={(x) => {
-                                                                if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
-                                                            }}
-                                                            unit={massUnitForDisplay}
-                                                            disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
-                                                        />
-                                                    </div>
-                                                </TooltipWrapper>
+                                                {(displayZfw
+                                                    ? (
+                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${usingMetric ? Loadsheet.specs.weights.maxZfw.toFixed(0) : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                            <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
+                                                                <PayloadValueInput
+                                                                    min={Math.round(usingMetric ? emptyWeight : Units.kilogramToPound(emptyWeight))}
+                                                                    max={Math.round(usingMetric ? Loadsheet.specs.weights.maxZfw : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw))}
+                                                                    value={usingMetric ? zfwDesired : Units.kilogramToPound(zfwDesired)}
+                                                                    onBlur={(x) => {
+                                                                        if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
+                                                                    }}
+                                                                    unit={massUnitForDisplay}
+                                                                    disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
+                                                                />
+                                                            </div>
+                                                        </TooltipWrapper>
+                                                    )
+                                                    : (
+                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${usingMetric ? Loadsheet.specs.weights.maxZfw.toFixed(0) : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                            <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
+                                                                <PayloadValueInput
+                                                                    min={Math.round(usingMetric ? emptyWeight : Units.kilogramToPound(emptyWeight))}
+                                                                    max={Math.round(usingMetric ? Loadsheet.specs.weights.maxZfw : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw))}
+                                                                    value={usingMetric ? zfwDesired : Units.kilogramToPound(zfwDesired)}
+                                                                    onBlur={(x) => {
+                                                                        if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
+                                                                    }}
+                                                                    unit={massUnitForDisplay}
+                                                                    disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
+                                                                />
+                                                            </div>
+                                                        </TooltipWrapper>
+                                                    )
+                                                )}
                                             </td>
                                             <td className="px-4 w-20 font-mono font-light whitespace-nowrap text-md">
-                                                <PayloadValueUnitDisplay value={zfw} padTo={5} unit={massUnitForDisplay} />
+                                                <PayloadValueUnitDisplay value={displayZfw ? zfw : gw} padTo={5} unit={massUnitForDisplay} />
                                             </td>
                                         </tr>
 
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {t('Ground.Payload.ZFWCG')}
-                                                {' / CG'}
+                                                {t(displayZfw ? 'Ground.Payload.ZFWCG' : 'Ground.Payload.GWCG')}
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFWCG')} ${40}%`}>
                                                     <div className="px-4 font-light whitespace-nowrap text-md">
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
-                                                            {`${zfwDesiredCg.toFixed(2)} / ${desiredCg.toFixed(2)} %`}
+                                                            {`${displayZfw ? zfwDesiredCg.toFixed(2) : desiredCg.toFixed(2)} %`}
                                                         </div>
                                                         {/*
                                                             <SimpleInput
@@ -685,12 +722,12 @@ export const Payload = () => {
                                                                 value={zfwCg.toFixed(2)}
                                                                 onBlur={{(x) => processZfwCg(x)}
                                                             />
-                                                            */}
+                                                        */}
                                                     </div>
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
-                                                {`${zfwCg.toFixed(2)} / ${cg.toFixed(2)} %`}
+                                                {`${displayZfw ? zfwCg.toFixed(2) : cg.toFixed(2)} %`}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -843,7 +880,7 @@ export const Payload = () => {
                             envelope={Loadsheet.chart.performanceEnvelope}
                             limits={Loadsheet.chart.chartLimits}
                             cg={boardingStarted ? Math.round(cg * 100) / 100 : Math.round(desiredCg * 100) / 100}
-                            totalWeight={boardingStarted ? Math.round(totalWeight) : Math.round(totalDesiredWeight)}
+                            gw={boardingStarted ? Math.round(gw) : Math.round(totalDesiredWeight)}
                             mldwCg={boardingStarted ? Math.round(mlwCg * 100) / 100 : Math.round(mlwDesiredCg * 100) / 100}
                             mldw={boardingStarted ? Math.round(mlw) : Math.round(mlwDesired)}
                             zfwCg={boardingStarted ? Math.round(zfwCg * 100) / 100 : Math.round(zfwDesiredCg * 100) / 100}
