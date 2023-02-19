@@ -159,8 +159,10 @@ export const Payload = () => {
 
     const stationMissedPax = (stationPax:number, stationPaxDesired:number, setPax:(numberToSet:number)=>void) => {
         let stationMissedPax = 0;
+        const chancesToMissBoarding = (Math.random() <= 0.05) ? 0.5 : 0.1;
+        console.info('chances to miss: %d%%', chancesToMissBoarding * 100);
         for (let i = stationPax; i < stationPaxDesired; i++) {
-            if (Math.random() <= 0.10) stationMissedPax++;
+            if (Math.random() <= chancesToMissBoarding) stationMissedPax++;
         }
         console.info('station pax missing: %d', stationMissedPax);
         setTotalMissedPax(totalMissedPax + stationMissedPax);
@@ -294,7 +296,7 @@ export const Payload = () => {
                 totalNumberPaxCargo += numberPaxCargo[station];
                 // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
             }
-            for (let i = 0; i < numberPaxCargoToRemove; i++) {
+            for (let i = 0; i < Math.min(numberPaxCargoToRemove, totalNumberPaxCargo); i++) {
                 const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargo);
                 let countMin : number = 0;
                 for (let station = cargoDesired.length - 1; station > 0; station--) {
