@@ -28,8 +28,6 @@ import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../UtilComponents/Modals/Modals';
 import { useAppSelector } from '../../../Store/store';
 
-let totalMissedPax = 0;
-
 export const Payload = () => {
     const { usingMetric } = Units;
     const { showModal } = useModals();
@@ -69,7 +67,7 @@ export const Payload = () => {
 
     const paxDesired = [paxADesired, paxBDesired, paxCDesired, paxDDesired];
     const [setPaxDesired] = useState([setPaxADesired, setPaxBDesired, setPaxCDesired, setPaxDDesired]);
-
+    const [totalMissedPax, setTotalMissedPax] = useState(0);
     const totalPaxDesired = useMemo(() => {
         const paxDesiredWithMissed = (paxDesired.reduce((a, b) => parseInt(a) + parseInt(b)) + totalMissedPax);
         console.info('pax desired : %d with %d missed', paxDesiredWithMissed, totalMissedPax);
@@ -165,12 +163,12 @@ export const Payload = () => {
             if (Math.random() <= 0.10) stationMissedPax++;
         }
         console.info('station pax missing: %d', stationMissedPax);
-        totalMissedPax += stationMissedPax;
+        setTotalMissedPax(totalMissedPax + stationMissedPax);
         setPax(stationPaxDesired - stationMissedPax);
     };
 
     const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
-        totalMissedPax = 0;
+        setTotalMissedPax(0);
         setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState) {
             stationMissedPax(paxA, paxADesired, setPaxADesired);
@@ -178,6 +176,7 @@ export const Payload = () => {
             stationMissedPax(paxC, paxCDesired, setPaxCDesired);
             stationMissedPax(paxD, paxDDesired, setPaxDDesired);
             console.info('pax missing plane: %d', totalMissedPax);
+            removeTargetPaxCargo(totalMissedPax);
         }
     };
 
@@ -285,6 +284,31 @@ export const Payload = () => {
         }
         fillStation(0, 1, paxRemaining);
     }, [...paxDesired, totalPaxDesired, maxPax, ...stationSize, ...seatMap]);
+
+    const removeTargetPaxCargo = (numberPaxCargoToRemove : number) => {
+        let numberPaxCargo : number[];
+        let totalNumberPaxCargo : number = 0;
+        if (paxBagWeight > 0) {
+            for (let station = cargoDesired.length - 1; station > 0; station--) {
+                numberPaxCargo[station] = Math.floor(cargoDesired[station] / paxBagWeight);
+                totalNumberPaxCargo += numberPaxCargo[station];
+                // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
+            }
+            for (let i = 0; i < numberPaxCargoToRemove; i++) {
+                const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargo);
+                let countMin : number = 0;
+                for (let station = cargoDesired.length - 1; station > 0; station--) {
+                    if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
+                        countMin += numberPaxCargo[station];
+                        setCargoDesired[station](cargoDesired[station] - paxBagWeight);
+                        numberPaxCargo[station] -= 1;
+                        totalNumberPaxCargo -= 1;
+                        break;
+                    }
+                }
+            }
+        }
+    };
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
         const bagWeight = numberOfPax * perBagWeight;
@@ -569,7 +593,7 @@ export const Payload = () => {
     useEffect(() => {
         // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
-            totalMissedPax = 0;
+            totalMissedPax(0);
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
         }
@@ -718,7 +742,7 @@ export const Payload = () => {
     useEffect(() => {
         updateAllWeights();
     }, [
-        ...pax, ...paxDesired,
+        ...pax, ...paxDesired, totalMissedPax,
         ...cargo, ...cargoDesired,
         ...fuel, destEfob,
         paxWeight, paxBagWeight,
