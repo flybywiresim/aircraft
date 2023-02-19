@@ -36,9 +36,11 @@ export class FmsClient {
 
     private readonly publisher: Publisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>;
 
-    private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages>;
+    private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages>;
 
     private requestId: number = 0;
+
+    private routerResponseCallbacks: ((code: AtsuStatusCodes, requestId: number) => boolean)[] = [];
 
     private genericRequestResponseCallbacks: ((requestId: number) => boolean)[] = [];
 
@@ -81,7 +83,7 @@ export class FmsClient {
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.bus = new EventBus();
         this.publisher = this.bus.getPublisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>();
-        this.subscriber = this.bus.getSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages>();
+        this.subscriber = this.bus.getSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages>();
 
         this.fms = fms;
         this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
@@ -127,6 +129,15 @@ export class FmsClient {
         this.subscriber.on('atcStationStatus').handle((status) => this.atcStationStatus = status);
         this.subscriber.on('atcMaxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('atcAutomaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
+        this.subscriber.on('routerManagementResponse').handle((data) => {
+            this.routerResponseCallbacks.every((callback, index) => {
+                if (callback(data.status, data.requestId)) {
+                    this.routerResponseCallbacks.splice(index, 1);
+                    return false;
+                }
+                return true;
+            });
+        });
         this.subscriber.on('routerDatalinkStatus').handle((data) => this.datalinkStatus = data);
         this.subscriber.on('routerDatalinkMode').handle((data) => this.datalinkMode = data);
 
@@ -371,7 +382,7 @@ export class FmsClient {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('routerRequestStationAvailable', { callsign, requestId }, true, false);
-            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
+            this.routerResponseCallbacks.push((code: AtsuStatusCodes, id: number) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
@@ -447,24 +458,20 @@ export class FmsClient {
         this.publisher.pub('atcResetAtisAutoUpdate', true, true, false);
     }
 
-    public connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
+    public async connectToNetworks(callsign: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            let requestId = this.requestId++;
-            this.publisher.pub('routerDisconnect', requestId, true, false);
-            this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
-                if (id === requestId) {
-                    if (code === AtsuStatusCodes.Ok) {
-                        requestId = this.requestId++;
-                        this.publisher.pub('routerConnect', { callsign, requestId }, true, false);
-                        this.requestAtsuStatusCodeCallbacks.push((code: AtsuStatusCodes, id: number) => {
-                            if (id === requestId) resolve(code);
-                            return id === requestId;
-                        });
-                    } else {
-                        resolve(code);
-                    }
+            const disconnectRequestId = this.requestId++;
+            this.publisher.pub('routerDisconnect', disconnectRequestId, true, false);
+            this.routerResponseCallbacks.push((_code: AtsuStatusCodes, id: number) => {
+                if (id === disconnectRequestId) {
+                    const connectRequestId = this.requestId++;
+                    this.publisher.pub('routerConnect', { callsign, requestId: connectRequestId }, true, false);
+                    this.routerResponseCallbacks.push((code: AtsuStatusCodes, id: number) => {
+                        if (id === connectRequestId) resolve(code);
+                        return id === connectRequestId;
+                    });
                 }
-                return id === requestId;
+                return id === disconnectRequestId;
             });
         });
     }
