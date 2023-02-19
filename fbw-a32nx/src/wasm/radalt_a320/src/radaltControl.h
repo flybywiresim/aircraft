@@ -338,7 +338,7 @@ void read_probe_data(int probe_i, probeStruct probe_pos) {
 	
 	if (findMin(beamMin, beamActual)) {
 		radAlt = user_pos.altitude - probe_pos.altitude;
-		beamMin = sqrt(pow(probe_pos.pitch * 100, 2) + pow(radAlt, 2));
+		beamMin = beamActual;
 		plane_alt = user_pos.altitude;			 // Debug
 		probe_alt = probe_pos.altitude;			 // Debug
 		plane_abv = user_pos.altAbvGnd;			 // Debug

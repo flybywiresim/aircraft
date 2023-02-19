@@ -40,7 +40,7 @@ public:
 
 	void initializeVars() {
 		DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
-		RadAlt = register_named_variable("A32NX_RADAR_ALTIMETER");
+		RadAlt = register_named_variable("A32NX_RA_RAW");
 
 		//this->setDeveloperState(0);
 		this->setRadAlt(99999);
