@@ -157,15 +157,13 @@ export const Payload = () => {
         COMPLETED: 6,
     };
 
-    const stationMissedPax = (stationPax:number, stationPaxDesired:number, setPax:(numberToSet:number)=>void) => {
+    const stationMissedPax = (stationPax:number, stationPaxDesired:number, setPax:(numberToSet:number)=>void, chance : number) => {
         let stationMissedPax = 0;
-        const chancesToMissBoarding = (Math.random() <= 0.05) ? 0.5 : 0.1;
-        console.info('chances to miss: %d%%', chancesToMissBoarding * 100);
         for (let i = stationPax; i < stationPaxDesired; i++) {
-            if (Math.random() <= chancesToMissBoarding) stationMissedPax++;
+            if (Math.random() <= chance) stationMissedPax++;
         }
-        console.info('station pax missing: %d', stationMissedPax);
         setTotalMissedPax(totalMissedPax + stationMissedPax);
+        console.info('station pax missing: %d, total:%d', stationMissedPax, totalMissedPax);
         setPax(stationPaxDesired - stationMissedPax);
     };
 
@@ -173,10 +171,9 @@ export const Payload = () => {
         setTotalMissedPax(0);
         setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState) {
-            stationMissedPax(paxA, paxADesired, setPaxADesired);
-            stationMissedPax(paxB, paxBDesired, setPaxBDesired);
-            stationMissedPax(paxC, paxCDesired, setPaxCDesired);
-            stationMissedPax(paxD, paxDDesired, setPaxDDesired);
+            const chancesToMissBoarding = (Math.random() <= 0.05) ? 0.5 : 0.1;
+            console.info('chances to miss: %d%%', chancesToMissBoarding * 100);
+            for (let station = 0 ; station < pax.length ; station++ ) stationMissedPax(pax[station], paxDesired[station], setPaxDesired[station], chancesToMissBoarding);
             console.info('pax missing plane: %d', totalMissedPax);
             removeTargetPaxCargo(totalMissedPax);
         }
@@ -595,7 +592,7 @@ export const Payload = () => {
     useEffect(() => {
         // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
-            totalMissedPax(0);
+            setTotalMissedPax(0);
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
         }
