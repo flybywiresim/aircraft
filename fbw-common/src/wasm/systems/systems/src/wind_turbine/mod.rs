@@ -36,11 +36,6 @@ impl WindTurbine {
     const FRICTION_COEFFICIENT: f64 = 0.0002;
     const AIR_LIFT_COEFFICIENT: f64 = 0.018;
 
-    // const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-    //     0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
-    // ];
-    // const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
-
     pub fn new(
         context: &mut InitContext,
         rpm_governor_breakpoints: [f64; 9],
@@ -83,6 +78,8 @@ impl WindTurbine {
         );
 
         self.propeller_angle = Angle::new::<degree>(cur_alpha_degrees);
+
+        println!("BLADE PITCH {:.2}", self.propeller_angle.get::<degree>());
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
         let air_speed_torque = cur_alpha_degrees.to_radians().sin()

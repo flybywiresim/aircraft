@@ -216,9 +216,7 @@ mod tests {
         }
 
         fn in_emergency() -> Self {
-            Self {
-                is_emergency: false,
-            }
+            Self { is_emergency: true }
         }
 
         fn set_in_emergency(&mut self, state: bool) {
@@ -371,7 +369,12 @@ mod tests {
                     &context.with_delta(cur_time_step),
                     &self.rat_controller,
                     &self.gcu,
-                )
+                );
+
+                println!(
+                    "GENERATOR POWER OUTPUT {:.0}W",
+                    self.gcu.generated_power().get::<watt>()
+                );
             }
         }
     }
@@ -388,6 +391,33 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.write_by_name("AIRSPEED INDICATED", 340.);
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+    }
+
+    #[test]
+    fn medium_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.write_by_name("AIRSPEED INDICATED", 200.);
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+    }
+
+    #[test]
+    fn min_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.write_by_name("AIRSPEED INDICATED", 140.);
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+    }
+
+    #[test]
+    fn stalling_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.write_by_name("AIRSPEED INDICATED", 80.);
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
     }
