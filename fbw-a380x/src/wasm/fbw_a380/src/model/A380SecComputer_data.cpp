@@ -1,195 +1,9 @@
-#include "A380PrimComputer.h"
+#include "A380SecComputer.h"
 
-base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct{
-  false,
-  false,
-
-  {
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-  a380_lateral_efcs_law::None,
-  a380_lateral_efcs_law::None,
-  a380_pitch_efcs_law::None,
-  a380_pitch_efcs_law::None,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
+base_sec_analog_outputs rtP_sec_analog_output_MATLABStruct{
   0.0,
   0.0,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
   0.0,
-  0.0,
-  false,
-  0.0,
-  0.0,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-  0.0,
-  false
-} ;
-
-base_prim_laws_outputs rtP_prim_laws_output_MATLABStruct{
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  }
-} ;
-
-base_prim_analog_outputs rtP_prim_analog_output_MATLABStruct{
   0.0,
   0.0,
   0.0,
@@ -204,11 +18,29 @@ base_prim_analog_outputs rtP_prim_analog_output_MATLABStruct{
   0.0
 } ;
 
-base_prim_discrete_outputs rtP_prim_discrete_output_MATLABStruct{
-  false,
-  false,
-  false,
-  false,
+base_sec_laws_outputs rtP_sec_laws_output_MATLABStruct{
+  {
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  }
+} ;
+
+base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct{
   false,
   false,
   false,
@@ -225,14 +57,10 @@ base_prim_discrete_outputs rtP_prim_discrete_output_MATLABStruct{
   false
 } ;
 
-A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComputer_P{
+A380SecComputer::Parameters_A380SecComputer_T A380SecComputer::A380SecComputer_P{
 
   0.5,
 
-  2.0,
-
-  1.0,
-
   1.0,
 
   0.0,
@@ -241,29 +69,67 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   0.0,
 
-  0.0,
-
-  0.0,
-
-  0.0,
-
-  0.0,
-
-  23.0,
-
-  23.0,
-
-  12.0,
-
-  15.0,
-
-  12.0,
-
-  15.0,
-
-  12.0,
+  21.0,
 
   21.0,
+
+  21.0,
+
+  12.0,
+
+  15.0,
+
+  18.0,
+
+  21.0,
+
+  18.0,
+
+  21.0,
+
+  12.0,
+
+  15.0,
+
+  12.0,
+
+  15.0,
+
+  12.0,
+
+  18.0,
+
+  15.0,
+
+  15.0,
+
+  18.0,
+
+  12.0,
+
+  18.0,
+
+  12.0,
+
+  18.0,
+
+  12.0,
+
+  15.0,
+
+  12.0,
+
+  15.0,
+
+  21.0,
+
+  21.0,
+
+  21.0,
+
+  13.0,
+
+  14.0,
 
   19.0,
 
@@ -273,123 +139,11 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   14.0,
 
-  13.0,
-
   19.0,
 
   13.0,
-
-  13.0,
-
-  19.0,
-
-  13.0,
-
-  12.0,
-
-  15.0,
-
-  18.0,
-
-  21.0,
-
-  12.0,
-
-  15.0,
-
-  18.0,
-
-  21.0,
-
-  12.0,
-
-  15.0,
-
-  18.0,
-
-  21.0,
-
-  18.0,
-
-  21.0,
-
-  12.0,
-
-  15.0,
-
-  12.0,
-
-  15.0,
-
-  12.0,
-
-  15.0,
-
-  12.0,
-
-  15.0,
-
-  13.0,
-
-  14.0,
-
-  19.0,
 
   20.0,
-
-  13.0,
-
-  14.0,
-
-  19.0,
-
-  20.0,
-
-  18.0,
-
-  21.0,
-
-  18.0,
-
-  21.0,
-
-  12.0,
-
-  15.0,
-
-  18.0,
-
-  21.0,
-
-  12.0,
-
-  15.0,
-
-  18.0,
-
-  21.0,
-
-  12.0,
-
-  15.0,
-
-  18.0,
-
-  21.0,
-
-  12.0,
-
-  15.0,
-
-  18.0,
-
-  12.0,
-
-  15.0,
-
-  21.0,
-
-  13.0,
 
   14.0,
 
@@ -403,151 +157,11 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   13.0,
 
-  14.0,
-
-  19.0,
-
-  20.0,
-
-  13.0,
-
-  14.0,
-
-  13.0,
-
-  14.0,
-
-  11.0,
-
-  12.0,
-
-  13.0,
-
-  21.0,
-
-  11.0,
-
-  12.0,
-
-  13.0,
-
-  21.0,
-
-  17.0,
-
-  18.0,
-
-  19.0,
-
-  20.0,
-
-  21.0,
-
-  26.0,
+  28.0,
 
   19.0,
 
   19.0,
-
-  21.0,
-
-  17.0,
-
-  18.0,
-
-  19.0,
-
-  20.0,
-
-  21.0,
-
-  26.0,
-
-  17.0,
-
-  18.0,
-
-  19.0,
-
-  20.0,
-
-  21.0,
-
-  26.0,
-
-  21.0,
-
-  20.0,
-
-  5.0,
-
-  35.0,
-
-  35.0,
-
-  35.0,
-
-  35.0,
-
-  0.05,
-
-  23.0,
-
-  23.0,
-
-  23.0,
-
-  23.0,
-
-  72.0,
-
-  72.0,
-
-  72.0,
-
-  72.0,
-
-  -0.02,
-
-  0.05,
-
-  0.0,
-
-  0.0,
-
-  0.0,
-
-  35.0,
-
-  35.0,
-
-  0.0,
-
-  0.05,
-
-  0.0,
-
-  0.0,
-
-  0.0,
-
-  35.0,
-
-  35.0,
-
-  0.0,
-
-  0.0,
-
-  0.0,
-
-  1.0,
-
-  2.0,
-
-  3.0,
-
-  4.0,
 
   5.0,
 
@@ -559,12 +173,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   -1.0,
 
-  -1.0,
-
-  -1.0,
-
-  -20.0,
-
   -30.0,
 
   -30.0,
@@ -572,14 +180,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   -30.0,
 
   -30.0,
-
-  -30.0,
-
-  -30.0,
-
-  -5.0,
-
-  -17.0,
 
   -5.0,
 
@@ -592,32 +192,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   -40.0,
 
   -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -40.0,
-
-  -30.0,
 
   -30.0,
 
@@ -633,32 +207,16 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   2900.0,
 
-  1.0,
-
-  1.0,
-
-  1.0,
-
   0.5,
 
   0.5,
 
-  0.2,
-
   30.0,
 
   30.0,
-
-  5.0,
 
   1.0,
 
-  1.0,
-
-  1.0,
-
-  20.0,
-
   30.0,
 
   30.0,
@@ -666,14 +224,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   30.0,
 
   30.0,
-
-  30.0,
-
-  30.0,
-
-  5.0,
-
-  17.0,
 
   5.0,
 
@@ -687,30 +237,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   40.0,
 
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
-  40.0,
-
   30.0,
 
   30.0,
@@ -720,33 +246,9 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   30.0,
 
   30.0,
-
-  30.0,
-
-  SignStatusMatrix::NoComputedData,
 
   SignStatusMatrix::NormalOperation,
 
-  a380_pitch_efcs_law::AlternateLaw2,
-
-  50.0F,
-
-  false,
-
-  false,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  false,
-
   true,
 
   true,
@@ -759,11 +261,17 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   true,
 
-  false,
+  0,
 
-  true,
+  1,
 
-  true,
+  2,
+
+  0,
+
+  1,
+
+  2,
 
 
   {
@@ -795,29 +303,10 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
         false,
         false,
         false,
-        false,
-        false,
-        false,
-        false,
-        false,
         false
       },
 
       {
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
         0.0,
         0.0,
         0.0,
@@ -964,48 +453,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
           {
             0U,
             0.0F
-          }
-        },
-
-        {
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
           },
 
           {
@@ -1305,158 +752,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
           {
             0U,
             0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          }
-        },
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-
-        {
-          {
-            0U,
-            0.0F
-          }
-        },
-
-        {
-          {
-            0U,
-            0.0F
           }
         },
 
@@ -1486,38 +781,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
             0.0F
           }
         },
-
-        {
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          }
-        },
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
         0.0,
         0.0,
 
@@ -2046,6 +1309,141 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -2439,17 +1837,74 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
         0.0,
         0.0,
         0.0,
+        0.0
+      },
+
+      {
         0.0,
         0.0,
         0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
+        0.0
+      }
+    },
+
+    {
+      false,
+      false,
+      0,
+      a380_lateral_efcs_law::NormalLaw,
+      a380_pitch_efcs_law::NormalLaw,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      0.0,
+      0.0,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+
+      {
         0.0,
         0.0,
         0.0,
@@ -2457,6 +1912,10 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
       },
 
       {
+        0.0,
+        0.0,
+        0.0,
+        0.0,
         0.0,
         0.0,
         0.0,
@@ -2468,162 +1927,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     {
       false,
       false,
-
-      {
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      },
-
-      {
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
-      },
-
-      {
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
-      },
-      a380_lateral_efcs_law::NormalLaw,
-      a380_lateral_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      0.0,
-      0.0,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      0.0,
-      0.0,
-      false,
-      0.0,
-      0.0,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-
-      {
-        0.0,
-        0.0,
-        0.0,
-        0.0
-      },
-
-      {
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
-      },
-      0.0,
-      false
-    },
-
-    {
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
       false,
       false,
       false,
@@ -2639,6 +1942,9 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     },
 
     {
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -2654,141 +1960,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     },
 
     {
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
       {
         0U,
         0.0F
@@ -3041,141 +2212,83 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     {
       0U,
       0.0F
+    }
+  },
+
+
+  {
+    false,
+    false,
+    0,
+    a380_lateral_efcs_law::None,
+    a380_pitch_efcs_law::None,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0.0,
+    0.0,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+
+    {
+      0.0,
+      0.0,
+      0.0,
+      0.0
     },
 
     {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
-    },
-
-    {
-      0U,
-      0.0F
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     }
   },
 
@@ -3185,21 +2298,11 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   -5.0,
 
-
-  { 0.0, 0.0, -2.0, -33.75, -45.0 },
-
-
-  { 0.0, 0.05, 0.051, 0.5, 1.0 },
+  0.0,
 
   5.0,
 
   0.0,
-
-  -25.0,
-
-  0.0,
-
-  -50.0,
 
   3.5,
 
@@ -3231,6 +2334,10 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   0.0,
 
+  0.0,
+
+  0.0,
+
   1.0,
 
   -1.0,
@@ -3241,56 +2348,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   -1.0,
 
-
-  { 8.7, 8.7, 6.4, 6.4, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 14.2, 14.2, 14.2, 14.2, 13.1, 13.1, 13.1, 13.1,
-    13.0, 13.0, 13.0, 13.0 },
-
-
-  { 0.0, 0.5, 0.9, 1.0 },
-
-
-  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
-
-
-  { 6.5, 6.5, 4.6, 4.6, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.9, 11.9, 11.9, 11.9, 11.0, 11.0, 11.0, 11.0,
-    10.6, 10.6, 10.6, 10.6 },
-
-
-  { 0.0, 0.5, 0.9, 1.0 },
-
-
-  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
-
-  350.0,
-
-  0.82,
-
-  380.0,
-
-  0.88,
-
-  0.017453292519943295,
-
-
-  { 350.0, 350.0, 356.0, 356.0 },
-
-
-  { -4.0, -3.0, -1.0, 0.0 },
-
-
-  { 0.82, 0.82, 0.83, 0.83 },
-
-
-  { -4.0, -3.0, -1.0, 0.0 },
-
-
-  { 0.82, 0.82, 0.85, 0.85 },
-
-
-  { -4.0, -3.0, -1.0, 0.0 },
-
-  0.0,
-
   0.0,
 
   -1.0,
@@ -3313,73 +2370,9 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   -30.0,
 
-  -1.0,
-
-  0.7,
-
   0.0,
 
   0.0,
-
-  0.0,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
-
-  0.0F,
 
   16.0F,
 
@@ -3390,42 +2383,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   20.0F,
 
   30.0F,
-
-
-  { 3U, 5U },
-
-
-  { 3U, 5U },
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
 
   false,
 
@@ -3440,6 +2397,16 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   false,
 
   true,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
 
   false
 };
