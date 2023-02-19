@@ -4,6 +4,7 @@
 #ifdef EXAMPLES
 
 #include <string>
+#include <iomanip>
 
 #include "logging.h"
 #include "ExampleModule.h"
@@ -129,7 +130,7 @@ bool ExampleModule::initialize() {
                                                       beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
 
   // Data definition variables
-  std::vector<DataDefinition> exampleDataDef = {
+  std::vector <DataDefinition> exampleDataDef = {
     {"LIGHT STROBE", 0, UNITS.Bool},
     {"LIGHT WING",   0, UNITS.Bool},
     {"ZULU TIME"},
@@ -167,35 +168,32 @@ bool ExampleModule::initialize() {
   bigClientDataPtr =
     dataManager->make_clientdataarea_var<BigClientData>("BIG CLIENT DATA");
   bigClientDataPtr->setSkipChangeCheck(true);
-  bigClientDataPtr->addCallback([=]() {
+  bigClientDataPtr->addCallback([&]() {
     // Big Client Data
-    LOG_INFO_BLOCK(
-      std::cout << "--- CALLBACK: BIG CLIENT DATA (External - reading)" << std::endl;
-      std::cout << bigClientDataPtr->str() << std::endl;
-      std::cout << "Bid Client Data data: " << std::endl;
-      auto s = std::string_view((const char*) &bigClientDataPtr->data().dataChunk, 100);
-      std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s
-                << " ... " << std::endl;
-    )
+    std::cout << "--- CALLBACK: BIG CLIENT DATA (External - reading)" << std::endl;
+    std::cout << bigClientDataPtr->str() << std::endl;
+    std::cout << "Bid Client Data data: " << std::endl;
+    auto s = std::string_view((const char*) &bigClientDataPtr->data().dataChunk, 100);
+    std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s
+              << " ... " << std::endl;
   });
-  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
 
   // Metadata for the ClientDataBufferedAreaVariable test
   metaDataPtr =
     dataManager->make_clientdataarea_var<BufferedAreaMetaData>("HUGE CLIENT DATA META DATA");
   metaDataPtr->setSkipChangeCheck(true);
-  metaDataPtr->addCallback([=]() {
+  metaDataPtr->addCallback([&]() {
+    receiptTimerStart = std::chrono::high_resolution_clock::now();
     hugeClientDataPtr->reserve(metaDataPtr->data().size);
     // Huge Client Data Meta Data
-    LOG_INFO_BLOCK(
-      std::cout << "--- CALLBACK: HUGE CLIENT META DATA (External - reading)" << std::endl;
+    std::cout << "--- CALLBACK: HUGE CLIENT META DATA (External - reading)" << std::endl;
     std::cout << metaDataPtr->str() << std::endl;
     std::cout << "HUGE CLIENT DATA META DATA size = " << metaDataPtr->data().size
               << " fingerprint = " << metaDataPtr->data().hash << std::endl;
     std::cout << std::endl;
-    );
   });
   if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
     LOG_ERROR("Failed to request periodic data from sim");
@@ -205,17 +203,24 @@ bool ExampleModule::initialize() {
   hugeClientDataPtr =
     dataManager->make_clientdatabufferedarea_var<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
   hugeClientDataPtr->setSkipChangeCheck(true);
-  hugeClientDataPtr->addCallback([=]() {
-    LOG_INFO_BLOCK(
-      std::cout << "--- CALLBACK: HUGE CLIENT DATA (External - reading)" << std::endl;
+  hugeClientDataPtr->addCallback([&]() {
+    receiptTimerEnd = std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::high_resolution_clock::now() - receiptTimerStart);
+    std::cout << "--- CALLBACK: HUGE CLIENT DATA (External - reading)" << std::endl;
     std::cout << hugeClientDataPtr->str() << std::endl;
     const uint64_t fingerPrintFvn = fingerPrintFVN(hugeClientDataPtr->getData());
-    std::cout << "HUGE CLIENT DATA size = " << hugeClientDataPtr->getData().size()
-              << " fingerprint = " << fingerPrintFvn
-              << " fingerprint match = " << std::boolalpha
-              << (fingerPrintFvn == metaDataPtr->data().hash) << std::endl;
+    std::cout << "HUGE CLIENT DATA "
+              << " size = " << hugeClientDataPtr->getData().size()
+              << " bytes = " << hugeClientDataPtr->getReceivedBytes()
+              << " chunks = " << hugeClientDataPtr->getReceivedChunks()
+              << " fingerprint = " << std::setw(21) << fingerPrintFvn
+              << " (match = " << std::boolalpha << (fingerPrintFvn == metaDataPtr->data().hash) << ")"
+              << " time = " << std::setw(10) << receiptTimerEnd.count() << " ns" << std::endl;
+    std::cout << "Content: " << "["
+              << std::string(hugeClientDataPtr->getData().begin(),
+                             hugeClientDataPtr->getData().begin() + hugeClientDataPtr->getReceivedBytes())
+              << "]" << std::endl;
     std::cout << std::endl;
-    )
   });
   if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
     LOG_ERROR("Failed to request periodic data from sim");

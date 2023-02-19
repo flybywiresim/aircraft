@@ -228,7 +228,6 @@ public:
 
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_TRACE("ClientDataAreaVariable: Received client data: " + name);
-
     const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
 
     // if not required then skip the rather expensive check for change

@@ -21,10 +21,13 @@ private:
   std::vector<T> content;
 
   // the number of bytes expected to be received - set in reserve()
-  std::size_t expectedByteCount;
+  std::size_t expectedByteCount{};
 
   // the number of bytes received so far - re-set in reserve()
-  std::size_t receivedBytes;
+  std::size_t receivedBytes{};
+
+  // the number of chunks received so far - re-set in reserve()
+  std::size_t receivedChunks{};
 
   // hide incompatible methods
   // TODO: is this ok??
@@ -58,7 +61,6 @@ public:
 
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_TRACE("ClientDataBufferedAreaVariable: Received client data: " + this->name);
-
     const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
 
     std::size_t remainingBytes = this->expectedByteCount - this->receivedBytes;
@@ -66,48 +68,45 @@ public:
       remainingBytes = ChunkSize;
     }
 
-    auto now = std::chrono::high_resolution_clock::now();
     // memcpy into a vector ignores the vector's metadata and just copies the data
     // it is therefore faster than std::copy or std::back_inserter but
-    std::memcpy(&this->content.data()[this->receivedBytes], &pClientData->dwData, remainingBytes);
-    // std::copy(&pClientData->dwData, &pClientData->dwData + remainingBytes, std::back_inserter(this->content));
-    // this->content.insert(this->content.end(), &pClientData->dwData, &pClientData->dwData + remainingBytes);
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(
-      std::chrono::high_resolution_clock::now() - now);
+    // std::memcpy(&this->content.data()[this->receivedBytes], &pClientData->dwData, remainingBytes);
+    BYTE* const pDataStart = (BYTE*) &pClientData->dwData;
+    BYTE* const pDataEnd = (BYTE*) &pClientData->dwData + remainingBytes;
+    // std::copy(pDataStart, pDataEnd, std::back_inserter(this->content));
+    this->content.insert(this->content.end(), pDataStart, pDataEnd);
 
-    LOG_DEBUG_BLOCK(
-      std::cout << "ClientDataBufferedAreaVariable DATA START========================" << std::endl;
-      auto d = &this->content.data()[this->receivedBytes];
-      for (std::size_t i = 0; i < 50; i++) { // remainingBytes
-        auto c = BYTE(*(d + i));
-        std::cout << c;
-      }
-      std::cout << std::endl;
-      std::cout << "ClientDataBufferedAreaVariable DATA END==========================" << std::endl;
-    )
+    this->receivedChunks++;
+    std::cout << "Chunk: " << this->receivedChunks << ": Begin: " << (void*) pDataStart << " End: " << (void*) pDataEnd << std::endl;
+
+    // DEBUG
+    //    std::cout << "ClientDataBufferedAreaVariable DATA START========================" << std::endl;
+    //    auto d = &this->content.data()[this->receivedBytes];
+    //    auto s = std::string_view((const char*) d, 100);
+    //    std::cout << s << std::endl;
+    //    std::cout << "ClientDataBufferedAreaVariable DATA END==========================" << std::endl;
+    // DEBUG
 
     this->receivedBytes += remainingBytes;
 
     const bool receivedAllData = this->receivedBytes >= this->expectedByteCount;
     if (receivedAllData) {
-      LOG_DEBUG_BLOCK(
-        std::cout << "ClientDataBufferedAreaVariable: Data fully received: " << this->name
-                  << " (" << this->receivedBytes << "/" << this->expectedByteCount
-                  << ") in " << duration.count() << " ns" << std::endl;
-
-      )
-      LOG_DEBUG("Content: " + std::string(this->content.begin(), this->content.end()));
+      //      // DEBUG
+      //      std::cout << "ClientDataBufferedAreaVariable: Data fully received: " << this->name
+      //                << " (" << this->receivedBytes << "/" << this->expectedByteCount
+      //                << ") in " << duration.count() << " ns" << std::endl;
+      //      // DEBUG
       this->timeStampSimTime = simTime;
       this->tickStamp = tickCounter;
       this->setChanged(true);
       return;
     }
 
-    LOG_DEBUG_BLOCK(
-      std::cout << "ClientDataBufferedAreaVariable: Data chunk received: " << this->name
-                << " (" << this->receivedBytes << "/" << this->expectedByteCount
-                << ") in " << duration.count() << " ns" << std::endl;
-    )
+    //    // DEBUG
+    //      std::cout << "ClientDataBufferedAreaVariable: Data chunk received: " << this->name
+    //                << " (" << this->receivedBytes << "/" << this->expectedByteCount
+    //                << ") in " << duration.count() << " ns" << std::endl;
+    //    // DEBUG
   }
 
   /**
@@ -116,12 +115,13 @@ public:
    * expected byte count.
    * @param _expectedByteCount Number of expected bytes in streaming cases
    */
-  void reserve(std::size_t _expectedByteCount) {
+  void reserve(std::size_t expectedByteCnt) {
     this->setChanged(false);
     this->content.clear();
-    this->content.reserve(_expectedByteCount);
-    this->expectedByteCount = _expectedByteCount;
     this->receivedBytes = 0;
+    this->receivedChunks = 0;
+    this->expectedByteCount = expectedByteCnt;
+    this->content.reserve(expectedByteCnt);
   }
 
   /**
@@ -136,6 +136,18 @@ public:
    */
   [[maybe_unused]] [[nodiscard]] const std::vector<T> &getData() const { return content; }
 
+  /**
+   * Returns the number of bytes received so far
+   * @return std::size_t Number of bytes received so far
+   */
+  [[nodiscard]] std::size_t getReceivedBytes() const { return receivedBytes; }
+
+  /**
+   * Returns the number of chunks received so far
+   * @return std::size_t Number of chunks received so far
+   */
+  [[nodiscard]] std::size_t getReceivedChunks() const { return receivedChunks; }
+
   [[nodiscard]] std::string str() const
   override {
     std::stringstream ss;
@@ -145,6 +157,7 @@ public:
     ss << ", requestId=" << this->requestId;
     ss << ", expectedByteCount=" << this->expectedByteCount;
     ss << ", receivedBytes=" << this->receivedBytes;
+    ss << ", receivedChunks=" << this->receivedChunks;
     ss << ", structSize=" << content.size() * sizeof(T);
     ss << ", timeStamp: " << this->timeStampSimTime;
     ss << ", tickStamp: " << this->tickStamp;

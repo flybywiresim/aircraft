@@ -92,7 +92,7 @@ public:
   /**
    * Called by the DataManager when a SIMCONNECT_RECV_ID_SIMOBJECT_DATA
    * or SIMCONNECT_RECV_ID_CLIENT_DATA message for this variables request ID is received.
-   * If skipChangeCheck is false, the dataChanged flag is set to true if the data is not identical.
+   * It processes the data and sets the dataChanged flag if the data has changed.
    * The dataChanged flag can be checked by the external class to determine if the data has changed.
    * @param pointer to the SIMCONNECT_RECV_SIMOBJECT_DATA of SIMCONNECT_RECV_CLIENT_DATA structure
    * @param simTime the current sim time (taken from the sim update event)

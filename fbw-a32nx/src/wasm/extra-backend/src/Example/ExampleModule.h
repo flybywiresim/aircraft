@@ -7,6 +7,7 @@
 #define FLYBYWIRE_EXAMPLEMODULE_H
 
 #include <array>
+#include <chrono>
 
 #include "Module.h"
 #include "DataManager.h"
@@ -131,6 +132,8 @@ private:
     return hash;
   }
 
+  std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long long int, std::nano>> receiptTimerStart;
+  std::chrono::duration<long long int, std::nano> receiptTimerEnd;
 };
 
 #endif //FLYBYWIRE_EXAMPLEMODULE_H

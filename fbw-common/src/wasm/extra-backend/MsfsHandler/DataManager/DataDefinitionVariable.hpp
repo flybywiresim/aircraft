@@ -217,9 +217,6 @@ public:
     LOG_TRACE("DataDefinitionVariable: Received client data: " + name);
     const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
 
-   SIMPLE_ASSERT(pSimobjectData->dwRequestID == requestId,
-           "DataDefinitionVariable::processSimData: Request ID mismatch: " + name);
-
     // if not required then skip the rather expensive check for change
     if (skipChangeCheck || std::memcmp(&pSimobjectData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       LOG_TRACE("DataDefinitionVariable: Data has changed: " + name);
