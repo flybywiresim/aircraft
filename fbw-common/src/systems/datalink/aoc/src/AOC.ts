@@ -78,6 +78,11 @@ export class Aoc {
         this.digitalInputs.update();
     }
 
+    private updateMessageCount(): void {
+        const msgCount = this.messageQueueUplink.reduce((c, m) => (!m.Confirmed ? c + 1 : c), 0);
+        this.digitalOutputs.FwcBus.setCompanyMessageCount(msgCount);
+    }
+
     private async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (this.poweredUp) {
             return this.digitalOutputs.RouterBus.sendMessage(message, false).then((code) => {
@@ -95,7 +100,7 @@ export class Aoc {
             // decrease the company message counter
             if (this.messageQueueUplink.at(index).Confirmed === false) {
                 const cMsgCnt = this.digitalInputs.CompanyMessageCount;
-                this.digitalOutputs.FwcBus.setCompanyMessageCount(Math.max(0, cMsgCnt - 1));
+                this.updateMessageCount();
             }
 
             this.messageQueueUplink.splice(index, 1);
@@ -125,7 +130,7 @@ export class Aoc {
         if (index !== -1) {
             if (this.messageQueueUplink[index].Confirmed === false) {
                 const cMsgCnt = this.digitalInputs.CompanyMessageCount;
-                this.digitalOutputs.FwcBus.setCompanyMessageCount(cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+                this.updateMessageCount();
             }
 
             this.messageQueueUplink[index].Confirmed = true;
@@ -146,7 +151,7 @@ export class Aoc {
 
                     // increase the company message counter
                     const cMsgCnt = this.digitalInputs.CompanyMessageCount;
-                    this.digitalOutputs.FwcBus.setCompanyMessageCount(cMsgCnt + 1);
+                    this.updateMessageCount();
                 } else {
                     this.blacklistedMessageIds.splice(index, 1);
                 }
