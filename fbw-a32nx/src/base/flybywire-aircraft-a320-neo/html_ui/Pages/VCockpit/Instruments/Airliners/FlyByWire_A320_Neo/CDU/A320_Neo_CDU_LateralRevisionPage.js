@@ -139,12 +139,10 @@ class CDULateralRevisionPage {
             newDestLabel = "NEW DEST{sp}";
             newDestCell = "[{sp}{sp}][color]cyan";
 
-            mcdu.onRightInput[3] = (value) => {
-                mcdu.setDestinationAfterWaypoint(value, waypointIndexFP + 1, (result) => {
-                    if (result) {
-                        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-                    }
-                });
+            mcdu.onRightInput[3] = async (value) => {
+                await mcdu.flightPlanService.newDest(waypointIndexFP, value, forPlan, inAlternate);
+
+                CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
             };
         }
 
@@ -159,7 +157,7 @@ class CDULateralRevisionPage {
             };
         }
 
-        let altnCell = "";
+        let altnCell = '';
         if (isDestination) {
             altnCell = "<ALTN[color]inop";
         }

@@ -11,7 +11,9 @@ import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { EventBus } from 'msfssdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 
+// TODO refactor into instance class
 export class FlightPlanService {
     private constructor() {
     }
@@ -356,6 +358,22 @@ export class FlightPlanService {
         await plan.nextWaypoint(atIndex, waypoint);
     }
 
+    /**
+     * NEW DEST revision. Changes the destination airport and removes all routing ahead of an index, with a discontinuity in between.
+     *
+     * @param atIndex the index of the leg to insert the waypoint after
+     * @param airportIdent the airport to use as the new destination
+     * @param planIndex which flight plan to make the change on
+     * @param alternate whether to edit the plan's alternate flight plan
+     */
+    static async newDest(atIndex: number, airportIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {
+        const finalIndex = this.prepareDestructiveModification(planIndex);
+
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
+
+        await plan.newDest(atIndex, airportIdent);
+    }
+
     static startAirwayEntry(at: number, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
@@ -370,6 +388,22 @@ export class FlightPlanService {
         const plan = this.flightPlanManager.get(finalIndex);
 
         plan.directTo(ppos, trueTrack, waypoint, withAbeam);
+    }
+
+    static async addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex = FlightPlanIndex.Active): Promise<number> {
+        const finalIndex = this.prepareDestructiveModification(planIndex);
+
+        const plan = this.flightPlanManager.get(finalIndex);
+
+        return plan.addOrEditManualHold(at, desiredHold, modifiedHold, defaultHold);
+    }
+
+    static revertHoldToComputed(at: number, planIndex = FlightPlanIndex.Active) {
+        const finalIndex = this.prepareDestructiveModification(planIndex);
+
+        const plan = this.flightPlanManager.get(finalIndex);
+
+        plan.revertHoldToComputed(at);
     }
 
     static enableAltn(atIndexInAlternate: number, planIndex = FlightPlanIndex.Active) {
