@@ -162,9 +162,10 @@ export const Payload = () => {
         for (let i = stationPax; i < stationPaxDesired; i++) {
             if (Math.random() <= chance) stationMissedPax++;
         }
-        setTotalMissedPax(totalMissedPax + stationMissedPax);
-        console.info('station pax missing: %d, total:%d', stationMissedPax, totalMissedPax);
+        // setTotalMissedPax(totalMissedPax + stationMissedPax);
+        // console.info('station pax missing: %d, total:%d', stationMissedPax, totalMissedPax);
         setPax(stationPaxDesired - stationMissedPax);
+        return stationMissedPax;
     };
 
     const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
@@ -173,9 +174,11 @@ export const Payload = () => {
         if (desiredBoardingState) {
             const chancesToMissBoarding = (Math.random() <= 0.05) ? 0.5 : 0.1;
             console.info('chances to miss: %d%%', chancesToMissBoarding * 100);
-            for (let station = 0 ; station < pax.length ; station++ ) stationMissedPax(pax[station], paxDesired[station], setPaxDesired[station], chancesToMissBoarding);
-            console.info('pax missing plane: %d', totalMissedPax);
-            removeTargetPaxCargo(totalMissedPax);
+            let tempTotalMissed : number = 0;
+            for (let station = 0 ; station < pax.length ; station++ ) tempTotalMissed += stationMissedPax(pax[station], paxDesired[station], setPaxDesired[station], chancesToMissBoarding);
+            setTotalMissedPax(tempTotalMissed);
+            console.info('pax missing plane: %d', tempTotalMissed);
+            removeTargetPaxCargo(tempTotalMissed);
         }
     };
 
