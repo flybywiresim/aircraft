@@ -3,4 +3,6 @@
 
 export * from './ClockBus';
 export * from './FmgcBus';
+export * from './FwcBus';
 export * from './Mailbox';
+export * from './RmpBus';

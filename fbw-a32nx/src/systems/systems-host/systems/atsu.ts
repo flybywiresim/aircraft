@@ -1,10 +1,13 @@
 import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
+import { SimVarHandling } from '@datalink/common';
 import { Router } from '@datalink/router';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 
 export class AtsuSystem {
+    private readonly simVarHandling: SimVarHandling;
+
     private readonly powerSupply: EventSubscriber<PowerSupplyBusTypes>;
 
     private readonly atc: Atc;
@@ -14,6 +17,7 @@ export class AtsuSystem {
     private readonly router: Router;
 
     constructor(private readonly bus: EventBus) {
+        this.simVarHandling = new SimVarHandling(this.bus);
         this.router = new Router(this.bus, false, false);
         this.atc = new Atc(this.bus, false, false);
         this.aoc = new Aoc(this.bus, false, false);
@@ -33,20 +37,20 @@ export class AtsuSystem {
     }
 
     public connectedCallback(): void {
+        this.simVarHandling.initialize();
         this.router.initialize();
         this.atc.initialize();
         this.aoc.initialize();
     }
 
     public startPublish(): void {
-        this.router.startPublish();
+        this.simVarHandling.startPublish();
         this.atc.startPublish();
-        this.aoc.startPublish();
     }
 
     public update(): void {
+        this.simVarHandling.update();
         this.router.update();
         this.atc.update();
-        this.aoc.update();
     }
 }

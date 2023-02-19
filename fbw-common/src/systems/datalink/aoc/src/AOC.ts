@@ -70,14 +70,6 @@ export class Aoc {
         this.digitalInputs.connectedCallback();
     }
 
-    public startPublish(): void {
-        this.digitalInputs.startPublish();
-    }
-
-    public update(): void {
-        this.digitalInputs.update();
-    }
-
     private updateMessageCount(): void {
         const msgCount = this.messageQueueUplink.reduce((c, m) => (!m.Confirmed ? c + 1 : c), 0);
         this.digitalOutputs.FwcBus.setCompanyMessageCount(msgCount);

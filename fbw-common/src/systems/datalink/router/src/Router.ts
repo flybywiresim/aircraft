@@ -124,10 +124,6 @@ export class Router {
         this.digitalInputs.connectedCallback();
     }
 
-    public startPublish(): void {
-        this.digitalInputs.startPublish();
-    }
-
     public powerUp(): void {
         this.poweredUp = true;
     }
@@ -142,8 +138,6 @@ export class Router {
     }
 
     public update(): void {
-        this.digitalInputs.update();
-
         const currentTimestamp = new Date().getTime();
 
         // update the communication interface states

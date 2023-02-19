@@ -7,16 +7,15 @@ import {
     CpdlcMessage,
     DclMessage,
     FmgcDataBusTypes,
-    FmgcInputBus,
     FreetextMessage,
     OclMessage,
     WeatherMessage,
+    RmpDataBusTypes,
 } from '@datalink/common';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 import { AtcAocRouterMessages, FmsRouterBus } from './databus';
-import { RmpDataBusTypes, RmpInputBus } from './databus/RmpBus';
 
 export type DigitalInputCallbacks = {
     sendFreetextMessage: (message: FreetextMessage, force: boolean) => Promise<AtsuStatusCodes>;
@@ -51,10 +50,6 @@ export class DigitalInputs {
 
     public readonly fmsBus: FmsRouterBus;
 
-    public readonly fmgcBus: FmgcInputBus;
-
-    public readonly rmpBus: RmpInputBus;
-
     private resetData(): void {
         this.FlightPhase = FmgcFlightPhase.Preflight;
         this.Vhf3Powered = false;
@@ -64,23 +59,16 @@ export class DigitalInputs {
     constructor(private readonly bus: EventBus, private readonly synchronizedAtc: boolean, private readonly synchronizedAoc: boolean) {
         this.resetData();
         this.fmsBus = new FmsRouterBus(this.bus);
-        this.fmgcBus = new FmgcInputBus(this.bus);
-        this.rmpBus = new RmpInputBus(this.bus);
     }
 
     public initialize(): void {
         this.fmsBus.initialize();
-        this.fmgcBus.initialize();
-        this.rmpBus.initialize();
 
         this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages & FmgcDataBusTypes & RmpDataBusTypes>();
         this.publisher = this.bus.getPublisher<AtcAocRouterMessages>();
     }
 
     public connectedCallback(): void {
-        this.fmgcBus.connectedCallback();
-        this.rmpBus.connectedCallback();
-
         this.subscriber.on('routerSendFreetextMessage').handle((request) => {
             if (this.callbacks.sendFreetextMessage !== null) {
                 this.callbacks.sendFreetextMessage(request.message, request.force).then((status) => {
@@ -160,11 +148,6 @@ export class DigitalInputs {
         this.subscriber.on('vhf3DataMode').handle((dataMode: boolean) => this.Vhf3DataMode = dataMode);
     }
 
-    public startPublish(): void {
-        this.fmgcBus.startPublish();
-        this.rmpBus.startPublish();
-    }
-
     public powerUp(): void {
         this.poweredUp = true;
     }
@@ -172,11 +155,6 @@ export class DigitalInputs {
     public powerDown(): void {
         this.poweredUp = false;
         this.resetData();
-    }
-
-    public update(): void {
-        this.fmgcBus.update();
-        this.rmpBus.update();
     }
 
     public addDataCallback<K extends keyof DigitalInputCallbacks>(event: K, callback: DigitalInputCallbacks[K]): void {

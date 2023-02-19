@@ -2,10 +2,9 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtcAocBus } from '@datalink/atc';
-import { Clock, ClockDataBusTypes, ClockInputBus, FreetextMessage } from '@datalink/common';
+import { Clock, ClockDataBusTypes, FreetextMessage, FwcDataBusTypes } from '@datalink/common';
 import { RouterAtcAocBus } from '@datalink/router';
 import { EventBus, EventSubscriber } from 'msfssdk';
-import { FwcDataBusTypes, FwcAocBus } from './databus/FwcBus';
 import { FmsAocBus } from './databus/FmsBus';
 
 export type DigitalInputCallbacks = {
@@ -25,10 +24,6 @@ export class DigitalInputs {
 
     public CompanyMessageCount: number = 0;
 
-    private readonly clockBus: ClockInputBus;
-
-    public readonly fwcBus: FwcAocBus;
-
     public readonly fmsBus: FmsAocBus;
 
     public readonly routerBus: RouterAtcAocBus;
@@ -42,24 +37,17 @@ export class DigitalInputs {
 
     constructor(private readonly bus: EventBus, synchronizedAtc: boolean) {
         this.resetData();
-        this.clockBus = new ClockInputBus(this.bus);
-        this.fwcBus = new FwcAocBus(this.bus);
         this.fmsBus = new FmsAocBus(this.bus);
         this.routerBus = new RouterAtcAocBus(this.bus);
         this.atcAocBus = new AtcAocBus(this.bus, synchronizedAtc, false);
     }
 
     public initialize(): void {
-        this.clockBus.initialize();
-        this.fwcBus.initialize();
         this.fmsBus.initialize();
         this.subscriber = this.bus.getSubscriber<ClockDataBusTypes & FwcDataBusTypes>();
     }
 
     public connectedCallback(): void {
-        this.clockBus.connectedCallback();
-        this.fwcBus.connectedCallback();
-
         this.subscriber.on('utcYear').handle((year: number) => {
             if (this.poweredUp) this.UtcClock.year = year;
         });
@@ -86,11 +74,6 @@ export class DigitalInputs {
         });
     }
 
-    public startPublish(): void {
-        this.clockBus.startPublish();
-        this.fwcBus.startPublish();
-    }
-
     public powerUp(): void {
         this.poweredUp = true;
     }
@@ -98,10 +81,5 @@ export class DigitalInputs {
     public powerDown(): void {
         this.poweredUp = false;
         this.resetData();
-    }
-
-    public update(): void {
-        this.clockBus.update();
-        this.fwcBus.update();
     }
 }

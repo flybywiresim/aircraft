@@ -1,12 +1,11 @@
-import { Clock, CpdlcMessage, FmgcDataBusTypes, FmgcInputBus, FreetextMessage } from '@datalink/common';
+import { Clock, CpdlcMessage, FmgcDataBusTypes, FreetextMessage, RmpDataBusTypes } from '@datalink/common';
 import { RouterAtcAocMessages } from '@datalink/router';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { AtcMessageButtonBusTypes, AtcMessageButtonInputBus } from './databus/AtcMessageButtonBus';
-import { ClockDataBusTypes, ClockInputBus } from '../../common/src/databus/ClockBus';
+import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
 import { FmsAtcBus, FmsAtcMessages, FmsRouteData } from './databus/FmsBus';
-import { RmpDataBusTypes, RmpInputBus } from './databus/RmpBus';
 
 export type DigitalInputCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
@@ -70,13 +69,7 @@ export class DigitalInputs {
 
     public readonly atcMessageButtonBus: AtcMessageButtonInputBus;
 
-    public readonly clockBus: ClockInputBus;
-
-    public readonly fmgcBus: FmgcInputBus;
-
     public readonly fmsBus: FmsAtcBus;
-
-    public readonly rmpBus: RmpInputBus;
 
     private resetData(): void {
         this.UtcClock = new Clock(0, 0, 0, 0, 0, 0, 0);
@@ -127,18 +120,12 @@ export class DigitalInputs {
         this.resetData();
 
         this.atcMessageButtonBus = new AtcMessageButtonInputBus(this.bus);
-        this.clockBus = new ClockInputBus(this.bus);
-        this.fmgcBus = new FmgcInputBus(this.bus);
         this.fmsBus = new FmsAtcBus(this.bus);
-        this.rmpBus = new RmpInputBus(this.bus);
     }
 
     public initialize(): void {
         this.atcMessageButtonBus.initialize();
-        this.clockBus.initialize();
-        this.fmgcBus.initialize();
         this.fmsBus.initialize();
-        this.rmpBus.initialize();
 
         this.subscriber = this.bus.getSubscriber<
             AtcMessageButtonBusTypes &
@@ -152,9 +139,6 @@ export class DigitalInputs {
 
     public connectedCallback(): void {
         this.atcMessageButtonBus.connectedCallback();
-        this.clockBus.connectedCallback();
-        this.fmgcBus.connectedCallback();
-        this.rmpBus.connectedCallback();
 
         this.subscriber.on('utcYear').handle((year: number) => {
             if (this.poweredUp) this.UtcClock.year = year;
@@ -288,9 +272,6 @@ export class DigitalInputs {
 
     public startPublish(): void {
         this.atcMessageButtonBus.startPublish();
-        this.clockBus.startPublish();
-        this.fmgcBus.startPublish();
-        this.rmpBus.startPublish();
     }
 
     public powerUp(): void {
@@ -307,9 +288,6 @@ export class DigitalInputs {
 
     public update(): void {
         this.atcMessageButtonBus.update();
-        this.clockBus.update();
-        this.fmgcBus.update();
-        this.rmpBus.update();
     }
 
     public addDataCallback<K extends keyof DigitalInputCallbacks>(event: K, callback: DigitalInputCallbacks[K]): void {
