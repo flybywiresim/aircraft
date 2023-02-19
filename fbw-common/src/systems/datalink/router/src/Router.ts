@@ -302,28 +302,32 @@ export class Router {
             return AtsuStatusCodes.ComFailed;
         }
 
-        const transmissionTime = this.vdl.enqueueOutboundMessage(message);
-        const timeout = setTimeout(() => {
-            this.vdl.dequeueOutboundMessage(transmissionTime);
-            this.removeTransmissionTimeout(timeout);
+        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+            const transmissionTime = this.vdl.enqueueOutboundMessage(message);
 
-            if (message.Type < AtsuMessageType.AOC) {
-                if (message.Network === AtsuMessageNetwork.FBW) {
-                    return NXApiConnector.sendTelexMessage(message);
+            const timeout = setTimeout(() => {
+                this.vdl.dequeueOutboundMessage(transmissionTime);
+                this.removeTransmissionTimeout(timeout);
+
+                let code: AtsuStatusCodes = AtsuStatusCodes.UnknownMessage;
+                if (message.Type < AtsuMessageType.AOC) {
+                    if (message.Network === AtsuMessageNetwork.FBW) {
+                        NXApiConnector.sendTelexMessage(message).then((code) => resolve(code));
+                    } else {
+                        HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
+                    }
+                } else if (message.Type === AtsuMessageType.DCL) {
+                    HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
+                } else if (message.Type < AtsuMessageType.ATC) {
+                    HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
                 } else {
-                    return HoppieConnector.sendTelexMessage(message, force);
+                    resolve(AtsuStatusCodes.UnknownMessage);
                 }
-            } else if (message.Type === AtsuMessageType.DCL) {
-                return HoppieConnector.sendTelexMessage(message, force);
-            } else if (message.Type < AtsuMessageType.ATC) {
-                return HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force);
-            } else {
-                return AtsuStatusCodes.UnknownMessage;
-            }
-        }, transmissionTime);
+            });
 
-        // register the transmission simulation for later management
-        this.transmissionSimulationTimeouts.push(timeout);
+            // register the transmission simulation for later management
+            this.transmissionSimulationTimeouts.push(timeout);
+        });
     }
 
     private vhf3DatalinkStatus(): DatalinkStatusCode {
