@@ -12,14 +12,19 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanS
 import { MathUtils } from '@shared/MathUtils';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
 import { MagVar } from '@shared/MagVar';
+import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
  */
 export interface SerializedFlightPlanLeg {
+    ident: string,
+    annotation: string,
     isDiscontinuity: false,
     definition: FlightPlanLegDefinition,
     effectiveType: LegType,
+    modifiedHold: HoldData | undefined,
+    defaultHold: HoldData | undefined,
 }
 
 export enum FlightPlanLegFlags {
@@ -48,8 +53,20 @@ export class FlightPlanLeg {
 
     isDiscontinuity: false = false
 
+    defaultHold: HoldData | undefined = undefined;
+
+    modifiedHold: HoldData | undefined = undefined;
+
     serialize(): SerializedFlightPlanLeg {
-        return { isDiscontinuity: false, definition: this.definition, effectiveType: this.type };
+        return {
+            ident: this.ident,
+            annotation: this.annotation,
+            isDiscontinuity: false,
+            definition: this.definition,
+            effectiveType: this.type,
+            modifiedHold: this.modifiedHold,
+            defaultHold: this.defaultHold,
+        };
     }
 
     clone(forSegment: FlightPlanSegment): FlightPlanLeg {
@@ -59,7 +76,11 @@ export class FlightPlanLeg {
     static deserialize(serialized: SerializedFlightPlanLeg, segment: FlightPlanSegment): FlightPlanLeg {
         const leg = FlightPlanLeg.fromProcedureLeg(segment, serialized.definition, serialized.definition.procedureIdent);
 
+        leg.ident = serialized.ident;
+        leg.annotation = serialized.annotation;
         leg.type = serialized.effectiveType;
+        leg.modifiedHold = serialized.modifiedHold;
+        leg.defaultHold = serialized.defaultHold;
 
         return leg;
     }
@@ -160,6 +181,19 @@ export class FlightPlanLeg {
             overfly: false,
             waypoint: targetWaypoint,
         }, targetWaypoint.ident, '', undefined, undefined, false);
+    }
+
+    static manualHold(segment: FlightPlanSegment, waypoint: Waypoint, hold: HoldData): FlightPlanLeg {
+        return new FlightPlanLeg(segment, {
+            procedureIdent: '',
+            type: LegType.HM,
+            overfly: false,
+            waypoint,
+            turnDirection: hold.turnDirection,
+            magneticCourse: hold.inboundMagneticCourse,
+            length: hold.distance,
+            lengthTime: hold.time,
+        }, waypoint.ident, '', undefined, undefined, false);
     }
 
     static fromProcedureLeg(segment: FlightPlanSegment, procedureLeg: ProcedureLeg, procedureIdent: string): FlightPlanLeg {

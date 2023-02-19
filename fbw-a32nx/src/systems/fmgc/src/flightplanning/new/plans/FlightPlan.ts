@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Fix } from 'msfs-navdata';
+import { Airport, Fix, LegType } from 'msfs-navdata';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { EventBus } from 'msfssdk';
@@ -13,8 +13,9 @@ import { Coordinates, Degrees } from 'msfs-geo';
 import { MagVar } from '@shared/MagVar';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from './BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
 export class FlightPlan extends BaseFlightPlan {
     static empty(index: number, bus: EventBus): FlightPlan {
@@ -143,6 +144,50 @@ export class FlightPlan extends BaseFlightPlan {
         this.incrementVersion();
     }
 
+    async addOrEditManualHold(atIndex: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData): Promise<number> {
+        const targetLeg = this.elementAt(atIndex);
+
+        if (targetLeg.isDiscontinuity === true) {
+            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity');
+        }
+
+        const waypoint = targetLeg.terminationWaypoint();
+
+        if (targetLeg.type === LegType.HA || targetLeg.type === LegType.HF || targetLeg.type === LegType.HM) {
+            targetLeg.type = LegType.HM;
+            targetLeg.definition.turnDirection = desiredHold.turnDirection;
+            targetLeg.definition.magneticCourse = desiredHold.inboundMagneticCourse;
+            targetLeg.definition.length = desiredHold.distance;
+            targetLeg.definition.lengthTime = desiredHold.time;
+
+            targetLeg.modifiedHold = modifiedHold;
+            if (targetLeg.defaultHold === undefined) {
+                targetLeg.defaultHold = defaultHold;
+            }
+
+            return atIndex;
+        }
+
+        const manualHoldLeg = FlightPlanLeg.manualHold(this.enrouteSegment, waypoint, desiredHold);
+
+        manualHoldLeg.modifiedHold = modifiedHold;
+        manualHoldLeg.defaultHold = defaultHold;
+
+        await this.insertElementAfter(atIndex, manualHoldLeg);
+
+        return atIndex + 1;
+    }
+
+    revertHoldToComputed(atIndex: number) {
+        const targetLeg = this.elementAt(atIndex);
+
+        if (targetLeg.isDiscontinuity === true || !targetLeg.isHX()) {
+            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity or a non-HX leg');
+        }
+
+        targetLeg.modifiedHold = undefined;
+    }
+
     enableAltn(atIndexInAlternate: number) {
         if (!this.alternateDestinationAirport) {
             throw new Error('[FMS/FPM] Cannot enable alternate with no alternate destination defined');
@@ -240,5 +285,13 @@ export class FlightPlan extends BaseFlightPlan {
         }
 
         this.incrementVersion();
+    }
+
+    static deserialize(serialized: SerializedFlightPlan, withIndex: number, withBus: EventBus): FlightPlan {
+        const plan = new FlightPlan(withIndex, withBus);
+
+        plan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
+
+        return plan;
     }
 }

@@ -25,6 +25,7 @@ import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSy
 import { EventBus, Publisher } from 'msfssdk';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
+import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -43,6 +44,7 @@ export abstract class BaseFlightPlan {
         const isAlternatePlan = this instanceof AlternateFlightPlan;
 
         // FIXME we need to destroy those subscriptions, this is a memory leak
+        // FIXME we should not be doing this here anyway...
 
         subs.on('flightPlan.setActiveLegIndex').handle((event) => {
             if (!this.ignoreSync) {
@@ -619,7 +621,7 @@ export abstract class BaseFlightPlan {
         return this.destinationSegment.destinationRunway;
     }
 
-    async setDestinationRunway(runwayIdent: string) {
+    async setDestinationRunway(runwayIdent: string | undefined) {
         await this.destinationSegment.setDestinationRunway(runwayIdent).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
@@ -710,6 +712,35 @@ export abstract class BaseFlightPlan {
         const waypointExists = this.findDuplicate(waypoint, index);
 
         await this.insertElementAfter(index, leg, !waypointExists);
+    }
+
+    /**
+     * NEW DEST revision. Changes the destination airport and removes all routing ahead of an index, with a discontinuity in between.
+     *
+     * @param index the index of the leg to insert the waypoint after
+     * @param airportIdent the airport to use as the new destination
+     */
+    async newDest(index: number, airportIdent: string) {
+        this.redistributeLegsAt(index);
+
+        const leg = this.legElementAt(index);
+        const legIndexInEnroute = this.enrouteSegment.allLegs.indexOf(leg);
+
+        const legsToDelete = this.enrouteSegment.allLegs.length - (legIndexInEnroute + 1);
+
+        this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
+
+        await this.setArrivalEnrouteTransition(undefined);
+        await this.setArrival(undefined);
+        await this.setApproach(undefined);
+        await this.setApproachVia(undefined);
+        await this.setDestinationAirport(airportIdent);
+        await this.setDestinationRunway(undefined);
+
+        this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
+        this.enrouteSegment.strung = true;
+
+        await this.flushOperationQueue();
     }
 
     // TODO make this private, adjust tests to test nextWaypoint instead
