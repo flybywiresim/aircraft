@@ -227,6 +227,7 @@ export class Atc {
             });
         }, 5000);
 
+        this.digitalInputs.powerUp();
         this.mailboxBus.powerUp();
         this.poweredUp = true;
     }
@@ -263,6 +264,7 @@ export class Atc {
         this.messageWatchdogInterval = null;
         this.messageMonitoring = null;
 
+        this.digitalInputs.powerDown();
         this.mailboxBus.powerDown();
         this.poweredUp = false;
     }

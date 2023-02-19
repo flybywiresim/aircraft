@@ -125,11 +125,13 @@ export class Router {
     }
 
     public powerUp(): void {
+        this.digitalInputs.powerUp();
         this.poweredUp = true;
     }
 
     public powerDown(): void {
         this.poweredUp = false;
+        this.digitalInputs.powerDown();
 
         this.transmissionSimulationTimeouts.forEach((timeout) => clearTimeout(timeout));
         this.transmissionSimulationTimeouts = [];
