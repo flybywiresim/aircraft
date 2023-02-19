@@ -58,9 +58,11 @@ impl A380Electrical {
     const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 2000.;
 
     const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentHot(1);
+        ElectricalBusType::DirectCurrentEssential;
+
+    //TODO second solenoid should be HOT BUS ESSENTIAL
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentHot(2);
+        ElectricalBusType::DirectCurrentEssential;
 
     const RAT_SIM_TIME_STEP: Duration = Duration::from_millis(33);
 
@@ -469,11 +471,10 @@ impl A380RamAirTurbineController {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
-        // TODO check actual A380 logic for deployment : solenoid 1 stubbed for now
-        let solenoid_1_should_trigger_deployment_if_powered = false;
+        let solenoid_1_should_trigger_deployment_if_powered = rat_and_emer_gen_man_on.is_pressed();
 
         let solenoid_2_should_trigger_deployment_if_powered =
-            emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
+            emergency_elec_state.is_in_emergency_elec();
 
         // due to initialization issues the RAT will not deployed in any case when simulation has just started
         self.should_deploy = context.is_sim_ready()
@@ -2069,9 +2070,7 @@ mod a380_electrical_circuit_tests {
         assert!(!test_bed.rat_and_emer_gen_has_fault());
     }
 
-    // TODO update accordingly with a380, ignored for now
     #[test]
-    #[ignore]
     fn when_rat_and_emer_gen_man_on_push_button_is_pressed_at_an_earlier_time_in_case_of_ac_1_and_2_unavailable_emergency_generator_provides_power_immediately(
     ) {
         let test_bed = test_bed_with()

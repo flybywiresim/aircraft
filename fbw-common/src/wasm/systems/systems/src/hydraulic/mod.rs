@@ -2935,6 +2935,11 @@ impl RamAirTurbine {
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
+    const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
+        0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
+    ];
+    const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
+
     pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             stow_position_id: context.get_identifier("RAT_STOW_POSITION".to_owned()),
@@ -2942,7 +2947,11 @@ impl RamAirTurbine {
             deployment_commanded: false,
             pump: Pump::new(pump_characteristics),
             pump_controller: AlwaysPressurisePumpController::new(),
-            wind_turbine: WindTurbine::new(context),
+            wind_turbine: WindTurbine::new(
+                context,
+                Self::RPM_GOVERNOR_BREAKPTS,
+                Self::PROP_ALPHA_MAP,
+            ),
             position: 0.,
         }
     }

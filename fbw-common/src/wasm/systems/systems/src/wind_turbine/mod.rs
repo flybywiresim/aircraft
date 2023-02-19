@@ -24,6 +24,9 @@ pub struct WindTurbine {
     torque_sum: f64,
 
     propeller_angle: Angle,
+
+    rpm_governor_breakpoints: [f64; 9],
+    propeller_alpha_to_rpm_map: [f64; 9],
 }
 impl WindTurbine {
     // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
@@ -33,12 +36,16 @@ impl WindTurbine {
     const FRICTION_COEFFICIENT: f64 = 0.0002;
     const AIR_LIFT_COEFFICIENT: f64 = 0.018;
 
-    const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-        0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
-    ];
-    const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
+    // const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
+    //     0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
+    // ];
+    // const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        rpm_governor_breakpoints: [f64; 9],
+        propeller_alpha_to_rpm_map: [f64; 9],
+    ) -> Self {
         Self {
             rpm_id: context.get_identifier("RAT_RPM".to_owned()),
             angular_position_id: context.get_identifier("RAT_ANGULAR_POSITION".to_owned()),
@@ -50,6 +57,9 @@ impl WindTurbine {
             torque_sum: 0.,
 
             propeller_angle: Angle::default(),
+
+            rpm_governor_breakpoints,
+            propeller_alpha_to_rpm_map,
         }
     }
 
@@ -67,8 +77,8 @@ impl WindTurbine {
 
     fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
         let cur_alpha_degrees = interpolation(
-            &Self::RPM_GOVERNOR_BREAKPTS,
-            &Self::PROP_ALPHA_MAP,
+            &self.rpm_governor_breakpoints,
+            &self.propeller_alpha_to_rpm_map,
             self.speed().get::<revolution_per_minute>(),
         );
 
@@ -83,6 +93,12 @@ impl WindTurbine {
             * (std::f64::consts::PI / 2. * stow_pos).sin();
 
         self.torque_sum += air_speed_torque;
+
+        println!(
+            "GENERATED BLADE TORQUE {:.1}Nm, Power :{:.0}W",
+            air_speed_torque,
+            air_speed_torque * self.speed.get::<radian_per_second>()
+        );
     }
 
     fn update_friction_torque(&mut self, resistant_torque: Torque) {
@@ -94,6 +110,12 @@ impl WindTurbine {
                 * Self::FRICTION_COEFFICIENT
         };
 
+        println!(
+            "FRICTION TORQUE {:.1}Nm, RESISTANT GEN TORQUE {:.1}Nm",
+            pump_torque,
+            resistant_torque.get::<newton_meter>(),
+        );
+
         self.torque_sum += resistant_torque.get::<newton_meter>() - pump_torque;
     }
 
@@ -103,6 +125,12 @@ impl WindTurbine {
             AngularVelocity::new::<radian_per_second>(self.acceleration * delta_time.as_secs_f64());
         self.position +=
             Angle::new::<radian>(self.speed.get::<radian_per_second>() * delta_time.as_secs_f64());
+
+        println!(
+            "RAT FINAL NET TORQUE {:.1}Nm speed rpm {:.0}",
+            self.torque_sum,
+            self.speed.get::<revolution_per_minute>()
+        );
 
         // Reset torque accumulator at end of update
         self.torque_sum = 0.;
