@@ -6,8 +6,13 @@
 
 #include "ClientDataAreaVariable.hpp"
 
-// FIXME remove inheritance from ClientDataAreaVariable and change to
-//  inheritance from SimObjectBase
+/**
+ * FIXME: This class is not working yet
+ * FIXME remove inheritance from ClientDataAreaVariable and change to
+ *  inheritance from SimObjectBase
+ * @tparam T
+ * @tparam ChunkSize
+ */
 template<typename T, std::size_t ChunkSize>
 class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
 private:
