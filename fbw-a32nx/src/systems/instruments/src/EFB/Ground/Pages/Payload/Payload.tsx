@@ -310,7 +310,7 @@ export const Payload = () => {
                 for (let station = cargoDesired.length - 1; station > 0; station--) {
                     if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
                         countMin += numberPaxCargo[station];
-                        tempCargoDesired[station](tempCargoDesired[station] - paxBagWeight);
+                        tempCargoDesired[station] -= paxBagWeight;
                         numberPaxCargo[station] -= 1;
                         totalNumberPaxCargoPlanned -= 1;
                         totalRemovedCargo += paxBagWeight;
@@ -318,7 +318,9 @@ export const Payload = () => {
                     }
                 }
             }
-            setCargoDesired(tempCargoDesired);
+            for (let station = cargoDesired.length - 1; station > 0; station--) {
+                setCargoDesired[station](tempCargoDesired);
+            }
             console.info('Removed %d pax luggage : %d Kg',totalRemovedCargo/paxBagWeight,totalRemovedCargo);
         }
         return totalRemovedCargo;
