@@ -1,10 +1,10 @@
 use crate::{
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     shared::{
-        pid::PidController, AdirsSignalInterface, CabinAltitude, CabinSimulation, ControllerSignal,
-        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
-        PneumaticBleed, PressurizationOverheadShared,
+        pid::PidController, CabinAltitude, CabinSimulation, ControllerSignal, ElectricalBusType,
+        ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        PressurizationOverheadShared,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -13,8 +13,8 @@ use crate::{
 };
 
 use super::{
-    AirConditioningSystemOverhead, DuctTemperature, OverheadFlowSelector, PackFlow,
-    PackFlowControllers, TrimAirSystem, ZoneType,
+    AdirsToAirCondInterface, AirConditioningSystemOverhead, DuctTemperature, OverheadFlowSelector,
+    PackFlow, PackFlowControllers, TrimAirSystem, ZoneType,
 };
 
 use std::time::Duration;
@@ -78,7 +78,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         cabin_temperature: &impl CabinSimulation,
         engines: [&impl EngineCorrectedN1; ENGINES],
@@ -231,7 +231,7 @@ impl AirConditioningStateManager {
     fn update(
         mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> Self {
@@ -338,7 +338,7 @@ impl AirConditioningState<BeginTakeOff> {
     fn step(
         self: AirConditioningState<BeginTakeOff>,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         engines: &[&impl EngineCorrectedN1],
     ) -> AirConditioningStateManager {
         if (AirConditioningStateManager::engines_are_in_takeoff(engines)
@@ -404,7 +404,7 @@ impl AirConditioningState<BeginLanding> {
     fn step(
         self: AirConditioningState<BeginLanding>,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         engines: &[&impl EngineCorrectedN1],
     ) -> AirConditioningStateManager {
         if (!AirConditioningStateManager::engines_are_in_takeoff(engines)
@@ -1144,7 +1144,7 @@ mod acs_controller_tests {
             self.ground_speed = ground_speed;
         }
     }
-    impl AdirsSignalInterface for TestAdirs {
+    impl AdirsToAirCondInterface for TestAdirs {
         fn ground_speed(&self, __adiru_number: usize) -> Velocity {
             self.ground_speed
         }

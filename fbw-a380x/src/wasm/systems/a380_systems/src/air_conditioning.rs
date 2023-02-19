@@ -5,16 +5,16 @@ use systems::{
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
-        AirConditioningSystem, DuctTemperature, OutflowValveSignal, OutletAir, PackFlowControllers,
-        PressurizationConstants, ZoneType,
+        AdirsToAirCondInterface, AirConditioningSystem, DuctTemperature, OutflowValveSignal,
+        OutletAir, PackFlowControllers, PressurizationConstants, ZoneType,
     },
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
     pneumatic::PneumaticContainer,
     shared::{
-        random_number, update_iterator::MaxStepLoop, AdirsSignalInterface, CabinAltitude,
-        CabinSimulation, ControllerSignal, ElectricalBusType, EngineBleedPushbutton,
-        EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
-        PackFlowValveState, PneumaticBleed, PressurizationOverheadShared,
+        random_number, update_iterator::MaxStepLoop, CabinAltitude, CabinSimulation,
+        ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
+        PneumaticBleed, PressurizationOverheadShared,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -64,7 +64,7 @@ impl A380AirConditioning {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
@@ -280,7 +280,7 @@ impl A320PressurizationSystem {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         press_overhead: &A380PressurizationOverheadPanel,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -584,7 +584,7 @@ mod tests {
             }
         }
     }
-    impl AdirsSignalInterface for TestAdirs {
+    impl AdirsToAirCondInterface for TestAdirs {
         fn ground_speed(&self, _adiru_number: usize) -> Velocity {
             self.ground_speed
         }

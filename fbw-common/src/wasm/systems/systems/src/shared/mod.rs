@@ -23,7 +23,6 @@ pub mod update_iterator;
 mod random;
 pub use random::*;
 
-use self::arinc429::Arinc429Word;
 pub mod arinc429;
 
 pub trait ReservoirAirPressure {
@@ -220,13 +219,6 @@ pub trait PackFlowValveState {
     // Pack id is 1 or 2
     fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool;
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
-}
-
-pub trait AdirsSignalInterface {
-    fn ground_speed(&self, adiru_number: usize) -> Velocity;
-    fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
-    fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure>;
-    fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure>;
 }
 
 pub trait AdirsDiscreteOutputs {

@@ -1,7 +1,7 @@
 use crate::{
     shared::{
-        low_pass_filter::LowPassFilter, pid::PidController, AdirsSignalInterface, AverageExt,
-        CabinSimulation, ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared,
+        low_pass_filter::LowPassFilter, pid::PidController, AverageExt, CabinSimulation,
+        ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
@@ -11,7 +11,7 @@ use crate::{
 
 use super::{
     pressure_valve::{OutflowValve, PressureValveSignal, SafetyValve},
-    OutflowValveSignal, PressurizationConstants,
+    AdirsToAirCondInterface, OutflowValveSignal, PressurizationConstants,
 };
 
 use std::{marker::PhantomData, time::Duration};
@@ -122,7 +122,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu_gears_compressed: bool,
         press_overhead: &impl PressurizationOverheadShared,
@@ -195,7 +195,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
     fn adirs_values_calculation(
         &self,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
     ) -> (Option<Velocity>, Option<Pressure>) {
         // TODO: Each CPC has a different order for checking the ADIRS
         let mut adiru_check_order = [1, 2, 3].iter();
@@ -304,7 +304,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     fn calculate_reference_pressure(
         &self,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         press_overhead: &impl PressurizationOverheadShared,
     ) -> Pressure {
         if press_overhead.is_in_man_mode() {
@@ -988,7 +988,7 @@ mod tests {
             self.true_airspeed = airspeed;
         }
     }
-    impl AdirsSignalInterface for TestAdirs {
+    impl AdirsToAirCondInterface for TestAdirs {
         fn ground_speed(&self, _adiru_number: usize) -> Velocity {
             Velocity::new::<knot>(0.)
         }

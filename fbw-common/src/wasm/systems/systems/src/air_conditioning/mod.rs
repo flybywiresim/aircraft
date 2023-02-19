@@ -10,7 +10,7 @@ use crate::{
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe,
     },
     shared::{
-        AdirsSignalInterface, AverageExt, CabinAltitude, CabinSimulation, ConsumePower,
+        arinc429::Arinc429Word, AverageExt, CabinAltitude, CabinSimulation, ConsumePower,
         ControllerSignal, ElectricalBusType, ElectricalBuses, EngineBleedPushbutton,
         EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
         PackFlowValveState, PneumaticBleed, PressurizationOverheadShared,
@@ -54,6 +54,14 @@ pub trait PackFlowControllers<const ZONES: usize, const ENGINES: usize> {
 
 pub trait OutletAir {
     fn outlet_air(&self) -> Air;
+}
+
+pub trait AdirsToAirCondInterface {
+    // TODO: Receive ground speed as Arinc word
+    fn ground_speed(&self, adiru_number: usize) -> Velocity;
+    fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
+    fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure>;
+    fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure>;
 }
 
 pub enum ZoneType {
@@ -174,7 +182,7 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsSignalInterface,
+        adirs: &impl AdirsToAirCondInterface,
         cabin_simulation: &impl CabinSimulation,
         engines: [&impl EngineCorrectedN1; ENGINES],
         engine_fire_push_buttons: &impl EngineFirePushButtons,

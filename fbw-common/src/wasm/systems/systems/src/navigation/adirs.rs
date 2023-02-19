@@ -1,10 +1,11 @@
+use crate::air_conditioning::AdirsToAirCondInterface;
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
-        AdirsDiscreteOutputs, AdirsSignalInterface, MachNumber,
+        AdirsDiscreteOutputs, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -440,7 +441,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
         )
     }
 }
-impl AdirsSignalInterface for AirDataInertialReferenceSystem {
+impl AdirsToAirCondInterface for AirDataInertialReferenceSystem {
     fn ground_speed(&self, adiru_number: usize) -> Velocity {
         self.adirus[adiru_number - 1].ground_speed()
     }

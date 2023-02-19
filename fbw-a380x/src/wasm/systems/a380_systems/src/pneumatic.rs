@@ -1399,7 +1399,7 @@ mod tests {
     use systems::{
         air_conditioning::{
             acs_controller::{Pack, PackFlowController},
-            AirConditioningSystem, PackFlowControllers, ZoneType,
+            AdirsToAirCondInterface, AirConditioningSystem, PackFlowControllers, ZoneType,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
@@ -1410,11 +1410,11 @@ mod tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            AdirsSignalInterface, ApuBleedAirValveSignal, CabinAltitude, CabinSimulation,
-            ControllerSignal, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
-            EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-            HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
-            PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
+            ApuBleedAirValveSignal, CabinAltitude, CabinSimulation, ControllerSignal,
+            ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
+            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, HydraulicColor,
+            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
+            PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
@@ -1525,7 +1525,7 @@ mod tests {
             }
         }
     }
-    impl AdirsSignalInterface for TestAdirs {
+    impl AdirsToAirCondInterface for TestAdirs {
         fn ground_speed(&self, _adiru_number: usize) -> Velocity {
             self.ground_speed
         }
