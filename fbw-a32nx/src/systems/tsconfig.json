@@ -14,7 +14,7 @@
       "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],
       "@datalink/atc": ["../../../fbw-common/src/systems/datalink/atc/src/index.ts"],
       "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
-      "@datalink/communication": ["../../../fbw-common/src/systems/datalink/communication/src/index.ts"],
+      "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
       "@failures": ["./failures/src/index.ts"],
       "@fmgc/*": ["./fmgc/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],

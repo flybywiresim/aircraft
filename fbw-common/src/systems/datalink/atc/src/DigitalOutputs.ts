@@ -1,5 +1,4 @@
-import { CpdlcMessage } from '@datalink/common';
-import { AtcAocRouterBus } from '@datalink/communication';
+import { AtcAocRouterBus } from '@datalink/router';
 import { EventBus } from 'msfssdk';
 import { AtcMessageButtonOutputBus } from './databus/AtcMessageButtonBus';
 import { AtcFmsBus } from './databus/FmsBus';

@@ -1,5 +1,3 @@
-import { EventBus } from 'msfssdk';
-
 export class FwcOutputBus {
     public activateAtcRing(): void {
         Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');

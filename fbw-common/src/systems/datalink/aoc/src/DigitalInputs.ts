@@ -1,6 +1,6 @@
 import { AtcAocBus } from '@datalink/atc';
 import { Clock, ClockDataBusTypes, ClockInputBus, FreetextMessage } from '@datalink/common';
-import { RouterAtcAocBus } from '@datalink/communication';
+import { RouterAtcAocBus } from '@datalink/router';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { FwcDataBusTypes, FwcAocBus } from './databus/FwcBus';
 import { FmsAocBus } from './databus/FmsBus';

@@ -1,5 +1,5 @@
 import { Clock, CpdlcMessage, FmgcDataBusTypes, FmgcInputBus, FreetextMessage } from '@datalink/common';
-import { RouterAtcAocMessages } from '@datalink/communication';
+import { RouterAtcAocMessages } from '@datalink/router';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber } from 'msfssdk';

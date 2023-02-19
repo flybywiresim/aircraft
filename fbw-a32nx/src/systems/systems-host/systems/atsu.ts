@@ -1,6 +1,6 @@
 import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
-import { Router } from '@datalink/communication';
+import { Router } from '@datalink/router';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 

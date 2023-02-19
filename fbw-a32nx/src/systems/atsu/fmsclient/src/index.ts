@@ -20,7 +20,7 @@ import {
     FlightStateData,
     PositionReportData,
 } from '@datalink/common';
-import { FmsRouterMessages, RouterFmsMessages } from '@datalink/communication';
+import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
