@@ -89,14 +89,14 @@ export class Aoc {
     private removeMessage(uid: number): void {
         let index = this.messageQueueUplink.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
-            // decrease the company message counter
-            if (this.messageQueueUplink.at(index).Confirmed === false) {
-                const cMsgCnt = this.digitalInputs.CompanyMessageCount;
-                this.updateMessageCount();
-            }
+            const updateCount = this.messageQueueUplink[index].Confirmed === false;
 
             this.messageQueueUplink.splice(index, 1);
             this.digitalOutputs.FmsBus.deleteMessage(uid);
+
+            if (updateCount) {
+                this.updateMessageCount();
+            }
         } else {
             index = this.messageQueueDownlink.findIndex((element) => element.UniqueMessageID === uid);
             if (index !== -1) {
@@ -120,13 +120,14 @@ export class Aoc {
     private messageRead(uid: number): void {
         const index = this.messageQueueUplink.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
-            if (this.messageQueueUplink[index].Confirmed === false) {
-                const cMsgCnt = this.digitalInputs.CompanyMessageCount;
-                this.updateMessageCount();
-            }
+            const updateCount = this.messageQueueUplink[index].Confirmed === false;
 
             this.messageQueueUplink[index].Confirmed = true;
             this.digitalOutputs.FmsBus.resynchronizeAocMessage(this.messageQueueUplink[index]);
+
+            if (updateCount) {
+                this.updateMessageCount();
+            }
         }
     }
 
