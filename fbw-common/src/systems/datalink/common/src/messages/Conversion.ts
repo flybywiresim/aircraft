@@ -1,3 +1,6 @@
+//  Copyright (c) 2023 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { AtsuMessage, AtsuMessageType } from './AtsuMessage';
 import { AtisMessage } from './AtisMessage';
 import { CpdlcMessage } from './CpdlcMessage';

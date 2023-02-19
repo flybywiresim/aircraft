@@ -1,3 +1,6 @@
+//  Copyright (c) 2023 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { CpdlcMessage, FreetextMessage } from '@datalink/common';
 import { EventBus, Publisher } from 'msfssdk';
 import { RouterAtcAocMessages, RouterFmsBus } from './databus';

@@ -1,3 +1,6 @@
+//  Copyright (c) 2023 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { AocFmsMessages } from '@datalink/aoc';
 import { AtcFmsMessages } from '@datalink/atc';
 import {

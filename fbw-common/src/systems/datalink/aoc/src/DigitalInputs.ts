@@ -1,3 +1,6 @@
+//  Copyright (c) 2023 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { AtcAocBus } from '@datalink/atc';
 import { Clock, ClockDataBusTypes, ClockInputBus, FreetextMessage } from '@datalink/common';
 import { RouterAtcAocBus } from '@datalink/router';

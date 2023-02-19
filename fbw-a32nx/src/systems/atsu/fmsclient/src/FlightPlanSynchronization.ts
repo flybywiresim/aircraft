@@ -1,3 +1,6 @@
+//  Copyright (c) 2023 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { FmsAtcMessages } from '@datalink/atc';
 import { Waypoint } from '@datalink/common';
 import { FlightPhaseManager } from '@fmgc/flightphase';

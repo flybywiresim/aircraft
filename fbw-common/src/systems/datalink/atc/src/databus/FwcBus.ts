@@ -1,3 +1,6 @@
+//  Copyright (c) 2023 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 export class FwcOutputBus {
     public activateAtcRing(): void {
         Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
