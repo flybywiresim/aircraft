@@ -11,6 +11,7 @@ import {
     OclMessage,
     WeatherMessage,
     RmpDataBusTypes,
+    Conversion,
 } from '@datalink/common';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -71,7 +72,7 @@ export class DigitalInputs {
     public connectedCallback(): void {
         this.subscriber.on('routerSendFreetextMessage').handle((request) => {
             if (this.callbacks.sendFreetextMessage !== null) {
-                this.callbacks.sendFreetextMessage(request.message, request.force).then((status) => {
+                this.callbacks.sendFreetextMessage(Conversion.messageDataToMessage(request.message) as FreetextMessage, request.force).then((status) => {
                     this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAoc, false);
                 });
             } else {
@@ -80,7 +81,7 @@ export class DigitalInputs {
         });
         this.subscriber.on('routerSendCpdlcMessage').handle((request) => {
             if (this.callbacks.sendCpdlcMessage !== null) {
-                this.callbacks.sendCpdlcMessage(request.message, request.force).then((status) => {
+                this.callbacks.sendCpdlcMessage(Conversion.messageDataToMessage(request.message) as CpdlcMessage, request.force).then((status) => {
                     this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAtc, false);
                 });
             } else {
@@ -89,7 +90,7 @@ export class DigitalInputs {
         });
         this.subscriber.on('routerSendDclMessage').handle((request) => {
             if (this.callbacks.sendDclMessage !== null) {
-                this.callbacks.sendDclMessage(request.message, request.force).then((status) => {
+                this.callbacks.sendDclMessage(Conversion.messageDataToMessage(request.message) as DclMessage, request.force).then((status) => {
                     this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAtc, false);
                 });
             } else {
@@ -98,7 +99,7 @@ export class DigitalInputs {
         });
         this.subscriber.on('routerSendOclMessage').handle((request) => {
             if (this.callbacks.sendOclMessage !== null) {
-                this.callbacks.sendOclMessage(request.message, request.force).then((status) => {
+                this.callbacks.sendOclMessage(Conversion.messageDataToMessage(request.message) as OclMessage, request.force).then((status) => {
                     this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAtc, false);
                 });
             } else {

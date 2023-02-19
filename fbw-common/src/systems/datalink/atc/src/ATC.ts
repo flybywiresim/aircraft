@@ -19,6 +19,7 @@ import {
     FutureAirNavigationSystem,
     coordinateToString,
     timestampToString,
+    Conversion,
 } from '@datalink/common';
 import { EventBus } from 'msfssdk';
 import { FmsRouteData } from './databus/FmsBus';
@@ -835,9 +836,9 @@ export class Atc {
     private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
         return this.digitalOutputs.RouterBus.receiveAtis(icao, type, () => { }).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
+                const atis = Conversion.messageDataToMessage(retval[1]) as AtisMessage;
                 let code = AtsuStatusCodes.Ok;
 
-                const atis = retval[1] as AtisMessage;
                 atis.Timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
                 atis.parseInformation();
 
