@@ -274,15 +274,13 @@ export class FmsClient {
     }
 
     public registerMessages(messages: AtsuMessage[]): void {
-        if (messages[0].Type === AtsuMessageType.ATIS) {
-            this.publisher.pub('atcRegisterAtisMessages', messages as AtisMessage[], true, false);
-        } else if (messages[0].Type === AtsuMessageType.CPDLC) {
+        if (messages[0].Type === AtsuMessageType.CPDLC) {
             this.publisher.pub('atcRegisterCpdlcMessages', messages as CpdlcMessage[], true, false);
         } else if (messages[0].Type === AtsuMessageType.DCL) {
             this.publisher.pub('atcRegisterDclMessages', messages as DclMessage[], true, false);
         } else if (messages[0].Type === AtsuMessageType.OCL) {
             this.publisher.pub('atcRegisterOclMessages', messages as OclMessage[], true, false);
-        } else if (messages[0].Type === AtsuMessageType.METAR || messages[0].Type === AtsuMessageType.TAF) {
+        } else if (messages[0].Type === AtsuMessageType.ATIS || messages[0].Type === AtsuMessageType.METAR || messages[0].Type === AtsuMessageType.TAF) {
             this.publisher.pub('aocRegisterWeatherMessages', messages as WeatherMessage[], true, false);
         }
     }

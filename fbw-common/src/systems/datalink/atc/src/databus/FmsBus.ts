@@ -71,7 +71,6 @@ export interface FmsAtcMessages {
     // expect 'atcPositionReport' response
     atcRequestPositionReport: number;
     // fire & forget messages
-    atcRegisterAtisMessages: AtisMessage[];
     atcRegisterCpdlcMessages: CpdlcMessage[];
     atcRegisterDclMessages: DclMessage[];
     atcRegisterOclMessages: OclMessage[];
@@ -194,7 +193,6 @@ export class FmsAtcBus {
                 this.publisher.pub('atcPositionReport', { requestId: data, data: this.callbacks.positionReportData() }, true, false);
             }
         });
-        this.subscriber.on('atcRegisterAtisMessages').handle((data) => this.fireAndForgetWithParameter(FmsAtcBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
         this.subscriber.on('atcRegisterCpdlcMessages').handle((data) => this.fireAndForgetWithParameter(FmsAtcBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
         this.subscriber.on('atcRegisterDclMessages').handle((data) => this.fireAndForgetWithParameter(FmsAtcBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
         this.subscriber.on('atcRegisterOclMessages').handle((data) => this.fireAndForgetWithParameter(FmsAtcBus.enhanceReceivedMessages(data), this.callbacks.registerMessages));
