@@ -32,7 +32,7 @@ impl OutflowValve {
         Self {
             auto_motor: OutflowValveMotor::new(Self::AUTO_TRAVEL_TIME, auto_motor_powered_by),
             manual_motor: OutflowValveMotor::new(Self::MANUAL_TRAVEL_TIME, manual_motor_powered_by),
-            valve: PressureValve::new_outflow_valve(),
+            valve: PressureValve::new_open(),
         }
     }
 
@@ -131,7 +131,7 @@ pub struct SafetyValve {
 impl SafetyValve {
     pub fn new() -> Self {
         Self {
-            valve: PressureValve::new_safety_valve(),
+            valve: PressureValve::new_closed(),
         }
     }
 
@@ -159,13 +159,13 @@ pub struct PressureValve {
 }
 
 impl PressureValve {
-    pub fn new_outflow_valve() -> Self {
+    pub fn new_open() -> Self {
         Self {
             open_amount: Ratio::new::<percent>(100.),
         }
     }
 
-    pub fn new_safety_valve() -> Self {
+    pub fn new_closed() -> Self {
         Self {
             open_amount: Ratio::new::<percent>(0.),
         }
@@ -227,7 +227,7 @@ mod pressure_valve_tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                valve: PressureValve::new_outflow_valve(),
+                valve: PressureValve::new_open(),
                 actuator: TestValveMotor::new(vec![
                     ElectricalBusType::DirectCurrentEssential,
                     ElectricalBusType::DirectCurrent(2),
