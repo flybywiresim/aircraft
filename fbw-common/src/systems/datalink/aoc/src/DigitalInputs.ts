@@ -7,18 +7,10 @@ import { RouterAtcAocBus } from '@datalink/router';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { FmsAocBus } from './databus/FmsBus';
 
-export type DigitalInputCallbacks = {
-    receivedFreetextMessage: (message: FreetextMessage) => void;
-}
-
 export class DigitalInputs {
     private subscriber: EventSubscriber<ClockDataBusTypes & FwcDataBusTypes> = null;
 
     private poweredUp: boolean = false;
-
-    private callbacks: DigitalInputCallbacks = {
-        receivedFreetextMessage: null,
-    };
 
     public UtcClock: Clock;
 
