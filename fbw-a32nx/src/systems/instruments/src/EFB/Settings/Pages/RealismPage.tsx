@@ -26,6 +26,8 @@ export const RealismPage = () => {
     const [syncEfis, setFoEfis] = usePersistentNumberProperty('FO_SYNC_EFIS_ENABLED', 0);
     const [pilotAvatar, setPilotAvatar] = usePersistentNumberProperty('CONFIG_PILOT_AVATAR_VISIBLE', 0);
     const [firstOfficerAvatar, setFirstOfficerAvatar] = usePersistentNumberProperty('CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', 0);
+    const [missedPaxRealism, setMissedPaxRealism] = usePersistentProperty('CONFIG_MISSED_PAX', 'NONE');
+    const [, setMissedPaxRealismSimVar] = useSimVar('L:A32NX_CONFIG_MISSED_PAX', 'Enum', 0);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -43,6 +45,13 @@ export const RealismPage = () => {
         { name: t('Settings.Instant'), setting: 'INSTANT' },
         { name: t('Settings.Fast'), setting: 'FAST' },
         { name: t('Settings.Real'), setting: 'REAL' },
+    ];
+
+    const missedPaxRealismButtons: (ButtonType & SimVarButton)[] = [
+        { name: t('Settings.None'), setting: 'NONE' , simVarValue: 0},
+        { name: t('Settings.Typical'), setting: 'TYPICAL' , simVarValue: 1},
+        { name: t('Settings.ConnectingFlights'), setting: 'CONNECTING FLIGHTS', simVarValue: 2 },
+        { name: t('Settings.Frequent'), setting: 'FREQUENT', simVarValue: 3 },
     ];
 
     return (
@@ -134,6 +143,22 @@ export const RealismPage = () => {
 
             <SettingItem name={t('Settings.Realism.FirstOfficerAvatar')}>
                 <Toggle value={!!firstOfficerAvatar} onToggle={(value) => setFirstOfficerAvatar(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.Realism.MissingPax')}>
+                <SelectGroup>
+                    {missedPaxRealismButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => {
+                                setMissedPaxRealism(button.setting);
+                                setMissedPaxRealismSimVar(button.simVarValue);
+                            }}
+                            selected={missedPaxRealism === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
             </SettingItem>
 
         </SettingsPage>
