@@ -104,7 +104,7 @@ export const Payload = () => {
     const totalCargoDesired = useMemo(() => {
         const cargoDesiredWithMissed = (cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) + totalMissedCargo);
         console.info('cargo desired : %d with %d missed', cargoDesiredWithMissed, totalMissedCargo);
-        return ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1)
+        return ((cargoDesired && cargoDesired.length > 0) ? cargoDesiredWithMissed : -1)
     }, [...cargoDesired, ...paxDesired, totalMissedCargo]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
@@ -302,13 +302,15 @@ export const Payload = () => {
                 totalNumberPaxCargoPlanned += numberPaxCargo[station];
                 // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
             }
-            for (let i = 0; i < Math.min(numberPaxCargoToRemove, totalNumberPaxCargoPlanned); i++) {
+            const paxCargoCanBeRemoved = Math.min(numberPaxCargoToRemove, totalNumberPaxCargoPlanned);
+            let tempCargoDesired = [...cargoDesired];
+            for (let i = 0; i < paxCargoCanBeRemoved; i++) {
                 const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargoPlanned);
                 let countMin : number = 0;
                 for (let station = cargoDesired.length - 1; station > 0; station--) {
                     if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
                         countMin += numberPaxCargo[station];
-                        setCargoDesired[station](cargoDesired[station] - paxBagWeight);
+                        tempCargoDesired[station](tempCargoDesired[station] - paxBagWeight);
                         numberPaxCargo[station] -= 1;
                         totalNumberPaxCargoPlanned -= 1;
                         totalRemovedCargo += paxBagWeight;
@@ -316,7 +318,8 @@ export const Payload = () => {
                     }
                 }
             }
-            console.info('Removed %d pax luggage : %d Kg',totalRemovedCargo,totalRemovedCargo/paxBagWeight);
+            setCargoDesired(tempCargoDesired);
+            console.info('Removed %d pax luggage : %d Kg',totalRemovedCargo/paxBagWeight,totalRemovedCargo);
         }
         return totalRemovedCargo;
     };
