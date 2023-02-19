@@ -277,13 +277,12 @@ export class DigitalInputs {
     public powerUp(): void {
         this.poweredUp = true;
         this.atcMessageButtonBus.powerUp();
-
-        this.resetData();
     }
 
     public powerDown(): void {
         this.atcMessageButtonBus.powerDown();
         this.poweredUp = false;
+        this.resetData();
     }
 
     public update(): void {
