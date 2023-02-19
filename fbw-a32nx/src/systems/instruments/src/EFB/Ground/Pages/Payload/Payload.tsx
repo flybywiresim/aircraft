@@ -117,9 +117,9 @@ export const Payload = () => {
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
     const setCargoMissed = useMemo(() => [setFwdBagMissed, setAftContMissed, setAftBagMissed, setAftBulkMissed], []);
     const totalCargoDesired = useMemo(() => {
-        const cargoDesiredWithMissed = (cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) + totalMissedCargo);
-        console.info('cargo desired : %d with %d missed', cargoDesiredWithMissed, totalMissedCargo);
-        return ((cargoDesired && cargoDesired.length > 0) ? cargoDesiredWithMissed : -1)
+        const cargoDesiredWithMissed = ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)):-1) + (isNaN(totalMissedCargo)? 0 : totalMissedCargo );
+        console.info('cargo desired : %d with %d missed', cargoDesiredWithMissed, isNaN(totalMissedCargo)? 0 : totalMissedCargo);
+        return ( cargoDesiredWithMissed)
     }, [...cargoDesired, ...paxDesired, totalMissedCargo]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
@@ -312,14 +312,16 @@ export const Payload = () => {
         let totalNumberPaxCargoPlanned : number = 0;
         let totalRemovedCargo = 0;
         if (paxBagWeight > 0) {
+            let tempMissedCargo = new Array(cargoDesired.length);
             for (let station = cargoDesired.length - 1; station >= 0; station--) {
                 numberPaxCargo[station] = Math.floor(cargoDesired[station] / paxBagWeight);
                 totalNumberPaxCargoPlanned += numberPaxCargo[station];
+                tempMissedCargo[station] = 0;
                 // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
             }
             const paxCargoCanBeRemoved = Math.min(numberPaxCargoToRemove, totalNumberPaxCargoPlanned);
             console.info('Attempting to remove %d luggages', paxCargoCanBeRemoved);
-            let tempMissedCargo = new Array(cargoDesired.length);
+
             for (let i = 0; i < paxCargoCanBeRemoved; i++) {
                 const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargoPlanned);
                 let countMin : number = 0;
@@ -335,6 +337,8 @@ export const Payload = () => {
                 }
             }
             for (let station = cargoDesired.length - 1; station >= 0; station--) {
+                console.info("changing cargo station %d's cargo to %d",station,cargoDesired[station] - tempMissedCargo[station]);
+                console.info("setting missed cargo on station %d at %d",station, tempMissedCargo[station]);
                 setCargoDesired[station](cargoDesired[station] - tempMissedCargo[station]);
                 setCargoMissed[station](tempMissedCargo[station]);
             }
