@@ -14,7 +14,7 @@ use super::{
     OutflowValveSignal, PressurizationConstants,
 };
 
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 use uom::si::{
     f64::*,
     length::{foot, meter},
@@ -23,14 +23,6 @@ use uom::si::{
     thermodynamic_temperature::kelvin,
     velocity::{foot_per_minute, knot, meter_per_second},
 };
-
-struct Constants<C: PressurizationConstants>(C);
-
-impl<C: PressurizationConstants> Constants<C> {
-    pub fn new(constants: C) -> Constants<C> {
-        Constants(constants)
-    }
-}
 
 pub struct CabinPressureController<C: PressurizationConstants> {
     cabin_altitude_id: VariableIdentifier,
@@ -67,7 +59,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     manual_to_auto_switch: bool,
     cabin_temperature: ThermodynamicTemperature,
 
-    _constants: Constants<C>,
+    constants: PhantomData<C>,
 }
 
 impl<C: PressurizationConstants> CabinPressureController<C> {
@@ -81,7 +73,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     // Altitude in ft equivalent to 0.1 PSI delta P at sea level
     const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
-    pub fn new(context: &mut InitContext, aircraft: C) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
             cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
             cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
@@ -123,7 +115,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             manual_to_auto_switch: false,
             cabin_temperature: ThermodynamicTemperature::new::<kelvin>(297.15), // 24C
 
-            _constants: Constants::new(aircraft),
+            constants: PhantomData,
         }
     }
 
@@ -1230,10 +1222,9 @@ mod tests {
             let mut test_aircraft = Self {
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
-                cpc: CabinPressureController::new(context, TestConstants),
+                cpc: CabinPressureController::new(context),
                 cabin_air_simulation: CabinAirSimulation::new(
                     context,
-                    TestConstants,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)],
                 ),
                 outflow_valve: OutflowValve::new(

@@ -22,17 +22,9 @@ use uom::si::{
 
 use bounded_vec_deque::BoundedVecDeque;
 
-use std::convert::TryInto;
+use std::{convert::TryInto, marker::PhantomData};
 
-struct Constants<C: PressurizationConstants>(C);
-
-impl<C: PressurizationConstants> Constants<C> {
-    pub fn new(constants: C) -> Constants<C> {
-        Constants(constants)
-    }
-}
-
-pub struct CabinAirSimulation<C: PressurizationConstants, const ZONES: usize> {
+pub struct CabinAirSimulation<C, const ZONES: usize> {
     is_initialised: bool,
     previous_exterior_pressure: BoundedVecDeque<Pressure>,
     filtered_exterior_pressure: Pressure,
@@ -45,14 +37,11 @@ pub struct CabinAirSimulation<C: PressurizationConstants, const ZONES: usize> {
 
     cabin_zones: [CabinZone<C>; ZONES],
 
-    _constants: Constants<C>,
+    constants: PhantomData<C>,
 }
 
-impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES>
-where
-    C: Copy,
-{
-    pub fn new(context: &mut InitContext, aircraft: C, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES> {
+    pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
         Self {
             is_initialised: false,
             previous_exterior_pressure: BoundedVecDeque::from_iter(
@@ -72,14 +61,14 @@ where
 
             cabin_zones: cabin_zone_ids
                 .iter()
-                .map(|zone| CabinZone::new(context, aircraft, zone))
+                .map(|zone| CabinZone::new(context, zone))
                 .collect::<Vec<CabinZone<C>>>()
                 .try_into()
                 .unwrap_or_else(|v: Vec<CabinZone<C>>| {
                     panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
                 }),
 
-            _constants: Constants::new(aircraft),
+            constants: PhantomData,
         }
     }
 
@@ -331,7 +320,7 @@ impl<C: PressurizationConstants, const ZONES: usize> SimulationElement
     }
 }
 
-pub struct CabinZone<C: PressurizationConstants> {
+pub struct CabinZone<C> {
     zone_identifier: VariableIdentifier,
 
     zone_id: usize,
@@ -339,11 +328,11 @@ pub struct CabinZone<C: PressurizationConstants> {
     zone_volume: Volume,
     passengers: u8,
 
-    _constants: Constants<C>,
+    constants: PhantomData<C>,
 }
 
 impl<C: PressurizationConstants> CabinZone<C> {
-    pub fn new(context: &mut InitContext, aircraft: C, zone_id: &ZoneType) -> Self {
+    pub fn new(context: &mut InitContext, zone_id: &ZoneType) -> Self {
         let (passengers, zone_volume): (u8, Volume) = if matches!(zone_id, &ZoneType::Cockpit) {
             (2, Volume::new::<cubic_meter>(C::COCKPIT_VOLUME_CUBIC_METER))
         } else {
@@ -358,7 +347,7 @@ impl<C: PressurizationConstants> CabinZone<C> {
             zone_volume,
             passengers,
 
-            _constants: Constants::new(aircraft),
+            constants: PhantomData,
         }
     }
 
@@ -747,7 +736,6 @@ mod cabin_air_tests {
                 number_of_passengers: 0,
                 cabin_air_simulation: CabinAirSimulation::new(
                     context,
-                    TestConstants,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1)],
                 ),
             }

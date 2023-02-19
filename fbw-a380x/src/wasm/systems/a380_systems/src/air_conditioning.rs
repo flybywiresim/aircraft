@@ -170,7 +170,6 @@ impl A320Cabin {
             number_of_passengers: [2, 0, 0],
             cabin_air_simulation: CabinAirSimulation::new(
                 context,
-                A320PressurizationConstants,
                 &[ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)],
             ),
         }
@@ -262,8 +261,8 @@ impl A320PressurizationSystem {
             active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
 
             cpc: [
-                CabinPressureController::new(context, A320PressurizationConstants),
-                CabinPressureController::new(context, A320PressurizationConstants),
+                CabinPressureController::new(context),
+                CabinPressureController::new(context),
             ],
             outflow_valve: [OutflowValve::new(
                 vec![

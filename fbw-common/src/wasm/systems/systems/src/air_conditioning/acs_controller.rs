@@ -1688,7 +1688,6 @@ mod acs_controller_tests {
             Self {
                 cabin_air_simulation: CabinAirSimulation::new(
                     context,
-                    TestConstants,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1)],
                 ),
                 test_cabin_temperature: None,
