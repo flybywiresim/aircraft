@@ -6,7 +6,7 @@ import {
     CpdlcMessage,
     CpdlcMessageMonitoringState,
     MailboxStatusMessage,
-} from '@atsu/common';
+} from '@datalink/common';
 import { MessageVisualization } from './MessageVisualization';
 
 type DatalinkMessageProps = {

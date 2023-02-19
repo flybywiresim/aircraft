@@ -13,7 +13,7 @@ import {
     Conversion,
     AtsuMailboxMessages,
     MailboxStatusMessage,
-} from '@atsu/common';
+} from '@datalink/common';
 import { SemanticResponseButtons } from './elements/SemanticResponseButtons';
 import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AtsuMessageComStatus, CpdlcMessage, UplinkMonitor } from '@atsu/common';
+import { AtsuMessageComStatus, CpdlcMessage, UplinkMonitor } from '@datalink/common';
 import { Button } from './Button';
 
 type WilcoUnableButtonsProps = {

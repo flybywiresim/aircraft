@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
-import { MailboxStatusMessage } from '@atsu/common';
+import { MailboxStatusMessage } from '@datalink/common';
 import { Checkerboard } from './Checkerboard';
 
 interface ColorizedWord {

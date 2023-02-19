@@ -6,7 +6,7 @@ import {
     CpdlcMessagesDownlink,
     CpdlcMessage,
     CpdlcMessageMonitoringState,
-} from '@atsu/common';
+} from '@datalink/common';
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {

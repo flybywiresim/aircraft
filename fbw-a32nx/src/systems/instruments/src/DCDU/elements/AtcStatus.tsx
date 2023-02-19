@@ -1,4 +1,4 @@
-import { MailboxStatusMessage } from '@atsu/common';
+import { MailboxStatusMessage } from '@datalink/common';
 import React from 'react';
 import { MessageVisualization } from './MessageVisualization';
 
