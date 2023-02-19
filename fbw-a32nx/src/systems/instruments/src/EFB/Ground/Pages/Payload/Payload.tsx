@@ -110,7 +110,8 @@ export const Payload = () => {
     const cargoDesiredDisplayed = useMemo(()=> {
         let tempCargoDisplay = new Array(cargoDesired.length);
         for (let station = 0 ; station < tempCargoDisplay.length; station++) {
-            tempCargoDisplay = cargoDesired[station] + cargoMissed[station];
+            tempCargoDisplay[station] = cargoDesired[station] + cargoMissed[station];
+            console.info('cargo %d\'s display:%d',station, tempCargoDisplay);
         }
         return tempCargoDisplay;
     }, [...cargoDesired, ...cargoMissed]);
@@ -499,6 +500,7 @@ export const Payload = () => {
 
     // Init
     useEffect(() => {
+        resetMissedCargo();
         if (paxWeight === 0) {
             setPaxWeight(Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultPaxWeight)));
         }
