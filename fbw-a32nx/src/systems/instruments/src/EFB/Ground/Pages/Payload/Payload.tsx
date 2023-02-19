@@ -303,23 +303,24 @@ export const Payload = () => {
                 // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
             }
             const paxCargoCanBeRemoved = Math.min(numberPaxCargoToRemove, totalNumberPaxCargoPlanned);
+            console.info('Attempting to remove %d luggages', paxCargoCanBeRemoved);
             let tempCargoDesired = [...cargoDesired];
             for (let i = 0; i < paxCargoCanBeRemoved; i++) {
                 const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargoPlanned);
                 let countMin : number = 0;
                 for (let station = cargoDesired.length - 1; station > 0; station--) {
                     if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
-                        countMin += numberPaxCargo[station];
                         tempCargoDesired[station] -= paxBagWeight;
                         numberPaxCargo[station] -= 1;
                         totalNumberPaxCargoPlanned -= 1;
                         totalRemovedCargo += paxBagWeight;
                         break;
                     }
+                    countMin += numberPaxCargo[station];
                 }
             }
             for (let station = cargoDesired.length - 1; station > 0; station--) {
-                setCargoDesired[station](tempCargoDesired);
+                setCargoDesired[station](tempCargoDesired[station]);
             }
             console.info('Removed %d pax luggage : %d Kg',totalRemovedCargo/paxBagWeight,totalRemovedCargo);
         }
