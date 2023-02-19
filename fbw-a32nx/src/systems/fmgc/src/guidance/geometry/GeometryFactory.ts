@@ -277,8 +277,8 @@ function geometryLegFromFlightPlanLeg(runningMagvar: Degrees, previousFlightPlan
     case LegType.TF: {
         const prev = previousFlightPlanLeg as FlightPlanLeg;
 
-        if (!prev.isXF()) {
-            throw new Error('[FMS/Geometry] Cannot create a TF leg after a non-XF leg');
+        if (!prev.isXF() && !prev.isHX()) {
+            throw new Error('[FMS/Geometry] Cannot create a TF leg after a non-XF/HX leg');
         }
 
         const prevWaypoint = prev.terminationWaypoint();
