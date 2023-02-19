@@ -98,9 +98,14 @@ export const Payload = () => {
     const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number', 200);
     const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number', 200);
 
+    const [totalMissedCargo, setTotalMissedCargo] = useState(0);
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
-    const totalCargoDesired = useMemo(() => ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1), [...cargoDesired, ...paxDesired]);
+    const totalCargoDesired = useMemo(() => {
+        const cargoDesiredWithMissed = (cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) + totalMissedCargo);
+        console.info('cargo desired : %d with %d missed', cargoDesiredWithMissed, totalMissedCargo);
+        return ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1)
+    }, [...cargoDesired, ...paxDesired, totalMissedCargo]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
 
@@ -178,7 +183,7 @@ export const Payload = () => {
             for (let station = 0 ; station < pax.length ; station++ ) tempTotalMissed += stationMissedPax(pax[station], paxDesired[station], setPaxDesired[station], chancesToMissBoarding);
             setTotalMissedPax(tempTotalMissed);
             console.info('pax missing plane: %d', tempTotalMissed);
-            removeTargetPaxCargo(tempTotalMissed);
+            setTotalMissedCargo(removeTargetPaxCargo(tempTotalMissed));
         }
     };
 
@@ -288,28 +293,32 @@ export const Payload = () => {
     }, [...paxDesired, totalPaxDesired, maxPax, ...stationSize, ...seatMap]);
 
     const removeTargetPaxCargo = (numberPaxCargoToRemove : number) => {
-        let numberPaxCargo : number[];
-        let totalNumberPaxCargo : number = 0;
+        let numberPaxCargo : number[] = new Array(cargoDesired.length);
+        let totalNumberPaxCargoPlanned : number = 0;
+        let totalRemovedCargo = 0;
         if (paxBagWeight > 0) {
             for (let station = cargoDesired.length - 1; station > 0; station--) {
                 numberPaxCargo[station] = Math.floor(cargoDesired[station] / paxBagWeight);
-                totalNumberPaxCargo += numberPaxCargo[station];
+                totalNumberPaxCargoPlanned += numberPaxCargo[station];
                 // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
             }
-            for (let i = 0; i < Math.min(numberPaxCargoToRemove, totalNumberPaxCargo); i++) {
-                const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargo);
+            for (let i = 0; i < Math.min(numberPaxCargoToRemove, totalNumberPaxCargoPlanned); i++) {
+                const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargoPlanned);
                 let countMin : number = 0;
                 for (let station = cargoDesired.length - 1; station > 0; station--) {
                     if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
                         countMin += numberPaxCargo[station];
                         setCargoDesired[station](cargoDesired[station] - paxBagWeight);
                         numberPaxCargo[station] -= 1;
-                        totalNumberPaxCargo -= 1;
+                        totalNumberPaxCargoPlanned -= 1;
+                        totalRemovedCargo += paxBagWeight;
                         break;
                     }
                 }
             }
+            console.info('Removed %d pax luggage : %d Kg',totalRemovedCargo,totalRemovedCargo/paxBagWeight);
         }
+        return totalRemovedCargo;
     };
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
@@ -596,6 +605,7 @@ export const Payload = () => {
         // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
             setTotalMissedPax(0);
+            setTotalMissedCargo(0);
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
         }
@@ -745,7 +755,7 @@ export const Payload = () => {
         updateAllWeights();
     }, [
         ...pax, ...paxDesired, totalMissedPax,
-        ...cargo, ...cargoDesired,
+        ...cargo, ...cargoDesired, totalMissedCargo,
         ...fuel, destEfob,
         paxWeight, paxBagWeight,
         emptyWeight,
