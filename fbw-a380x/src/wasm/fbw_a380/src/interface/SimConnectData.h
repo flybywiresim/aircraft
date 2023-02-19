@@ -146,6 +146,11 @@ struct SimInput {
   double inputs[3];
 };
 
+struct SimInputPitchTrim {
+  bool pitchTrimSwitchUp;
+  bool pitchTrimSwitchDown;
+};
+
 struct SimInputRudderTrim {
   bool rudderTrimSwitchLeft;
   bool rudderTrimSwitchRight;
