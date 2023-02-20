@@ -122,7 +122,7 @@ export class MailboxBus {
     constructor(private readonly bus: EventBus, atc: Atc) {
         this.atc = atc;
 
-        this.atc.digitalInputs.atcMessageButtonBus.addDataCallback('onButtonPressed', () => this.cleanupNotifications());
+        this.atc.digitalInputs.addDataCallback('onAtcMessageButtonPressed', () => this.cleanupNotifications());
         this.publisher = this.bus.getPublisher<AtsuMailboxMessages>();
         this.subscriber = this.bus.getSubscriber<AtsuMailboxMessages>();
 
@@ -168,7 +168,7 @@ export class MailboxBus {
                         if (message.Direction === AtsuMessageDirection.Downlink) {
                             this.atc.sendMessage(message).then((code) => {
                                 if (code !== AtsuStatusCodes.Ok) {
-                                    this.atc.digitalOutputs.FmsBus.sendSystemStatus(code);
+                                    this.atc.digitalOutputs.sendSystemStatus(code);
                                 }
                             });
                         }
@@ -197,7 +197,7 @@ export class MailboxBus {
             if (idx > -1) {
                 const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
                 if (message !== undefined) {
-                    this.atc.digitalOutputs.FmsBus.sendMessageModify(message as CpdlcMessage);
+                    this.atc.digitalOutputs.sendMessageModify(message as CpdlcMessage);
                 }
             }
         });
@@ -208,7 +208,7 @@ export class MailboxBus {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
                 this.publisher.pub('systemStatus', MailboxStatusMessage.Printing, true, false);
-                this.atc.digitalOutputs.FmsBus.sendPrintMessage(message);
+                this.atc.digitalOutputs.sendPrintMessage(message);
                 setTimeout(() => {
                     if (this.currentMessageStatus(uid) === MailboxStatusMessage.Printing) {
                         this.publisher.pub('systemStatus', MailboxStatusMessage.NoMessage, true, false);
@@ -322,7 +322,7 @@ export class MailboxBus {
     }
 
     private cleanupNotifications() {
-        this.atc.digitalOutputs.AtcMessageButtonsBus.resetButton();
+        this.atc.digitalOutputs.resetButton();
 
         if (this.atcRingInterval) {
             clearInterval(this.atcRingInterval);
@@ -336,10 +336,10 @@ export class MailboxBus {
         }
 
         // call the first ring tone
-        this.atc.digitalOutputs.FwcBus.activateAtcRing();
+        this.atc.digitalOutputs.activateAtcRing();
 
         // start the ring tone interval
-        this.atcRingInterval = setInterval(() => this.atc.digitalOutputs.FwcBus.activateAtcRing(), this.estimateRingInterval());
+        this.atcRingInterval = setInterval(() => this.atc.digitalOutputs.activateAtcRing(), this.estimateRingInterval());
     }
 
     public powerUp(): void {
@@ -378,13 +378,13 @@ export class MailboxBus {
             this.downlinkMessages.push(mailboxBlocks);
         } else if (mailboxBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < MailboxBus.MaxMailboxFileSize) {
             this.uplinkMessages.push(mailboxBlocks);
-            this.atc.digitalOutputs.AtcMessageButtonsBus.activateButton();
+            this.atc.digitalOutputs.activateButton();
             this.setupIntervals();
         } else {
             if (mailboxBlocks[0].Direction === AtsuMessageDirection.Downlink) {
                 this.bufferedDownlinkMessages.push(mailboxBlocks);
                 this.publisher.pub('systemStatus', MailboxStatusMessage.MaximumDownlinkMessages, true, false);
-                this.atc.digitalOutputs.FmsBus.sendSystemStatus(AtsuStatusCodes.MailboxFull);
+                this.atc.digitalOutputs.sendSystemStatus(AtsuStatusCodes.MailboxFull);
             } else {
                 this.bufferedUplinkMessages.push(mailboxBlocks);
                 this.publisher.pub('systemStatus', MailboxStatusMessage.AnswerRequired, true, false);

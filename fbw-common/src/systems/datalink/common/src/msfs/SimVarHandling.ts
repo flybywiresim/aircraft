@@ -1,6 +1,7 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { AtcMessageButtonBusMessages } from '@datalink/atc';
 import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes } from '../databus';
@@ -31,6 +32,8 @@ interface SimVars {
     msfsVhf3Frequency: number,
     msfsTransponderCode: number,
     msfsCompanyMessageCount: number,
+    msfsAtcMessageButtonActive: boolean,
+    msfsAtcMessageButtonPressed: number,
 }
 
 export enum SimVarSources {
@@ -59,12 +62,20 @@ export enum SimVarSources {
     vhf3Frequency = 'A:COM ACTIVE FREQUENCY:3',
     transponderCode = 'TRANSPONDER CODE:1',
     companyMessageCount = 'L:A32NX_COMPANY_MSG_COUNT',
+    atcMessageButtonActive = 'L:A32NX_DCDU_ATC_MSG_WAITING',
+    atcMessageButtonPressed = 'L:A32NX_DCDU_ATC_MSG_ACK',
 }
 
 export class SimVarHandling extends SimVarPublisher<SimVars> {
     private subscriber: EventSubscriber<SimVars> = null;
 
-    private datalinkPublisher: Publisher<ClockDataBusTypes & FmgcDataBusTypes & RmpDataBusTypes & FwcDataBusTypes> = null;
+    private datalinkPublisher: Publisher<
+        AtcMessageButtonBusMessages &
+        ClockDataBusTypes &
+        FmgcDataBusTypes &
+        RmpDataBusTypes &
+        FwcDataBusTypes
+    > = null;
 
     private static simvars = new Map<keyof SimVars, SimVarDefinition>([
         ['msfsUtcYear', { name: SimVarSources.utcYear, type: SimVarValueType.Number }],
@@ -91,6 +102,8 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         ['msfsVhf3Frequency', { name: SimVarSources.vhf3Frequency, type: SimVarValueType.MHz }],
         ['msfsTransponderCode', { name: SimVarSources.transponderCode, type: SimVarValueType.Number }],
         ['msfsCompanyMessageCount', { name: SimVarSources.companyMessageCount, type: SimVarValueType.Number }],
+        ['msfsAtcMessageButtonActive', { name: SimVarSources.atcMessageButtonActive, type: SimVarValueType.Bool }],
+        ['msfsAtcMessageButtonPressed', { name: SimVarSources.atcMessageButtonPressed, type: SimVarValueType.Number }],
     ]);
 
     public constructor(private readonly eventBus: EventBus) {
@@ -123,10 +136,18 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         super.subscribe('msfsVhf3Frequency');
         super.subscribe('msfsTransponderCode');
         super.subscribe('msfsCompanyMessageCount');
+        super.subscribe('msfsAtcMessageButtonActive');
+        super.subscribe('msfsAtcMessageButtonPressed');
     }
 
     public initialize(): void {
-        this.datalinkPublisher = this.eventBus.getPublisher<ClockDataBusTypes & FmgcDataBusTypes & RmpDataBusTypes & FwcDataBusTypes>();
+        this.datalinkPublisher = this.eventBus.getPublisher<
+            AtcMessageButtonBusMessages &
+            ClockDataBusTypes &
+            FmgcDataBusTypes &
+            RmpDataBusTypes &
+            FwcDataBusTypes
+        >();
         this.subscriber = this.eventBus.getSubscriber<SimVars>();
 
         this.subscriber.on('msfsUtcYear').handle((year: number) => this.datalinkPublisher.pub('utcYear', year, false, false));
@@ -205,6 +226,8 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         this.subscriber.on('msfsVhf3Frequency').handle((frequency: number) => this.datalinkPublisher.pub('vhf3DataMode', frequency === 0, false, false));
         this.subscriber.on('msfsTransponderCode').handle((code: number) => this.datalinkPublisher.pub('transponderCode', code, false, false));
         this.subscriber.on('msfsCompanyMessageCount').handle((count: number) => this.datalinkPublisher.pub('companyMessageCount', count, false, false));
+        this.subscriber.on('msfsAtcMessageButtonActive').handle((active: boolean) => this.datalinkPublisher.pub('atcMessageButtonActive', active, false, false));
+        this.subscriber.on('msfsAtcMessageButtonPressed').handle((pressed: number) => this.datalinkPublisher.pub('atcMessageButtonPressed', pressed !== 0, false, false));
 
         this.connectedCallback();
     }

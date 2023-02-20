@@ -32,17 +32,17 @@ export class Aoc {
     private blacklistedMessageIds: number[] = [];
 
     constructor(private bus: EventBus, synchronizedRouter: boolean, synchronizedAtc: boolean) {
-        this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc);
+        this.digitalInputs = new DigitalInputs(this.bus);
         this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedRouter);
 
-        this.digitalInputs.fmsBus.addDataCallback('sendFreetextMessage', (message) => this.sendMessage(message));
-        this.digitalInputs.fmsBus.addDataCallback('requestAtis', (icao, type, sentCallback) => this.receiveAtis(icao, type, sentCallback));
-        this.digitalInputs.fmsBus.addDataCallback('requestWeather', (icaos, requestMetar, sentCallback) => this.receiveWeather(requestMetar, icaos, sentCallback));
-        this.digitalInputs.fmsBus.addDataCallback('registerMessages', (messages) => this.insertMessages(messages));
-        this.digitalInputs.fmsBus.addDataCallback('messageRead', (messageId) => this.messageRead(messageId));
-        this.digitalInputs.fmsBus.addDataCallback('removeMessage', (messageId) => this.removeMessage(messageId));
-        this.digitalInputs.routerBus.addDataCallback('receivedFreetextMessage', (message) => this.insertMessages([message]));
-        this.digitalInputs.atcAocBus.addDataCallback('ignoreIncomingMessage', (uid: number) => {
+        this.digitalInputs.addDataCallback('sendFreetextMessage', (message) => this.sendMessage(message));
+        this.digitalInputs.addDataCallback('requestAtis', (icao, type, sentCallback) => this.receiveAtis(icao, type, sentCallback));
+        this.digitalInputs.addDataCallback('requestWeather', (icaos, requestMetar, sentCallback) => this.receiveWeather(requestMetar, icaos, sentCallback));
+        this.digitalInputs.addDataCallback('registerMessages', (messages) => this.insertMessages(messages));
+        this.digitalInputs.addDataCallback('messageRead', (messageId) => this.messageRead(messageId));
+        this.digitalInputs.addDataCallback('removeMessage', (messageId) => this.removeMessage(messageId));
+        this.digitalInputs.addDataCallback('receivedFreetextMessage', (message) => this.insertMessages([message]));
+        this.digitalInputs.addDataCallback('ignoreIncomingMessage', (uid: number) => {
             const index = this.messageQueueUplink.findIndex((message) => message.UniqueMessageID === uid);
             if (index !== -1) {
                 this.removeMessage(uid);
@@ -58,7 +58,7 @@ export class Aoc {
     }
 
     public powerDown(): void {
-        this.digitalOutputs.FmsBus.powerDown();
+        this.digitalOutputs.powerDown();
         this.digitalInputs.powerDown();
         this.messageQueueUplink = [];
         this.messageQueueDownlink = [];
@@ -67,17 +67,16 @@ export class Aoc {
 
     public initialize(): void {
         this.digitalInputs.initialize();
-        this.digitalInputs.connectedCallback();
     }
 
     private updateMessageCount(): void {
         const msgCount = this.messageQueueUplink.reduce((c, m) => (!m.Confirmed ? c + 1 : c), 0);
-        this.digitalOutputs.FwcBus.setCompanyMessageCount(msgCount);
+        this.digitalOutputs.setCompanyMessageCount(msgCount);
     }
 
     private async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (this.poweredUp) {
-            return this.digitalOutputs.RouterBus.sendMessage(message, false).then((code) => {
+            return this.digitalOutputs.sendMessage(message, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) this.insertMessages([message]);
                 return code;
             });
@@ -92,7 +91,7 @@ export class Aoc {
             const updateCount = this.messageQueueUplink[index].Confirmed === false;
 
             this.messageQueueUplink.splice(index, 1);
-            this.digitalOutputs.FmsBus.deleteMessage(uid);
+            this.digitalOutputs.deleteMessage(uid);
 
             if (updateCount) {
                 this.updateMessageCount();
@@ -101,20 +100,20 @@ export class Aoc {
             index = this.messageQueueDownlink.findIndex((element) => element.UniqueMessageID === uid);
             if (index !== -1) {
                 this.messageQueueDownlink.splice(index, 1);
-                this.digitalOutputs.FmsBus.deleteMessage(uid);
+                this.digitalOutputs.deleteMessage(uid);
             }
         }
     }
 
     private async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
-        if (requestMetar) return this.digitalOutputs.RouterBus.receiveMetar(icaos, sentCallback);
-        return this.digitalOutputs.RouterBus.receiveTaf(icaos, sentCallback);
+        if (requestMetar) return this.digitalOutputs.receiveMetar(icaos, sentCallback);
+        return this.digitalOutputs.receiveTaf(icaos, sentCallback);
     }
 
     private async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
-        return this.digitalOutputs.RouterBus.receiveAtis(icao, type, sentCallback);
+        return this.digitalOutputs.receiveAtis(icao, type, sentCallback);
     }
 
     private messageRead(uid: number): void {
@@ -123,7 +122,7 @@ export class Aoc {
             const updateCount = this.messageQueueUplink[index].Confirmed === false;
 
             this.messageQueueUplink[index].Confirmed = true;
-            this.digitalOutputs.FmsBus.resynchronizeAocMessage(this.messageQueueUplink[index]);
+            this.digitalOutputs.resynchronizeAocMessage(this.messageQueueUplink[index]);
 
             if (updateCount) {
                 this.updateMessageCount();
@@ -149,7 +148,7 @@ export class Aoc {
                 this.messageQueueDownlink.unshift(message);
             }
 
-            this.digitalOutputs.FmsBus.resynchronizeAocMessage(message);
+            this.digitalOutputs.resynchronizeAocMessage(message);
         });
     }
 }

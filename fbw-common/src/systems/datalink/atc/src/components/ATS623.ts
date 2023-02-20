@@ -11,19 +11,14 @@ import {
     OclMessage,
 } from '@datalink/common';
 import { EventBus } from 'msfssdk';
-import { AtcAocBus } from '../databus/AtcAocBus';
 import { Atc } from '../ATC';
 
 // TODO reset internal states if flight state changes
 
 export class ATS623 {
-    private atcAocBus: AtcAocBus = null;
-
     private clearanceRequest: CpdlcMessage = null;
 
-    constructor(bus: EventBus, private readonly atc: Atc, synchronized: boolean) {
-        this.atcAocBus = new AtcAocBus(bus, synchronized, true);
-    }
+    constructor(private readonly atc: Atc) { }
 
     public isRelevantMessage(message: AtsuMessage): boolean {
         if (message instanceof DclMessage || message instanceof OclMessage) {
@@ -102,7 +97,7 @@ export class ATS623 {
             }
 
             handledMessages.push(processedMessage as CpdlcMessage);
-            this.atcAocBus.sendMessageId(processedMessage.UniqueMessageID);
+            this.atc.digitalOutputs.sendAocIgnoreMessageId(processedMessage.UniqueMessageID);
         });
 
         this.atc.insertMessages(handledMessages);

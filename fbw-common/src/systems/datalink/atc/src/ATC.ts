@@ -286,22 +286,22 @@ export class Atc {
 
     constructor(bus: EventBus, synchronizedAoc: boolean, synchronizedRouter: boolean) {
         this.digitalInputs = new DigitalInputs(bus);
-        this.digitalOutputs = new DigitalOutputs(bus, synchronizedRouter);
+        this.digitalOutputs = new DigitalOutputs(bus, synchronizedAoc, synchronizedRouter);
         this.mailboxBus = new MailboxBus(bus, this);
-        this.ats623 = new ATS623(bus, this, synchronizedAoc);
+        this.ats623 = new ATS623(this);
 
-        this.digitalInputs.fmsBus.addDataCallback('routeData', (route) => this.newRouteReceived(route));
-        this.digitalInputs.fmsBus.addDataCallback('sendMessage', (message) => this.sendMessage(message));
-        this.digitalInputs.fmsBus.addDataCallback('updateMessage', (message) => this.updateMessage(message as CpdlcMessage));
-        this.digitalInputs.fmsBus.addDataCallback('atcLogon', (station) => this.logon(station));
-        this.digitalInputs.fmsBus.addDataCallback('atcLogoff', () => this.logoff());
-        this.digitalInputs.fmsBus.addDataCallback('activateAtisAutoUpdate', (data) => this.activateAtisAutoUpdate(data));
-        this.digitalInputs.fmsBus.addDataCallback('deactivateAtisAutoUpdate', (icao) => this.deactivateAtisAutoUpdate(icao));
-        this.digitalInputs.fmsBus.addDataCallback('togglePrintAtisReportsPrint', () => this.togglePrintAtisReports());
-        this.digitalInputs.fmsBus.addDataCallback('setMaxUplinkDelay', (delay) => this.setMaxUplinkDelay(delay));
-        this.digitalInputs.fmsBus.addDataCallback('toggleAutomaticPositionReport', () => this.toggleAutomaticPositionReportActive());
-        this.digitalInputs.fmsBus.addDataCallback('requestAtis', (icao, type) => this.receiveAtis(icao, type));
-        this.digitalInputs.fmsBus.addDataCallback('positionReportData', () => {
+        this.digitalInputs.addDataCallback('routeData', (route) => this.newRouteReceived(route));
+        this.digitalInputs.addDataCallback('sendMessage', (message) => this.sendMessage(message));
+        this.digitalInputs.addDataCallback('updateMessage', (message) => this.updateMessage(message as CpdlcMessage));
+        this.digitalInputs.addDataCallback('atcLogon', (station) => this.logon(station));
+        this.digitalInputs.addDataCallback('atcLogoff', () => this.logoff());
+        this.digitalInputs.addDataCallback('activateAtisAutoUpdate', (data) => this.activateAtisAutoUpdate(data));
+        this.digitalInputs.addDataCallback('deactivateAtisAutoUpdate', (icao) => this.deactivateAtisAutoUpdate(icao));
+        this.digitalInputs.addDataCallback('togglePrintAtisReportsPrint', () => this.togglePrintAtisReports());
+        this.digitalInputs.addDataCallback('setMaxUplinkDelay', (delay) => this.setMaxUplinkDelay(delay));
+        this.digitalInputs.addDataCallback('toggleAutomaticPositionReport', () => this.toggleAutomaticPositionReportActive());
+        this.digitalInputs.addDataCallback('requestAtis', (icao, type) => this.receiveAtis(icao, type));
+        this.digitalInputs.addDataCallback('positionReportData', () => {
             const machMode = this.digitalInputs.AutopilotData.machMode;
 
             return {
@@ -332,11 +332,11 @@ export class Atc {
                 destination: this.digitalInputs.FlightRoute.destination,
             };
         });
-        this.digitalInputs.fmsBus.addDataCallback('registerMessages', (messages) => this.insertMessages(messages));
-        this.digitalInputs.fmsBus.addDataCallback('messageRead', (uid) => this.messageRead(uid));
-        this.digitalInputs.fmsBus.addDataCallback('removeMessage', (uid) => this.removeMessage(uid));
-        this.digitalInputs.fmsBus.addDataCallback('cleanupMessages', () => this.cleanupMessages());
-        this.digitalInputs.fmsBus.addDataCallback('resetAtisAutoUpdate', () => this.resetAtisAutoUpdate());
+        this.digitalInputs.addDataCallback('registerMessages', (messages) => this.insertMessages(messages));
+        this.digitalInputs.addDataCallback('messageRead', (uid) => this.messageRead(uid));
+        this.digitalInputs.addDataCallback('removeMessage', (uid) => this.removeMessage(uid));
+        this.digitalInputs.addDataCallback('cleanupMessages', () => this.cleanupMessages());
+        this.digitalInputs.addDataCallback('resetAtisAutoUpdate', () => this.resetAtisAutoUpdate());
 
         // receive freetext messages for the ATS623
         this.digitalInputs.addDataCallback('receivedFreetextMessage', (message) => {
@@ -350,14 +350,6 @@ export class Atc {
         this.digitalInputs.connectedCallback();
     }
 
-    public startPublish(): void {
-        this.digitalInputs.startPublish();
-    }
-
-    public update(): void {
-        this.digitalInputs.update();
-    }
-
     public async disconnect(): Promise<void> {
         if (this.currentAtc !== '') {
             await this.logoff();
@@ -368,7 +360,7 @@ export class Atc {
     }
 
     private sendAtcStationStatus(): void {
-        this.digitalOutputs.FmsBus.sendAtcConnectionStatus({
+        this.digitalOutputs.sendAtcConnectionStatus({
             current: this.currentAtc,
             next: this.nextAtc,
             notificationTime: this.notificationTime,
@@ -438,7 +430,7 @@ export class Atc {
             }
         }, 300000);
 
-        return this.digitalOutputs.RouterBus.sendMessage(message, false);
+        return this.digitalOutputs.sendMessage(message, false);
     }
 
     private async handover(station: string): Promise<AtsuStatusCodes> {
@@ -488,10 +480,10 @@ export class Atc {
         message.MailboxRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
-        this.digitalOutputs.FmsBus.sendMaxUplinkDelay(this.maxUplinkDelay);
+        this.digitalOutputs.sendMaxUplinkDelay(this.maxUplinkDelay);
         this.insertMessages([message]);
 
-        return this.digitalOutputs.RouterBus.sendMessage(message, true).then((error) => error);
+        return this.digitalOutputs.sendMessage(message, true).then((error) => error);
     }
 
     public async logoff(): Promise<AtsuStatusCodes> {
@@ -543,7 +535,7 @@ export class Atc {
             this.mailboxBus.update(message);
 
             if (message.Response !== undefined) {
-                this.digitalOutputs.RouterBus.sendMessage(message.Response, false).then((code) => {
+                this.digitalOutputs.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
                         this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
@@ -559,7 +551,7 @@ export class Atc {
 
                     // update the peripherical devices
                     this.mailboxBus.update(message);
-                    this.digitalOutputs.FmsBus.resynchronizeAtcMessage(message);
+                    this.digitalOutputs.resynchronizeAtcMessage(message);
                 });
             }
         }
@@ -582,7 +574,7 @@ export class Atc {
             this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sending);
             this.mailboxBus.update(message);
 
-            this.digitalOutputs.RouterBus.sendMessage(message.Response, false).then((code) => {
+            this.digitalOutputs.sendMessage(message.Response, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) {
                     message.Response.ComStatus = AtsuMessageComStatus.Sent;
                     this.mailboxBus.updateMessageStatus(message.UniqueMessageID, MailboxStatusMessage.Sent);
@@ -597,7 +589,7 @@ export class Atc {
                 }
                 this.mailboxBus.update(message);
 
-                this.digitalOutputs.FmsBus.resynchronizeAtcMessage(message);
+                this.digitalOutputs.resynchronizeAtcMessage(message);
             });
         }
     }
@@ -624,7 +616,7 @@ export class Atc {
             this.mailboxBus.update(message as CpdlcMessage);
         }
 
-        return this.digitalOutputs.RouterBus.sendMessage(message, false).then((code) => {
+        return this.digitalOutputs.sendMessage(message, false).then((code) => {
             if (code === AtsuStatusCodes.Ok) {
                 message.ComStatus = AtsuMessageComStatus.Sent;
             } else {
@@ -646,7 +638,7 @@ export class Atc {
 
             // update the internal list
             if (this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID) !== -1) {
-                this.digitalOutputs.FmsBus.resynchronizeAtcMessage(message as CpdlcMessage);
+                this.digitalOutputs.resynchronizeAtcMessage(message as CpdlcMessage);
             }
 
             return code;
@@ -679,7 +671,7 @@ export class Atc {
         if (index !== -1) {
             this.messageQueue.splice(index, 1);
             this.mailboxBus.dequeue(uid);
-            this.digitalOutputs.FmsBus.deleteMessage(uid);
+            this.digitalOutputs.deleteMessage(uid);
             this.mailboxBus.dequeue(uid);
         }
         return index !== -1;
@@ -690,11 +682,11 @@ export class Atc {
         this.atisMessages.forEach((data) => {
             reports = reports.concat(...data[1]);
         });
-        this.digitalOutputs.FmsBus.sendAtcAtisReports(reports);
+        this.digitalOutputs.sendAtcAtisReports(reports);
     }
 
     public cleanupMessages(): void {
-        this.messageQueue.forEach((message) => this.digitalOutputs.FmsBus.deleteMessage(message.UniqueMessageID));
+        this.messageQueue.forEach((message) => this.digitalOutputs.deleteMessage(message.UniqueMessageID));
         this.messageQueue = [];
         this.mailboxBus.reset();
         this.atisMessages = new Map();
@@ -796,7 +788,7 @@ export class Atc {
                                 element.Response = cpdlcMessage;
                                 this.analyzeMessage(element, cpdlcMessage);
                                 // update the old message with the new answer
-                                this.digitalOutputs.FmsBus.resynchronizeAtcMessage(element);
+                                this.digitalOutputs.resynchronizeAtcMessage(element);
                                 break;
                             }
                             element = element.Response;
@@ -806,7 +798,7 @@ export class Atc {
             } else {
                 this.messageQueue.unshift(cpdlcMessage);
                 this.analyzeMessage(cpdlcMessage, undefined);
-                this.digitalOutputs.FmsBus.resynchronizeAtcMessage(cpdlcMessage);
+                this.digitalOutputs.resynchronizeAtcMessage(cpdlcMessage);
             }
         });
 
@@ -827,14 +819,14 @@ export class Atc {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
             this.messageQueue[index].Confirmed = true;
-            this.digitalOutputs.FmsBus.resynchronizeAtcMessage(this.messageQueue[index]);
+            this.digitalOutputs.resynchronizeAtcMessage(this.messageQueue[index]);
         }
 
         return index !== -1;
     }
 
     private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
-        return this.digitalOutputs.RouterBus.receiveAtis(icao, type, () => { }).then((retval) => {
+        return this.digitalOutputs.receiveAtis(icao, type, () => { }).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
                 const atis = Conversion.messageDataToMessage(retval[1]) as AtisMessage;
                 let code = AtsuStatusCodes.Ok;
@@ -874,7 +866,7 @@ export class Atc {
                 }
 
                 if (this.printAtisReport && printable) {
-                    this.digitalOutputs.FmsBus.sendPrintMessage(atis);
+                    this.digitalOutputs.sendPrintMessage(atis);
                 }
 
                 return code;
@@ -886,7 +878,7 @@ export class Atc {
 
     public togglePrintAtisReports() {
         this.printAtisReport = !this.printAtisReport;
-        this.digitalOutputs.FmsBus.sendPrintAtisReportsPrint(this.printAtisReport);
+        this.digitalOutputs.sendPrintAtisReportsPrint(this.printAtisReport);
     }
 
     public printAtisReportsPrint(): boolean {
@@ -900,7 +892,7 @@ export class Atc {
     public resetAtisAutoUpdate() {
         this.atisAutoUpdateIcaos.forEach((elem) => clearInterval(elem[2]));
         this.atisAutoUpdateIcaos = [];
-        this.digitalOutputs.FmsBus.sendActiveAtisAutoUpdates([]);
+        this.digitalOutputs.sendActiveAtisAutoUpdates([]);
     }
 
     public atisAutoUpdateActive(icao: string): boolean {
@@ -913,13 +905,13 @@ export class Atc {
                 if (code === AtsuStatusCodes.Ok) {
                     this.atisMessages.get(icao)[0] = this.digitalInputs.UtcClock.secondsOfDay;
                 } else {
-                    this.digitalOutputs.FmsBus.sendSystemStatus(code);
+                    this.digitalOutputs.sendSystemStatus(code);
                 }
             });
         } else {
             this.updateAtis(icao, type, false).then((code) => {
                 if (code !== AtsuStatusCodes.Ok) {
-                    this.digitalOutputs.FmsBus.sendSystemStatus(code);
+                    this.digitalOutputs.sendSystemStatus(code);
                 }
             });
         }
@@ -932,7 +924,7 @@ export class Atc {
 
             const icaos: string[] = [];
             this.atisAutoUpdateIcaos.forEach((airport) => icaos.push(airport[0]));
-            this.digitalOutputs.FmsBus.sendActiveAtisAutoUpdates(icaos);
+            this.digitalOutputs.sendActiveAtisAutoUpdates(icaos);
         }
     }
 
@@ -944,7 +936,7 @@ export class Atc {
 
             const icaos: string[] = [];
             this.atisAutoUpdateIcaos.forEach((airport) => icaos.push(airport[0]));
-            this.digitalOutputs.FmsBus.sendActiveAtisAutoUpdates(icaos);
+            this.digitalOutputs.sendActiveAtisAutoUpdates(icaos);
         }
     }
 
@@ -958,11 +950,11 @@ export class Atc {
 
     public toggleAutomaticPositionReportActive(): void {
         this.automaticPositionReport = !this.automaticPositionReport;
-        this.digitalOutputs.FmsBus.sendAutomaticPositionReportActive(this.automaticPositionReport);
+        this.digitalOutputs.sendAutomaticPositionReportActive(this.automaticPositionReport);
     }
 
     public setMaxUplinkDelay(delay: number): void {
         this.maxUplinkDelay = delay;
-        this.digitalOutputs.FmsBus.sendMaxUplinkDelay(this.maxUplinkDelay);
+        this.digitalOutputs.sendMaxUplinkDelay(this.maxUplinkDelay);
     }
 }

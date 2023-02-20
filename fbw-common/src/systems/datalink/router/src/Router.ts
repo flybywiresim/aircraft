@@ -99,9 +99,9 @@ export class Router {
         this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
         this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedAtc, synchronizedAoc);
 
-        this.digitalInputs.fmsBus.addDataCallback('connect', (callsign: string) => Router.connect(callsign));
-        this.digitalInputs.fmsBus.addDataCallback('disconnect', () => Router.disconnect());
-        this.digitalInputs.fmsBus.addDataCallback('stationAvailable', (callsign: string) => this.isStationAvailable(callsign));
+        this.digitalInputs.addDataCallback('connect', (callsign: string) => Router.connect(callsign));
+        this.digitalInputs.addDataCallback('disconnect', () => Router.disconnect());
+        this.digitalInputs.addDataCallback('stationAvailable', (callsign: string) => this.isStationAvailable(callsign));
         this.digitalInputs.addDataCallback('sendFreetextMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendCpdlcMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendDclMessage', (message, force) => this.sendMessage(message, force));
@@ -159,12 +159,12 @@ export class Router {
             this.waitedComUpdate += currentTimestamp - this.lastUpdateTime;
         }
 
-        this.digitalOutputs.FmsBus.sendDatalinkStatus({
+        this.digitalOutputs.sendDatalinkStatus({
             vhf: this.vhf3DatalinkStatus(),
             satellite: this.satcomDatalinkStatus(),
             hf: DatalinkStatusCode.NotInstalled,
         });
-        this.digitalOutputs.FmsBus.sendDatalinkMode({
+        this.digitalOutputs.sendDatalinkMode({
             vhf: this.vhf3DatalinkMode(),
             satellite: DatalinkModeCode.None,
             hf: DatalinkModeCode.None,

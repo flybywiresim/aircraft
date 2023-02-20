@@ -205,7 +205,7 @@ export class FmsClient {
 
     public modificationMessage: CpdlcMessage = null;
 
-    public sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('aocSendFreetextMessage', { message: message as FreetextMessage, requestId }, true, false);
@@ -229,7 +229,7 @@ export class FmsClient {
         this.publisher.pub(aocMessage ? 'aocRemoveMessage' : 'atcRemoveMessage', uid, true, false);
     }
 
-    public receiveAocAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+    public async receiveAocAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('aocRequestAtis', { icao: airport, type, requestId }, true, false);
@@ -245,7 +245,7 @@ export class FmsClient {
         });
     }
 
-    public receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
+    public async receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcRequestAtis', { icao: airport, type, requestId }, true, false);
@@ -257,7 +257,7 @@ export class FmsClient {
         });
     }
 
-    public receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+    public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('aocRequestWeather', { icaos, requestMetar, requestId }, true, false);
@@ -289,7 +289,7 @@ export class FmsClient {
         return this.atisAutoUpdates.findIndex((airport) => icao === airport) !== -1;
     }
 
-    public deactivateAtisAutoUpdate(icao: string): Promise<AtsuStatusCodes> {
+    public async deactivateAtisAutoUpdate(icao: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcDeactivateAtisAutoUpdate', { icao, requestId }, true, false);
@@ -300,7 +300,7 @@ export class FmsClient {
         });
     }
 
-    public activateAtisAutoUpdate(icao: string, type: AtisType): Promise<AtsuStatusCodes> {
+    public async activateAtisAutoUpdate(icao: string, type: AtisType): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcActivateAtisAutoUpdate', { icao, type, requestId }, true, false);
@@ -322,7 +322,7 @@ export class FmsClient {
         return this.atisReportsPrintActive;
     }
 
-    public togglePrintAtisReports(): Promise<AtsuStatusCodes> {
+    public async togglePrintAtisReports(): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcTogglePrintAtisReportsPrint', requestId, true, false);
@@ -357,7 +357,7 @@ export class FmsClient {
         return this.atcStationStatus.logonInProgress;
     }
 
-    public logon(callsign: string): Promise<AtsuStatusCodes> {
+    public async logon(callsign: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcLogon', { station: callsign, requestId }, true, false);
@@ -368,7 +368,7 @@ export class FmsClient {
         });
     }
 
-    public logoff(): Promise<AtsuStatusCodes> {
+    public async logoff(): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcLogoff', requestId, true, false);
@@ -379,7 +379,7 @@ export class FmsClient {
         });
     }
 
-    public isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
+    public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('routerRequestStationAvailable', { callsign, requestId }, true, false);
@@ -418,7 +418,7 @@ export class FmsClient {
         this.publisher.pub('atcCleanupMessages', true, true, false);
     }
 
-    public setMaxUplinkDelay(delay: number): Promise<AtsuStatusCodes> {
+    public async setMaxUplinkDelay(delay: number): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcSetMaxUplinkDelay', { delay, requestId }, true, false);
@@ -433,7 +433,7 @@ export class FmsClient {
         return this.automaticPositionReportIsActive;
     }
 
-    public toggleAutomaticPositionReport(): Promise<AtsuStatusCodes> {
+    public async toggleAutomaticPositionReport(): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcToggleAutomaticPositionReport', requestId, true, false);
@@ -444,7 +444,7 @@ export class FmsClient {
         });
     }
 
-    public receivePositionReportData(): Promise<{ flightState: FlightStateData; autopilot: AutopilotData; environment: EnvironmentData }> {
+    public async receivePositionReportData(): Promise<{ flightState: FlightStateData; autopilot: AutopilotData; environment: EnvironmentData }> {
         return new Promise<{ flightState: FlightStateData; autopilot: AutopilotData; environment: EnvironmentData }>((resolve, _reject) => {
             const requestId = this.requestId++;
             this.publisher.pub('atcRequestPositionReport', requestId, true, false);

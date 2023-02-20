@@ -1,14 +1,47 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcAocBus } from '@datalink/atc';
-import { Clock, ClockDataBusTypes, FwcDataBusTypes } from '@datalink/common';
-import { RouterAtcAocBus } from '@datalink/router';
-import { EventBus, EventSubscriber } from 'msfssdk';
-import { FmsAocBus } from './databus/FmsBus';
+import { AtcAocMessages } from '@datalink/atc';
+import {
+    AtisType,
+    AtsuMessage,
+    AtsuStatusCodes,
+    Clock,
+    ClockDataBusTypes,
+    FreetextMessage,
+    FwcDataBusTypes,
+    WeatherMessage,
+} from '@datalink/common';
+import { RouterAtcAocMessages } from '@datalink/router';
+import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { AocFmsMessages, FmsAocMessages } from './databus/FmsBus';
+
+export type AocDigitalInputCallbacks = {
+    receivedFreetextMessage: (message: FreetextMessage) => void;
+    ignoreIncomingMessage: (uid: number) => void;
+    sendFreetextMessage: (message: FreetextMessage) => Promise<AtsuStatusCodes>;
+    requestAtis: (icao: string, type: AtisType, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
+    requestWeather: (icaos: string[], requestMetar: boolean, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
+    registerMessages: (messages: AtsuMessage[]) => void;
+    messageRead: (messageId: number) => void;
+    removeMessage: (messageId: number) => void;
+}
 
 export class DigitalInputs {
-    private subscriber: EventSubscriber<ClockDataBusTypes & FwcDataBusTypes> = null;
+    private callbacks: AocDigitalInputCallbacks = {
+        receivedFreetextMessage: null,
+        ignoreIncomingMessage: null,
+        sendFreetextMessage: null,
+        requestAtis: null,
+        requestWeather: null,
+        registerMessages: null,
+        messageRead: null,
+        removeMessage: null,
+    };
+
+    private subscriber: EventSubscriber<AtcAocMessages & ClockDataBusTypes & FmsAocMessages & FwcDataBusTypes & RouterAtcAocMessages> = null;
+
+    private publisher: Publisher<AocFmsMessages> = null;
 
     private poweredUp: boolean = false;
 
@@ -16,30 +49,19 @@ export class DigitalInputs {
 
     public CompanyMessageCount: number = 0;
 
-    public readonly fmsBus: FmsAocBus;
-
-    public readonly routerBus: RouterAtcAocBus;
-
-    public readonly atcAocBus: AtcAocBus;
-
     private resetData(): void {
         this.UtcClock = new Clock(0, 0, 0, 0, 0, 0, 0);
         this.CompanyMessageCount = 0;
     }
 
-    constructor(private readonly bus: EventBus, synchronizedAtc: boolean) {
+    constructor(private readonly bus: EventBus) {
         this.resetData();
-        this.fmsBus = new FmsAocBus(this.bus);
-        this.routerBus = new RouterAtcAocBus(this.bus);
-        this.atcAocBus = new AtcAocBus(this.bus, synchronizedAtc, false);
     }
 
     public initialize(): void {
-        this.fmsBus.initialize();
-        this.subscriber = this.bus.getSubscriber<ClockDataBusTypes & FwcDataBusTypes>();
-    }
+        this.subscriber = this.bus.getSubscriber<AtcAocMessages & ClockDataBusTypes & FmsAocMessages & FwcDataBusTypes & RouterAtcAocMessages>();
+        this.publisher = this.bus.getPublisher<AocFmsMessages>();
 
-    public connectedCallback(): void {
         this.subscriber.on('utcYear').handle((year: number) => {
             if (this.poweredUp) this.UtcClock.year = year;
         });
@@ -64,6 +86,57 @@ export class DigitalInputs {
         this.subscriber.on('companyMessageCount').handle((count: number) => {
             if (this.poweredUp) this.CompanyMessageCount = count;
         });
+        this.subscriber.on('routerReceivedFreetextMessage').handle((data) => {
+            if (this.callbacks.receivedFreetextMessage !== null) {
+                this.callbacks.receivedFreetextMessage(data);
+            }
+        });
+        this.subscriber.on('ignoreIncomingAts623Message').handle((uid: number) => {
+            if (this.callbacks.ignoreIncomingMessage !== null) {
+                this.callbacks.ignoreIncomingMessage(uid);
+            }
+        });
+        this.subscriber.on('aocSendFreetextMessage').handle((data) => {
+            if (this.callbacks.sendFreetextMessage !== null) {
+                this.callbacks.sendFreetextMessage(data.message).then((status) => {
+                    this.publisher.pub('aocTransmissionResponse', { requestId: data.requestId, status }, true, false);
+                });
+            }
+        });
+        this.subscriber.on('aocRequestAtis').handle((data) => {
+            if (this.callbacks.requestAtis !== null) {
+                this.callbacks.requestAtis(data.icao, data.type, () => this.publisher.pub('aocRequestSentToGround', data.requestId, true, false)).then((response) => {
+                    this.publisher.pub('aocWeatherResponse', { requestId: data.requestId, data: response }, true, false);
+                });
+            }
+        });
+        this.subscriber.on('aocRequestWeather').handle((data) => {
+            if (this.callbacks.requestWeather !== null) {
+                this.callbacks.requestWeather(data.icaos, data.requestMetar, () => this.publisher.pub('aocRequestSentToGround', data.requestId, true, false)).then((response) => {
+                    this.publisher.pub('aocWeatherResponse', { requestId: data.requestId, data: response }, true, false);
+                });
+            }
+        });
+        this.subscriber.on('aocRegisterFreetextMessages').handle((messages) => {
+            if (this.callbacks.registerMessages !== null) {
+                this.callbacks.registerMessages(messages);
+            }
+        });
+        this.subscriber.on('aocRegisterWeatherMessages').handle((messages) => {
+            if (this.callbacks.registerMessages !== null) {
+                this.callbacks.registerMessages(messages);
+            }
+        });
+        this.subscriber.on('aocMessageRead').handle((messageId) => {
+            if (this.callbacks.messageRead !== null) {
+                this.callbacks.messageRead(messageId);
+            }
+        });
+        this.subscriber.on('aocRemoveMessage').handle((messageId) => {
+            if (this.callbacks.removeMessage !== null) {
+                this.callbacks.removeMessage(messageId);
+            }
+        });
     }
 
     public powerUp(): void {
@@ -73,5 +146,9 @@ export class DigitalInputs {
     public powerDown(): void {
         this.poweredUp = false;
         this.resetData();
+    }
+
+    public addDataCallback<K extends keyof AocDigitalInputCallbacks>(event: K, callback: AocDigitalInputCallbacks[K]): void {
+        this.callbacks[event] = callback;
     }
 }

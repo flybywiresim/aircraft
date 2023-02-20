@@ -1,22 +1,19 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { CpdlcMessage, FreetextMessage } from '@datalink/common';
+import { CpdlcMessage, DatalinkModeCode, DatalinkStatusCode, FreetextMessage } from '@datalink/common';
 import { EventBus, Publisher } from 'msfssdk';
-import { RouterAtcAocMessages, RouterFmsBus } from './databus';
+import { RouterAtcAocMessages, RouterFmsMessages } from './databus';
 
 export class DigitalOutputs {
-    private publisher: Publisher<RouterAtcAocMessages>;
-
-    public FmsBus: RouterFmsBus = null;
+    private publisher: Publisher<RouterAtcAocMessages & RouterFmsMessages>;
 
     constructor(
         private readonly bus: EventBus,
         private readonly synchronizedAtc: boolean,
         private readonly synchronizedAoc: boolean,
     ) {
-        this.publisher = this.bus.getPublisher<RouterAtcAocMessages>();
-        this.FmsBus = new RouterFmsBus(this.bus);
+        this.publisher = this.bus.getPublisher<RouterAtcAocMessages & RouterFmsMessages>();
     }
 
     public receivedFreetextMesage(message: FreetextMessage): void {
@@ -25,5 +22,13 @@ export class DigitalOutputs {
 
     public receivedCpdlcMessage(message: CpdlcMessage): void {
         this.publisher.pub('routerReceivedCpdlcMessage', message, this.synchronizedAtc, false);
+    }
+
+    public sendDatalinkStatus(status: { vhf: DatalinkStatusCode, satellite: DatalinkStatusCode, hf: DatalinkStatusCode }): void {
+        this.publisher.pub('routerDatalinkStatus', status, true, false);
+    }
+
+    public sendDatalinkMode(mode: { vhf: DatalinkModeCode, satellite: DatalinkModeCode, hf: DatalinkModeCode }): void {
+        this.publisher.pub('routerDatalinkMode', mode, true, false);
     }
 }
