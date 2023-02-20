@@ -9,6 +9,7 @@ import {
     CpdlcMessagesUplink,
     DclMessage,
     OclMessage,
+    AtsuMessageType,
 } from '@datalink/common';
 import { EventBus } from 'msfssdk';
 import { Atc } from '../ATC';
@@ -97,7 +98,9 @@ export class ATS623 {
             }
 
             handledMessages.push(processedMessage as CpdlcMessage);
-            this.atc.digitalOutputs.sendAocIgnoreMessageId(processedMessage.UniqueMessageID);
+            if (message.Type <= AtsuMessageType.AOC) {
+                this.atc.digitalOutputs.sendAocIgnoreMessageId(processedMessage.UniqueMessageID);
+            }
         });
 
         this.atc.insertMessages(handledMessages);
