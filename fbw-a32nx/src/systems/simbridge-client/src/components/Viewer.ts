@@ -15,7 +15,7 @@ export class Viewer {
      * @returns a Blob
      */
     public static async getPDFPage(filename: string, pageNumber: number): Promise<Blob> {
-        if (!ClientState.getInstance().isAvailable()) {
+        if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
         if (filename || pageNumber) {
@@ -47,7 +47,7 @@ export class Viewer {
      * @returns A number
      */
     public static async getPDFPageNum(filename: string): Promise<number> {
-        if (!ClientState.getInstance().isAvailable()) {
+        if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
         if (filename) {
@@ -65,7 +65,7 @@ export class Viewer {
      * @returns an Array of strings
      */
     public static async getPDFList(): Promise<string[]> {
-        if (!ClientState.getInstance().isAvailable()) {
+        if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
         const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/list`);
@@ -81,7 +81,7 @@ export class Viewer {
      * @returns A Blob
      */
     public static async getImage(filename: string): Promise<Blob> {
-        if (!ClientState.getInstance().isAvailable()) {
+        if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
         if (filename) {
@@ -111,7 +111,7 @@ export class Viewer {
      * @returns an Array of strings
      */
     public static async getImageList(): Promise<string[]> {
-        if (!ClientState.getInstance().isAvailable()) {
+        if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
         const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image/list`);
