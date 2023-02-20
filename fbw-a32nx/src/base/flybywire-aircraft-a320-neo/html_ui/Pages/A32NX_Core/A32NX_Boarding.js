@@ -153,24 +153,16 @@ class A32NX_Boarding {
                 const gsxBoardingTotal = SimVar.GetSimVarValue("L:FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", "Number");
                 this.passengersLeftToFillOrEmpty = gsxBoardingTotal - this.prevBoardedOrDeboarded;
 
-                for (const paxStation of Object.values(
-                    this.paxStations
-                ).reverse()) {
-                    const stationCurrentPax = SimVar.GetSimVarValue(
-                        `L:${paxStation.simVar}`,
-                        "Number"
-                    );
-                    const stationCurrentPaxTarget = SimVar.GetSimVarValue(
-                        `L:${paxStation.simVar}_DESIRED`,
-                        "Number"
-                    );
+                for (const paxStation of Object.values(this.paxStations).reverse()) {
+                    const stationCurrentPax = SimVar.GetSimVarValue(`L:${paxStation.simVar}`, "Number");
+                    const stationCurrentPaxTarget = SimVar.GetSimVarValue(`L:${paxStation.simVar}_DESIRED`, "Number");
                     if (this.passengersLeftToFillOrEmpty <= 0) {
                         break;
                     }
 
                     const loadAmount = Math.min(this.passengersLeftToFillOrEmpty, paxStation.seats);
                     if (stationCurrentPax < stationCurrentPaxTarget) {
-                        this.fillPaxStation(paxStation,stationCurrentPax + loadAmount - missedPax);
+                        this.fillPaxStation(paxStation, stationCurrentPax + loadAmount);
                         this.passengersLeftToFillOrEmpty -= loadAmount;
                     }
                 }
