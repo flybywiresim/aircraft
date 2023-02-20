@@ -11,7 +11,6 @@ import {
     OclMessage,
     AtsuMessageType,
 } from '@datalink/common';
-import { EventBus } from 'msfssdk';
 import { Atc } from '../ATC';
 
 // TODO reset internal states if flight state changes

@@ -20,7 +20,7 @@ export class AtsuSystem {
         this.simVarHandling = new SimVarHandling(this.bus);
         this.router = new Router(this.bus, false, false);
         this.atc = new Atc(this.bus, false, false);
-        this.aoc = new Aoc(this.bus, false, false);
+        this.aoc = new Aoc(this.bus, false);
 
         this.powerSupply = this.bus.getSubscriber<PowerSupplyBusTypes>();
         this.powerSupply.on('acBus1').handle((powered: boolean) => {

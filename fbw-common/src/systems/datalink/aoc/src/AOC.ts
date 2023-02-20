@@ -31,7 +31,7 @@ export class Aoc {
 
     private blacklistedMessageIds: number[] = [];
 
-    constructor(private bus: EventBus, synchronizedRouter: boolean, synchronizedAtc: boolean) {
+    constructor(private bus: EventBus, synchronizedRouter: boolean) {
         this.digitalInputs = new DigitalInputs(this.bus);
         this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedRouter);
 
