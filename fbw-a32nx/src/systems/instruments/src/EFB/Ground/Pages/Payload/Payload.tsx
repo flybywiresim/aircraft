@@ -68,12 +68,12 @@ export const Payload = () => {
 
     const paxDesired = [paxADesired, paxBDesired, paxCDesired, paxDDesired];
     const [setPaxDesired] = useState([setPaxADesired, setPaxBDesired, setPaxCDesired, setPaxDDesired]);
-    const [totalMissedPax, setTotalMissedPax] = useState(0);
+    const [totalDeltaPax, setTotalDeltaPax] = useState(0);
     const totalPaxDesired = useMemo(() => {
-        const paxDesiredWithMissed = (paxDesired.reduce((a, b) => parseInt(a) + parseInt(b)) + totalMissedPax);
-        console.info('pax desired : %d with %d missed', paxDesiredWithMissed, totalMissedPax);
+        const paxDesiredWithMissed = (paxDesired.reduce((a, b) => parseInt(a) + parseInt(b)) - totalDeltaPax);
+        console.info('pax desired : %d including %d delta', paxDesiredWithMissed, totalDeltaPax);
         return (paxDesired && paxDesired.length > 0 && paxDesiredWithMissed);
-    }, [...paxDesired, totalMissedPax]);
+    }, [...paxDesired, totalDeltaPax]);
 
     const [aFlagsDesired, setAFlagsDesired] = useBitFlags('PAX_FLAGS_A_DESIRED');
     const [bFlagsDesired, setBFlagsDesired] = useBitFlags('PAX_FLAGS_B_DESIRED');
@@ -99,44 +99,43 @@ export const Payload = () => {
     const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number', 200);
     const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number', 200);
 
-    const [fwdBagMissed, setFwdBagMissed] = useState<number>(0);
-    const [aftContMissed, setAftContMissed] = useState<number>(0);
-    const [aftBagMissed, setAftBagMissed] = useState<number>(0);
-    const [aftBulkMissed, setAftBulkMissed] = useState<number>(0);
+    const [fwdBagDelta, setFwdBagDelta] = useState<number>(0);
+    const [aftContDelta, setAftContDelta] = useState<number>(0);
+    const [aftBagDelta, setAftBagDelta] = useState<number>(0);
+    const [aftBulkDelta, setAftBulkDelta] = useState<number>(0);
 
-    const chancesOfMissedConnection = useMemo(() => missedPaxRealismSimVar === 2 ? 0.1 : 0, [missedPaxRealismSimVar]);
+    const chancesOfMissedConnection = useMemo(() => (missedPaxRealismSimVar === 2 ? 0.1 : 0), [missedPaxRealismSimVar]);
     const chancheOfPaxMissingWhenMissedConnection = 0.15;
     const chancesOfPaxMissing = useMemo(() => {
         const typicalChance = 0.02;
         switch (missedPaxRealismSimVar) {
-            case 0: return 0;
-            case 1: return typicalChance;
-            case 2: return Math.max(0, typicalChance - chancesOfMissedConnection * chancheOfPaxMissingWhenMissedConnection);
-            case 3: return 0.25;
-            default: return 0;
+        case 0: return 0;
+        case 1: return typicalChance;
+        case 2: return Math.max(0, typicalChance - chancesOfMissedConnection * chancheOfPaxMissingWhenMissedConnection);
+        case 3: return 0.25;
+        default: return 0;
         }
     }, [chancesOfMissedConnection, missedPaxRealismSimVar]);
 
-
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
-    const cargoMissed = [fwdBagMissed, aftContMissed, aftBagMissed, aftBulkMissed];
-    const totalMissedCargo = useMemo(() => ((cargoMissed && cargoMissed.length > 0) ? cargoMissed.reduce((a, b) => parseInt(a) + parseInt(b)) : -1), [...cargoMissed]);
+    const cargoDelta = [fwdBagDelta, aftContDelta, aftBagDelta, aftBulkDelta];
+    const totalDeltaCargo = useMemo(() => ((cargoDelta && cargoDelta.length > 0) ? cargoDelta.reduce((a, b) => a + b) : -1), [...cargoDelta]);
 
-    const cargoDesiredDisplayed = useMemo(()=> {
-        let tempCargoDisplay = new Array(cargoDesired.length);
-        for (let station = 0 ; station < tempCargoDisplay.length; station++) {
-            tempCargoDisplay[station] = cargoDesired[station] + cargoMissed[station];
-            console.info('cargo %d\'s display:%d',station, tempCargoDisplay);
+    const cargoDesiredDisplayed = useMemo(() => {
+        const tempCargoDisplay = new Array(cargoDesired.length);
+        for (let station = 0; station < tempCargoDisplay.length; station++) {
+            tempCargoDisplay[station] = cargoDesired[station] - cargoDelta[station];
+            console.info('cargo %d\'s display:%d', station, tempCargoDisplay);
         }
         return tempCargoDisplay;
-    }, [...cargoDesired, ...cargoMissed]);
+    }, [...cargoDesired, ...cargoDelta]);
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
-    const setCargoMissed = useMemo(() => [setFwdBagMissed, setAftContMissed, setAftBagMissed, setAftBulkMissed], []);
+    const setCargoDelta = useMemo(() => [setFwdBagDelta, setAftContDelta, setAftBagDelta, setAftBulkDelta], []);
     const totalCargoDesired = useMemo(() => {
-        const cargoDesiredWithMissed = ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)):-1) + (isNaN(totalMissedCargo)? 0 : totalMissedCargo );
-        console.info('cargo desired : %d with %d missed', cargoDesiredWithMissed, isNaN(totalMissedCargo)? 0 : totalMissedCargo);
-        return ( cargoDesiredWithMissed)
-    }, [...cargoDesired, ...paxDesired, totalMissedCargo]);
+        const cargoDesiredWithMissed = ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1) + (Number.isNaN(totalDeltaCargo) ? 0 : totalDeltaCargo);
+        console.info('cargo desired : %d with %d missed', cargoDesiredWithMissed, Number.isNaN(totalDeltaCargo) ? 0 : totalDeltaCargo);
+        return (cargoDesiredWithMissed);
+    }, [...cargoDesired, ...paxDesired, totalDeltaCargo]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
 
@@ -193,28 +192,38 @@ export const Payload = () => {
         COMPLETED: 6,
     };
 
-    const stationMissedPax = (stationPax:number, stationPaxDesired:number, setPax:(numberToSet:number)=>void, chance : number) => {
+    const stationMissedPax = (stationPax:number, stationPaxDesired:number, chance : number) => {
         let stationMissedPax = 0;
-        for (let i = stationPax; i < stationPaxDesired; i++) {
-            if (Math.random() <= chance) stationMissedPax++;
+        if (chance > 0) {
+            for (let i = stationPax; i < stationPaxDesired; i++) {
+                if (Math.random() <= chance) stationMissedPax++;
+            }
+        } else
+        if (chance < 0) {
+            for (let i = stationPax - 1; i >= stationPaxDesired; i--) {
+                if (Math.random() <= chance) stationMissedPax--;
+            }
         }
-        // setTotalMissedPax(totalMissedPax + stationMissedPax);
-        // console.info('station pax missing: %d, total:%d', stationMissedPax, totalMissedPax);
-        setPax(stationPaxDesired - stationMissedPax);
         return stationMissedPax;
     };
 
     const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
-        setTotalMissedPax(0);
+        setTotalDeltaPax(0);
         setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState) {
             const chancesToMissBoarding = (Math.random() <= chancesOfMissedConnection) ? chancheOfPaxMissingWhenMissedConnection : chancesOfPaxMissing;
+            const chancesToAdditionalBoarding = (Math.random() <= chancesOfMissedConnection / 2) ? -chancheOfPaxMissingWhenMissedConnection : -chancesOfPaxMissing / 2;
             console.info('chances to miss: %d%%', chancesToMissBoarding * 100);
-            let tempTotalMissed : number = 0;
-            for (let station = 0 ; station < pax.length ; station++ ) tempTotalMissed += stationMissedPax(pax[station], paxDesired[station], setPaxDesired[station], chancesToMissBoarding);
-            setTotalMissedPax(tempTotalMissed);
-            console.info('pax missing plane: %d', tempTotalMissed);
-            removeTargetPaxCargo(tempTotalMissed);
+            let tempTotalDelta : number = 0;
+            for (let station = 0; station < pax.length; station++) {
+                let tempStationMissedPax = stationMissedPax(pax[station], paxDesired[station], chancesToMissBoarding);
+                tempStationMissedPax += stationMissedPax(maxPax[station], paxDesired[station], chancesToAdditionalBoarding);
+                tempTotalDelta -= tempStationMissedPax;
+                setPaxDesired[station](paxDesired[station] - tempStationMissedPax);
+            }
+            setTotalDeltaPax(tempTotalDelta);
+            console.info('pax delta: %d', tempTotalDelta);
+            deltaTargetPaxCargo(tempTotalDelta);
         }
     };
 
@@ -323,42 +332,63 @@ export const Payload = () => {
         fillStation(0, 1, paxRemaining);
     }, [...paxDesired, totalPaxDesired, maxPax, ...stationSize, ...seatMap]);
 
-    const removeTargetPaxCargo = (numberPaxCargoToRemove : number) => {
-        let numberPaxCargo : number[] = new Array(cargoDesired.length);
+    const deltaTargetPaxCargo = (paxCargoDelta : number) => {
+        const numberPaxCargo : number[] = new Array(cargoDesired.length);
+        const numberPaxCargoMax : number[] = new Array(cargoDesired.length);
         let totalNumberPaxCargoPlanned : number = 0;
         let totalRemovedCargo = 0;
+        const totalPaxCargoMax = 0;
         if (paxBagWeight > 0) {
-            let tempMissedCargo = new Array(cargoDesired.length);
+            const tempDeltaCargo = new Array(cargoDesired.length);
             for (let station = cargoDesired.length - 1; station >= 0; station--) {
                 numberPaxCargo[station] = Math.floor(cargoDesired[station] / paxBagWeight);
+                numberPaxCargoMax[station] = Math.floor(maxCargo[station] / paxBagWeight);
                 totalNumberPaxCargoPlanned += numberPaxCargo[station];
-                tempMissedCargo[station] = 0;
+                tempDeltaCargo[station] = 0;
                 // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
             }
-            const paxCargoCanBeRemoved = Math.min(numberPaxCargoToRemove, totalNumberPaxCargoPlanned);
-            console.info('Attempting to remove %d luggages', paxCargoCanBeRemoved);
+            const paxCargoDeltaPossible = Math.min(totalPaxCargoMax - totalNumberPaxCargoPlanned, Math.max(paxCargoDelta, totalNumberPaxCargoPlanned));
+            console.info('Attempting to remove %d luggages', paxCargoDeltaPossible);
 
-            for (let i = 0; i < paxCargoCanBeRemoved; i++) {
-                const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargoPlanned);
-                let countMin : number = 0;
-                for (let station = cargoDesired.length - 1; station >= 0; station--) {
-                    if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
-                        tempMissedCargo[station] += paxBagWeight;
-                        numberPaxCargo[station] -= 1;
-                        totalNumberPaxCargoPlanned -= 1;
-                        totalRemovedCargo += paxBagWeight;
-                        break;
+            if (paxCargoDelta < 0) {
+                for (let i = 0; i < -paxCargoDeltaPossible; i++) {
+                    const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargoPlanned);
+                    let countMin : number = 0;
+                    for (let station = cargoDesired.length - 1; station >= 0; station--) {
+                        if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
+                            tempDeltaCargo[station] -= paxBagWeight;
+                            numberPaxCargo[station] -= 1;
+                            totalNumberPaxCargoPlanned -= 1;
+                            totalRemovedCargo += paxBagWeight;
+                            break;
+                        }
+                        countMin += numberPaxCargo[station];
                     }
-                    countMin += numberPaxCargo[station];
+                }
+            } else if (paxCargoDelta > 0) {
+                for (let i = 0; i < paxCargoDeltaPossible; i++) {
+                    const pickedSlot = Math.floor(Math.random() * (totalPaxCargoMax - totalNumberPaxCargoPlanned));
+                    let countMin : number = 0;
+                    for (let station = cargoDesired.length - 1; station >= 0; station--) {
+                        const freePaxCargo = numberPaxCargoMax[station] - numberPaxCargo[station];
+                        if (pickedSlot >= countMin && pickedSlot < countMin + freePaxCargo) {
+                            tempDeltaCargo[station] += paxBagWeight;
+                            numberPaxCargo[station] += 1;
+                            totalNumberPaxCargoPlanned += 1;
+                            totalRemovedCargo -= paxBagWeight;
+                            break;
+                        }
+                        countMin += freePaxCargo;
+                    }
                 }
             }
             for (let station = cargoDesired.length - 1; station >= 0; station--) {
-                console.info("changing cargo station %d's cargo to %d",station,cargoDesired[station] - tempMissedCargo[station]);
-                console.info("setting missed cargo on station %d at %d",station, tempMissedCargo[station]);
-                setCargoDesired[station](cargoDesired[station] - tempMissedCargo[station]);
-                setCargoMissed[station](tempMissedCargo[station]);
+                console.info("changing cargo station %d's cargo to %d", station, cargoDesired[station] + tempDeltaCargo[station]);
+                console.info('setting delta cargo on station %d at %d', station, tempDeltaCargo[station]);
+                setCargoDesired[station](cargoDesired[station] + tempDeltaCargo[station]);
+                setCargoDelta[station](tempDeltaCargo[station]);
             }
-            console.info('Removed %d pax luggage : %d Kg',totalRemovedCargo/paxBagWeight,totalRemovedCargo);
+            console.info('Removed %d pax luggage : %d Kg', totalRemovedCargo / paxBagWeight, totalRemovedCargo);
         }
         return totalRemovedCargo;
     };
@@ -644,17 +674,16 @@ export const Payload = () => {
         });
     }, [...pax]);
 
-    const resetMissedCargo = ()=>{
-        cargoMissed.forEach((stationNumPax: number, stationIndex: number)=> {
-            setCargoMissed[stationIndex](0);
-        }
-        );
+    const resetMissedCargo = () => {
+        cargoDelta.forEach((stationNumPax: number, stationIndex: number) => {
+            setCargoDelta[stationIndex](0);
+        });
     };
 
     useEffect(() => {
         // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
-            setTotalMissedPax(0);
+            setTotalDeltaPax(0);
             resetMissedCargo();
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
@@ -804,8 +833,8 @@ export const Payload = () => {
     useEffect(() => {
         updateAllWeights();
     }, [
-        ...pax, ...paxDesired, totalMissedPax,
-        ...cargo, ...cargoDesired, totalMissedCargo,
+        ...pax, ...paxDesired, totalDeltaPax,
+        ...cargo, ...cargoDesired, totalDeltaCargo,
         ...fuel, destEfob,
         paxWeight, paxBagWeight,
         emptyWeight,

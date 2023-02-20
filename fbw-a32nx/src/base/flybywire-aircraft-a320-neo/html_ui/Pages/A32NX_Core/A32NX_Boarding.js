@@ -46,7 +46,6 @@ class A32NX_Boarding {
         if (!inDeveloperState) {
             // Set default pax (0)
             await this.setPax(0);
-            this.totalMissedPax = 0;
             this.loadPaxPayload();
             this.loadCargoZero();
             this.loadCargoPayload();
