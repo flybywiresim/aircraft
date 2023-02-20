@@ -15,8 +15,9 @@ module.exports = {
     ],
     parser: '@typescript-eslint/parser',
     ignorePatterns: [
-        'wasm/**',
+        'jest/**',
         'typings/**',
+        'wasm/**',
     ],
     parserOptions: {
         ecmaVersion: 2021,
