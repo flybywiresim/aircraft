@@ -185,11 +185,7 @@ impl<const N: usize> SimulationElement for CanBus<N> {
         for (i, id) in self.message_received_by_systems_ids.iter().enumerate() {
             writer.write(
                 id,
-                if self.message_received_by_systems[i][0] {
-                    1.
-                } else {
-                    0.
-                },
+self.message_received_by_systems[i][0]
             );
         }
     }
