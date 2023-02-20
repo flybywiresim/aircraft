@@ -28,7 +28,7 @@ export interface AtcAocRouterMessages {
     routerRequestTaf: { requestId: number, icaos: string[] };
     routerRequestSent: number;
     routerReceivedWeather: { requestId: number, response: [AtsuStatusCodes, WeatherMessage] };
-};
+}
 
 export interface RouterAtcAocMessages {
     // streams to read specific messages
@@ -154,7 +154,7 @@ export class AtcAocRouterBus {
             this.weatherResponseCallbacks.push((id, response) => {
                 if (id === requestId) resolve(response);
                 return requestId === id;
-            })
+            });
         });
     }
 
@@ -169,7 +169,7 @@ export class AtcAocRouterBus {
             this.weatherResponseCallbacks.push((id, response) => {
                 if (id === requestId) resolve(response);
                 return requestId === id;
-            })
+            });
         });
     }
 
@@ -184,7 +184,7 @@ export class AtcAocRouterBus {
             this.weatherResponseCallbacks.push((id, response) => {
                 if (id === requestId) resolve(response);
                 return requestId === id;
-            })
+            });
         });
     }
 }

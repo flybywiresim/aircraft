@@ -16,9 +16,7 @@ export class AtcAocBus {
 
     private publisher: Publisher<AtcAocMessages> = null;
 
-    private callbacks: AtcAocCallbacks = {
-        ignoreIncomingMessage: null,
-    };
+    private callbacks: AtcAocCallbacks = { ignoreIncomingMessage: null };
 
     constructor(private readonly bus: EventBus, private readonly synchronized: boolean, publish: boolean) {
         if (publish) {

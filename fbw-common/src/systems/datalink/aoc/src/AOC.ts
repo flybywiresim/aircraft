@@ -109,7 +109,7 @@ export class Aoc {
     private async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
         if (requestMetar) return this.digitalOutputs.RouterBus.receiveMetar(icaos, sentCallback);
-        this.digitalOutputs.RouterBus.receiveTaf(icaos, sentCallback);
+        return this.digitalOutputs.RouterBus.receiveTaf(icaos, sentCallback);
     }
 
     private async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {

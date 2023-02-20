@@ -16,10 +16,10 @@ import {
     FreetextMessage,
 } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
+import { EventBus } from 'msfssdk';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
-import { EventBus } from 'msfssdk';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
 
@@ -28,7 +28,7 @@ enum ActiveCommunicationInterface {
     VHF,
     HF,
     SATCOM,
-};
+}
 
 export class Router {
     private readonly digitalInputs: DigitalInputs;
@@ -89,7 +89,7 @@ export class Router {
         case ActiveCommunicationInterface.SATCOM:
         case ActiveCommunicationInterface.None:
         default:
-            return;
+            break;
         }
     }
 
@@ -112,9 +112,9 @@ export class Router {
             }
 
             const message = new AtisMessage();
-            return NXApiConnector.receiveAtis(icao, type, message).then(() => {
-                return this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], requestSent);
-            }).catch((_err) => [AtsuStatusCodes.ComFailed, null]);
+            return NXApiConnector.receiveAtis(icao, type, message)
+                .then(() => this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], requestSent))
+                .catch((_err) => [AtsuStatusCodes.ComFailed, null]);
         });
         this.digitalInputs.addDataCallback('requestWeather', async (icaos, metar, requestSent) => this.receiveWeather(metar, icaos, requestSent));
     }
@@ -163,7 +163,7 @@ export class Router {
             vhf: this.vhf3DatalinkStatus(),
             satellite: this.satcomDatalinkStatus(),
             hf: DatalinkStatusCode.NotInstalled,
-    }   );
+        });
         this.digitalOutputs.FmsBus.sendDatalinkMode({
             vhf: this.vhf3DatalinkMode(),
             satellite: DatalinkModeCode.None,
@@ -288,9 +288,7 @@ export class Router {
             message = new TafMessage();
         }
 
-        return this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => {
-            return this.simulateWeatherRequestResponse([code, message], requestSent);
-        });
+        return this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => this.simulateWeatherRequestResponse([code, message], requestSent));
     }
 
     private async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
@@ -309,7 +307,6 @@ export class Router {
                 this.vdl.dequeueOutboundMessage(transmissionTime);
                 this.removeTransmissionTimeout(timeout);
 
-                let code: AtsuStatusCodes = AtsuStatusCodes.UnknownMessage;
                 if (message.Type < AtsuMessageType.AOC) {
                     if (message.Network === AtsuMessageNetwork.FBW) {
                         NXApiConnector.sendTelexMessage(message).then((code) => resolve(code));

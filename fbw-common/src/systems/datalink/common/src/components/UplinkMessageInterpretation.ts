@@ -1,8 +1,8 @@
+import { Atc } from '@datalink/atc';
 import { coordinateToString, timestampToString } from './Convert';
 import { InputValidation } from './InputValidation';
 import { CpdlcMessagesDownlink } from '../messages/CpdlcMessageElements';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { Atc } from '@datalink/atc';
 
 export class UplinkMessageInterpretation {
     private static NonAutomaticClosingMessage: string[] = [

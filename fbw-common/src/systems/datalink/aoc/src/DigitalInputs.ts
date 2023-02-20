@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtcAocBus } from '@datalink/atc';
-import { Clock, ClockDataBusTypes, FreetextMessage, FwcDataBusTypes } from '@datalink/common';
+import { Clock, ClockDataBusTypes, FwcDataBusTypes } from '@datalink/common';
 import { RouterAtcAocBus } from '@datalink/router';
 import { EventBus, EventSubscriber } from 'msfssdk';
 import { FmsAocBus } from './databus/FmsBus';
