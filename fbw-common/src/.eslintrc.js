@@ -15,7 +15,8 @@ module.exports = {
     ],
     parser: '@typescript-eslint/parser',
     ignorePatterns: [
-        'mcdu-server/client/build/**',
+        'wasm/**',
+        'typings/**',
     ],
     parserOptions: {
         ecmaVersion: 2021,
