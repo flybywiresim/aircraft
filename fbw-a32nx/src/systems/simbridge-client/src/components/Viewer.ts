@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { getSimBridgeUrl } from '../common';
+import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { ClientState } from './ClientState';
 
 /**
@@ -19,7 +19,7 @@ export class Viewer {
             throw new Error('SimBridge is not connected.');
         }
         if (filename || pageNumber) {
-            const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf?filename=${filename}&pagenumber=${pageNumber}`);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/utility/pdf?filename=${filename}&pagenumber=${pageNumber}`);
             if (response.ok) {
                 return response.blob();
             }
@@ -51,7 +51,7 @@ export class Viewer {
             throw new Error('SimBridge is not connected.');
         }
         if (filename) {
-            const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/numpages?filename=${filename}`);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/utility/pdf/numpages?filename=${filename}`);
             if (response.ok) {
                 return response.json();
             }
@@ -68,7 +68,7 @@ export class Viewer {
         if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
-        const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/pdf/list`);
+        const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/utility/pdf/list`);
         if (response.ok) {
             return response.json();
         }
@@ -85,7 +85,7 @@ export class Viewer {
             throw new Error('SimBridge is not connected.');
         }
         if (filename) {
-            const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image?filename=${filename}`);
+            const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/utility/image?filename=${filename}`);
             if (response.ok) {
                 return response.blob();
             }
@@ -114,7 +114,7 @@ export class Viewer {
         if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
-        const response = await fetch(`${getSimBridgeUrl()}/api/v1/utility/image/list`);
+        const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/utility/image/list`);
         if (response.ok) {
             return response.json();
         }
