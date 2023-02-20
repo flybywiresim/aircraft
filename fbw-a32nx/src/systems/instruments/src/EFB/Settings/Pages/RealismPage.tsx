@@ -26,8 +26,7 @@ export const RealismPage = () => {
     const [syncEfis, setFoEfis] = usePersistentNumberProperty('FO_SYNC_EFIS_ENABLED', 0);
     const [pilotAvatar, setPilotAvatar] = usePersistentNumberProperty('CONFIG_PILOT_AVATAR_VISIBLE', 0);
     const [firstOfficerAvatar, setFirstOfficerAvatar] = usePersistentNumberProperty('CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', 0);
-    const [payloadDeltaRealism, setPayloadDeltaRealism] = usePersistentProperty('CONFIG_PAYLOAD_DELTA', 'NONE');
-    const [, setPayloadDeltaRealismSimVar] = useSimVar('L:A32NX_CONFIG_PAYLOAD_DELTA', 'Enum');
+    const [payloadDeltaRealism, setPayloadDeltaRealism] = usePersistentProperty('CONFIG_PAYLOAD_DELTA', 'CONNECTING FLIGHTS');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -47,11 +46,11 @@ export const RealismPage = () => {
         { name: t('Settings.Real'), setting: 'REAL' },
     ];
 
-    const payloadDeltaRealismButtons: (ButtonType & SimVarButton)[] = [
-        { name: t('Settings.None'), setting: 'NONE', simVarValue: 0 },
-        { name: t('Settings.Typical'), setting: 'TYPICAL', simVarValue: 1 },
-        { name: t('Settings.Realism.ConnectingFlights'), setting: 'CONNECTING FLIGHTS', simVarValue: 2 },
-        { name: t('Settings.Frequent'), setting: 'FREQUENT', simVarValue: 3 },
+    const payloadDeltaRealismButtons: ButtonType[] = [
+        { name: t('Settings.None'), setting: 'NONE' },
+        { name: t('Settings.Typical'), setting: 'TYPICAL' },
+        { name: t('Settings.Realism.ConnectingFlights'), setting: 'CONNECTING FLIGHTS' },
+        { name: t('Settings.Frequent'), setting: 'FREQUENT' },
     ];
 
     return (
@@ -151,7 +150,6 @@ export const RealismPage = () => {
                         <SelectItem
                             onSelect={() => {
                                 setPayloadDeltaRealism(button.setting);
-                                setPayloadDeltaRealismSimVar(button.simVarValue);
                             }}
                             selected={payloadDeltaRealism === button.setting}
                         >

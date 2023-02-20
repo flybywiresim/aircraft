@@ -41,7 +41,7 @@ export const Payload = () => {
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number', 200);
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 2_000);
     const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
-    const [payloadDeltaRealismSimVar] = useSimVar('L:A32NX_CONFIG_PAYLOAD_DELTA', 'Enum', 2_000);
+    const [payloadDeltaRealism] = usePersistentProperty('CONFIG_PAYLOAD_DELTA', 'CONNECTING FLIGHTS');
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds', 2_000);
 
@@ -105,25 +105,25 @@ export const Payload = () => {
     const [aftBulkDelta, setAftBulkDelta] = useState<number>(0);
 
     const chancesOfMissedConnection = useMemo(() => {
-        console.info('payloadDeltaRealismSimVar:%d chances of connections:%d', payloadDeltaRealismSimVar, payloadDeltaRealismSimVar === 2 ? 0.1 : 0);
-        return (payloadDeltaRealismSimVar === 2 ? 0.1 : 0);
-    }, [payloadDeltaRealismSimVar]);
+        console.info('payloadDeltaRealism:%d chances of connections:%d', payloadDeltaRealism, payloadDeltaRealism === 'TYPICAL' ? 0.1 : 0);
+        return (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.1 : 0);
+    }, [payloadDeltaRealism]);
     const chancheOfPaxMissingWhenMissedConnection = 0.15;
     const chancesOfPaxMissing = useMemo(() => {
         const typicalChance = 0.02;
-        switch (payloadDeltaRealismSimVar) {
-        case 0: console.info('chancesOfPaxMissing:%d', 0);
+        switch (payloadDeltaRealism) {
+        case 'NONE': console.info('chancesOfPaxMissing:%d', 0);
             return 0;
-        case 1: console.info('chancesOfPaxMissing:%d', typicalChance);
+        case 'TYPICAL': console.info('chancesOfPaxMissing:%d', typicalChance);
             return typicalChance;
-        case 2: console.info('chancesOfPaxMissing:%d', Math.max(0, typicalChance - chancesOfMissedConnection * chancheOfPaxMissingWhenMissedConnection));
+        case 'CONNECTING FLIGHTS': console.info('chancesOfPaxMissing:%d', Math.max(0, typicalChance - chancesOfMissedConnection * chancheOfPaxMissingWhenMissedConnection));
             return Math.max(0, typicalChance - chancesOfMissedConnection * chancheOfPaxMissingWhenMissedConnection);
-        case 3: console.info('chancesOfPaxMissing:%d', 0.25);
+        case 'FREQUENT': console.info('chancesOfPaxMissing:%d', 0.25);
             return 0.25;
         default: console.info('chancesOfPaxMissing: default');
             return 0;
         }
-    }, [chancesOfMissedConnection, payloadDeltaRealismSimVar]);
+    }, [chancesOfMissedConnection, payloadDeltaRealism]);
 
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
     const cargoDelta = [fwdBagDelta, aftContDelta, aftBagDelta, aftBulkDelta];
