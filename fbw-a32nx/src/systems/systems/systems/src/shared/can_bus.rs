@@ -170,7 +170,7 @@ impl<const N: usize> SimulationElement for CanBus<N> {
         // set the availability flag
         writer.write(
             &self.availability_id,
-            if self.failure_indication { 0. } else { 1. },
+            !self.failure_indication
         );
 
         if self.next_output_message_valid {
