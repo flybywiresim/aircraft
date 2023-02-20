@@ -159,7 +159,7 @@ impl SimulationElement for Keyboard {
         self.switch_kbd_value = reader.read(&self.switch_kbd_id);
     }
 
-    fn write(&mut self, writer: &mut SimulatorWriter) {
+    fn write(&self, writer: &mut SimulatorWriter) {
         if self.switch_kbd_value > 0.0 && self.power_supply.output_is_powered() {
             writer.write(&self.available_id, 1.0);
         } else {
