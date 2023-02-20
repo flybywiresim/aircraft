@@ -241,14 +241,8 @@ struct AdirsSimulatorData {
     angle_of_attack_id: VariableIdentifier,
     angle_of_attack: Angle,
 
-    baro_correction_1_hpa_id: VariableIdentifier,
-    baro_correction_1_hpa: Pressure,
-    baro_correction_1_inhg_id: VariableIdentifier,
-    baro_correction_1_inhg: Pressure,
-    baro_correction_2_hpa_id: VariableIdentifier,
-    baro_correction_2_hpa: Pressure,
-    baro_correction_2_inhg_id: VariableIdentifier,
-    baro_correction_2_inhg: Pressure,
+    baro_correction_1_id: VariableIdentifier,
+    baro_correction_1: Pressure,
 }
 impl AdirsSimulatorData {
     const MACH: &'static str = "AIRSPEED MACH";
@@ -269,9 +263,6 @@ impl AdirsSimulatorData {
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
     const BARO_CORRECTION_1_HPA: &'static str = "KOHLSMAN SETTING MB:1";
-    const BARO_CORRECTION_1_INHG: &'static str = "KOHLSMAN SETTING HG:1";
-    const BARO_CORRECTION_2_HPA: &'static str = "KOHLSMAN SETTING MB:2";
-    const BARO_CORRECTION_2_INHG: &'static str = "KOHLSMAN SETTING HG:2";
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -327,18 +318,8 @@ impl AdirsSimulatorData {
             angle_of_attack_id: context.get_identifier(Self::ANGLE_OF_ATTACK.to_owned()),
             angle_of_attack: Default::default(),
 
-            baro_correction_1_hpa_id: context
-                .get_identifier(Self::BARO_CORRECTION_1_HPA.to_owned()),
-            baro_correction_1_hpa: Default::default(),
-            baro_correction_1_inhg_id: context
-                .get_identifier(Self::BARO_CORRECTION_1_INHG.to_owned()),
-            baro_correction_1_inhg: Default::default(),
-            baro_correction_2_hpa_id: context
-                .get_identifier(Self::BARO_CORRECTION_2_HPA.to_owned()),
-            baro_correction_2_hpa: Default::default(),
-            baro_correction_2_inhg_id: context
-                .get_identifier(Self::BARO_CORRECTION_2_INHG.to_owned()),
-            baro_correction_2_inhg: Default::default(),
+            baro_correction_1_id: context.get_identifier(Self::BARO_CORRECTION_1_HPA.to_owned()),
+            baro_correction_1: Default::default(),
         }
     }
 }
@@ -366,14 +347,8 @@ impl SimulationElement for AdirsSimulatorData {
         self.ground_speed = reader.read(&self.ground_speed_id);
         self.total_air_temperature = reader.read(&self.total_air_temperature_id);
         self.angle_of_attack = reader.read(&self.angle_of_attack_id);
-        self.baro_correction_1_hpa =
-            Pressure::new::<hectopascal>(reader.read(&self.baro_correction_1_hpa_id));
-        self.baro_correction_1_inhg =
-            Pressure::new::<inch_of_mercury>(reader.read(&self.baro_correction_1_inhg_id));
-        self.baro_correction_2_hpa =
-            Pressure::new::<hectopascal>(reader.read(&self.baro_correction_2_hpa_id));
-        self.baro_correction_2_inhg =
-            Pressure::new::<inch_of_mercury>(reader.read(&self.baro_correction_2_inhg_id));
+        self.baro_correction_1 =
+            Pressure::new::<hectopascal>(reader.read(&self.baro_correction_1_id));
     }
 }
 
@@ -906,13 +881,14 @@ impl AirDataReference {
         } else {
             // If it is on and initialized, output normal values.
             self.baro_correction_1_hpa
-                .set_normal_operation_value(simulator_data.baro_correction_1_hpa);
+                .set_normal_operation_value(simulator_data.baro_correction_1);
             self.baro_correction_1_inhg
-                .set_normal_operation_value(simulator_data.baro_correction_1_inhg);
+                .set_normal_operation_value(simulator_data.baro_correction_1);
+            // Fixme: Get data from F/O altimeter when available
             self.baro_correction_2_hpa
-                .set_normal_operation_value(simulator_data.baro_correction_2_hpa);
+                .set_normal_operation_value(simulator_data.baro_correction_1);
             self.baro_correction_2_inhg
-                .set_normal_operation_value(simulator_data.baro_correction_2_inhg);
+                .set_normal_operation_value(simulator_data.baro_correction_1);
             self.corrected_average_static_pressure
                 .set_normal_operation_value(context.ambient_pressure());
             self.altitude
@@ -1986,18 +1962,6 @@ mod tests {
             self.write_by_name(
                 AdirsSimulatorData::BARO_CORRECTION_1_HPA,
                 altimeter.get::<hectopascal>(),
-            );
-            self.write_by_name(
-                AdirsSimulatorData::BARO_CORRECTION_1_INHG,
-                altimeter.get::<inch_of_mercury>(),
-            );
-            self.write_by_name(
-                AdirsSimulatorData::BARO_CORRECTION_2_HPA,
-                altimeter.get::<hectopascal>(),
-            );
-            self.write_by_name(
-                AdirsSimulatorData::BARO_CORRECTION_2_INHG,
-                altimeter.get::<inch_of_mercury>(),
             );
             self
         }
