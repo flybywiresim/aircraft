@@ -41,7 +41,7 @@ export const Payload = () => {
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Number', 200);
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 2_000);
     const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
-    const [missedPaxRealismSimVar] = useSimVar('L:A32NX_CONFIG_MISSED_PAX', 'Enum', 0);
+    const [payloadDeltaRealismSimVar] = useSimVar('L:A32NX_CONFIG_PAYLOAD_DELTA', 'Enum', 0);
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', usingMetric ? 'Kilograms' : 'Pounds', 2_000);
 
@@ -104,18 +104,18 @@ export const Payload = () => {
     const [aftBagDelta, setAftBagDelta] = useState<number>(0);
     const [aftBulkDelta, setAftBulkDelta] = useState<number>(0);
 
-    const chancesOfMissedConnection = useMemo(() => (missedPaxRealismSimVar === 2 ? 0.1 : 0), [missedPaxRealismSimVar]);
+    const chancesOfMissedConnection = useMemo(() => (payloadDeltaRealismSimVar === 2 ? 0.1 : 0), [payloadDeltaRealismSimVar]);
     const chancheOfPaxMissingWhenMissedConnection = 0.15;
     const chancesOfPaxMissing = useMemo(() => {
         const typicalChance = 0.02;
-        switch (missedPaxRealismSimVar) {
+        switch (payloadDeltaRealismSimVar) {
         case 0: return 0;
         case 1: return typicalChance;
         case 2: return Math.max(0, typicalChance - chancesOfMissedConnection * chancheOfPaxMissingWhenMissedConnection);
         case 3: return 0.25;
         default: return 0;
         }
-    }, [chancesOfMissedConnection, missedPaxRealismSimVar]);
+    }, [chancesOfMissedConnection, payloadDeltaRealismSimVar]);
 
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
     const cargoDelta = [fwdBagDelta, aftContDelta, aftBagDelta, aftBulkDelta];
