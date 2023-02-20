@@ -531,7 +531,7 @@
       "AutofillChecklists": "Saisie automatique des check-lists",
       "BoardingTime": "Durée d'embarquement",
       "ConnectingFlights": "Correspondances",
-      "DeltaPayload": "Variation de la charge utile",
+      "PayloadDelta": "Variation de la charge utile",
       "DmcSelfTestTime": "Temps d'auto-test DMC",
       "FirstOfficerAvatar": "Afficher l'avatar du copilote",
       "HomeCockpitMode": "Mode home cockpit",

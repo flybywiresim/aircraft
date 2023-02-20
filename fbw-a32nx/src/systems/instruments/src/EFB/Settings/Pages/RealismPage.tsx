@@ -27,7 +27,7 @@ export const RealismPage = () => {
     const [pilotAvatar, setPilotAvatar] = usePersistentNumberProperty('CONFIG_PILOT_AVATAR_VISIBLE', 0);
     const [firstOfficerAvatar, setFirstOfficerAvatar] = usePersistentNumberProperty('CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', 0);
     const [payloadDeltaRealism, setPayloadDeltaRealism] = usePersistentProperty('CONFIG_PAYLOAD_DELTA', 'NONE');
-    const [, setPayloadDeltaRealismSimVar] = useSimVar('L:A32NX_CONFIG_PAYLOAD_DELTA', 'Enum', 0);
+    const [, setPayloadDeltaRealismSimVar] = useSimVar('L:A32NX_CONFIG_PAYLOAD_DELTA', 'Enum');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
