@@ -3,8 +3,6 @@
 
 import {
     AtisType,
-    AtsuMessage,
-    AtsuMessageType,
     AtsuStatusCodes,
     CpdlcMessage,
     DclMessage,
@@ -12,7 +10,6 @@ import {
     OclMessage,
     WeatherMessage,
 } from '@datalink/common';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
 
 export interface AtcAocRouterMessages {
     // streams to send several messages
