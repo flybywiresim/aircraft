@@ -141,9 +141,6 @@ export class Aoc {
 
                 if (index === -1) {
                     this.messageQueueUplink.unshift(message);
-
-                    // increase the company message counter
-                    const cMsgCnt = this.digitalInputs.CompanyMessageCount;
                     this.updateMessageCount();
                 } else {
                     this.blacklistedMessageIds.splice(index, 1);
