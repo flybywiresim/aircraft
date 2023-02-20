@@ -897,7 +897,7 @@ export class PseudoFWC {
         const fm1DiscreteWord3 = SimVar.GetSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3', 'number');
         const fm2DiscreteWord3 = SimVar.GetSimVarValue('L:A32NX_FM2_DISCRETE_WORD_3', 'number');
 
-        if (!([2, 3].includes(this.fwcFlightPhase.get()))) {
+        if (!this.flightPhase23.get()) {
             this.toConfigCheckedInPhase2Or3 = false;
         } else if (this.toConfigTestRaw) {
             this.toConfigCheckedInPhase2Or3 = true;
@@ -911,7 +911,7 @@ export class PseudoFWC {
         if (fmToSpeedsNotInserted && (this.toConfigTestRaw || this.fwcFlightPhase.get() === 3) && !this.toSpeedsNotInserted) {
             this.toSpeedsNotInserted = true;
         }
-        if (!([2, 3].includes(this.fwcFlightPhase.get()) && fmToSpeedsNotInserted) && this.toSpeedsNotInserted) {
+        if (!(this.flightPhase23.get() && fmToSpeedsNotInserted) && this.toSpeedsNotInserted) {
             this.toSpeedsNotInserted = false;
         }
 

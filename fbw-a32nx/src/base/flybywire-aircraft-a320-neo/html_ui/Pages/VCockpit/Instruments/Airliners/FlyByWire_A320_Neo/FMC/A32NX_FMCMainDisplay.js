@@ -886,7 +886,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     getPressureAltAtElevation(elev, qnh = 1013.2) {
         const p0 = qnh < 500 ? 29.92 : 1013.2;
-        return elev + 145442.15 * Math.pow((1 - (qnh / p0)), 0.190263);
+        return elev + 145442.15 * (1 - Math.pow((qnh / p0), 0.190263));
     }
 
     getPressureAlt() {
@@ -2975,8 +2975,13 @@ class FMCMainDisplay extends BaseAirliners {
             departureElevation = this.flightPlanManager.getOrigin().infos.elevation;
         }
         const zp = departureElevation !== null ? this.getPressureAltAtElevation(departureElevation, this.getBaroCorrection1()) : this.getPressureAlt();
+        if (zp === null) {
+            return false;
+        }
+
         const conf = this.flaps ? this.flaps : 0;
         const tow = this.zeroFuelWeight + this.blockFuel - this.taxiFuelWeight;
+
         return departureElevation !== undefined && (
             this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
             || this.vRSpeed < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))

@@ -597,7 +597,7 @@ class NXSpeedsUtils {
         }
         for (let i = 0; i < table.length - 1; i++) {
             if (alt >= table[i][0] && alt <= table[i + 1][0]) {
-                const d = (alt - table[i + 1][0]) / (table[i + 1][0] - table[i][0]);
+                const d = (alt - table[i][0]) / (table[i + 1][0] - table[i][0]);
                 return Avionics.Utils.lerpAngle(table[i][1], table[i + 1][1], d);
             }
         }
