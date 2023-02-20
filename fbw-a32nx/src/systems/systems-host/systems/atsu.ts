@@ -45,12 +45,10 @@ export class AtsuSystem {
 
     public startPublish(): void {
         this.simVarHandling.startPublish();
-        this.atc.startPublish();
     }
 
     public update(): void {
         this.simVarHandling.update();
         this.router.update();
-        this.atc.update();
     }
 }
