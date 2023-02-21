@@ -37,13 +37,8 @@ impl RoutingTableEntry {
     }
 
     pub fn publish(&self, writer: &mut SimulatorWriter) {
-        if self.reachable {
-            writer.write(&self.routing_id_1, 1.0);
-            writer.write(&self.routing_id_2, 1.0);
-        } else {
-            writer.write(&self.routing_id_1, 0.0);
-            writer.write(&self.routing_id_2, 0.0);
-        }
+        writer.write(&self.routing_id_1, self.reachable);
+        writer.write(&self.routing_id_2, self.reachable);
     }
 }
 
