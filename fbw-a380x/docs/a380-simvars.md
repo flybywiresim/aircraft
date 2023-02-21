@@ -4,6 +4,7 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
+  - [Integrated Modular Avionics](#integrated-modular-avionics)
 
 ## Indicating/Recording ATA 31
 
@@ -58,3 +59,29 @@
 - A32NX_CDS_CAN_BUS_2_2
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
+
+## Integrated Modular Avionics
+
+- A32NX_AFDX_SWITCH_<ID>_FAILURE
+  - Bool
+  - Indicates if a specific AFDX switch is in a failure mode
+
+- A32NX_AFDX_SWITCH_<ID>_AVAIL
+  - Bool
+  - Indicates if a specific AFDX switch is available
+
+- A32NX_CPIOM_<NAME>_FAILURE
+  - Bool
+  - Indicates if a specific CPIOM system is in a failure mode
+
+- A32NX_CPIOM_<NAME>_AVAIL
+  - Bool
+  - Indicates if a specific CPIOM system is available
+
+- A32NX_IOM_<NAME>_FAILURE
+  - Bool
+  - Indicates if a specific IOM system is in a failure mode
+
+- A32NX_IOM_<NAME>_AVAIL
+  - Bool
+  - Indicates if a specific IOM system is available
