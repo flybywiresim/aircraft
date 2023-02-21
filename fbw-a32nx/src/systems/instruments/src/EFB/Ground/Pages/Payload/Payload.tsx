@@ -197,7 +197,7 @@ export const Payload = () => {
 
     const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
         setBoardingStarted(desiredBoardingState);
-        if (desiredBoardingState) {
+        if (desiredBoardingState && payloadDeltaRealism !== 'NONE' && totalPaxDesired !== 0) {
             const chancesToMissBoarding = (Math.random() <= chancesOfMissedConnection) ? chancheOfPaxMissingWhenMissedConnection : chancesOfPaxMissing;
             const chancesToAdditionalBoarding = (Math.random() <= chancesOfMissedConnection) ? -chancheOfPaxMissingWhenMissedConnection : -chancesOfPaxMissing;
             console.info('chances to miss: %.2f%%, chances to add:%.2f%%', chancesToMissBoarding * 100, chancesToAdditionalBoarding * 100);
@@ -215,7 +215,7 @@ export const Payload = () => {
             }
             console.info('pax delta: %d', tempTotalDelta);
             console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
-            const newCargo = setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight);
+            const newCargo = setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargoDesired - totalPaxDesired * paxBagWeight), -paxBagWeight);
             setCargoDesiredDisplayRatio(newCargo === 0 ? 1 : totalCargoDesired / newCargo);
             console.info('observed cargo change: %.2f Kg', newCargo - totalCargoDesired);
         }
@@ -337,7 +337,7 @@ export const Payload = () => {
             const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, -perBagWeight));
             const randomVariations = Math.max(Math.min(maxLuggageWeight - average, average - minLuggageWeight), minVariation);
             // double random to reduce variance and fake a law closer to normal law
-            const randomPerBagWeight = average + randomVariations * (Math.random() + Math.random()) / 2;
+            const randomPerBagWeight = average + randomVariations * ((Math.random() - 0.5) + (Math.random() - 0.5));
             console.info('Average weight:%.1f Kg and max variation %.2f Kg', average, randomVariations);
             bagWeight = numberOfPax * randomPerBagWeight;
             tempTotalCargo = bagWeight + freight;
