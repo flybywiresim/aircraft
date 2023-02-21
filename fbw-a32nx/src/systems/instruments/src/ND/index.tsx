@@ -5,12 +5,8 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { getSupplier } from '@instruments/common/utils';
 import { useFlowSyncEvent } from '@instruments/common/hooks';
-<<<<<<< HEAD:fbw-a32nx/src/systems/instruments/src/ND/index.tsx
 import { EfisNdMode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
-=======
-import { Mode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 import { TerrainMapThresholds } from './elements/TerrainMapThresholds';
->>>>>>> b595efe24... introduce the threshold rendering:src/instruments/src/ND/index.tsx
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
 import { WindIndicator } from './elements/WindIndicator';
