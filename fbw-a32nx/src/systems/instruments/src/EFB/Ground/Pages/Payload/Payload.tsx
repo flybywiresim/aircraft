@@ -96,24 +96,28 @@ export const Payload = () => {
     const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number', 200);
     const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number', 200);
 
-    const chancesOfMissedConnection = useMemo(() => {
-        console.info('payloadDeltaRealism:%s chances of connections:%.2f%%', payloadDeltaRealism, 100 * (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.1 : 0));
-        return (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.1 : 0);
-    }, [payloadDeltaRealism]);
+    const chancesOfMissedConnection = useMemo(() => (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.05 : 0), [payloadDeltaRealism]);
+    const chancesOfDelayedPlane = useMemo(() => (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.025 : 0), [payloadDeltaRealism]);
     const chancheOfPaxMissingWhenMissedConnection = 0.15;
-    const chancesOfPaxMissing = useMemo(() => {
-        const typicalChance = 0.02;
+    const chanceOfAddedPaxWhenMissedConnection = 0.15;
+    const chancesOfAddedPax = useMemo(() => {
+        const typicalChance = 0.005;
         switch (payloadDeltaRealism) {
-        case 'NONE': console.info('chancesOfPaxMissing:%.2f%%', 0 * 100);
-            return 0;
-        case 'TYPICAL': console.info('chancesOfPaxMissing:%.2f%%', typicalChance * 100);
-            return typicalChance;
-        case 'CONNECTING FLIGHTS': console.info('chancesOfPaxMissing:%.2f%%', 100 * typicalChance);
-            return typicalChance;
-        case 'FREQUENT': console.info('chancesOfPaxMissing:%.2f', 0.25);
-            return 0.25;
-        default: console.info('chancesOfPaxMissing: default 0%%');
-            return 0;
+        case 'NONE': return 0;
+        case 'TYPICAL': return typicalChance;
+        case 'CONNECTING FLIGHTS': return typicalChance;
+        case 'FREQUENT': return 0.05;
+        default: return 0;
+        }
+    }, [chancesOfMissedConnection, payloadDeltaRealism]);
+    const chancesOfPaxMissing = useMemo(() => {
+        const typicalChance = 0.015;
+        switch (payloadDeltaRealism) {
+        case 'NONE': return 0;
+        case 'TYPICAL': return typicalChance;
+        case 'CONNECTING FLIGHTS': return typicalChance;
+        case 'FREQUENT': return 0.25;
+        default: return 0;
         }
     }, [chancesOfMissedConnection, payloadDeltaRealism]);
 
@@ -199,25 +203,18 @@ export const Payload = () => {
         setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState && payloadDeltaRealism !== 'NONE' && totalPaxDesired !== 0) {
             const chancesToMissBoarding = (Math.random() <= chancesOfMissedConnection) ? chancheOfPaxMissingWhenMissedConnection : chancesOfPaxMissing;
-            const chancesToAdditionalBoarding = (Math.random() <= chancesOfMissedConnection) ? -chancheOfPaxMissingWhenMissedConnection : -chancesOfPaxMissing;
-            console.info('chances to miss: %.2f%%, chances to add:%.2f%%', chancesToMissBoarding * 100, chancesToAdditionalBoarding * 100);
+            const chancesToAdditionalBoarding = (Math.random() <= chancesOfDelayedPlane) ? -chanceOfAddedPaxWhenMissedConnection : -chancesOfAddedPax;
             let tempTotalDelta : number = 0;
             for (let station = 0; station < pax.length; station++) {
-                console.info('pax: %d, pax desired: %d, max pax: %d', pax[station], paxDesired[station], stationSize[station]);
                 // potential missed boardings
                 let tempStationDeltaPax = stationDeltaPax(pax[station], paxDesired[station], chancesToMissBoarding);
-                console.info('station missed pax: %d', tempStationDeltaPax);
                 // potential additions with open seats
                 tempStationDeltaPax += stationDeltaPax(stationSize[station], paxDesired[station], chancesToAdditionalBoarding);
                 tempTotalDelta += tempStationDeltaPax;
-                console.info('station delta pax: %d', tempStationDeltaPax);
                 setPaxDesired[station](paxDesired[station] + tempStationDeltaPax);
             }
-            console.info('pax delta: %d', tempTotalDelta);
-            console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
             const newCargo = setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargoDesired - totalPaxDesired * paxBagWeight), -paxBagWeight);
             setCargoDesiredDisplayRatio(newCargo === 0 ? 1 : totalCargoDesired / newCargo);
-            console.info('observed cargo change: %.2f Kg', newCargo - totalCargoDesired);
         }
     };
 
@@ -330,18 +327,16 @@ export const Payload = () => {
         let bagWeight:number;
         let tempTotalCargo:number;
         // negative perBagWeigths means random perBagWeights with average of this absolute value
-        if (perBagWeight < 0) {
-            const maxLuggageWeight = 25;
-            const minLuggageWeight = 5;
+        const maxLuggageWeight = 25;
+        const minLuggageWeight = 5;
+        if (perBagWeight < 0 && perBagWeight > minLuggageWeight && perBagWeight < maxLuggageWeight) {
             const minVariation = 5;
             const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, -perBagWeight));
             const randomVariations = Math.max(Math.min(maxLuggageWeight - average, average - minLuggageWeight), minVariation);
             // double random to reduce variance and fake a law closer to normal law
             const randomPerBagWeight = average + randomVariations * ((Math.random() - 0.5) + (Math.random() - 0.5));
-            console.info('Average weight:%.1f Kg and max variation %.2f Kg', average, randomVariations);
             bagWeight = numberOfPax * randomPerBagWeight;
             tempTotalCargo = bagWeight + freight;
-            console.info('New bag weight:%.1f Kg representing a new total cargo of %d Kg', randomPerBagWeight, tempTotalCargo);
         } else {
             bagWeight = numberOfPax * perBagWeight;
             tempTotalCargo = bagWeight + freight;
@@ -410,6 +405,7 @@ export const Payload = () => {
 
         setTargetPax(newPax);
         setTargetCargo(newPax, newCargo);
+        setTotalPaxDesiredDisplayed(newPax);
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
@@ -498,7 +494,6 @@ export const Payload = () => {
 
     // Init
     useEffect(() => {
-        console.info('Init');
         if (paxWeight === 0) {
             setPaxWeight(Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultPaxWeight)));
         }
