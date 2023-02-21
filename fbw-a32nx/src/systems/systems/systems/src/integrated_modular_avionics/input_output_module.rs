@@ -37,11 +37,7 @@ impl SimulationElement for InputOutputModule {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        if self.is_available() {
-            writer.write(&self.available_id, 1.0);
-        } else {
-            writer.write(&self.available_id, 0.0);
-        }
+        writer.write(&self.available_id, self.is_available());
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
