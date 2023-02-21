@@ -6,7 +6,7 @@ import { ColorCode, MetarParserType } from '@flybywiresim/fbw-sdk';
 
 /**
  * Returns HTML with coloring for METAR parts marked with coloring hints.
- * ColorCode: src/instruments/src/Common/metarTypes.ts
+ * ColorCode: src/systems/instruments/src/Common/metarTypes.ts
  */
 export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
     const partsList = metar.raw_parts.map((metarPart, index) => {

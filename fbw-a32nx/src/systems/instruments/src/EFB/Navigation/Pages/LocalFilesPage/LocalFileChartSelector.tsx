@@ -1,6 +1,7 @@
 import React from 'react';
 import { CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { Viewer } from '@simbridge/index';
 import { t } from '../../../translation';
 import {
     addPinnedChart,
@@ -15,7 +16,6 @@ import {
 } from '../../../Store/features/navigationPage';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { navigationTabs } from '../../Navigation';
-import { Viewer } from '../../../../../../simbridge-client/src';
 import { getImageUrl, getPdfUrl } from './LocalFilesPage';
 
 export type LocalFileChart = {

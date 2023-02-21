@@ -14,7 +14,7 @@ import { ColorCode, MetarParserType, Visibility, Wind } from '../../instruments/
  * @see       https://api.checkwx.com/#31-single
  * @see       https://www.skybrary.aero/index.php/Meteorological_Terminal_Air_Report_(METAR)
  * @param     {String}  metarString - A string containing the raw metar information
- * @returns   MetarParserType with structured information from src/instruments/src/Common/metarTypes.ts
+ * @returns   MetarParserType with structured information from src/systems/instruments/src/Common/metarTypes.ts
  * @author    Original library: Frank Boës, Extensions: FlyByWire Simulations
  * @copyright Original library: Copyright (c) 2019 Frank Boës, Extensions: (c) 2022 FlyByWire Simulations
  * @license   Original library: MIT License, Extensions: https://github.com/flybywiresim/a32nx/blob/master/LICENSE

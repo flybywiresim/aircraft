@@ -4,7 +4,7 @@
 
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import React from 'react';
-import { Failure } from '@flybywiresim/failures';
+import { Failure } from '@failures';
 import { t } from '../../translation';
 import { FailureButton } from '../FailureButton';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
