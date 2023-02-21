@@ -98,29 +98,11 @@ impl EnhancedGPWC {
          * TODO:
          *   - implement logic as soon as GPS sensor is available
          */
-
-        if adirs_output.is_fully_aligned(1) && self.is_powered {
-            self.latitude =
-                Arinc429Word::new(adirs_output.latitude(1), SignStatus::NormalOperation);
-            self.longitude =
-                Arinc429Word::new(adirs_output.longitude(1), SignStatus::NormalOperation);
-            self.altitude =
-                Arinc429Word::new(adirs_output.altitude(1), SignStatus::NormalOperation);
-            self.heading = Arinc429Word::new(adirs_output.heading(1), SignStatus::NormalOperation);
-            self.vertical_speed =
-                Arinc429Word::new(adirs_output.vertical_speed(1), SignStatus::NormalOperation);
-        } else {
-            self.latitude =
-                Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
-            self.longitude =
-                Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
-            self.altitude = Arinc429Word::new(Length::new::<foot>(0.0), SignStatus::FailureWarning);
-            self.heading = Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning);
-            self.vertical_speed = Arinc429Word::new(
-                Velocity::new::<foot_per_minute>(0.0),
-                SignStatus::FailureWarning,
-            );
-        }
+        self.latitude = adirs_output.latitude(1);
+        self.longitude = adirs_output.longitude(1);
+        self.altitude = adirs_output.altitude(1);
+        self.heading = adirs_output.heading(1);
+        self.vertical_speed = adirs_output.vertical_speed(1);
     }
 
     pub fn update(

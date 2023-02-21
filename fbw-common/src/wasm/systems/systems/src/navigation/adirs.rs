@@ -459,23 +459,23 @@ impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
         self.adirus[adiru_number - 1].is_fully_aligned()
     }
 
-    fn latitude(&self, adiru_number: usize) -> Angle {
+    fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
         self.adirus[adiru_number - 1].latitude()
     }
 
-    fn longitude(&self, adiru_number: usize) -> Angle {
+    fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
         self.adirus[adiru_number - 1].longitude()
     }
 
-    fn heading(&self, adiru_number: usize) -> Angle {
+    fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
         self.adirus[adiru_number - 1].heading()
     }
 
-    fn vertical_speed(&self, adiru_number: usize) -> Velocity {
+    fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
         self.adirus[adiru_number - 1].vertical_speed()
     }
 
-    fn altitude(&self, adiru_number: usize) -> Length {
+    fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length> {
         self.adirus[adiru_number - 1].altitude()
     }
 }
