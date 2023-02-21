@@ -128,7 +128,7 @@ export const Payload = () => {
         const tempCargoDisplay = new Array(cargoDesired.length);
         for (let station = 0; station < tempCargoDisplay.length; station++) {
             // console.info('station %d: cargoDesired: %d, cargoDelta: %d', station, cargoDesired[station], cargoDelta[station]);
-            tempCargoDisplay[station] = cargoDesired[station] * deltaRatioCargo;
+            tempCargoDisplay[station] = cargoDesired[station] / deltaRatioCargo;
             if (Number.isNaN(tempCargoDisplay[station])) tempCargoDisplay[station] = 0;
             console.info('cargo %d\'s display:%d', station, tempCargoDisplay[station]);
         }
@@ -136,8 +136,8 @@ export const Payload = () => {
     }, [...cargoDesired, deltaRatioCargo]);
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
     const totalCargoDesired = useMemo(() => {
-        const cargoDesiredWithDelta = ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1) + (Number.isNaN(deltaRatioCargo) ? 1 : totalCargoDesired * deltaRatioCargo);
-        console.info('cargo desired : %d with %d delta', cargoDesiredWithDelta, Number.isNaN(deltaRatioCargo) ? 1 : totalCargoDesired * deltaRatioCargo);
+        const cargoDesiredWithDelta = (cargoDesired && (cargoDesired.length > 0 ? (cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) / (Number.isNaN(deltaRatioCargo) ? 1 : deltaRatioCargo)) : -1));
+        console.info('cargo desired : %d with %d delta ratio', cargoDesiredWithDelta, Number.isNaN(deltaRatioCargo) ? 1 : deltaRatioCargo);
         return (cargoDesiredWithDelta);
     }, [...cargoDesired, ...paxDesired, deltaRatioCargo]);
 
@@ -233,7 +233,8 @@ export const Payload = () => {
             setTotalDeltaPax(tempTotalDelta);
             console.info('pax delta: %d', tempTotalDelta);
             console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
-            setDeltaRatioCargo(setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight));
+            const ratioChange = totalCargo === 0 ? 1 : setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight) / totalCargo;
+            setDeltaRatioCargo(ratioChange);
         }
     };
 
@@ -344,21 +345,22 @@ export const Payload = () => {
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
         let bagWeight:number;
-        let deltaRatioApplied = 1;
+        let tempTotalCargo = 0;
         // negative perBagWeigths means random perBagWeights with average of this absolute value
         if (perBagWeight < 0) {
             const maxLuggageWeight = 25;
-            const minLuggageWeight = 0;
+            const minLuggageWeight = 5;
             const minVariation = 5;
             const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, -paxBagWeight));
             const randomVariations = Math.max(Math.min(maxLuggageWeight - average, average - minLuggageWeight), minVariation);
             // double random to reduce variance and fake a law closer to normal law
             const randomPerBagWeight = average + randomVariations * (Math.random() + Math.random()) / 2;
-            deltaRatioApplied = (paxBagWeight === 0) ? 1 : (randomPerBagWeight * numberOfPax + freight) / (paxBagWeight * numberOfPax + freight);
-            console.info('New bag weight:%.1f representing a delta ratio on cargo of %.1f%%', randomPerBagWeight, deltaRatioApplied * 100);
             bagWeight = numberOfPax * randomPerBagWeight;
+            tempTotalCargo = bagWeight + freight;
+            console.info('New bag weight:%.1f Kg representing a new total cargo of %d Kg', randomPerBagWeight, tempTotalCargo);
         } else {
             bagWeight = numberOfPax * perBagWeight;
+            tempTotalCargo = bagWeight + freight;
         }
         const loadableCargoWeight = Math.min(bagWeight + Math.round(freight), maxCargo);
 
@@ -374,7 +376,7 @@ export const Payload = () => {
             fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
         }
         fillCargo(0, 1, remainingWeight);
-        return (deltaRatioApplied);
+        return (tempTotalCargo);
     }, [...cargoDesired, paxBagWeight, ...cargoStationSize]);
 
     const calculatePaxMoment = useCallback(() => {
