@@ -606,23 +606,23 @@ impl AirDataInertialReferenceUnit {
         self.low_speed_warning_4_260kts
     }
 
-    fn latitude(&self) -> Angle {
+    fn latitude(&self) -> Arinc429Word<Angle> {
         self.ir.latitude()
     }
 
-    fn longitude(&self) -> Angle {
+    fn longitude(&self) -> Arinc429Word<Angle> {
         self.ir.longitude()
     }
 
-    fn heading(&self) -> Angle {
+    fn heading(&self) -> Arinc429Word<Angle> {
         self.ir.heading()
     }
 
-    fn vertical_speed(&self) -> Velocity {
+    fn vertical_speed(&self) -> Arinc429Word<Velocity> {
         self.ir.vertical_speed()
     }
 
-    fn altitude(&self) -> Length {
+    fn altitude(&self) -> Arinc429Word<Length> {
         self.adr.altitude()
     }
 }
@@ -936,8 +936,8 @@ impl AirDataReference {
         self.computed_airspeed.value()
     }
 
-    fn altitude(&self) -> Length {
-        self.altitude.value()
+    fn altitude(&self) -> Arinc429Word<Length> {
+        Arinc429Word::new(self.altitude.value(), self.altitude.ssm())
     }
 }
 impl TrueAirspeedSource for AirDataReference {
@@ -1612,20 +1612,23 @@ impl InertialReference {
         !self.extreme_latitude
     }
 
-    fn latitude(&self) -> Angle {
-        self.latitude.value()
+    fn latitude(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.latitude.value(), self.latitude.ssm())
     }
 
-    fn longitude(&self) -> Angle {
-        self.longitude.value()
+    fn longitude(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.longitude.value(), self.longitude.ssm())
     }
 
-    fn heading(&self) -> Angle {
-        self.heading.value()
+    fn heading(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.heading.value(), self.heading.ssm())
     }
 
-    fn vertical_speed(&self) -> Velocity {
-        Velocity::new::<foot_per_minute>(self.vertical_speed.value())
+    fn vertical_speed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(
+            Velocity::new::<foot_per_minute>(self.vertical_speed.value()),
+            self.vertical_speed.ssm(),
+        )
     }
 }
 impl SimulationElement for InertialReference {

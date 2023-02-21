@@ -4,6 +4,7 @@ use crate::{
     simulation::UpdateContext,
 };
 
+use arinc429::Arinc429Word;
 use nalgebra::Vector3;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
@@ -223,11 +224,11 @@ pub trait PackFlowValveState {
 
 pub trait AdirsMeasurementOutputs {
     fn is_fully_aligned(&self, adiru_number: usize) -> bool;
-    fn latitude(&self, adiru_number: usize) -> Angle;
-    fn longitude(&self, adiru_number: usize) -> Angle;
-    fn heading(&self, adiru_number: usize) -> Angle;
-    fn vertical_speed(&self, adiru_number: usize) -> Velocity;
-    fn altitude(&self, adiru_number: usize) -> Length;
+    fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
+    fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length>;
 }
 
 pub trait GroundSpeed {
