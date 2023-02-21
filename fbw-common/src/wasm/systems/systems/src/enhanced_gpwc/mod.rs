@@ -38,12 +38,14 @@ pub struct EnhancedGPWC {
     navigation_display_range_lookup: Vec<Length>,
     navigation_displays: [NavigationDisplay; 2],
     gear_is_down: bool,
+    terronnd_rendering_mode: u8,
     // output variables of the EGPWC
     egpwc_destination_longitude_id: VariableIdentifier,
     egpwc_destination_latitude_id: VariableIdentifier,
     egpwc_present_latitude_id: VariableIdentifier,
     egpwc_present_longitude_id: VariableIdentifier,
     egpwc_gear_is_down_id: VariableIdentifier,
+    egpwc_terronnd_rendering_mode: VariableIdentifier,
 }
 
 impl EnhancedGPWC {
@@ -51,6 +53,7 @@ impl EnhancedGPWC {
         context: &mut InitContext,
         powered_by: ElectricalBusType,
         range_lookup: Vec<Length>,
+        terronnd_rendering_mode: u8,
     ) -> Self {
         EnhancedGPWC {
             powered_by,
@@ -82,11 +85,14 @@ impl EnhancedGPWC {
                 NavigationDisplay::new(context, "R"),
             ],
             gear_is_down: true,
+            terronnd_rendering_mode,
             egpwc_destination_longitude_id: context.get_identifier("EGPWC_DEST_LAT".to_owned()),
             egpwc_destination_latitude_id: context.get_identifier("EGPWC_DEST_LONG".to_owned()),
             egpwc_present_latitude_id: context.get_identifier("EGPWC_PRESENT_LAT".to_owned()),
             egpwc_present_longitude_id: context.get_identifier("EGPWC_PRESENT_LONG".to_owned()),
             egpwc_gear_is_down_id: context.get_identifier("EGPWC_GEAR_IS_DOWN".to_owned()),
+            egpwc_terronnd_rendering_mode: context
+                .get_identifier("EGPWC_TERRONND_RENDERING_MODE".to_owned()),
         }
     }
 
@@ -165,6 +171,10 @@ impl SimulationElement for EnhancedGPWC {
             self.longitude.ssm(),
         );
         writer.write(&self.egpwc_gear_is_down_id, self.gear_is_down);
+        writer.write(
+            &self.egpwc_terronnd_rendering_mode,
+            self.terronnd_rendering_mode,
+        );
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

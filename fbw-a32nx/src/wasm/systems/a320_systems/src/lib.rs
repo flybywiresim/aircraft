@@ -119,6 +119,7 @@ impl A320 {
                     Length::new::<nautical_mile>(160.0),
                     Length::new::<nautical_mile>(320.0),
                 ]),
+                0,
             ),
         }
     }

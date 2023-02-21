@@ -131,6 +131,7 @@ impl A380 {
                     Length::new::<nautical_mile>(320.0),
                     Length::new::<nautical_mile>(640.0),
                 ]),
+                1,
             ),
         }
     }
