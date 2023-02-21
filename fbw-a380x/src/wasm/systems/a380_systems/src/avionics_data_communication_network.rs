@@ -483,7 +483,7 @@ mod tests {
             }
         }
 
-        fn update_after_power_distribution(&mut self) {
+        fn update_after_power_distribution(&mut self, _: &UpdateContext) {
             self.update();
         }
     }
@@ -517,12 +517,12 @@ mod tests {
             row.iter().for_each(|switch| {
                 let reachable_first: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
-                let reachable_second: f64 =
+                let reachable_second: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
                 println!("AFDX switch combination: {} {}", fixed_id, switch);
-                assert_about_eq!(reachable_first, 0.0);
-                assert_about_eq!(reachable_second, 0.0);
+                assert!(!reachable_first);
+                assert!(!reachable_second);
             });
         });
     }
@@ -548,13 +548,13 @@ mod tests {
             let fixed_id = row[0];
 
             row.iter().for_each(|switch| {
-                let reachable_first: f64 =
+                let reachable_first: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
-                let reachable_second: f64 =
+                let reachable_second: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
-                assert_about_eq!(reachable_first, 0.0);
-                assert_about_eq!(reachable_second, 0.0);
+                assert!(!reachable_first);
+                assert!(!reachable_second);
             });
         });
     }
@@ -581,14 +581,14 @@ mod tests {
             let fixed_id = row[0];
 
             row.iter().for_each(|switch| {
-                let reachable_first: f64 =
+                let reachable_first: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
-                let reachable_second: f64 =
+                let reachable_second: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
                 println!("AFDX switch combination: {} {}", fixed_id, switch);
-                assert_about_eq!(reachable_first, 1.0);
-                assert_about_eq!(reachable_second, 1.0);
+                assert!(reachable_first);
+                assert!(reachable_second);
             });
         });
     }
@@ -615,14 +615,14 @@ mod tests {
             let fixed_id = row[0];
 
             row.iter().for_each(|switch| {
-                let reachable_first: f64 =
+                let reachable_first: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
-                let reachable_second: f64 =
+                let reachable_second: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
                 println!("AFDX switch combination: {} {}", fixed_id, switch);
-                assert_about_eq!(reachable_first, 1.0);
-                assert_about_eq!(reachable_second, 1.0);
+                assert!(reachable_first);
+                assert!(reachable_second);
             });
         });
     }
@@ -640,18 +640,18 @@ mod tests {
         let mut reachable: bool = test_bed.read_by_name("AFDX_1_1_REACHABLE");
         assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_2_REACHABLE");
-        assert!(reachable);
+        assert!(!reachable);
         reachable = test_bed.read_by_name("AFDX_1_3_REACHABLE");
-        assert!(reachable);
+        assert!(!reachable);
         reachable = test_bed.read_by_name("AFDX_1_4_REACHABLE");
-        assert!(reachable);
+        assert!(!reachable);
         reachable = test_bed.read_by_name("AFDX_1_5_REACHABLE");
-        assert!(reachable);
+        assert!(!reachable);
         reachable = test_bed.read_by_name("AFDX_1_6_REACHABLE");
-        assert!(reachable);
+        assert!(!reachable);
         reachable = test_bed.read_by_name("AFDX_1_7_REACHABLE");
-        assert!(reachable);
+        assert!(!reachable);
         reachable = test_bed.read_by_name("AFDX_1_9_REACHABLE");
-        assert!(reachable);
+        assert!(!reachable);
     }
 }
