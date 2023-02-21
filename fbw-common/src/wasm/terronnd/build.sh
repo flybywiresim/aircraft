@@ -59,6 +59,9 @@ clang++ \
 # restore directory
 popd
 
+# create the output folder
+mkdir -p "${DIR}/out"
+
 # link modules
 wasm-ld \
   --no-entry \
