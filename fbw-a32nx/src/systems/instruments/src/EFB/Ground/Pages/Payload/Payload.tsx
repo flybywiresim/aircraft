@@ -118,6 +118,8 @@ export const Payload = () => {
     }, [chancesOfMissedConnection, payloadDeltaRealism]);
 
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
+    const [cargoDesiredDisplayRatio, setCargoDesiredDisplayRatio] = useState<number>(1);
+    const cargoDesiredDisplayed = [fwdBagDesired * cargoDesiredDisplayRatio, aftContDesired * cargoDesiredDisplayRatio, aftBagDesired * cargoDesiredDisplayRatio, aftBulkDesired * cargoDesiredDisplayRatio];
     const [totalCargoDesiredDisplayed, setTotalCargoDesiredDisplayed] = useState<number>(0);
 
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
@@ -214,6 +216,7 @@ export const Payload = () => {
             console.info('pax delta: %d', tempTotalDelta);
             console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
             const newCargo = setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight);
+            setCargoDesiredDisplayRatio(newCargo === 0 ? 1 : totalCargoDesired / newCargo);
             console.info('observed cargo change: %.2f Kg', newCargo - totalCargoDesired);
         }
     };
@@ -342,6 +345,7 @@ export const Payload = () => {
         } else {
             bagWeight = numberOfPax * perBagWeight;
             tempTotalCargo = bagWeight + freight;
+            setTotalCargoDesiredDisplayed(tempTotalCargo);
         }
         const loadableCargoWeight = Math.min(bagWeight + Math.round(freight), maxCargo);
 
@@ -629,6 +633,7 @@ export const Payload = () => {
             setTotalPaxDesiredDisplayed(totalPaxDesired);
             setTotalCargoDesiredDisplayed(totalCargoDesired);
             adjustDesiredSeats(paxDesired);
+            setCargoDesiredDisplayRatio(1);
             updateAllWeights();
         }
         pax.forEach((stationNumPax: number, stationIndex: number) => {
@@ -796,7 +801,7 @@ export const Payload = () => {
                 <div className="mb-10">
                     <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} />
                 </div>
-                <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationSize} onClickCargo={onClickCargo} />
+                <CargoWidget cargo={cargo} cargoDesired={cargoDesiredDisplayed} cargoMap={cargoMap} cargoStationSize={cargoStationSize} onClickCargo={onClickCargo} />
 
                 <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
                     <div className="flex flex-col flex-grow pr-24">
