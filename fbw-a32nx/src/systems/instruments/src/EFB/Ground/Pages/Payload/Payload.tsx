@@ -68,12 +68,15 @@ export const Payload = () => {
 
     const paxDesired = [paxADesired, paxBDesired, paxCDesired, paxDDesired];
     const [setPaxDesired] = useState([setPaxADesired, setPaxBDesired, setPaxCDesired, setPaxDDesired]);
-    const [totalDeltaPax, setTotalDeltaPax] = useState(0);
+
     const totalPaxDesired = useMemo(() => {
-        const paxDesiredWithDelta = (paxDesired.reduce((a, b) => parseInt(a) + parseInt(b)) - totalDeltaPax);
-        console.info('pax desired : %d including %d delta', paxDesiredWithDelta, totalDeltaPax);
-        return (paxDesired && paxDesired.length > 0 && paxDesiredWithDelta);
-    }, [...paxDesired, totalDeltaPax]);
+        if (!boardingStarted) {
+            const tempTotalPaxDesired = paxDesired.reduce((a, b) => parseInt(a) + parseInt(b));
+            console.info('pax desired : %d', tempTotalPaxDesired);
+            return (paxDesired && paxDesired.length > 0 && tempTotalPaxDesired);
+        }
+        return (totalPaxDesired === undefined) ? 0 : totalCargoDesired;
+    }, [...paxDesired, boardingStarted]);
 
     const [aFlagsDesired, setAFlagsDesired] = useBitFlags('PAX_FLAGS_A_DESIRED');
     const [bFlagsDesired, setBFlagsDesired] = useBitFlags('PAX_FLAGS_B_DESIRED');
@@ -99,8 +102,6 @@ export const Payload = () => {
     const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number', 200);
     const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number', 200);
 
-    const [deltaRatioCargo, setDeltaRatioCargo] = useState<number>(1);
-
     const chancesOfMissedConnection = useMemo(() => {
         console.info('payloadDeltaRealism:%s chances of connections:%.2f%%', payloadDeltaRealism, 100 * (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.1 : 0));
         return (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.1 : 0);
@@ -125,21 +126,31 @@ export const Payload = () => {
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
 
     const cargoDesiredDisplayed = useMemo(() => {
+        if (!boardingStarted) {
+            for (let station = 0; station < cargoDesired.length; station++) {
+                // console.info('station %d: cargoDesired: %d, cargoDelta: %d', station, cargoDesired[station], cargoDelta[station]);
+                console.info('cargo %d\'s display:%d', station, cargoDesired[station]);
+            }
+            return cargoDesired;
+        }
+        if (cargoDesiredDisplayed !== undefined) return cargoDesiredDisplayed;
         const tempCargoDisplay = new Array(cargoDesired.length);
         for (let station = 0; station < tempCargoDisplay.length; station++) {
-            // console.info('station %d: cargoDesired: %d, cargoDelta: %d', station, cargoDesired[station], cargoDelta[station]);
-            tempCargoDisplay[station] = cargoDesired[station] / deltaRatioCargo;
-            if (Number.isNaN(tempCargoDisplay[station])) tempCargoDisplay[station] = 0;
-            console.info('cargo %d\'s display:%d', station, tempCargoDisplay[station]);
+            tempCargoDisplay[station] = 0;
         }
         return tempCargoDisplay;
-    }, [...cargoDesired, deltaRatioCargo]);
+    }, [...cargoDesired, boardingStarted]);
+
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
     const totalCargoDesired = useMemo(() => {
-        const cargoDesiredWithDelta = (cargoDesired && (cargoDesired.length > 0 ? (cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) / (Number.isNaN(deltaRatioCargo) ? 1 : deltaRatioCargo)) : -1));
-        console.info('cargo desired : %d with %.2%% delta ratio', cargoDesiredWithDelta, Number.isNaN(deltaRatioCargo) ? 100 : deltaRatioCargo * 100);
-        return (cargoDesiredWithDelta);
-    }, [...cargoDesired, ...paxDesired, deltaRatioCargo]);
+        if (!boardingStarted) {
+            const tempCargoDesired = cargoDesired && cargoDesired.length > 0 ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1;
+            console.info('cargo desired : %d Kg', tempCargoDesired);
+            return (tempCargoDesired);
+        }
+        if (totalCargoDesired !== undefined) return totalCargoDesired;
+        return 0;
+    }, [...cargoDesired, ...paxDesired, boardingStarted]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
 
@@ -212,7 +223,6 @@ export const Payload = () => {
     };
 
     const boardingChangeStateOperations = (desiredBoardingState:boolean) => {
-        setTotalDeltaPax(0);
         setBoardingStarted(desiredBoardingState);
         if (desiredBoardingState) {
             const chancesToMissBoarding = (Math.random() <= chancesOfMissedConnection) ? chancheOfPaxMissingWhenMissedConnection : chancesOfPaxMissing;
@@ -230,12 +240,10 @@ export const Payload = () => {
                 console.info('station delta pax: %d', tempStationDeltaPax);
                 setPaxDesired[station](paxDesired[station] + tempStationDeltaPax);
             }
-            setTotalDeltaPax(tempTotalDelta);
             console.info('pax delta: %d', tempTotalDelta);
             console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
             const ratioChange = (totalCargoDesired === 0) ? 1 : setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight) / totalCargoDesired;
             console.info('observed cargo change: %.2f', ratioChange * 100);
-            setDeltaRatioCargo(ratioChange);
         }
     };
 
@@ -516,7 +524,6 @@ export const Payload = () => {
     // Init
     useEffect(() => {
         console.info('Init');
-        setDeltaRatioCargo(1);
         if (paxWeight === 0) {
             setPaxWeight(Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultPaxWeight)));
         }
@@ -648,8 +655,6 @@ export const Payload = () => {
     useEffect(() => {
         // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
-            setTotalDeltaPax(0);
-            setDeltaRatioCargo(1);
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
         }
@@ -798,8 +803,8 @@ export const Payload = () => {
     useEffect(() => {
         updateAllWeights();
     }, [
-        ...pax, ...paxDesired, totalDeltaPax,
-        ...cargo, ...cargoDesired, deltaRatioCargo,
+        ...pax, ...paxDesired,
+        ...cargo, ...cargoDesired, boardingStarted,
         ...fuel, destEfob,
         paxWeight, paxBagWeight,
         emptyWeight,
