@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useState } from 'react';
-import { A320Failure, Failure, FailuresOrchestrator } from '@flybywiresim/failures';
+import { A320Failure, Failure, FailuresOrchestrator } from '@failures';
 import { useUpdate } from '@flybywiresim/fbw-sdk';
 
 interface FailuresOrchestratorContext {
