@@ -364,7 +364,7 @@ impl A380AvionicsDataCommunicationNetwork {
     fn update_routing_table(&mut self, network: usize, offset: usize) {
         for (y, row) in self.routing_tables[network].iter_mut().enumerate() {
             for (x, entry) in row.iter_mut().enumerate() {
-                entry.set_reachable(A380AvionicsDataCommunicationNetwork::switches_reachable(
+                entry.set_reachable(Self::switches_reachable(
                     &self.afdx_switches,
                     &self.afdx_networks[network],
                     (y + offset) as u8,
@@ -458,7 +458,7 @@ mod tests {
             }
         }
 
-        fn update(&mut self, _context: &UpdateContext) {
+        fn update(&mut self) {
             self.adcn.update();
         }
 
@@ -483,8 +483,8 @@ mod tests {
             }
         }
 
-        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.update(context);
+        fn update_after_power_distribution(&mut self) {
+            self.update();
         }
     }
     impl SimulationElement for AdcnTestAircraft {
