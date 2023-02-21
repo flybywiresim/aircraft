@@ -65,7 +65,7 @@ export class WaypointEntryUtils {
             return WaypointEntryUtils.parseRunway(place);
         }
 
-        const items = await NavigationDatabaseService.activeDatabase.searchFix(place);
+        const items = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
 
         if (items.length === 0) {
             throw new Error('NOT IN DATABASE');
