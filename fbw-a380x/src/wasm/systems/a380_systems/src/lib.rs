@@ -45,6 +45,7 @@ use systems::{
 };
 
 pub struct A380 {
+    adcn: A380AvionicsDataCommunicationNetwork,
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
@@ -73,12 +74,12 @@ pub struct A380 {
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
-    adcn: A380AvionicsDataCommunicationNetwork,
     cds: A380ControlDisplaySystem,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
         A380 {
+            adcn: A380AvionicsDataCommunicationNetwork::new(context),
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
@@ -117,7 +118,6 @@ impl A380 {
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
-            adcn: A380AvionicsDataCommunicationNetwork::new(context),
             cds: A380ControlDisplaySystem::new(context),
         }
     }
@@ -166,6 +166,7 @@ impl Aircraft for A380 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
+        self.adcn.update();
         self.lgcius.update(
             context,
             &self.landing_gear,
@@ -242,11 +243,11 @@ impl Aircraft for A380 {
 
         self.engines_flex_physics.update(context);
         self.cds.update();
-        self.adcn.update();
     }
 }
 impl SimulationElement for A380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.adcn.accept(visitor);
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
         self.air_conditioning.accept(visitor);
@@ -276,7 +277,6 @@ impl SimulationElement for A380 {
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
-        self.adcn.accept(visitor);
 
         visitor.visit(self);
     }
