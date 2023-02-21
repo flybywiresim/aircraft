@@ -2545,20 +2545,20 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getOrSelectILSsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetILSsByIdent.bind(this.dataManager), ident, callback);
+        this._getOrSelectWaypoints(this.dataManager.GetILSsByIdent.bind(this.dataManager), ident, callback); // TODO port over (fms-v2)
     }
     getOrSelectVORsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
+        this._getOrSelectWaypoints(this.navigationDatabase.searchVor.bind(this.navigationDatabase), ident, callback);
     }
     getOrSelectNDBsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetNDBsByIdent.bind(this.dataManager), ident, callback);
+        this._getOrSelectWaypoints(this.navigationDatabase.searchNdb.bind(this.navigationDatabase), ident, callback);
     }
     getOrSelectNavaidsByIdent(ident, callback) {
         this._getOrSelectWaypoints(this.dataManager.GetNavaidsByIdent.bind(this.dataManager), ident, callback);
     }
 
     getOrSelectWaypointByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.navigationDatabase.searchFix.bind(this.navigationDatabase), ident, callback);
+        this._getOrSelectWaypoints(this.navigationDatabase.searchWaypoint.bind(this.navigationDatabase), ident, callback);
     }
 
     insertWaypoint(newWaypointTo, fpIndex, forAlternate, index, before = false, callback = EmptyCallback.Boolean, bypassTmpy) {

@@ -1,12 +1,12 @@
 class A320_Neo_CDU_SelectWptPage {
     /**
      * @param mcdu
-     * @param waypoints {Array.<import('msfs-navdata').Waypoint>}
+     * @param fixes {Array.<import('msfs-navdata').Fix>}
      * @param callback
      * @param page
      * @constructor
      */
-    static ShowPage(mcdu, waypoints, callback, page = 0) {
+    static ShowPage(mcdu, fixes, callback, page = 0) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.SelectWptPage;
         const rows = [
@@ -33,7 +33,7 @@ class A320_Neo_CDU_SelectWptPage {
             return Avionics.Utils.computeGreatCircleDistance(planeLla, w.location);
         }
 
-        const orderedWaypoints = [...waypoints].sort((a, b) => calculateDistance(a) - calculateDistance(b));
+        const orderedWaypoints = [...fixes].sort((a, b) => calculateDistance(a) - calculateDistance(b));
 
         for (let i = 0; i < 5; i++) {
             const w = orderedWaypoints[i + 5 * page];
@@ -86,7 +86,7 @@ class A320_Neo_CDU_SelectWptPage {
             }
         };
         mcdu.onNextPage = () => {
-            if (page < Math.floor(waypoints.length / 5)) {
+            if (page < Math.floor(fixes.length / 5)) {
                 A320_Neo_CDU_SelectWptPage.ShowPage(mcdu, orderedWaypoints, callback, page + 1);
             }
         };

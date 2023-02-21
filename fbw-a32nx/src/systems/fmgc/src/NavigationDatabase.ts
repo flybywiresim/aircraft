@@ -9,7 +9,7 @@ import {
     Approach,
     ApproachType,
     Database,
-    ExternalBackend,
+    ExternalBackend, Fix,
     MsfsBackend,
     NdbNavaid,
     VhfNavaid,
@@ -48,7 +48,7 @@ export class NavigationDatabase {
         return this.backendDatabase.getAirports([icao]).then((results) => results[0]);
     }
 
-    async searchFix(ident: string): Promise<Waypoint[]> {
+    async searchWaypoint(ident: string): Promise<Waypoint[]> {
         return this.backendDatabase.getWaypoints([ident]);
     }
 
@@ -62,6 +62,10 @@ export class NavigationDatabase {
 
     async searchVor(ident: string): Promise<VhfNavaid[]> {
         return this.backendDatabase.getNavaids([ident]);
+    }
+
+    async searchNdb(ident: string): Promise<NdbNavaid[]> {
+        return this.backendDatabase.getNDBs([ident]);
     }
 
     async searchAirway(ident: string): Promise<Airway[]> {
