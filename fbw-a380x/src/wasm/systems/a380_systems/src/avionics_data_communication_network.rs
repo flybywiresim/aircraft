@@ -60,7 +60,7 @@ impl RoutingTableEntry {
 // A breadth-first-search is used to update the routing table per AFDX switch.
 pub struct A380AvionicsDataCommunicationNetwork {
     afdx_switches: [AvionicsFullDuplexSwitch; 16],
-    afdx_networks: [HashMap<usize, Vec<usize>>; 2],
+    afdx_networks: [HashMap<u8, Vec<u8>>; 2],
     cpio_modules: [CoreProcessingInputOutputModule; 22],
     io_modules: [InputOutputModule; 8],
     routing_tables: [[Vec<RoutingTableEntry>; 8]; 2],
@@ -325,34 +325,35 @@ impl A380AvionicsDataCommunicationNetwork {
 
     fn switches_reachable(
         afdx_switches: &[AvionicsFullDuplexSwitch; 16],
-        network: &HashMap<usize, Vec<usize>>,
-        from: usize,
-        to: usize,
+        network: &HashMap<u8, Vec<u8>>,
+        from: u8,
+        to: u8,
     ) -> bool {
-        let mut frontier: VecDeque<usize> = VecDeque::new();
-        let mut visited: Vec<usize> = Vec::new();
+        let mut frontier: VecDeque<u8> = VecDeque::new();
+        let mut visited: Vec<u8> = Vec::new();
 
-        if !afdx_switches[from].is_available() {
+        if !afdx_switches[from as usize].is_available() {
             return false;
         }
 
-        visited.resize(network.len() * 2, 0xffff);
+        visited.resize(network.len() * 2, 0xff);
         frontier.push_front(from);
-        visited[from] = from;
+        visited[from as usize] = from;
 
         while !frontier.is_empty() {
-            let node = frontier.pop_front();
+            let node = frontier.pop_front().unwrap();
 
-            if node.unwrap() == to {
+            if node == to {
                 return true;
             }
 
-            // TODO check if the switch is available
-            let neighbors = &network[&node.unwrap()];
-            for neighbor in neighbors {
-                if afdx_switches[*neighbor].is_available() && visited[*neighbor] == 0xffff {
-                    visited[*neighbor] = node.unwrap();
-                    frontier.push_back(*neighbor);
+            let neighbors = &network[&node];
+            for &neighbor in neighbors {
+                if afdx_switches[neighbor as usize].is_available()
+                    && visited[neighbor as usize] == 0xff
+                {
+                    visited[neighbor as usize] = node;
+                    frontier.push_back(neighbor);
                 }
             }
         }
@@ -366,8 +367,8 @@ impl A380AvionicsDataCommunicationNetwork {
                 entry.set_reachable(A380AvionicsDataCommunicationNetwork::switches_reachable(
                     &self.afdx_switches,
                     &self.afdx_networks[network],
-                    y + offset,
-                    x + offset,
+                    (y + offset) as u8,
+                    (x + offset) as u8,
                 ));
             }
         }
