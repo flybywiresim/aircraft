@@ -137,7 +137,7 @@ export const Payload = () => {
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
     const totalCargoDesired = useMemo(() => {
         const cargoDesiredWithDelta = (cargoDesired && (cargoDesired.length > 0 ? (cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) / (Number.isNaN(deltaRatioCargo) ? 1 : deltaRatioCargo)) : -1));
-        console.info('cargo desired : %d with %d delta ratio', cargoDesiredWithDelta, Number.isNaN(deltaRatioCargo) ? 1 : deltaRatioCargo);
+        console.info('cargo desired : %d with %.2%% delta ratio', cargoDesiredWithDelta, Number.isNaN(deltaRatioCargo) ? 100 : deltaRatioCargo * 100);
         return (cargoDesiredWithDelta);
     }, [...cargoDesired, ...paxDesired, deltaRatioCargo]);
 
@@ -233,7 +233,8 @@ export const Payload = () => {
             setTotalDeltaPax(tempTotalDelta);
             console.info('pax delta: %d', tempTotalDelta);
             console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
-            const ratioChange = totalCargo === 0 ? 1 : setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight) / totalCargo;
+            const ratioChange = (totalCargoDesired === 0) ? 1 : setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight) / totalCargoDesired;
+            console.info('observed cargo change: %.2f', ratioChange * 100);
             setDeltaRatioCargo(ratioChange);
         }
     };
@@ -345,16 +346,17 @@ export const Payload = () => {
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
         let bagWeight:number;
-        let tempTotalCargo = 0;
+        let tempTotalCargo:number;
         // negative perBagWeigths means random perBagWeights with average of this absolute value
         if (perBagWeight < 0) {
             const maxLuggageWeight = 25;
             const minLuggageWeight = 5;
             const minVariation = 5;
-            const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, -paxBagWeight));
+            const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, -perBagWeight));
             const randomVariations = Math.max(Math.min(maxLuggageWeight - average, average - minLuggageWeight), minVariation);
             // double random to reduce variance and fake a law closer to normal law
             const randomPerBagWeight = average + randomVariations * (Math.random() + Math.random()) / 2;
+            console.info('Average weight:%.1f Kg and max variation %.2f Kg', average, randomVariations);
             bagWeight = numberOfPax * randomPerBagWeight;
             tempTotalCargo = bagWeight + freight;
             console.info('New bag weight:%.1f Kg representing a new total cargo of %d Kg', randomPerBagWeight, tempTotalCargo);
