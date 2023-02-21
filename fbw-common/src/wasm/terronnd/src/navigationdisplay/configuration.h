@@ -30,6 +30,7 @@ static constexpr std::string_view EfisNdLeftMode = "EFIS_L_ND_MODE";
 static constexpr std::string_view EgpwcTerrOnNdLeftActive = "EGPWC_ND_L_TERRAIN_ACTIVE";
 static constexpr std::string_view EgpwcNdRightRange = "EGPWC_ND_R_RANGE";
 static constexpr std::string_view EfisNdRightMode = "EFIS_R_ND_MODE";
+static constexpr std::string_view EgpwcTerrOnNdRenderingMode = "EGPWC_TERRONND_RENDERING_MODE";
 static const std::string LightPotentiometerLeftName = "LIGHT POTENTIOMETER:94";
 static const std::string LightPotentiometerRightName = "LIGHT POTENTIOMETER:95";
 

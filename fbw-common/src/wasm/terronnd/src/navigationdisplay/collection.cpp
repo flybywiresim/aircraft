@@ -21,7 +21,8 @@ Collection::Collection(simconnect::Connection& connection)
   this->_simconnectAircraftStatus->allocateArea(true);
 
   this->_aircraftStatus = connection.lvarObject<EgpwcDestinationLat, EgpwcDestinationLong, EgpwcPresentLat, EgpwcPresentLong,
-                                                Adirs1Altitude, Adirs1TrueHeading, Adirs1VerticalSpeed, EgpwcGearIsDown>();
+                                                EgpwcTerrOnNdRenderingMode, Adirs1Altitude, Adirs1TrueHeading, Adirs1VerticalSpeed,
+                                                EgpwcGearIsDown>();
   this->_aircraftStatus->setUpdateCycleTime(100 * types::millisecond);
   this->_aircraftStatus->setOnChangeCallback([=]() {
     this->_egpwcData.destinationLatitude = types::Arinc429Word<float>::fromSimVar(this->_aircraftStatus->value<EgpwcDestinationLat>());
@@ -32,6 +33,7 @@ Collection::Collection(simconnect::Connection& connection)
     this->_egpwcData.heading = types::Arinc429Word<float>::fromSimVar(this->_aircraftStatus->value<Adirs1TrueHeading>());
     this->_egpwcData.verticalSpeed = types::Arinc429Word<float>::fromSimVar(this->_aircraftStatus->value<Adirs1VerticalSpeed>());
     this->_egpwcData.gearIsDown = static_cast<std::uint8_t>(this->_aircraftStatus->value<EgpwcGearIsDown>()) != 0;
+    this->_egpwcData.terrOnNdRenderingMode = static_cast<std::uint8_t>(this->_aircraftStatus->value<EgpwcTerrOnNdRenderingMode>());
 
     this->_sendAircraftStatus = true;
   });
@@ -139,6 +141,7 @@ void Collection::updateDisplay(FsContext context) {
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveFO =
         static_cast<std::uint8_t>(this->_configurationRight.terrainActive && terrainMapMode);
 
+    this->_simconnectAircraftStatus->data().ndTerrainOnNdRenderingMode = this->_egpwcData.terrOnNdRenderingMode;
     this->_simconnectAircraftStatus->data().groundTruthLatitude = this->_groundTruth.latitude.convert(types::degree);
     this->_simconnectAircraftStatus->data().groundTruthLongitude = this->_groundTruth.longitude.convert(types::degree);
 

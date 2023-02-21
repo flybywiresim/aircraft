@@ -15,7 +15,6 @@ namespace navigationdisplay {
 
 /**
  * @brief A collection of all available ND displays to manage terrain on ND visualizations
- *
  */
 class Collection {
  private:
@@ -28,6 +27,7 @@ class Collection {
     types::Arinc429Word<float> heading;
     types::Arinc429Word<float> verticalSpeed;
     bool gearIsDown;
+    std::uint8_t terrOnNdRenderingMode;
   };
 
   struct GroundTruthPosition {
@@ -51,6 +51,7 @@ class Collection {
                                          EgpwcDestinationLong,
                                          EgpwcPresentLat,
                                          EgpwcPresentLong,
+                                         EgpwcTerrOnNdRenderingMode,
                                          Adirs1Altitude,
                                          Adirs1TrueHeading,
                                          Adirs1VerticalSpeed,
@@ -72,11 +73,11 @@ class Collection {
    * @brief Construct a new Collection object and initializes the communication objects
    * @param connection The connection to SimConnect
    */
-  Collection(simconnect::Connection& connection);
-  Collection(const Collection&) = delete;
+  Collection(simconnect::Connection &connection);
+  Collection(const Collection &) = delete;
   ~Collection();
 
-  Collection& operator=(const Collection&) = delete;
+  Collection &operator=(const Collection &) = delete;
 
   /**
    * @brief Registers a new display for a specific side with a context per gauge
@@ -84,7 +85,8 @@ class Collection {
    * @param context The gauge context
    * @param connection The SimConnect connection
    */
-  void registerDisplay(DisplaySide side, FsContext context, simconnect::Connection& connection);
+  void registerDisplay(DisplaySide side, FsContext context,
+                       simconnect::Connection &connection);
   /**
    * @brief Destroys all displays and temporary instances
    */
@@ -102,7 +104,7 @@ class Collection {
    * @param pDraw The pointer to the gauge draw data object
    * @param context The context of the gauge
    */
-  void renderDisplay(sGaugeDrawData* pDraw, FsContext context);
+  void renderDisplay(sGaugeDrawData *pDraw, FsContext context);
 };
 
-}  // namespace navigationdisplay
+} // namespace navigationdisplay
