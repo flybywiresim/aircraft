@@ -29,7 +29,7 @@ bool ExampleModule::initialize() {
   // Events
   beaconLightSetEventPtr = dataManager->make_event("BEACON_LIGHTS_SET");
   /*    beaconLightSetCallbackID = beaconLightSetEventPtr
-        ->addCallback([&, this](const int number, const DWORD param0, const DWORD param1,
+        ->addKeyEventCallback([&, this](const int number, const DWORD param0, const DWORD param1,
                                 const DWORD param2, const DWORD param3, const DWORD param4) {
           LOG_INFO("Callback: BEACON_LIGHTS_SET event received with " + std::to_string(number)
                    + " params:"
@@ -43,7 +43,7 @@ bool ExampleModule::initialize() {
         });*/
 
   /*    beaconLightSetCallbackID = beaconLightSetEventPtr
-        ->addCallback([&, this](const int number, const DWORD param0, const DWORD param1,
+        ->addKeyEventCallback([&, this](const int number, const DWORD param0, const DWORD param1,
                                 const DWORD param2, const DWORD param3, const DWORD param4) {
           LOG_INFO("Callback 2: BEACON_LIGHTS_SET event received with " + std::to_string(number)
                    + " params:"
@@ -59,7 +59,7 @@ bool ExampleModule::initialize() {
   // Event with Callback example
   toggleFlightDirectorEventPtr = dataManager->make_event("TOGGLE_FLIGHT_DIRECTOR");
   /*    toggleFlightDirectorCallbackID = toggleFlightDirectorEventPtr
-        ->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+        ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
                           DWORD param4) {
           LOG_DEBUG("Callback 1: TOGGLE_FLIGHT_DIRECTOR event received with " + std::to_string(number)
                     + " params:"
@@ -74,7 +74,7 @@ bool ExampleModule::initialize() {
   // Event with Callback example - twice to see multiple callbacks added to a single event
   lightPotentiometerSetEventPtr = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
   /*    lightPotentiometerSetCallbackID = lightPotentiometerSetEventPtr
-        ->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+        ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
                           DWORD param4) {
           LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
                     + " params:"
@@ -89,7 +89,7 @@ bool ExampleModule::initialize() {
 
   lightPotentiometerSetEvent2Ptr = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
   /*    lightPotentiometerSetCallback2ID = lightPotentiometerSetEvent2Ptr
-        ->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+        ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
                           DWORD param4) {
           LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
                     + " params:"
@@ -222,9 +222,27 @@ bool ExampleModule::initialize() {
               << "]" << std::endl;
     std::cout << std::endl;
   });
-  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
+
+  // Key event test
+  [[maybe_unused]] auto keyEventId = dataManager->addKeyEventCallback(
+    KEY_BEACON_LIGHTS_SET,
+    [&, this](DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
+      this->keyEventTest(param0, param1, param2, param3, param4);
+    });
+  [[maybe_unused]] auto keyEventId2 = dataManager->addKeyEventCallback(
+    KEY_BEACON_LIGHTS_SET,
+    [&](DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
+      std::cout << "Callback 2: KEY_BEACON_LIGHTS_SET "
+                << " param0 = " << param0
+                << " param1 = " << param1
+                << " param2 = " << param2
+                << " param3 = " << param3
+                << " param4 = " << param4
+                << std::endl;
+    });
 
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
@@ -301,7 +319,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     // testing removing an event callback
     /*
       if (msfsHandler->getTimeStamp() >= 30 && msfsHandler->getTimeStamp() < 31) {
-        lightPotentiometerSetEvent2Ptr->removeCallback(lightPotentiometerSetCallback2ID);
+        lightPotentiometerSetEvent2Ptr->removeKeyEventCallback(lightPotentiometerSetCallback2ID);
       }
     */
 
@@ -458,6 +476,11 @@ bool ExampleModule::shutdown() {
   isInitialized = false;
   std::cout << "ExampleModule::shutdown()" << std::endl;
   return true;
+}
+
+void ExampleModule::keyEventTest(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
+  std::cout << "ExampleModule::keyEventTest() - param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
+            << " param3 = " << param3 << " param4 = " << param4 << std::endl;
 }
 
 #endif

@@ -87,7 +87,6 @@ set(SOURCES
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/AircraftVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/Event.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/InputEvent.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/KeyEvent.cpp
         src/Gauge_Extra_Backend.cpp
         src/Example/ExampleModule.cpp
         src/LightingPresets/LightingPresets.cpp

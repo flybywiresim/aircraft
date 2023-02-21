@@ -120,6 +120,9 @@ public:
 
 private:
 
+  // key event test function
+  void keyEventTest(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4);
+
   // Fowler-Noll-Vo hash function
   uint64_t fingerPrintFVN(std::vector<BYTE> &data) {
     const uint64_t FNV_offset_basis = 14695981039346656037ULL;

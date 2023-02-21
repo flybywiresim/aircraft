@@ -37,11 +37,26 @@ typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
 typedef std::shared_ptr<Event> EventPtr;
 
+// Used to identify a key event
+typedef unsigned int KeyEventID;
+
+// Used for callback registration to allow removal of callbacks
+typedef uint64_t KeyEventCallbackID;
+
+/**
+ * Defines a callback function for a key event
+ * @param number of parameters to use
+ * @param parameters 0-4 to pass to the callback function
+ */
+typedef std::function<void(
+  DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> KeyEventCallbackFunction;
+
 /**
  * DataManager is responsible for managing all variables and events.
  * It is used to register variables and events and to update them.
  * It de-duplicates variables and events and only creates one instance of each if multiple modules
  * use the same variable.
+ *
  * It is still possible to use the SDK and Simconnect directly but it is recommended to use the
  * DataManager instead as the data manager is able to de-duplicate variables and events and automatically
  * update and write back variables from/to the sim.
@@ -62,6 +77,9 @@ private:
   // Map over the event id to quickly find the event - make creating an event a bit less efficient.
   std::map<SIMCONNECT_CLIENT_EVENT_ID, EventPtr> events{};
 
+  // Map of callback vectors to be called when a key event is triggered in the sim.
+  std::map<KeyEventID , std::map<KeyEventCallbackID, KeyEventCallbackFunction>> keyEventCallbacks{};
+
   // Backreference to the MsfsHandler instance.
   MsfsHandler* msfsHandler;
 
@@ -76,6 +94,7 @@ private:
   IDGenerator dataReqIDGen{};
   IDGenerator clientDataIDGen{};
   IDGenerator eventIDGen{};
+  IDGenerator keyEventCallbackIDGen{};
 
 public:
 
@@ -137,9 +156,54 @@ public:
    */
   void getRequestedData();
 
+  /**
+   * Adds a callback function to be called when a key event is triggered in the sim.<br/>
+   * OBS: The callback will be called even if the sim is paused.
+   * @param keyEventId The ID of the key event to listen to.
+   * @param callback
+   * @return The ID of the callback required for removing a callback.
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
+   * @see #define KEY_events in gauges.h.
+   */
+  [[nodiscard]]
+  KeyEventCallbackID addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction &callback);
+
+  /**
+   * Removes a callback from a key event.
+   * @param keyEventId The ID of the key event to remove the callback from.
+   * @param callbackId The ID receive when adding the callback.
+   */
+  bool removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId);
+
+  /**
+   * Sends a key event to the sim.
+   * @param keyEventId The ID of the key event to send.
+   * @param param0
+   * @param param1
+   * @param param2
+   * @param param3
+   * @param param4
+   * @return true if successful, false otherwise
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
+   * @see #define KEY_events in gauges.h.
+   */
+  bool sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4);
+
+  /**
+   * TODO: Implement and document
+   *
+   * Is called by the MsfsHandler when a key event is triggered in the sim.
+   * @param event
+   * @param evdata0
+   * @param evdata1
+   * @param evdata2
+   * @param evdata3
+   * @param evdata4
+   * @param userdata
+   */
   [[maybe_unused]]
-  void processKeyEvent(ID32 event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2,
-                       UINT32 evdata3, UINT32 evdata4, PVOID userdata);
+  void processKeyEvent(KeyEventID event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2,
+                       UINT32 evdata3, UINT32 evdata4, PVOID unused);
 
   /**
    * Creates a new named variable and adds it to the list of managed variables

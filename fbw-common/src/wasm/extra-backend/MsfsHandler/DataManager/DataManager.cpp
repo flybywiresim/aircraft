@@ -127,38 +127,6 @@ void DataManager::getRequestedData() {
   }
 }
 
-void DataManager::processKeyEvent(
-  [[maybe_unused]] ID32 event,
-  [[maybe_unused]] UINT32 evdata0,
-  [[maybe_unused]] UINT32 evdata1,
-  [[maybe_unused]] UINT32 evdata2,
-  [[maybe_unused]] UINT32 evdata3,
-  [[maybe_unused]] UINT32 evdata4,
-  [[maybe_unused]] PVOID userdata) {
-
-  // TODO: Implement a key event class and a have key_events register themselves with the data manager
-  //  Similar to normal Events
-
-  //  if (event == KEY_BEACON_LIGHTS_SET) {
-  //    LOG_INFO("KeyEvent received: KEY_BEACON_LIGHTS_SET " + std::to_string(event) + " evdata0=" + std::to_string(evdata0) +
-  //             " evdata1=" + std::to_string(evdata1) + " evdata2=" + std::to_string(evdata2) +
-  //             " evdata3=" + std::to_string(evdata3) + " evdata4=" + std::to_string(evdata4)
-  //             + " userdata=" + std::to_string((UINT64) userdata));
-  //  }
-
-  //  if (event == KEY_TUG_HEADING) {
-  //    LOG_INFO("KeyEvent received: KEY_TUG_HEADING " + std::to_string(event) + " evdata0=" + std::to_string(evdata0) +
-  //             " evdata1=" + std::to_string(evdata1) + " evdata2=" + std::to_string(evdata2) +
-  //             " evdata3=" + std::to_string(evdata3) + " evdata4=" + std::to_string(evdata4)
-  //             + " userdata=" + std::to_string((UINT64) userdata));
-  //  }
-
-  //  LOG_INFO("Key event=" + std::to_string(event) + " evdata0=" + std::to_string(evdata0) +
-  //           " evdata1=" + std::to_string(evdata1) + " evdata2=" + std::to_string(evdata2) +
-  //           " evdata3=" + std::to_string(evdata3) + " evdata4=" + std::to_string(evdata4)
-  //           + " userdata=" + std::to_string((UINT64) userdata));
-}
-
 NamedVariablePtr DataManager::make_named_var(const std::string varName,
                                              Unit unit,
                                              bool autoReading,
@@ -308,6 +276,61 @@ EventPtr DataManager::make_event(
 
   LOG_DEBUG("DataManager::make_event(): created event " + event->str());
   return event;
+}
+
+KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction &callback) {
+  auto id = keyEventCallbackIDGen.getNextId();
+  if (!keyEventCallbacks.contains(keyEventId)) {
+    keyEventCallbacks.insert({keyEventId, {{id, callback}}});
+  }
+  else {
+    keyEventCallbacks[keyEventId].insert({id, callback});
+  }
+  LOG_DEBUG("Added callback to key event " + std::to_string(keyEventId) + " with ID " + std::to_string(id)
+            + " and " + std::to_string(keyEventCallbacks[keyEventId].size()) + " callbacks");
+  return id;
+}
+
+bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId) {
+  if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
+    if (auto callbackPair = eventPair->second.find(keyEventId); callbackPair != eventPair->second.end()) {
+      eventPair->second.erase(callbackPair);
+      LOG_DEBUG("Removed callback from key event " + std::to_string(keyEventId) + " with ID " + std::to_string(callbackId)
+                + " and " + std::to_string(eventPair->second.size()) + " callbacks left");
+      if (eventPair->second.empty()) {
+        keyEventCallbacks.erase(eventPair);
+      }
+      return true;
+    }
+  }
+  LOG_WARN("Failed to remove callback from key event" + std::to_string(keyEventId) + "with ID " + std::to_string(callbackId));
+  return false;
+}
+
+bool DataManager::sendKeyEvent(KeyEventID keyEventId,
+                               DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
+  auto result = trigger_key_event_EX1(keyEventId, param0, param1, param2, param3, param4);
+  if (result == 0) {
+    LOG_DEBUG("Sent key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", "
+              + std::to_string(param1) + ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", "
+              + std::to_string(param4));
+    return true;
+  }
+  LOG_WARN("Failed to send key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", "
+           + std::to_string(param1) + ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", "
+           + std::to_string(param4) + " with error code " + std::to_string(result));
+  return false;
+}
+
+void DataManager::processKeyEvent(
+  KeyEventID keyEventId,
+  UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4,
+  PVOID unused) {
+  if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
+    for (auto &callbackPair: eventPair->second) {
+      callbackPair.second(evdata0, evdata1, evdata2, evdata3, evdata4);
+    }
+  }
 }
 
 // =================================================================================================
