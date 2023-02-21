@@ -69,14 +69,8 @@ export const Payload = () => {
     const paxDesired = [paxADesired, paxBDesired, paxCDesired, paxDDesired];
     const [setPaxDesired] = useState([setPaxADesired, setPaxBDesired, setPaxCDesired, setPaxDDesired]);
 
-    const totalPaxDesired = useMemo(() => {
-        if (!boardingStarted) {
-            const tempTotalPaxDesired = paxDesired.reduce((a, b) => parseInt(a) + parseInt(b));
-            console.info('pax desired : %d', tempTotalPaxDesired);
-            return (paxDesired && paxDesired.length > 0 && tempTotalPaxDesired);
-        }
-        return (totalPaxDesired === undefined) ? 0 : totalCargoDesired;
-    }, [...paxDesired, boardingStarted]);
+    const totalPaxDesired = useMemo(() => ((paxDesired && paxDesired.length > 0) ? paxDesired.reduce((a, b) => a + b) : -1), [paxDesired]);
+    const [totalPaxDesiredDisplayed, setTotalPaxDesiredDisplayed] = useState<number>(0);
 
     const [aFlagsDesired, setAFlagsDesired] = useBitFlags('PAX_FLAGS_A_DESIRED');
     const [bFlagsDesired, setBFlagsDesired] = useBitFlags('PAX_FLAGS_B_DESIRED');
@@ -124,33 +118,10 @@ export const Payload = () => {
     }, [chancesOfMissedConnection, payloadDeltaRealism]);
 
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
-
-    const cargoDesiredDisplayed = useMemo(() => {
-        if (!boardingStarted) {
-            for (let station = 0; station < cargoDesired.length; station++) {
-                // console.info('station %d: cargoDesired: %d, cargoDelta: %d', station, cargoDesired[station], cargoDelta[station]);
-                console.info('cargo %d\'s display:%d', station, cargoDesired[station]);
-            }
-            return cargoDesired;
-        }
-        if (cargoDesiredDisplayed !== undefined) return cargoDesiredDisplayed;
-        const tempCargoDisplay = new Array(cargoDesired.length);
-        for (let station = 0; station < tempCargoDisplay.length; station++) {
-            tempCargoDisplay[station] = 0;
-        }
-        return tempCargoDisplay;
-    }, [...cargoDesired, boardingStarted]);
+    const [totalCargoDesiredDisplayed, setTotalCargoDesiredDisplayed] = useState<number>(0);
 
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
-    const totalCargoDesired = useMemo(() => {
-        if (!boardingStarted) {
-            const tempCargoDesired = cargoDesired && cargoDesired.length > 0 ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1;
-            console.info('cargo desired : %d Kg', tempCargoDesired);
-            return (tempCargoDesired);
-        }
-        if (totalCargoDesired !== undefined) return totalCargoDesired;
-        return 0;
-    }, [...cargoDesired, ...paxDesired, boardingStarted]);
+    const totalCargoDesired = useMemo(() => (cargoDesired && cargoDesired.length > 0 ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1), [...cargoDesired, ...paxDesired]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
 
@@ -242,8 +213,8 @@ export const Payload = () => {
             }
             console.info('pax delta: %d', tempTotalDelta);
             console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
-            const ratioChange = (totalCargoDesired === 0) ? 1 : setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight) / totalCargoDesired;
-            console.info('observed cargo change: %.2f', ratioChange * 100);
+            const newCargo = setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight);
+            console.info('observed cargo change: %.2f Kg', newCargo - totalCargoDesired);
         }
     };
 
@@ -469,7 +440,7 @@ export const Payload = () => {
         setTimeout(() => setClicked(false), 500);
     }, [
         totalPaxDesired, paxBagWeight,
-        totalCargoDesired, totalPaxDesired,
+        totalCargoDesired,
         ...cargoDesired, ...paxDesired,
         ...desiredFlags, ...stationSize,
     ]);
@@ -512,7 +483,7 @@ export const Payload = () => {
         const estimatedCargoLoadingSeconds = (differentialCargo / cargoWeightPerWeightStep) * boardingRateMultiplier;
 
         return Math.max(estimatedPaxBoardingSeconds, estimatedCargoLoadingSeconds);
-    }, [totalPaxDesired, totalPax, totalCargoDesired, totalCargo, boardingRate]);
+    }, [totalPaxDesiredDisplayed, totalPax, totalCargoDesiredDisplayed, totalCargo, boardingRate]);
 
     const boardingStatusClass = useMemo(() => {
         if (!boardingStarted) {
@@ -655,6 +626,8 @@ export const Payload = () => {
     useEffect(() => {
         // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
+            setTotalPaxDesiredDisplayed(totalPaxDesired);
+            setTotalCargoDesiredDisplayed(totalCargoDesired);
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
         }
@@ -823,7 +796,7 @@ export const Payload = () => {
                 <div className="mb-10">
                     <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} />
                 </div>
-                <CargoWidget cargo={cargo} cargoDesired={cargoDesiredDisplayed} cargoMap={cargoMap} cargoStationSize={cargoStationSize} onClickCargo={onClickCargo} />
+                <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationSize} onClickCargo={onClickCargo} />
 
                 <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
                     <div className="flex flex-col flex-grow pr-24">
@@ -854,7 +827,7 @@ export const Payload = () => {
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxPax > 0 ? maxPax : 999}
-                                                            value={totalPaxDesired}
+                                                            value={totalPaxDesiredDisplayed}
                                                             onBlur={(x) => {
                                                                 if (!Number.isNaN(parseInt(x) || parseInt(x) === 0)) {
                                                                     setTargetPax(parseInt(x));
@@ -882,7 +855,7 @@ export const Payload = () => {
                                                         <PayloadValueInput
                                                             min={0}
                                                             max={maxCargo > 0 ? Math.round(maxCargo) : 99999}
-                                                            value={totalCargoDesired}
+                                                            value={totalCargoDesiredDisplayed}
                                                             onBlur={(x) => {
                                                                 if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) {
                                                                     setTargetCargo(0, parseInt(x));
