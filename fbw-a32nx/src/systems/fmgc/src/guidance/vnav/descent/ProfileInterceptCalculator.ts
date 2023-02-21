@@ -2,7 +2,14 @@ import { VerticalCheckpoint } from '@fmgc/guidance/vnav/profile/NavGeometryProfi
 import { MathUtils } from '@shared/MathUtils';
 
 export class ProfileInterceptCalculator {
-    static calculateIntercept(checkpoints1: VerticalCheckpoint[], checkpoints2: VerticalCheckpoint[], offset: NauticalMiles = 0): NauticalMiles | null {
+    /**
+     * Calculate where two checkpoint sequences intersect.
+     * @param checkpoints1 The first sequence of checkpoints.
+     * @param checkpoints2 The second sequence of checkpoints.
+     * @param offset The distance from the start of the second sequence to the start of the first sequence.
+     * @returns A tuple of the index of the first checkpoint in the first sequence and the distance from the start of the first sequence to the intersection point.
+     */
+    static calculateIntercept(checkpoints1: VerticalCheckpoint[], checkpoints2: VerticalCheckpoint[], offset: NauticalMiles = 0): [number, NauticalMiles | null] {
         for (let i = 0; i < checkpoints1.length - 1; i++) {
             const c1Start = checkpoints1[i];
             const c1End = checkpoints1[i + 1];
@@ -17,11 +24,11 @@ export class ProfileInterceptCalculator {
                 );
 
                 if (intersection) {
-                    return intersection[0];
+                    return [i, intersection[0]];
                 }
             }
         }
 
-        return null;
+        return [-1, null];
     }
 }

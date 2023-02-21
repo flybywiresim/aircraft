@@ -130,7 +130,6 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         public guidanceControler: GuidanceController,
         private constraintReader: ConstraintReader,
         private atmosphericConditions: AtmosphericConditions,
-        public waypointCount: number,
     ) {
         super();
     }

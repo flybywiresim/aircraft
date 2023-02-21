@@ -180,14 +180,14 @@ export class CruisePathBuilder {
         );
     }
 
-    getFinalCruiseAltitude(profile: BaseGeometryProfile): Feet {
+    getFinalCruiseAltitude(cruiseSteps: GeographicCruiseStep[]): Feet {
         const { cruiseAltitude } = this.computationParametersObserver.get();
 
-        if (profile.cruiseSteps.length === 0) {
+        if (cruiseSteps.length === 0) {
             return cruiseAltitude;
         }
 
-        return profile.cruiseSteps[profile.cruiseSteps.length - 1].toAltitude;
+        return cruiseSteps[cruiseSteps.length - 1].toAltitude;
     }
 
     private getClimbThrustN1Limit(atmosphericConditions: AtmosphericConditions, altitude: Feet, speed: Knots) {

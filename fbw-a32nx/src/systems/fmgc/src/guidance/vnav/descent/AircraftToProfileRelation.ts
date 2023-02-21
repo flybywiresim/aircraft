@@ -24,10 +24,9 @@ export class AircraftToDescentProfileRelation {
 
     updateProfile(profile: NavGeometryProfile) {
         const topOfDescent = profile?.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
-        const lastPosition = profile?.findVerticalCheckpoint(VerticalCheckpointReason.PresentPosition) ?? profile.checkpoints[0];
         const geometricPathStart = profile?.findVerticalCheckpoint(VerticalCheckpointReason.GeometricPathStart);
 
-        const isProfileValid = !!topOfDescent && !!lastPosition && !!geometricPathStart;
+        const isProfileValid = !!topOfDescent && !!geometricPathStart;
 
         if (!isProfileValid) {
             this.invalidate();
@@ -44,9 +43,6 @@ export class AircraftToDescentProfileRelation {
 
         this.topOfDescent = topOfDescent;
         this.geometricPathStart = geometricPathStart;
-
-        // TODO: Remove this
-        profile.checkpoints = profile.checkpoints.filter(({ reason }) => reason !== VerticalCheckpointReason.PresentPosition);
 
         this.currentProfile = profile;
         this.totalFlightPlanDistance = profile.totalFlightPlanDistance;

@@ -14,7 +14,6 @@ import { LateralMode } from '@shared/autopilot';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { TimeUtils } from '@fmgc/utils/TimeUtils';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
@@ -163,39 +162,6 @@ export class PseudoWaypoints implements GuidanceComponent {
                 displayedOnMcdu: false,
                 displayedOnNd: true,
             });
-        }
-
-        // Time Markers
-        for (const [time, prediction] of this.guidanceController.vnavDriver.timeMarkers.entries()) {
-            if (!this.guidanceController.vnavDriver.isLatAutoControlActive() || !prediction) {
-                continue;
-            }
-
-            const position = this.pointFromEndOfPath(geometry, wptCount, totalDistance - prediction.distanceFromStart, `TIME ${time}`);
-
-            if (position) {
-                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = position;
-
-                const ident = TimeUtils.formatSeconds(time);
-
-                newPseudoWaypoints.push({
-                    ident,
-                    alongLegIndex,
-                    distanceFromLegTermination,
-                    efisSymbolFlag: NdSymbolTypeFlags.PwpTimeMarker,
-                    efisSymbolLla,
-                    distanceFromStart: prediction.distanceFromStart,
-                    displayedOnMcdu: true,
-                    mcduIdent: `(${TimeUtils.formatSeconds(time, false)})`,
-                    mcduHeader: '{white}{big}(UTC){end}{end}',
-                    // TODO: Use `formatFlightPlanInfo` for this.
-                    flightPlanInfo: {
-                        ...prediction,
-                        distanceFromLastFix: PseudoWaypoints.computePseudoWaypointDistanceFromFix(geometry.legs.get(alongLegIndex), distanceFromLegTermination),
-                    },
-                    displayedOnNd: true,
-                });
-            }
         }
 
         if (VnavConfig.DEBUG_PROFILE || VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {

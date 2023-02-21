@@ -15,8 +15,10 @@ export interface VerticalProfileComputationParameters {
     fcuVerticalSpeed: FeetPerMinute,
     fcuFlightPathAngle: Degrees,
     fcuSpeed: Knots | Mach,
+    fcuSpeedManaged: boolean,
     fcuArmedLateralMode: ArmedLateralMode,
     fcuArmedVerticalMode: ArmedVerticalMode,
+    fcuExpediteModeActive: boolean,
     qnhSettingMillibar: Millibar,
 
     managedClimbSpeed: Knots,
@@ -70,9 +72,11 @@ export class VerticalProfileComputationParametersObserver {
             fcuLateralMode: SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum'),
             fcuVerticalSpeed: SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'Feet per minute'),
             fcuFlightPathAngle: SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degrees'),
+            fcuSpeedManaged: SimVar.GetSimVarValue('L:A32NX_FCU_SPD_MANAGED_DOT', 'number'),
             fcuSpeed: SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number'),
             fcuArmedLateralMode: SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'number'),
             fcuArmedVerticalMode: SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_ARMED', 'number'),
+            fcuExpediteModeActive: SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number'),
             qnhSettingMillibar: Simplane.getPressureValue('millibar'),
 
             managedClimbSpeed: this.fmgc.getManagedClimbSpeed(),

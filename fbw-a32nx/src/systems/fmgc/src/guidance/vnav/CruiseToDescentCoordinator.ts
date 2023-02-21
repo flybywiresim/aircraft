@@ -74,7 +74,7 @@ export class CruiseToDescentCoordinator {
             }
 
             // Geometric and idle
-            this.descentPathBuilder.computeManagedDescentPath(descentPath, profile, speedProfile, descentWinds, this.cruisePathBuilder.getFinalCruiseAltitude(profile));
+            this.descentPathBuilder.computeManagedDescentPath(descentPath, profile, speedProfile, descentWinds, this.cruisePathBuilder.getFinalCruiseAltitude(profile.cruiseSteps));
 
             if (descentPath.lastCheckpoint.reason !== VerticalCheckpointReason.TopOfDescent) {
                 console.error('[FMS/VNAV] Approach path did not end in T/D. Discarding descent profile.');
@@ -90,10 +90,10 @@ export class CruiseToDescentCoordinator {
                     return;
                 } if (startingPoint.reason === VerticalCheckpointReason.TopOfClimb) {
                     // Flight plan too short
-                    const climbDescentInterceptDistance = ProfileInterceptCalculator.calculateIntercept(profile.checkpoints, descentPath.checkpoints);
+                    const [index, climbDescentInterceptDistance] = ProfileInterceptCalculator.calculateIntercept(profile.checkpoints, descentPath.checkpoints);
 
                     // If we somehow don't find an intercept between climb and descent path, just build the cruise path until end of the path
-                    if (!climbDescentInterceptDistance) {
+                    if (index < 0) {
                         cruisePath = this.cruisePathBuilder.computeCruisePath(
                             profile, startingPoint, descentPath.at(0).distanceFromStart, stepClimbStrategy, stepDescentStrategy, speedProfile, cruiseWinds,
                         );
