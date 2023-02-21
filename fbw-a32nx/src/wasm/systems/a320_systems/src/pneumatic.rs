@@ -1484,8 +1484,8 @@ mod tests {
         }
     }
     impl AdirsToAirCondInterface for TestAdirs {
-        fn ground_speed(&self, _adiru_number: usize) -> Velocity {
-            self.ground_speed
+        fn ground_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            Arinc429Word::new(self.ground_speed, SignStatus::NormalOperation)
         }
         fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
             Arinc429Word::new(Velocity::new::<knot>(0.), SignStatus::NoComputedData)

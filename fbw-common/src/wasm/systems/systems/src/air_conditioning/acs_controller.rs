@@ -90,7 +90,10 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         lgciu: [&impl LgciuWeightOnWheels; 2],
         trim_air_system: &TrimAirSystem<ZONES, ENGINES>,
     ) {
-        self.aircraft_state = self.aircraft_state.update(context, adirs, &engines, lgciu);
+        let ground_speed = self.ground_speed(adirs).unwrap_or_default();
+        self.aircraft_state = self
+            .aircraft_state
+            .update(context, ground_speed, &engines, lgciu);
 
         let operation_mode = self.operation_mode_determination();
 
@@ -141,6 +144,20 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
             ACSCActiveComputer::Secondary
         } else {
             ACSCActiveComputer::None
+        }
+    }
+
+    fn ground_speed(&self, adirs: &impl AdirsToAirCondInterface) -> Option<Velocity> {
+        // TODO: Verify ADIRU check order
+        let mut adiru_check_order = [1, 2, 3].iter();
+        loop {
+            let adiru_number = adiru_check_order.next().unwrap_or(&99_usize);
+            if adiru_number == &99_usize {
+                return None;
+            }
+            if let Some(data) = adirs.ground_speed(*adiru_number).normal_value() {
+                return Some(data);
+            }
         }
     }
 
@@ -231,17 +248,21 @@ impl AirConditioningStateManager {
     fn update(
         mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsToAirCondInterface,
+        ground_speed: Velocity,
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> Self {
         self = match self {
             AirConditioningStateManager::Initialisation(val) => val.step(lgciu),
             AirConditioningStateManager::OnGround(val) => val.step(engines, lgciu),
-            AirConditioningStateManager::BeginTakeOff(val) => val.step(context, adirs, engines),
+            AirConditioningStateManager::BeginTakeOff(val) => {
+                val.step(context, ground_speed, engines)
+            }
             AirConditioningStateManager::EndTakeOff(val) => val.step(context, lgciu),
             AirConditioningStateManager::InFlight(val) => val.step(engines, lgciu),
-            AirConditioningStateManager::BeginLanding(val) => val.step(context, adirs, engines),
+            AirConditioningStateManager::BeginLanding(val) => {
+                val.step(context, ground_speed, engines)
+            }
             AirConditioningStateManager::EndLanding(val) => val.step(context),
         };
         self
@@ -338,11 +359,11 @@ impl AirConditioningState<BeginTakeOff> {
     fn step(
         self: AirConditioningState<BeginTakeOff>,
         context: &UpdateContext,
-        adirs: &impl AdirsToAirCondInterface,
+        ground_speed: Velocity,
         engines: &[&impl EngineCorrectedN1],
     ) -> AirConditioningStateManager {
         if (AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && adirs.ground_speed(1).get::<knot>()
+            && ground_speed.get::<knot>()
                 > AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
@@ -404,11 +425,11 @@ impl AirConditioningState<BeginLanding> {
     fn step(
         self: AirConditioningState<BeginLanding>,
         context: &UpdateContext,
-        adirs: &impl AdirsToAirCondInterface,
+        ground_speed: Velocity,
         engines: &[&impl EngineCorrectedN1],
     ) -> AirConditioningStateManager {
         if (!AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && adirs.ground_speed(1).get::<knot>()
+            && ground_speed.get::<knot>()
                 < AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
@@ -1145,8 +1166,8 @@ mod acs_controller_tests {
         }
     }
     impl AdirsToAirCondInterface for TestAdirs {
-        fn ground_speed(&self, __adiru_number: usize) -> Velocity {
-            self.ground_speed
+        fn ground_speed(&self, __adiru_number: usize) -> Arinc429Word<Velocity> {
+            Arinc429Word::new(self.ground_speed, SignStatus::NormalOperation)
         }
         fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
             Arinc429Word::new(Velocity::new::<knot>(0.), SignStatus::NoComputedData)

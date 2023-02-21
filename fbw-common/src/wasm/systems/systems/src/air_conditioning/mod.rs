@@ -57,8 +57,7 @@ pub trait OutletAir {
 }
 
 pub trait AdirsToAirCondInterface {
-    // TODO: Receive ground speed as Arinc word
-    fn ground_speed(&self, adiru_number: usize) -> Velocity;
+    fn ground_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure>;
     fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure>;

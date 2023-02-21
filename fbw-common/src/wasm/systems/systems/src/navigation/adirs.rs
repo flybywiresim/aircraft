@@ -444,7 +444,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
     }
 }
 impl AdirsToAirCondInterface for AirDataInertialReferenceSystem {
-    fn ground_speed(&self, adiru_number: usize) -> Velocity {
+    fn ground_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
         self.adirus[adiru_number - 1].ground_speed()
     }
     fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
@@ -601,7 +601,7 @@ impl AirDataInertialReferenceUnit {
         self.low_speed_warning_4_260kts
     }
 
-    fn ground_speed(&self) -> Velocity {
+    fn ground_speed(&self) -> Arinc429Word<Velocity> {
         self.ir.ground_speed()
     }
 
@@ -1653,8 +1653,8 @@ impl InertialReference {
         !self.extreme_latitude
     }
 
-    fn ground_speed(&self) -> Velocity {
-        self.ground_speed.value()
+    fn ground_speed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(self.ground_speed.value(), self.ground_speed.ssm())
     }
 }
 impl SimulationElement for InertialReference {
