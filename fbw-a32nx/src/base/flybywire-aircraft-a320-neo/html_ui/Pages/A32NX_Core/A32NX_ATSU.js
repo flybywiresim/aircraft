@@ -138,10 +138,10 @@ const insertUplink = (mcdu) => {
     mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
             if (originTransAlt > 0) {
-                mcdu.flightPlanManager.setOriginTransitionAltitude(originTransAlt, true);
+                mcdu.flightPlanService.active.performanceData.databaseTransitionAltitude.set(originTransAlt);
             }
             if (destinationTransLevel > 0) {
-                mcdu.flightPlanManager.setDestinationTransitionLevel(destinationTransLevel / 100, true);
+                mcdu.flightPlanService.active.performanceData.databaseTransitionLevel.set(destinationTransLevel / 100);
             }
 
             await mcdu.tryUpdateAltDestination(alternateIcao);
