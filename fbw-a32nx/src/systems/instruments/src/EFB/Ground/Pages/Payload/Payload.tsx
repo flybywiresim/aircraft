@@ -99,10 +99,7 @@ export const Payload = () => {
     const [aftBagDesired, setAftBagDesired] = useSimVar('L:A32NX_CARGO_AFT_BAGGAGE_DESIRED', 'Number', 200);
     const [aftBulkDesired, setAftBulkDesired] = useSimVar('L:A32NX_CARGO_AFT_BULK_LOOSE_DESIRED', 'Number', 200);
 
-    const [fwdBagDelta, setFwdBagDelta] = useState<number>(0);
-    const [aftContDelta, setAftContDelta] = useState<number>(0);
-    const [aftBagDelta, setAftBagDelta] = useState<number>(0);
-    const [aftBulkDelta, setAftBulkDelta] = useState<number>(0);
+    const [deltaRatioCargo, setDeltaRatioCargo] = useState<number>(1);
 
     const chancesOfMissedConnection = useMemo(() => {
         console.info('payloadDeltaRealism:%s chances of connections:%.2f%%', payloadDeltaRealism, 100 * (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.1 : 0));
@@ -126,26 +123,23 @@ export const Payload = () => {
     }, [chancesOfMissedConnection, payloadDeltaRealism]);
 
     const cargoDesired = [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired];
-    const cargoDelta = [fwdBagDelta, aftContDelta, aftBagDelta, aftBulkDelta];
-    const totalDeltaCargo = useMemo(() => ((cargoDelta && cargoDelta.length > 0) ? cargoDelta.reduce((a, b) => a + b) : -1), [...cargoDelta]);
 
     const cargoDesiredDisplayed = useMemo(() => {
         const tempCargoDisplay = new Array(cargoDesired.length);
         for (let station = 0; station < tempCargoDisplay.length; station++) {
             // console.info('station %d: cargoDesired: %d, cargoDelta: %d', station, cargoDesired[station], cargoDelta[station]);
-            tempCargoDisplay[station] = cargoDesired[station] - cargoDelta[station];
+            tempCargoDisplay[station] = cargoDesired[station] * deltaRatioCargo;
             if (Number.isNaN(tempCargoDisplay[station])) tempCargoDisplay[station] = 0;
             console.info('cargo %d\'s display:%d', station, tempCargoDisplay[station]);
         }
         return tempCargoDisplay;
-    }, [...cargoDesired, ...cargoDelta]);
+    }, [...cargoDesired, deltaRatioCargo]);
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
-    const setCargoDelta = useMemo(() => [setFwdBagDelta, setAftContDelta, setAftBagDelta, setAftBulkDelta], []);
     const totalCargoDesired = useMemo(() => {
-        const cargoDesiredWithDelta = ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1) + (Number.isNaN(totalDeltaCargo) ? 0 : totalDeltaCargo);
-        console.info('cargo desired : %d with %d delta', cargoDesiredWithDelta, Number.isNaN(totalDeltaCargo) ? 0 : totalDeltaCargo);
+        const cargoDesiredWithDelta = ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => parseInt(a) + parseInt(b)) : -1) + (Number.isNaN(deltaRatioCargo) ? 1 : totalCargoDesired * deltaRatioCargo);
+        console.info('cargo desired : %d with %d delta', cargoDesiredWithDelta, Number.isNaN(deltaRatioCargo) ? 1 : totalCargoDesired * deltaRatioCargo);
         return (cargoDesiredWithDelta);
-    }, [...cargoDesired, ...paxDesired, totalDeltaCargo]);
+    }, [...cargoDesired, ...paxDesired, deltaRatioCargo]);
 
     const [cargoStationSize, setCargoStationLen] = useState<number[]>([]);
 
@@ -238,7 +232,8 @@ export const Payload = () => {
             }
             setTotalDeltaPax(tempTotalDelta);
             console.info('pax delta: %d', tempTotalDelta);
-            deltaTargetPaxCargo(tempTotalDelta);
+            console.info('Setting cargo to pax:%d, freight:%d, random bag weight around:%.1f Kg', totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), paxBagWeight);
+            setDeltaRatioCargo(setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargo - totalPaxDesired * paxBagWeight), -paxBagWeight));
         }
     };
 
@@ -347,70 +342,24 @@ export const Payload = () => {
         fillStation(0, 1, paxRemaining);
     }, [...paxDesired, totalPaxDesired, maxPax, ...stationSize, ...seatMap]);
 
-    const deltaTargetPaxCargo = (paxCargoDelta : number) => {
-        const numberPaxCargo : number[] = new Array(cargoDesired.length);
-        const numberPaxCargoMax : number[] = new Array(cargoDesired.length);
-        let totalNumberPaxCargoPlanned : number = 0;
-        let totalDeltaCargo = 0;
-        let totalPaxCargoMax = 0;
-        if (paxBagWeight > 0) {
-            const tempDeltaCargo = new Array(cargoDesired.length);
-            for (let station = cargoDesired.length - 1; station >= 0; station--) {
-                numberPaxCargo[station] = Math.floor(cargoDesired[station] / paxBagWeight);
-                numberPaxCargoMax[station] = Math.floor(cargoStationSize[station] / paxBagWeight);
-                totalPaxCargoMax += numberPaxCargoMax[station];
-                totalNumberPaxCargoPlanned += numberPaxCargo[station];
-                tempDeltaCargo[station] = 0;
-                // fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
-            }
-            const paxCargoDeltaPossible = Math.min(totalPaxCargoMax - totalNumberPaxCargoPlanned, Math.max(paxCargoDelta, -totalNumberPaxCargoPlanned));
-            console.info('Attempting delta luggages: %d', paxCargoDeltaPossible);
-
-            if (paxCargoDelta < 0) {
-                for (let i = 0; i < -paxCargoDeltaPossible; i++) {
-                    const pickedSlot = Math.floor(Math.random() * totalNumberPaxCargoPlanned);
-                    let countMin : number = 0;
-                    for (let station = cargoDesired.length - 1; station >= 0; station--) {
-                        if (pickedSlot >= countMin && pickedSlot < countMin + numberPaxCargo[station]) {
-                            tempDeltaCargo[station] -= paxBagWeight;
-                            numberPaxCargo[station] -= 1;
-                            totalNumberPaxCargoPlanned -= 1;
-                            totalDeltaCargo -= paxBagWeight;
-                            break;
-                        }
-                        countMin += numberPaxCargo[station];
-                    }
-                }
-            } else if (paxCargoDelta > 0) {
-                for (let i = 0; i < paxCargoDeltaPossible; i++) {
-                    const pickedSlot = Math.floor(Math.random() * (totalPaxCargoMax - totalNumberPaxCargoPlanned));
-                    let countMin : number = 0;
-                    for (let station = cargoDesired.length - 1; station >= 0; station--) {
-                        const freePaxCargo = numberPaxCargoMax[station] - numberPaxCargo[station];
-                        if (pickedSlot >= countMin && pickedSlot < countMin + freePaxCargo) {
-                            tempDeltaCargo[station] += paxBagWeight;
-                            numberPaxCargo[station] += 1;
-                            totalNumberPaxCargoPlanned += 1;
-                            totalDeltaCargo += paxBagWeight;
-                            break;
-                        }
-                        countMin += freePaxCargo;
-                    }
-                }
-            }
-            for (let station = cargoDesired.length - 1; station >= 0; station--) {
-                console.info("changing cargo station %d's cargo to %d", station, cargoDesired[station] + tempDeltaCargo[station]);
-                console.info('setting delta cargo on station %d at %d', station, tempDeltaCargo[station]);
-                setCargoDesired[station](cargoDesired[station] + tempDeltaCargo[station]);
-                setCargoDelta[station](tempDeltaCargo[station]);
-            }
-            console.info('Delta %d pax luggage : %d Kg', totalDeltaCargo / paxBagWeight, totalDeltaCargo);
-        }
-        return totalDeltaCargo;
-    };
-
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
-        const bagWeight = numberOfPax * perBagWeight;
+        let bagWeight:number;
+        let deltaRatioApplied = 1;
+        // negative perBagWeigths means random perBagWeights with average of this absolute value
+        if (perBagWeight < 0) {
+            const maxLuggageWeight = 25;
+            const minLuggageWeight = 0;
+            const minVariation = 5;
+            const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, -paxBagWeight));
+            const randomVariations = Math.max(Math.min(maxLuggageWeight - average, average - minLuggageWeight), minVariation);
+            // double random to reduce variance and fake a law closer to normal law
+            const randomPerBagWeight = average + randomVariations * (Math.random() + Math.random()) / 2;
+            deltaRatioApplied = (paxBagWeight === 0) ? 1 : (randomPerBagWeight * numberOfPax + freight) / (paxBagWeight * numberOfPax + freight);
+            console.info('New bag weight:%.1f representing a delta ratio on cargo of %.1f%%', randomPerBagWeight, deltaRatioApplied * 100);
+            bagWeight = numberOfPax * randomPerBagWeight;
+        } else {
+            bagWeight = numberOfPax * perBagWeight;
+        }
         const loadableCargoWeight = Math.min(bagWeight + Math.round(freight), maxCargo);
 
         let remainingWeight = loadableCargoWeight;
@@ -425,6 +374,7 @@ export const Payload = () => {
             fillCargo(i, cargoStationSize[i] / maxCargo, loadableCargoWeight);
         }
         fillCargo(0, 1, remainingWeight);
+        return (deltaRatioApplied);
     }, [...cargoDesired, paxBagWeight, ...cargoStationSize]);
 
     const calculatePaxMoment = useCallback(() => {
@@ -562,7 +512,7 @@ export const Payload = () => {
     // Init
     useEffect(() => {
         console.info('Init');
-        resetDeltaCargo();
+        setDeltaRatioCargo(1);
         if (paxWeight === 0) {
             setPaxWeight(Math.round(Units.kilogramToUser(Loadsheet.specs.pax.defaultPaxWeight)));
         }
@@ -691,17 +641,11 @@ export const Payload = () => {
         });
     }, [...pax]);
 
-    const resetDeltaCargo = () => {
-        cargoDelta.forEach((stationNumPax: number, stationIndex: number) => {
-            setCargoDelta[stationIndex](0);
-        });
-    };
-
     useEffect(() => {
         // Sync desired seats & weights to paxDesired as it was frozen during boarding
         if (!boardingStarted) {
             setTotalDeltaPax(0);
-            resetDeltaCargo();
+            setDeltaRatioCargo(1);
             adjustDesiredSeats(paxDesired);
             updateAllWeights();
         }
@@ -851,7 +795,7 @@ export const Payload = () => {
         updateAllWeights();
     }, [
         ...pax, ...paxDesired, totalDeltaPax,
-        ...cargo, ...cargoDesired, totalDeltaCargo,
+        ...cargo, ...cargoDesired, deltaRatioCargo,
         ...fuel, destEfob,
         paxWeight, paxBagWeight,
         emptyWeight,
