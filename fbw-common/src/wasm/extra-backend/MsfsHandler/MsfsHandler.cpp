@@ -44,14 +44,13 @@ bool MsfsHandler::initialize() {
                                  auto &&PH4,
                                  auto &&PH5,
                                  auto &&PH6,
-                                 auto &&PH7) {
+                                 [[maybe_unused]] auto &&PH7) {
     ObjectPtr->processKeyEvent(std::forward<decltype(PH1)>(PH1),
                                std::forward<decltype(PH2)>(PH2),
                                std::forward<decltype(PH3)>(PH3),
                                std::forward<decltype(PH4)>(PH4),
                                std::forward<decltype(PH5)>(PH5),
-                               std::forward<decltype(PH6)>(PH6),
-                               std::forward<decltype(PH7)>(PH7));
+                               std::forward<decltype(PH6)>(PH6));
   };
   keyEventHandlerEx1 = static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(
     Callback<void(ID32, UINT32, UINT32, UINT32, UINT32, UINT32, PVOID)>::callback);

@@ -203,7 +203,7 @@ public:
    */
   [[maybe_unused]]
   void processKeyEvent(KeyEventID event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2,
-                       UINT32 evdata3, UINT32 evdata4, PVOID unused);
+                       UINT32 evdata3, UINT32 evdata4);
 
   /**
    * Creates a new named variable and adds it to the list of managed variables

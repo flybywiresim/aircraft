@@ -324,8 +324,7 @@ bool DataManager::sendKeyEvent(KeyEventID keyEventId,
 
 void DataManager::processKeyEvent(
   KeyEventID keyEventId,
-  UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4,
-  PVOID unused) {
+  UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4) {
   if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
     for (auto &callbackPair: eventPair->second) {
       callbackPair.second(evdata0, evdata1, evdata2, evdata3, evdata4);
