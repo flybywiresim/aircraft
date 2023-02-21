@@ -74,11 +74,8 @@ pub struct A380 {
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
-<<<<<<< HEAD:fbw-a380x/src/wasm/systems/a380_systems/src/lib.rs
     cds: A380ControlDisplaySystem,
-=======
     enhanced_gpwc: EnhancedGPWC,
->>>>>>> 73c9c7949... add the EGPWC to the A380:src/systems/a380_systems/src/lib.rs
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -121,9 +118,7 @@ impl A380 {
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
-<<<<<<< HEAD:fbw-a380x/src/wasm/systems/a380_systems/src/lib.rs
             cds: A380ControlDisplaySystem::new(context),
-=======
             enhanced_gpwc: EnhancedGPWC::new(
                 context,
                 ElectricalBusType::DirectCurrent(1),
@@ -137,7 +132,6 @@ impl A380 {
                     Length::new::<nautical_mile>(640.0),
                 ]),
             ),
->>>>>>> 73c9c7949... add the EGPWC to the A380:src/systems/a380_systems/src/lib.rs
         }
     }
 }
@@ -260,12 +254,10 @@ impl Aircraft for A380 {
         );
 
         self.engines_flex_physics.update(context);
-<<<<<<< HEAD:fbw-a380x/src/wasm/systems/a380_systems/src/lib.rs
 
         self.cds.update();
-=======
+
         self.enhanced_gpwc.update(&self.adirs, &self.lgcius);
->>>>>>> 73c9c7949... add the EGPWC to the A380:src/systems/a380_systems/src/lib.rs
     }
 }
 impl SimulationElement for A380 {
@@ -298,11 +290,8 @@ impl SimulationElement for A380 {
         self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
-<<<<<<< HEAD:fbw-a380x/src/wasm/systems/a380_systems/src/lib.rs
         self.cds.accept(visitor);
-=======
         self.enhanced_gpwc.accept(visitor);
->>>>>>> 73c9c7949... add the EGPWC to the A380:src/systems/a380_systems/src/lib.rs
 
         visitor.visit(self);
     }
