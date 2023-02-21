@@ -189,117 +189,30 @@ impl A380AvionicsDataCommunicationNetwork {
                 InputOutputModule::new(context, "A8", ElectricalBusType::DirectCurrent(2)),
             ],
             cpio_modules: [
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "A1",
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "A2",
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "A3",
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "A4",
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "B1",
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "B2",
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "B3",
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "B4",
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "C1",
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "C2",
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "D1",
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "D3",
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "E1",
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "E2",
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "F1",
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "F2",
-                    ElectricalBusType::DirectCurrentGndFltService,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "F3",
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "F4",
-                    ElectricalBusType::DirectCurrentGndFltService,
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "G1",
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "G2",
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "G3",
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                CoreProcessingInputOutputModule::new(
-                    context,
-                    "G4",
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-            ],
+                ("A1", ElectricalBusType::DirectCurrent(1)),
+                ("A2", ElectricalBusType::DirectCurrentEssential),
+                ("A3", ElectricalBusType::DirectCurrentEssential),
+                ("A4", ElectricalBusType::DirectCurrent(2)),
+                ("B1", ElectricalBusType::DirectCurrent(1)),
+                ("B2", ElectricalBusType::DirectCurrentEssential),
+                ("B3", ElectricalBusType::DirectCurrentEssential),
+                ("B4", ElectricalBusType::DirectCurrent(2)),
+                ("C1", ElectricalBusType::DirectCurrentEssential),
+                ("C2", ElectricalBusType::DirectCurrent(2)),
+                ("D1", ElectricalBusType::DirectCurrent(1)),
+                ("D3", ElectricalBusType::DirectCurrent(1)),
+                ("E1", ElectricalBusType::DirectCurrent(1)),
+                ("E2", ElectricalBusType::DirectCurrent(2)),
+                ("F1", ElectricalBusType::DirectCurrentEssential),
+                ("F2", ElectricalBusType::DirectCurrentGndFltService),
+                ("F3", ElectricalBusType::DirectCurrentEssential),
+                ("F4", ElectricalBusType::DirectCurrentGndFltService),
+                ("G1", ElectricalBusType::DirectCurrent(1)),
+                ("G2", ElectricalBusType::DirectCurrent(2)),
+                ("G3", ElectricalBusType::DirectCurrent(2)),
+                ("G4", ElectricalBusType::DirectCurrent(2)),
+            ]
+            .map(|(name, bus)| CoreProcessingInputOutputModule::new(context, name, bus)),
             routing_tables: [
                 [
                     vec![
