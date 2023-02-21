@@ -515,12 +515,10 @@ mod tests {
             let fixed_id = row[0];
 
             row.iter().for_each(|switch| {
-                let reachable_first: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", fixed_id, switch).into_boxed_str(),
-                ));
-                let reachable_second: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", switch, fixed_id).into_boxed_str(),
-                ));
+                let reachable_first: bool =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
+                let reachable_second: f64 =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
                 println!("AFDX switch combination: {} {}", fixed_id, switch);
                 assert_about_eq!(reachable_first, 0.0);
@@ -550,12 +548,10 @@ mod tests {
             let fixed_id = row[0];
 
             row.iter().for_each(|switch| {
-                let reachable_first: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", fixed_id, switch).into_boxed_str(),
-                ));
-                let reachable_second: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", switch, fixed_id).into_boxed_str(),
-                ));
+                let reachable_first: f64 =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
+                let reachable_second: f64 =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
                 assert_about_eq!(reachable_first, 0.0);
                 assert_about_eq!(reachable_second, 0.0);
@@ -585,12 +581,10 @@ mod tests {
             let fixed_id = row[0];
 
             row.iter().for_each(|switch| {
-                let reachable_first: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", fixed_id, switch).into_boxed_str(),
-                ));
-                let reachable_second: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", switch, fixed_id).into_boxed_str(),
-                ));
+                let reachable_first: f64 =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
+                let reachable_second: f64 =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
                 println!("AFDX switch combination: {} {}", fixed_id, switch);
                 assert_about_eq!(reachable_first, 1.0);
@@ -621,12 +615,10 @@ mod tests {
             let fixed_id = row[0];
 
             row.iter().for_each(|switch| {
-                let reachable_first: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", fixed_id, switch).into_boxed_str(),
-                ));
-                let reachable_second: f64 = test_bed.read_by_name(Box::leak(
-                    format!("AFDX_{}_{}_REACHABLE", switch, fixed_id).into_boxed_str(),
-                ));
+                let reachable_first: f64 =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", fixed_id, switch));
+                let reachable_second: f64 =
+                    test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
                 println!("AFDX switch combination: {} {}", fixed_id, switch);
                 assert_about_eq!(reachable_first, 1.0);
@@ -640,26 +632,26 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(AdcnTestAircraft::new);
 
         test_bed.command(|a| a.set_elec_powered(true));
-        test_bed.write_by_name("AFDX_SWITCH_2_FAILURE", 1.0);
-        test_bed.write_by_name("AFDX_SWITCH_3_FAILURE", 1.0);
-        test_bed.write_by_name("AFDX_SWITCH_9_FAILURE", 1.0);
+        test_bed.write_by_name("AFDX_SWITCH_2_FAILURE", true);
+        test_bed.write_by_name("AFDX_SWITCH_3_FAILURE", true);
+        test_bed.write_by_name("AFDX_SWITCH_9_FAILURE", true);
         test_bed.run();
 
-        let mut reachable: f64 = test_bed.read_by_name("AFDX_1_1_REACHABLE");
-        assert_about_eq!(reachable, 1.0);
+        let mut reachable: bool = test_bed.read_by_name("AFDX_1_1_REACHABLE");
+        assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_2_REACHABLE");
-        assert_about_eq!(reachable, 0.0);
+        assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_3_REACHABLE");
-        assert_about_eq!(reachable, 0.0);
+        assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_4_REACHABLE");
-        assert_about_eq!(reachable, 0.0);
+        assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_5_REACHABLE");
-        assert_about_eq!(reachable, 0.0);
+        assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_6_REACHABLE");
-        assert_about_eq!(reachable, 0.0);
+        assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_7_REACHABLE");
-        assert_about_eq!(reachable, 0.0);
+        assert!(reachable);
         reachable = test_bed.read_by_name("AFDX_1_9_REACHABLE");
-        assert_about_eq!(reachable, 0.0);
+        assert!(reachable);
     }
 }
