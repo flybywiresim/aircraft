@@ -44,4 +44,24 @@ export class FlightPlanPerformanceData {
      * Whether TRANS ALT is from the database
      */
     readonly transitionAltitudeIsFromDatabase = this.pilotTransitionAltitude.map((it) => it !== undefined);
+
+    /**
+     * TRANS LVL from NAV database
+     */
+    readonly databaseTransitionLevel = Subject.create<AltitudeValue>(undefined);
+
+    /**
+     * TRANS LVL from pilot entry
+     */
+    readonly pilotTransitionLevel = Subject.create<AltitudeValue>(undefined);
+
+    /**
+     * TRANS LVL from pilot if entered, otherwise from database
+     */
+    readonly transitionLevel = MappedSubject.create(([db, pilot]) => pilot ?? db, this.databaseTransitionLevel, this.pilotTransitionLevel);
+
+    /**
+     * Whether TRANS LVL is from the database
+     */
+    readonly transitionLevelIsFromDatabase = this.pilotTransitionLevel.map((it) => it !== undefined);
 }

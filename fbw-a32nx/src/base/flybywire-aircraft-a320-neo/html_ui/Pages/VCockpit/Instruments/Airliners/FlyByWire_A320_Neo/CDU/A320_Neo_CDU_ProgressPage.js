@@ -186,6 +186,8 @@ class CDUProgressPage {
     }
 
     static ShowReportPage(mcdu) {
+        const plan = mcdu.flightPlanService.active;
+
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPageReport;
         let altCell = "---";
@@ -199,48 +201,39 @@ class CDUProgressPage {
                 scratchpadCallback();
             }
         };
-        let toWaypoint;
-        if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            toWaypoint = mcdu.flightPlanManager.getDestination();
-        } else {
-            toWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex);
-        }
+
+        const toLeg = plan.activeLeg;
         let toWaypointCell = "";
-        let toWaypointUTCCell = "---";
+        const toWaypointUTCCell = "---";
         const toWaypointAltCell = "----";
         let nextWaypointCell = "";
-        let nextWaypointUTCCell = "----";
+        const nextWaypointUTCCell = "----";
         const nextWaypointAltCell = "---";
-        if (toWaypoint) {
-            toWaypointCell = toWaypoint.ident;
-            toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
-            let nextWaypoint;
-            if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
-                nextWaypoint = mcdu.flightPlanManager.getDestination();
-            } else {
-                nextWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex + 1);
-            }
-            if (nextWaypoint) {
-                nextWaypointCell = nextWaypoint.ident;
-                nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextWaypoint.infos.etaInFP);
+        if (toLeg && toLeg.isDiscontinuity === false) {
+            toWaypointCell = toLeg.ident;
+            // toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toLeg.infos.etaInFP); TODO port over
+            const nextLeg = plan.maybeElementAt(plan.activeLegIndex + 1);
+
+            if (nextLeg && nextLeg.isDiscontinuity === false) {
+                nextWaypointCell = nextLeg.ident;
+                // nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextLeg.infos.etaInFP); TODO port over
             }
         }
+
         let destCell = "";
-        let destUTCCell = "---";
-        let destDistCell = "----";
-        if (mcdu.flightPlanManager.getDestination()) {
-            console.log(mcdu.flightPlanManager.getDestination());
-            destCell = mcdu.flightPlanManager.getDestination().ident;
-            const destInfos = mcdu.flightPlanManager.getDestination().infos;
-            if (destInfos instanceof AirportInfo) {
-                const destApproach = destInfos.approaches[mcdu.flightPlanManager.getApproachIndex()];
-                if (destApproach) {
-                    destCell += destApproach.runway;
-                }
+        const destUTCCell = "---";
+        const destDistCell = "----";
+        if (plan.destinationAirport) {
+            destCell = plan.destinationAirport.ident;
+
+            if (plan.destinationRunway) {
+                destCell += plan.destinationRunway.ident.replace('RW', '');
             }
-            destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
-            destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
+
+            // destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over
+            // destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0); TODO port over
         }
+
         mcdu.setTemplate([
             ["REPORT"],
             ["\xa0OVHD", "ALT\xa0", "UTC"],
@@ -261,19 +254,25 @@ class CDUProgressPage {
     static ShowPredictiveGPSPage(mcdu, overrideDestETA = "") {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPagePredictiveGPS;
+
+        const plan = mcdu.flightPlanService.active;
+
         let destIdentCell = "";
         let destETACell = "";
-        if (mcdu.flightPlanManager.getDestination()) {
-            destIdentCell = mcdu.flightPlanManager.getDestination().ident + "[color]green";
+        if (plan.destinationAirport) {
+            destIdentCell = plan.destinationAirport.ident + "[color]green";
+
             if (overrideDestETA) {
                 destETACell = overrideDestETA;
             } else {
-                destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
+                // destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over
             }
+
             mcdu.onRightInput[0] = (value) => {
                 CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
             };
         }
+
         mcdu.setTemplate([
             ["PREDICTIVE GPS"],
             ["DEST", "ETA"],

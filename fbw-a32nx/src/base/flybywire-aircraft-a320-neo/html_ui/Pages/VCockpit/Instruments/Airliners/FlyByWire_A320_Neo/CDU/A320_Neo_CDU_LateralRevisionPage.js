@@ -11,7 +11,7 @@ class CDULateralRevisionPage {
         mcdu.page.Current = mcdu.page.LateralRevisionPage;
 
         const coordinates = "";
-        // TODO port over
+        // TODO port over (fms-v2)
         // if (waypoint && waypoint.infos && waypoint.infos.coordinates) {
         //     const lat = CDUInitPage.ConvertDDToDMS(waypoint.infos.coordinates['lat'], false);
         //     const long = CDUInitPage.ConvertDDToDMS(waypoint.infos.coordinates['long'], true);

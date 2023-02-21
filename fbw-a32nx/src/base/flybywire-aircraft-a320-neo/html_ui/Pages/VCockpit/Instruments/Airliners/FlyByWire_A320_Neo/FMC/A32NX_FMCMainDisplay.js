@@ -960,7 +960,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateHoldingSpeed() {
-        // TODO port over
+        // TODO port over (fms-v2)
         return;
 
         const currentLegIndex = this.guidanceController.activeLegIndex;
@@ -3871,7 +3871,7 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
 
     setPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.flightPlanManager.setDestinationTransitionLevel();
+            this.flightPlanService.active.performanceData.pilotTransitionLevel.set(null);
             return true;
         }
 
@@ -3885,7 +3885,7 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
             return false;
         }
 
-        this.flightPlanManager.setDestinationTransitionLevel(Math.round(value / 100));
+        this.flightPlanService.active.performanceData.pilotTransitionLevel.set(Math.round(value / 100));
         return true;
     }
 
@@ -4555,7 +4555,8 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
         try {
             Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false).then((wp) => {
                 // FIXME wp.additionalData.temporary
-                this._setProgLocation(true ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
+                const temporary = false;
+                this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
                 return callback(true);
             }).catch((err) => {
                 if (err instanceof McduMessage) {
