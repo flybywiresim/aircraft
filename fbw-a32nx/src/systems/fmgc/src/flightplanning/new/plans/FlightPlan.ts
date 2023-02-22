@@ -222,9 +222,13 @@ export class FlightPlan extends BaseFlightPlan {
 
                 // Otherwise, we only move the next segment onwards, and insert the legs from atIndexInAlternate to the last segment leg into the enroute
 
+                // TODO this is bad, we need to preserve segment topology...
+                // for example this breaks if we ENABLE ALTN into the approach, because we put the rest of approach into the
+                // enroute, and now the stringing to the missed approach breaks
+
                 indexOfFirstSegmentToReplace = i + 1;
 
-                const [, indexInSegment] = this.segmentPositionForIndex(atIndexInAlternate);
+                const [, indexInSegment] = this.alternateFlightPlan.segmentPositionForIndex(atIndexInAlternate);
 
                 const legsToInsertIntoEnroute = segment.allLegs.slice(indexInSegment);
 
