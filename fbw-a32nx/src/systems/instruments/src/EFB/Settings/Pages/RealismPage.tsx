@@ -59,6 +59,7 @@ export const RealismPage = () => {
                 <SelectGroup>
                     {adirsAlignTimeButtons.map((button) => (
                         <SelectItem
+                            key={button.name}
                             onSelect={() => {
                                 setAdirsAlignTime(button.setting);
                                 setAdirsAlignTimeSimVar(button.simVarValue);
@@ -75,6 +76,7 @@ export const RealismPage = () => {
                 <SelectGroup>
                     {dmcSelfTestTimeButtons.map((button) => (
                         <SelectItem
+                            key={button.name}
                             onSelect={() => setDmcSelfTestTime(button.setting)}
                             selected={dmcSelfTestTime === button.setting}
                         >
@@ -88,6 +90,7 @@ export const RealismPage = () => {
                 <SelectGroup>
                     {boardingRateButtons.map((button) => (
                         <SelectItem
+                            key={button.name}
                             onSelect={() => setBoardingRate(button.setting)}
                             selected={boardingRate === button.setting}
                         >

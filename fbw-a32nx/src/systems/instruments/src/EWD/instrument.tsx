@@ -117,6 +117,9 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('slatsPositionRaw');
 
         FSComponent.render(<EwdComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
+
+        // Remove "instrument didn't load" text
+        document.getElementById('EWD_CONTENT').querySelector(':scope > h1').remove();
     }
 
     public Update(): void {

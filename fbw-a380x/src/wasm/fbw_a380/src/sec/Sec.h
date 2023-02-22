@@ -1,16 +1,13 @@
 #pragma once
 
-#include "SecIO.h"
-
-#include "../Arinc429.h"
-#include "../model/SecComputer.h"
+#include "../model/A380SecComputer.h"
 #include "../utils/ConfirmNode.h"
 #include "../utils/PulseNode.h"
 #include "../utils/SRFlipFlop.h"
 
 class Sec {
  public:
-  Sec(bool isUnit1, bool isUnit3);
+  Sec(bool isUnit1, bool isUnit2, bool isUnit3);
 
   Sec(const Sec&);
 
@@ -22,7 +19,7 @@ class Sec {
 
   base_sec_analog_outputs getAnalogOutputs();
 
-  SecComputer::ExternalInputs_SecComputer_T modelInputs = {};
+  A380SecComputer::ExternalInputs_A380SecComputer_T modelInputs = {};
 
  private:
   void initSelfTests();
@@ -36,7 +33,7 @@ class Sec {
   void updateSelfTest(double deltaTime);
 
   // Model
-  SecComputer secComputer;
+  A380SecComputer secComputer;
   sec_outputs modelOutputs;
 
   // Computer Self-monitoring vars
@@ -60,6 +57,7 @@ class Sec {
 
   // Constants
   const bool isUnit1;
+  const bool isUnit2;
   const bool isUnit3;
 
   const double minimumPowerOutageTimeForFailure = 0.02;

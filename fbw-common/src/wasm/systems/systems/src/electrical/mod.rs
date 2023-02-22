@@ -6,8 +6,10 @@ pub mod consumption;
 mod emergency_generator;
 mod engine_generator;
 mod external_power_source;
+mod ram_air_turbine;
 mod static_inverter;
 mod transformer_rectifier;
+
 use std::{
     cell::{Ref, RefCell},
     rc::Rc,
@@ -17,7 +19,8 @@ use std::{
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{
-        ConsumePower, ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
+        ConsumePower, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
+        PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -34,6 +37,8 @@ use fxhash::{FxHashMap, FxHashSet};
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 use uom::si::{electric_potential::volt, f64::*, power::watt, velocity::knot};
+
+pub use ram_air_turbine::{GeneratorControlUnit, RamAirTurbine};
 
 pub mod test;
 
@@ -295,6 +300,11 @@ impl EmergencyElectrical {
 impl Default for EmergencyElectrical {
     fn default() -> Self {
         Self::new()
+    }
+}
+impl EmergencyElectricalState for EmergencyElectrical {
+    fn is_in_emergency_elec(&self) -> bool {
+        self.is_active()
     }
 }
 
