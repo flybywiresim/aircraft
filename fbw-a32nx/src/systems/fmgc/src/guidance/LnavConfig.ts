@@ -37,7 +37,7 @@ export const LnavConfig = {
     /**
      * Whether to force the drawing of course reversal (hold, proc turn) vectors at any point in the path
      */
-    DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS: true,
+    DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS: false,
 
     /**
      * Whether to print guidance debug information on the ND
