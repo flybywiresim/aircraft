@@ -80,6 +80,7 @@ template <std::string_view const& NdMinElevation,
 class Display : public DisplayBase {
  private:
   std::shared_ptr<simconnect::LVarObject<NdMinElevation, NdMinElevationMode, NdMaxElevation, NdMaxElevationMode>> _ndThresholdData;
+  bool _ignoreNextFrame;
 
   void resetNavigationDisplayData() {
     this->_ndThresholdData->template value<NdMinElevation>() = -1;
@@ -112,9 +113,15 @@ class Display : public DisplayBase {
     this->_frameData->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
     this->_frameData->setOnChangeCallback([=]() {
       this->destroyImage();
-      this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
-      if (this->_nanovgImage == 0) {
-        std::cerr << "TERR ON ND: Unable to decode the image from the stream" << std::endl;
+
+      if (!this->_ignoreNextFrame && this->_configuration.terrainActive) {
+        this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
+        if (this->_nanovgImage == 0) {
+          std::cerr << "TERR ON ND: Unable to decode the image from the stream" << std::endl;
+        }
+      } else {
+        this->resetNavigationDisplayData();
+        this->_ignoreNextFrame = false;
       }
     });
 
@@ -143,19 +150,21 @@ class Display : public DisplayBase {
    * @param config The new ND configuration instance
    */
   void update(const DisplayBase::NdConfiguration& config) override {
-    bool oldArcMode = this->_configuration.mode == NavigationDisplayArcModeId;
-    bool oldRoseMode = this->_configuration.mode == NavigationDisplayRoseLsModeId ||
-                       this->_configuration.mode == NavigationDisplayRoseVorModeId ||
-                       this->_configuration.mode == NavigationDisplayRoseNavModeId;
-    bool newArcMode = config.mode == NavigationDisplayArcModeId;
-    bool newRoseMode = config.mode == NavigationDisplayRoseLsModeId || config.mode == NavigationDisplayRoseVorModeId ||
-                       config.mode == NavigationDisplayRoseNavModeId;
+    const bool oldArcMode = this->_configuration.mode == NavigationDisplayArcModeId;
+    const bool oldRoseMode = this->_configuration.mode == NavigationDisplayRoseLsModeId ||
+                             this->_configuration.mode == NavigationDisplayRoseVorModeId ||
+                             this->_configuration.mode == NavigationDisplayRoseNavModeId;
+    const bool newArcMode = config.mode == NavigationDisplayArcModeId;
+    const bool newRoseMode = config.mode == NavigationDisplayRoseLsModeId || config.mode == NavigationDisplayRoseVorModeId ||
+                             config.mode == NavigationDisplayRoseNavModeId;
+    const bool resetMapData = oldArcMode != newArcMode || oldRoseMode != newRoseMode || config.range != this->_configuration.range;
 
     this->_configuration = config;
 
-    if (!config.terrainActive || oldArcMode != newArcMode || oldRoseMode != newRoseMode || (!newRoseMode && !newArcMode)) {
+    if (!config.terrainActive || resetMapData) {
       this->resetNavigationDisplayData();
       this->destroyImage();
+      this->_ignoreNextFrame = true;
     }
   }
 };
