@@ -20,7 +20,6 @@ use uom::si::{
     length::{foot, meter},
     pressure::{hectopascal, psi},
     ratio::{percent, ratio},
-    thermodynamic_temperature::kelvin,
     velocity::{foot_per_minute, knot, meter_per_second},
 };
 
@@ -57,7 +56,6 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     manual_to_auto_switch: bool,
-    cabin_temperature: ThermodynamicTemperature,
 
     constants: PhantomData<C>,
 }
@@ -113,7 +111,6 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
-            cabin_temperature: ThermodynamicTemperature::new::<kelvin>(297.15), // 24C
 
             constants: PhantomData,
         }
@@ -130,17 +127,16 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         outflow_valve: Vec<&OutflowValve>,
         safety_valve: &SafetyValve,
     ) {
-        self.exterior_pressure = cabin_simulation.exterior_pressure();
+        let (adirs_airspeed, adirs_ambient_pressure): (Option<Velocity>, Option<Pressure>) =
+            self.adirs_values_calculation(adirs);
+        self.exterior_pressure =
+            adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(1013.25));
         self.exterior_vertical_speed = context.vertical_speed();
         self.cabin_pressure = cabin_simulation.cabin_pressure();
-        self.cabin_temperature = cabin_simulation.cabin_temperature().iter().average();
 
         if !press_overhead.ldg_elev_is_auto() {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
         }
-
-        let (adirs_airspeed, adirs_ambient_pressure): (Option<Velocity>, Option<Pressure>) =
-            self.adirs_values_calculation(adirs);
 
         if let Some(manager) = self.pressure_schedule_manager.take() {
             self.pressure_schedule_manager = Some(manager.update(

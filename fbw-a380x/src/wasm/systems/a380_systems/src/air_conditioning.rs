@@ -560,6 +560,7 @@ mod tests {
         true_airspeed: Velocity,
         baro_correction: Pressure,
         baro_correction_ssm: SignStatus,
+        ambient_pressure: Pressure,
     }
     impl TestAdirs {
         fn new() -> Self {
@@ -568,6 +569,7 @@ mod tests {
                 true_airspeed: Velocity::new::<knot>(0.),
                 baro_correction: Pressure::new::<hectopascal>(1013.25),
                 baro_correction_ssm: SignStatus::NormalOperation,
+                ambient_pressure: Pressure::new::<hectopascal>(1013.25),
             }
         }
         fn set_true_airspeed(&mut self, airspeed: Velocity) {
@@ -583,6 +585,9 @@ mod tests {
                 SignStatus::NormalOperation
             }
         }
+        fn set_ambient_pressure(&mut self, pressure: Pressure) {
+            self.ambient_pressure = pressure;
+        }
     }
     impl AdirsToAirCondInterface for TestAdirs {
         fn ground_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
@@ -595,10 +600,7 @@ mod tests {
             Arinc429Word::new(self.baro_correction, self.baro_correction_ssm)
         }
         fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
-            Arinc429Word::new(
-                Pressure::new::<hectopascal>(1013.25),
-                SignStatus::NormalOperation,
-            )
+            Arinc429Word::new(self.ambient_pressure, SignStatus::NormalOperation)
         }
     }
 
@@ -1205,8 +1207,13 @@ mod tests {
             self.stored_pressure.unwrap()
         }
 
-        fn ambient_pressure_of(mut self, pressure: Pressure) -> Self {
+        fn command_ambient_pressure(&mut self, pressure: Pressure) {
             self.set_ambient_pressure(pressure);
+            self.command(|a| a.adirs.set_ambient_pressure(pressure));
+        }
+
+        fn ambient_pressure_of(mut self, pressure: Pressure) -> Self {
+            self.command_ambient_pressure(pressure);
             self
         }
 
@@ -1325,14 +1332,14 @@ mod tests {
             const PRESSURE_CONSTANT: f64 = 911.47;
 
             self.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
-            self.set_ambient_pressure(Pressure::new::<hectopascal>(
+            self.command_ambient_pressure(Pressure::new::<hectopascal>(
                 PRESSURE_CONSTANT - init_altitude.get::<foot>() * (KPA_FT),
             ));
 
             for i in ((init_altitude.get::<foot>() / 1000.) as u32)
                 ..((final_altitude.get::<foot>() / 1000.) as u32)
             {
-                self.set_ambient_pressure(Pressure::new::<hectopascal>(
+                self.command_ambient_pressure(Pressure::new::<hectopascal>(
                     PRESSURE_CONSTANT - (((i * 1000) as f64) * (KPA_FT)),
                 ));
                 for _ in 1..10 {
@@ -1343,7 +1350,7 @@ mod tests {
                     self.run();
                 }
             }
-            self.set_ambient_pressure(Pressure::new::<hectopascal>(
+            self.command_ambient_pressure(Pressure::new::<hectopascal>(
                 PRESSURE_CONSTANT - final_altitude.get::<foot>() * (KPA_FT),
             ));
             self.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
@@ -1439,7 +1446,7 @@ mod tests {
         let mut test_bed =
             test_bed().command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(20000.));
         test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(472.));
+        test_bed.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
         test_bed = test_bed.iterate(31);
         test_bed
