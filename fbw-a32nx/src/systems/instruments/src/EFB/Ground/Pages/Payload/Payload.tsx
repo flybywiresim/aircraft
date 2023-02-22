@@ -219,17 +219,20 @@ export const Payload = () => {
     };
 
     const setSimBriefValues = () => {
+        setCargoDesiredDisplayRatio(1);
         if (simbriefUnits === 'kgs') {
             const perBagWeight = Units.kilogramToUser(simbriefBagWeight);
             setPaxBagWeight(perBagWeight);
             setPaxWeight(Units.kilogramToUser(simbriefPaxWeight));
             setTargetPax(simbriefPax > maxPax ? maxPax : simbriefPax);
+            setTotalPaxDesiredDisplayed(simbriefPax > maxPax ? maxPax : simbriefPax);
             setTargetCargo(simbriefBag, Units.kilogramToUser(simbriefFreight), perBagWeight);
         } else {
             const perBagWeight = Units.poundToUser(simbriefBagWeight);
             setPaxBagWeight(perBagWeight);
             setPaxWeight(Units.poundToUser(simbriefPaxWeight));
-            setTargetPax(simbriefPax);
+            setTargetPax(simbriefPax > maxPax ? maxPax : simbriefPax);
+            setTotalPaxDesiredDisplayed(simbriefPax > maxPax ? maxPax : simbriefPax);
             setTargetCargo(simbriefBag, Units.poundToUser(simbriefFreight), perBagWeight);
         }
     };
