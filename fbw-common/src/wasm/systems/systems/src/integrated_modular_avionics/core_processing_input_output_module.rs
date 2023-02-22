@@ -32,8 +32,7 @@ impl CoreProcessingInputOutputModule {
 
 impl SimulationElement for CoreProcessingInputOutputModule {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let failure_value: f64 = reader.read(&self.failure_indication_id);
-        self.failure_indication = failure_value != 0.0;
+        self.failure_indication = reader.read(&self.failure_indication_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
