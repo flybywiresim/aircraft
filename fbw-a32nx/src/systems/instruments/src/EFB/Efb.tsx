@@ -99,6 +99,7 @@ const Efb = () => {
 
     const [ac1BusIsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 1000);
     const [, setLoadLightingPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
+    const [autoDisplayBrightness] = useSimVar('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'number', 1000);
     const [timeOfDay] = useSimVar('E:TIME OF DAY', 'number', 5000);
     const [autoLoadLightingPresetEnabled] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD', 0);
     const [autoLoadDayLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAY', 0);
@@ -261,30 +262,13 @@ const Efb = () => {
         }
     });
 
-    /**
-     * Returns a brightness value between 0 and 100 inclusive based on the ratio of the solar altitude to the solar zenith
-     * @param {number} latitude - The latitude of the location (-90 to 90)
-     * @param {number} dayOfYear - The day of the year (0 to 365)
-     * @param {number} timeOfDay - The time of day in hours (0 to 24)
-     */
-    const calculateBrightness = (latitude: number, dayOfYear: number, timeOfDay: number) => {
-        const solarTime = timeOfDay + (dayOfYear - 1) * 24;
-        const solarDeclination = 0.409 * Math.sin(2 * Math.PI * (284 + dayOfYear) / 365);
-        const solarAltitude = Math.asin(
-            Math.sin(latitude * Math.PI / 180) * Math.sin(solarDeclination) + Math.cos(latitude * Math.PI / 180) * Math.cos(solarDeclination) * Math.cos(2 * Math.PI * solarTime / 24),
-        );
-        const solarZenith = 90 - (latitude - solarDeclination);
-
-        return Math.min(Math.max((-solarAltitude * (180 / Math.PI)) / solarZenith * 100, 0), 100);
-    };
-
     const { posX, posY, shown, text } = useAppSelector((state) => state.tooltip);
 
     useEffect(() => {
         if (usingAutobrightness && powerState === PowerStates.LOADED) {
-            setBrightness(calculateBrightness(lat, dayOfYear, currentLocalTime / 3600));
+            setBrightness(autoDisplayBrightness);
         }
-    }, [powerState, currentLocalTime, usingAutobrightness]);
+    }, [powerState, autoDisplayBrightness, usingAutobrightness]);
 
     useEffect(() => {
         if (!usingAutobrightness) {
