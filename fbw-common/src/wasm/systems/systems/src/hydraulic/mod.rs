@@ -2991,7 +2991,7 @@ impl RamAirTurbine {
         self.wind_turbine.update(
             delta_time,
             indicated_airspeed,
-            self.position,
+            Ratio::new::<ratio>(self.position),
             resistant_torque,
         );
     }

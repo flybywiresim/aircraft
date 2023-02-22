@@ -16,6 +16,7 @@ use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     power::watt,
+    ratio::ratio,
     torque::newton_meter,
 };
 
@@ -25,7 +26,7 @@ pub struct RamAirTurbine {
     deployment_commanded: bool,
 
     wind_turbine: WindTurbine,
-    position: f64,
+    stow_position: f64,
 }
 impl RamAirTurbine {
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
@@ -53,7 +54,7 @@ impl RamAirTurbine {
                 Self::RPM_GOVERNOR_BREAKPTS,
                 Self::PROP_ALPHA_MAP,
             ),
-            position: 0.,
+            stow_position: 0.,
         }
     }
 
@@ -80,16 +81,16 @@ impl RamAirTurbine {
         self.wind_turbine.update(
             &context.delta(),
             context.indicated_airspeed(),
-            self.position,
+            Ratio::new::<ratio>(self.stow_position),
             resistant_torque,
         );
     }
 
     fn update_position(&mut self, context: &UpdateContext) {
         if self.deployment_commanded {
-            self.position += context.delta_as_secs_f64() * Self::STOWING_SPEED;
+            self.stow_position += context.delta_as_secs_f64() * Self::STOWING_SPEED;
 
-            self.position = self.position.clamp(0., 1.);
+            self.stow_position = self.stow_position.clamp(0., 1.);
         }
     }
 
@@ -112,7 +113,7 @@ impl SimulationElement for RamAirTurbine {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.stow_position_id, self.position);
+        writer.write(&self.stow_position_id, self.stow_position);
     }
 }
 impl AngularSpeedSensor for RamAirTurbine {
