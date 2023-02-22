@@ -290,6 +290,11 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_UP, "ELEV_UP", true);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_DN, "ELEV_TRIM_DN", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_UP, "ELEV_TRIM_UP", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_TRIM_SET, "ELEVATOR_TRIM_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET", true);
+
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_ON, "AUTOPILOT_ON", true);
@@ -789,88 +794,87 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     }
   }
 
-  //  // ------------------------------------------------------------------------------------------------------------------
-  //
-  //  // map client id
-  //  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_SEC_DISCRETE_INPUT", ClientData::SEC_DISCRETE_INPUTS);
-  //  // create client data
-  //  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_DISCRETE_INPUTS, sizeof(base_sec_discrete_inputs),
-  //                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  //  // add data definitions
-  //  for (int i = 0; i < 26; i++) {
-  //    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-  //                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
-  //  }
-  //
-  //  // ------------------------------------------------------------------------------------------------------------------
-  //
-  //  // map client id
-  //  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_SEC_ANALOG_INPUT", ClientData::SEC_ANALOG_INPUTS);
-  //  // create client data
-  //  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_ANALOG_INPUTS, sizeof(base_sec_analog_inputs),
-  //                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  //  // add data definitions
-  //  for (int i = 0; i < 18; i++) {
-  //    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_ANALOG_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-  //                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  //  }
-  //
-  //  // ------------------------------------------------------------------------------------------------------------------
-  //
-  //  // map client id
-  //  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_SEC_DISCRETES_OUTPUT", ClientData::SEC_DISCRETE_OUTPUTS);
-  //  // create client data
-  //  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, sizeof(base_sec_discrete_outputs),
-  //                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  //  // add data definitions
-  //  for (int i = 0; i < 9; i++) {
-  //    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-  //                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
-  //  }
-  //
-  //  // request data to be updated when set
-  //  result &= SimConnect_RequestClientData(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, ClientData::SEC_DISCRETE_OUTPUTS,
-  //                                         ClientData::SEC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-  //
-  //  // ------------------------------------------------------------------------------------------------------------------
-  //
-  //  // map client id
-  //  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_SEC_ANALOGS_OUTPUT", ClientData::SEC_ANALOG_OUTPUTS);
-  //  // create client data
-  //  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_ANALOG_OUTPUTS, sizeof(base_sec_analog_outputs),
-  //                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  //  // add data definitions
-  //  for (int i = 0; i < 7; i++) {
-  //    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_ANALOG_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-  //                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  //  }
-  //
-  //  // request data to be updated when set
-  //  result &= SimConnect_RequestClientData(hSimConnect, ClientData::SEC_ANALOG_OUTPUTS, ClientData::SEC_ANALOG_OUTPUTS,
-  //                                         ClientData::SEC_ANALOG_OUTPUTS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-  //
-  //  // ------------------------------------------------------------------------------------------------------------------
-  //
-  //  for (int i = 0; i < 2; i++) {
-  //    auto defineId = ClientData::SEC_1_BUS_OUTPUT + i;
-  //
-  //    // map client id
-  //    result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_SEC_" + std::to_string(i + 1) + "_BUS").c_str(),
-  //    defineId);
-  //    // create client data
-  //    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_sec_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  //    // add data definitions
-  //    for (int i = 0; i < 16; i++) {
-  //      result &=
-  //          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-  //          SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  //    }
-  //
-  //    // request data to be updated when set
-  //    if (i == secDisabled) {
-  //      result &= SimConnect_RequestClientData(hSimConnect, defineId, defineId, defineId, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
-  //    }
-  //  }
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_A380_SEC_DISCRETE_INPUT", ClientData::SEC_DISCRETE_INPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_DISCRETE_INPUTS, sizeof(base_sec_discrete_inputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  for (int i = 0; i < 13; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_DISCRETE_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_A380_SEC_ANALOG_INPUT", ClientData::SEC_ANALOG_INPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_ANALOG_INPUTS, sizeof(base_sec_analog_inputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  for (int i = 0; i < 20; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_ANALOG_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_A380_SEC_DISCRETES_OUTPUT", ClientData::SEC_DISCRETE_OUTPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, sizeof(base_sec_discrete_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  for (int i = 0; i < 14; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
+  }
+
+  // request data to be updated when set
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::SEC_DISCRETE_OUTPUTS, ClientData::SEC_DISCRETE_OUTPUTS,
+                                         ClientData::SEC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_A380_SEC_ANALOGS_OUTPUT", ClientData::SEC_ANALOG_OUTPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::SEC_ANALOG_OUTPUTS, sizeof(base_sec_analog_outputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  for (int i = 0; i < 15; i++) {
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::SEC_ANALOG_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  }
+
+  // request data to be updated when set
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::SEC_ANALOG_OUTPUTS, ClientData::SEC_ANALOG_OUTPUTS,
+                                         ClientData::SEC_ANALOG_OUTPUTS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  for (int i = 0; i < 3; i++) {
+    auto defineId = ClientData::SEC_1_BUS_OUTPUT + i;
+
+    // map client id
+    result &=
+        SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_A380_SEC_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
+    // create client data
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_sec_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    // add data definitions
+    for (int i = 0; i < 25; i++) {
+      result &=
+          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+    }
+
+    // request data to be updated when set
+    if (i == secDisabled) {
+      result &= SimConnect_RequestClientData(hSimConnect, defineId, defineId, defineId, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+    }
+  }
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -1229,6 +1233,10 @@ SimInputAutopilot SimConnectInterface::getSimInputAutopilot() {
   return simInputAutopilot;
 }
 
+SimInputPitchTrim SimConnectInterface::getSimInputPitchTrim() {
+  return simInputPitchTrim;
+}
+
 SimInputRudderTrim SimConnectInterface::getSimInputRudderTrim() {
   return simInputRudderTrim;
 }
@@ -1252,6 +1260,11 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.APPR_push = 0;
   simInputAutopilot.EXPED_push = 0;
   simInputAutopilot.DIR_TO_trigger = 0;
+}
+
+void SimConnectInterface::resetSimInputPitchTrim() {
+  simInputPitchTrim.pitchTrimSwitchUp = false;
+  simInputPitchTrim.pitchTrimSwitchDown = false;
 }
 
 void SimConnectInterface::resetSimInputRudderTrim() {
@@ -1304,21 +1317,17 @@ bool SimConnectInterface::setClientDataPrimBusInput(base_prim_out_bus output, in
   return sendClientData(ClientData::PRIM_1_BUS_OUTPUT + primIndex, sizeof(output), &output);
 }
 
-// bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs output) {
-//   return sendClientData(ClientData::SEC_DISCRETE_INPUTS, sizeof(output), &output);
-// }
-//
-// bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs output) {
-//   return sendClientData(ClientData::SEC_ANALOG_INPUTS, sizeof(output), &output);
-// }
-//
-// bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus output, int secIndex) {
-//   if (secIndex < 2) {
-//     return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
-//   } else {
-//     return false;
-//   }
-// }
+bool SimConnectInterface::setClientDataSecDiscretes(base_sec_discrete_inputs output) {
+  return sendClientData(ClientData::SEC_DISCRETE_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataSecAnalog(base_sec_analog_inputs output) {
+  return sendClientData(ClientData::SEC_ANALOG_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataSecBus(base_sec_out_bus output, int secIndex) {
+  return sendClientData(ClientData::SEC_1_BUS_OUTPUT + secIndex, sizeof(output), &output);
+}
 
 bool SimConnectInterface::setClientDataFacDiscretes(base_fac_discrete_inputs output) {
   return sendClientData(ClientData::FAC_DISCRETE_INPUTS, sizeof(output), &output);
@@ -1344,17 +1353,17 @@ base_prim_out_bus SimConnectInterface::getClientDataPrimBusOutput() {
   return clientDataPrimBusOutputs;
 }
 
-// base_sec_discrete_outputs SimConnectInterface::getClientDataSecDiscretesOutput() {
-//   return clientDataSecDiscreteOutputs;
-// }
-//
-// base_sec_analog_outputs SimConnectInterface::getClientDataSecAnalogsOutput() {
-//   return clientDataSecAnalogOutputs;
-// }
-//
-// base_sec_out_bus SimConnectInterface::getClientDataSecBusOutput() {
-//   return clientDataSecBusOutputs;
-// }
+base_sec_discrete_outputs SimConnectInterface::getClientDataSecDiscretesOutput() {
+  return clientDataSecDiscreteOutputs;
+}
+
+base_sec_analog_outputs SimConnectInterface::getClientDataSecAnalogsOutput() {
+  return clientDataSecAnalogOutputs;
+}
+
+base_sec_out_bus SimConnectInterface::getClientDataSecBusOutput() {
+  return clientDataSecBusOutputs;
+}
 
 base_fac_discrete_outputs SimConnectInterface::getClientDataFacDiscretesOutput() {
   return clientDataFacDiscreteOutputs;
@@ -1765,6 +1774,46 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
         std::cout << "(no data)";
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_ELEVATOR_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::ELEV_TRIM_DN: {
+      simInputPitchTrim.pitchTrimSwitchDown = true;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: ELEV_TRIM_DN: ";
+        std::cout << "(no data)";
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::ELEV_TRIM_UP: {
+      simInputPitchTrim.pitchTrimSwitchUp = true;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: ELEV_TRIM_UP: ";
+        std::cout << "(no data)";
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::ELEVATOR_TRIM_SET: {
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: ELEVATOR_TRIM_SET: ";
+        std::cout << static_cast<long>(event->dwData);
+        std::cout << " (IGNORING)";
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::AXIS_ELEV_TRIM_SET: {
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: AXIS_ELEV_TRIM_SET: ";
+        std::cout << static_cast<long>(event->dwData);
+        std::cout << " (IGNORING)";
         std::cout << std::endl;
       }
       break;
@@ -2880,25 +2929,30 @@ void SimConnectInterface::simConnectProcessClientData(const SIMCONNECT_RECV_CLIE
       clientDataPrimBusOutputs = *((base_prim_out_bus*)&data->dwData);
       return;
 
-      //     case ClientData::SEC_DISCRETE_OUTPUTS:
-      //       // store aircraft data
-      //       clientDataSecDiscreteOutputs = *((base_sec_discrete_outputs*)&data->dwData);
-      //       return;
-      //
-      //     case ClientData::SEC_ANALOG_OUTPUTS:
-      //       // store aircraft data
-      //       clientDataSecAnalogOutputs = *((base_sec_analog_outputs*)&data->dwData);
-      //       return;
-      //
-      //     case ClientData::SEC_1_BUS_OUTPUT:
-      //       // store aircraft data
-      //       clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
-      //       return;
-      //
-      //    case ClientData::SEC_2_BUS_OUTPUT:
-      //      // store aircraft data
-      //      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
-      //      return;
+    case ClientData::SEC_DISCRETE_OUTPUTS:
+      // store aircraft data
+      clientDataSecDiscreteOutputs = *((base_sec_discrete_outputs*)&data->dwData);
+      return;
+
+    case ClientData::SEC_ANALOG_OUTPUTS:
+      // store aircraft data
+      clientDataSecAnalogOutputs = *((base_sec_analog_outputs*)&data->dwData);
+      return;
+
+    case ClientData::SEC_1_BUS_OUTPUT:
+      // store aircraft data
+      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
+      return;
+
+    case ClientData::SEC_2_BUS_OUTPUT:
+      // store aircraft data
+      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
+      return;
+
+    case ClientData::SEC_3_BUS_OUTPUT:
+      // store aircraft data
+      clientDataSecBusOutputs = *((base_sec_out_bus*)&data->dwData);
+      return;
 
     case ClientData::FAC_DISCRETE_OUTPUTS:
       // store aircraft data
