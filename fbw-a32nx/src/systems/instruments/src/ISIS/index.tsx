@@ -64,12 +64,14 @@ export const ISISDisplay: React.FC = () => {
     useInteractionEvent('A32NX_ISIS_PLUS_PRESSED', () => {
         lastPilotInput.current = Date.now();
 
+        // eslint-disable-next-line no-unused-expressions
         bugsActive && setSelectedIndex((7 + selectedIndex) % 6);
     });
 
     useInteractionEvent('A32NX_ISIS_MINUS_PRESSED', () => {
         lastPilotInput.current = Date.now();
 
+        // eslint-disable-next-line no-unused-expressions
         bugsActive && setSelectedIndex((5 + selectedIndex) % 6);
     });
 
