@@ -1,15 +1,23 @@
 use crate::shared::interpolation;
+use crate::shared::low_pass_filter::LowPassFilter;
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
+use uom::si::acceleration::megameter_per_second_squared;
 use uom::si::{
     angle::{degree, radian},
+    angular_acceleration::radian_per_second_squared,
     angular_velocity::{radian_per_second, revolution_per_minute},
+    area::square_meter,
     f64::*,
+    mass_density::kilogram_per_cubic_meter,
+    power::watt,
     ratio::ratio,
+    thermodynamic_temperature::kelvin,
     torque::newton_meter,
     velocity::knot,
+    velocity::meter_per_second,
 };
 
 use std::time::Duration;
@@ -19,29 +27,43 @@ pub struct WindTurbine {
     angular_position_id: VariableIdentifier,
     propeller_angle_id: VariableIdentifier,
 
+    propeller_radius: Length,
+    propeller_area: Area,
+
+    tip_speed: Velocity,
+    tip_speed_ratio: Ratio,
+
     position: Angle,
     speed: AngularVelocity,
-    acceleration: f64,
-    torque_sum: f64,
+    acceleration: AngularAcceleration,
+    torque_sum: Torque,
 
-    propeller_angle: Angle,
+    propeller_beta_pitch: LowPassFilter<Ratio>,
 
     rpm_governor_breakpoints: [f64; 9],
-    propeller_alpha_to_rpm_map: [f64; 9],
+    propeller_pitch_ratio_to_rpm_map: [f64; 9],
 }
 impl WindTurbine {
     // Stow position from which mechanical pin unlocks blades rotation
     const PIN_BLADE_UNLOCK_POSITION_WITH_STOW_RATIO: f64 = 0.8;
 
-    // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
+    const MAX_TIP_SPEED_MACH_NUMBER: f64 = 0.98;
+    const MIN_TIP_SPEED_MACH_NUMBER: f64 = 0.95;
+
+    const OPTIMAL_TIP_SPEED_RATIO_BLADE_DESIGN: f64 = 2.;
+    const MAX_AERODYNAMIC_EFFICIENCY: f64 = 0.45;
+
+    const PROPELLER_PITCH_MECHANISM_TIME_CONSTANT: Duration = Duration::from_millis(100);
+
+    // Low speed special calculation threshold. Under that value we compute torque and friction differently
     const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 15.;
     const STOWED_ANGLE: f64 = std::f64::consts::PI / 2.;
     const PROPELLER_INERTIA: f64 = 0.2;
-    const FRICTION_COEFFICIENT: f64 = 0.0002;
-    const AIR_LIFT_COEFFICIENT: f64 = 0.018;
+    const FRICTION_COEFFICIENT: f64 = 0.2;
 
     pub fn new(
         context: &mut InitContext,
+        propeller_radius: Length,
         rpm_governor_breakpoints: [f64; 9],
         propeller_alpha_to_rpm_map: [f64; 9],
     ) -> Self {
@@ -50,16 +72,79 @@ impl WindTurbine {
             angular_position_id: context.get_identifier("RAT_ANGULAR_POSITION".to_owned()),
             propeller_angle_id: context.get_identifier("RAT_PROPELLER_ANGLE".to_owned()),
 
+            propeller_radius,
+            propeller_area: propeller_radius * propeller_radius * std::f64::consts::PI,
+
+            tip_speed: Velocity::default(),
+            tip_speed_ratio: Ratio::default(),
+
             position: Angle::new::<radian>(Self::STOWED_ANGLE),
             speed: AngularVelocity::default(),
-            acceleration: 0.,
-            torque_sum: 0.,
+            acceleration: AngularAcceleration::default(),
+            torque_sum: Torque::default(),
 
-            propeller_angle: Angle::default(),
+            propeller_beta_pitch: LowPassFilter::new(Self::PROPELLER_PITCH_MECHANISM_TIME_CONSTANT),
 
             rpm_governor_breakpoints,
-            propeller_alpha_to_rpm_map,
+            propeller_pitch_ratio_to_rpm_map: propeller_alpha_to_rpm_map,
         }
+    }
+
+    fn update_tip_speed_ratio(&mut self, context: &UpdateContext) {
+        self.tip_speed = self.propeller_radius * self.speed();
+
+        let wind_speed = context.true_airspeed();
+
+        self.tip_speed_ratio = if wind_speed.get::<meter_per_second>().abs() > 0.001 {
+            (self.tip_speed / wind_speed).abs()
+        } else {
+            Ratio::default()
+        }
+    }
+
+    fn mach_effect_ratio(&self, context: &UpdateContext) -> Ratio {
+        let speed_of_sound = Velocity::new::<meter_per_second>(
+            (1.4 * 287. * context.ambient_temperature().get::<kelvin>()).sqrt(),
+        );
+
+        let blade_tip_mach_number = self.tip_speed / speed_of_sound;
+
+        ((Ratio::new::<ratio>(1.) - blade_tip_mach_number)
+            / (Ratio::new::<ratio>(Self::MAX_TIP_SPEED_MACH_NUMBER)
+                - Ratio::new::<ratio>(Self::MIN_TIP_SPEED_MACH_NUMBER)))
+        .min(Ratio::new::<ratio>(1.))
+        .max(Ratio::new::<ratio>(0.))
+    }
+
+    fn power_efficiency(&self) -> Ratio {
+        Ratio::new::<ratio>(
+            (Self::MAX_AERODYNAMIC_EFFICIENCY
+                * (1. - self.propeller_beta_pitch.output().get::<ratio>()))
+                / (1.
+                    + 3. * (self.tip_speed_ratio.get::<ratio>()
+                        - Self::OPTIMAL_TIP_SPEED_RATIO_BLADE_DESIGN)
+                        .powi(2)),
+        )
+    }
+
+    fn wind_power_available(&self, context: &UpdateContext) -> Power {
+        0.5 * context.ambient_air_density()
+            * self.propeller_area
+            * context.true_airspeed()
+            * context.true_airspeed()
+            * context.true_airspeed()
+    }
+
+    fn wind_power_converted(&self, context: &UpdateContext) -> Power {
+        println!(
+            "*****eff {:.3}  machC {:.3}  TSR {:.2}",
+            self.power_efficiency().get::<ratio>(),
+            self.mach_effect_ratio(context).get::<ratio>(),
+            self.tip_speed_ratio.get::<ratio>()
+        );
+        self.wind_power_available(context)
+            * self.power_efficiency()
+            * self.mach_effect_ratio(context)
     }
 
     pub fn speed(&self) -> AngularVelocity {
@@ -75,67 +160,84 @@ impl WindTurbine {
     }
 
     fn update_generated_torque(&mut self, context: &UpdateContext) {
-        let cur_alpha_degrees = interpolation(
+        let cur_beta_pitch_ratio = interpolation(
             &self.rpm_governor_breakpoints,
-            &self.propeller_alpha_to_rpm_map,
+            &self.propeller_pitch_ratio_to_rpm_map,
             self.speed().get::<revolution_per_minute>(),
         );
 
-        self.propeller_angle = Angle::new::<degree>(cur_alpha_degrees);
+        self.propeller_beta_pitch
+            .update(context.delta(), Ratio::new::<ratio>(cur_beta_pitch_ratio));
 
-        println!("BLADE PITCH {:.2}", self.propeller_angle.get::<degree>());
+        let generated_torque = if self.speed().get::<revolution_per_minute>().abs()
+            > Self::LOW_SPEED_PHYSICS_ACTIVATION
+        {
+            Torque::new::<newton_meter>(
+                self.wind_power_converted(context).get::<watt>()
+                    / self.speed().get::<radian_per_second>().abs(),
+            )
+        } else {
+            Torque::new::<newton_meter>(
+                0.003
+                    * context
+                        .ambient_air_density()
+                        .get::<kilogram_per_cubic_meter>()
+                    * self.propeller_area.get::<square_meter>()
+                    * context.true_airspeed().get::<meter_per_second>()
+                    * context.true_airspeed().get::<meter_per_second>()
+                    * context.true_airspeed().get::<meter_per_second>().signum(),
+            )
+        };
 
-        // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
-        let air_speed_torque = cur_alpha_degrees.to_radians().sin()
-            * (context.true_airspeed().get::<knot>()
-                * context.true_airspeed().get::<knot>()
-                * Self::AIR_LIFT_COEFFICIENT)
-            * 0.5;
-
-        self.torque_sum += air_speed_torque;
+        self.torque_sum += generated_torque;
 
         println!(
             "GENERATED BLADE TORQUE {:.1}Nm, Power :{:.0}W",
-            air_speed_torque,
-            air_speed_torque * self.speed.get::<radian_per_second>()
+            generated_torque.get::<newton_meter>(),
+            generated_torque.get::<newton_meter>() * self.speed.get::<radian_per_second>()
         );
     }
 
     fn update_friction_torque(&mut self, resistant_torque: Torque) {
-        let pump_torque = if self.is_low_speed() {
-            self.speed().get::<radian_per_second>() * 0.25
+        let friction_torque = if self.is_low_speed() {
+            Torque::new::<newton_meter>(self.speed().get::<radian_per_second>() * -5.)
         } else {
-            20. + (self.speed().get::<radian_per_second>()
-                * self.speed().get::<radian_per_second>())
-                * Self::FRICTION_COEFFICIENT
+            Torque::new::<newton_meter>(
+                self.speed().get::<radian_per_second>() * -Self::FRICTION_COEFFICIENT,
+            )
         };
+
+        let pumping_torque = Torque::new::<newton_meter>(3. * self.position.get::<radian>().cos());
 
         println!(
             "FRICTION TORQUE {:.1}Nm, RESISTANT GEN TORQUE {:.1}Nm",
-            pump_torque,
+            (friction_torque + pumping_torque).get::<newton_meter>(),
             resistant_torque.get::<newton_meter>(),
         );
 
-        self.torque_sum += resistant_torque.get::<newton_meter>() - pump_torque;
+        self.torque_sum += resistant_torque + friction_torque + pumping_torque;
     }
 
     fn update_physics(&mut self, context: &UpdateContext) {
-        self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
+        self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
+            self.torque_sum.get::<newton_meter>() / Self::PROPELLER_INERTIA,
+        );
         self.speed += AngularVelocity::new::<radian_per_second>(
-            self.acceleration * context.delta_as_secs_f64(),
+            self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
         );
         self.position += Angle::new::<radian>(
             self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
         );
 
         println!(
-            "RAT FINAL NET TORQUE {:.1}Nm speed rpm {:.0}",
-            self.torque_sum,
-            self.speed.get::<revolution_per_minute>()
+            "RAT FINAL NET TORQUE {:.1}Nm speed rpm {:.0} BladePitch {:.2}",
+            self.torque_sum.get::<newton_meter>(),
+            self.speed.get::<revolution_per_minute>(),
+            self.propeller_beta_pitch.output().get::<ratio>()
         );
 
         // Reset torque accumulator at end of update
-        self.torque_sum = 0.;
+        self.torque_sum = Torque::default();
 
         self.position = Angle::new::<degree>(self.position.get::<degree>() % 360.);
     }
@@ -143,6 +245,7 @@ impl WindTurbine {
     pub fn update(&mut self, context: &UpdateContext, stow_pos: Ratio, resistant_torque: Torque) {
         //Only update if propeller is after mechanical pin position
         if stow_pos.get::<ratio>() > Self::PIN_BLADE_UNLOCK_POSITION_WITH_STOW_RATIO {
+            self.update_tip_speed_ratio(context);
             self.update_generated_torque(context);
             self.update_friction_torque(resistant_torque);
             self.update_physics(context);
@@ -153,14 +256,11 @@ impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.rpm_id, self.speed());
 
-        writer.write(
-            &self.angular_position_id,
-            self.position.get::<degree>() % 360.,
-        );
+        writer.write(&self.angular_position_id, self.position.get::<degree>());
 
         writer.write(
             &self.propeller_angle_id,
-            self.propeller_angle.get::<degree>() / 45.,
+            self.propeller_beta_pitch.output().get::<ratio>(),
         );
     }
 }
@@ -176,6 +276,7 @@ mod tests {
     use uom::si::power::kilowatt;
     use uom::si::{
         angular_velocity::{radian_per_second, revolution_per_minute},
+        length::meter,
         power::watt,
         torque::newton_meter,
         velocity::knot,
@@ -279,48 +380,112 @@ mod tests {
     }
 
     #[test]
-    fn high_air_speed_conditions() {
+    fn spins_in_high_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(75.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
+
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 3500.);
     }
 
     #[test]
-    fn medium_air_speed_conditions() {
+    fn spins_in_medium_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.write_by_name("AIRSPEED INDICATED", 200.);
+        test_bed.write_by_name("AIRSPEED TRUE", 200.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(75.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 3500.);
     }
 
     #[test]
-    fn min_air_speed_conditions() {
+    fn fails_to_spin_in_min_air_speed_conditions_over_rated_load() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.write_by_name("AIRSPEED INDICATED", 140.);
+        test_bed.write_by_name("AIRSPEED TRUE", 140.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+
+        // Cannot supply 75KW of power at lowest approach speed
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(75.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) < 2500.);
+    }
+
+    #[test]
+    fn spins_in_min_air_speed_conditions_at_lower_load() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.write_by_name("AIRSPEED TRUE", 140.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+
+        // Cannot supply 75KW of power at lowest approach speed
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(40.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 2500.);
     }
 
     #[test]
     fn stalling_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.write_by_name("AIRSPEED INDICATED", 80.);
+        test_bed.write_by_name("AIRSPEED TRUE", 50.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(75.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
+
+        assert!(test_bed.query(|a| a.turbine_rpm()) < 500.);
+    }
+
+    #[test]
+    fn stops_from_full_speed_less_than_5_s() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(40.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 3900.);
+
+        test_bed.write_by_name("AIRSPEED TRUE", 0.);
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) < 5.);
     }
 
     fn a380_wind_turbine(context: &mut InitContext) -> WindTurbine {
         const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-            0.0, 1000., 2400.0, 2475.0, 4150.0, 4154.0, 4155.0, 4200.0, 4300.0,
+            0.0, 1000., 3400.0, 3900.0, 4150.0, 4154.0, 4155.0, 4200.0, 4300.0,
         ];
-        const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 1., 1., 1., 1., 1.];
-        WindTurbine::new(context, RPM_GOVERNOR_BREAKPTS, PROP_ALPHA_MAP)
+        const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+
+        WindTurbine::new(
+            context,
+            Length::new::<meter>(1.6256 / 2.),
+            RPM_GOVERNOR_BREAKPTS,
+            PROP_ALPHA_MAP,
+        )
     }
 }

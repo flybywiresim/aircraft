@@ -24,6 +24,7 @@ use uom::si::{
     angle::radian,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
+    length::meter,
     mass::kilogram,
     pressure::{pascal, psi},
     ratio::ratio,
@@ -2953,8 +2954,11 @@ impl RamAirTurbine {
             deployment_commanded: false,
             pump: Pump::new(pump_characteristics),
             pump_controller: AlwaysPressurisePumpController::new(),
+
+            // TODO UPDATE TO 320 SPECs
             wind_turbine: WindTurbine::new(
                 context,
+                Length::new::<meter>(1.6256 / 2.),
                 Self::RPM_GOVERNOR_BREAKPTS,
                 Self::PROP_ALPHA_MAP,
             ),

@@ -15,6 +15,7 @@ use uom::si::{
     angle::radian,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
+    length::meter,
     power::watt,
     ratio::ratio,
     torque::newton_meter,
@@ -41,7 +42,7 @@ impl RamAirTurbine {
     const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
         0.0, 1000., 2400.0, 2475.0, 4150.0, 4154.0, 4155.0, 4200.0, 4300.0,
     ];
-    const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 1., 1., 1., 1., 1.];
+    const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -51,6 +52,7 @@ impl RamAirTurbine {
 
             wind_turbine: WindTurbine::new(
                 context,
+                Length::new::<meter>(1.6256 / 2.),
                 Self::RPM_GOVERNOR_BREAKPTS,
                 Self::PROP_ALPHA_MAP,
             ),
