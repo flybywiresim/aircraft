@@ -79,12 +79,10 @@ export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
-    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 5000);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
-    const [dayOfYear] = useSimVar('E:ZULU DAY OF YEAR', 'number');
     const [batteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
     const [navigraph] = useState(() => new NavigraphClient());
