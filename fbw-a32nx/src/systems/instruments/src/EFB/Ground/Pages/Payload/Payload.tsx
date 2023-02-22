@@ -213,7 +213,7 @@ export const Payload = () => {
                 tempTotalDelta += tempStationDeltaPax;
                 setPaxDesired[station](paxDesired[station] + tempStationDeltaPax);
             }
-            const newCargo = setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargoDesired - totalPaxDesired * paxBagWeight), -paxBagWeight);
+            const newCargo = setTargetCargo(totalPaxDesired + tempTotalDelta, Math.max(0, totalCargoDesired - totalPaxDesired * paxBagWeight), paxBagWeight, true);
             setCargoDesiredDisplayRatio(newCargo === 0 ? 1 : totalCargoDesired / newCargo);
         }
     };
@@ -323,15 +323,15 @@ export const Payload = () => {
         fillStation(0, 1, paxRemaining);
     }, [...paxDesired, totalPaxDesired, maxPax, ...stationSize, ...seatMap]);
 
-    const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
+    const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight, randomize : boolean = false) => {
         let bagWeight:number;
         let tempTotalCargo:number;
         // negative perBagWeigths means random perBagWeights with average of this absolute value
         const maxLuggageWeight = 25;
         const minLuggageWeight = 5;
-        if (perBagWeight < 0 && perBagWeight > minLuggageWeight && perBagWeight < maxLuggageWeight) {
+        if (randomize && perBagWeight > minLuggageWeight && perBagWeight < maxLuggageWeight) {
             const minVariation = 5;
-            const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, -perBagWeight));
+            const average = Math.min(maxLuggageWeight - minVariation, Math.max(minLuggageWeight + minVariation, perBagWeight));
             const randomVariations = Math.max(Math.min(maxLuggageWeight - average, average - minLuggageWeight), minVariation);
             // double random to reduce variance and fake a law closer to normal law
             const randomPerBagWeight = average + randomVariations * ((Math.random() - 0.5) + (Math.random() - 0.5));
