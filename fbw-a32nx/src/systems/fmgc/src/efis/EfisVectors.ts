@@ -113,7 +113,9 @@ export class EfisVectors {
 
             if (transmitActive) {
                 this.transmitFlightPlan(plan, EfisVectorsGroup.ACTIVE, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
+                this.transmitGroup([], EfisVectorsGroup.DASHED);
             } else {
+                this.transmitGroup([], EfisVectorsGroup.ACTIVE);
                 this.transmitFlightPlan(plan, EfisVectorsGroup.DASHED, EfisVectorsGroup.MISSED, EfisVectorsGroup.ALTERNATE);
             }
             break;
