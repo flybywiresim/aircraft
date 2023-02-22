@@ -432,7 +432,6 @@ mod tests {
             Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
-    use ntest::assert_about_eq;
     use uom::si::{electric_potential::volt, f64::*};
 
     struct AdcnTestAircraft {
@@ -520,7 +519,6 @@ mod tests {
                 let reachable_second: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
-                println!("AFDX switch combination: {} {}", fixed_id, switch);
                 assert!(!reachable_first);
                 assert!(!reachable_second);
             });
@@ -586,7 +584,6 @@ mod tests {
                 let reachable_second: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
-                println!("AFDX switch combination: {} {}", fixed_id, switch);
                 assert!(reachable_first);
                 assert!(reachable_second);
             });
@@ -620,7 +617,6 @@ mod tests {
                 let reachable_second: bool =
                     test_bed.read_by_name(&format!("AFDX_{}_{}_REACHABLE", switch, fixed_id));
 
-                println!("AFDX switch combination: {} {}", fixed_id, switch);
                 assert!(reachable_first);
                 assert!(reachable_second);
             });

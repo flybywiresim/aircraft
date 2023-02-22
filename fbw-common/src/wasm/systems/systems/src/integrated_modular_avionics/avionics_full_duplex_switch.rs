@@ -5,7 +5,6 @@ use crate::{
         SimulatorWriter, VariableIdentifier, Write,
     },
 };
-// use std::option::Option;
 
 enum PowerSupply {
     Single(ElectricalBusType),
