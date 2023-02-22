@@ -112,7 +112,7 @@ class CDULateralRevisionPage {
                 if (nextLeg && nextLeg.additionalData.legType >= 12 && nextLeg.additionalData.legType <= 14 /* HA, HF, HM */) {
                     CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP + 1);
                 } else {
-                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP);
+                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP, forPlan);
                 }
             };
         }
