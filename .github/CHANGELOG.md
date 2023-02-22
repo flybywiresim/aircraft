@@ -44,6 +44,7 @@
 1. [MCDU] Reset of flight plan and stored data on Database switch - @Maverickwoe (Garoomf#4683)
 1. [FLIGHTMODEL/FUEL] Increased rate of fuel transfer from outer to inner tanks - @donstim (donbikes#4084)
 1. [MISC] Flight deck brightness and lighting is set automatically at spawn - @tracernz (Mike)
+1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed capability) - @donstim (donbikes#4084)
 
 ## 0.9.0
 
