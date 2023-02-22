@@ -75,6 +75,12 @@ pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
 }
 
+#[derive(PartialEq, Clone, Copy)]
+pub enum ActuatorSide {
+    Left,
+    Right,
+}
+
 pub trait Synchro {
     fn get_angle(&self) -> Angle;
 }

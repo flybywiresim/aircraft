@@ -5,9 +5,11 @@ use crate::shared::{
 };
 use crate::shared::{
     litre_per_minute::litre_per_minute, newton_per_square_millimeter::newton_per_square_millimeter,
+    ActuatorSide,
 };
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use num_traits::Zero;
@@ -613,6 +615,157 @@ impl<const N: usize> SimulationElement for FlapSlatAssy<N> {
         writer.write(&self.is_moving_id, self.is_surface_jammed());
     }
 }
+
+/*
+    [LEFT | RIGHT] [INBOARD | OUTBOARD] FLAP
+    [LEFT | RIGHT] {1..5}               SLAT
+*/
+
+struct SlatGroup {
+    slats: [SlatElement; 5],
+}
+impl SlatGroup {
+    fn new(_context: &mut InitContext, slats: [SlatElement; 5]) -> Self {
+        Self { slats }
+    }
+}
+impl SimulationElement for SlatGroup {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        for slat in &mut self.slats {
+            slat.accept(visitor);
+        }
+
+        visitor.visit(self);
+    }
+}
+
+pub struct SlatElement {
+    position_id: VariableIdentifier,
+    percent_id: VariableIdentifier,
+}
+impl SlatElement {
+    pub fn new(context: &mut InitContext, id: ActuatorSide, id_num: usize) -> Self {
+        let surface_id = "SLATS";
+        Self {
+            position_id: match id {
+                ActuatorSide::Left => {
+                    context.get_identifier(format!("LEFT_{}_{}_ANGLE", surface_id, id_num))
+                }
+                ActuatorSide::Right => {
+                    context.get_identifier(format!("RIGHT_{}_{}_ANGLE", surface_id, id_num))
+                }
+            },
+            percent_id: match id {
+                ActuatorSide::Left => context
+                    .get_identifier(format!("LEFT_{}_{}_POSITION_PERCENT", surface_id, id_num)),
+                ActuatorSide::Right => context
+                    .get_identifier(format!("RIGHT_{}_{}_POSITION_PERCENT", surface_id, id_num)),
+            },
+        }
+    }
+
+    fn get_position_deg(&self) -> f64 {
+        todo!();
+    }
+
+    fn get_position_percent(&self) -> f64 {
+        todo!();
+    }
+}
+impl SimulationElement for SlatElement {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.position_id, self.get_position_deg());
+        writer.write(&self.percent_id, self.get_position_percent());
+    }
+}
+
+pub struct A320SlatFactory {}
+impl A320SlatFactory {
+    fn new_a320_slat_group(context: &mut InitContext, id: ActuatorSide) -> SlatGroup {
+        let slat_1 = Self::new_a320_slat_element(context, id, 1);
+        let slat_2 = Self::new_a320_slat_element(context, id, 2);
+        let slat_3 = Self::new_a320_slat_element(context, id, 3);
+        let slat_4 = Self::new_a320_slat_element(context, id, 4);
+        let slat_5 = Self::new_a320_slat_element(context, id, 5);
+
+        match id {
+            ActuatorSide::Left => SlatGroup::new(context, [slat_1, slat_2, slat_3, slat_4, slat_5]),
+            ActuatorSide::Right => {
+                SlatGroup::new(context, [slat_1, slat_2, slat_3, slat_4, slat_5])
+            }
+        }
+    }
+
+    fn new_a320_slat_element(
+        context: &mut InitContext,
+        id: ActuatorSide,
+        id_number: usize,
+    ) -> SlatElement {
+        SlatElement::new(context, id, id_number)
+    }
+}
+
+pub struct SlatLinkage {
+    left_linkage: SlatGroup,
+    right_linkage: SlatGroup,
+}
+impl SlatLinkage {
+    pub fn new(context: &mut InitContext) -> Self {
+        Self {
+            left_linkage: A320SlatFactory::new_a320_slat_group(context, ActuatorSide::Left),
+            right_linkage: A320SlatFactory::new_a320_slat_group(context, ActuatorSide::Right),
+        }
+    }
+}
+impl SimulationElement for SlatLinkage {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.left_linkage.accept(visitor);
+        self.right_linkage.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct FlapLinkage {
+    angle_left_inboard_id: VariableIdentifier,
+    angle_left_outboard_id: VariableIdentifier,
+
+    angle_right_inboard_id: VariableIdentifier,
+    angle_right_outboard_id: VariableIdentifier,
+
+    position_left_inboard_percent_id: VariableIdentifier,
+    position_left_outboard_percent_id: VariableIdentifier,
+
+    position_right_inboard_percent_id: VariableIdentifier,
+    position_right_outboard_percent_id: VariableIdentifier,
+}
+impl FlapLinkage {
+    pub fn new(context: &mut InitContext) -> Self {
+        let id = "FLAPS";
+        Self {
+            angle_left_inboard_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
+            angle_left_outboard_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
+
+            angle_right_inboard_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
+            angle_right_outboard_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
+
+            position_left_inboard_percent_id: context
+                .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
+            position_left_outboard_percent_id: context
+                .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
+
+            position_right_inboard_percent_id: context
+                .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
+            position_right_outboard_percent_id: context
+                .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
+        }
+    }
+}
+// impl SimulationElement for FlapLinkage {
+//     fn write(&self, writer: &mut SimulatorWriter) {
+
+//     }
+// }
 
 /// Simple hydraulic motor directly driven with a speed.
 /// Speed is smoothly rising or lowering to simulate transients states
