@@ -47,10 +47,14 @@ impl WindTurbine {
     // Stow position from which mechanical pin unlocks blades rotation
     const PIN_BLADE_UNLOCK_POSITION_WITH_STOW_RATIO: f64 = 0.8;
 
-    const MAX_TIP_SPEED_MACH_NUMBER: f64 = 0.98;
+    // Mach speed boundaries for tip speed. Efficiency will start to drop at MIN value to be null at MAX
+    const MAX_TIP_SPEED_MACH_NUMBER: f64 = 1.01;
     const MIN_TIP_SPEED_MACH_NUMBER: f64 = 0.95;
 
+    // What is the tip speed ratio where aerodynamic efficiency is the best
     const OPTIMAL_TIP_SPEED_RATIO_BLADE_DESIGN: f64 = 2.;
+
+    // Max absolute aerodynamic efficiency
     const MAX_AERODYNAMIC_EFFICIENCY: f64 = 0.45;
 
     const PROPELLER_PITCH_MECHANISM_TIME_CONSTANT: Duration = Duration::from_millis(100);
