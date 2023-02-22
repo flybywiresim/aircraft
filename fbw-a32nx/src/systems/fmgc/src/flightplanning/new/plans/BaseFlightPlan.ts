@@ -113,6 +113,8 @@ export abstract class BaseFlightPlan {
     }
 
     sequence() {
+        this.incrementVersion();
+
         if (this.activeLegIndex + 1 >= this.firstMissedApproachLegIndex) {
             this.enrouteSegment.allLegs.length = 0;
 
