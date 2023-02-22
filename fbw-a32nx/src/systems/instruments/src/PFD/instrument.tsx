@@ -227,6 +227,9 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('slatPosLeft');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+
+        // Remove "instrument didn't load" text
+        document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();
     }
 
     /**

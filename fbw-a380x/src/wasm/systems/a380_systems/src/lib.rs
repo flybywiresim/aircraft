@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod control_display_system;
 mod electrical;
 mod fuel;
 pub mod hydraulic;
@@ -10,6 +11,7 @@ mod power_consumption;
 
 use self::{
     air_conditioning::A380AirConditioning,
+    control_display_system::A380ControlDisplaySystem,
     fuel::A380Fuel,
     pneumatic::{A380Pneumatic, A380PneumaticOverheadPanel},
 };
@@ -69,6 +71,7 @@ pub struct A380 {
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
+    cds: A380ControlDisplaySystem,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -111,6 +114,7 @@ impl A380 {
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
+            cds: A380ControlDisplaySystem::new(context),
         }
     }
 }
@@ -233,6 +237,8 @@ impl Aircraft for A380 {
         );
 
         self.engines_flex_physics.update(context);
+
+        self.cds.update();
     }
 }
 impl SimulationElement for A380 {
@@ -265,6 +271,7 @@ impl SimulationElement for A380 {
         self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
+        self.cds.accept(visitor);
 
         visitor.visit(self);
     }

@@ -74,6 +74,7 @@ export const ChecklistsReminder = () => {
                 <div className="grid grid-cols-2">
                     {relevantChecklists.map((checklist, index) => (
                         <ChecklistReminderCard
+                            key={checklist.name}
                             checklist={checklist}
                             checklistIndex={checklists.findIndex((cl) => cl.name === checklist.name)}
                             className={`${index && index % 2 !== 0 && 'ml-4'}`}
