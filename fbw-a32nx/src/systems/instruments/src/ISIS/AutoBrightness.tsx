@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import useInterval from '@instruments/common/useInterval';
@@ -12,7 +12,7 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
     const minBrightness = 0.15;
     const maxBrightness = 0.99;
     const dayBrightness = 0.85;
-    const nightBrightness = 0.50;
+    const nightBrightness = 0.25;
     const brightnessGranularity = 0.05;
 
     const [rawAutoBrightness] = useSimVar('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'number', 1000);
