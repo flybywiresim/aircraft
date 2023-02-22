@@ -2981,16 +2981,10 @@ impl RamAirTurbine {
         );
     }
 
-    pub fn update_physics(
-        &mut self,
-        delta_time: &Duration,
-        indicated_airspeed: Velocity,
-        pressure: &impl SectionPressure,
-    ) {
+    pub fn update_physics(&mut self, context: &UpdateContext, pressure: &impl SectionPressure) {
         let resistant_torque = self.resistant_torque(self.delta_vol_max(), pressure.pressure());
         self.wind_turbine.update(
-            delta_time,
-            indicated_airspeed,
+            context,
             Ratio::new::<ratio>(self.position),
             resistant_torque,
         );

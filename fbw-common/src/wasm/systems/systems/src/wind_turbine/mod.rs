@@ -1,6 +1,6 @@
 use crate::shared::interpolation;
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
 use uom::si::{
@@ -74,7 +74,7 @@ impl WindTurbine {
         self.speed.get::<revolution_per_minute>().abs() < Self::LOW_SPEED_PHYSICS_ACTIVATION
     }
 
-    fn update_generated_torque(&mut self, indicated_speed: Velocity) {
+    fn update_generated_torque(&mut self, context: &UpdateContext) {
         let cur_alpha_degrees = interpolation(
             &self.rpm_governor_breakpoints,
             &self.propeller_alpha_to_rpm_map,
@@ -87,8 +87,8 @@ impl WindTurbine {
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
         let air_speed_torque = cur_alpha_degrees.to_radians().sin()
-            * (indicated_speed.get::<knot>()
-                * indicated_speed.get::<knot>()
+            * (context.true_airspeed().get::<knot>()
+                * context.true_airspeed().get::<knot>()
                 * Self::AIR_LIFT_COEFFICIENT)
             * 0.5;
 
@@ -119,12 +119,14 @@ impl WindTurbine {
         self.torque_sum += resistant_torque.get::<newton_meter>() - pump_torque;
     }
 
-    fn update_physics(&mut self, delta_time: &Duration) {
+    fn update_physics(&mut self, context: &UpdateContext) {
         self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
-        self.speed +=
-            AngularVelocity::new::<radian_per_second>(self.acceleration * delta_time.as_secs_f64());
-        self.position +=
-            Angle::new::<radian>(self.speed.get::<radian_per_second>() * delta_time.as_secs_f64());
+        self.speed += AngularVelocity::new::<radian_per_second>(
+            self.acceleration * context.delta_as_secs_f64(),
+        );
+        self.position += Angle::new::<radian>(
+            self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
+        );
 
         println!(
             "RAT FINAL NET TORQUE {:.1}Nm speed rpm {:.0}",
@@ -138,18 +140,12 @@ impl WindTurbine {
         self.position = Angle::new::<degree>(self.position.get::<degree>() % 360.);
     }
 
-    pub fn update(
-        &mut self,
-        delta_time: &Duration,
-        indicated_speed: Velocity,
-        stow_pos: Ratio,
-        resistant_torque: Torque,
-    ) {
+    pub fn update(&mut self, context: &UpdateContext, stow_pos: Ratio, resistant_torque: Torque) {
         //Only update if propeller is after mechanical pin position
         if stow_pos.get::<ratio>() > Self::PIN_BLADE_UNLOCK_POSITION_WITH_STOW_RATIO {
-            self.update_generated_torque(indicated_speed);
+            self.update_generated_torque(context);
             self.update_friction_torque(resistant_torque);
-            self.update_physics(delta_time);
+            self.update_physics(context);
         }
     }
 }
@@ -173,8 +169,8 @@ impl SimulationElement for WindTurbine {
 mod tests {
     use super::*;
     use crate::shared::update_iterator::MaxStepLoop;
-    use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
-    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
+    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName};
+    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
     use uom::si::power::kilowatt;
@@ -190,7 +186,7 @@ mod tests {
         fn resistant_toque(load: Power, turbine_speed: AngularVelocity) -> Torque {
             if turbine_speed.get::<revolution_per_minute>() > 2000. {
                 Torque::new::<newton_meter>(
-                    load.get::<watt>() / turbine_speed.get::<radian_per_second>(),
+                    -load.get::<watt>() / turbine_speed.get::<radian_per_second>(),
                 )
             } else {
                 Torque::default()
@@ -227,6 +223,10 @@ mod tests {
         fn set_stow_position(&mut self, position: Ratio) {
             self.stow_position = position;
         }
+
+        fn turbine_rpm(&self) -> f64 {
+            self.turbine.speed().get::<revolution_per_minute>()
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -234,8 +234,7 @@ mod tests {
 
             for cur_time_step in &mut self.updater_max_step {
                 self.turbine.update(
-                    &cur_time_step,
-                    context.true_airspeed(),
+                    &context.with_delta(cur_time_step),
                     self.stow_position,
                     TestTorqueLoad::resistant_toque(self.power_load, self.turbine.speed()),
                 );
@@ -258,10 +257,32 @@ mod tests {
     }
 
     #[test]
+    fn do_not_turn_if_stow_pin_locked() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(0.)));
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(75.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.turbine_rpm()).abs() < 0.1);
+
+        test_bed.command(|a| {
+            a.set_stow_position(Ratio::new::<ratio>(
+                WindTurbine::PIN_BLADE_UNLOCK_POSITION_WITH_STOW_RATIO - 0.01,
+            ))
+        });
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.turbine_rpm()).abs() < 0.1);
+    }
+
+    #[test]
     fn high_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.write_by_name("AIRSPEED INDICATED", 340.);
+        test_bed.write_by_name("AIRSPEED TRUE", 340.);
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(75.)));
 

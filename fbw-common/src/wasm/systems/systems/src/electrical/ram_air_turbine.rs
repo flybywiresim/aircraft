@@ -79,8 +79,7 @@ impl RamAirTurbine {
     ) {
         let resistant_torque = self.resistant_torque(generator_power);
         self.wind_turbine.update(
-            &context.delta(),
-            context.indicated_airspeed(),
+            context,
             Ratio::new::<ratio>(self.stow_position),
             resistant_torque,
         );
