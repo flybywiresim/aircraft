@@ -5,11 +5,15 @@ use crate::{
         SimulatorWriter, VariableIdentifier, Write,
     },
 };
-use std::option::Option;
+// use std::option::Option;
+
+enum PowerSupply {
+    Single(ElectricalBusType),
+    Relay(PowerSupplyRelay),
+}
 
 pub struct AvionicsFullDuplexSwitch {
-    single_power_supply: Option<ElectricalBusType>,
-    power_supply_relay: Option<PowerSupplyRelay>,
+    power_supply: PowerSupply,
     last_is_powered: bool,
     is_powered: bool,
     failure_indication_id: VariableIdentifier,
@@ -26,8 +30,7 @@ impl AvionicsFullDuplexSwitch {
         power_supply: ElectricalBusType,
     ) -> Self {
         Self {
-            single_power_supply: Some(power_supply),
-            power_supply_relay: None,
+            power_supply: PowerSupply::Single(power_supply),
             last_is_powered: false,
             is_powered: false,
             failure_indication_id: context.get_identifier(format!("AFDX_SWITCH_{}_FAILURE", id)),
@@ -45,8 +48,7 @@ impl AvionicsFullDuplexSwitch {
         secondary_power_supply: ElectricalBusType,
     ) -> Self {
         Self {
-            single_power_supply: None,
-            power_supply_relay: Some(PowerSupplyRelay::new(
+            power_supply: PowerSupply::Relay(PowerSupplyRelay::new(
                 primary_power_supply,
                 secondary_power_supply,
             )),
@@ -65,12 +67,8 @@ impl AvionicsFullDuplexSwitch {
     }
 
     pub fn update(&mut self) {
-        if self.power_supply_relay.is_some() {
-            self.is_powered = self
-                .power_supply_relay
-                .as_ref()
-                .unwrap()
-                .output_is_powered();
+        if let PowerSupply::Relay(ref power_supply_relay) = self.power_supply {
+            self.is_powered = power_supply_relay.output_is_powered();
         }
 
         // do not recalculate in every step the routing table
@@ -88,28 +86,23 @@ impl AvionicsFullDuplexSwitch {
 
 impl SimulationElement for AvionicsFullDuplexSwitch {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        if self.power_supply_relay.is_some() {
-            self.power_supply_relay.as_mut().unwrap().accept(visitor);
+        if let PowerSupply::Relay(ref mut power_supply_relay) = self.power_supply {
+            power_supply_relay.accept(visitor);
         }
         visitor.visit(self);
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let failure: f64 = reader.read(&self.failure_indication_id);
-        self.failure_indication = failure != 0.0;
+        self.failure_indication = reader.read(&self.failure_indication_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        if self.is_available() {
-            writer.write(&self.available_id, 1.0);
-        } else {
-            writer.write(&self.available_id, 0.0);
-        }
+        writer.write(&self.available_id, self.is_available());
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        if self.single_power_supply.is_some() {
-            self.is_powered = buses.is_powered(self.single_power_supply.unwrap());
+        if let PowerSupply::Single(power_supply) = self.power_supply {
+            self.is_powered = buses.is_powered(power_supply);
         }
     }
 }
