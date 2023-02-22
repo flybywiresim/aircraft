@@ -11,7 +11,8 @@ use crate::systems::{
         VariableIdentifier, Write,
     },
 };
-use std::collections::{HashMap, VecDeque};
+use fxhash::FxHashMap;
+use std::collections::VecDeque;
 use std::vec::Vec;
 
 struct RoutingTableEntry {
@@ -60,7 +61,7 @@ impl RoutingTableEntry {
 // A breadth-first-search is used to update the routing table per AFDX switch.
 pub struct A380AvionicsDataCommunicationNetwork {
     afdx_switches: [AvionicsFullDuplexSwitch; 16],
-    afdx_networks: [HashMap<u8, Vec<u8>>; 2],
+    afdx_networks: [FxHashMap<u8, Vec<u8>>; 2],
     cpio_modules: [CoreProcessingInputOutputModule; 22],
     io_modules: [InputOutputModule; 8],
     routing_tables: [[Vec<RoutingTableEntry>; 8]; 2],
@@ -69,6 +70,26 @@ pub struct A380AvionicsDataCommunicationNetwork {
 
 impl A380AvionicsDataCommunicationNetwork {
     pub fn new(context: &mut InitContext) -> Self {
+        let mut first_network = FxHashMap::default();
+        first_network.insert(0, vec![1, 2, 7]);
+        first_network.insert(1, vec![0, 3, 7]);
+        first_network.insert(2, vec![0, 3, 4, 6, 7]);
+        first_network.insert(3, vec![1, 2, 5, 6, 7]);
+        first_network.insert(4, vec![2, 5, 6]);
+        first_network.insert(5, vec![3, 4, 6]);
+        first_network.insert(6, vec![2, 3, 4, 5]);
+        first_network.insert(7, vec![0, 1, 2, 3]);
+
+        let mut second_network = FxHashMap::default();
+        second_network.insert(8, vec![9, 10, 15]);
+        second_network.insert(9, vec![8, 11, 15]);
+        second_network.insert(10, vec![8, 11, 12, 14, 15]);
+        second_network.insert(11, vec![9, 10, 13, 14, 15]);
+        second_network.insert(12, vec![10, 13, 14]);
+        second_network.insert(13, vec![11, 12, 14]);
+        second_network.insert(14, vec![10, 11, 12, 13]);
+        second_network.insert(15, vec![8, 9, 10, 11]);
+
         Self {
             afdx_switches: [
                 AvionicsFullDuplexSwitch::new_single_power_supply(
@@ -156,28 +177,7 @@ impl A380AvionicsDataCommunicationNetwork {
                     ElectricalBusType::DirectCurrentEssential,
                 ),
             ],
-            afdx_networks: [
-                HashMap::from([
-                    (0, vec![1, 2, 7]),
-                    (1, vec![0, 3, 7]),
-                    (2, vec![0, 3, 4, 6, 7]),
-                    (3, vec![1, 2, 5, 6, 7]),
-                    (4, vec![2, 5, 6]),
-                    (5, vec![3, 4, 6]),
-                    (6, vec![2, 3, 4, 5]),
-                    (7, vec![0, 1, 2, 3]),
-                ]),
-                HashMap::from([
-                    (8, vec![9, 10, 15]),
-                    (9, vec![8, 11, 15]),
-                    (10, vec![8, 11, 12, 14, 15]),
-                    (11, vec![9, 10, 13, 14, 15]),
-                    (12, vec![10, 13, 14]),
-                    (13, vec![11, 12, 14]),
-                    (14, vec![10, 11, 12, 13]),
-                    (15, vec![8, 9, 10, 11]),
-                ]),
-            ],
+            afdx_networks: [first_network, second_network],
             io_modules: [
                 InputOutputModule::new(context, "A1", ElectricalBusType::DirectCurrentEssential),
                 InputOutputModule::new(context, "A2", ElectricalBusType::DirectCurrent(2)),
@@ -325,7 +325,7 @@ impl A380AvionicsDataCommunicationNetwork {
 
     fn switches_reachable(
         afdx_switches: &[AvionicsFullDuplexSwitch; 16],
-        network: &HashMap<u8, Vec<u8>>,
+        network: &FxHashMap<u8, Vec<u8>>,
         from: u8,
         to: u8,
     ) -> bool {
