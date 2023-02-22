@@ -15,6 +15,7 @@ export const Tooltip = forwardRef(({ text, posX, posY, shown }: TooltipProps, re
 
     return (
         <div
+            key={text}
             ref={ref}
             className={`absolute rounded-md z-50 px-2 whitespace-nowrap border bg-theme-accent border-theme-secondary transition duration-100 pointer-events-none ${shown ? 'opacity-100' : 'opacity-0'}`}
             style={{ top: `${posY + offsetY}px`, left: `${posX}px` }}
@@ -69,7 +70,6 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
     }, [contentRef.current, tooltipRef.current, text, showTooltip]);
 
     return (
-        // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
         <>
             {React.Children.map(children, (child) => React.cloneElement(
                 child as React.ReactElement,
@@ -116,7 +116,14 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
             ))}
 
             {/* Dummy tooltip for use in calculations */}
-            <Tooltip ref={tooltipRef} posX={0} posY={0} text={text} shown={false} />
+            <Tooltip
+                key={text}
+                ref={tooltipRef}
+                posX={0}
+                posY={0}
+                text={text}
+                shown={false}
+            />
         </>
     );
 };

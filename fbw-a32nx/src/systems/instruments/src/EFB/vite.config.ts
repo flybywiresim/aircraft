@@ -20,7 +20,7 @@ export default defineConfig({
         },
     },
     plugins: [
-        react(),
+        react({ jsxRuntime: 'classic' }),
         tsconfigPaths({ root: '../../../' }),
         replaceCodePlugin({
             replacements: [

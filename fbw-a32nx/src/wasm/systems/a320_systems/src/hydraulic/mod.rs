@@ -49,8 +49,7 @@ use systems::{
         Accumulator, ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
         HydraulicCircuitController, HydraulicPressureSensors, PowerTransferUnit,
         PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
-        PressureSwitchType, PriorityValve, PumpController, RamAirTurbine, RamAirTurbineController,
-        Reservoir,
+        PressureSwitchType, PriorityValve, PumpController, RamAirTurbine, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
@@ -61,10 +60,10 @@ use systems::{
         random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
         AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorPower,
-        EngineFirePushButtons, GearWheel, HydraulicColor, HydraulicGeneratorControlUnit,
-        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure,
-        SectionPressure, TrimmableHorizontalStabilizer,
+        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
+        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
+        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, RamAirTurbineController,
+        ReservoirAirPressure, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -2584,7 +2583,7 @@ impl SimulationElement for A320Hydraulic {
         );
     }
 }
-impl HydraulicGeneratorControlUnit for A320Hydraulic {
+impl EmergencyGeneratorControlUnit for A320Hydraulic {
     fn max_allowed_power(&self) -> Power {
         self.gcu.max_allowed_power()
     }
@@ -5969,7 +5968,7 @@ mod tests {
             hydraulic::electrical_generator::TestGenerator,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{
-                EmergencyElectricalState, HydraulicGeneratorControlUnit, LgciuId, PotentialOrigin,
+                EmergencyElectricalState, EmergencyGeneratorControlUnit, LgciuId, PotentialOrigin,
             },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -6087,7 +6086,7 @@ mod tests {
 
             fn update(
                 &mut self,
-                gcu: &impl HydraulicGeneratorControlUnit,
+                gcu: &impl EmergencyGeneratorControlUnit,
                 context: &UpdateContext,
             ) {
                 self.airspeed = context.indicated_airspeed();
@@ -6622,11 +6621,11 @@ mod tests {
             }
 
             fn get_rat_position(&mut self) -> f64 {
-                self.read_by_name("HYD_RAT_STOW_POSITION")
+                self.read_by_name("RAT_STOW_POSITION")
             }
 
             fn get_rat_rpm(&mut self) -> f64 {
-                self.read_by_name("A32NX_HYD_RAT_RPM")
+                self.read_by_name("A32NX_RAT_RPM")
             }
 
             fn get_left_aileron_position(&mut self) -> Ratio {

@@ -3,7 +3,7 @@
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/fonts/ISISFontTemporary.ttf") format("truetype");
+  src: url("/Fonts/ISISFontTemporary.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -136,7 +136,7 @@
   0% {stroke: $display-background;}
   50% {stroke: $display-background;}
   51% {stroke: white;}
-  100% {strok: white;}
+  100% {stroke: white;}
 }
 
 .BlinkInfinite {

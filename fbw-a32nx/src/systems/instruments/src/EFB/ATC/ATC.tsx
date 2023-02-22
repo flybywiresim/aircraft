@@ -217,7 +217,10 @@ export const ATC = () => {
                             </TooltipWrapper>
                             <SelectGroup>
                                 {atcTypeOptions.map((option) => (
-                                    <TooltipWrapper text={`${t('AirTrafficControl.TT.AtcTypeFilter')} ${option.typeName}`}>
+                                    <TooltipWrapper
+                                        key={option.typeName}
+                                        text={`${t('AirTrafficControl.TT.AtcTypeFilter')} ${option.typeName}`}
+                                    >
                                         <div>
                                             <SelectItem
                                                 className="overflow-hidden w-[120px] whitespace-nowrap"
@@ -237,6 +240,7 @@ export const ATC = () => {
                                 .filter((c) => filterControllers(c))
                                 .map((controller, index) => (
                                     <FrequencyCard
+                                        key={controller.frequency}
                                         className={`${index && index % 2 !== 0 && 'ml-4'} ${index >= 2 && 'mt-4'}`}
                                         callsign={controller.callsign}
                                         frequency={controller.frequency}
