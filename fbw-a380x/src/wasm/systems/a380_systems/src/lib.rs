@@ -22,7 +22,6 @@ use electrical::{
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use std::vec::Vec;
 use systems::enhanced_gpwc::EnhancedGPWC;
 use systems::simulation::InitContext;
 use uom::si::{f64::Length, length::nautical_mile};
@@ -122,7 +121,7 @@ impl A380 {
             enhanced_gpwc: EnhancedGPWC::new(
                 context,
                 ElectricalBusType::DirectCurrent(1),
-                Vec::from([
+                vec![
                     Length::new::<nautical_mile>(10.0),
                     Length::new::<nautical_mile>(20.0),
                     Length::new::<nautical_mile>(40.0),
@@ -130,7 +129,7 @@ impl A380 {
                     Length::new::<nautical_mile>(160.0),
                     Length::new::<nautical_mile>(320.0),
                     Length::new::<nautical_mile>(640.0),
-                ]),
+                ],
                 1,
             ),
         }

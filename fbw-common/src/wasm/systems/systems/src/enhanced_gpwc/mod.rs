@@ -15,8 +15,6 @@ use std::vec::Vec;
 use uom::si::{
     angle::degree,
     f64::{Angle, Length, Velocity},
-    length::foot,
-    velocity::foot_per_minute,
 };
 
 pub mod navigation_display;
@@ -63,22 +61,13 @@ impl EnhancedGPWC {
             fm1_destination_longitude_id: context.get_identifier("FM1_DEST_LONG".to_owned()),
             fm1_destination_latitude_ssm_id: context.get_identifier("FM1_DEST_LAT_SSM".to_owned()),
             fm1_destination_latitude_id: context.get_identifier("FM1_DEST_LAT".to_owned()),
-            destination_longitude: Arinc429Word::new(
-                Angle::new::<degree>(0.0),
-                SignStatus::FailureWarning,
-            ),
-            destination_latitude: Arinc429Word::new(
-                Angle::new::<degree>(0.0),
-                SignStatus::FailureWarning,
-            ),
-            latitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            longitude: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            altitude: Arinc429Word::new(Length::new::<foot>(0.0), SignStatus::FailureWarning),
-            heading: Arinc429Word::new(Angle::new::<degree>(0.0), SignStatus::FailureWarning),
-            vertical_speed: Arinc429Word::new(
-                Velocity::new::<foot_per_minute>(0.0),
-                SignStatus::FailureWarning,
-            ),
+            destination_longitude: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+            destination_latitude: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+            latitude: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+            longitude: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+            altitude: Arinc429Word::new(Length::default(), SignStatus::FailureWarning),
+            heading: Arinc429Word::new(Angle::default(), SignStatus::FailureWarning),
+            vertical_speed: Arinc429Word::new(Velocity::default(), SignStatus::FailureWarning),
             navigation_display_range_lookup: range_lookup,
             navigation_displays: [
                 NavigationDisplay::new(context, "L"),
@@ -97,13 +86,11 @@ impl EnhancedGPWC {
     }
 
     fn update_position_data(&mut self, adirs_output: &impl AdirsMeasurementOutputs) {
-        /*
-         * documentation hints:
-         *   - EGPWC has direct connection to GPS sensor && ADIRS_1
-         *   - uses direct GPS data if ADIRS_1 is unavailable
-         * TODO:
-         *   - implement logic as soon as GPS sensor is available
-         */
+        // documentation hints:
+        //   - EGPWC has direct connection to GPS sensor && ADIRS_1
+        //   - uses direct GPS data if ADIRS_1 is unavailable
+        // TODO:
+        //   - implement logic as soon as GPS sensor is available
         self.latitude = adirs_output.latitude(1);
         self.longitude = adirs_output.longitude(1);
         self.altitude = adirs_output.altitude(1);
@@ -150,26 +137,16 @@ impl SimulationElement for EnhancedGPWC {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_arinc429(
+        writer.write(
             &self.egpwc_destination_longitude_id,
-            self.destination_longitude.value().get::<degree>(),
-            self.destination_longitude.ssm(),
+            self.destination_longitude,
         );
-        writer.write_arinc429(
+        writer.write(
             &self.egpwc_destination_latitude_id,
-            self.destination_latitude.value().get::<degree>(),
-            self.destination_latitude.ssm(),
+            self.destination_latitude,
         );
-        writer.write_arinc429(
-            &self.egpwc_present_latitude_id,
-            self.latitude.value().get::<degree>(),
-            self.latitude.ssm(),
-        );
-        writer.write_arinc429(
-            &self.egpwc_present_longitude_id,
-            self.longitude.value().get::<degree>(),
-            self.longitude.ssm(),
-        );
+        writer.write(&self.egpwc_present_latitude_id, self.latitude);
+        writer.write(&self.egpwc_present_longitude_id, self.longitude);
         writer.write(&self.egpwc_gear_is_down_id, self.gear_is_down);
         writer.write(
             &self.egpwc_terronnd_rendering_mode,
