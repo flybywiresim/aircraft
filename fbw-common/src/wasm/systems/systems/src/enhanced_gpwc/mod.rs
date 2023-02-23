@@ -19,7 +19,7 @@ use uom::si::{
 
 pub mod navigation_display;
 
-pub struct EnhancedGPWC {
+pub struct EnhancedGroundProximityWarningComputer {
     powered_by: ElectricalBusType,
     is_powered: bool,
     fm1_destination_longitude_ssm_id: VariableIdentifier,
@@ -46,14 +46,14 @@ pub struct EnhancedGPWC {
     egpwc_terronnd_rendering_mode: VariableIdentifier,
 }
 
-impl EnhancedGPWC {
+impl EnhancedGroundProximityWarningComputer {
     pub fn new(
         context: &mut InitContext,
         powered_by: ElectricalBusType,
         range_lookup: Vec<Length>,
         terronnd_rendering_mode: u8,
     ) -> Self {
-        EnhancedGPWC {
+        EnhancedGroundProximityWarningComputer {
             powered_by,
             is_powered: false,
             fm1_destination_longitude_ssm_id: context
@@ -115,7 +115,7 @@ impl EnhancedGPWC {
     }
 }
 
-impl SimulationElement for EnhancedGPWC {
+impl SimulationElement for EnhancedGroundProximityWarningComputer {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by)
     }

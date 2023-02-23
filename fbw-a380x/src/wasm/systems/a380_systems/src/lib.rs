@@ -22,7 +22,7 @@ use electrical::{
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use systems::enhanced_gpwc::EnhancedGPWC;
+use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
 use uom::si::{f64::Length, length::nautical_mile};
 
@@ -74,7 +74,7 @@ pub struct A380 {
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     cds: A380ControlDisplaySystem,
-    enhanced_gpwc: EnhancedGPWC,
+    egpwc: EnhancedGroundProximityWarningComputer,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -118,7 +118,7 @@ impl A380 {
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             cds: A380ControlDisplaySystem::new(context),
-            enhanced_gpwc: EnhancedGPWC::new(
+            egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
                 ElectricalBusType::DirectCurrent(1),
                 vec![
@@ -257,7 +257,7 @@ impl Aircraft for A380 {
 
         self.cds.update();
 
-        self.enhanced_gpwc.update(&self.adirs, &self.lgcius);
+        self.egpwc.update(&self.adirs, &self.lgcius);
     }
 }
 impl SimulationElement for A380 {
@@ -291,7 +291,7 @@ impl SimulationElement for A380 {
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
-        self.enhanced_gpwc.accept(visitor);
+        self.egpwc.accept(visitor);
 
         visitor.visit(self);
     }
