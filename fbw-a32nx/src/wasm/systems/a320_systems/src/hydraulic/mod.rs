@@ -1949,11 +1949,8 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.ram_air_turbine.update_physics(
-            &context.delta(),
-            context.indicated_airspeed(),
-            self.blue_circuit.system_section(),
-        );
+        self.ram_air_turbine
+            .update_physics(context, self.blue_circuit.system_section());
 
         self.gcu.update(
             context,
