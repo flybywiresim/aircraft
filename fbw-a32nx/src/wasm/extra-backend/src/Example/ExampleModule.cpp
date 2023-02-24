@@ -253,6 +253,42 @@ bool ExampleModule::initialize() {
                 << std::endl;
     });
 
+  // Input Event tests
+  const int INPUT_ID_0 = 0;
+  inputEventBrakesPtr = dataManager->make_event("BRAKES");
+  inputEventBrakesCallbackID = inputEventBrakesPtr
+    ->addCallback([&, this](const int number,
+                            const DWORD param0,
+                            const DWORD param1,
+                            const DWORD param2,
+                            const DWORD param3,
+                            const DWORD param4) {
+      std::cout << "--- CALLBACK: BRAKES" << std::endl;
+      std::cout << inputEventBrakesPtr->str() << std::endl;
+      std::cout << "BRAKES "
+                << " number = " << number
+                << " param0 = " << param0
+                << " param1 = " << param1
+                << " param2 = " << param2
+                << " param3 = " << param3
+                << " param4 = " << param4
+                << std::endl;
+      std::cout << std::endl;
+    });
+  // Map input event to the client event
+  if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(
+    dataManager->getSimConnectHandle(), INPUT_ID_0, "VK_COMMA", inputEventBrakesPtr->getEventClientId()))) {
+    LOG_ERROR("Failed to map input event to client event");
+  }
+  if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(
+    dataManager->getSimConnectHandle(), INPUT_ID_0, "joystick:1:button:15", inputEventBrakesPtr->getEventClientId()))) {
+    LOG_ERROR("Failed to map input event to client event");
+  }
+  if (!SUCCEEDED(SimConnect_SetInputGroupState(
+    dataManager->getSimConnectHandle(), INPUT_ID_0, SIMCONNECT_STATE_ON))) {
+    LOG_ERROR("Failed to set input group state");
+  }
+
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
   return true;
@@ -270,7 +306,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   }
 
   // Do not do anything if the sim is not running - this is not required but is a good idea
-  // It is ready after the click on "READY TO FLY"
+  // It is ready after the click on "READY TO FLY"           ,,,,,
   if (!msfsHandler.getA32NxIsReady()) return true;
 
   // Un-throttled tests
