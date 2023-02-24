@@ -12,6 +12,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
+import { RandomFailureGenerator } from 'instruments/src/EFB/Failures/randomFailureGen';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
@@ -79,8 +80,9 @@ export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
-    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 5000);
-    const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [currentLocalTime5s] = useSimVar('E:LOCAL TIME', 'seconds', 5000);
+    const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
+    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
@@ -95,7 +97,7 @@ const Efb = () => {
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
-    const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
+    const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime5s, isCharging: dc2BusIsPowered });
 
     const [ac1BusIsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 1000);
     const [, setLoadLightingPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
@@ -139,13 +141,13 @@ const Efb = () => {
         if (powerState !== PowerStates.LOADED || !batteryLifeEnabled) return;
 
         setBatteryLevel((oldLevel) => {
-            const deltaTs = Math.max(absoluteTime - oldLevel.lastChangeTimestamp, 0);
+            const deltaTs = Math.max(absoluteTime5s - oldLevel.lastChangeTimestamp, 0);
             const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
 
             let level = oldLevel.level + 100 * deltaTs / batteryDurationSec;
             if (level > 100) level = 100;
             if (level < 0) level = 0;
-            const lastChangeTimestamp = absoluteTime;
+            const lastChangeTimestamp = absoluteTime5s;
             const isCharging = oldLevel.isCharging;
 
             if (oldLevel.level > 20 && level <= 20) {
@@ -159,16 +161,20 @@ const Efb = () => {
 
             return { level, lastChangeTimestamp, isCharging };
         });
-    }, [absoluteTime, powerState]);
+    }, [absoluteTime5s, powerState]);
+
+    useEffect(() => {
+        RandomFailureGenerator();
+    }, [absoluteTime1s]);
 
     useEffect(() => {
         setBatteryLevel((oldLevel) => {
             if (oldLevel.isCharging !== dc2BusIsPowered) {
-                return { level: oldLevel.level, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered };
+                return { level: oldLevel.level, lastChangeTimestamp: absoluteTime5s, isCharging: dc2BusIsPowered };
             }
             return oldLevel;
         });
-    }, [absoluteTime, dc2BusIsPowered]);
+    }, [absoluteTime5s, dc2BusIsPowered]);
 
     useEffect(() => {
         if (batteryLevel.level <= 0) {
@@ -282,9 +288,9 @@ const Efb = () => {
 
     useEffect(() => {
         if (usingAutobrightness && powerState === PowerStates.LOADED) {
-            setBrightness(calculateBrightness(lat, dayOfYear, currentLocalTime / 3600));
+            setBrightness(calculateBrightness(lat, dayOfYear, currentLocalTime5s / 3600));
         }
-    }, [powerState, currentLocalTime, usingAutobrightness]);
+    }, [powerState, currentLocalTime5s, usingAutobrightness]);
 
     useEffect(() => {
         if (!usingAutobrightness) {
