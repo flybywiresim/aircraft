@@ -336,14 +336,25 @@ An event can be triggered (send to the sim) or registered with the sim to receiv
 events from the sim. Callbacks can be added to the Event object to handle the
 events.
 
-For details see class documentation. 
+For details see the Event class documentation.
+
+#### Input Event
+Input events can be added and mapped to an Event instance to be triggered by the 
+defined input events.                 
+
+See [MSFS SDK Documentation: SimConnect_MapInputEventToClientEvent](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm)
+for how to define input events.
+
+These input events can be clustered in groups to be able to enable and disable a set of multiple 
+input events at once. Use Event::setInputGroupState() to enable or disable a group of input events.
+
+For details see the Event class documentation.  
 
 #### Key Event
 A Key Event is not a data type which can be created. Use the DataManager to register a callback
 to handle key events. The callback will be called with the key event data.
 
-#### Input Event
-<span style="color:yellow">**To be implemented**</span>                
+For details see the DataManager class documentation.
 
 ## Example Code
 Good examples of how to use the framework can be found in the modules:

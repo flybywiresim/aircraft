@@ -160,6 +160,43 @@ public:
   void processEvent(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWORD data4);
 
   /**
+   * Adds an input event to the event group and maps it to the event.
+   *
+   * @param groupId The ID of the group to add the event to. This is useful to be able to use
+   *                setInputGroupState() to enable/disable the group with unmapping the events.
+   * @param inputDefinition The input definition to map to the event. See the SDK documentation
+   *                        linked below.
+   * @return true if the input event was successfully added and mapped to the event, false otherwise.
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
+   */
+  bool mapInputEvent(SIMCONNECT_INPUT_GROUP_ID groupId, const std::string &inputDefinition);
+
+  /**
+   * Removes an input event from the event group and unmaps it from the event.
+   *
+   * @param groupId The ID of the group to remove the event from.
+   * @param inputDefinition The input definition to unmap from the event.
+   * @return true if the input event was successfully removed and unmapped from the event,
+   *         false otherwise.
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RemoveInputEvent.htm
+   */
+  bool unmapInputEvent(SIMCONNECT_INPUT_GROUP_ID groupId, const std::string &inputDefinition);
+
+  /**
+   * Allows to enable/disable the input event groups. This method is not specific to the instance
+   * but uses the instances SimConnect handle. It can be used for any event group on any Event instance.<p/>
+   *
+   * Use the SIMCONNECT_STATE enum to set the state.<br/>
+   *     SIMCONNECT_STATE_OFF <br/>
+         SIMCONNECT_STATE_ON  <br/>
+
+   * @param groupId The ID of the group to enable/disable.
+   * @param state The state to set the group to.
+   * @return true if the state was successfully set, false otherwise.
+   */
+  bool setInputGroupState(SIMCONNECT_INPUT_GROUP_ID groupId, SIMCONNECT_STATE state);
+
+  /**
    * @return The name of the event.
    */
   [[maybe_unused]] [[nodiscard]]

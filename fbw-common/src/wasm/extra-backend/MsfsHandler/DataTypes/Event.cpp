@@ -93,6 +93,33 @@ void Event::processEvent(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWO
   }
 }
 
+bool Event::mapInputEvent(SIMCONNECT_INPUT_GROUP_ID groupId, const std::string &inputDefinition) {
+  if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(
+    this->hSimConnect, groupId, inputDefinition.c_str(), this->eventClientID))) {
+    LOG_ERROR("Failed to map input event " + inputDefinition + " to client event " + std::to_string(this->eventClientID));
+    return false;
+  }
+  return true;
+}
+
+bool Event::unmapInputEvent(SIMCONNECT_INPUT_GROUP_ID groupId, const std::string &inputDefinition) {
+  if (!SUCCEEDED(SimConnect_RemoveInputEvent(
+    this->hSimConnect, groupId, inputDefinition.c_str()))) {
+    LOG_ERROR("Failed to unmap input event " + inputDefinition + " from client event " + std::to_string(this->eventClientID));
+    return false;
+  }
+  return true;
+}
+
+bool Event::setInputGroupState(SIMCONNECT_INPUT_GROUP_ID groupId, SIMCONNECT_STATE state) {
+  if (!SUCCEEDED(SimConnect_SetInputGroupState(
+    this->hSimConnect, groupId, state))) {
+    LOG_ERROR("Failed to set input group state " + std::to_string(state) + " for group " + std::to_string(groupId));
+    return false;
+  }
+  return true;
+}
+
 std::string Event::str() const {
   std::stringstream ss;
   ss << "Event: [" << eventName;
@@ -156,3 +183,4 @@ void Event::unsubscribeFromSim() {
 
   LOG_DEBUG("Unsubscribed from event " + eventName + " with client ID " + std::to_string(eventClientID));
 }
+

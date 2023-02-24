@@ -276,18 +276,9 @@ bool ExampleModule::initialize() {
       std::cout << std::endl;
     });
   // Map input event to the client event
-  if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(
-    dataManager->getSimConnectHandle(), INPUT_ID_0, "VK_COMMA", inputEventBrakesPtr->getEventClientId()))) {
-    LOG_ERROR("Failed to map input event to client event");
-  }
-  if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(
-    dataManager->getSimConnectHandle(), INPUT_ID_0, "joystick:1:button:15", inputEventBrakesPtr->getEventClientId()))) {
-    LOG_ERROR("Failed to map input event to client event");
-  }
-  if (!SUCCEEDED(SimConnect_SetInputGroupState(
-    dataManager->getSimConnectHandle(), INPUT_ID_0, SIMCONNECT_STATE_ON))) {
-    LOG_ERROR("Failed to set input group state");
-  }
+  inputEventBrakesPtr->mapInputEvent(INPUT_ID_0, "VK_COMMA");
+  inputEventBrakesPtr->mapInputEvent(INPUT_ID_0, "joystick:1:button:15");
+  inputEventBrakesPtr->setInputGroupState(INPUT_ID_0, SIMCONNECT_STATE_ON);
 
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
