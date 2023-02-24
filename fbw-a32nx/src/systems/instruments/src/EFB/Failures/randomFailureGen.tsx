@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useSimVar } from 'react';
 
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
-import { NXFMGCFlightPhases } from '@A32NX_Utils';
 
 const FlightPhases = {
     PREFLIGHT: 0,
@@ -16,6 +15,7 @@ const FlightPhases = {
 };
 
 export const RandomFailureGenerator = () => {
+    const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
     const [failurePerTakeOff] = usePersistentNumberProperty('EFB_FAILURES_PER_TAKE_OFF', 1);
     const chanceFailureHighTakeOffRegime = 0.33;
     const chanceFailureMediumTakeOffRegime = 0.40;
@@ -27,7 +27,6 @@ export const RandomFailureGenerator = () => {
     const minFailureTakeOffSpeed = 30;
     const mediumTakeOffRegimeSpeed = 100;
     const maxFailureTakeOffSpeed = 140;
-    const
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
     const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
     const altitude = Simplane.getAltitudeAboveGround();
@@ -43,34 +42,30 @@ export const RandomFailureGenerator = () => {
                     const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
                     setFailureSpeedThreshold(temp);
                     console.info('A failure will occur during this Take-Off at the speed of %d', temp);
+                } else if (Math.random() < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
+                    // Medium Take Off speed regime
+                    const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
+                    setFailureSpeedThreshold(temp);
+                    console.info('A failure will occur during this Take-Off at the speed of %d', temp);
                 } else {
-                    if (Math.random() < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
-                        // Medium Take Off speed regime
-                        const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
-                        setFailureSpeedThreshold(temp);
-                        console.info('A failure will occur during this Take-Off at the speed of %d', temp);
-                    } else {
-                        // High Take Off speed regime
-                        const temp = altitude + 10 + Math.random() * 1000;
-                        setFailureAltitudeThreshold(temp);
-                        console.info('A failure will occur during this Take-Off at altitude %d', temp);
-                    }
+                    // High Take Off speed regime
+                    const temp = altitude + 10 + Math.random() * 1000;
+                    setFailureAltitudeThreshold(temp);
+                    console.info('A failure will occur during this Take-Off at altitude %d', temp);
                 }
             }
         }
     }, [fwcFlightPhase]);
 
-    console.info('flight phase: %s', fwcFlightPhase);
-    if (fwcFlightPhase === FlightPhases.PREFLIGHT) {
-        setRunWayAltitude(altitude);
-    } else {
-        if (fwcFlightPhase === FlightPhases.TAKEOFF || fwcFlightPhase === FlightPhases.CLIMB) {
-            if (altitude >= failureAltitudeThreshold || gs >= failureSpeedThreshold)
-            {
+    useEffect(() => {
+        console.info('flight phase: %s', fwcFlightPhase);
+        if (fwcFlightPhase === FlightPhases.PREFLIGHT) {
+            setRunWayAltitude(altitude);
+        } else if (fwcFlightPhase === FlightPhases.TAKEOFF || fwcFlightPhase === FlightPhases.CLIMB) {
+            if (altitude >= failureAltitudeThreshold || gs >= failureSpeedThreshold) {
                 console.info('Failure triggered');
                 allFailures.activate(0);
             }
         }
-    }
-
+    }, [absoluteTime1s]);
 };
