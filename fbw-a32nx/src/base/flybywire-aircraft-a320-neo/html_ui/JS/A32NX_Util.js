@@ -43,7 +43,7 @@ A32NX_Util.createMachine = (machineDef) => {
             if (valid) {
                 machine.value = newState;
             }
-        }
+        },
     };
     return machine;
 };
@@ -54,9 +54,7 @@ A32NX_Util.createMachine = (machineDef) => {
  * @param {Number=} magVar falls back to current aircraft position magvar
  * @returns magnetic heading
  */
-A32NX_Util.trueToMagnetic = (heading, magVar) => {
-    return (720 + heading - (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
-};
+A32NX_Util.trueToMagnetic = (heading, magVar) => (720 + heading - (magVar || SimVar.GetSimVarValue('MAGVAR', 'degree'))) % 360;
 
 /**
  * Compute a magnetic heading from a true heading
@@ -64,30 +62,24 @@ A32NX_Util.trueToMagnetic = (heading, magVar) => {
  * @param {Number=} magVar falls back to current aircraft position magvar
  * @returns true heading
  */
-A32NX_Util.magneticToTrue = (heading, magVar) => {
-    return (720 + heading + (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
-};
+A32NX_Util.magneticToTrue = (heading, magVar) => (720 + heading + (magVar || SimVar.GetSimVarValue('MAGVAR', 'degree'))) % 360;
 
 /**
  * Takes a LatLongAlt or LatLong and returns a vector of spherical co-ordinates
  * @param {(LatLong | LatLongAlt)} ll
  */
-A32NX_Util.latLonToSpherical = (ll) => {
-    return [
-        Math.cos(ll.lat * Avionics.Utils.DEG2RAD) * Math.cos(ll.long * Avionics.Utils.DEG2RAD),
-        Math.cos(ll.lat * Avionics.Utils.DEG2RAD) * Math.sin(ll.long * Avionics.Utils.DEG2RAD),
-        Math.sin(ll.lat * Avionics.Utils.DEG2RAD)
-    ];
-};
+A32NX_Util.latLonToSpherical = (ll) => [
+    Math.cos(ll.lat * Avionics.Utils.DEG2RAD) * Math.cos(ll.long * Avionics.Utils.DEG2RAD),
+    Math.cos(ll.lat * Avionics.Utils.DEG2RAD) * Math.sin(ll.long * Avionics.Utils.DEG2RAD),
+    Math.sin(ll.lat * Avionics.Utils.DEG2RAD),
+];
 
 /**
  * Takes a vector of spherical co-ordinates and returns a LatLong
  * @param {[x: number, y: number, z: number]} s
  * @returns {LatLong}
  */
-A32NX_Util.sphericalToLatLon = (s) => {
-    return new LatLong(Math.asin(s[2]) * Avionics.Utils.RAD2DEG, Math.atan2(s[1], s[0]) * Avionics.Utils.RAD2DEG);
-};
+A32NX_Util.sphericalToLatLon = (s) => new LatLong(Math.asin(s[2]) * Avionics.Utils.RAD2DEG, Math.atan2(s[1], s[0]) * Avionics.Utils.RAD2DEG);
 
 /**
  * Computes the intersection point of two (true) bearings on a great circle
@@ -156,24 +148,19 @@ A32NX_Util.bothGreatCircleIntersections = (latlon1, brg1, latlon2, brg2) => {
  * @param alt {number} altitude in ft
  * @returns {number} ISA temp in C°
  */
-A32NX_Util.getIsaTemp = (alt = Simplane.getAltitude()) => {
-    return Math.min(alt, 36089) * -0.0019812 + 15;
-};
+A32NX_Util.getIsaTemp = (alt = Simplane.getAltitude()) => Math.min(alt, 36089) * -0.0019812 + 15;
 
 /**
  * Returns the deviation from ISA temperature and OAT at given altitude
  * @param alt {number} altitude in ft
  * @returns {number} ISA temp deviation from OAT in C°
  */
-A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.getAmbientTemperature()) => {
-    return sat - A32NX_Util.getIsaTemp(alt);
-};
+A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.getAmbientTemperature()) => sat - A32NX_Util.getIsaTemp(alt);
 
 /**
  * Utility class to throttle instrument updates
  */
 class UpdateThrottler {
-
     /**
      * @param {number} intervalMs Interval between updates, in milliseconds
      */
@@ -206,9 +193,8 @@ class UpdateThrottler {
             const accumulatedDelta = this.currentTime - this.lastUpdateTime;
             this.lastUpdateTime = this.currentTime;
             return accumulatedDelta;
-        } else {
-            return -1;
         }
+        return -1;
     }
 }
 
@@ -219,9 +205,9 @@ A32NX_Util.UpdateThrottler = UpdateThrottler;
  */
 class NotificationParams {
     constructor() {
-        this.__Type = "SNotificationParams";
+        this.__Type = 'SNotificationParams';
         this.buttons = [];
-        this.style = "normal";
+        this.style = 'normal';
         this.displayGlobalPopup = true;
     }
 }
@@ -233,18 +219,18 @@ class NXPopUp {
     constructor() {
         this.params = new NotificationParams();
         this.popupListener;
-        this.params.title = "A32NX POPUP";
+        this.params.title = 'A32NX POPUP';
         this.params.time = new Date().getTime();
-        this.params.id = this.params.title + "_" + this.params.time;
-        this.params.contentData = "Default Message";
-        this.params.style = "small";
-        this.params.buttons.push(new NotificationButton("TT:MENU.YES", "A32NX_POP_" + this.params.id + "_YES"));
-        this.params.buttons.push(new NotificationButton("TT:MENU.NO", "A32NX_POP_" + this.params.id + "_NO"));
+        this.params.id = `${this.params.title}_${this.params.time}`;
+        this.params.contentData = 'Default Message';
+        this.params.style = 'small';
+        this.params.buttons.push(new NotificationButton('TT:MENU.YES', `A32NX_POP_${this.params.id}_YES`));
+        this.params.buttons.push(new NotificationButton('TT:MENU.NO', `A32NX_POP_${this.params.id}_NO`));
     }
 
     _showPopUp(params) {
         try {
-            Coherent.trigger("SHOW_POP_UP", params);
+            Coherent.trigger('SHOW_POP_UP', params);
         } catch (e) {
             console.error(e);
         }
@@ -269,14 +255,14 @@ class NXPopUp {
             this.params.style = style;
         }
         if (callbackYes) {
-            const yes = (typeof callbackYes === "function") ? callbackYes : () => callbackYes;
+            const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
             Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
                 Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
                 yes();
             });
         }
         if (callbackNo) {
-            const no = (typeof callbackNo === "function") ? callbackNo : () => callbackNo;
+            const no = (typeof callbackNo === 'function') ? callbackNo : () => callbackNo;
             Coherent.on(`A32NX_POP_${this.params.id}_NO`, () => {
                 Coherent.off(`A32NX_POP_${this.params.id}_NO`, null, null);
                 no();
@@ -284,7 +270,7 @@ class NXPopUp {
         }
 
         if (!this.popupListener) {
-            this.popupListener = RegisterViewListener("JS_LISTENER_POPUP", this._showPopUp.bind(null, this.params));
+            this.popupListener = RegisterViewListener('JS_LISTENER_POPUP', this._showPopUp.bind(null, this.params));
         } else {
             this._showPopUp();
         }
@@ -296,29 +282,28 @@ class NXPopUp {
  */
 
 class NXNotifManager {
-
     constructor() {
-        Coherent.on("keyIntercepted", (key) => this.registerIntercepts(key));
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_TOGGLE", 0);
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_ON", 0);
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_OFF", 0);
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_SET", 0);
+        Coherent.on('keyIntercepted', (key) => this.registerIntercepts(key));
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_TOGGLE', 0);
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_ON', 0);
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_OFF', 0);
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_SET', 0);
         this.notifications = [];
     }
 
     registerIntercepts(key) {
         switch (key) {
-            case "PAUSE_TOGGLE":
-            case "PAUSE_ON":
-            case "PAUSE_OFF":
-            case "PAUSE_SET":
-                this.notifications.forEach((notif) => {
-                    notif.hideNotification();
-                });
-                this.notifications.length = 0;
-                break;
-            default:
-                break;
+        case 'PAUSE_TOGGLE':
+        case 'PAUSE_ON':
+        case 'PAUSE_OFF':
+        case 'PAUSE_SET':
+            this.notifications.forEach((notif) => {
+                notif.hideNotification();
+            });
+            this.notifications.length = 0;
+            break;
+        default:
+            break;
         }
     }
 
@@ -331,15 +316,15 @@ class NXNotifManager {
 
 class NXNotif {
     constructor() {
-        const title = "A32NX ALERT";
+        const title = 'A32NX ALERT';
         this.time = new Date().getTime();
         this.params = {
             id: `${title}_${this.time}`,
             title,
-            type: "MESSAGE",
-            theme: "GAMEPLAY",
-            image: "IMAGE_NOTIFICATION",
-            description: "Default Message",
+            type: 'MESSAGE',
+            theme: 'GAMEPLAY',
+            image: 'IMAGE_NOTIFICATION',
+            description: 'Default Message',
             timeout: 10000,
             time: this.time,
         };
@@ -380,9 +365,9 @@ class NXNotif {
         this.setData(params);
 
         if (!nxNotificationsListener) {
-            nxNotificationsListener = RegisterViewListener("JS_LISTENER_NOTIFICATIONS");
+            nxNotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
         }
-        nxNotificationsListener.triggerToAllSubscribers("SendNewNotification", this.params);
+        nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
         setTimeout(() => {
             this.hideNotification();
         }, this.params.timeout);
@@ -390,10 +375,8 @@ class NXNotif {
 
     // TODO FIXME: May break in the future, check every update
     hideNotification() {
-        nxNotificationsListener.triggerToAllSubscribers("HideNotification", this.params.type, null, this.params.id);
+        nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
     }
 }
 
-A32NX_Util.meterToFeet = (meterValue) => {
-    return meterValue / 0.3048;
-};
+A32NX_Util.meterToFeet = (meterValue) => meterValue / 0.3048;

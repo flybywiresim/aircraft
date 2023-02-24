@@ -20,14 +20,15 @@ class CDUAocMessagesSent {
         const msgTimeHeaders = [];
         msgTimeHeaders.length = 6;
         for (let i = 5; i > 0; i--) {
-            let header = "";
+            let header = '';
             if (messages.length > (offset - i) && messages[offset - i]) {
                 header += `${messages[offset - i].Timestamp.mcduTimestamp()} TO ${messages[offset - i].Station}[color]green`;
             }
             msgTimeHeaders[i] = header;
         }
 
-        let left = false, right = false;
+        let left = false; let
+            right = false;
         if (messages.length > ((page + 1) * 5)) {
             mcdu.onNextPage = () => {
                 CDUAocMessagesSent.ShowPage(mcdu, messages, page + 1);
@@ -43,25 +44,23 @@ class CDUAocMessagesSent {
         mcdu.setArrows(false, false, left, right);
 
         mcdu.setTemplate([
-            ["AOC SENT MSGS"],
+            ['AOC SENT MSGS'],
             [msgTimeHeaders[5]],
-            [`${messages[offset - 5] ? "<" + translateAtsuMessageType(messages[offset - 5].Type) : "NO MESSAGES"}`],
+            [`${messages[offset - 5] ? `<${translateAtsuMessageType(messages[offset - 5].Type)}` : 'NO MESSAGES'}`],
             [msgTimeHeaders[4]],
-            [`${messages[offset - 4] ? "<" + translateAtsuMessageType(messages[offset - 4].Type) : ""}`],
+            [`${messages[offset - 4] ? `<${translateAtsuMessageType(messages[offset - 4].Type)}` : ''}`],
             [msgTimeHeaders[3]],
-            [`${messages[offset - 3] ? "<" + translateAtsuMessageType(messages[offset - 3].Type) : ""}`],
+            [`${messages[offset - 3] ? `<${translateAtsuMessageType(messages[offset - 3].Type)}` : ''}`],
             [msgTimeHeaders[2]],
-            [`${messages[offset - 2] ? "<" + translateAtsuMessageType(messages[offset - 2].Type) : ""}`],
+            [`${messages[offset - 2] ? `<${translateAtsuMessageType(messages[offset - 2].Type)}` : ''}`],
             [msgTimeHeaders[1]],
-            [`${messages[offset - 1] ? "<" + translateAtsuMessageType(messages[offset - 1].Type) : ""}`],
-            ["\xa0AOC MENU"],
-            ["<RETURN"]
+            [`${messages[offset - 1] ? `<${translateAtsuMessageType(messages[offset - 1].Type)}` : ''}`],
+            ['\xa0AOC MENU'],
+            ['<RETURN'],
         ]);
 
         for (let i = 0; i < 5; i++) {
-            mcdu.leftInputDelay[i] = () => {
-                return mcdu.getDelaySwitchPage();
-            };
+            mcdu.leftInputDelay[i] = () => mcdu.getDelaySwitchPage();
 
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
@@ -75,9 +74,7 @@ class CDUAocMessagesSent {
             };
         }
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);

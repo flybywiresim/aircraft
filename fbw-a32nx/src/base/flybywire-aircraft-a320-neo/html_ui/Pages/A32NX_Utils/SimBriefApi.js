@@ -9,10 +9,9 @@ class SimBriefApi {
 
                     return response.json();
                 });
-        } else {
-            throw new Error("No SimBrief pilot ID provided");
         }
+        throw new Error('No SimBrief pilot ID provided');
     }
 }
 
-SimBriefApi.url = "https://www.simbrief.com/api/xml.fetcher.php?json=1";
+SimBriefApi.url = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';

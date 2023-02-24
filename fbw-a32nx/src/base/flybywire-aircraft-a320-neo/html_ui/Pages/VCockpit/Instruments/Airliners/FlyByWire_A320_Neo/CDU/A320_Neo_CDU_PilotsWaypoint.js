@@ -24,7 +24,7 @@ class CDUPilotsWaypoint {
             ['', 'NEW\xa0'],
             ['', 'WAYPOINT>'],
             ['', confirmDeleteAll ? '{amber}CONFIRM\xa0{end}' : ''],
-            ['', `{${confirmDeleteAll ? 'amber' : 'cyan'}}DELETE ALL${confirmDeleteAll ? '*' : '}'}{end}`]
+            ['', `{${confirmDeleteAll ? 'amber' : 'cyan'}}DELETE ALL${confirmDeleteAll ? '*' : '}'}{end}`],
         ];
 
         const wp = mcdu.dataManager.storedWaypoints[index];
@@ -32,20 +32,20 @@ class CDUPilotsWaypoint {
             template[2][0] = `{green}${wp.ident}{end}`;
 
             switch (wp.additionalData.storedType) {
-                case StoredWaypointType.LatLon:
-                    template[4][0] = `{green}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}`;
-                    break;
-                case StoredWaypointType.Pbd:
-                    template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}{end}`;
-                    template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
-                    template[6][0] = `{green}${wp.additionalData.pbdPlace.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbdBearing)}/${wp.additionalData.pbdDistance.toFixed(1)}{end}`;
-                    break;
-                case StoredWaypointType.Pbx:
-                    template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}{end}`;
-                    template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
-                    template[8][0] = `{green}${wp.additionalData.pbxPlace1.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbxBearing1)}\xa0/${wp.additionalData.pbxPlace2.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbxBearing2)}{end}`;
-                    break;
-                default:
+            case StoredWaypointType.LatLon:
+                template[4][0] = `{green}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}`;
+                break;
+            case StoredWaypointType.Pbd:
+                template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}{end}`;
+                template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
+                template[6][0] = `{green}${wp.additionalData.pbdPlace.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbdBearing)}/${wp.additionalData.pbdDistance.toFixed(1)}{end}`;
+                break;
+            case StoredWaypointType.Pbx:
+                template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(wp.infos.coordinates)}{end}{end}`;
+                template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
+                template[8][0] = `{green}${wp.additionalData.pbxPlace1.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbxBearing1)}\xa0/${wp.additionalData.pbxPlace2.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(wp, wp.additionalData.pbxBearing2)}{end}`;
+                break;
+            default:
             }
         }
 
@@ -68,9 +68,7 @@ class CDUPilotsWaypoint {
             }
         };
 
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
 
         mcdu.onRightInput[4] = () => {
             CDUNewWaypoint.ShowPage(mcdu);

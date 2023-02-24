@@ -1,4 +1,4 @@
-Include.addScript("/JS/dataStorage.js");
+Include.addScript('/JS/dataStorage.js');
 
 // TODO use the ts version in src/shared
 class NXDataStore {

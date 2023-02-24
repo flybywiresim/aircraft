@@ -28,16 +28,16 @@ class CDUAtcProcedureRequest {
         const retval = [];
 
         if (data.sid) {
-            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, "DM23", [data.sid]));
+            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, 'DM23', [data.sid]));
         }
         if (data.departureTransition) {
-            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, "DM23", [data.departureTransition]));
+            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, 'DM23', [data.departureTransition]));
         }
         if (data.star) {
-            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, "DM23", [data.star]));
+            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, 'DM23', [data.star]));
         }
         if (data.arrivalTransition) {
-            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, "DM23", [data.arrivalTransition]));
+            retval.push(CDUAtcProcedureRequest.CreateRequest(mcdu, 'DM23', [data.arrivalTransition]));
         }
 
         return retval;
@@ -46,10 +46,10 @@ class CDUAtcProcedureRequest {
     static ShowPage(mcdu, data = CDUAtcProcedureRequest.CreateDataBlock()) {
         mcdu.clearDisplay();
 
-        let sid = "[   ][color]cyan";
-        let star = "[   ][color]cyan";
-        let arrivalTransition = "[   ][color]cyan";
-        let departureTransition = "[   ][color]cyan";
+        let sid = '[   ][color]cyan';
+        let star = '[   ][color]cyan';
+        let arrivalTransition = '[   ][color]cyan';
+        let departureTransition = '[   ][color]cyan';
 
         if (data.sid) {
             sid = `${data.sid}[color]cyan`;
@@ -64,34 +64,32 @@ class CDUAtcProcedureRequest {
             departureTransition = `${data.departureTransition}[color]cyan`;
         }
 
-        let text = "ADD TEXT\xa0";
-        let erase = "\xa0ERASE";
-        let reqDisplay = "DCDU\xa0[color]cyan";
+        let text = 'ADD TEXT\xa0';
+        let erase = '\xa0ERASE';
+        let reqDisplay = 'DCDU\xa0[color]cyan';
         if (CDUAtcProcedureRequest.CanSendData(data)) {
-            reqDisplay = "DCDU*[color]cyan";
-            text = "ADD TEXT>";
-            erase = "*ERASE";
+            reqDisplay = 'DCDU*[color]cyan';
+            text = 'ADD TEXT>';
+            erase = '*ERASE';
         }
 
         mcdu.setTemplate([
-            ["PROCEDURE REQ"],
-            ["\xa0SID--------------TRANS\xa0"],
+            ['PROCEDURE REQ'],
+            ['\xa0SID--------------TRANS\xa0'],
             [sid, departureTransition],
-            ["\xa0STAR---------------VIA\xa0"],
+            ['\xa0STAR---------------VIA\xa0'],
             [star, arrivalTransition],
-            [""],
-            [""],
-            [""],
-            [""],
-            ["\xa0ALL FIELDS"],
+            [''],
+            [''],
+            [''],
+            [''],
+            ['\xa0ALL FIELDS'],
             [erase, text],
-            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
-            ["<RETURN", reqDisplay]
+            ['\xa0FLIGHT REQ', 'XFR TO\xa0[color]cyan'],
+            ['<RETURN', reqDisplay],
         ]);
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.sid = null;
@@ -106,9 +104,7 @@ class CDUAtcProcedureRequest {
             CDUAtcProcedureRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.star = null;
@@ -123,23 +119,17 @@ class CDUAtcProcedureRequest {
             CDUAtcProcedureRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[4] = () => {
             CDUAtcProcedureRequest.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             CDUAtcFlightReq.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.departureTransition = null;
@@ -154,9 +144,7 @@ class CDUAtcProcedureRequest {
             CDUAtcProcedureRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.arrivalTransition = null;
@@ -171,9 +159,7 @@ class CDUAtcProcedureRequest {
             CDUAtcProcedureRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[4] = () => {
             if (CDUAtcProcedureRequest.CanSendData(data)) {
                 const messages = CDUAtcProcedureRequest.CreateRequests(mcdu, data);
@@ -183,12 +169,10 @@ class CDUAtcProcedureRequest {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = () => {
             if (CDUAtcProcedureRequest.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === '') {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcProcedureRequest.CreateRequests(mcdu, data);

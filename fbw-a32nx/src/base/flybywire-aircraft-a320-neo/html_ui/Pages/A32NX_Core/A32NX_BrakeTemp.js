@@ -26,7 +26,6 @@ const BASE_HEAT_DIFFERENTIAL_FACTOR = 0.000015;
 const MIN_TEMP_DELTA = 0.1;
 
 class A32NX_BrakeTemp {
-
     /**
      * @param brakePosition {number}
      * @param wheelRpm {number}
@@ -42,14 +41,17 @@ class A32NX_BrakeTemp {
     getRandomArbitrary(min, max) {
         return Math.random() * (max - min) + min;
     }
-    //the brake fan is actively cooling the temp probe faster than it is cooling the brakes
+
+    // the brake fan is actively cooling the temp probe faster than it is cooling the brakes
     coolProbe(finalTemp, currentReportedBrakeTemp) {
         return (finalTemp - currentReportedBrakeTemp) * BASE_COOL_DOWN_FACTOR;
     }
-    //the brake fan is off, the temp probe is slowly reaching back up to brake temp
+
+    // the brake fan is off, the temp probe is slowly reaching back up to brake temp
     equalizeProbe(currentReportedBrakeTemp, currentBrakeTemp) {
         return (currentBrakeTemp - currentReportedBrakeTemp) * BASE_HEAT_UP_FACTOR;
     }
+
     constructor() {
         this.initializedAmbientBrakeTemp = false;
     }
@@ -57,8 +59,8 @@ class A32NX_BrakeTemp {
     init() { }
 
     update(_deltaTime) {
-        let currentBrakeTemps = [0,0,0,0];
-        let currentReportedBrakeTemps = [0,0,0,0];
+        let currentBrakeTemps = [0, 0, 0, 0];
+        let currentReportedBrakeTemps = [0, 0, 0, 0];
         if (!this.initializedAmbientBrakeTemp) {
             const ambientTemperature = Simplane.getAmbientTemperature();
 
@@ -67,49 +69,47 @@ class A32NX_BrakeTemp {
             currentReportedBrakeTemps.fill(ambientTemperature);
             this.initializedAmbientBrakeTemp = true;
         } else {
-            //actual physical temperatures of the brakes
+            // actual physical temperatures of the brakes
             currentBrakeTemps = [
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
+                SimVar.GetSimVarValue('L:A32NX_BRAKE_TEMPERATURE_1', 'celsius'),
+                SimVar.GetSimVarValue('L:A32NX_BRAKE_TEMPERATURE_2', 'celsius'),
+                SimVar.GetSimVarValue('L:A32NX_BRAKE_TEMPERATURE_3', 'celsius'),
+                SimVar.GetSimVarValue('L:A32NX_BRAKE_TEMPERATURE_4', 'celsius'),
             ];
-            //temps reported by the thermal probes in the brake assembly
+            // temps reported by the thermal probes in the brake assembly
             currentReportedBrakeTemps = [
-                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_1", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_2", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_3", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_4", "celsius")
+                SimVar.GetSimVarValue('L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', 'celsius'),
+                SimVar.GetSimVarValue('L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', 'celsius'),
+                SimVar.GetSimVarValue('L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', 'celsius'),
+                SimVar.GetSimVarValue('L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', 'celsius'),
             ];
         }
-        const GearLeftPosition = SimVar.GetSimVarValue("L:A32NX_GEAR_LEFT_POSITION", "Percent Over 100");
+        const GearLeftPosition = SimVar.GetSimVarValue('L:A32NX_GEAR_LEFT_POSITION', 'Percent Over 100');
         const GearLeftExtended = GearLeftPosition >= 0.25;
-        const GearRightExtended = SimVar.GetSimVarValue("L:A32NX_GEAR_RIGHT_POSITION", "Percent Over 100") >= 0.25;
-        const currentBrakeFanState = SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN", "Bool");
-        const brakeFanButtonIsPressed = SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN_BTN_PRESSED", "Bool");
+        const GearRightExtended = SimVar.GetSimVarValue('L:A32NX_GEAR_RIGHT_POSITION', 'Percent Over 100') >= 0.25;
+        const currentBrakeFanState = SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'Bool');
+        const brakeFanButtonIsPressed = SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN_BTN_PRESSED', 'Bool');
         // if the fan button is pressed down and the left main gear is down and locked, the fan is on
         const brakeFanIsOn = brakeFanButtonIsPressed && (GearLeftPosition == 100);
         let fanMultiplier = 1;
         let fanDifferentialFactor = 1;
         if (brakeFanIsOn) {
             if (!currentBrakeFanState) {
-                SimVar.SetSimVarValue("L:A32NX_BRAKE_FAN", "Bool", true);
+                SimVar.SetSimVarValue('L:A32NX_BRAKE_FAN', 'Bool', true);
             }
             fanMultiplier = 4.35;
             fanDifferentialFactor = 0.28;
-        } else {
-            if (currentBrakeFanState) {
-                SimVar.SetSimVarValue("L:A32NX_BRAKE_FAN", "Bool", false);
-            }
+        } else if (currentBrakeFanState) {
+            SimVar.SetSimVarValue('L:A32NX_BRAKE_FAN', 'Bool', false);
         }
-        const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
-        const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
+        const currentBrakeLeft = SimVar.GetSimVarValue('BRAKE LEFT POSITION', 'position 32k');
+        const currentBrakeRight = SimVar.GetSimVarValue('BRAKE RIGHT POSITION', 'position 32k');
 
         const ambientTemperature = Simplane.getAmbientTemperature();
-        const airspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Meters per second");
+        const airspeed = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Meters per second');
 
-        const wheelSet1Rpm = SimVar.GetSimVarValue("WHEEL RPM:1", "number");
-        const wheelSet2Rpm = SimVar.GetSimVarValue("WHEEL RPM:2", "number");
+        const wheelSet1Rpm = SimVar.GetSimVarValue('WHEEL RPM:1', 'number');
+        const wheelSet2Rpm = SimVar.GetSimVarValue('WHEEL RPM:2', 'number');
 
         const wheelsAreSpinning = wheelSet1Rpm > WHEEL_RPM_THRESHOLD || wheelSet2Rpm > WHEEL_RPM_THRESHOLD;
 
@@ -176,7 +176,7 @@ class A32NX_BrakeTemp {
                 ambientTemperature + deltaTemp0 / 2,
                 ambientTemperature + deltaTemp1 / 2,
                 ambientTemperature + deltaTemp2 / 2,
-                ambientTemperature + deltaTemp3 / 2
+                ambientTemperature + deltaTemp3 / 2,
             ];
             currentReportedBrakeTemps[0] += _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.coolProbe(brakeProbeFinalTemps[0], currentReportedBrakeTemps[0]);
             currentReportedBrakeTemps[1] += _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.coolProbe(brakeProbeFinalTemps[1], currentReportedBrakeTemps[1]);
@@ -193,13 +193,13 @@ class A32NX_BrakeTemp {
 
         // Set simvars
         for (let i = 0; i < currentBrakeTemps.length; ++i) {
-            SimVar.SetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentBrakeTemps[i]);
-            SimVar.SetSimVarValue(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentReportedBrakeTemps[i]);
+            SimVar.SetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, 'celsius', currentBrakeTemps[i]);
+            SimVar.SetSimVarValue(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${i + 1}`, 'celsius', currentReportedBrakeTemps[i]);
             if (currentReportedBrakeTemps[i] > 300) {
                 brakesHot = 1;
             }
         }
 
-        SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", brakesHot);
+        SimVar.SetSimVarValue('L:A32NX_BRAKES_HOT', 'Bool', brakesHot);
     }
 }

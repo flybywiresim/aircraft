@@ -43,7 +43,7 @@ class CDUHoldAtPage {
             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
                 const holdIndex = mcdu.flightPlanManager.addOrEditManualHold(
                     waypointIndexFP,
-                    Object.assign({}, defaultHold),
+                    { ...defaultHold },
                     modifiedHold,
                     defaultHold,
                 );
@@ -71,27 +71,27 @@ class CDUHoldAtPage {
         const displayDistance = currentHold.distance === undefined ? speed * currentHold.time / 60 : currentHold.distance;
 
         const defaultType = defaultHold.type === HoldType.Database ? 'DATABASE' : 'COMPUTED';
-        const defaultTitle = defaultType + '\xa0';
-        const defaultRevert = defaultType + '}';
+        const defaultTitle = `${defaultType}\xa0`;
+        const defaultRevert = `${defaultType}}`;
 
         const ident = waypoint.ident.replace('T-P', 'PPOS').padEnd(7, '\xa0');
         const rows = [];
         rows.push([`${currentHold.type !== HoldType.Modified ? defaultTitle : ''}HOLD\xa0{small}AT{end}\xa0{green}${ident}{end}`]);
-        rows.push(["INB CRS", "", ""]);
+        rows.push(['INB CRS', '', '']);
         rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold.inboundMagneticCourse !== undefined ? '{big}' : '{small}'}${currentHold.inboundMagneticCourse.toFixed(0).padStart(3, '0')}°{end}{end}`]);
-        rows.push(["TURN", currentHold.type === HoldType.Modified ? "REVERT TO" : ""]);
+        rows.push(['TURN', currentHold.type === HoldType.Modified ? 'REVERT TO' : '']);
         rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold.turnDirection !== undefined ? '{big}' : '{small}'}${currentHold.turnDirection === TurnDirection.Left ? 'L' : 'R'}{end}`, `{cyan}${currentHold.type === HoldType.Modified ? defaultRevert : ''}{end}`]);
-        rows.push(["TIME/DIST"]);
+        rows.push(['TIME/DIST']);
         rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold.time !== undefined ? '{big}' : '{small}'}${displayTime.toFixed(1).padStart(4, '\xa0')}{end}/${modifiedHold.distance !== undefined ? '{big}' : '{small}'}${displayDistance.toFixed(1)}{end}{end}`]);
-        rows.push(["", "", "\xa0LAST EXIT"]);
-        rows.push(["", "", "{small}UTC\xa0\xa0\xa0FUEL{end}"]);
-        rows.push(["", "", "----\xa0\xa0----"]);
-        rows.push([""]);
-        rows.push([""]);
-        rows.push([tmpy ? "{amber}{ERASE{end}" : "", tmpy ? "{amber}INSERT*{end}" : "", ""]);
+        rows.push(['', '', '\xa0LAST EXIT']);
+        rows.push(['', '', '{small}UTC\xa0\xa0\xa0FUEL{end}']);
+        rows.push(['', '', '----\xa0\xa0----']);
+        rows.push(['']);
+        rows.push(['']);
+        rows.push([tmpy ? '{amber}{ERASE{end}' : '', tmpy ? '{amber}INSERT*{end}' : '', '']);
 
         mcdu.setTemplate([
-            ...rows
+            ...rows,
         ]);
 
         // TODO what happens if CLR attemped?
@@ -114,7 +114,7 @@ class CDUHoldAtPage {
 
         // change turn direction
         mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-            if (value !== "L" && value !== "R") {
+            if (value !== 'L' && value !== 'R') {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;

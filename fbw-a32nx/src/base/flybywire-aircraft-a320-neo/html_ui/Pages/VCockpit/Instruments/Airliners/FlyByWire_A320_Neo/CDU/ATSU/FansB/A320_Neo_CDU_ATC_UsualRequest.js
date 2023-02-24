@@ -35,29 +35,29 @@ class CDUAtcUsualRequestFansB {
 
         let extension = null;
         if (data.dueToWeather) {
-            extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
+            extension = Atsu.CpdlcMessagesDownlink.DM65[1].deepCopy();
         }
 
         if (data.directTo) {
-            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM22", [data.directTo]));
+            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, 'DM22', [data.directTo]));
         }
         if (data.weatherDeviation) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.weatherDeviation).split(" ");
-            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM27", [elements[0], elements[1]]));
+            const elements = Atsu.InputValidation.expandLateralOffset(data.weatherDeviation).split(' ');
+            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, 'DM27', [elements[0], elements[1]]));
         }
         if (data.climbTo) {
-            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM9", [data.climbTo]));
+            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, 'DM9', [data.climbTo]));
         }
         if (data.descentTo) {
-            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM10", [data.descentTo]));
+            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, 'DM10', [data.descentTo]));
         }
         if (data.speed) {
-            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM18", [data.speed]));
+            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, 'DM18', [data.speed]));
         }
 
         if (extension) {
             retval.forEach((message) => {
-                if (message.Content[0].TypeId !== "DM27") {
+                if (message.Content[0].TypeId !== 'DM27') {
                     message.Content.push(extension);
                 }
             });
@@ -70,31 +70,31 @@ class CDUAtcUsualRequestFansB {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCUsualRequest;
 
-        let addText = "ADD TEXT\xa0";
-        let erase = "\xa0ERASE";
-        let reqDisplay = "DCDU\xa0[color]cyan";
+        let addText = 'ADD TEXT\xa0';
+        let erase = '\xa0ERASE';
+        let reqDisplay = 'DCDU\xa0[color]cyan';
         if (CDUAtcUsualRequestFansB.CanSendData(data)) {
-            reqDisplay = "DCDU*[color]cyan";
-            addText = "ADD TEXT>";
+            reqDisplay = 'DCDU*[color]cyan';
+            addText = 'ADD TEXT>';
         }
         if (CDUAtcUsualRequestFansB.CanEraseData(data)) {
-            erase = "*ERASE";
+            erase = '*ERASE';
         }
 
-        let directTo = "{cyan}[     ]{end}";
+        let directTo = '{cyan}[     ]{end}';
         if (data.directTo) {
             directTo = `${data.directTo}[color]cyan`;
         }
-        let weatherDeviation = "{cyan}[  ]{end}";
+        let weatherDeviation = '{cyan}[  ]{end}';
         if (data.weatherDeviation) {
             weatherDeviation = `${data.weatherDeviation}[color]cyan`;
         }
-        let speed = "[ ][color]cyan";
+        let speed = '[ ][color]cyan';
         if (data.speed) {
             speed = `${data.speed}[color]cyan`;
         }
-        let climbTo = "[   ][color]cyan";
-        let descentTo = "[   ][color]cyan";
+        let climbTo = '[   ][color]cyan';
+        let descentTo = '[   ][color]cyan';
         if (data.climbTo) {
             climbTo = `${data.climbTo}[color]cyan`;
         }
@@ -102,31 +102,29 @@ class CDUAtcUsualRequestFansB {
             descentTo = `${data.descentTo}[color]cyan`;
         }
 
-        const dueToWeather = ["\xa0DUE TO", "{cyan}{{end}WEATHER"];
+        const dueToWeather = ['\xa0DUE TO', '{cyan}{{end}WEATHER'];
         if (data.dueToWeather) {
-            dueToWeather[0] = "{cyan}\xa0DUE TO{end}";
-            dueToWeather[1] = "{cyan}\xa0WEATHER{end}";
+            dueToWeather[0] = '{cyan}\xa0DUE TO{end}';
+            dueToWeather[1] = '{cyan}\xa0WEATHER{end}';
         }
 
         mcdu.setTemplate([
-            ["USUAL REQ"],
-            ["\xa0DIR TO", "SPEED\xa0"],
+            ['USUAL REQ'],
+            ['\xa0DIR TO', 'SPEED\xa0'],
             [directTo, speed],
-            ["", "WX DEV\xa0"],
-            ["", weatherDeviation],
-            ["\xa0CLB TO", "DES TO\xa0"],
+            ['', 'WX DEV\xa0'],
+            ['', weatherDeviation],
+            ['\xa0CLB TO', 'DES TO\xa0'],
             [climbTo, descentTo],
             [dueToWeather[0]],
             [dueToWeather[1]],
-            ["\xa0ALL FIELDS"],
+            ['\xa0ALL FIELDS'],
             [erase, addText],
-            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
-            ["<RETURN", reqDisplay]
+            ['\xa0ATC MENU', 'XFR TO\xa0[color]cyan'],
+            ['<RETURN', reqDisplay],
         ]);
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.directTo = null;
@@ -140,7 +138,7 @@ class CDUAtcUsualRequestFansB {
                         if (err === NXSystemMessages.formatError) {
                             mcdu.setScratchpadMessage(err);
                         }
-                    };
+                    }
                 } else if (/^[A-Z0-9]{2,7}/.test(value)) {
                     // place format
                     mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
@@ -158,9 +156,7 @@ class CDUAtcUsualRequestFansB {
             CDUAtcUsualRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.climbTo = null;
@@ -175,9 +171,7 @@ class CDUAtcUsualRequestFansB {
             CDUAtcUsualRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[3] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.dueToWeather = false;
@@ -187,23 +181,17 @@ class CDUAtcUsualRequestFansB {
             CDUAtcUsualRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[4] = () => {
             CDUAtcUsualRequestFansB.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.speed = null;
@@ -218,9 +206,7 @@ class CDUAtcUsualRequestFansB {
             CDUAtcUsualRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[1] = async (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.weatherDeviation = null;
@@ -235,9 +221,7 @@ class CDUAtcUsualRequestFansB {
             CDUAtcUsualRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.descentTo = null;
@@ -252,9 +236,7 @@ class CDUAtcUsualRequestFansB {
             CDUAtcUsualRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[4] = () => {
             if (CDUAtcUsualRequestFansB.CanSendData(data)) {
                 const requests = CDUAtcUsualRequestFansB.CreateRequests(mcdu, data);
@@ -264,9 +246,7 @@ class CDUAtcUsualRequestFansB {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = () => {
             if (CDUAtcUsualRequestFansB.CDUAtcUsualRequestFansB(data)) {
                 const requests = CDUAtcUsualRequestFansB.CreateRequests(mcdu, data);

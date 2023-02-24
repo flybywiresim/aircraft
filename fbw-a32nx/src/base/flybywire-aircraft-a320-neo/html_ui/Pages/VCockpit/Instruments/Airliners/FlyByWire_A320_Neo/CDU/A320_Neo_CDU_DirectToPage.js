@@ -11,7 +11,7 @@ class CDUDirectToPage {
             CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
         };
         mcdu.activeSystem = 'FMGC';
-        let directWaypointCell = "";
+        let directWaypointCell = '';
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;
         } else if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === FlightPlans.Temporary) {
@@ -20,18 +20,18 @@ class CDUDirectToPage {
             });
             return;
         }
-        const waypointsCell = ["", "", "", "", ""];
+        const waypointsCell = ['', '', '', '', ''];
         let iMax = 5;
-        let eraseLabel = "";
-        let eraseLine = "";
-        let insertLabel = "";
-        let insertLine = "";
+        let eraseLabel = '';
+        let eraseLine = '';
+        let insertLabel = '';
+        let insertLine = '';
         if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === FlightPlans.Temporary) {
             iMax--;
-            eraseLabel = "\xa0DIR TO[color]amber";
-            eraseLine = "{ERASE[color]amber";
-            insertLabel = "TMPY\xa0[color]amber";
-            insertLine = "DIRECT*[color]amber";
+            eraseLabel = '\xa0DIR TO[color]amber';
+            eraseLine = '{ERASE[color]amber';
+            insertLabel = 'TMPY\xa0[color]amber';
+            insertLine = 'DIRECT*[color]amber';
             mcdu.onLeftInput[5] = () => {
                 mcdu.eraseTemporaryFlightPlan(() => {
                     CDUDirectToPage.ShowPage(mcdu);
@@ -39,7 +39,7 @@ class CDUDirectToPage {
             };
             mcdu.onRightInput[5] = () => {
                 mcdu.insertTemporaryFlightPlan(() => {
-                    SimVar.SetSimVarValue("K:A32NX.FMGC_DIR_TO_TRIGGER", "number", 0);
+                    SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
                     CDUFlightPlanPage.ShowPage(mcdu);
                 });
             };
@@ -87,7 +87,7 @@ class CDUDirectToPage {
                     i++;
                     continue;
                 }
-                waypointsCell[cellIter] = "{" + waypoint.ident + "[color]cyan";
+                waypointsCell[cellIter] = `{${waypoint.ident}[color]cyan`;
                 if (waypointsCell[cellIter]) {
                     mcdu.onLeftInput[cellIter + 1] = () => {
                         mcdu.eraseTemporaryFlightPlan(() => {
@@ -100,13 +100,13 @@ class CDUDirectToPage {
                     };
                 }
             } else {
-                waypointsCell[cellIter] = "----";
+                waypointsCell[cellIter] = '----';
             }
             i++;
             cellIter++;
         }
         if (cellIter < iMax) {
-            waypointsCell[cellIter] = "--END--";
+            waypointsCell[cellIter] = '--END--';
         }
         let up = false;
         let down = false;
@@ -124,21 +124,21 @@ class CDUDirectToPage {
             };
             down = true;
         }
-        mcdu.setArrows(up, down, false ,false);
+        mcdu.setArrows(up, down, false, false);
         mcdu.setTemplate([
-            ["DIR TO"],
-            ["\xa0WAYPOINT", "DIST\xa0", "UTC"],
-            ["*[" + (directWaypointCell ? directWaypointCell : "\xa0\xa0\xa0\xa0\xa0") + "][color]cyan", "---", "----"],
-            ["\xa0F-PLN WPTS"],
-            [waypointsCell[0], "DIRECT TO[color]cyan"],
-            ["", "WITH\xa0"],
-            [waypointsCell[1], "ABEAM PTS[color]cyan"],
-            ["", "RADIAL IN\xa0"],
-            [waypointsCell[2], "[ ]°[color]cyan"],
-            ["", "RADIAL OUT\xa0"],
-            [waypointsCell[3], "[ ]°[color]cyan"],
+            ['DIR TO'],
+            ['\xa0WAYPOINT', 'DIST\xa0', 'UTC'],
+            [`*[${directWaypointCell || '\xa0\xa0\xa0\xa0\xa0'}][color]cyan`, '---', '----'],
+            ['\xa0F-PLN WPTS'],
+            [waypointsCell[0], 'DIRECT TO[color]cyan'],
+            ['', 'WITH\xa0'],
+            [waypointsCell[1], 'ABEAM PTS[color]cyan'],
+            ['', 'RADIAL IN\xa0'],
+            [waypointsCell[2], '[ ]°[color]cyan'],
+            ['', 'RADIAL OUT\xa0'],
+            [waypointsCell[3], '[ ]°[color]cyan'],
             [eraseLabel, insertLabel],
-            [eraseLine ? eraseLine : waypointsCell[4], insertLine]
+            [eraseLine || waypointsCell[4], insertLine],
         ]);
     }
 }

@@ -1,25 +1,25 @@
 class CDUIRSStatus {
     static ShowPage(mcdu, index, prev_wind_dir) {
-        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
-            SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
-        if (currPos.includes("N")) {
-            var currPosSplit = currPos.split("N");
-            var sep = "N/";
+        let currPos = new LatLong(SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude'),
+            SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude')).toShortDegreeString();
+        if (currPos.includes('N')) {
+            var currPosSplit = currPos.split('N');
+            var sep = 'N/';
         } else {
-            var currPosSplit = currPos.split("S");
-            var sep = "S/";
+            var currPosSplit = currPos.split('S');
+            var sep = 'S/';
         }
         const latStr = currPosSplit[0];
         const lonStr = currPosSplit[1];
         currPos = latStr + sep + lonStr;
-        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Knots") || "0";
-        const THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
-        const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
-        const MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";
-        const WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00";
+        const GROUNDSPEED = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots') || '0';
+        const THDG = SimVar.GetSimVarValue('GPS GROUND TRUE HEADING', 'radians') || '000';
+        const TTRK = SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'radians') || '000';
+        const MHDG = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'radians') || '000';
+        const WIND_VELOCITY = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots') || '00';
         // wind direction smoothing like A32NX_NDInfo.js:setWind()
         let wind_dir = Math.round(Simplane.getWindDirection());
-        if (typeof (prev_wind_dir) == "undefined") {
+        if (typeof (prev_wind_dir) === 'undefined') {
             prev_wind_dir = wind_dir;
         }
         let startAngle = prev_wind_dir;
@@ -37,27 +37,25 @@ class CDUIRSStatus {
         mcdu.page.Current = mcdu.page.IRSStatus;
         mcdu.setTemplate([
             [`IRS${index}`],
-            ["POSITION"],
+            ['POSITION'],
             [`${currPos}[color]green`],
-            ["TTRK", "GS"],
+            ['TTRK', 'GS'],
             [`${Math.round(TTRK)}[color]green`, `${Math.round(GROUNDSPEED)}[color]green`],
-            [`THDG`, "MHDG"],
+            ['THDG', 'MHDG'],
             [`${Math.round(THDG)}[color]green`, `${Math.round(MHDG)}[color]green`],
-            ["WIND", "GPIRS ACCUR"],
-            [`${Math.round(wind_dir)}°/${Math.round(WIND_VELOCITY)}[color]green`, `200FT[color]green`],
-            ["GPIRS POSITION"],
+            ['WIND', 'GPIRS ACCUR'],
+            [`${Math.round(wind_dir)}°/${Math.round(WIND_VELOCITY)}[color]green`, '200FT[color]green'],
+            ['GPIRS POSITION'],
             [`${currPos}[color]green`],
-            ["", ""],
-            ["{FREEZE[color]cyan", `${index < 3 ? "NEXT IRS>" : "RETURN>"}`]
+            ['', ''],
+            ['{FREEZE[color]cyan', `${index < 3 ? 'NEXT IRS>' : 'RETURN>'}`],
         ]);
 
         mcdu.onLeftInput[5] = () => {
             CDUIRSStatusFrozen.ShowPage(mcdu, index, wind_dir);
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
 
         mcdu.onRightInput[5] = () => {
             if (index > 2) {

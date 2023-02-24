@@ -19,7 +19,7 @@ class DisplayUnit {
     }
 
     isOn() {
-        const brightness = SimVar.GetSimVarValue(`LIGHT POTENTIOMETER:${this.potentiometerId}`, "number");
+        const brightness = SimVar.GetSimVarValue(`LIGHT POTENTIOMETER:${this.potentiometerId}`, 'number');
         return brightness >= 0.01 && this.isPowered();
     }
 
@@ -49,7 +49,7 @@ class DisplayUnit {
             }
         }
 
-        this.rootElement.style.display = isOn ? "block" : "none";
+        this.rootElement.style.display = isOn ? 'block' : 'none';
 
         this.previouslyOff = !isOn;
     }
@@ -92,10 +92,9 @@ class DisplayUnitSelfTest {
             } else {
                 this.init = true;
             }
-            this.element.style.visibility = "visible";
+            this.element.style.visibility = 'visible';
         } else {
-
-            this.element.style.visibility = "hidden";
+            this.element.style.visibility = 'hidden';
         }
     }
 }

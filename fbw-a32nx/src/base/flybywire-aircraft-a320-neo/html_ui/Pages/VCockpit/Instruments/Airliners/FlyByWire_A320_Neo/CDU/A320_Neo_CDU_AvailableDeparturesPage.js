@@ -1,7 +1,5 @@
 const DeparturePagination = Object.freeze(
-    {
-        DEPT_PAGE: 4,
-    }
+    { DEPT_PAGE: 4 },
 );
 
 class CDUAvailableDeparturesPage {
@@ -11,12 +9,12 @@ class CDUAvailableDeparturesPage {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
 
-            let selectedRunwayCell = "---";
-            let selectedRunwayCellColor = "white";
-            let selectedSidCell = "------";
-            let selectedSidCellColor = "white";
-            let selectedTransCell = "------";
-            let selectedTransCellColor = "white";
+            let selectedRunwayCell = '---';
+            let selectedRunwayCellColor = 'white';
+            let selectedSidCell = '------';
+            let selectedSidCellColor = 'white';
+            let selectedTransCell = '------';
+            let selectedTransCellColor = 'white';
 
             // --- figure out which data is available for the page ---
 
@@ -44,15 +42,13 @@ class CDUAvailableDeparturesPage {
 
             if (selectedRunway) {
                 // filter out any SIDs not compatible with this runway
-                availableSids = availableSids.filter(([index, sid]) =>
-                    sid.runwayTransitions.length === 0 ||
-                    findRunwayTransitionIndex(selectedRunway, sid.runwayTransitions) !== -1
-                );
+                availableSids = availableSids.filter(([index, sid]) => sid.runwayTransitions.length === 0
+                    || findRunwayTransitionIndex(selectedRunway, sid.runwayTransitions) !== -1);
             }
 
             // NO SID/NO TRANS option is available at the start of the list when non-zero options
             if (availableSids.length > 0) {
-                availableSids.unshift([-2, "NO SID"]);
+                availableSids.unshift([-2, 'NO SID']);
             }
 
             let selectedSidPage = -1;
@@ -65,12 +61,12 @@ class CDUAvailableDeparturesPage {
             const selectedRunwayPage = selectedRunway ? Math.floor((availableRunways.findIndex((runway) => runway.designation === selectedRunway.designation)) / DeparturePagination.DEPT_PAGE) : -1;
 
             if (availableTransitions.length > 0) {
-                availableTransitions.unshift([-2, "NO TRANS"]);
+                availableTransitions.unshift([-2, 'NO TRANS']);
             }
 
             // --- render the top part of the page ---
 
-            const selectedColour = editingTmpy ? "yellow" : "green";
+            const selectedColour = editingTmpy ? 'yellow' : 'green';
 
             if (selectedRunway) {
                 selectedRunwayCell = Avionics.Utils.formatRunway(selectedRunway.designation);
@@ -82,10 +78,10 @@ class CDUAvailableDeparturesPage {
             }
 
             if (availableSids.length === 0) {
-                selectedSidCell = "NONE";
+                selectedSidCell = 'NONE';
                 selectedSidCellColor = selectedColour;
             } else if (selectedSidIndex === -2) {
-                selectedSidCell = "NO SID";
+                selectedSidCell = 'NO SID';
                 selectedSidCellColor = selectedColour;
             } else if (selectedDeparture) {
                 selectedSidCell = selectedDeparture.name;
@@ -94,10 +90,10 @@ class CDUAvailableDeparturesPage {
 
             if (selectedDeparture || availableSids.length === 0) {
                 if (availableTransitions.length === 0) {
-                    selectedTransCell = "NONE";
+                    selectedTransCell = 'NONE';
                     selectedTransCellColor = selectedColour;
                 } else if (selectedTransitionIndex === -2) {
-                    selectedTransCell = "NO TRANS";
+                    selectedTransCell = 'NO TRANS';
                     selectedTransCellColor = selectedColour;
                 } else if (selectedTransition) {
                     selectedTransCell = selectedTransition.name;
@@ -107,7 +103,7 @@ class CDUAvailableDeparturesPage {
 
             // --- render the rows ---
 
-            const rows = [[""], [""], [""], [""], [""], [""], [""], ["", "", ""]];
+            const rows = [[''], [''], [''], [''], [''], [''], [''], ['', '', '']];
             if (!sidSelection) {
                 // jump to selected runway page if entering page
                 if (pageCurrent < 0) {
@@ -120,11 +116,11 @@ class CDUAvailableDeparturesPage {
                     if (runway) {
                         const selected = selectedRunway && selectedRunway.designation === runway.designation;
                         const hasIls = runway.primaryILSFrequency.freqMHz > 0;
-                        rows[2 * i] = [`${selected ? "{green}{sp}" : "{cyan}{"}${Avionics.Utils.formatRunway(runway.designation).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
+                        rows[2 * i] = [`${selected ? '{green}{sp}' : '{cyan}{'}${Avionics.Utils.formatRunway(runway.designation).padEnd(3)}${hasIls ? '{small}-ILS{end}' : '{sp}{sp}{sp}{sp}'}${NXUnits.mToUser(runway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}{end}`];
                         const magVar = Facilities.getMagVar(runway.beginningCoordinates.lat, runway.beginningCoordinates.long);
                         const bearing = A32NX_Util.trueToMagnetic(runway.direction, magVar);
                         const ilsText = hasIls ? `${WayPoint.formatIdentFromIcao(runway.primaryILSFrequency.icao).padStart(6)}/${runway.primaryILSFrequency.freqMHz.toFixed(2)}` : '';
-                        rows[2 * i + 1] = [`${selected ? "{green}" : "{cyan}"}{sp}{sp}{sp}${Utils.leadingZeros(Math.round(bearing), 3)}${ilsText}{end}`];
+                        rows[2 * i + 1] = [`${selected ? '{green}' : '{cyan}'}{sp}{sp}{sp}${Utils.leadingZeros(Math.round(bearing), 3)}${ilsText}{end}`];
                         mcdu.onLeftInput[i + 1] = async () => {
                             mcdu.setOriginRunwayIndex(index, () => {
                                 CDUAvailableDeparturesPage.ShowPage(mcdu, airport, -1, true);
@@ -144,9 +140,9 @@ class CDUAvailableDeparturesPage {
                     if (row) {
                         const [sidIndex, sid] = row;
                         const selected = selectedSidIndex === sidIndex;
-                        rows[2 * i] = [`${selected ? "{green}{sp}" : "{cyan}{"}${typeof sid === 'string' ? sid : sid.name}{end}`];
+                        rows[2 * i] = [`${selected ? '{green}{sp}' : '{cyan}{'}${typeof sid === 'string' ? sid : sid.name}{end}`];
                         mcdu.onLeftInput[1 + i] = async () => {
-                            if (sid === "NO SID") {
+                            if (sid === 'NO SID') {
                                 mcdu.setDepartureIndex(-2, () => {
                                     CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true);
                                 });
@@ -171,7 +167,7 @@ class CDUAvailableDeparturesPage {
                         if (row) {
                             const [transIndex, trans] = row;
                             const selected = selectedTransitionIndex === transIndex;
-                            rows[2 * i][1] = `${selected ? "{green}" : "{cyan}"}${typeof trans === 'string' ? trans : trans.name}${selected ? " " : "}"}{end}`;
+                            rows[2 * i][1] = `${selected ? '{green}' : '{cyan}'}${typeof trans === 'string' ? trans : trans.name}${selected ? ' ' : '}'}{end}`;
                             mcdu.onRightInput[i + 1] = () => {
                                 mcdu.setDepartureTransitionIndex(transIndex, () => {
                                     CDUAvailableDeparturesPage.ShowPage(mcdu, airport, pageCurrent, true);
@@ -242,10 +238,10 @@ class CDUAvailableDeparturesPage {
             }
 
             mcdu.setTemplate([
-                ["{sp}DEPARTURES {small}FROM{end} {green}" + airport.ident + "{sp}{sp}{sp}"],
-                ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
-                [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
-                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "AVAILABLE RUNWAYS{sp}"],
+                [`{sp}DEPARTURES {small}FROM{end} {green}${airport.ident}{sp}{sp}{sp}`],
+                ['{sp}RWY', 'TRANS{sp}', '{sp}SID'],
+                [`${selectedRunwayCell}[color]${selectedRunwayCellColor}`, `${selectedTransCell}[color]${selectedTransCellColor}`, `${selectedSidCell}[color]${selectedSidCellColor}`],
+                sidSelection ? ['SIDS', 'TRANS', 'AVAILABLE'] : ['', '', 'AVAILABLE RUNWAYS{sp}'],
                 rows[0],
                 rows[1],
                 rows[2],
@@ -254,7 +250,7 @@ class CDUAvailableDeparturesPage {
                 rows[5],
                 rows[6],
                 rows[7],
-                [editingTmpy ? "{ERASE[color]amber" : "{RETURN", editingTmpy ? "INSERT*[color]amber" : "", showEosid ? `{${selectedColour}}{sp}NONE{end}` : '']
+                [editingTmpy ? '{ERASE[color]amber' : '{RETURN', editingTmpy ? 'INSERT*[color]amber' : '', showEosid ? `{${selectedColour}}{sp}NONE{end}` : ''],
             ]);
             mcdu.onPrevPage = () => {
                 CDUAvailableDeparturesPage.ShowPage(mcdu, airport, -1, !sidSelection);

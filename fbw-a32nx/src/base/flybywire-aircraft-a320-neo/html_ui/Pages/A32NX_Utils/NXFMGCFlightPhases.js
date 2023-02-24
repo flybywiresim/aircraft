@@ -5,6 +5,6 @@ const FmgcFlightPhases = {
     CRUISE: 3,
     DESCENT: 4,
     APPROACH: 5,
-    GOAROUND : 6,
-    DONE: 7
+    GOAROUND: 6,
+    DONE: 7,
 };

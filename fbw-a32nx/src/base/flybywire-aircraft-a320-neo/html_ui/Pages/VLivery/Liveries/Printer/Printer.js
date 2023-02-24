@@ -6,14 +6,16 @@ class LiveryPrinter extends TemplateElement {
         this._isConnected = false;
         this.pages = [];
     }
+
     get templateID() {
-        return "LiveryPrinter";
+        return 'LiveryPrinter';
     }
+
     connectedCallback() {
         super.connectedCallback();
-        const url = document.getElementsByTagName("livery-printer-element")[0].getAttribute("url");
+        const url = document.getElementsByTagName('livery-printer-element')[0].getAttribute('url');
         this.index = parseInt(url.substring(url.length - 1));
-        this.lines = this.querySelector("#lines");
+        this.lines = this.querySelector('#lines');
         const updateLoop = () => {
             if (!this._isConnected) {
                 return;
@@ -23,7 +25,7 @@ class LiveryPrinter extends TemplateElement {
         this._isConnected = true;
         setInterval(updateLoop, 100);
         Coherent.on('A32NX_PRINT', (lines) => {
-            const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
+            const currentPageID = SimVar.GetSimVarValue('L:A32NX_PAGE_ID', 'number') - 1;
             if (currentPageID >= 0 && this.pages[currentPageID] == null) {
                 this.pages[currentPageID] = lines;
             } else if (this.index === 0) {
@@ -32,8 +34,10 @@ class LiveryPrinter extends TemplateElement {
             }
         });
     }
+
     disconnectedCallback() {
     }
+
     Update() {
         if (this.pages == null) {
             return;
@@ -42,28 +46,28 @@ class LiveryPrinter extends TemplateElement {
         if (this.index === 0) {
             displayedPage = this.pages.length - 1;
         } else {
-            let pagesPrinted = SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number");
-            const offset = SimVar.GetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number");
+            let pagesPrinted = SimVar.GetSimVarValue('L:A32NX_PAGES_PRINTED', 'number');
+            const offset = SimVar.GetSimVarValue('L:A32NX_PRINT_PAGE_OFFSET', 'number');
             displayedPage = pagesPrinted - 1 + offset;
 
-            const discard = SimVar.GetSimVarValue("L:A32NX_DISCARD_PAGE", "bool");
+            const discard = SimVar.GetSimVarValue('L:A32NX_DISCARD_PAGE', 'bool');
 
             if (displayedPage < 0) {
                 displayedPage = 0;
-                SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", (pagesPrinted - 1) * -1);
+                SimVar.SetSimVarValue('L:A32NX_PRINT_PAGE_OFFSET', 'number', (pagesPrinted - 1) * -1);
             }
 
             if (displayedPage > (pagesPrinted - 1)) {
                 displayedPage = pagesPrinted - 1;
-                SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
+                SimVar.SetSimVarValue('L:A32NX_PRINT_PAGE_OFFSET', 'number', 0);
             }
 
             if (discard) {
                 this.pages.splice(displayedPage, 1);
                 pagesPrinted--;
-                SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", pagesPrinted);
-                SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1);
-                SimVar.SetSimVarValue("L:A32NX_DISCARD_PAGE", "bool", 0);
+                SimVar.SetSimVarValue('L:A32NX_PAGES_PRINTED', 'number', pagesPrinted);
+                SimVar.SetSimVarValue('L:A32NX_PAGE_ID', 'number', SimVar.GetSimVarValue('L:A32NX_PAGE_ID', 'number') - 1);
+                SimVar.SetSimVarValue('L:A32NX_DISCARD_PAGE', 'bool', 0);
             }
         }
 
@@ -74,12 +78,12 @@ class LiveryPrinter extends TemplateElement {
         }
         if (this.previousLines !== newLines) {
             this.lines.innerHTML = newLines;
-            this.lines.setAttribute("class", "large");
+            this.lines.setAttribute('class', 'large');
             if (this.lines.clientHeight > 1024) {
-                this.lines.setAttribute("class", "small");
+                this.lines.setAttribute('class', 'small');
             }
         }
         this.previousLines = newLines;
     }
 }
-registerLivery("livery-printer-element", LiveryPrinter);
+registerLivery('livery-printer-element', LiveryPrinter);

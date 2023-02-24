@@ -1,157 +1,153 @@
 class CDUAocFreeText {
-    static ShowPage(mcdu, store = { "msg_to": "", "reqID": SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 0 ? 0 : 1, "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, store = { msg_to: '', reqID: SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 0 ? 0 : 1, msg_line1: '', msg_line2: '', msg_line3: '', msg_line4: '', sendStatus: '' }) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCFreeText;
         const networkTypes = [
             'HOPPIE',
-            'FBW'
+            'FBW',
         ];
 
         const updateView = () => {
             let oneLineFilled = false;
-            if (store["msg_line1"] !== "" || store["msg_line2"] !== "" || store["msg_line3"] !== "" || store["msg_line4"] !== "") {
+            if (store.msg_line1 !== '' || store.msg_line2 !== '' || store.msg_line3 !== '' || store.msg_line4 !== '') {
                 oneLineFilled = true;
             }
-            let sendValid = oneLineFilled === true && store["msg_to"] !== "";
-            if (store["sendStatus"] === "SENDING" || store["sendStatus"] === "SENT") {
+            let sendValid = oneLineFilled === true && store.msg_to !== '';
+            if (store.sendStatus === 'SENDING' || store.sendStatus === 'SENT') {
                 sendValid = false;
             }
 
             mcdu.setTemplate([
-                ["AOC FREE TEXT"],
-                ["\xa0TO", "NETWORK\xa0"],
-                [`${store["msg_to"] !== "" ? store["msg_to"] + "[color]cyan" : "________[color]amber"}`, `↓${networkTypes[store["reqID"]]}[color]cyan`],
-                [""],
-                [`${store["msg_line1"] !== "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
-                [""],
-                [`${store["msg_line2"] !== "" ? store["msg_line2"] : "["}[color]cyan`, `${store["msg_line2"] != "" ? "" : "]"}[color]cyan`],
-                [""],
-                [`${store["msg_line3"] !== "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
-                [""],
-                [`${store["msg_line4"] !== "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
-                ["\xa0RETURN TO", `${store["sendStatus"]}\xa0`],
-                ["<AOC MENU", (sendValid === true ? "SEND*" : "SEND") + "[color]cyan"]
+                ['AOC FREE TEXT'],
+                ['\xa0TO', 'NETWORK\xa0'],
+                [`${store.msg_to !== '' ? `${store.msg_to}[color]cyan` : '________[color]amber'}`, `↓${networkTypes[store.reqID]}[color]cyan`],
+                [''],
+                [`${store.msg_line1 !== '' ? store.msg_line1 : '['}[color]cyan`, `${store.msg_line1 != '' ? '' : ']'}[color]cyan`],
+                [''],
+                [`${store.msg_line2 !== '' ? store.msg_line2 : '['}[color]cyan`, `${store.msg_line2 != '' ? '' : ']'}[color]cyan`],
+                [''],
+                [`${store.msg_line3 !== '' ? store.msg_line3 : '['}[color]cyan`, `${store.msg_line3 != '' ? '' : ']'}[color]cyan`],
+                [''],
+                [`${store.msg_line4 !== '' ? store.msg_line4 : '['}[color]cyan`, `${store.msg_line4 != '' ? '' : ']'}[color]cyan`],
+                ['\xa0RETURN TO', `${store.sendStatus}\xa0`],
+                ['<AOC MENU', `${sendValid === true ? 'SEND*' : 'SEND'}[color]cyan`],
             ]);
         };
         updateView();
 
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                store["msg_to"] = "";
+                store.msg_to = '';
             } else {
-                store["msg_to"] = value;
+                store.msg_to = value;
             }
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                store["msg_line1"] = "";
+                store.msg_line1 = '';
             } else {
-                store["msg_line1"] = value;
+                store.msg_line1 = value;
             }
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                store["msg_line2"] = "";
+                store.msg_line2 = '';
             } else {
-                store["msg_line2"] = value;
+                store.msg_line2 = value;
             }
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
         mcdu.onLeftInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                store["msg_line3"] = "";
+                store.msg_line3 = '';
             } else {
-                store["msg_line3"] = value;
+                store.msg_line3 = value;
             }
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
         mcdu.onLeftInput[4] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                store["msg_line4"] = "";
+                store.msg_line4 = '';
             } else {
-                store["msg_line4"] = value;
+                store.msg_line4 = value;
             }
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
-        mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[0] = () => {
-            store["reqID"] = (store["reqID"] + 1) % 2;
+            store.reqID = (store.reqID + 1) % 2;
             updateView();
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = async () => {
             // do not send two times
-            if (store["sendStatus"] === "SENDING" || store["sendStatus"] === "SENT") {
+            if (store.sendStatus === 'SENDING' || store.sendStatus === 'SENT') {
                 return;
             }
 
             let oneLineFilled = false;
-            if (store["msg_line1"] !== "" || store["msg_line2"] !== "" || store["msg_line3"] !== "" || store["msg_line4"] !== "") {
+            if (store.msg_line1 !== '' || store.msg_line2 !== '' || store.msg_line3 !== '' || store.msg_line4 !== '') {
                 oneLineFilled = true;
             }
-            const sendValid = oneLineFilled === true && store["msg_to"] !== "";
+            const sendValid = oneLineFilled === true && store.msg_to !== '';
 
             if (sendValid === false) {
                 mcdu.setScratchpadMessage(NXSystemMessages.mandatoryFields);
                 return;
             }
 
-            store["sendStatus"] = "SENDING";
+            store.sendStatus = 'SENDING';
             if (mcdu.page.Current === mcdu.page.AOCFreeText) {
                 updateView();
             }
 
             // create the message
             const message = new Atsu.FreetextMessage();
-            if (store["reqID"] === 0) {
+            if (store.reqID === 0) {
                 message.Network = Atsu.AtsuMessageNetwork.Hoppie;
             } else {
                 message.Network = Atsu.AtsuMessageNetwork.FBW;
             }
-            message.Station = store["msg_to"];
-            if (store["msg_line1"] !== "") {
-                message.Message += store["msg_line1"] + '\n';
+            message.Station = store.msg_to;
+            if (store.msg_line1 !== '') {
+                message.Message += `${store.msg_line1}\n`;
             }
-            if (store["msg_line2"] !== "") {
-                message.Message += store["msg_line2"] + '\n';
+            if (store.msg_line2 !== '') {
+                message.Message += `${store.msg_line2}\n`;
             }
-            if (store["msg_line3"] !== "") {
-                message.Message += store["msg_line3"] + '\n';
+            if (store.msg_line3 !== '') {
+                message.Message += `${store.msg_line3}\n`;
             }
-            if (store["msg_line4"] !== "") {
-                message.Message += store["msg_line4"] + '\n';
+            if (store.msg_line4 !== '') {
+                message.Message += `${store.msg_line4}\n`;
             }
             message.Message = message.Message.substring(0, message.Message.length - 1);
 
             // send the message
             mcdu.atsu.sendMessage(message).then((code) => {
                 if (code === Atsu.AtsuStatusCodes.Ok) {
-                    store["sendStatus"] = "SENT";
-                    store["msg_line1"] = "";
-                    store["msg_line2"] = "";
-                    store["msg_line3"] = "";
-                    store["msg_line4"] = "";
+                    store.sendStatus = 'SENT';
+                    store.msg_line1 = '';
+                    store.msg_line2 = '';
+                    store.msg_line3 = '';
+                    store.msg_line4 = '';
 
                     setTimeout(() => {
-                        store["sendStatus"] = "";
+                        store.sendStatus = '';
                         if (mcdu.page.Current === mcdu.page.AOCFreeText) {
                             CDUAocFreeText.ShowPage(mcdu, store);
                         }
                     }, 5000);
                 } else {
-                    store["sendStatus"] = "FAILED";
+                    store.sendStatus = 'FAILED';
                     mcdu.addNewAtsuMessage(code);
                 }
                 if (mcdu.page.Current === mcdu.page.AOCFreeText) {
@@ -160,9 +156,7 @@ class CDUAocFreeText {
             });
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);

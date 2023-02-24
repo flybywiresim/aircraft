@@ -3,31 +3,31 @@ class CDUAtcMessage {
         let retval;
 
         switch (message.Content[0].TypeId) {
-            case "DM0":
-                retval = "WILC";
-                break;
-            case "UM0":
-            case "DM1":
-                retval = "UNBL";
-                break;
-            case "UM1":
-            case "DM2":
-                retval = "STBY";
-                break;
-            case "UM3":
-            case "DM3":
-                retval = "ROGR";
-                break;
-            case "UM4":
-            case "DM4":
-                retval = "AFRM";
-                break;
-            case "UM5":
-            case "DM5":
-                retval = "NEG";
-                break;
-            default:
-                return "";
+        case 'DM0':
+            retval = 'WILC';
+            break;
+        case 'UM0':
+        case 'DM1':
+            retval = 'UNBL';
+            break;
+        case 'UM1':
+        case 'DM2':
+            retval = 'STBY';
+            break;
+        case 'UM3':
+        case 'DM3':
+            retval = 'ROGR';
+            break;
+        case 'UM4':
+        case 'DM4':
+            retval = 'AFRM';
+            break;
+        case 'UM5':
+        case 'DM5':
+            retval = 'NEG';
+            break;
+        default:
+            return '';
         }
 
         let color = '{cyan}';
@@ -42,12 +42,12 @@ class CDUAtcMessage {
     static ShowPage(mcdu, messages, messageIndex, messageList, offset = 0) {
         mcdu.clearDisplay();
         const message = messages[messageIndex];
-        const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split("\n");
+        const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split('\n');
 
         // mark message as read
         mcdu.atsu.messageRead(message.UniqueMessageID);
 
-        const msgArrows = messages.length > 1 ? " {}" : "";
+        const msgArrows = messages.length > 1 ? ' {}' : '';
 
         if (lines.length > 8) {
             let up = false;
@@ -70,19 +70,19 @@ class CDUAtcMessage {
         }
 
         mcdu.setTemplate([
-            ["ATC MSG DISPLAY"],
-            ["", `${messageIndex + 1}/${messages.length}${msgArrows}`],
-            [`{small}${lines[offset] ? lines[offset] : ""}{end}`, `${offset === 0 ? CDUAtcMessage.TranslateCpdlcResponse(message) : ""}`],
-            [`${lines[offset + 1] ? lines[offset + 1] : ""}`],
-            [`{small}${lines[offset + 2] ? lines[offset + 2] : ""}{end}`],
-            [`${lines[offset + 3] ? lines[offset + 3] : ""}`],
-            [`{small}${lines[offset + 4] ? lines[offset + 4] : ""}{end}`],
-            [`${lines[offset + 5] ? lines[offset + 5] : ""}`],
-            [`{small}${lines[offset + 6] ? lines[offset + 6] : ""}{end}`],
-            [`${lines[offset + 7] ? lines[offset + 7] : ""}`],
-            [`{small}${lines[offset + 8] ? lines[offset + 8] : ""}{end}`],
-            [`\xa0${messageList ? "MSG RECORD" : "MONITORED MSG"}`],
-            ["<RETURN", "PRINT*[color]cyan"]
+            ['ATC MSG DISPLAY'],
+            ['', `${messageIndex + 1}/${messages.length}${msgArrows}`],
+            [`{small}${lines[offset] ? lines[offset] : ''}{end}`, `${offset === 0 ? CDUAtcMessage.TranslateCpdlcResponse(message) : ''}`],
+            [`${lines[offset + 1] ? lines[offset + 1] : ''}`],
+            [`{small}${lines[offset + 2] ? lines[offset + 2] : ''}{end}`],
+            [`${lines[offset + 3] ? lines[offset + 3] : ''}`],
+            [`{small}${lines[offset + 4] ? lines[offset + 4] : ''}{end}`],
+            [`${lines[offset + 5] ? lines[offset + 5] : ''}`],
+            [`{small}${lines[offset + 6] ? lines[offset + 6] : ''}{end}`],
+            [`${lines[offset + 7] ? lines[offset + 7] : ''}`],
+            [`{small}${lines[offset + 8] ? lines[offset + 8] : ''}{end}`],
+            [`\xa0${messageList ? 'MSG RECORD' : 'MONITORED MSG'}`],
+            ['<RETURN', 'PRINT*[color]cyan'],
         ]);
 
         mcdu.onNextPage = () => {
@@ -99,9 +99,7 @@ class CDUAtcMessage {
             }
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             if (messageList) {
                 CDUAtcMessagesRecord.ShowPage(mcdu);
@@ -113,6 +111,5 @@ class CDUAtcMessage {
         mcdu.onRightInput[5] = () => {
             mcdu.atsu.printMessage(message);
         };
-
     }
 }

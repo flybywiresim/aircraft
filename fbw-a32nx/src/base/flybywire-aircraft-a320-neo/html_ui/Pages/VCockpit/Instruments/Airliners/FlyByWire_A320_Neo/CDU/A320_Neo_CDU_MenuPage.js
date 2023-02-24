@@ -7,30 +7,30 @@ class CDUMenuPage {
         let selectedATSU = false;
         let selectedAIDS = false;
         let selectedCFDS = false;
-        //const selectedMaint = false;
+        // const selectedMaint = false;
 
         const updateView = () => {
-            const getText = (name, isSelected, extra = "", isLeft = true) => isSelected ? (isLeft ? name + " (SEL)" : "(SEL) " + name) : name + extra;
-            const getColor = (system, isSelected) => isSelected ? Column.cyan : system === activeSystem ? Column.green : Column.white;
+            const getText = (name, isSelected, extra = '', isLeft = true) => (isSelected ? (isLeft ? `${name} (SEL)` : `(SEL) ${name}`) : name + extra);
+            const getColor = (system, isSelected) => (isSelected ? Column.cyan : system === activeSystem ? Column.green : Column.white);
 
             mcdu.setTemplate(FormatTemplate([
-                [new Column(7, "MCDU MENU")],
-                [new Column(22, "SELECT", Column.right)],
+                [new Column(7, 'MCDU MENU')],
+                [new Column(22, 'SELECT', Column.right)],
                 [
-                    new Column(0, getText("<FMGC", selectedFMGC, " (REQ)"), getColor("FMGC", selectedFMGC)),
-                    new Column(23, "NAV B/UP>", Column.right)
+                    new Column(0, getText('<FMGC', selectedFMGC, ' (REQ)'), getColor('FMGC', selectedFMGC)),
+                    new Column(23, 'NAV B/UP>', Column.right),
                 ],
-                [""],
-                [new Column(0, getText("<ATSU", selectedATSU), getColor("ATSU", selectedATSU))],
-                [""],
-                [new Column(0, getText("<AIDS", selectedAIDS), getColor("AIDS", selectedAIDS))],
-                [""],
-                [new Column(0, getText("<CFDS", selectedCFDS), getColor("CFDS", selectedCFDS))],
-                [""],
-                [""],
-                //[new Column(0, getText("MCDU MAINT>", selectedMaint, "", false), Column.right, getColor("MAINT", selectedMaint))],
-                [""],
-                [""]
+                [''],
+                [new Column(0, getText('<ATSU', selectedATSU), getColor('ATSU', selectedATSU))],
+                [''],
+                [new Column(0, getText('<AIDS', selectedAIDS), getColor('AIDS', selectedAIDS))],
+                [''],
+                [new Column(0, getText('<CFDS', selectedCFDS), getColor('CFDS', selectedCFDS))],
+                [''],
+                [''],
+                // [new Column(0, getText("MCDU MAINT>", selectedMaint, "", false), Column.right, getColor("MAINT", selectedMaint))],
+                [''],
+                [''],
             ]));
         };
 

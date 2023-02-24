@@ -35,13 +35,14 @@ class FMCDataManager {
 
         NXDataStore.getAndSubscribe('LATLON_EXT_FMT', (_, value) => this.latLonExtendedFormat = value === '1', '0');
     }
+
     IsValidLatLon(latLong) {
-        if (latLong[0] === "N" || latLong[0] === "S") {
+        if (latLong[0] === 'N' || latLong[0] === 'S') {
             if (isFinite(parseInt(latLong.substr(1, 2)))) {
-                if (latLong[3] === "°") {
-                    if (latLong[9] === "W" || latLong[9] === "E") {
+                if (latLong[3] === '°') {
+                    if (latLong[9] === 'W' || latLong[9] === 'E') {
                         if (isFinite(parseInt(latLong.substr(10, 3)))) {
-                            if (latLong[13] === "°") {
+                            if (latLong[13] === '°') {
                                 return true;
                             }
                         }
@@ -51,35 +52,38 @@ class FMCDataManager {
         }
         return false;
     }
+
     async IsAirportValid(icao) {
         if (!icao || icao.length !== 4) {
             return false;
         }
         return new Promise((resolve) => {
-            SimVar.SetSimVarValue("C:fs9gps:IcaoSearchStartCursor", "string", "A", "FMC").then(() => {
-                SimVar.SetSimVarValue("C:fs9gps:IcaoSearchEnterChar", "string", icao, "FMC").then(() => {
-                    resolve(SimVar.GetSimVarValue("C:fs9gps:IcaoSearchMatchedIcaosNumber", "number", "FMC") >= 0);
+            SimVar.SetSimVarValue('C:fs9gps:IcaoSearchStartCursor', 'string', 'A', 'FMC').then(() => {
+                SimVar.SetSimVarValue('C:fs9gps:IcaoSearchEnterChar', 'string', icao, 'FMC').then(() => {
+                    resolve(SimVar.GetSimVarValue('C:fs9gps:IcaoSearchMatchedIcaosNumber', 'number', 'FMC') >= 0);
                 });
             });
         });
     }
+
     async IsWaypointValid(ident) {
         if (!ident || ident.length < 0 || ident.length > 5) {
             return false;
         }
         return new Promise((resolve) => {
-            SimVar.SetSimVarValue("C:fs9gps:IcaoSearchStartCursor", "string", "AVNWX", "FMC").then(() => {
-                SimVar.SetSimVarValue("C:fs9gps:IcaoSearchEnterChar", "string", ident, "FMC").then(() => {
-                    resolve(SimVar.GetSimVarValue("C:fs9gps:IcaoSearchMatchedIcaosNumber", "number", "FMC") > 0);
+            SimVar.SetSimVarValue('C:fs9gps:IcaoSearchStartCursor', 'string', 'AVNWX', 'FMC').then(() => {
+                SimVar.SetSimVarValue('C:fs9gps:IcaoSearchEnterChar', 'string', ident, 'FMC').then(() => {
+                    resolve(SimVar.GetSimVarValue('C:fs9gps:IcaoSearchMatchedIcaosNumber', 'number', 'FMC') > 0);
                 });
             });
         });
     }
+
     async GetAirportByIdent(ident) {
         if (!(await this.IsAirportValid(ident).catch(console.error))) {
             return undefined;
         }
-        const icao = "A      " + ident.toLocaleUpperCase();
+        const icao = `A      ${ident.toLocaleUpperCase()}`;
         const airportWaypoint = await this.fmc.facilityLoader.getAirport(icao);
         return airportWaypoint;
     }
@@ -92,24 +96,28 @@ class FMCDataManager {
         const waypoints = [...await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.None)];
         return this._filterDuplicateWaypoints(waypoints);
     }
+
     async GetVORsByIdent(ident) {
         const navaids = [];
         const vors = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Vors);
         navaids.push(...vors.filter((vor) => vor.infos.type !== 6 /* ILS */));
         return navaids;
     }
+
     async GetILSsByIdent(ident) {
         const navaids = [];
         const vors = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Vors);
         navaids.push(...vors.filter((vor) => vor.infos.type === 6 /* ILS */));
         return navaids;
     }
+
     async GetNDBsByIdent(ident) {
         const navaids = [];
         const ndbs = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Ndbs);
         navaids.push(...ndbs);
         return navaids;
     }
+
     async GetWaypointsByIdentAndType(ident, filter = 0, maxItems = 40) {
         // fetch results from the nav database
         // we filter for equal idents, because the search returns everything starting with the given string
@@ -128,11 +136,12 @@ class FMCDataManager {
 
         return waypoints;
     }
+
     async _PushWaypointToFlightPlan(waypoint) {
-        const lastWaypointIndex = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointsNumber", "number", "FMC");
+        const lastWaypointIndex = SimVar.GetSimVarValue('C:fs9gps:FlightPlanWaypointsNumber', 'number', 'FMC');
         return new Promise((resolve) => {
-            SimVar.SetSimVarValue("C:fs9gps:FlightPlanNewWaypointICAO", "string", waypoint.icao, "FMC").then(() => {
-                SimVar.SetSimVarValue("C:fs9gps:FlightPlanAddWaypoint", "number", lastWaypointIndex, "FMC").then(() => {
+            SimVar.SetSimVarValue('C:fs9gps:FlightPlanNewWaypointICAO', 'string', waypoint.icao, 'FMC').then(() => {
+                SimVar.SetSimVarValue('C:fs9gps:FlightPlanAddWaypoint', 'number', lastWaypointIndex, 'FMC').then(() => {
                     this.fmc.requestCall(() => {
                         resolve(true);
                     });
@@ -140,21 +149,21 @@ class FMCDataManager {
             });
         });
     }
+
     async _DeleteFlightPlan() {
-        const deleteFirstWaypoint = async () => {
-            return new Promise((resolve) => {
-                SimVar.SetSimVarValue("C:fs9gps:FlightPlanDeleteWaypoint", "number", 0, "FMC").then(() => {
-                    resolve();
-                });
+        const deleteFirstWaypoint = async () => new Promise((resolve) => {
+            SimVar.SetSimVarValue('C:fs9gps:FlightPlanDeleteWaypoint', 'number', 0, 'FMC').then(() => {
+                resolve();
             });
-        };
-        while (SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointsNumber", "number", "FMC") > 0) {
+        });
+        while (SimVar.GetSimVarValue('C:fs9gps:FlightPlanWaypointsNumber', 'number', 'FMC') > 0) {
             await deleteFirstWaypoint();
         }
         return true;
     }
+
     async ExecuteFlightPlan(fmc) {
-        console.warn("ExecuteFlightPlan not implemented.");
+        console.warn('ExecuteFlightPlan not implemented.');
         return true;
     }
 
@@ -169,11 +178,11 @@ class FMCDataManager {
     }
 
     _updateLocalStorage() {
-        localStorage.setItem(FMCDataManager.STORED_WP_KEY, JSON.stringify(this.storedWaypoints.map((wp) => wp ? {
+        localStorage.setItem(FMCDataManager.STORED_WP_KEY, JSON.stringify(this.storedWaypoints.map((wp) => (wp ? {
             ident: wp.ident,
             coordinates: { lat: wp.infos.coordinates.lat, long: wp.infos.coordinates.long },
             additionalData: wp.additionalData,
-        } : undefined)));
+        } : undefined))));
     }
 
     storeWaypoint(wp, index) {
@@ -224,7 +233,7 @@ class FMCDataManager {
     }
 
     numberOfStoredWaypoints() {
-        return this.storedWaypoints.reduce((count, wp) => wp ? count + 1 : count, 0);
+        return this.storedWaypoints.reduce((count, wp) => (wp ? count + 1 : count), 0);
     }
 
     prevStoredWaypointIndex(currentIndex) {
@@ -310,9 +319,7 @@ class FMCDataManager {
             }
         }
 
-        const additionalData = {
-            storedType: StoredWaypointType.LatLon,
-        };
+        const additionalData = { storedType: StoredWaypointType.LatLon };
 
         return this._createWaypoint(ident, index, coordinates, additionalData, stored);
     }

@@ -30,11 +30,11 @@ class CDUAtcLatRequestFansB {
         const retval = [];
 
         if (data.directTo) {
-            retval.push(CDUAtcLatRequestFansB.CreateRequest(mcdu, "DM22", [data.directTo]));
+            retval.push(CDUAtcLatRequestFansB.CreateRequest(mcdu, 'DM22', [data.directTo]));
         }
         if (data.weatherDeviation) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.weatherDeviation).split(" ");
-            retval.push(CDUAtcLatRequestFansB.CreateRequest(mcdu, "DM27", [elements[0], elements[1]]));
+            const elements = Atsu.InputValidation.expandLateralOffset(data.weatherDeviation).split(' ');
+            retval.push(CDUAtcLatRequestFansB.CreateRequest(mcdu, 'DM27', [elements[0], elements[1]]));
         }
 
         return retval;
@@ -43,45 +43,43 @@ class CDUAtcLatRequestFansB {
     static ShowPage(mcdu, data = CDUAtcLatRequestFansB.CreateDataBlock()) {
         mcdu.clearDisplay();
 
-        let weatherDeviation = "{cyan}[  ]{end}";
+        let weatherDeviation = '{cyan}[  ]{end}';
         if (data.weatherDeviation) {
             weatherDeviation = `${data.weatherDeviation}[color]cyan`;
         }
-        let directTo = "{cyan}[     ]{end}";
+        let directTo = '{cyan}[     ]{end}';
         if (data.directTo) {
             directTo = `${data.directTo}[color]cyan`;
         }
 
-        let text = "ADD TEXT\xa0";
-        let erase = "\xa0ERASE";
-        let reqDisplay = "DCDU\xa0[color]cyan";
+        let text = 'ADD TEXT\xa0';
+        let erase = '\xa0ERASE';
+        let reqDisplay = 'DCDU\xa0[color]cyan';
         if (CDUAtcLatRequestFansB.CanSendData(data)) {
-            reqDisplay = "DCDU*[color]cyan";
-            text = "ADD TEXT>";
+            reqDisplay = 'DCDU*[color]cyan';
+            text = 'ADD TEXT>';
         }
         if (CDUAtcLatRequestFansB.CanEraseData(data)) {
-            erase = "*ERASE";
+            erase = '*ERASE';
         }
 
         mcdu.setTemplate([
-            ["ATC LAT REQ"],
-            ["\xa0DIR TO[color]white"],
+            ['ATC LAT REQ'],
+            ['\xa0DIR TO[color]white'],
             [directTo],
-            [""],
-            [""],
-            ["", "WX DEV"],
-            ["", weatherDeviation],
-            [""],
-            [""],
-            ["\xa0ALL FIELDS"],
+            [''],
+            [''],
+            ['', 'WX DEV'],
+            ['', weatherDeviation],
+            [''],
+            [''],
+            ['\xa0ALL FIELDS'],
             [erase, text],
-            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
-            ["<RETURN", reqDisplay]
+            ['\xa0FLIGHT REQ', 'XFR TO\xa0[color]cyan'],
+            ['<RETURN', reqDisplay],
         ]);
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.directTo = null;
@@ -95,7 +93,7 @@ class CDUAtcLatRequestFansB {
                         if (err === NXSystemMessages.formatError) {
                             mcdu.setScratchpadMessage(err);
                         }
-                    };
+                    }
                 } else if (/^[A-Z0-9]{2,7}/.test(value)) {
                     // place format
                     mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
@@ -113,9 +111,7 @@ class CDUAtcLatRequestFansB {
             CDUAtcLatRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.heading = null;
@@ -131,9 +127,7 @@ class CDUAtcLatRequestFansB {
             CDUAtcLatRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.track = null;
@@ -149,23 +143,17 @@ class CDUAtcLatRequestFansB {
             CDUAtcLatRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[4] = () => {
             CDUAtcLatRequestFansB.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             CDUAtcFlightReq.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.offset = null;
@@ -181,9 +169,7 @@ class CDUAtcLatRequestFansB {
             CDUAtcLatRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[2] = async (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.weatherDeviation = null;
@@ -198,9 +184,7 @@ class CDUAtcLatRequestFansB {
             CDUAtcLatRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[3] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.backOnTrack = false;
@@ -210,9 +194,7 @@ class CDUAtcLatRequestFansB {
             CDUAtcLatRequestFansB.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[4] = () => {
             if (CDUAtcLatRequestFansB.CanSendData(data)) {
                 const messages = CDUAtcLatRequestFansB.CreateRequests(mcdu, data);
@@ -222,12 +204,10 @@ class CDUAtcLatRequestFansB {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = () => {
             if (CDUAtcLatRequestFansB.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === '') {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcLatRequestFansB.CreateRequests(mcdu, data);

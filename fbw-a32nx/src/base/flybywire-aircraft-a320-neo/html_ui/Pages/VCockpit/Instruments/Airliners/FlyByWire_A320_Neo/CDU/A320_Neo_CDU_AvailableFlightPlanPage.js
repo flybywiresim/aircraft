@@ -2,11 +2,11 @@ class CDUAvailableFlightPlanPage {
     static ShowPage(mcdu, offset = 0, currentRoute = 1) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AvailableFlightPlanPage;
-        let fromTo = "NO ORIGIN/DEST";
+        let fromTo = 'NO ORIGIN/DEST';
         const hasCoRoutes = mcdu.coRoute.routes.length > 0;
         if (mcdu.flightPlanManager.getOrigin()) {
             if (mcdu.flightPlanManager.getDestination()) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident;
+                fromTo = `${mcdu.flightPlanManager.getOrigin().ident}/${mcdu.flightPlanManager.getDestination().ident}`;
             }
         }
         if (hasCoRoutes) {
@@ -20,10 +20,10 @@ class CDUAvailableFlightPlanPage {
                 currentRoute = 1;
             }
 
-            const {navlog, routeName} = mcdu.coRoute.routes[currentRoute - 1];
+            const { navlog, routeName } = mcdu.coRoute.routes[currentRoute - 1];
 
             let scrollText = [];
-            var routeArray = [];
+            const routeArray = [];
             const scrollLimit = 9;
             let columnPos = 0;
             let rowPos = 0;
@@ -37,7 +37,7 @@ class CDUAvailableFlightPlanPage {
                     continue;
                 }
 
-                if (["TOP OF CLIMB", "TOP OF DESCENT"].includes(fix.name)) {
+                if (['TOP OF CLIMB', 'TOP OF DESCENT'].includes(fix.name)) {
                     continue;
                 }
 
@@ -47,20 +47,20 @@ class CDUAvailableFlightPlanPage {
 
                 if (fix.via_airway === 'DCT' && nextFix.via_airway === 'DCT') {
                     switch (columnPos) {
-                        case 1:
-                            routeArray[rowPos] = [
-                                "",
-                                "",
-                                `${routeArray[rowPos][2]}` + " " + `{green}{big}${fix.via_airway.concat("@".repeat(5 - fix.via_airway.length))}{end}{end}` + " " + `{small}${fix.ident.concat("@".repeat(5 - fix.ident.length))}{end}`
-                            ];
-                            columnPos = 2;
-                            break;
-                        case 2:
-                            routeArray[rowPos] = ["", "",`${routeArray[rowPos][2]}` + " " + `{green}{big}${fix.via_airway.concat("@".repeat(5 - fix.via_airway.length))}{end}`];
-                            routeArray[rowPos + 1] = ["", "", `{small}${fix.ident.concat("@".repeat(5 - fix.ident.length))}{end}`];
-                            columnPos = 1;
-                            rowPos++;
-                            break;
+                    case 1:
+                        routeArray[rowPos] = [
+                            '',
+                            '',
+                            `${routeArray[rowPos][2]}` + ' ' + `{green}{big}${fix.via_airway.concat('@'.repeat(5 - fix.via_airway.length))}{end}{end}` + ' ' + `{small}${fix.ident.concat('@'.repeat(5 - fix.ident.length))}{end}`,
+                        ];
+                        columnPos = 2;
+                        break;
+                    case 2:
+                        routeArray[rowPos] = ['', '', `${routeArray[rowPos][2]}` + ' ' + `{green}{big}${fix.via_airway.concat('@'.repeat(5 - fix.via_airway.length))}{end}`];
+                        routeArray[rowPos + 1] = ['', '', `{small}${fix.ident.concat('@'.repeat(5 - fix.ident.length))}{end}`];
+                        columnPos = 1;
+                        rowPos++;
+                        break;
                     }
 
                     continue;
@@ -68,28 +68,28 @@ class CDUAvailableFlightPlanPage {
 
                 if (nextFix.via_airway !== fix.via_airway) {
                     switch (columnPos) {
-                        case 0:
-                            routeArray[rowPos] = ["","",`{small}${fix.ident.concat("@".repeat(5 - fix.ident.length))}{end}`];
-                            columnPos = 1;
-                            break;
-                        case 1:
-                            routeArray[rowPos] = [
-                                "",
-                                "",
-                                `${routeArray[rowPos][2]}` + " " + `{green}{big}${fix.via_airway.concat("@".repeat(5 - fix.via_airway.length))}{end}{end}` + " " + `{small}${fix.ident.concat("@".repeat(5 - fix.ident.length))}{end}`
-                            ];
-                            columnPos = 2;
-                            break;
-                        case 2:
-                            routeArray[rowPos] = [
-                                "",
-                                "",
-                                `${routeArray[rowPos][2]}` + " " + `{green}{big}${fix.via_airway.concat("@".repeat(5 - fix.via_airway.length))}{end}{end}`
-                            ];
-                            routeArray[rowPos + 1] = ["","",`{small}${fix.ident.concat("@".repeat(5 - fix.ident.length))}{end}`];
-                            columnPos = 1;
-                            rowPos++;
-                            break;
+                    case 0:
+                        routeArray[rowPos] = ['', '', `{small}${fix.ident.concat('@'.repeat(5 - fix.ident.length))}{end}`];
+                        columnPos = 1;
+                        break;
+                    case 1:
+                        routeArray[rowPos] = [
+                            '',
+                            '',
+                            `${routeArray[rowPos][2]}` + ' ' + `{green}{big}${fix.via_airway.concat('@'.repeat(5 - fix.via_airway.length))}{end}{end}` + ' ' + `{small}${fix.ident.concat('@'.repeat(5 - fix.ident.length))}{end}`,
+                        ];
+                        columnPos = 2;
+                        break;
+                    case 2:
+                        routeArray[rowPos] = [
+                            '',
+                            '',
+                            `${routeArray[rowPos][2]}` + ' ' + `{green}{big}${fix.via_airway.concat('@'.repeat(5 - fix.via_airway.length))}{end}{end}`,
+                        ];
+                        routeArray[rowPos + 1] = ['', '', `{small}${fix.ident.concat('@'.repeat(5 - fix.ident.length))}{end}`];
+                        columnPos = 1;
+                        rowPos++;
+                        break;
                     }
                     continue;
                 }
@@ -98,34 +98,34 @@ class CDUAvailableFlightPlanPage {
             /* row character width management,
              uses @ as a delim for adding spaces in short airways/waypoints */
             routeArray.forEach((line, index) => {
-                const excludedLength = line[2].replace(/{small}|{green}|{end}|{big}|/g,'').length;
+                const excludedLength = line[2].replace(/{small}|{green}|{end}|{big}|/g, '').length;
                 if (excludedLength < 23) {
                     // Add spaces to make up lack of row width
-                    const adjustedLine = line[2] + "{sp}".repeat(23 - excludedLength);
-                    routeArray[index] = ["", "", adjustedLine];
+                    const adjustedLine = line[2] + '{sp}'.repeat(23 - excludedLength);
+                    routeArray[index] = ['', '', adjustedLine];
                 }
                 // Add spaces for short airways/waypoints smaller than 5 characters
-                routeArray[index] = ["", "", routeArray[index][2].replace(/@/g, '{sp}')];
+                routeArray[index] = ['', '', routeArray[index][2].replace(/@/g, '{sp}')];
             });
 
             // Offset Management
             const routeArrayLength = routeArray.length;
             if (offset < 0) {
                 offset = 0;
-            };
+            }
             if (offset > (routeArrayLength - 9)) {
                 offset = routeArrayLength - 9;
-            };
-            scrollText = routeArrayLength > 9 ?
-                [...routeArray.slice(0 + offset, 9 + offset)]
+            }
+            scrollText = routeArrayLength > 9
+                ? [...routeArray.slice(0 + offset, 9 + offset)]
                 : [...routeArray, ...CDUAvailableFlightPlanPage.insertEmptyRows(scrollLimit - routeArray.length)];
 
             mcdu.setTemplate([
                 [`{sp}{sp}{sp}{sp}{sp}ROUTE{sp}{sp}{small}${currentRoute}/${coRoutesListSize}{end}`],
-                ["{sp}CO RTE", "FROM/TO{sp}{sp}" ],
+                ['{sp}CO RTE', 'FROM/TO{sp}{sp}'],
                 [`${routeName}[color]cyan`, `${fromTo}[color]cyan`],
                 ...scrollText,
-                ["<RETURN", "INSERT*[color]amber"]
+                ['<RETURN', 'INSERT*[color]amber'],
             ]);
 
             mcdu.onPrevPage = () => {
@@ -134,7 +134,7 @@ class CDUAvailableFlightPlanPage {
             mcdu.onNextPage = () => {
                 CDUAvailableFlightPlanPage.ShowPage(mcdu, 0, currentRoute + 1);
             };
-            mcdu.onDown = () => {//on page down decrement the page offset.
+            mcdu.onDown = () => { // on page down decrement the page offset.
                 CDUAvailableFlightPlanPage.ShowPage(mcdu, offset - 1, currentRoute);
             };
             mcdu.onUp = () => {
@@ -149,34 +149,33 @@ class CDUAvailableFlightPlanPage {
             mcdu.onRightInput[5] = () => {
                 const selectedRoute = mcdu.coRoute.routes[currentRoute - 1];
                 mcdu.coRoute.routeNumber = routeName;
-                mcdu.coRoute["originIcao"] = selectedRoute.originIcao;
-                mcdu.coRoute["destinationIcao"] = selectedRoute.destinationIcao;
-                mcdu.coRoute["route"] = selectedRoute.route;
+                mcdu.coRoute.originIcao = selectedRoute.originIcao;
+                mcdu.coRoute.destinationIcao = selectedRoute.destinationIcao;
+                mcdu.coRoute.route = selectedRoute.route;
                 if (selectedRoute.alternateIcao) {
-                    mcdu.coRoute["alternateIcao"] = selectedRoute.alternateIcao;
+                    mcdu.coRoute.alternateIcao = selectedRoute.alternateIcao;
                 }
-                mcdu.coRoute["navlog"] = selectedRoute.navlog;
+                mcdu.coRoute.navlog = selectedRoute.navlog;
                 setTimeout(async () => {
                     await insertCoRoute(mcdu);
                     CDUInitPage.ShowPage1(mcdu);
                 }, mcdu.getDelayRouteChange());
-
             };
         } else {
             mcdu.setTemplate([
                 [fromTo],
-                [""],
-                ["NONE[color]green"],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                ["<RETURN"]
+                [''],
+                ['NONE[color]green'],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                ['<RETURN'],
             ]);
         }
 
@@ -188,7 +187,7 @@ class CDUAvailableFlightPlanPage {
     static insertEmptyRows(rowsToInsert) {
         const array = [];
         for (let i = 0; i < rowsToInsert; i++) {
-            array.push([""]);
+            array.push(['']);
         }
         return array;
     }

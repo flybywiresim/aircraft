@@ -18,18 +18,18 @@ class CDUAirportsMonitor {
         if (!this.icao1) {
             mcdu.clearDisplay();
             mcdu.setTemplate([
-                ["CLOSEST AIRPORTS"],
-                ["LOADING..."],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
-                [""],
+                ['CLOSEST AIRPORTS'],
+                ['LOADING...'],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
+                [''],
             ]);
         }
 
@@ -38,24 +38,23 @@ class CDUAirportsMonitor {
         const max_dist_miles = 100000;
 
         if (this.total_delta_t >= update_ival_ms || !this.icao1) {
+            const ap_line_batch = new SimVar.SimVarBatch('C:fs9gps:NearestAirportItemsNumber', 'C:fs9gps:NearestAirportCurrentLine');
+            ap_line_batch.add('C:fs9gps:NearestAirportSelectedLatitude', 'degree latitude');
+            ap_line_batch.add('C:fs9gps:NearestAirportSelectedLongitude', 'degree longitude');
+            ap_line_batch.add('C:fs9gps:NearestAirportCurrentICAO', 'string', 'string');
+            ap_line_batch.add('C:fs9gps:NearestAirportCurrentDistance', 'nautical miles', 'number');
+            ap_line_batch.add('C:fs9gps:NearestAirportCurrentTrueBearing', 'degrees', 'number');
 
-            const ap_line_batch = new SimVar.SimVarBatch("C:fs9gps:NearestAirportItemsNumber", "C:fs9gps:NearestAirportCurrentLine");
-            ap_line_batch.add("C:fs9gps:NearestAirportSelectedLatitude", "degree latitude");
-            ap_line_batch.add("C:fs9gps:NearestAirportSelectedLongitude", "degree longitude");
-            ap_line_batch.add("C:fs9gps:NearestAirportCurrentICAO", "string", "string");
-            ap_line_batch.add("C:fs9gps:NearestAirportCurrentDistance", "nautical miles", "number");
-            ap_line_batch.add("C:fs9gps:NearestAirportCurrentTrueBearing", "degrees", "number");
-
-            this.lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-            this.lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+            this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+            this.lon = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
             this.fob_kg = Simplane.getTotalFuel();
-            this.fuel_flow_kg_per_s = SimVar.GetSimVarValue("ENG FUEL FLOW PPH SSL", "kilograms per second");
-            SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLatitude", "degree latitude", this.lat);
-            SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLongitude", "degree longitude", this.lon);
-            SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumItems", "number", max_num_ap);
-            SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumDistance", "nautical miles", max_dist_miles);
+            this.fuel_flow_kg_per_s = SimVar.GetSimVarValue('ENG FUEL FLOW PPH SSL', 'kilograms per second');
+            SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLatitude', 'degree latitude', this.lat);
+            SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLongitude', 'degree longitude', this.lon);
+            SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumItems', 'number', max_num_ap);
+            SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumDistance', 'nautical miles', max_dist_miles);
 
-            SimVar.GetSimVarArrayValues(ap_line_batch, function (_Values) {
+            SimVar.GetSimVarArrayValues(ap_line_batch, (_Values) => {
                 // sometimes we get only one value,
                 // in which case the display will not be cleared and redrawn
                 if (_Values.length === 4) {
@@ -68,7 +67,7 @@ class CDUAirportsMonitor {
                     this.dist3 = Math.round(parseFloat(_Values[2][3]));
                     this.dist4 = Math.round(parseFloat(_Values[3][3]));
                     // values are jumpy! mitigated by slow update rate, as only about every 30th value is erroneous
-                    this.magvar = SimVar.GetSimVarValue("MAGVAR", "degree");
+                    this.magvar = SimVar.GetSimVarValue('MAGVAR', 'degree');
                     this.brng1 = Math.round(parseFloat(_Values[0][4]) - this.magvar);
                     this.brng2 = Math.round(parseFloat(_Values[1][4]) - this.magvar);
                     this.brng3 = Math.round(parseFloat(_Values[2][4]) - this.magvar);
@@ -78,10 +77,10 @@ class CDUAirportsMonitor {
                     this.ll3 = new LatLong(_Values[2][0], _Values[2][1]);
                     this.ll4 = new LatLong(_Values[3][0], _Values[3][1]);
                 }
-            }.bind(this));
+            });
 
             // logic from FlightPlanManager.js
-            this.gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+            this.gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
             if (this.gs < 50) {
                 this.gs = 50;
             }
@@ -99,7 +98,7 @@ class CDUAirportsMonitor {
         const eta4_s = Math.round(this.dist4 / this.gs * s_per_h);
 
         // absolute ETA in seconds
-        const utc_s = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const utc_s = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
         const utc1_s = (utc_s + eta1_s) % s_per_d;
         const utc2_s = (utc_s + eta2_s) % s_per_d;
         const utc3_s = (utc_s + eta3_s) % s_per_d;
@@ -116,10 +115,10 @@ class CDUAirportsMonitor {
         const m4 = Math.floor(utc4_s % s_per_h / 60) || 0;
 
         // ETA HHMM strings
-        this.eta1 = `${h1.toString().padStart(2, "0") || "00"}${m1.toString().padStart(2, "0") || "00"}`;
-        this.eta2 = `${h2.toString().padStart(2, "0") || "00"}${m2.toString().padStart(2, "0") || "00"}`;
-        this.eta3 = `${h3.toString().padStart(2, "0") || "00"}${m3.toString().padStart(2, "0") || "00"}`;
-        this.eta4 = `${h4.toString().padStart(2, "0") || "00"}${m4.toString().padStart(2, "0") || "00"}`;
+        this.eta1 = `${h1.toString().padStart(2, '0') || '00'}${m1.toString().padStart(2, '0') || '00'}`;
+        this.eta2 = `${h2.toString().padStart(2, '0') || '00'}${m2.toString().padStart(2, '0') || '00'}`;
+        this.eta3 = `${h3.toString().padStart(2, '0') || '00'}${m3.toString().padStart(2, '0') || '00'}`;
+        this.eta4 = `${h4.toString().padStart(2, '0') || '00'}${m4.toString().padStart(2, '0') || '00'}`;
 
         // EFOBs
         this.efob1 = Math.max(0, (this.fob_kg - (this.fuel_flow_kg_per_s * eta1_s)) / 1000).toFixed(1);
@@ -129,35 +128,35 @@ class CDUAirportsMonitor {
 
         if (!this.user_ap) {
             if (this.page2) {
-                this.user_ap_line = [""];
+                this.user_ap_line = [''];
             } else {
-                this.user_ap_line = ["[\xa0\xa0][color]cyan", ""];
+                this.user_ap_line = ['[\xa0\xa0][color]cyan', ''];
             }
         } else if (this.total_delta_t === 0) {
             // calculate values for user selected airport
-            SimVar.SetSimVarValue("C:fs9gps:GeoCalcLatitude1", "degree", this.lat);
-            SimVar.SetSimVarValue("C:fs9gps:GeoCalcLongitude1", "degree", this.lon);
-            SimVar.SetSimVarValue("C:fs9gps:GeoCalcLatitude2", "degree", this.user_ap.infos.lat);
-            SimVar.SetSimVarValue("C:fs9gps:GeoCalcLongitude2", "degree", this.user_ap.infos.long);
-            this.brng5 = Math.round(SimVar.GetSimVarValue("C:fs9gps:GeoCalcBearing", "degree") - this.magvar);
-            this.dist5 = Math.round(SimVar.GetSimVarValue("C:fs9gps:GeoCalcDistance", "nautical miles"));
+            SimVar.SetSimVarValue('C:fs9gps:GeoCalcLatitude1', 'degree', this.lat);
+            SimVar.SetSimVarValue('C:fs9gps:GeoCalcLongitude1', 'degree', this.lon);
+            SimVar.SetSimVarValue('C:fs9gps:GeoCalcLatitude2', 'degree', this.user_ap.infos.lat);
+            SimVar.SetSimVarValue('C:fs9gps:GeoCalcLongitude2', 'degree', this.user_ap.infos.long);
+            this.brng5 = Math.round(SimVar.GetSimVarValue('C:fs9gps:GeoCalcBearing', 'degree') - this.magvar);
+            this.dist5 = Math.round(SimVar.GetSimVarValue('C:fs9gps:GeoCalcDistance', 'nautical miles'));
             const eta5_s = Math.round(this.dist5 / this.gs * s_per_h);
             const utc5_s = (utc_s + eta5_s) % s_per_d;
             const h5 = Math.floor(utc5_s / s_per_h) || 0;
             const m5 = Math.floor(utc5_s % s_per_h / 60) || 0;
-            this.eta5 = `${h5.toString().padStart(2, "0") || "00"}${m5.toString().padStart(2, "0") || "00"}`;
+            this.eta5 = `${h5.toString().padStart(2, '0') || '00'}${m5.toString().padStart(2, '0') || '00'}`;
             this.efob5 = Math.max(0, (this.fob_kg - (this.fuel_flow_kg_per_s * eta5_s)) / 1000).toFixed(1);
             if (this.page2) {
                 this.user_ap_line = [
                     `${this.user_ap.infos.ident}[color]green`,
-                    `---[color]green`,
-                    `${this.efob5.toString().padStart(3, "\xa0")}[color]green`
+                    '---[color]green',
+                    `${this.efob5.toString().padStart(3, '\xa0')}[color]green`,
                 ];
             } else {
                 this.user_ap_line = [
                     `${this.user_ap.infos.ident}[color]green`,
                     `${this.eta5}[color]green`,
-                    `${this.brng5.toString().padStart(3, "0")}° ${this.dist5.toString().padStart(5, "\xa0")}[color]green`
+                    `${this.brng5.toString().padStart(3, '0')}° ${this.dist5.toString().padStart(5, '\xa0')}[color]green`,
                 ];
             }
         }
@@ -167,57 +166,57 @@ class CDUAirportsMonitor {
             mcdu.clearDisplay();
             if (this.page2) {
                 mcdu.setTemplate([
-                    ["CLOSEST AIRPORTS"],
-                    ["", "EFF WIND\xa0", "EFOB"],
+                    ['CLOSEST AIRPORTS'],
+                    ['', 'EFF WIND\xa0', 'EFOB'],
                     [`${this.icao1}[color]green`,
-                        `{small}[KTS]{end}{cyan}[\xa0\xa0\xa0]{end}`,
-                        `${this.efob1.toString().padStart(3, "\xa0")}[color]green`],
-                    [""],
+                        '{small}[KTS]{end}{cyan}[\xa0\xa0\xa0]{end}',
+                        `${this.efob1.toString().padStart(3, '\xa0')}[color]green`],
+                    [''],
                     [`${this.icao2}[color]green`,
-                        `[\xa0\xa0\xa0][color]cyan`,
-                        `${this.efob2.toString().padStart(3, "\xa0")}[color]green`],
-                    [""],
+                        '[\xa0\xa0\xa0][color]cyan',
+                        `${this.efob2.toString().padStart(3, '\xa0')}[color]green`],
+                    [''],
                     [`${this.icao3}[color]green`,
-                        `[\xa0\xa0\xa0][color]cyan`,
-                        `${this.efob3.toString().padStart(3, "\xa0")}[color]green`],
-                    [""],
+                        '[\xa0\xa0\xa0][color]cyan',
+                        `${this.efob3.toString().padStart(3, '\xa0')}[color]green`],
+                    [''],
                     [`${this.icao4}[color]green`,
-                        `[\xa0\xa0\xa0][color]cyan`,
-                        `${this.efob4.toString().padStart(3, "\xa0")}[color]green`],
-                    [""],
+                        '[\xa0\xa0\xa0][color]cyan',
+                        `${this.efob4.toString().padStart(3, '\xa0')}[color]green`],
+                    [''],
                     this.user_ap_line,
-                    ["", "", this.frozen ? "LIST FROZEN" : ""],
-                    ["<RETURN"]
+                    ['', '', this.frozen ? 'LIST FROZEN' : ''],
+                    ['<RETURN'],
                 ]);
             } else {
                 mcdu.setTemplate([
-                    ["CLOSEST AIRPORTS"],
-                    ["", "BRG\xa0\xa0\xa0\xa0DIST\xa0\xa0\xa0UTC\xa0"],
+                    ['CLOSEST AIRPORTS'],
+                    ['', 'BRG\xa0\xa0\xa0\xa0DIST\xa0\xa0\xa0UTC\xa0'],
                     [`${this.icao1}[color]green`,
                         `${this.eta1}[color]green`,
-                        `${this.brng1.toString().padStart(3, "0")}°\xa0${this.dist1.toString().padStart(5, "\xa0")}[color]green`],
-                    [""],
+                        `${this.brng1.toString().padStart(3, '0')}°\xa0${this.dist1.toString().padStart(5, '\xa0')}[color]green`],
+                    [''],
                     [`${this.icao2}[color]green`,
                         `${this.eta2}[color]green`,
-                        `${this.brng2.toString().padStart(3, "0")}°\xa0${this.dist2.toString().padStart(5, "\xa0")}[color]green`],
-                    [""],
+                        `${this.brng2.toString().padStart(3, '0')}°\xa0${this.dist2.toString().padStart(5, '\xa0')}[color]green`],
+                    [''],
                     [`${this.icao3}[color]green`,
                         `${this.eta3}[color]green`,
-                        `${this.brng3.toString().padStart(3, "0")}°\xa0${this.dist3.toString().padStart(5, "\xa0")}[color]green`],
-                    [""],
+                        `${this.brng3.toString().padStart(3, '0')}°\xa0${this.dist3.toString().padStart(5, '\xa0')}[color]green`],
+                    [''],
                     [`${this.icao4}[color]green`,
                         `${this.eta4}[color]green`,
-                        `${this.brng4.toString().padStart(3, "0")}°\xa0${this.dist4.toString().padStart(5, "\xa0")}[color]green`],
-                    [""],
+                        `${this.brng4.toString().padStart(3, '0')}°\xa0${this.dist4.toString().padStart(5, '\xa0')}[color]green`],
+                    [''],
                     this.user_ap_line,
-                    ["", "", this.frozen ? "LIST FROZEN" : ""],
-                    [this.frozen ? "{UNFREEZE[color]cyan" : "{FREEZE[color]cyan", "EFOB/WIND>"]
+                    ['', '', this.frozen ? 'LIST FROZEN' : ''],
+                    [this.frozen ? '{UNFREEZE[color]cyan' : '{FREEZE[color]cyan', 'EFOB/WIND>'],
                 ]);
 
                 // force spaces to emulate 4 columns
-                mcdu._labelElements[0][2].innerHTML = "&nbsp;&nbsp;&nbsp;";
+                mcdu._labelElements[0][2].innerHTML = '&nbsp;&nbsp;&nbsp;';
                 for (let i = 0; i < (this.user_ap ? 5 : 4); i++) {
-                    mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;");
+                    mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, '&nbsp;');
                 }
             }
         }
@@ -226,7 +225,7 @@ class CDUAirportsMonitor {
         if (!this.frozen || !this.icao1) {
             // regular update due to showing dynamic data on this page
             mcdu.page.SelfPtr = setTimeout(() => {
-                CDUAirportsMonitor.ShowPage(mcdu,false);
+                CDUAirportsMonitor.ShowPage(mcdu, false);
             }, mcdu.PageTimeout.Default);
         }
 
@@ -268,9 +267,7 @@ class CDUAirportsMonitor {
             this.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
 
         // EFOB/WIND
         if (!this.page2) {
@@ -282,6 +279,5 @@ class CDUAirportsMonitor {
                 this.ShowPage(mcdu);
             };
         }
-
     }
 }

@@ -17,8 +17,8 @@ class CDUAtcVertRequestFansA {
     }
 
     static CanSendData(data) {
-        return data.climb || data.climbStart || data.descendStart || data.descend || data.startAt || data.altitude || data.whenHigher || data.whenLower ||
-            data.blockAltitudeLow || data.blockAltitudeHigh || data.cruise || data.requestDescent;
+        return data.climb || data.climbStart || data.descendStart || data.descend || data.startAt || data.altitude || data.whenHigher || data.whenLower
+            || data.blockAltitudeLow || data.blockAltitudeHigh || data.cruise || data.requestDescent;
     }
 
     static HandleClbDesStart(mcdu, value, data, climbRequest) {
@@ -43,29 +43,29 @@ class CDUAtcVertRequestFansA {
             }
 
             if (entries.length !== 0) {
-                const startingPoint = entries.join("/");
+                const startingPoint = entries.join('/');
 
                 Atsu.InputValidation.classifyScratchpadWaypointType(mcdu, startingPoint, true).then((type) => {
                     if (altitude || (data.climb && climbRequest || data.descend && !climbRequest)) {
                         switch (type[0]) {
-                            case Atsu.InputWaypointType.GeoCoordinate:
-                            case Atsu.InputWaypointType.Place:
+                        case Atsu.InputWaypointType.GeoCoordinate:
+                        case Atsu.InputWaypointType.Place:
+                            start = startingPoint;
+                            break;
+                        case Atsu.InputWaypointType.Timepoint:
+                            if (startingPoint.endsWith('Z')) {
                                 start = startingPoint;
-                                break;
-                            case Atsu.InputWaypointType.Timepoint:
-                                if (startingPoint.endsWith("Z")) {
-                                    start = startingPoint;
-                                } else {
-                                    start = `${startingPoint}Z`;
-                                }
-                                break;
-                            default:
-                                mcdu.addNewAtsuMessage(type[1]);
-                                start = null;
-                                if (updateAlt) {
-                                    altitude = null;
-                                }
-                                break;
+                            } else {
+                                start = `${startingPoint}Z`;
+                            }
+                            break;
+                        default:
+                            mcdu.addNewAtsuMessage(type[1]);
+                            start = null;
+                            if (updateAlt) {
+                                altitude = null;
+                            }
+                            break;
                         }
                     }
 
@@ -124,35 +124,35 @@ class CDUAtcVertRequestFansA {
         const retval = [];
 
         if (data.climb) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM9", [data.climb]));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, 'DM9', [data.climb]));
         }
         if (data.climbStart) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM13" : "DM11", [data.startAt, data.climbStart]));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? 'DM13' : 'DM11', [data.startAt, data.climbStart]));
         }
         if (data.descend) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM10", [data.descend]));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, 'DM10', [data.descend]));
         }
         if (data.descendStart) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM14" : "DM12", [data.startAt, data.descendStart]));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? 'DM14' : 'DM12', [data.startAt, data.descendStart]));
         }
         if (data.altitude) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM6", [data.altitude]));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, 'DM6', [data.altitude]));
         }
         if (data.whenHigher) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM53"));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, 'DM53'));
         }
         if (data.whenLower) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM52"));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, 'DM52'));
         }
         if (data.blockAltitudeLow && data.blockAltitudeHigh) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM7", [data.blockAltitudeLow, data.blockAltitudeHigh]));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, 'DM7', [data.blockAltitudeLow, data.blockAltitudeHigh]));
         }
         if (data.requestDescent) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM67"));
-            retval[retval.length - 1].Content[0].Content[0].Value = "REQUEST DESCENT";
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, 'DM67'));
+            retval[retval.length - 1].Content[0].Content[0].Value = 'REQUEST DESCENT';
         }
         if (data.cruise) {
-            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, data.whenCruise ? "DM54" : "DM8", [data.cruise]));
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, data.whenCruise ? 'DM54' : 'DM8', [data.cruise]));
         }
 
         return retval;
@@ -161,61 +161,59 @@ class CDUAtcVertRequestFansA {
     static ShowPage1(mcdu, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
         mcdu.clearDisplay();
 
-        let climbTo = "[   ][color]cyan";
-        let descentTo = "[   ][color]cyan";
+        let climbTo = '[   ][color]cyan';
+        let descentTo = '[   ][color]cyan';
         if (data.climb) {
             climbTo = `${data.climb}[color]cyan`;
         }
         if (data.descend) {
             descentTo = `${data.descend}[color]cyan`;
         }
-        let altitude = "[   ][color]cyan";
+        let altitude = '[   ][color]cyan';
         if (data.altitude) {
             altitude = `${data.altitude}[color]cyan`;
         }
-        let requestDescentSmall = "REQUEST\xa0";
-        let requestDescent = "DESCENT{cyan}}{end}";
+        let requestDescentSmall = 'REQUEST\xa0';
+        let requestDescent = 'DESCENT{cyan}}{end}';
         if (data.requestDescent) {
-            requestDescentSmall += "[color]cyan";
-            requestDescent = "DESCENT\xa0[color]cyan";
+            requestDescentSmall += '[color]cyan';
+            requestDescent = 'DESCENT\xa0[color]cyan';
         }
-        let blockAlt = "[   ]/[   ][color]cyan";
+        let blockAlt = '[   ]/[   ][color]cyan';
         if (data.blockAltitudeLow && data.blockAltitudeHigh) {
             blockAlt = `${data.blockAltitudeLow}/${data.blockAltitudeHigh}[color]cyan`;
         }
-        let crzClimb = "[   ][color]cyan";
+        let crzClimb = '[   ][color]cyan';
         if (data.cruise && !data.whenCruise) {
             crzClimb = `${data.cruise}[color]cyan`;
         }
 
-        let text = "ADD TEXT\xa0";
-        let erase = "\xa0ERASE";
-        let reqDisplay = "DCDU\xa0[color]cyan";
+        let text = 'ADD TEXT\xa0';
+        let erase = '\xa0ERASE';
+        let reqDisplay = 'DCDU\xa0[color]cyan';
         if (CDUAtcVertRequestFansA.CanSendData(data)) {
-            reqDisplay = "DCDU*[color]cyan";
-            text = "ADD TEXT>";
-            erase = "*ERASE";
+            reqDisplay = 'DCDU*[color]cyan';
+            text = 'ADD TEXT>';
+            erase = '*ERASE';
         }
 
         mcdu.setTemplate([
-            ["ATC VERT REQ", "1", "2"],
-            ["\xa0CLB TO", "DES TO\xa0"],
+            ['ATC VERT REQ', '1', '2'],
+            ['\xa0CLB TO', 'DES TO\xa0'],
             [climbTo, descentTo],
-            ["\xa0ALT", requestDescentSmall],
+            ['\xa0ALT', requestDescentSmall],
             [altitude, requestDescent],
-            ["\xa0BLOCK ALT/ALT"],
+            ['\xa0BLOCK ALT/ALT'],
             [blockAlt],
-            ["\xa0CRUISE CLB TO"],
+            ['\xa0CRUISE CLB TO'],
             [crzClimb],
-            ["\xa0ALL FIELDS"],
+            ['\xa0ALL FIELDS'],
             [erase, text],
-            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
-            ["<RETURN", reqDisplay]
+            ['\xa0FLIGHT REQ', 'XFR TO\xa0[color]cyan'],
+            ['<RETURN', reqDisplay],
         ]);
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.climb = null;
@@ -230,9 +228,7 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
 
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.altitude = null;
@@ -247,15 +243,13 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
 
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.blockAltitudeLow = null;
                 data.blockAltitudeHigh = null;
             } else if (value) {
-                const entries = value.split("/");
+                const entries = value.split('/');
                 if (entries.length !== 2) {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 } else {
@@ -271,9 +265,7 @@ class CDUAtcVertRequestFansA {
             }
         };
 
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[3] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.cruise = null;
@@ -288,9 +280,7 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
 
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[3] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.cruise = null;
@@ -305,23 +295,17 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[4] = () => {
             CDUAtcVertRequestFansA.ShowPage1(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             CDUAtcFlightReq.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.descend = null;
@@ -336,9 +320,7 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
 
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.requestDescent = false;
@@ -348,9 +330,7 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
 
-        mcdu.rightInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[3] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 if (data.whenSpeedRange) {
@@ -362,20 +342,16 @@ class CDUAtcVertRequestFansA {
                 const range = Atsu.InputValidation.validateScratchpadSpeedRanges(value);
                 if (range[0] !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(range[0]);
-                } else {
-                    if (range[1].length === 2) {
-                        data.speedLow = range[1][0];
-                        data.speedHigh = range[1][1];
-                        data.whenSpeedRange = true;
-                    }
+                } else if (range[1].length === 2) {
+                    data.speedLow = range[1][0];
+                    data.speedHigh = range[1][1];
+                    data.whenSpeedRange = true;
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
 
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[4] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
                 const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);
@@ -385,12 +361,10 @@ class CDUAtcVertRequestFansA {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === '') {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);
@@ -413,66 +387,60 @@ class CDUAtcVertRequestFansA {
     static ShowPage2(mcdu, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
         mcdu.clearDisplay();
 
-        let climbStart = "[   ]/[   ][color]cyan";
+        let climbStart = '[   ]/[   ][color]cyan';
         if (data.climbStart) {
-            climbStart = `${data.climbStart}/${data.startAt ? data.startAt : "[   ]"}[color]cyan`;
+            climbStart = `${data.climbStart}/${data.startAt ? data.startAt : '[   ]'}[color]cyan`;
         }
-        let descendStart = "[   ]/[   ][color]cyan";
+        let descendStart = '[   ]/[   ][color]cyan';
         if (data.descendStart) {
-            descendStart = `${data.descendStart}/${data.startAt ? data.startAt : "[   ]"}[color]cyan`;
+            descendStart = `${data.descendStart}/${data.startAt ? data.startAt : '[   ]'}[color]cyan`;
         }
 
-        let higherAlt = "{cyan}{{end}HIGHER ALT";
+        let higherAlt = '{cyan}{{end}HIGHER ALT';
         if (data.whenHigher) {
-            higherAlt = "\xa0HIGHER ALT[color]cyan";
+            higherAlt = '\xa0HIGHER ALT[color]cyan';
         }
-        let lowerAlt = "LOWER ALT{cyan}}{end}";
+        let lowerAlt = 'LOWER ALT{cyan}}{end}';
         if (data.whenLower) {
-            lowerAlt = "LOWER ALT\xa0[color]cyan";
+            lowerAlt = 'LOWER ALT\xa0[color]cyan';
         }
 
-        let text = "ADD TEXT\xa0";
-        let erase = "\xa0ERASE";
-        let reqDisplay = "DCDU\xa0[color]cyan";
+        let text = 'ADD TEXT\xa0';
+        let erase = '\xa0ERASE';
+        let reqDisplay = 'DCDU\xa0[color]cyan';
         if (CDUAtcVertRequestFansA.CanSendData(data)) {
-            reqDisplay = "DCDU*[color]cyan";
-            text = "ADD TEXT>";
-            erase = "*ERASE";
+            reqDisplay = 'DCDU*[color]cyan';
+            text = 'ADD TEXT>';
+            erase = '*ERASE';
         }
 
         mcdu.setTemplate([
-            ["ATC VERT REQ", "2", "2"],
-            ["\xa0CLB TO/START AT"],
+            ['ATC VERT REQ', '2', '2'],
+            ['\xa0CLB TO/START AT'],
             [climbStart],
-            ["\xa0DES TO/START AT"],
+            ['\xa0DES TO/START AT'],
             [descendStart],
-            ["---WHEN CAN WE EXPECT---"],
+            ['---WHEN CAN WE EXPECT---'],
             [higherAlt, lowerAlt],
-            [""],
-            [""],
-            ["\xa0ALL FIELDS"],
+            [''],
+            [''],
+            ['\xa0ALL FIELDS'],
             [erase, text],
-            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
-            ["<RETURN", reqDisplay]
+            ['\xa0FLIGHT REQ', 'XFR TO\xa0[color]cyan'],
+            ['<RETURN', reqDisplay],
         ]);
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[0] = (value) => {
             CDUAtcVertRequestFansA.HandleClbDesStart(mcdu, value, data, true);
         };
 
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[1] = (value) => {
             CDUAtcVertRequestFansA.HandleClbDesStart(mcdu, value, data, false);
         };
 
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.whenHigher = false;
@@ -483,23 +451,17 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage2(mcdu, data);
         };
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[4] = () => {
             CDUAtcVertRequestFansA.ShowPage2(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             CDUAtcFlightReq.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.whenLower = false;
@@ -510,9 +472,7 @@ class CDUAtcVertRequestFansA {
             CDUAtcVertRequestFansA.ShowPage2(mcdu, data);
         };
 
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[4] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
                 const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);
@@ -522,12 +482,10 @@ class CDUAtcVertRequestFansA {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === '') {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);

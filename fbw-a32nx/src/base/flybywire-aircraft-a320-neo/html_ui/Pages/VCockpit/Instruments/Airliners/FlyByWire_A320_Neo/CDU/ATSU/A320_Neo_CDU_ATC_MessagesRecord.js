@@ -1,27 +1,27 @@
 class CDUAtcMessagesRecord {
     static TranslateCpdlcResponse(response) {
         if (response) {
-            if (response.Content[0].TypeId === "DM0") {
-                return "WILC";
+            if (response.Content[0].TypeId === 'DM0') {
+                return 'WILC';
             }
-            if (response.Content[0].TypeId === "UM0" || response.Content[0].TypeId === "DM1") {
-                return "UNBL";
+            if (response.Content[0].TypeId === 'UM0' || response.Content[0].TypeId === 'DM1') {
+                return 'UNBL';
             }
-            if (response.Content[0].TypeId === "UM1" || response.Content[0].TypeId === "DM2") {
-                return "STBY";
+            if (response.Content[0].TypeId === 'UM1' || response.Content[0].TypeId === 'DM2') {
+                return 'STBY';
             }
-            if (response.Content[0].TypeId === "UM3" || response.Content[0].TypeId === "DM3") {
-                return "ROGR";
+            if (response.Content[0].TypeId === 'UM3' || response.Content[0].TypeId === 'DM3') {
+                return 'ROGR';
             }
-            if (response.Content[0].TypeId === "UM4" || response.Content[0].TypeId === "DM4") {
-                return "AFRM";
+            if (response.Content[0].TypeId === 'UM4' || response.Content[0].TypeId === 'DM4') {
+                return 'AFRM';
             }
-            if (response.Content[0].TypeId === "UM5" || response.Content[0].TypeId === "DM5") {
-                return "NEG";
+            if (response.Content[0].TypeId === 'UM5' || response.Content[0].TypeId === 'DM5') {
+                return 'NEG';
             }
         }
 
-        return "";
+        return '';
     }
 
     static ShowPage(mcdu, messages = null, offset = 0, confirmErase = false) {
@@ -39,33 +39,36 @@ class CDUAtcMessagesRecord {
             }
         }, mcdu.PageTimeout.Slow);
 
-        let eraseRecordTitle = "\xa0MSG RECORD";
-        let eraseRecordButton = "*ERASE";
+        let eraseRecordTitle = '\xa0MSG RECORD';
+        let eraseRecordButton = '*ERASE';
         if (confirmErase) {
-            eraseRecordTitle = "\xa0ERASE MSG RECORD";
-            eraseRecordButton = "*CONFIRM";
+            eraseRecordTitle = '\xa0ERASE MSG RECORD';
+            eraseRecordButton = '*CONFIRM';
         }
 
-        const msgHeadersLeft = [], msgHeadersRight = [], msgStart = [];
+        const msgHeadersLeft = []; const msgHeadersRight = []; const
+            msgStart = [];
         msgHeadersLeft.length = msgHeadersRight.length = msgStart.length = 4;
         for (let i = 0; i < 5; ++i) {
-            let headerLeft = "", headerRight = "", contentStart = "";
+            let headerLeft = '';
+            let headerRight = '';
+            let contentStart = '';
 
             if (messages.length > (offset + i) && messages[offset + i]) {
-                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
+                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? 'FROM' : 'TO'} `;
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].Response);
 
                 // ignore the headline with the station and the timestamp
-                const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n");
-                let firstLine = "CPDLC";
+                const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split('\n');
+                let firstLine = 'CPDLC';
                 if (lines.length >= 2) {
-                    firstLine = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n")[1];
+                    firstLine = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split('\n')[1];
                 }
                 if (firstLine.length <= 24) {
                     contentStart = firstLine;
                 } else {
-                    firstLine.split(" ").forEach((word) => {
+                    firstLine.split(' ').forEach((word) => {
                         if (contentStart.length + word.length + 1 < 24) {
                             contentStart += `${word}\xa0`;
                         }
@@ -75,10 +78,11 @@ class CDUAtcMessagesRecord {
 
             msgHeadersLeft[i] = headerLeft;
             msgHeadersRight[i] = headerRight;
-            msgStart[i] = `${contentStart.length !== 0 ? "<" : ""}${contentStart}`;
+            msgStart[i] = `${contentStart.length !== 0 ? '<' : ''}${contentStart}`;
         }
 
-        let left = false, right = false;
+        let left = false; let
+            right = false;
         if (messages.length > offset + 4) {
             mcdu.onNextPage = () => {
                 CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset + 4, false);
@@ -94,9 +98,9 @@ class CDUAtcMessagesRecord {
         mcdu.setArrows(false, false, left, right);
 
         mcdu.setTemplate([
-            ["MSG RECORD"],
+            ['MSG RECORD'],
             [msgHeadersLeft[0], `{big}${msgHeadersRight[0]}{end}`],
-            [`${messages.length !== 0 ? msgStart[0] : "NO MESSAGES"}`],
+            [`${messages.length !== 0 ? msgStart[0] : 'NO MESSAGES'}`],
             [msgHeadersLeft[1], `{big}${msgHeadersRight[1]}{end}`],
             [msgStart[1]],
             [msgHeadersLeft[2], `{big}${msgHeadersRight[2]}{end}`],
@@ -105,14 +109,12 @@ class CDUAtcMessagesRecord {
             [msgStart[3]],
             [eraseRecordTitle],
             [eraseRecordButton],
-            ["\xa0ATC MENU", "MSG RECORD\xa0[color]inop"],
-            ["<RETURN", "PRINT*[color]inop"]
+            ['\xa0ATC MENU', 'MSG RECORD\xa0[color]inop'],
+            ['<RETURN', 'PRINT*[color]inop'],
         ]);
 
         for (let i = 0; i < 4; i++) {
-            mcdu.leftInputDelay[i] = () => {
-                return mcdu.getDelaySwitchPage();
-            };
+            mcdu.leftInputDelay[i] = () => mcdu.getDelaySwitchPage();
 
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset + i]) {
@@ -126,9 +128,7 @@ class CDUAtcMessagesRecord {
             };
         }
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[4] = () => {
             if (messages.length !== 0) {
                 if (!confirmErase) {
@@ -139,9 +139,7 @@ class CDUAtcMessagesRecord {
                 }
             }
         };
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage(mcdu);
         };

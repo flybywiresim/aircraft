@@ -17,10 +17,9 @@ class CDUFixInfoPage {
                 if (fixInfo.getRefFixIdent()) {
                     fixInfo.setRefFix();
                     return CDUFixInfoPage.ShowPage(mcdu, page);
-                } else {
-                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-                    return scratchpadCallback();
                 }
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                return scratchpadCallback();
             }
             if (mcdu.isPlaceFormat(value)) {
                 mcdu.parsePlace(value).then((runway) => {
@@ -63,9 +62,9 @@ class CDUFixInfoPage {
             for (let i = 0; i <= 1; i++) {
                 const radial = fixInfo.getRadial(i);
                 if (radial !== undefined) {
-                    template[4 + i * 2] = [`\xa0{cyan}${("" + radial.magneticBearing).padStart(3, "0")}°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----`];
+                    template[4 + i * 2] = [`\xa0{cyan}${(`${radial.magneticBearing}`).padStart(3, '0')}°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----`];
                 } else if (i === 0 || fixInfo.getRadial(0) !== undefined) {
-                    template[4 + i * 2] = [`\xa0{cyan}[\xa0]°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----`];
+                    template[4 + i * 2] = ['\xa0{cyan}[\xa0]°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----'];
                 }
                 mcdu.onLeftInput[1 + i] = (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
@@ -98,9 +97,9 @@ class CDUFixInfoPage {
 
             template[7] = ['\xa0RADIUS'];
             if (fixInfo.radius !== undefined) {
-                template[8] = [`\xa0{cyan}${("" + fixInfo.radius.radius).padStart(3, "\xa0")}{small}NM{end}{end}\xa0\xa0\xa0----\xa0----\xa0----`];
+                template[8] = [`\xa0{cyan}${(`${fixInfo.radius.radius}`).padStart(3, '\xa0')}{small}NM{end}{end}\xa0\xa0\xa0----\xa0----\xa0----`];
             } else {
-                template[8] = [`\xa0{cyan}[\xa0]{small}NM{end}{end}\xa0\xa0\xa0----\xa0----\xa0----`];
+                template[8] = ['\xa0{cyan}[\xa0]{small}NM{end}{end}\xa0\xa0\xa0----\xa0----\xa0----'];
             }
             mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
                 if (value === FMCMainDisplay.clrValue) {

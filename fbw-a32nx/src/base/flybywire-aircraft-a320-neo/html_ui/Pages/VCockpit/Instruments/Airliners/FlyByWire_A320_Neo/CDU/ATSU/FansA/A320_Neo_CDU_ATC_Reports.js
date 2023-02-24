@@ -26,11 +26,11 @@ class CDUAtcReports {
         const retval = [];
 
         if (data.requestContact) {
-            retval.push(CDUAtcReports.CreateRequest(mcdu, "DM20"));
+            retval.push(CDUAtcReports.CreateRequest(mcdu, 'DM20'));
         }
         if (data.deviating) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.deviating).split(" ");
-            retval.push(CDUAtcReports.CreateRequest(mcdu, "DM80", [elements[0], elements[1]]));
+            const elements = Atsu.InputValidation.expandLateralOffset(data.deviating).split(' ');
+            retval.push(CDUAtcReports.CreateRequest(mcdu, 'DM80', [elements[0], elements[1]]));
         }
 
         return retval;
@@ -40,43 +40,41 @@ class CDUAtcReports {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCReports;
 
-        let backOnRoute = "{cyan}{{end}BACK ON RTE";
+        let backOnRoute = '{cyan}{{end}BACK ON RTE';
         if (data.backOnRoute) {
-            backOnRoute = "{cyan}\xa0BACK ON RTE{end}";
+            backOnRoute = '{cyan}\xa0BACK ON RTE{end}';
         }
-        let deviating = "{cyan}[ ]{end}";
+        let deviating = '{cyan}[ ]{end}';
         if (data.deviating) {
             deviating = `{cyan}${data.deviating}{end}`;
         }
 
-        let text = "ADD TEXT\xa0";
-        let erase = "\xa0ERASE";
-        let reqDisplay = "DCDU\xa0[color]cyan";
+        let text = 'ADD TEXT\xa0';
+        let erase = '\xa0ERASE';
+        let reqDisplay = 'DCDU\xa0[color]cyan';
         if (CDUAtcReports.CanSendData(data)) {
-            reqDisplay = "DCDU*[color]cyan";
-            text = "ADD TEXT>";
-            erase = "*ERASE";
+            reqDisplay = 'DCDU*[color]cyan';
+            text = 'ADD TEXT>';
+            erase = '*ERASE';
         }
 
         mcdu.setTemplate([
-            ["REPORTS"],
-            [""],
+            ['REPORTS'],
+            [''],
             [backOnRoute],
-            ["\xa0DEVIATING"],
+            ['\xa0DEVIATING'],
             [deviating],
-            [""],
-            ["<MANUAL POS REPORT"],
-            [`\xa0AUTO POS REPORT: ${mcdu.atsu.atc.automaticPositionReportActive() ? "ON" : "OFF"}`],
-            [`{cyan}*SET ${mcdu.atsu.atc.automaticPositionReportActive() ? "OFF" : "ON"}{end}`],
-            ["\xa0ALL FIELDS"],
+            [''],
+            ['<MANUAL POS REPORT'],
+            [`\xa0AUTO POS REPORT: ${mcdu.atsu.atc.automaticPositionReportActive() ? 'ON' : 'OFF'}`],
+            [`{cyan}*SET ${mcdu.atsu.atc.automaticPositionReportActive() ? 'OFF' : 'ON'}{end}`],
+            ['\xa0ALL FIELDS'],
             [erase, text],
-            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
-            ["<RETURN", reqDisplay]
+            ['\xa0ATC MENU', 'XFR TO\xa0[color]cyan'],
+            ['<RETURN', reqDisplay],
         ]);
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.backOnRoute = false;
@@ -86,9 +84,7 @@ class CDUAtcReports {
             CDUAtcReports.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.deviating = null;
@@ -103,38 +99,28 @@ class CDUAtcReports {
             CDUAtcReports.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[2] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[2] = () => {
             CDUAtcPositionReport.ShowPage1(mcdu);
         };
 
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[3] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[3] = () => {
             mcdu.atsu.atc.toggleAutomaticPositionReportActive();
             CDUAtcReports.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[4] = () => {
             CDUAtcReports.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[4] = () => {
             if (CDUAtcReports.CanSendData(data)) {
                 const messages = CDUAtcReports.CreateRequests(mcdu, data);
@@ -144,12 +130,10 @@ class CDUAtcReports {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
+        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = () => {
             if (CDUAtcReports.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === '') {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcReports.CreateRequests(mcdu, data);

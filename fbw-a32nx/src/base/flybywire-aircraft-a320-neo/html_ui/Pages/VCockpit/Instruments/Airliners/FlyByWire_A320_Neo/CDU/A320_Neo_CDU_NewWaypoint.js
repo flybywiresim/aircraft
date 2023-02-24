@@ -19,44 +19,44 @@ class CDUNewWaypoint {
         };
 
         const template = [
-            ["NEW WAYPOINT"],
-            ["IDENT"],
-            [_inProgressData.ident !== undefined ? `{cyan}${_inProgressData.ident}{end}` : "_______[color]amber"],
-            ["LAT/LONG"],
-            ["____.__|_____.__[color]amber"],
-            ["PLACE/BRG /DIST"],
-            ["_______|___° |___. _[color]amber"],
-            ["PLACE-BRG  /PLACE-BRG"],
-            ["{amber}_____-___°  |_____-___°{end}"],
-            [""],
-            ["", "RETURN>"],
-            [""],
-            ["", _inProgressData.type !== undefined ? '{amber}STORE}{end}' : '']
+            ['NEW WAYPOINT'],
+            ['IDENT'],
+            [_inProgressData.ident !== undefined ? `{cyan}${_inProgressData.ident}{end}` : '_______[color]amber'],
+            ['LAT/LONG'],
+            ['____.__|_____.__[color]amber'],
+            ['PLACE/BRG /DIST'],
+            ['_______|___° |___. _[color]amber'],
+            ['PLACE-BRG  /PLACE-BRG'],
+            ['{amber}_____-___°  |_____-___°{end}'],
+            [''],
+            ['', 'RETURN>'],
+            [''],
+            ['', _inProgressData.type !== undefined ? '{amber}STORE}{end}' : ''],
         ];
 
         switch (_inProgressData.type) {
-            case StoredWaypointType.LatLon:
-                template[4][0] = `{cyan}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}`;
-                template[5].length = 0;
-                template[6].length = 0;
-                template[7].length = 0;
-                template[8].length = 0;
-                break;
-            case StoredWaypointType.Pbd:
-                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
-                template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
-                template[6][0] = `{cyan}${_inProgressData.place.ident.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing)}/${_inProgressData.distance.toFixed(1)}{end}`;
-                template[7].length = 0;
-                template[8].length = 0;
-                break;
-            case StoredWaypointType.Pbx:
-                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
-                template[5].length = 0;
-                template[6].length = 0;
-                template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
-                template[8][0] = `{cyan}${_inProgressData.place1.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing1)}/${_inProgressData.place2.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing2)}{end}`;
-                break;
-            default:
+        case StoredWaypointType.LatLon:
+            template[4][0] = `{cyan}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}`;
+            template[5].length = 0;
+            template[6].length = 0;
+            template[7].length = 0;
+            template[8].length = 0;
+            break;
+        case StoredWaypointType.Pbd:
+            template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
+            template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
+            template[6][0] = `{cyan}${_inProgressData.place.ident.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing)}/${_inProgressData.distance.toFixed(1)}{end}`;
+            template[7].length = 0;
+            template[8].length = 0;
+            break;
+        case StoredWaypointType.Pbx:
+            template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
+            template[5].length = 0;
+            template[6].length = 0;
+            template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
+            template[8][0] = `{cyan}${_inProgressData.place1.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing1)}/${_inProgressData.place2.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing2)}{end}`;
+            break;
+        default:
         }
 
         mcdu.setTemplate(template);
@@ -197,18 +197,18 @@ class CDUNewWaypoint {
             mcdu.onRightInput[5] = () => {
                 let wp;
                 switch (_inProgressData.type) {
-                    case StoredWaypointType.LatLon:
-                        wp = mcdu.dataManager.createLatLonWaypoint(_inProgressData.coordinates, true, _inProgressData.ident);
-                        break;
-                    case StoredWaypointType.Pbd:
-                        wp = mcdu.dataManager.createPlaceBearingDistWaypoint(_inProgressData.place, _inProgressData.bearing, _inProgressData.distance, true, _inProgressData.ident);
-                        break;
-                    case StoredWaypointType.Pbx:
-                        wp = mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(_inProgressData.place1, _inProgressData.bearing1, _inProgressData.place2, _inProgressData.bearing2, true, _inProgressData.ident);
-                        break;
-                    default:
-                        mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
-                        return;
+                case StoredWaypointType.LatLon:
+                    wp = mcdu.dataManager.createLatLonWaypoint(_inProgressData.coordinates, true, _inProgressData.ident);
+                    break;
+                case StoredWaypointType.Pbd:
+                    wp = mcdu.dataManager.createPlaceBearingDistWaypoint(_inProgressData.place, _inProgressData.bearing, _inProgressData.distance, true, _inProgressData.ident);
+                    break;
+                case StoredWaypointType.Pbx:
+                    wp = mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(_inProgressData.place1, _inProgressData.bearing1, _inProgressData.place2, _inProgressData.bearing2, true, _inProgressData.ident);
+                    break;
+                default:
+                    mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+                    return;
                 }
                 mcdu.requestCall(() => {
                     if (doneCallback !== undefined) {
