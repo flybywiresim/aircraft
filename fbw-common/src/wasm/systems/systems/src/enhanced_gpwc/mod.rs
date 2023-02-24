@@ -1,7 +1,6 @@
 use crate::{
     accept_iterable,
     enhanced_gpwc::navigation_display::NavigationDisplay,
-    landing_gear::LandingGearControlInterfaceUnitSet,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         AdirsMeasurementOutputs, ElectricalBusType, ElectricalBuses, LgciuGearExtension,
@@ -101,7 +100,7 @@ impl EnhancedGroundProximityWarningComputer {
     pub fn update(
         &mut self,
         adirs_output: &impl AdirsMeasurementOutputs,
-        lgcius: &LandingGearControlInterfaceUnitSet,
+        lgcius: &impl LgciuGearExtension,
     ) {
         self.update_position_data(adirs_output);
         self.gear_is_down = lgcius.lgciu1().main_down_and_locked();

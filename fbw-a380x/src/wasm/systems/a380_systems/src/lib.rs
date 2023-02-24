@@ -257,7 +257,7 @@ impl Aircraft for A380 {
 
         self.cds.update();
 
-        self.egpwc.update(&self.adirs, &self.lgcius);
+        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
     }
 }
 impl SimulationElement for A380 {
