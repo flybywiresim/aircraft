@@ -1921,7 +1921,7 @@ export class FlightPlanManager {
     public isWaypointInUse(icao: string): boolean {
         for (const fp of this._flightPlans) {
             for (let i = 0; i < fp?.waypoints.length; i++) {
-                if (fp.getWaypoint(i).icao === icao) {
+                if (fp?.getWaypoint(i)?.icao === icao) {
                     return true;
                 }
             }

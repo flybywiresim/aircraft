@@ -53,4 +53,7 @@ export class Navigation {
 
         this.groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
     }
+
+    // TODO:
+    ///  NOTE : When FMC internal position will be coded, there needs to be a way to make the FMC lose its position in flight when switching database in the A320_Neo_CDU_IdentPage.js
 }
