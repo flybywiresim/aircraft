@@ -13,7 +13,7 @@
 
 bool ExampleModule::initialize() {
 
-  dataManager = &msfsHandler->getDataManager();
+  dataManager = &msfsHandler.getDataManager();
 
   /*
    * Update mode of a variable - last 4 optional parameters of the make_... calls:
@@ -262,7 +262,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
   // Do not do anything if the sim is not running - this is not required but is a good idea
   // It is ready after the click on "READY TO FLY"
-  if (!msfsHandler->getA32NxIsReady()) return true;
+  if (!msfsHandler.getA32NxIsReady()) return true;
 
   // Un-throttled tests
   //  if (metaDataPtr->hasChanged()) {
@@ -285,10 +285,10 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   //  }
 
   // Use this to throttle output frequency while you are debugging
-  if (msfsHandler->getTickCounter() % 100 == 0) {
+  if (msfsHandler.getTickCounter() % 100 == 0) {
 
-    [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
-    [[maybe_unused]] const UINT64 tickCounter = msfsHandler->getTickCounter();
+    [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
+    [[maybe_unused]] const UINT64 tickCounter = msfsHandler.getTickCounter();
 
 
 

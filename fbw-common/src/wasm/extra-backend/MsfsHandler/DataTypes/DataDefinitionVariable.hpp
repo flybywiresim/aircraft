@@ -42,7 +42,7 @@ struct DataDefinition {
  *
  * The difference between DataDefinitionVariable and ClientDataAreaVariable is that this class is used
  * to read and write simulation variables that are defined by one or more SimConnect data definitions
- * whereas the ClientDataAreaVariable is to read and write arbitrary data structs to the sim.<p/>
+ * whereas the ClientDataAreaVariable is to read and write arbitrary data structs to/from the sim.<p/>
  *
  * A local data struct is used to store the sim's data when received from the sim. This data struct
  * needs to be passed a template parameter to this class and an instance of the struct is created
@@ -58,6 +58,9 @@ struct DataDefinition {
  * The class is based on ManagedDataObjectBase and therefore supports auto reading and writing of
  * the data to the sim. It also supports using the SimConnect SIMCONNECT_PERIOD flags to update the
  * data by using this method to request the data: requestPeriodicUpdateFromSim().<p/>
+ *
+ * It is recommended to use the DataManager's make_datadefinition_var() to create instances of
+ * DataDefinitionVariable as it ensures unique ids for the data definition and request.
  *
  * @tparam T The data struct type that will be used to store the data from the sim.
  * @see requestPeriodicUpdateFromSim()
@@ -85,7 +88,12 @@ public:
   DataDefinitionVariable<T> &operator=(const DataDefinitionVariable &) = delete;
 
   /**
-   * Creates a new instance of a DataDefinitionVariable.
+   * Creates a new instance of a DataDefinitionVariable.<p/>
+   *
+   * It is recommended to use the DataManager's make_datadefinition_var() to create instances of
+   * DataDefinitionVariable as it ensures unique ids for the data definition and request within the
+   * SimConnect session.
+   *
    * @typename T: the data struct type that will be used to store the data
    * @param hSimConnect Handle to the SimConnect object.
    * @param name Arbitrary name for the data definition variable for debugging purposes

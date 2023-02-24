@@ -81,12 +81,12 @@ set(OUT_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/../../../../fbw-a32nx/out/flybywire-
 # add all cpp source-files here
 set(SOURCES
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/MsfsHandler.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/DataManager.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/CacheableVariable.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/NamedVariable.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/AircraftVariable.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/Event.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager/InputEvent.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/CacheableVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/NamedVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/AircraftVariable.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/Event.cpp
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/InputEvent.cpp
         src/Gauge_Extra_Backend.cpp
         src/Example/ExampleModule.cpp
         src/LightingPresets/LightingPresets.cpp
@@ -103,7 +103,7 @@ set(INCLUDES
         "${MSFS_SDK}/SimConnect SDK/include"
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/lib
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataManager
+        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes
         src
         src/Modules
         src/Example

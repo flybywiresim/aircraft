@@ -110,7 +110,7 @@ public:
    * Creates a new ExampleModule instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit ExampleModule(MsfsHandler* msfsHandler) : Module(msfsHandler) {};
+  explicit ExampleModule(MsfsHandler& msfsHandler) : Module(msfsHandler) {};
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData* pData) override;

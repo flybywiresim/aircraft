@@ -114,7 +114,7 @@ public:
    * Usually called in the MsfsHandler initialization.
    * @param hdl Handle to the simconnect instance
    */
-  bool initialize(HANDLE hdl);
+  bool initialize(HANDLE hdlSimConnect);
 
   /**
    * Called by the MsfsHandler update() method.
@@ -190,8 +190,6 @@ public:
   bool sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4);
 
   /**
-   * TODO: Implement and document
-   *
    * Is called by the MsfsHandler when a key event is triggered in the sim.
    * @param event
    * @param evdata0
@@ -212,7 +210,7 @@ public:
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
-   * @param maxAgeTicks optional Maximum age of the variable in ticks (default=0)
+   * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
    * @see Units.h for available units
    */
@@ -236,7 +234,7 @@ public:
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
-   * @param maxAgeTicks optional Maximum age of the variable in ticks (default=0)
+   * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
    * @see Units.h for available units
    */
@@ -259,7 +257,7 @@ public:
    * @param unit Unit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
-   * @param maxAgeTicks optional Maximum age of the variable in ticks (default=0)
+   * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
    * @see Units.h for available units
    */
@@ -278,7 +276,7 @@ public:
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
-   * @param maxAgeTicks optional Maximum age of the variable in ticks (default=0)
+   * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
    */
   template<typename T>
@@ -320,7 +318,7 @@ public:
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
-   * @param maxAgeTicks optional Maximum age of the variable in ticks (default=0)
+   * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
    */
   template<typename T>
@@ -348,6 +346,18 @@ public:
     return var;
   }
 
+  /**
+   * FIXME: not working yet
+   * TODO: document
+   * @tparam T
+   * @tparam ChunkSize
+   * @param clientDataName
+   * @param autoReading
+   * @param autoWriting
+   * @param maxAgeTime
+   * @param maxAgeTicks
+   * @return
+   */
   template<typename T, std::size_t ChunkSize>
   std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>> make_clientdatabufferedarea_var(
     const std::string clientDataName,

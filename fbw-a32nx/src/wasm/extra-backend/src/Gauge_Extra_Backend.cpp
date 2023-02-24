@@ -21,19 +21,20 @@
 #include "Pushback/Pushback.h"
 #include "AircraftPresets/AircraftPresets.h"
 
-// ADD ADDITIONAL MODULES HERE
-// This is the only place these have to be added - everything else is handled automatically
 MsfsHandler msfsHandler("Gauge_Extra_Backend");
 #ifdef EXAMPLES
 [[maybe_unused]]
-ExampleModule exampleModule(&msfsHandler);
+ExampleModule exampleModule(msfsHandler);
 #endif
+
+// ADD ADDITIONAL MODULES HERE
+// This is the only place these have to be added - everything else is handled automatically
 [[maybe_unused]]
-LightingPresets lightingPresets(&msfsHandler);
+LightingPresets lightingPresets(msfsHandler);
 [[maybe_unused]]
-Pushback pushback(&msfsHandler);
+Pushback pushback(msfsHandler);
 [[maybe_unused]]
-AircraftPresets aircraftPresets(&msfsHandler);
+AircraftPresets aircraftPresets(msfsHandler);
 
 /**
  * Gauge Callback

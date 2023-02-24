@@ -40,6 +40,10 @@
  * the data to the sim. It also supports using the SimConnect SIMCONNECT_PERIOD flags to update the
  * data by using this method to request the data: requestPeriodicUpdateFromSim().
  *
+ * It is recommended to use the DataManager's make_clientdataarea_var() to create instances of
+ * ClientDataAreaVariable as it ensures unique clientDataId, clientDataDefinitionId and requestId
+ * within the SimConnect session.
+ *
  * @tparam T The data struct that will be used to store  the data
  * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientDataNameToID.htm
  * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm
@@ -62,7 +66,12 @@ public:
   ClientDataAreaVariable<T> &operator=(const ClientDataAreaVariable<T> &) = delete;
 
   /**
-   * Creates a new ClientDataAreaVariable object
+   * Creates a new ClientDataAreaVariable object.<p/>
+   *
+   * It is recommended to use the DataManager's make_clientdataarea_var() to create instances of
+   * ClientDataAreaVariable as it ensures unique clientDataId, clientDataDefinitionId and requestId
+   * within the SimConnect session.
+   *
    * @tparam T The data struct that will be used to store the data
    * @param hSimConnect The SimConnect handle
    * @param clientDataName String containing the client data area name. This is the name that another

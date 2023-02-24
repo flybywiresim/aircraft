@@ -61,7 +61,6 @@ protected:
    */
   ID dataID = -1;
 
-protected:
   ~CacheableVariable() override = default;
 
   /**
@@ -240,16 +239,5 @@ public:
   [[nodiscard]]
   ID getDataId() const { return dataID; }
 };
-
-/**
- * Overloaded operator to write the value of a CacheableVariable to an ostream
- * @param os
- * @param variable
- * @return the ostream
- */
-inline std::ostream &operator<<(std::ostream &os, const CacheableVariable &variable) {
-  os << variable.str();
-  return os;
-}
 
 #endif // FLYBYWIRE_CACHEABLEVARIABLE_H

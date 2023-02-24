@@ -34,7 +34,7 @@
 
 bool AircraftPresets::initialize() {
 
-  dataManager = &msfsHandler->getDataManager();
+  dataManager = &msfsHandler.getDataManager();
 
   // LVARs
   aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, true);
@@ -62,10 +62,10 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     return false;
   }
 
-  if (!msfsHandler->getA32NxIsReady()) return true;
+  if (!msfsHandler.getA32NxIsReady()) return true;
 
-  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
-  const UINT64 tickCounter = msfsHandler->getTickCounter();
+  const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
+  const UINT64 tickCounter = msfsHandler.getTickCounter();
 
   // has request to load a preset been received?
   if (loadAircraftPresetRequest->get() > 0) {

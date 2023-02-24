@@ -12,12 +12,18 @@
 #include "Event.h"
 
 /**
- * Specialized class for aircraft cacheable variables (aka simvars or A:VARS).
+ * Specialized class for aircraft cacheable variables (aka simvars or A:VARS).<p/>
  *
  * This class uses events or calculator code to write to a variable as
- * AircraftVariables are read-only.
+ * AircraftVariables are read-only.<p/>
  *
- * If no setter code or event is provided the variable will be read-only.
+ * If a setter event or event name is provided the variable will be writable.<p/>
+ *
+ * AircraftVariables can't be copy constructed or assigned. They can only be moved.
+ * Create a new AircraftVariable instance instead.
+ *
+ * It is recommended to use the DataManager's make_aircraft_var() to create instances of AircraftVariable
+ * as it de-duplicates variables and only creates one instance of each name-index-unit combination.
  */
 class AircraftVariable : public CacheableVariable {
 private:
@@ -44,8 +50,10 @@ public:
   AircraftVariable &operator=(const AircraftVariable &) = delete; // no copy assignment
 
   /**
-   * Creates an instance of a writable aircraft variable.
-   * If a setter event name is provided the variable will be writable.
+   * Creates an instance of a writable aircraft variable.<p/>
+   * If a setter event or event name is provided the variable will be writable.<p/>
+   * It is recommended to use the DataManager's make_aircraft_var() to create instances of AircraftVariable
+   * as it de-duplicates variables and only creates one instance of each name-index-unit combination.
    * @param varName The name of the variable in the sim.
    * @param varIndex The index of the variable in the sim.
    * @param setterEventName The name of the event used to write to the variable.

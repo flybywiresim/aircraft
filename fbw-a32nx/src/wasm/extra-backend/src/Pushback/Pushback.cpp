@@ -32,7 +32,7 @@ static constexpr double TURN_SPEED_RATIO = 0.16;
 ///
 
 bool Pushback::initialize() {
-  dataManager = &msfsHandler->getDataManager();
+  dataManager = &msfsHandler.getDataManager();
 
   // LVARs
   pushbackSystemEnabled = dataManager->make_named_var("PUSHBACK_SYSTEM_ENABLED", UNITS.Bool, true);
@@ -85,7 +85,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
     return false;
   }
 
-  if (!msfsHandler->getA32NxIsReady()) return true;
+  if (!msfsHandler.getA32NxIsReady()) return true;
 
   // Check if the pushback system is enabled and conditions are met
   if (!pushbackSystemEnabled->getAsBool()
@@ -94,8 +94,8 @@ bool Pushback::update(sGaugeDrawData* pData) {
     return true;
   }
 
-  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
-  const UINT64 tickCounter = msfsHandler->getTickCounter();
+  const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
+  const UINT64 tickCounter = msfsHandler.getTickCounter();
 
   // read all data from sim - could be done inline but better readability this way
   parkingBrakeEngaged->updateFromSim(timeStamp, tickCounter);

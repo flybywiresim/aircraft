@@ -11,10 +11,13 @@
 #include "CacheableVariable.h"
 
 /**
- * Specialized class for named cacheable variables (LVARS).
+ * Specialized class for named cacheable variables (LVARS).<p/>
+ *
+ * It is recommended to use the DataManager's make_named_var() to create instances of NamedVariable
+ * as it de-duplicates variables and only creates one instance of each name-unit combination.<p/>
  *
  * NamedVariables can't be copy constructed or assigned. They can only be moved.
- * Create a NamedVariable instance instead.
+ * Create a new NamedVariable instance instead.
  *
  * @see CacheableVariable
  */
@@ -27,8 +30,12 @@ public:
   NamedVariable &operator=(const NamedVariable &) = delete; // no copy assignment
 
   /**
-   * Creates an instance of a named variable.
-   * If the variable is not found in the sim it will be created.
+   * Creates an instance of a named variable.<p/>
+   * If the variable is not found in the sim it will be created.<p/>
+   *
+   * It is recommended to use the DataManager's make_named_var() to create instances of NamedVariable
+   * as it de-duplicates variables and only creates one instance of each name-unit combination.
+   *
    * @param varName The varName of the variable in the sim. An aircraft prefix (e.g. A32NX_) will be added automatically.
    * @param unit The unit  of the variable as per the sim. See Units.h
    * @param autoReading Used by external classes to determine if the variable should be updated

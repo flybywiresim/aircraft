@@ -30,7 +30,7 @@
 
 bool LightingPresets::initialize() {
 
-  dataManager = &msfsHandler->getDataManager();
+  dataManager = &msfsHandler.getDataManager();
 
   // Events for setting the aircraft variables
   lightPotentiometerSetEvent = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
@@ -87,7 +87,7 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   }
 
   // only run when aircraft is powered
-  if (!msfsHandler->getA32NxIsReady() || !elecAC1Powered->getAsBool()) return true;
+  if (!msfsHandler.getA32NxIsReady() || !elecAC1Powered->getAsBool()) return true;
 
   // load becomes priority in case both vars are set.
   if (loadLightingPresetRequest->getAsBool()) {

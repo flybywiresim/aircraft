@@ -4,8 +4,6 @@
 #ifndef FLYBYWIRE_MODULE_H
 #define FLYBYWIRE_MODULE_H
 
-#include <memory>
-
 #include <MSFS/Legacy/gauges.h>
 
 #include "MsfsHandler.h"
@@ -25,7 +23,7 @@ protected:
   /**
    * The MsfsHandler instance that is used to communicate with the simulator.
    */
-  MsfsHandler* msfsHandler;
+  MsfsHandler& msfsHandler;
 
   /**
    * Flag to indicate if the module has been initialized.
@@ -43,7 +41,7 @@ public:
    * Creates a new module and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit Module(MsfsHandler *backRef) : msfsHandler(backRef){ msfsHandler->registerModule(this); }
+  explicit Module(MsfsHandler& backRef) : msfsHandler(backRef){ msfsHandler.registerModule(this); }
 
   /**
    * Called by the MsfsHandler instance once to initialize the module.

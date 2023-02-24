@@ -8,8 +8,8 @@
 #include "AircraftVariable.h"
 #include "Event.h"
 
-bool DataManager::initialize(HANDLE hdl) {
-  hSimConnect = hdl;
+bool DataManager::initialize(HANDLE hdlSimConnect) {
+  hSimConnect = hdlSimConnect;
   isInitialized = true;
   return true;
 }

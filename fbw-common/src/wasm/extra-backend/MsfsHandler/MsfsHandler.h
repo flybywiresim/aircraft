@@ -18,8 +18,8 @@ class Module;
 /**
  * MsfsHandler is a lightweight abstraction layer for the MSFS SDK and Simconnect to handle the
  * communication with the simulator mainly for standard variables and events.
- * It is not meant to fully replace the SDK but to provide a simple interface for the most common
- * tasks.
+ * It is not meant to fully replace the SDK but to provide a simple C++ style interface for the
+ * most common tasks.
  * It does not limit the direct usage of the SDK or Simconnect in any way!
  */
 class MsfsHandler {

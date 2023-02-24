@@ -27,6 +27,10 @@ typedef std::function<void(
 
 /**
  * Event class to wrap SimConnect events providing trigger and callback registration.
+ *
+ * It is recommended to use the DataManager's make_event() to create instances of Events as it
+ * de-duplicates events and only creates one instance of each event. It also makes sure the ID of
+ * the event is unique for the simconnect session.
  */
 class Event {
 private:
@@ -76,9 +80,15 @@ public:
 
   /**
    * Creates an event instance.
+   *
+   * It is recommended to use the DataManager's make_event() to create instances of Events as it
+   * de-duplicates events and only creates one instance of each event. It also makes sure the ID of
+   * the event is unique for the simconnect session.
+   *
    * @param hdlSimConnect The handle of the simconnect connection.
    * @param eventName The name of the event in the sim.
-   * @param eventClientId The client's ID of the event to map with the sim event.
+   * @param eventClientId The client's ID of the event to map with the sim event. Needs to be unique
+   *                      for the SimConnect session.
    * @param immediateSubscribe Flag to indicate if the event should be subscribed to the sim immediately.
    * @param maskEvent Flag to indicate if the event should be masked.
    *                  From SDK doc: True indicates that the event will be masked by this client and will not be

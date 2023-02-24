@@ -51,7 +51,7 @@ public:
    * Creates a new AircraftPresets instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit AircraftPresets(MsfsHandler* msfsHandler) : Module(msfsHandler) {}
+  explicit AircraftPresets(MsfsHandler& msfsHandler) : Module(msfsHandler) {}
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData* pData) override;
