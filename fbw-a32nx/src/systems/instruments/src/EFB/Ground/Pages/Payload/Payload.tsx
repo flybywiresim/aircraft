@@ -705,19 +705,6 @@ export const Payload = () => {
                                                 <PayloadValueUnitDisplay value={displayZfw ? zfw : gw} padTo={5} unit={massUnitForDisplay} />
                                             </td>
                                         </tr>
-
-                                        {/*
-                                            <td className="flex flex-col justify-center items-center px-4 font-light whitespace-nowrap text-md">
-                                                <div className="flex-auto align-middle">
-                                                    <span>
-                                                        {t(displayZfw ? 'Ground.Payload.ZFWCG' : 'Ground.Payload.GWCG')}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-auto align-middle">
-                                                    <Shuffle size={20} />
-                                                </div>
-                                            </td>
-                                        */}
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 <div className="flex relative flex-row justify-start items-center">
