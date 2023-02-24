@@ -38,6 +38,8 @@
 
 /fbw-a32nx/*
 !/fbw-a32nx/README.md
+!/fbw-a32nx/mach.config.js
+!/fbw-a32nx/.env
 !/fbw-a32nx/docs/
 !/fbw-a32nx/docs/**
 !/fbw-a32nx/src/

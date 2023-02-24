@@ -10,7 +10,7 @@ export const Result = ({ className }: {className: string}) => {
     const calculationInput = useAppSelector((state) => state.todCalculator.calculation.input) ?? 0;
     const calculationType = useAppSelector((state) => state.todCalculator.calculation.type) ?? TOD_CALCULATION_TYPE.DISTANCE;
     const targetAltitude = useAppSelector((state) => state.todCalculator.targetAltitude) ?? 0;
-    const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed) ?? 0;
+    const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed) ?? [];
     const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude) ?? 0;
 
     const todCalculator = new TODCalculator(toNumber(currentAltitude), toNumber(targetAltitude), groundSpeed);
@@ -74,7 +74,10 @@ export const Result = ({ className }: {className: string}) => {
 
                 if (calculationValid(calculation)) {
                     return (
-                        <div className="flex flex-col justify-center items-center mb-10 last:mb-0">
+                        <div
+                            key={headerText}
+                            className="flex flex-col justify-center items-center mb-10 last:mb-0"
+                        >
                             <h1 className="mb-4 text-2xl font-medium text-center">{headerText}</h1>
 
                             <span className="text-6xl whitespace-nowrap">
