@@ -403,3 +403,4 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) {
            + std::to_string(pRecv->uEventID));
 }
 
+

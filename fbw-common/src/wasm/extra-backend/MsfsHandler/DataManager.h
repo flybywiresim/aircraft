@@ -397,6 +397,12 @@ public:
    */
   EventPtr make_event(const std::string &eventName, bool maksEvent = false);
 
+  /**
+   * @returns the current SimConnect handle
+   */
+  [[maybe_unused]]
+  HANDLE getSimConnectHandle() const { return hSimConnect; };
+
 private:
 
   /**
@@ -429,6 +435,7 @@ private:
    * @param pRecv the SIMCONNECT_RECV_EVENT_EX1 structure
    */
   void processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv);
+
 };
 
 #endif // FLYBYWIRE_DATAMANAGER_H
