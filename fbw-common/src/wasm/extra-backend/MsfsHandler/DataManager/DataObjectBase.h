@@ -25,14 +25,14 @@ protected:
    */
   const std::string name;
 
+  explicit DataObjectBase(std::string varName) : name(std::move(varName)) {}
+
 public:
 
   DataObjectBase() = delete; // no default constructor
   DataObjectBase(const DataObjectBase&) = delete; // no copy constructor
   DataObjectBase& operator=(const DataObjectBase&) = delete; // no copy assignment
   virtual ~DataObjectBase() = default;
-
-  explicit DataObjectBase(std::string varName) : name(std::move(varName)) {}
 
   /**
    * @return the name of the variable
