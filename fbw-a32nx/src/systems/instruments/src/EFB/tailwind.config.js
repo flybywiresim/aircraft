@@ -1,7 +1,5 @@
 'use strict';
 
-const colors = require('tailwindcss/colors');
-
 const fallbacks = [
     'NotoSansJP',
     'NotoSansSC',
@@ -48,8 +46,7 @@ module.exports = {
                 '26.5': '26.5deg',
                 '-26.5': '-26.5deg',
             }),
-            colors: {
-                colors,
+            colors: () => ({
                 'theme-highlight': 'var(--color-highlight)',
                 'theme-body': 'var(--color-body)',
                 'theme-text': 'var(--color-text)',
@@ -73,7 +70,7 @@ module.exports = {
                     'grey': 'var(--color-utility-grey)',
                     'dark-grey': 'var(--color-utility-dark-grey)',
                 },
-            },
+            }),
             maxWidth: { '1/2': '50%' },
         },
         fontFamily: {

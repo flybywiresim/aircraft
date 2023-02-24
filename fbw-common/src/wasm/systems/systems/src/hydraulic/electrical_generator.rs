@@ -11,9 +11,9 @@ use uom::si::{
 };
 
 use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, pid::PidController, ControlValveCommand,
-    EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorPower,
-    HydraulicGeneratorControlUnit, LgciuWeightOnWheels, SectionPressure,
+    interpolation, low_pass_filter::LowPassFilter, pid::PidController, AngularSpeedSensor,
+    ControlValveCommand, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+    EmergencyGeneratorControlUnit, EmergencyGeneratorPower, LgciuWeightOnWheels, SectionPressure,
 };
 
 use crate::simulation::{
@@ -23,10 +23,6 @@ use crate::simulation::{
 use std::time::Duration;
 
 use super::linear_actuator::Actuator;
-
-pub trait AngularSpeedSensor {
-    fn speed(&self) -> AngularVelocity;
-}
 
 pub struct GeneratorControlUnit<const N: usize> {
     pid_controller: PidController,
@@ -135,7 +131,7 @@ impl<const N: usize> GeneratorControlUnit<N> {
             <= Self::NOMINAL_SPEED_MARGIN_RPM
     }
 }
-impl<const N: usize> HydraulicGeneratorControlUnit for GeneratorControlUnit<N> {
+impl<const N: usize> EmergencyGeneratorControlUnit for GeneratorControlUnit<N> {
     fn max_allowed_power(&self) -> Power {
         self.max_allowed_power()
     }
@@ -340,7 +336,7 @@ pub struct TestGenerator {
 }
 impl TestGenerator {
     #[cfg(test)]
-    fn from_gcu(gcu: &impl HydraulicGeneratorControlUnit) -> Self {
+    fn from_gcu(gcu: &impl EmergencyGeneratorControlUnit) -> Self {
         let mut g = TestGenerator {
             speed: gcu.motor_speed(),
             generated_power: Power::new::<watt>(0.),
@@ -350,7 +346,7 @@ impl TestGenerator {
         g
     }
 
-    pub fn update(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
+    pub fn update(&mut self, gcu: &impl EmergencyGeneratorControlUnit) {
         self.speed = gcu.motor_speed();
         self.generated_power = gcu.max_allowed_power();
     }

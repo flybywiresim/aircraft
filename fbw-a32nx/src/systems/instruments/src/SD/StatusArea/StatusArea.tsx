@@ -76,6 +76,7 @@ export const StatusArea = () => {
 
     const satPrefix = sat.value > 0 ? '+' : '';
     const tatPrefix = tat.value > 0 ? '+' : '';
+    const isaPrefix = isa.value > 0 ? '+' : '';
     const seconds = Math.floor(zulu);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - (hours * 3600)) / 60);
@@ -195,7 +196,10 @@ export const StatusArea = () => {
                     {isaVisible && (
                         <>
                             <Text title x={74} y={111} alignEnd>ISA</Text>
-                            <Text value x={130} y={111} alignEnd>{Math.round(isa.value)}</Text>
+                            <Text value x={130} y={111} alignEnd>
+                                {isaPrefix}
+                                {Math.round(isa.value)}
+                            </Text>
                             <Text unit x={150} y={111} alignStart>&#176;C</Text>
                         </>
 

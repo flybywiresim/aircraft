@@ -83,6 +83,8 @@ clang++ \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
   -I "${DIR}/src/prim" \
   "${DIR}/src/prim/Prim.cpp" \
+  -I "${DIR}/src/sec" \
+  "${DIR}/src/sec/Sec.cpp" \
   -I "${DIR}/src/fac" \
   "${DIR}/src/fac/Fac.cpp" \
   -I "${DIR}/src/failures" \
@@ -102,6 +104,8 @@ clang++ \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/A380PrimComputer_data.cpp" \
   "${DIR}/src/model/A380PrimComputer.cpp" \
+  "${DIR}/src/model/A380SecComputer_data.cpp" \
+  "${DIR}/src/model/A380SecComputer.cpp" \
   "${DIR}/src/model/A380PitchNormalLaw.cpp" \
   "${DIR}/src/model/A380PitchAlternateLaw.cpp" \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \
