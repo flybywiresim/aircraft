@@ -149,7 +149,7 @@ class CDUIdentPage {
         if (confirmDataBaseSwitch) {
             secondaryDBTopLine =
                 confirmType === ConfirmType.SwitchDataBase
-                    ? "{amber}{small} " + calculateSecDate(date) + "{end}"
+                    ? "{amber}{small} " + calculateActiveDate(date) + "{end}"
                     : "\xa0SECOND NAV DATA BASE";
             secondaryDBSubLine =
                 confirmType === ConfirmType.SwitchDataBase
