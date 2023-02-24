@@ -37,15 +37,16 @@ export const RandomFailureGenerator = () => {
     useEffect(() => {
         console.info('flight phase: %s', fwcFlightPhase);
         // set the thresholds once per start of takeoff
-        if (fwcFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+        if (fwcFlightPhase === FlightPhases.TAKEOFF) {
             if (Math.random() < failurePerTakeOff) {
                 console.info('A failure will occur during this Take-Off');
-                if (Math.random() < chanceFailureMediumTakeOffRegime) {
+                const rolledDice = Math.random();
+                if (rolledDice < chanceFailureMediumTakeOffRegime) {
                     // Low Take Off speed regime
                     const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
                     setFailureSpeedThreshold(temp);
                     console.info('A failure will occur during this Take-Off at the speed of %d', temp);
-                } else if (Math.random() < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
+                } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
                     // Medium Take Off speed regime
                     const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
                     setFailureSpeedThreshold(temp);
@@ -64,9 +65,11 @@ export const RandomFailureGenerator = () => {
         if (fwcFlightPhase === FlightPhases.PREFLIGHT) {
             setRunWayAltitude(altitude);
         } else if (fwcFlightPhase === FlightPhases.TAKEOFF || fwcFlightPhase === FlightPhases.CLIMB) {
-            if (altitude >= failureAltitudeThreshold || gs >= failureSpeedThreshold) {
+            if ((altitude >= failureAltitudeThreshold || gs >= failureSpeedThreshold) && (failureAltitudeThreshold !== -1 || failureSpeedThreshold !== -1)) {
                 console.info('Failure Take-Off triggered');
                 activate(0);
+                setFailureAltitudeThreshold(-1);
+                setFailureSpeedThreshold(-1);
             }
         }
     }, [absoluteTime1s]);
