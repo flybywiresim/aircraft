@@ -108,6 +108,7 @@ impl EnhancedGroundProximityWarningComputer {
 
         self.navigation_displays.iter_mut().for_each(|display| {
             display.update(
+                self.is_powered,
                 &self.navigation_display_range_lookup,
                 adirs_output.is_fully_aligned(1),
             )
