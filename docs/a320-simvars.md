@@ -446,6 +446,10 @@
     - Bool
     - If the ILS is tuned via the RMP
 
+- A32NX_RMP_SEL_LIGHT_ON
+    - Bool
+    - If the SEL light is on
+
 - A32NX_ACP{1,2,3}_VHF{1,2}_TRANSMIT
     - Bool
     - Indicates which VHF is selected for transmission on which ACP
@@ -476,23 +480,21 @@
 
 - A32NX_HF1_VOLUME
     - Number
-    - The greatest HF1 volume value between the three ACPs
-
+    - The HF1 volume equal to one of the ACPs (or all) depending on the controlling mode
 - A32NX_HF2_VOLUME
     - Number
-    - The greatest HF2 volume value between the three ACPs
-
+    - The HF2 volume equal to one of the ACPs (or all) depending on the controlling mode
 - A32NX_ACP_MECH_VOLUME
     - Number
-    - The greatest MECH volume value between the three ACPs
+    - The MECH volume equal to one of the ACPs (or all) depending on the controlling mode
 
 - A32NX_ACP_ATT_VOLUME
     - Number
-    - The greatest CABIN volume value between the three ACPs
+    - The CABIN volume equal to one of the ACPs(or all) depending on the controlling mode
 
 - A32NX_ACP_PA_VOLUME
     - Number
-    - The greatest PA volume value between the three ACPs
+    - The PA volume equal to one of the ACPs (or all) depending on the controlling mode
 
 - L:A32NX_ACP{1,2,3}_VHF{1,2,3}_KNOB_VOLUME_DOWN
     - Bool
@@ -553,6 +555,10 @@
 - L:A32NX_ACP{1,2,3}_ADF{1,2}_VOLUME
     - Number
     - Volume of ADF 1/2 on the left/right/overhead ACP
+
+- L:A32NX_IS_EMITTING_ON_FREQUENCY
+    - Bool
+    - True if the INTRAD switch on the ACPs (depending on controlling mode) is on RAD thus transmitting
 
 - A32NX_TO_CONFIG_FLAPS_ENTERED
     - Bool

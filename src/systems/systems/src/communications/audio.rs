@@ -3,14 +3,14 @@ use crate::simulation::{
     SimulatorWriter, VariableIdentifier, Write,
 };
 
-use crate::communications::receiver::{Transceiver, ADF, COMM, GLS, ILS, MARKERS, VHF, VOR};
-
 pub struct AudioControlPanel {
     id: usize,
     transmit_channel_id: VariableIdentifier,
     voice_button_id: VariableIdentifier,
+    int_rad_switch_id: VariableIdentifier,
     voice_button: bool,
     transmit_channel: u8,
+    int_rad_switch: u8,
     vhfs: [VHF; 3],
     comms: [COMM; 5], // Transceivers not simulated. Jus to make the knobs rotate
     adfs: [ADF; 2],
@@ -25,10 +25,12 @@ impl AudioControlPanel {
             id: id_acp,
             voice_button_id: context.get_identifier(format!("ACP{}_VOICE_BUTTON_DOWN", id_acp)),
             transmit_channel_id: context.get_identifier(format!("ACP{}_TRANSMIT_CHANNEL", id_acp)),
+            int_rad_switch_id: context.get_identifier(format!("ACP{}_SWITCH_INT", id_acp)),
             voice_button: false,
             transmit_channel: 1,
+            int_rad_switch: 50,
             vhfs: [
-                VHF::new_vhf1(context, id_acp, 1),
+                VHF::new_vhf1(context, id_acp),
                 VHF::new_vhf2(context, id_acp),
                 VHF::new_vhf3(context, id_acp),
             ],
@@ -179,6 +181,15 @@ impl AudioControlPanel {
         self.voice_button
     }
 
+    fn get_int_rad_switch(&self) -> u8 {
+        self.int_rad_switch
+    }
+
+    pub fn is_emitting(&self) -> bool {
+        // 0 the the bottom position of the switch meaning transmitting on current radio channel
+        self.int_rad_switch == 0
+    }
+
     pub fn update_volume(&mut self, other_acp: &AudioControlPanel) {
         if self.id != 1 {
             self.vhfs[0].set_volume(other_acp.get_volume_com1());
@@ -208,8 +219,6 @@ impl AudioControlPanel {
 
     pub fn update_receive(&mut self, other_acp: &AudioControlPanel) {
         if self.id != 1 {
-            self.voice_button = other_acp.get_voice_button();
-
             self.vhfs[0].set_receive(other_acp.get_receive_com1());
             self.vhfs[1].set_receive(other_acp.get_receive_com2());
             self.vhfs[2].set_receive(other_acp.get_receive_com3());
@@ -233,6 +242,11 @@ impl AudioControlPanel {
         } else {
             panic!("update_receive is meant to update ACP 2 or 3");
         }
+    }
+
+    pub fn update_misc(&mut self, other_acp: &AudioControlPanel) {
+        self.voice_button = other_acp.get_voice_button();
+        self.int_rad_switch = other_acp.get_int_rad_switch();
     }
 }
 
@@ -259,12 +273,389 @@ impl SimulationElement for AudioControlPanel {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
+        self.int_rad_switch = reader.read(&self.int_rad_switch_id);
         self.voice_button = reader.read(&self.voice_button_id);
         self.transmit_channel = reader.read(&self.transmit_channel_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.int_rad_switch_id, self.int_rad_switch);
         writer.write(&self.voice_button_id, self.voice_button);
+    }
+}
+
+pub trait Transceiver {
+    fn get_volume(&self) -> u8;
+    fn get_receive(&self) -> bool;
+    fn set_volume(&mut self, volume: u8);
+    fn set_receive(&mut self, receive: bool);
+}
+
+pub struct VHF {
+    volume_id: VariableIdentifier,
+    knob_id: VariableIdentifier,
+    knob: bool,
+    volume: u8,
+}
+impl VHF {
+    pub fn new_vhf1(context: &mut InitContext, id_acp: usize) -> Self {
+        Self {
+            volume_id: context.get_identifier(format!("ACP{}_VHF1_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_VHF1_KNOB_VOLUME_DOWN", id_acp)),
+            knob: false,
+            volume: 0,
+        }
+    }
+
+    pub fn new_vhf2(context: &mut InitContext, id_acp: usize) -> Self {
+        Self {
+            volume_id: context.get_identifier(format!("ACP{}_VHF2_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_VHF2_KNOB_VOLUME_DOWN", id_acp)),
+            knob: true,
+            volume: 0,
+        }
+    }
+
+    pub fn new_vhf3(context: &mut InitContext, id_acp: usize) -> Self {
+        Self {
+            volume_id: context.get_identifier(format!("ACP{}_VHF3_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_VHF3_KNOB_VOLUME_DOWN", id_acp)),
+            knob: false,
+            volume: 0,
+        }
+    }
+}
+impl Transceiver for VHF {
+    fn get_volume(&self) -> u8 {
+        self.volume
+    }
+    fn get_receive(&self) -> bool {
+        self.knob
+    }
+    fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
+    }
+    fn set_receive(&mut self, receive: bool) {
+        self.knob = receive;
+    }
+}
+
+impl SimulationElement for VHF {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.volume = reader.read(&self.volume_id);
+        self.knob = reader.read(&self.knob_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.volume_id, self.volume);
+        writer.write(&self.knob_id, self.knob);
+    }
+}
+
+// To manage
+pub struct COMM {
+    volume_id: VariableIdentifier,
+    knob_id: VariableIdentifier,
+    volume: u8,
+    knob: bool,
+}
+impl COMM {
+    pub fn new_long(
+        context: &mut InitContext,
+        name: &str,
+        id_transceiver: usize,
+        id_acp: usize,
+    ) -> Self {
+        Self {
+            volume_id: context
+                .get_identifier(format!("ACP{}_{}{}_VOLUME", id_acp, name, id_transceiver)),
+            knob_id: context.get_identifier(format!(
+                "ACP{}_{}{}_KNOB_VOLUME_DOWN",
+                id_acp, name, id_transceiver
+            )),
+            volume: 0,
+            knob: false,
+        }
+    }
+
+    pub fn new_short(context: &mut InitContext, name: &str, id_acp: usize) -> Self {
+        Self {
+            volume_id: context.get_identifier(format!("ACP{}_{}_VOLUME", id_acp, name)),
+            knob_id: context.get_identifier(format!("ACP{}_{}_KNOB_VOLUME_DOWN", id_acp, name)),
+            volume: 0,
+            knob: false,
+        }
+    }
+}
+impl Transceiver for COMM {
+    fn get_volume(&self) -> u8 {
+        self.volume
+    }
+    fn get_receive(&self) -> bool {
+        self.knob
+    }
+    fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
+    }
+    fn set_receive(&mut self, receive: bool) {
+        self.knob = receive;
+    }
+}
+impl SimulationElement for COMM {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.volume = reader.read(&self.volume_id);
+        self.knob = reader.read(&self.knob_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.volume_id, self.volume);
+        writer.write(&self.knob_id, self.knob);
+    }
+}
+
+pub struct ADF {
+    volume_id: VariableIdentifier,
+    knob_id: VariableIdentifier,
+    volume: u8,
+    knob: bool,
+}
+impl ADF {
+    pub fn new(context: &mut InitContext, id_transceiver: usize, id_acp: usize) -> Self {
+        Self {
+            volume_id: context
+                .get_identifier(format!("ACP{}_ADF{}_VOLUME", id_acp, id_transceiver)),
+            knob_id: context.get_identifier(format!(
+                "ACP{}_ADF{}_KNOB_VOLUME_DOWN",
+                id_acp, id_transceiver
+            )),
+            knob: false,
+            volume: 0,
+        }
+    }
+}
+impl Transceiver for ADF {
+    fn get_volume(&self) -> u8 {
+        self.volume
+    }
+    fn get_receive(&self) -> bool {
+        self.knob
+    }
+    fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
+    }
+    fn set_receive(&mut self, receive: bool) {
+        self.knob = receive;
+    }
+}
+impl SimulationElement for ADF {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.volume = reader.read(&self.volume_id);
+        self.knob = reader.read(&self.knob_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.volume_id, self.volume);
+        writer.write(&self.knob_id, self.knob);
+    }
+}
+
+pub struct VOR {
+    volume_id: VariableIdentifier,
+    knob_id: VariableIdentifier,
+    volume: u8,
+    knob: bool,
+}
+impl VOR {
+    pub fn new(context: &mut InitContext, id_transceiver: usize, id_acp: usize) -> Self {
+        Self {
+            volume_id: context
+                .get_identifier(format!("ACP{}_VOR{}_VOLUME", id_acp, id_transceiver)),
+            knob_id: context.get_identifier(format!(
+                "ACP{}_VOR{}_KNOB_VOLUME_DOWN",
+                id_acp, id_transceiver
+            )),
+            volume: 0,
+            knob: false,
+        }
+    }
+}
+impl Transceiver for VOR {
+    fn get_volume(&self) -> u8 {
+        self.volume
+    }
+    fn get_receive(&self) -> bool {
+        self.knob
+    }
+    fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
+    }
+    fn set_receive(&mut self, receive: bool) {
+        self.knob = receive;
+    }
+}
+impl SimulationElement for VOR {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.volume = reader.read(&self.volume_id);
+        self.knob = reader.read(&self.knob_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.volume_id, self.volume);
+        writer.write(&self.knob_id, self.knob);
+    }
+}
+
+pub struct ILS {
+    volume_id: VariableIdentifier,
+    knob_id: VariableIdentifier,
+    volume: u8,
+    knob: bool,
+}
+impl ILS {
+    pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
+        Self {
+            volume_id: context.get_identifier(format!("ACP{}_ILS_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_ILS_KNOB_VOLUME_DOWN", id_acp)),
+            volume: 0,
+            knob: false,
+        }
+    }
+}
+impl Transceiver for ILS {
+    fn get_volume(&self) -> u8 {
+        self.volume
+    }
+    fn get_receive(&self) -> bool {
+        self.knob
+    }
+    fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
+    }
+    fn set_receive(&mut self, receive: bool) {
+        self.knob = receive;
+    }
+}
+impl SimulationElement for ILS {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.volume = reader.read(&self.volume_id);
+        self.knob = reader.read(&self.knob_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.volume_id, self.volume);
+        writer.write(&self.knob_id, self.knob);
+    }
+}
+
+pub struct GLS {
+    volume_id: VariableIdentifier,
+    knob_id: VariableIdentifier,
+    volume: u8,
+    knob: bool,
+}
+impl GLS {
+    pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
+        Self {
+            volume_id: context.get_identifier(format!("ACP{}_GLS_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_GLS_KNOB_VOLUME_DOWN", id_acp)),
+            volume: 0,
+            knob: false,
+        }
+    }
+}
+impl Transceiver for GLS {
+    fn get_volume(&self) -> u8 {
+        self.volume
+    }
+    fn get_receive(&self) -> bool {
+        self.knob
+    }
+    fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
+    }
+    fn set_receive(&mut self, receive: bool) {
+        self.knob = receive;
+    }
+}
+impl SimulationElement for GLS {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.volume = reader.read(&self.volume_id);
+        self.knob = reader.read(&self.knob_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.volume_id, self.volume);
+        writer.write(&self.knob_id, self.knob);
+    }
+}
+
+pub struct MARKERS {
+    volume_id: VariableIdentifier,
+    knob_id: VariableIdentifier,
+    volume: u8,
+    knob: bool,
+}
+impl MARKERS {
+    pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
+        Self {
+            volume_id: context.get_identifier(format!("ACP{}_MKR_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_MKR_KNOB_VOLUME_DOWN", id_acp)),
+            volume: 0,
+            knob: false,
+        }
+    }
+}
+impl Transceiver for MARKERS {
+    fn get_volume(&self) -> u8 {
+        self.volume
+    }
+    fn get_receive(&self) -> bool {
+        self.knob
+    }
+    fn set_volume(&mut self, volume: u8) {
+        self.volume = volume;
+    }
+    fn set_receive(&mut self, receive: bool) {
+        self.knob = receive;
+    }
+}
+impl SimulationElement for MARKERS {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.volume = reader.read(&self.volume_id);
+        self.knob = reader.read(&self.knob_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.volume_id, self.volume);
+        writer.write(&self.knob_id, self.knob);
     }
 }
 

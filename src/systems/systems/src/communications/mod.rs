@@ -1,36 +1,14 @@
 pub mod audio;
-pub mod receiver;
+pub mod communications_panel;
 
 use crate::{
-    communications::audio::AudioControlPanel,
+    communications::communications_panel::CommunicationsPanel,
     simulation::{
         InitContext, Read, Reader, SideControlling, SimulationElement, SimulationElementVisitor,
         SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 use std::time::Duration;
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum TransmitType {
-    COM1,
-    COM2,
-    COM3,
-    DUMMY,
-    NONE,
-}
-
-read_write_enum!(TransmitType);
-
-impl From<f64> for TransmitType {
-    fn from(value: f64) -> TransmitType {
-        match value as u32 {
-            0 => TransmitType::COM1,
-            1 => TransmitType::COM2,
-            2 => TransmitType::COM3,
-            _ => TransmitType::NONE,
-        }
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum SideTransmission {
@@ -58,22 +36,19 @@ pub enum AudioSwitchingKnobPosition {
     FO,
 }
 
-enum AcpChosen {
-    ACP1,
-    ACP2,
-    ACP3,
+enum CommunicationsPanelChosen {
+    CommunicationsPanelCaptain,
+    CommunicationsPanelFO,
+    CommunicationsPanelOVHD,
 }
 
 pub struct Communications {
-    acp1: AudioControlPanel,
-    acp2: AudioControlPanel,
-    acp3: AudioControlPanel,
+    communications_panel_captain: CommunicationsPanel,
+    communications_panel_first_officer: CommunicationsPanel,
+    communications_panel_ovhd: CommunicationsPanel,
 
     audio_switching_knob_id: VariableIdentifier,
     audio_switching_knob: AudioSwitchingKnobPosition,
-
-    pilot_transmit_id: VariableIdentifier,
-    copilot_transmit_id: VariableIdentifier,
 
     receive_com1_id: VariableIdentifier,
     receive_com2_id: VariableIdentifier,
@@ -108,9 +83,7 @@ pub struct Communications {
     sound_markers_id: VariableIdentifier,
 
     voice_button_id: VariableIdentifier,
-
-    pilot_transmit: TransmitType,
-    copilot_transmit: TransmitType,
+    is_emitting_id: VariableIdentifier,
 
     receive_com1: bool,
     receive_com2: bool,
@@ -127,7 +100,9 @@ pub struct Communications {
     receive_gls: bool,
     receive_markers: bool,
     sound_markers: bool,
+
     voice_button: bool,
+    is_emitting: bool,
 
     volume_com1: u8,
     volume_com2: u8,
@@ -155,15 +130,12 @@ pub struct Communications {
 impl Communications {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            acp1: AudioControlPanel::new(context, 1),
-            acp2: AudioControlPanel::new(context, 2),
-            acp3: AudioControlPanel::new(context, 3),
+            communications_panel_captain: CommunicationsPanel::new(context, 1),
+            communications_panel_first_officer: CommunicationsPanel::new(context, 2),
+            communications_panel_ovhd: CommunicationsPanel::new(context, 3),
 
             audio_switching_knob_id: context.get_identifier("AUDIOSWITCHING_KNOB".to_owned()),
             audio_switching_knob: AudioSwitchingKnobPosition::NORM,
-
-            pilot_transmit_id: context.get_identifier("PILOT_TRANSMIT".to_owned()),
-            copilot_transmit_id: context.get_identifier("COPILOT_TRANSMIT".to_owned()),
 
             receive_com1_id: context.get_identifier("COM1_RECEIVE".to_owned()),
             receive_com2_id: context.get_identifier("COM2_RECEIVE".to_owned()),
@@ -199,9 +171,7 @@ impl Communications {
             volume_markers_id: context.get_identifier("MKR_VOLUME".to_owned()),
 
             voice_button_id: context.get_identifier("VOICE_BUTTON_DOWN".to_owned()),
-
-            pilot_transmit: TransmitType::COM1,
-            copilot_transmit: TransmitType::COM1,
+            is_emitting_id: context.get_identifier("IS_EMITTING_ON_FREQUENCY".to_owned()),
 
             receive_com1: false,
             receive_com2: false,
@@ -219,6 +189,7 @@ impl Communications {
             receive_markers: false,
             sound_markers: false,
             voice_button: false,
+            is_emitting: false,
 
             volume_com1: 0,
             volume_com2: 0,
@@ -253,70 +224,51 @@ impl Communications {
      * and it's update within the Behaviors
      */
     pub fn update(&mut self, context: &UpdateContext) {
-        let chosen_acp: &AudioControlPanel = match self.guess_acp(&context.side_controlling()) {
-            AcpChosen::ACP1 => &(self.acp1),
-            AcpChosen::ACP2 => &(self.acp2),
-            AcpChosen::ACP3 => &(self.acp3),
+        let chosen_panel: &CommunicationsPanel = match self.guess_panel(&context.side_controlling())
+        {
+            CommunicationsPanelChosen::CommunicationsPanelCaptain => {
+                &(self.communications_panel_captain)
+            }
+            CommunicationsPanelChosen::CommunicationsPanelFO => {
+                &(self.communications_panel_first_officer)
+            }
+            CommunicationsPanelChosen::CommunicationsPanelOVHD => &(self.communications_panel_ovhd),
         };
 
-        self.pilot_transmit = TransmitType::NONE;
-        self.copilot_transmit = TransmitType::NONE;
+        self.voice_button = chosen_panel.get_voice_button();
+        self.is_emitting = chosen_panel.is_emitting();
 
-        if chosen_acp.get_transmit_com1() || chosen_acp.get_transmit_com2() {
-            let type_transmit = if chosen_acp.get_transmit_com1() {
-                TransmitType::COM1
-            } else {
-                TransmitType::COM2
-            };
+        self.receive_com1 = chosen_panel.get_receive_com1();
+        self.receive_com2 = chosen_panel.get_receive_com2();
+        self.receive_hf1 = chosen_panel.get_receive_hf1();
+        self.receive_hf2 = chosen_panel.get_receive_hf2();
+        self.receive_mech = chosen_panel.get_receive_mech();
+        self.receive_att = chosen_panel.get_receive_att();
+        self.receive_pa = chosen_panel.get_receive_pa();
+        self.receive_adf1 = chosen_panel.get_receive_adf1();
+        self.receive_adf2 = chosen_panel.get_receive_adf2();
+        self.receive_vor1 = chosen_panel.get_receive_vor1();
+        self.receive_vor2 = chosen_panel.get_receive_vor2();
+        self.receive_ils = chosen_panel.get_receive_ils();
+        self.receive_gls = chosen_panel.get_receive_gls();
 
-            match context.side_controlling() {
-                SideControlling::CAPTAIN => {
-                    self.pilot_transmit = type_transmit;
-                }
-                SideControlling::FO => {
-                    self.copilot_transmit = type_transmit;
-                }
-                SideControlling::BOTH => {
-                    self.pilot_transmit = type_transmit;
-                    self.copilot_transmit = type_transmit;
-                }
-            }
-        }
+        self.receive_markers = (self.sound_markers && !chosen_panel.get_receive_markers())
+            || (!self.sound_markers && chosen_panel.get_receive_markers());
 
-        self.voice_button = chosen_acp.get_voice_button();
-
-        self.receive_com1 = chosen_acp.get_receive_com1();
-        println!("Going to write receive_com1 {:?}", self.receive_com1);
-        self.receive_com2 = chosen_acp.get_receive_com2();
-        self.receive_hf1 = chosen_acp.get_receive_hf1();
-        self.receive_hf2 = chosen_acp.get_receive_hf2();
-        self.receive_mech = chosen_acp.get_receive_mech();
-        self.receive_att = chosen_acp.get_receive_att();
-        self.receive_pa = chosen_acp.get_receive_pa();
-        self.receive_adf1 = chosen_acp.get_receive_adf1();
-        self.receive_adf2 = chosen_acp.get_receive_adf2();
-        self.receive_vor1 = chosen_acp.get_receive_vor1();
-        self.receive_vor2 = chosen_acp.get_receive_vor2();
-        self.receive_ils = chosen_acp.get_receive_ils();
-        self.receive_gls = chosen_acp.get_receive_gls();
-
-        self.receive_markers = (self.sound_markers && !chosen_acp.get_receive_markers())
-            || (!self.sound_markers && chosen_acp.get_receive_markers());
-
-        self.volume_com1 = chosen_acp.get_volume_com1();
-        self.volume_com2 = chosen_acp.get_volume_com2();
-        self.volume_adf1 = chosen_acp.get_volume_adf1();
-        self.volume_adf2 = chosen_acp.get_volume_adf2();
-        self.volume_vor1 = chosen_acp.get_volume_vor1();
-        self.volume_vor2 = chosen_acp.get_volume_vor2();
-        self.volume_ils = chosen_acp.get_volume_ils();
-        self.volume_gls = chosen_acp.get_volume_gls();
-        self.volume_hf1 = chosen_acp.get_volume_hf1();
-        self.volume_hf2 = chosen_acp.get_volume_hf2();
-        self.volume_pa = chosen_acp.get_volume_pa();
-        self.volume_att = chosen_acp.get_volume_att();
-        self.volume_mech = chosen_acp.get_volume_mech();
-        self.volume_markers = chosen_acp.get_volume_markers();
+        self.volume_com1 = chosen_panel.get_volume_com1();
+        self.volume_com2 = chosen_panel.get_volume_com2();
+        self.volume_adf1 = chosen_panel.get_volume_adf1();
+        self.volume_adf2 = chosen_panel.get_volume_adf2();
+        self.volume_vor1 = chosen_panel.get_volume_vor1();
+        self.volume_vor2 = chosen_panel.get_volume_vor2();
+        self.volume_ils = chosen_panel.get_volume_ils();
+        self.volume_gls = chosen_panel.get_volume_gls();
+        self.volume_hf1 = chosen_panel.get_volume_hf1();
+        self.volume_hf2 = chosen_panel.get_volume_hf2();
+        self.volume_pa = chosen_panel.get_volume_pa();
+        self.volume_att = chosen_panel.get_volume_att();
+        self.volume_mech = chosen_panel.get_volume_mech();
+        self.volume_markers = chosen_panel.get_volume_markers();
 
         self.morse_adf1.update(context);
         self.morse_adf2.update(context);
@@ -328,11 +280,20 @@ impl Communications {
         // Update ACP 2/3 with ACP1 as ACP1 is the preffered one
         // when both sides are synchronised
         if context.side_controlling() == SideControlling::BOTH {
-            self.acp2.update_volume(&self.acp1);
-            self.acp3.update_volume(&self.acp1);
+            self.communications_panel_first_officer
+                .update_volume(&self.communications_panel_captain);
+            self.communications_panel_ovhd
+                .update_volume(&self.communications_panel_captain);
 
-            self.acp2.update_receive(&self.acp1);
-            self.acp3.update_receive(&self.acp1);
+            self.communications_panel_first_officer
+                .update_receive(&self.communications_panel_captain);
+            self.communications_panel_ovhd
+                .update_receive(&self.communications_panel_captain);
+
+            self.communications_panel_first_officer
+                .update_misc(&self.communications_panel_captain);
+            self.communications_panel_ovhd
+                .update_misc(&self.communications_panel_captain);
         }
     }
 
@@ -341,39 +302,39 @@ impl Communications {
      * according to AudioSwitchingKnob position and the side
      * the player is playing on
      */
-    fn guess_acp(&self, side_controlling: &SideControlling) -> AcpChosen {
-        let mut chosen_acp = AcpChosen::ACP1;
+    fn guess_panel(&self, side_controlling: &SideControlling) -> CommunicationsPanelChosen {
+        let mut chosen_panel = CommunicationsPanelChosen::CommunicationsPanelCaptain;
 
         // If the sides are sync, let's choose ACP1 as it doewn't matter
         if !matches!(side_controlling, SideControlling::BOTH) {
             if self.audio_switching_knob != AudioSwitchingKnobPosition::NORM {
-                chosen_acp = AcpChosen::ACP3;
+                chosen_panel = CommunicationsPanelChosen::CommunicationsPanelOVHD;
 
                 if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
                     if matches!(side_controlling, SideControlling::FO) {
-                        chosen_acp = AcpChosen::ACP2;
+                        chosen_panel = CommunicationsPanelChosen::CommunicationsPanelFO;
                     }
                 } else {
                     if matches!(side_controlling, SideControlling::CAPTAIN) {
-                        chosen_acp = AcpChosen::ACP1;
+                        chosen_panel = CommunicationsPanelChosen::CommunicationsPanelCaptain;
                     }
                 }
             } else {
                 if matches!(side_controlling, SideControlling::FO) {
-                    chosen_acp = AcpChosen::ACP2;
+                    chosen_panel = CommunicationsPanelChosen::CommunicationsPanelFO;
                 }
             }
         }
 
-        chosen_acp
+        chosen_panel
     }
 }
 
 impl SimulationElement for Communications {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.acp1.accept(visitor);
-        self.acp2.accept(visitor);
-        self.acp3.accept(visitor);
+        self.communications_panel_captain.accept(visitor);
+        self.communications_panel_first_officer.accept(visitor);
+        self.communications_panel_ovhd.accept(visitor);
 
         self.morse_adf1.accept(visitor);
         self.morse_adf2.accept(visitor);
@@ -396,12 +357,9 @@ impl SimulationElement for Communications {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_emitting_id, self.is_emitting);
         writer.write(&self.voice_button_id, self.voice_button);
 
-        writer.write(&self.pilot_transmit_id, self.pilot_transmit);
-        writer.write(&self.copilot_transmit_id, self.copilot_transmit);
-
-        println!("Writing receive_com1 {:?}", self.receive_com1);
         writer.write(&self.receive_com1_id, self.receive_com1);
         writer.write(&self.receive_com2_id, self.receive_com2);
         writer.write(&self.receive_hf1_id, self.receive_hf1);

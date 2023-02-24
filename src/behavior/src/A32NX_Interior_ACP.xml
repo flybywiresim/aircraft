@@ -1,8 +1,5 @@
 <ModelBehaviors>
     <Template Name="FBW_Airbus_AudioSwitching_Knob">
-        <Update Once="True">
-            1 (&gt;L:A32NX_AUDIOSWITCHING_KNOB)
-        </Update>
         <DefaultTemplateParameters>
             <WWISE_EVENT>turnknob</WWISE_EVENT>
             <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.WIPERS_SET_OFF</ANIMTIP_0>
@@ -17,6 +14,81 @@
                 <STATE0_TEST>(L:A32NX_AUDIOSWITCHING_KNOB) 0 ==</STATE0_TEST>
                 <STATE1_TEST>(L:A32NX_AUDIOSWITCHING_KNOB) 1 ==</STATE1_TEST>
                 <STATE2_TEST>(L:A32NX_AUDIOSWITCHING_KNOB) 2 ==</STATE2_TEST>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Switch_INT_RAD">
+        <DefaultTemplateParameters>
+            <ANIM_GUID/>
+            <ANIM_WRAP>FALSE</ANIM_WRAP>
+            <SIMVAR_TYPE>bool</SIMVAR_TYPE>
+            <ANIM_DELTA>FALSE</ANIM_DELTA>
+            <ANIM_BLENDWEIGHT>1.0</ANIM_BLENDWEIGHT>
+            <ADDITIONAL_EVENT_CODE></ADDITIONAL_EVENT_CODE>
+            <LENGTH_CLICK>50</LENGTH_CLICK>
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+        </DefaultTemplateParameters>
+        <EditableTemplateParameters>
+            <AddParams>
+                <ANIM_NAME/>
+                <SIMVAR_TYPE/>
+                <TOGGLE_EVENT/>
+                <TOGGLE_EVENT_2/>
+                <SIMVAR_INDEX_1/>
+                <SIMVAR_INDEX_2/>
+                <SIMVAR_NAME/>
+                <SIMVAR_NAME_2/>
+                <ADDITIONAL_EVENT_CODE/>
+            </AddParams>
+        </EditableTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+                <PART_ID>#PART_ID#</PART_ID>
+                <ANIM_CODE>(L:A32NX_ACP#ID#_SWITCH_INT, number)</ANIM_CODE>
+                <ANIM_LAG>600</ANIM_LAG>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_MouseRect">
+                <Condition NotEmpty="SIMVAR_INDEX_1">
+                    <True>
+                        <TOOLTIPID>%((#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#))%{if}#ANIMTIP_1#%{else}#ANIMTIP_0#%{end}</TOOLTIPID>
+                    </True>
+                    <False>
+                        <TOOLTIPID>%((#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#))%{if}#ANIMTIP_1#%{else}#ANIMTIP_0#%{end}</TOOLTIPID>
+                    </False>
+                </Condition>
+                <CURSOR>Hand</CURSOR>
+                <MOUSEFLAGS>LeftSingle+RightSingle+RightRelease+WheelUp+WheelDown</MOUSEFLAGS>
+                <CALLBACKCODE>
+                    (M:Event) 'LeftSingle' scmi 0 == if{
+                        (L:A32NX_ACP#ID#_SWITCH_INT, number) #ANIM_LENGTH# == if{
+                            #ANIM_LENGTH# 2 / (&gt;L:A32NX_ACP#ID#_SWITCH_INT, number)
+                        } els{
+                            #ANIM_LENGTH# (&gt;L:A32NX_ACP#ID#_SWITCH_INT, number)
+                        }
+                    }
+                    (M:Event) 'RightSingle' scmp 0 == if{
+                        #ANIM_LENGTH# 2 / (L:A32NX_ACP#ID#_SWITCH_INT) == if{
+                            0 (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
+                        }
+                    }
+                    (M:Event) 'RightRelease' scmp 0 == if{
+                        0 (L:A32NX_ACP#ID#_SWITCH_INT) == if{
+                            #ANIM_LENGTH# 2 / (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
+                        }
+                    }
+                    (M:Event) 'WheelUp' scmp 0 == if{
+                        #ANIM_LENGTH# 2 / (L:A32NX_ACP#ID#_SWITCH_INT) + #ANIM_LENGTH# min (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
+                    }
+                    (M:Event) 'WheelDown' scmi 0 == if{
+                       (L:A32NX_ACP#ID#_SWITCH_INT) #ANIM_LENGTH# 2 / - 0 max (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
+                    }
+
+                    (L:A32NX_SIDE_CONTROLLING, number) 2 == if{
+                        (L:A32NX_ACP#ID#_SWITCH_INT, number) (&gt;L:A32NX_ACP1_SWITCH_INT, number)
+                    }
+                </CALLBACKCODE>
             </UseTemplate>
         </Component>
     </Template>
@@ -385,7 +457,7 @@
             <ANIM_NAME>#NODE_ID_SWITCH_INT#</ANIM_NAME>
             <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
             <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-            <ANIM_CODE>(L:A32NX_RMP_#SIDE#_SWITCH_INT, number)</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_ACP#ID#_SWITCH_INT, number)</ANIM_CODE>
         </UseTemplate>
     </Template>
 
