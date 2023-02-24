@@ -117,6 +117,8 @@ const Efb = () => {
 
     const history = useHistory();
 
+    RandomFailureGenerator();
+
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
     }, []);
@@ -161,10 +163,6 @@ const Efb = () => {
             return { level, lastChangeTimestamp, isCharging };
         });
     }, [absoluteTime, powerState]);
-
-    useEffect(() => {
-        RandomFailureGenerator();
-    }, [absoluteTime1s]);
 
     useEffect(() => {
         setBatteryLevel((oldLevel) => {
