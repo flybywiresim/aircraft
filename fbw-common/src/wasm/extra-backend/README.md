@@ -130,20 +130,26 @@ It is not expected that a Module-developer will have to modify the MsfsHandler.
 
 The DataManager is a central data store which allows to store and retrieve data
 from the simulator. It provides different kinds of variables which abstract the 
-various sim SDK API elements and data types.
+various sim SDK API elements and data types into C++ objects.
 
 It currently provides the following data types:
 
 - AircraftVariable: a variable which is directly mapped to a simvar
 - NamedVariable: a variable which is mapped to a LVAR
 - DataDefinitionVariable: Custom defined SimObjects base on custom C++ structs
-- Event: a SimConnect event
-
-Currently missing:
-- ClientDataArea Variable: Custom defined SimObjects base on memory mapped data 
   between clients
-  - not yet implemented
+- ClientDataAreaVariable: Custom defined SimObjects base on memory mapped data 
+- ClientDataAreaBuffered Variable: Custom defined SimObjects base on memory mapped
+  which can be larger than the limit of 8k bytes per ClientDataArea by using a 
+  streaming buffer approach to send and retrieve data (partially implemented but
+  not working yet).
+- Event: a SimConnect event
                            
+It implements a simple callback observer pattern to allow modules to register for updates
+of a variable.
+
+Also, it allows to register callback functions for KeyEvents.  
+
 The below described variables can be used without the DataManager, however the 
 DataManager provides not only automatic updates and writing of the variables, 
 but also convenience functions to create and register variables and events in 
@@ -170,6 +176,11 @@ Each variable has various ways to be updated and written back to the sim:
   if it is older than a certain number of ticks (preUpdate)
 - Max Age in Seconds: The variable can be configured to be automatically read from the sim if 
   it is older than a certain number of seconds (preUpdate)
+
+This base class provides the means to register and remove callbacks for updates 
+to the variable.
+
+See the documentation of ManagedDataObjectBase for more details.
 
 ##### CacheableVariable (abstract base class)
 The CacheableVariable is the base class for AircraftVariable and NamedVariable
@@ -314,7 +325,6 @@ Use the DataManager to create these variables, and it will automatically assign
 unique IDs.
 
 Also see:
-- Example and Pushback modules for examples of custom writable sim objects
 - [MSFS SDK Documentation: SimConnect_MapClientDataNameToID](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientDataNameToID.htm)
 
 #### Event
@@ -329,7 +339,8 @@ events.
 For details see class documentation. 
 
 #### Key Event
-<span style="color:yellow">**To be implemented**</span>                
+A Key Event is not a data type which can be created. Use the DataManager to register a callback
+to handle key events. The callback will be called with the key event data.
 
 #### Input Event
 <span style="color:yellow">**To be implemented**</span>                
