@@ -77,7 +77,7 @@ public:
     this->content.insert(this->content.end(), pDataStart, pDataEnd);
 
     this->receivedChunks++;
-    std::cout << "Chunk: " << this->receivedChunks << ": Begin: " << (void*) pDataStart << " End: " << (void*) pDataEnd << std::endl;
+    // std::cout << "Chunk: " << this->receivedChunks << ": Begin: " << (void*) pDataStart << " End: " << (void*) pDataEnd << std::endl;
 
     // DEBUG
     //    std::cout << "ClientDataBufferedAreaVariable DATA START========================" << std::endl;

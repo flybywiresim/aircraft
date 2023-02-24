@@ -42,64 +42,72 @@ bool ExampleModule::initialize() {
           );
         });*/
 
-  /*    beaconLightSetCallbackID = beaconLightSetEventPtr
-        ->addKeyEventCallback([&, this](const int number, const DWORD param0, const DWORD param1,
-                                const DWORD param2, const DWORD param3, const DWORD param4) {
-          LOG_INFO("Callback 2: BEACON_LIGHTS_SET event received with " + std::to_string(number)
-                   + " params:"
-                   + " 0: " + std::to_string(param0)
-                   + " 1: " + std::to_string(param1)
-                   + " 2: " + std::to_string(param2)
-                   + " 3: " + std::to_string(param3)
-                   + " 4: " + std::to_string(param4)
-                   + " beaconLt: " + this->beaconLightSetEventPtr->str()
-          );
-        });*/
+  /*
+  beaconLightSetCallbackID = beaconLightSetEventPtr
+  ->addKeyEventCallback([&, this](const int number, const DWORD param0, const DWORD param1,
+                          const DWORD param2, const DWORD param3, const DWORD param4) {
+    LOG_INFO("Callback 2: BEACON_LIGHTS_SET event received with " + std::to_string(number)
+             + " params:"
+             + " 0: " + std::to_string(param0)
+             + " 1: " + std::to_string(param1)
+             + " 2: " + std::to_string(param2)
+             + " 3: " + std::to_string(param3)
+             + " 4: " + std::to_string(param4)
+             + " beaconLt: " + this->beaconLightSetEventPtr->str()
+    );
+  });
+  */
 
   // Event with Callback example
   toggleFlightDirectorEventPtr = dataManager->make_event("TOGGLE_FLIGHT_DIRECTOR");
-  /*    toggleFlightDirectorCallbackID = toggleFlightDirectorEventPtr
-        ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
-                          DWORD param4) {
-          LOG_DEBUG("Callback 1: TOGGLE_FLIGHT_DIRECTOR event received with " + std::to_string(number)
-                    + " params:"
-                    + " 0: " + std::to_string(param0)
-                    + " 1: " + std::to_string(param1)
-                    + " 2: " + std::to_string(param2)
-                    + " 3: " + std::to_string(param3)
-                    + " 4: " + std::to_string(param4)
-          );
-        });*/
+  /*
+  toggleFlightDirectorCallbackID = toggleFlightDirectorEventPtr
+  ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+                    DWORD param4) {
+    LOG_DEBUG("Callback 1: TOGGLE_FLIGHT_DIRECTOR event received with " + std::to_string(number)
+              + " params:"
+              + " 0: " + std::to_string(param0)
+              + " 1: " + std::to_string(param1)
+              + " 2: " + std::to_string(param2)
+              + " 3: " + std::to_string(param3)
+              + " 4: " + std::to_string(param4)
+    );
+  });
+   */
 
   // Event with Callback example - twice to see multiple callbacks added to a single event
   lightPotentiometerSetEventPtr = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
-  /*    lightPotentiometerSetCallbackID = lightPotentiometerSetEventPtr
-        ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
-                          DWORD param4) {
-          LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
-                    + " params:"
-                    + " 0: " + std::to_string(param0)
-                    + " 1: " + std::to_string(param1)
-                    + " 2: " + std::to_string(param2)
-                    + " 3: " + std::to_string(param3)
-                    + " 4: " + std::to_string(param4)
-          );
-        });
-      lightPotentiometerSetEventPtr->subscribeToSim();*/
+  /*
+  lightPotentiometerSetCallbackID = lightPotentiometerSetEventPtr
+  ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+                    DWORD param4) {
+    LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
+              + " params:"
+              + " 0: " + std::to_string(param0)
+              + " 1: " + std::to_string(param1)
+              + " 2: " + std::to_string(param2)
+              + " 3: " + std::to_string(param3)
+              + " 4: " + std::to_string(param4)
+    );
+  });
+  lightPotentiometerSetEventPtr->subscribeToSim();
+  */
 
   lightPotentiometerSetEvent2Ptr = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
-  /*    lightPotentiometerSetCallback2ID = lightPotentiometerSetEvent2Ptr
-        ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
-                          DWORD param4) {
-          LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
-                    + " params:"
-                    + " 0: " + std::to_string(param0)
-                    + " 1: " + std::to_string(param1)
-                    + " 2: " + std::to_string(param2)
-                    + " 3: " + std::to_string(param3)
-                    + " 4: " + std::to_string(param4)
-          );
-        });*/
+  /*
+  lightPotentiometerSetCallback2ID = lightPotentiometerSetEvent2Ptr
+  ->addKeyEventCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
+                    DWORD param4) {
+    LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
+              + " params:"
+              + " 0: " + std::to_string(param0)
+              + " 1: " + std::to_string(param1)
+              + " 2: " + std::to_string(param2)
+              + " 3: " + std::to_string(param3)
+              + " 4: " + std::to_string(param4)
+    );
+  });
+  */
 
   // LVARS
   // requested multiple times to demonstrate de-duplication - also shows optional parameters
@@ -130,7 +138,7 @@ bool ExampleModule::initialize() {
                                                       beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
 
   // Data definition variables
-  std::vector <DataDefinition> exampleDataDef = {
+  std::vector<DataDefinition> exampleDataDef = {
     {"LIGHT STROBE", 0, UNITS.Bool},
     {"LIGHT WING",   0, UNITS.Bool},
     {"ZULU TIME"},
@@ -141,7 +149,6 @@ bool ExampleModule::initialize() {
   };
   exampleDataPtr = dataManager
     ->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, true, false, 0, 0);
-
   // Alternative to use autoRead it is possible to set the SIMCONNECT_PERIOD.
   // this is probably very efficient for data definitions areas if every change needs to be read
   // or if the sim should only send data when it has changed.
@@ -160,23 +167,23 @@ bool ExampleModule::initialize() {
     dataManager->make_clientdataarea_var<ExampleClientData2>("EXAMPLE 2 CLIENT DATA");
   // exampleClientData2Ptr->setSkipChangeCheck(true);
   // this is probably very efficient for client data areas if every change needs to be read
-  if (!exampleClientData2Ptr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!exampleClientData2Ptr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
 
   // Big client data area owned by an external module
   bigClientDataPtr =
     dataManager->make_clientdataarea_var<BigClientData>("BIG CLIENT DATA");
-  bigClientDataPtr->setSkipChangeCheck(true);
-  bigClientDataPtr->addCallback([&]() {
-    // Big Client Data
-    std::cout << "--- CALLBACK: BIG CLIENT DATA (External - reading)" << std::endl;
-    std::cout << bigClientDataPtr->str() << std::endl;
-    std::cout << "Bid Client Data data: " << std::endl;
-    auto s = std::string_view((const char*) &bigClientDataPtr->data().dataChunk, 100);
-    std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s
-              << " ... " << std::endl;
-  });
+  //  bigClientDataPtr->setSkipChangeCheck(true);
+  //  bigClientDataPtr->addCallback([&]() {
+  //    // Big Client Data
+  //    std::cout << "--- CALLBACK: BIG CLIENT DATA (External - reading)" << std::endl;
+  //    std::cout << bigClientDataPtr->str() << std::endl;
+  //    std::cout << "Bid Client Data data: " << std::endl;
+  //    auto s = std::string_view((const char*) &bigClientDataPtr->data().dataChunk, 100);
+  //    std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s
+  //              << " ... " << std::endl;
+  //  });
   //  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
   //    LOG_ERROR("Failed to request periodic data from sim");
   //  }
@@ -195,9 +202,9 @@ bool ExampleModule::initialize() {
               << " fingerprint = " << metaDataPtr->data().hash << std::endl;
     std::cout << std::endl;
   });
-  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
 
   // ClientDataBufferedAreaVariable test
   hugeClientDataPtr =
@@ -226,12 +233,14 @@ bool ExampleModule::initialize() {
   //    LOG_ERROR("Failed to request periodic data from sim");
   //  }
 
-  // Key event test
+  // Key event tests
+  // Test callback a member method using this->
   [[maybe_unused]] auto keyEventId = dataManager->addKeyEventCallback(
     KEY_BEACON_LIGHTS_SET,
     [&, this](DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
       this->keyEventTest(param0, param1, param2, param3, param4);
     });
+  // Test a second callback using a lambda
   [[maybe_unused]] auto keyEventId2 = dataManager->addKeyEventCallback(
     KEY_BEACON_LIGHTS_SET,
     [&](DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
