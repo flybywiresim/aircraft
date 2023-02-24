@@ -154,11 +154,11 @@ class CDUIdentPage {
             secondaryDBSubLine =
                 confirmType === ConfirmType.SwitchDataBase
                     ? "{amber}{CANCEL    SWAP CONFIRM*{end}"
-                    : "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
+                    : "{small}{" + calculateActiveDate(date) + "{end}[color]cyan";
         } else {
             secondaryDBTopLine = "\xa0SECOND NAV DATA BASE";
             secondaryDBSubLine =
-                "{small}{" + calculateSecDate(date) + "{end}[color]cyan";
+                "{small}{" + calculateActiveDate(date) + "{end}[color]cyan";
         }
 
         mcdu.leftInputDelay[2] = () => {
