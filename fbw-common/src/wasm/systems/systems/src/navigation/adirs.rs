@@ -471,6 +471,10 @@ impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
         self.adirus[adiru_number - 1].heading()
     }
 
+    fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].true_heading()
+    }
+
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
         self.adirus[adiru_number - 1].vertical_speed()
     }
@@ -616,6 +620,10 @@ impl AirDataInertialReferenceUnit {
 
     fn heading(&self) -> Arinc429Word<Angle> {
         self.ir.heading()
+    }
+
+    fn true_heading(&self) -> Arinc429Word<Angle> {
+        self.ir.true_heading()
     }
 
     fn vertical_speed(&self) -> Arinc429Word<Velocity> {
@@ -1622,6 +1630,10 @@ impl InertialReference {
 
     fn heading(&self) -> Arinc429Word<Angle> {
         Arinc429Word::new(self.heading.value(), self.heading.ssm())
+    }
+
+    fn true_heading(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.true_heading.value(), self.true_heading.ssm())
     }
 
     fn vertical_speed(&self) -> Arinc429Word<Velocity> {

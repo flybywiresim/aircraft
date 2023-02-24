@@ -227,6 +227,7 @@ pub trait AdirsMeasurementOutputs {
     fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle>;
     fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle>;
     fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle>;
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length>;
 }
