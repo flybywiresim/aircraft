@@ -98,8 +98,8 @@ export const Payload = () => {
 
     const chancesOfMissedConnection = useMemo(() => (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.05 : 0), [payloadDeltaRealism]);
     const chancesOfDelayedPlane = useMemo(() => (payloadDeltaRealism === 'CONNECTING FLIGHTS' ? 0.025 : 0), [payloadDeltaRealism]);
-    const chancheOfPaxMissingWhenMissedConnection = 0.15;
-    const chanceOfAddedPaxWhenMissedConnection = 0.15;
+    const chancheOfPaxMissingWhenMissedConnection = 0.10;
+    const chanceOfAddedPaxWhenMissedConnection = 0.05;
     const chancesOfAddedPax = useMemo(() => {
         const typicalChance = 0.005;
         switch (payloadDeltaRealism) {
