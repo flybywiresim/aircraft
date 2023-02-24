@@ -49,11 +49,8 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
                 20,
             ),
             filtered_exterior_pressure: Pressure::new::<hectopascal>(1013.25),
-            previous_flow_in: BoundedVecDeque::from_iter(
-                vec![MassRate::new::<kilogram_per_second>(0.); 200],
-                200,
-            ),
-            filtered_flow_in: MassRate::new::<kilogram_per_second>(0.),
+            previous_flow_in: BoundedVecDeque::from_iter(vec![MassRate::default(); 200], 200),
+            filtered_flow_in: MassRate::default(),
 
             air_in: Air::new(),
             air_out: Air::new(),
@@ -138,8 +135,7 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             average_temperature.get::<kelvin>() - self.internal_air.temperature().get::<kelvin>(); // K
         let pressure_change = self.calculate_pressure_change(mass_change, temperature_change);
         self.internal_air.set_temperature(average_temperature);
-        self.internal_air
-            .set_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        self.internal_air.set_flow_rate(MassRate::default());
         self.internal_air
             .set_pressure(self.internal_air.pressure() + pressure_change);
     }
@@ -641,7 +637,7 @@ mod cabin_air_tests {
         },
     };
     use std::time::Duration;
-    use uom::si::{pressure::psi, ratio::percent, thermodynamic_temperature::degree_celsius};
+    use uom::si::{pressure::psi, thermodynamic_temperature::degree_celsius};
 
     struct TestAirConditioningSystem {
         duct_demand_temperature: ThermodynamicTemperature,
@@ -652,7 +648,7 @@ mod cabin_air_tests {
         fn new() -> Self {
             Self {
                 duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
-                pack_flow: MassRate::new::<kilogram_per_second>(0.),
+                pack_flow: MassRate::default(),
             }
         }
 
@@ -759,8 +755,8 @@ mod cabin_air_tests {
             self.cabin_air_simulation.update(
                 context,
                 &self.air_conditioning_system,
-                Ratio::new::<percent>(0.),
-                Ratio::new::<percent>(0.),
+                Ratio::default(),
+                Ratio::default(),
                 true,
                 [2, self.number_of_passengers],
                 0u8,
@@ -786,7 +782,7 @@ mod cabin_air_tests {
                 stored_temperature: None,
             };
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-            test_bed = test_bed.true_airspeed_of(Velocity::new::<meter_per_second>(0.));
+            test_bed = test_bed.true_airspeed_of(Velocity::default());
 
             test_bed
         }
@@ -962,7 +958,7 @@ mod cabin_air_tests {
     #[test]
     fn temperature_stays_stable_with_no_flow_and_no_passengers() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .memorize_cabin_temperature()
             .then()
             .iterate_with_delta(100, Duration::from_secs(10));
@@ -978,7 +974,7 @@ mod cabin_air_tests {
     #[test]
     fn reducing_ambient_temperature_reduces_cabin_temperature() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .memorize_cabin_temperature()
             .then()
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
@@ -990,7 +986,7 @@ mod cabin_air_tests {
     #[test]
     fn increasing_ambient_temperature_increases_cabin_temperature() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .memorize_cabin_temperature()
             .then()
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(45.))
@@ -1002,7 +998,7 @@ mod cabin_air_tests {
     #[test]
     fn more_heat_is_dissipated_in_flight() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .iterate(1)
             .then()
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
@@ -1014,7 +1010,7 @@ mod cabin_air_tests {
             - test_bed.cabin_temperature().get::<degree_celsius>();
 
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
             .and()
             .true_airspeed_of(Velocity::new::<meter_per_second>(130.))

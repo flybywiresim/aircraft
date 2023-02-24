@@ -1383,13 +1383,8 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*,
-        length::foot,
-        mass_rate::kilogram_per_second,
-        pressure::{hectopascal, psi},
-        ratio::ratio,
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
+        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     use crate::air_conditioning::A320PressurizationOverheadPanel;
@@ -1479,7 +1474,7 @@ mod tests {
     impl TestAdirs {
         fn new() -> Self {
             Self {
-                ground_speed: Velocity::new::<knot>(0.),
+                ground_speed: Velocity::default(),
             }
         }
     }
@@ -1488,13 +1483,13 @@ mod tests {
             Arinc429Word::new(self.ground_speed, SignStatus::NormalOperation)
         }
         fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
-            Arinc429Word::new(Velocity::new::<knot>(0.), SignStatus::NoComputedData)
+            Arinc429Word::new(Velocity::default(), SignStatus::NoComputedData)
         }
         fn baro_correction(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
-            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
+            Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
         }
         fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
-            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
+            Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
         }
     }
 
@@ -1506,7 +1501,7 @@ mod tests {
     }
     impl CabinAltitude for TestPressurization {
         fn altitude(&self) -> Length {
-            Length::new::<foot>(0.)
+            Length::default()
         }
     }
 

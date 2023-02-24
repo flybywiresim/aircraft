@@ -93,21 +93,21 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
             outflow_valve_controller: OutflowValveController::new(),
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
-            exterior_vertical_speed: Velocity::new::<foot_per_minute>(0.),
+            exterior_vertical_speed: Velocity::default(),
             reference_pressure: Pressure::new::<hectopascal>(1013.25),
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
-            cabin_alt: Length::new::<meter>(0.),
-            cabin_vertical_speed: Velocity::new::<foot_per_minute>(0.),
+            cabin_alt: Length::default(),
+            cabin_vertical_speed: Velocity::default(),
             cabin_filtered_vertical_speed: LowPassFilter::new(
                 Self::VERTICAL_SPEED_FILTER_TIME_CONSTANT,
             ),
-            cabin_target_vs: Velocity::new::<meter_per_second>(0.),
+            cabin_target_vs: Velocity::default(),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
 
-            landing_elevation: Length::new::<foot>(0.),
-            departure_elevation: Length::new::<foot>(0.),
-            destination_qnh: Pressure::new::<hectopascal>(0.),
+            landing_elevation: Length::default(),
+            departure_elevation: Length::default(),
+            destination_qnh: Pressure::default(),
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
@@ -965,7 +965,6 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         length::foot,
-        mass_rate::kilogram_per_second,
         ratio::percent,
         thermodynamic_temperature::degree_celsius,
         velocity::{foot_per_minute, knot},
@@ -977,7 +976,7 @@ mod tests {
     impl TestAdirs {
         fn new() -> Self {
             Self {
-                true_airspeed: Velocity::new::<knot>(0.),
+                true_airspeed: Velocity::default(),
             }
         }
         fn set_true_airspeed(&mut self, airspeed: Velocity) {
@@ -986,13 +985,13 @@ mod tests {
     }
     impl AdirsToAirCondInterface for TestAdirs {
         fn ground_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
-            Arinc429Word::new(Velocity::new::<knot>(0.), SignStatus::NormalOperation)
+            Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
         }
         fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
             Arinc429Word::new(self.true_airspeed, SignStatus::NormalOperation)
         }
         fn baro_correction(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
-            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
+            Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
         }
         fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
             Arinc429Word::new(
@@ -1011,7 +1010,7 @@ mod tests {
         fn new() -> Self {
             Self {
                 duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
-                pack_flow: MassRate::new::<kilogram_per_second>(0.),
+                pack_flow: MassRate::default(),
             }
         }
     }
@@ -1232,8 +1231,8 @@ mod tests {
                 ),
                 safety_valve: SafetyValve::new(),
                 press_overhead: TestPressurizationOverheadPanel::new(context),
-                engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
-                engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                engine_1: TestEngine::new(Ratio::default()),
+                engine_2: TestEngine::new(Ratio::default()),
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
             };
@@ -1347,7 +1346,7 @@ mod tests {
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
         test_bed.command(|a| a.set_on_ground(true));
-        test_bed.command(|a| a.set_true_airspeed(Velocity::new::<knot>(0.)));
+        test_bed.command(|a| a.set_true_airspeed(Velocity::default()));
 
         test_bed.run();
 
@@ -1376,7 +1375,7 @@ mod tests {
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
         test_bed.command(|a| a.set_on_ground(true));
-        test_bed.command(|a| a.set_true_airspeed(Velocity::new::<knot>(0.)));
+        test_bed.command(|a| a.set_true_airspeed(Velocity::default()));
         test_bed.run();
 
         test_bed.command(|a| a.set_on_ground(false));
@@ -1392,7 +1391,7 @@ mod tests {
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
         test_bed.command(|a| a.set_on_ground(true));
-        test_bed.command(|a| a.set_true_airspeed(Velocity::new::<knot>(0.)));
+        test_bed.command(|a| a.set_true_airspeed(Velocity::default()));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_takeoff()));

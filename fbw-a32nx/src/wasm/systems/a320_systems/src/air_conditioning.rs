@@ -213,9 +213,9 @@ impl CabinSimulation for A320Cabin {
 impl SimulationElement for A320Cabin {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let rear_door_read: Ratio = reader.read(&self.rear_door_id);
-        self.rear_door_is_open = rear_door_read > Ratio::new::<percent>(0.);
+        self.rear_door_is_open = rear_door_read > Ratio::default();
         let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
-        self.fwd_door_is_open = fwd_door_read > Ratio::new::<percent>(0.);
+        self.fwd_door_is_open = fwd_door_read > Ratio::default();
 
         for (id, variable) in self.passenger_rows_id.iter().enumerate() {
             if let Some(var) = variable {
@@ -564,8 +564,8 @@ mod tests {
     impl TestAdirs {
         fn new() -> Self {
             Self {
-                ground_speed: Velocity::new::<knot>(0.),
-                true_airspeed: Velocity::new::<knot>(0.),
+                ground_speed: Velocity::default(),
+                true_airspeed: Velocity::default(),
                 baro_correction: Pressure::new::<hectopascal>(1013.25),
                 baro_correction_ssm: SignStatus::NormalOperation,
                 ambient_pressure: Pressure::new::<hectopascal>(1013.25),
@@ -742,7 +742,7 @@ mod tests {
     }
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-            self.packs[pack_id].pfv_open_amount() > Ratio::new::<percent>(0.)
+            self.packs[pack_id].pfv_open_amount() > Ratio::default()
         }
         fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
             self.packs[pack_id].pack_flow_valve_air_flow()
@@ -1005,8 +1005,8 @@ mod tests {
             let mut test_aircraft = Self {
                 a320_cabin_air: A320AirConditioning::new(context),
                 adirs: TestAdirs::new(),
-                engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
-                engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                engine_1: TestEngine::new(Ratio::default()),
+                engine_2: TestEngine::new(Ratio::default()),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
@@ -2003,10 +2003,7 @@ mod tests {
                 .ambient_pressure_of(Pressure::new::<hectopascal>(421.))
                 .and_run();
 
-            assert_eq!(
-                test_bed.safety_valve_open_amount(),
-                Ratio::new::<percent>(0.)
-            );
+            assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
         }
 
         #[test]
@@ -2016,10 +2013,7 @@ mod tests {
                 .ambient_pressure_of(Pressure::new::<hectopascal>(1080.))
                 .and_run();
 
-            assert_eq!(
-                test_bed.safety_valve_open_amount(),
-                Ratio::new::<percent>(0.)
-            );
+            assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
         }
 
         #[test]
@@ -2034,7 +2028,7 @@ mod tests {
                 .ambient_pressure_of(Pressure::new::<hectopascal>(323.))
                 .iterate_with_delta(20, Duration::from_millis(100));
 
-            assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
+            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
         }
 
         #[test]
@@ -2049,7 +2043,7 @@ mod tests {
                 .ambient_pressure_of(Pressure::new::<hectopascal>(1400.))
                 .iterate(20);
 
-            assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
+            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
         }
 
         #[test]
@@ -2064,16 +2058,13 @@ mod tests {
                 .ambient_pressure_of(Pressure::new::<hectopascal>(1400.))
                 .iterate(20);
 
-            assert!(test_bed.safety_valve_open_amount() > Ratio::new::<percent>(0.));
+            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
 
             test_bed = test_bed
                 .ambient_pressure_of(Pressure::new::<hectopascal>(1013.))
                 .iterate(20);
 
-            assert_eq!(
-                test_bed.safety_valve_open_amount(),
-                Ratio::new::<percent>(0.)
-            );
+            assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
         }
 
         #[test]

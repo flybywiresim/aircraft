@@ -431,8 +431,7 @@ impl CabinFan {
             self.is_on = false;
             self.outlet_air
                 .set_pressure(cabin_simulation.cabin_pressure());
-            self.outlet_air
-                .set_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+            self.outlet_air.set_flow_rate(MassRate::default());
         } else {
             self.is_on = true;
             self.outlet_air.set_pressure(
@@ -826,7 +825,7 @@ impl Air {
         Self {
             temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
             pressure: Pressure::new::<hectopascal>(1013.25),
-            flow_rate: MassRate::new::<kilogram_per_second>(0.),
+            flow_rate: MassRate::default(),
         }
     }
 

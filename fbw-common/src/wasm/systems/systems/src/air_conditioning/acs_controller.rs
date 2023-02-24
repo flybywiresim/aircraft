@@ -709,11 +709,11 @@ impl<const ZONES: usize, const ENGINES: usize> PackFlowController<ZONES, ENGINES
             pack_flow_id: context.get_identifier(Self::pack_flow_id(pack_id.to_index())),
 
             id: pack_id.to_index(),
-            flow_demand: Ratio::new::<percent>(0.),
+            flow_demand: Ratio::default(),
             fcv_open_allowed: false,
             should_open_fcv: false,
-            pack_flow: MassRate::new::<kilogram_per_second>(0.),
-            pack_flow_demand: MassRate::new::<kilogram_per_second>(0.),
+            pack_flow: MassRate::default(),
+            pack_flow_demand: MassRate::default(),
             pid: PidController::new(0.01, 0.1, 0., 0., 1., 0., 1.),
             operation_mode: ACSCActiveComputer::None,
 
@@ -1144,10 +1144,7 @@ mod acs_controller_tests {
         },
     };
     use uom::si::{
-        length::foot,
-        pressure::{hectopascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
+        length::foot, pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
         volume::cubic_meter,
     };
 
@@ -1157,7 +1154,7 @@ mod acs_controller_tests {
     impl TestAdirs {
         fn new() -> Self {
             Self {
-                ground_speed: Velocity::new::<knot>(0.),
+                ground_speed: Velocity::default(),
             }
         }
 
@@ -1170,13 +1167,13 @@ mod acs_controller_tests {
             Arinc429Word::new(self.ground_speed, SignStatus::NormalOperation)
         }
         fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
-            Arinc429Word::new(Velocity::new::<knot>(0.), SignStatus::NoComputedData)
+            Arinc429Word::new(Velocity::default(), SignStatus::NoComputedData)
         }
         fn baro_correction(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
-            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
+            Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
         }
         fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
-            Arinc429Word::new(Pressure::new::<hectopascal>(0.), SignStatus::NoComputedData)
+            Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
         }
     }
 
@@ -1205,7 +1202,7 @@ mod acs_controller_tests {
     impl TestPressurization {
         fn new() -> Self {
             Self {
-                cabin_altitude: Length::new::<foot>(0.),
+                cabin_altitude: Length::default(),
             }
         }
 
@@ -1478,7 +1475,7 @@ mod acs_controller_tests {
     }
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-            self.packs[pack_id].pfv_open_amount() > Ratio::new::<percent>(0.)
+            self.packs[pack_id].pfv_open_amount() > Ratio::default()
         }
         fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
             self.packs[pack_id].pack_flow_valve_air_flow()
@@ -1844,8 +1841,8 @@ mod acs_controller_tests {
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
                 cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
-                engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
-                engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                engine_1: TestEngine::new(Ratio::default()),
+                engine_2: TestEngine::new(Ratio::default()),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 mixer_unit: MixerUnit::new(&cabin_zones),
                 number_of_passengers: 0,
@@ -2941,10 +2938,7 @@ mod acs_controller_tests {
         fn pack_flow_starts_at_zero() {
             let test_bed = test_bed();
 
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.)
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default());
         }
 
         #[test]
@@ -2956,7 +2950,7 @@ mod acs_controller_tests {
                 .engine_idle()
                 .iterate(2);
 
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
         }
 
         #[test]
@@ -3090,15 +3084,12 @@ mod acs_controller_tests {
             test_bed.command_apu_bleed_on();
             test_bed = test_bed.iterate(20);
 
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
             test_bed = test_bed.iterate(2);
 
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.)
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default());
         }
 
         #[test]
@@ -3110,7 +3101,7 @@ mod acs_controller_tests {
 
             let initial_pack_flow = test_bed.pack_flow();
 
-            assert!(initial_pack_flow > MassRate::new::<kilogram_per_second>(0.));
+            assert!(initial_pack_flow > MassRate::default());
 
             test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
             test_bed = test_bed.iterate(2);
@@ -3130,10 +3121,7 @@ mod acs_controller_tests {
             test_bed.command_engine_in_start_mode();
             test_bed = test_bed.iterate(2);
 
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.)
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default());
         }
 
         #[test]
@@ -3148,10 +3136,7 @@ mod acs_controller_tests {
             test_bed.command_engine_on_fire();
             test_bed = test_bed.iterate(2);
 
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.)
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default());
         }
 
         #[test]
@@ -3166,10 +3151,7 @@ mod acs_controller_tests {
             test_bed.command_ditching_on();
             test_bed = test_bed.iterate(2);
 
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.)
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default());
         }
 
         #[test]
@@ -3242,7 +3224,7 @@ mod acs_controller_tests {
                 .and()
                 .engine_idle()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
@@ -3252,7 +3234,7 @@ mod acs_controller_tests {
             test_bed.command_ditching_on();
             test_bed = test_bed.iterate(2);
 
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
         }
 
         #[test]
@@ -3263,12 +3245,12 @@ mod acs_controller_tests {
                 .and()
                 .engine_idle()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed = test_bed.unpowered_dc_1_bus().unpowered_ac_2_bus();
             test_bed.command_ditching_on();
             test_bed = test_bed.iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed = test_bed
                 .powered_dc_1_bus()
@@ -3276,13 +3258,10 @@ mod acs_controller_tests {
                 .unpowered_dc_2_bus()
                 .powered_ac_2_bus();
             test_bed = test_bed.iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed = test_bed.powered_ac_1_bus().powered_dc_2_bus().iterate(2);
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.),
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default(),);
         }
 
         #[test]
@@ -3316,7 +3295,7 @@ mod acs_controller_tests {
                 .and()
                 .engine_idle()
                 .iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
@@ -3325,7 +3304,7 @@ mod acs_controller_tests {
                 .unpowered_ac_2_bus();
             test_bed.command_ditching_on();
             test_bed = test_bed.iterate(2);
-            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+            assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed = test_bed
                 .powered_dc_1_bus()
@@ -3333,10 +3312,7 @@ mod acs_controller_tests {
                 .powered_dc_2_bus()
                 .powered_ac_2_bus()
                 .iterate(2);
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.),
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default(),);
         }
     }
 
@@ -3441,7 +3417,7 @@ mod acs_controller_tests {
 
             assert_eq!(
                 test_bed.mixer_unit_outlet_air().flow_rate(),
-                MassRate::new::<kilogram_per_second>(0.),
+                MassRate::default(),
             );
         }
 
@@ -3627,10 +3603,7 @@ mod acs_controller_tests {
 
             // If both zones get the temperature raised at the same time the packs deliver hotter air and the
             // effect of hot air valves is negligible
-            assert!(
-                (test_bed.trim_air_system_outlet_air(1).flow_rate())
-                    > MassRate::new::<kilogram_per_second>(0.)
-            );
+            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
             assert!(
                 (test_bed.trim_air_system_outlet_air(1).temperature())
                     > ThermodynamicTemperature::new::<degree_celsius>(25.)
@@ -3697,10 +3670,7 @@ mod acs_controller_tests {
             test_bed.command_engine_in_start_mode();
             test_bed = test_bed.iterate(2);
 
-            assert_eq!(
-                test_bed.pack_flow(),
-                MassRate::new::<kilogram_per_second>(0.)
-            );
+            assert_eq!(test_bed.pack_flow(), MassRate::default());
             assert!(
                 (test_bed
                     .trim_air_system_outlet_temp()
