@@ -281,6 +281,7 @@ constexpr Angle operator"" _deg(unsigned long long int value) {
 
 constexpr Velocity knot = 0.51444f * metre / second;
 constexpr Velocity ftpmin = feet / minute;
+constexpr Velocity mps = metre / second;
 constexpr Velocity operator"" _mps(long double value) {
   return Velocity(static_cast<float>(value));
 }
