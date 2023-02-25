@@ -28,7 +28,7 @@ use uom::si::{
     mass::kilogram,
     pressure::{pascal, psi},
     ratio::ratio,
-    torque::newton_meter,
+    torque::{newton_meter, pound_force_inch},
     volume::{cubic_inch, cubic_meter, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
@@ -2512,6 +2512,11 @@ impl HeatingElement for Reservoir {
 
 pub trait PumpController {
     fn should_pressurise(&self) -> bool;
+
+    // Gives a factor applied to max pump displacement to manually control displacement of the pump
+    fn max_displacement_restriction(&self) -> Ratio {
+        Ratio::new::<ratio>(1.)
+    }
 }
 
 pub struct Pump {
@@ -2564,7 +2569,9 @@ impl Pump {
 
         self.current_max_displacement.update(
             context.delta(),
-            self.cavitation_efficiency * theoretical_displacement,
+            self.cavitation_efficiency
+                * theoretical_displacement
+                * controller.max_displacement_restriction(),
         );
 
         let max_flow = Self::calculate_flow(speed, self.current_max_displacement.output())
@@ -2912,18 +2919,49 @@ impl HeatingElement for EngineDrivenPump {
 }
 impl HeatingPressureSource for EngineDrivenPump {}
 
-struct AlwaysPressurisePumpController {}
-impl AlwaysPressurisePumpController {
+struct RatAntiStallPumpController {
+    anti_stall_ratio: LowPassFilter<Ratio>,
+}
+impl RatAntiStallPumpController {
+    const LOW_SPEED_CUT_OFF_THRESHOLD_RPM: f64 = 4000.;
+    const LOW_SPEED_CUT_OFF_BANDWIDTH_RPM: f64 = 500.;
+
+    const ANTI_STALL_TIME_CONSTANT: Duration = Duration::from_millis(200);
+
+    const MIN_ANTI_STALL_RATIO: f64 = 0.15;
+
     fn new() -> Self {
-        Self {}
+        Self {
+            anti_stall_ratio: LowPassFilter::new(Self::ANTI_STALL_TIME_CONSTANT),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, speed: AngularVelocity) {
+        let cut_off_ratio = ((speed.get::<revolution_per_minute>()
+            - (Self::LOW_SPEED_CUT_OFF_THRESHOLD_RPM - Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM))
+            / Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM)
+            .clamp(Self::MIN_ANTI_STALL_RATIO, 1.);
+        self.anti_stall_ratio
+            .update(context.delta(), Ratio::new::<ratio>(cut_off_ratio));
+
+        if self.anti_stall_ratio.output().get::<ratio>() < 1. {
+            println!(
+                "--------------RAT ANTISTALL={:.2}-------------",
+                cut_off_ratio
+            );
+        }
     }
 }
-impl PumpController for AlwaysPressurisePumpController {
+impl PumpController for RatAntiStallPumpController {
     fn should_pressurise(&self) -> bool {
         true
     }
+
+    fn max_displacement_restriction(&self) -> Ratio {
+        self.anti_stall_ratio.output()
+    }
 }
-impl Default for AlwaysPressurisePumpController {
+impl Default for RatAntiStallPumpController {
     fn default() -> Self {
         Self::new()
     }
@@ -2934,7 +2972,7 @@ pub struct RamAirTurbine {
 
     deployment_commanded: bool,
     pump: Pump,
-    pump_controller: AlwaysPressurisePumpController,
+    pump_controller: RatAntiStallPumpController,
     wind_turbine: WindTurbine,
     position: f64,
 }
@@ -2943,9 +2981,9 @@ impl RamAirTurbine {
     const STOWING_SPEED: f64 = 1.;
 
     const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-        0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
+        0.0, 1000., 4700.0, 5500.0, 6250.0, 6300.0, 6450.0, 9000.0, 15000.0,
     ];
-    const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
+    const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
 
     pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
@@ -2953,14 +2991,16 @@ impl RamAirTurbine {
 
             deployment_commanded: false,
             pump: Pump::new(pump_characteristics),
-            pump_controller: AlwaysPressurisePumpController::new(),
+            pump_controller: RatAntiStallPumpController::new(),
 
-            // TODO UPDATE TO 320 SPECs
             wind_turbine: WindTurbine::new(
                 context,
-                Length::new::<meter>(1.6256 / 2.),
+                Length::new::<meter>(1.003 / 2.),
                 Self::RPM_GOVERNOR_BREAKPTS,
                 Self::PROP_ALPHA_MAP,
+                0.06,
+                2.,
+                0.12,
             ),
             position: 0.,
         }
@@ -2975,6 +3015,9 @@ impl RamAirTurbine {
     ) {
         // Once commanded, stays commanded forever
         self.deployment_commanded = controller.should_deploy() || self.deployment_commanded;
+
+        self.pump_controller
+            .update(context, self.wind_turbine.speed());
 
         self.pump.update(
             context,
@@ -3008,16 +3051,9 @@ impl RamAirTurbine {
     }
 
     fn resistant_torque(&mut self, displacement: Volume, pressure: Pressure) -> Torque {
-        let pump_torque = if self.wind_turbine.is_low_speed() {
-            (self.wind_turbine.position().get::<radian>() * 4.).cos()
-                * displacement.get::<gallon>().max(0.35)
-                * 2.
-        } else {
-            // TODO wrong unit here, whole rat system needs a power/torque/rotation speed tuning and check
-            -pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI)
-        };
-
-        Torque::new::<newton_meter>(pump_torque)
+        Torque::new::<pound_force_inch>(
+            -pressure.get::<psi>() * displacement.get::<cubic_inch>() / (2. * std::f64::consts::PI),
+        )
     }
 }
 impl PressureSource for RamAirTurbine {
@@ -3041,10 +3077,18 @@ impl PressureSource for RamAirTurbine {
     }
 
     fn flow(&self) -> VolumeRate {
+        println!(
+            "-----------RAT FINAL FLOW= {:.4}gpm-------------",
+            self.pump.flow().get::<gallon_per_minute>()
+        );
         self.pump.flow()
     }
 
     fn displacement(&self) -> Volume {
+        println!(
+            "-----------RAT FINAL DIS= {:.4}gal-------------",
+            self.pump.displacement().get::<gallon>()
+        );
         self.pump.displacement()
     }
 }

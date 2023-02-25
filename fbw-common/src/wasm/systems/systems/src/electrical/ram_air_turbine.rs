@@ -55,6 +55,9 @@ impl RamAirTurbine {
                 Length::new::<meter>(1.6256 / 2.),
                 Self::RPM_GOVERNOR_BREAKPTS,
                 Self::PROP_ALPHA_MAP,
+                0.2,
+                4.,
+                0.2,
             ),
             stow_position: 0.,
         }

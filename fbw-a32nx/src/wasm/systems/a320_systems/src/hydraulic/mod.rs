@@ -5977,6 +5977,7 @@ mod tests {
             angle::degree,
             electric_potential::volt,
             length::foot,
+            mass_density::kilogram_per_cubic_meter,
             ratio::{percent, ratio},
             volume::liter,
         };
@@ -6786,6 +6787,8 @@ mod tests {
                 self.set_on_ground(false);
                 self.set_indicated_altitude(Length::new::<foot>(2500.));
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
+                self.set_true_airspeed(Velocity::new::<knot>(180.));
+                self.set_ambient_air_density(MassDensity::new::<kilogram_per_cubic_meter>(1.22));
                 self.start_eng1(Ratio::new::<percent>(80.))
                     .start_eng2(Ratio::new::<percent>(80.))
                     .set_gear_lever_up()

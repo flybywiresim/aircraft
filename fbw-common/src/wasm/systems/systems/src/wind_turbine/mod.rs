@@ -40,6 +40,10 @@ pub struct WindTurbine {
 
     rpm_governor_breakpoints: [f64; 9],
     propeller_pitch_ratio_to_rpm_map: [f64; 9],
+
+    dynamic_friction_coefficient: f64,
+    best_efficiency_tip_speed_ratio: f64,
+    propeller_inertia: f64,
 }
 impl WindTurbine {
     // Stow position from which mechanical pin unlocks blades rotation
@@ -49,9 +53,6 @@ impl WindTurbine {
     const MAX_TIP_SPEED_MACH_NUMBER: f64 = 1.01;
     const MIN_TIP_SPEED_MACH_NUMBER: f64 = 0.95;
 
-    // What is the tip speed ratio where aerodynamic efficiency is the best
-    const OPTIMAL_TIP_SPEED_RATIO_BLADE_DESIGN: f64 = 4.;
-
     // Max absolute aerodynamic efficiency
     const MAX_AERODYNAMIC_EFFICIENCY: f64 = 0.45;
 
@@ -60,9 +61,6 @@ impl WindTurbine {
     // Low speed special calculation threshold. Under that value we compute torque and friction differently
     const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 100.;
 
-    const PROPELLER_INERTIA: f64 = 0.2;
-    const FRICTION_COEFFICIENT: f64 = 0.2;
-
     const CUT_OUT_WIND_SPEED_KTS: f64 = 45.;
 
     pub fn new(
@@ -70,6 +68,9 @@ impl WindTurbine {
         propeller_radius: Length,
         rpm_governor_breakpoints: [f64; 9],
         propeller_alpha_to_rpm_map: [f64; 9],
+        dynamic_friction_coefficient: f64,
+        best_efficiency_tip_speed_ratio: f64,
+        propeller_inertia: f64,
     ) -> Self {
         Self {
             rpm_id: context.get_identifier("RAT_RPM".to_owned()),
@@ -91,6 +92,10 @@ impl WindTurbine {
 
             rpm_governor_breakpoints,
             propeller_pitch_ratio_to_rpm_map: propeller_alpha_to_rpm_map,
+
+            dynamic_friction_coefficient,
+            best_efficiency_tip_speed_ratio,
+            propeller_inertia,
         }
     }
 
@@ -126,7 +131,7 @@ impl WindTurbine {
                 * (1. - self.propeller_beta_pitch.output().get::<ratio>()))
                 / (1.
                     + 3. * (self.tip_speed_ratio.get::<ratio>()
-                        - Self::OPTIMAL_TIP_SPEED_RATIO_BLADE_DESIGN)
+                        - self.best_efficiency_tip_speed_ratio)
                         .powi(2)),
         )
     }
@@ -191,8 +196,7 @@ impl WindTurbine {
                         .ambient_air_density()
                         .get::<kilogram_per_cubic_meter>()
                     * self.propeller_area.get::<square_meter>()
-                    * context.true_airspeed().get::<meter_per_second>()
-                    * context.true_airspeed().get::<meter_per_second>()
+                    * context.true_airspeed().get::<meter_per_second>().powi(2)
                     * context.true_airspeed().get::<meter_per_second>().signum(),
             )
         };
@@ -200,9 +204,12 @@ impl WindTurbine {
         self.torque_sum += generated_torque;
 
         println!(
-            "GENERATED BLADE TORQUE {:.1}Nm, Power :{:.0}W",
+            "GENERATED BLADE TORQUE {:.1}Nm, Power :{:.0}W  AIR DENSITY {:.3}",
             generated_torque.get::<newton_meter>(),
-            generated_torque.get::<newton_meter>() * self.speed.get::<radian_per_second>()
+            generated_torque.get::<newton_meter>() * self.speed.get::<radian_per_second>(),
+            context
+                .ambient_air_density()
+                .get::<kilogram_per_cubic_meter>()
         );
     }
 
@@ -211,7 +218,7 @@ impl WindTurbine {
             Torque::new::<newton_meter>(self.speed().get::<radian_per_second>() * -1.)
         } else {
             Torque::new::<newton_meter>(
-                self.speed().get::<radian_per_second>() * -Self::FRICTION_COEFFICIENT,
+                self.speed().get::<radian_per_second>() * -self.dynamic_friction_coefficient,
             )
         };
 
@@ -229,7 +236,7 @@ impl WindTurbine {
 
     fn update_physics(&mut self, context: &UpdateContext) {
         self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
-            self.torque_sum.get::<newton_meter>() / Self::PROPELLER_INERTIA,
+            self.torque_sum.get::<newton_meter>() / self.propeller_inertia,
         );
         self.speed += AngularVelocity::new::<radian_per_second>(
             self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
@@ -333,11 +340,11 @@ mod tests {
         stow_position: Ratio,
     }
     impl TestAircraft {
-        fn new(context: &mut InitContext) -> Self {
+        fn new(context: &mut InitContext, turbine: WindTurbine) -> Self {
             Self {
                 updater_max_step: MaxStepLoop::new(Duration::from_millis(10)),
 
-                turbine: a380_wind_turbine(context),
+                turbine,
 
                 power_load: Power::default(),
 
@@ -396,7 +403,10 @@ mod tests {
 
     #[test]
     fn do_not_turn_if_stow_pin_locked() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(0.)));
@@ -416,9 +426,13 @@ mod tests {
         assert!(test_bed.query(|a| a.turbine_rpm()).abs() < 0.1);
     }
 
+    /// A380 turbine TESTS
     #[test]
-    fn spins_in_high_air_speed_conditions() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+    fn a380_turbine_spins_in_high_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
         test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
@@ -432,8 +446,11 @@ mod tests {
     }
 
     #[test]
-    fn spins_in_medium_air_speed_conditions() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+    fn a380_turbine_spins_in_medium_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 200.);
         test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
@@ -446,8 +463,11 @@ mod tests {
     }
 
     #[test]
-    fn fails_to_spin_in_min_air_speed_conditions_over_rated_load() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+    fn a380_turbine_fails_to_spin_in_min_air_speed_conditions_over_rated_load() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 120.);
         test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
@@ -462,8 +482,11 @@ mod tests {
     }
 
     #[test]
-    fn spins_in_min_air_speed_conditions_at_lower_load() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+    fn a380_turbine_spins_in_min_air_speed_conditions_at_lower_load() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 120.);
         test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
@@ -478,8 +501,11 @@ mod tests {
     }
 
     #[test]
-    fn stalling_air_speed_conditions() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+    fn a380_turbine_stalling_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 50.);
         test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
@@ -493,8 +519,11 @@ mod tests {
     }
 
     #[test]
-    fn stops_from_full_speed_less_than_5_s_more_than_2s() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+    fn a380_turbine_stops_from_full_speed_less_than_5_s_more_than_2s() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
         test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
@@ -516,8 +545,11 @@ mod tests {
     }
 
     #[test]
-    fn stops_from_full_speed_if_wind_less_than_30kts() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+    fn a380_turbine_stops_from_full_speed_if_wind_less_than_30kts() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a380_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
         test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
@@ -528,6 +560,145 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 3800.);
+
+        test_bed.write_by_name("AIRSPEED TRUE", 30.);
+
+        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) < 50.);
+    }
+
+    /// A320 turbine TESTS
+    #[test]
+    fn a320_turbine_spins_in_high_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a320_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
+
+        test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 4000.);
+    }
+
+    #[test]
+    fn a320_turbine_spins_in_medium_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a320_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
+
+        test_bed.write_by_name("AIRSPEED TRUE", 200.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 4000.);
+    }
+
+    #[test]
+    fn a320_turbine_fails_to_spin_in_min_air_speed_conditions_over_rated_load() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a320_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
+
+        test_bed.write_by_name("AIRSPEED TRUE", 120.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) < 4000.);
+    }
+
+    #[test]
+    fn a320_turbine_spins_in_min_air_speed_conditions_at_lower_load() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a320_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
+
+        test_bed.write_by_name("AIRSPEED TRUE", 120.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(5.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 4000.);
+    }
+
+    #[test]
+    fn a320_turbine_stalling_air_speed_conditions() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a320_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
+
+        test_bed.write_by_name("AIRSPEED TRUE", 50.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+
+        assert!(test_bed.query(|a| a.turbine_rpm()) < 500.);
+    }
+
+    #[test]
+    fn a320_turbine_stops_from_full_speed_less_than_5_s_more_than_2s() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a320_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
+
+        test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 5000.);
+
+        test_bed.write_by_name("AIRSPEED TRUE", 0.);
+
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 200.);
+
+        test_bed.run_with_delta(Duration::from_secs_f64(3.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) < 5.);
+    }
+
+    #[test]
+    fn a320_turbine_stops_from_full_speed_if_wind_less_than_30kts() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let turbine = a320_wind_turbine(context);
+            TestAircraft::new(context, turbine)
+        });
+
+        test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
+
+        test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 5000.);
 
         test_bed.write_by_name("AIRSPEED TRUE", 30.);
 
@@ -546,6 +717,26 @@ mod tests {
             Length::new::<meter>(1.6256 / 2.),
             RPM_GOVERNOR_BREAKPTS,
             PROP_ALPHA_MAP,
+            0.2,
+            4.,
+            0.2,
+        )
+    }
+
+    fn a320_wind_turbine(context: &mut InitContext) -> WindTurbine {
+        const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
+            0.0, 1000., 4700.0, 5500.0, 6250.0, 6300.0, 6450.0, 9000.0, 15000.0,
+        ];
+        const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+
+        WindTurbine::new(
+            context,
+            Length::new::<meter>(1.003 / 2.),
+            RPM_GOVERNOR_BREAKPTS,
+            PROP_ALPHA_MAP,
+            0.06,
+            2.,
+            0.12,
         )
     }
 }
