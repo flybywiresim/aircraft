@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-
+import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
@@ -11,11 +11,14 @@ const FailurePhases = {
     FLIGHT: 3,
 };
 
-const activateRandomFailure = () => {
-    const { allFailures, activate } = useFailuresOrchestrator();
+const activateRandomFailure = (allFailures : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>)) => {
     const failureArray = allFailures.map((it) => it.ata);
-    const pick = Math.floor(Math.random() * failureArray.length);
-    activate(pick);
+    if (failureArray && failureArray.length > 0) {
+        const pick = Math.floor(Math.random() * failureArray.length);
+        const pickedFailure = allFailures.find((failure : Failure) => failure.identifier === failureArray[pick]);
+        console.info('Failure triggered: %d "%s"', pick, pickedFailure.name);
+        activate(pickedFailure.identifier);
+    }
 };
 
 export const RandomFailureGenerator = () => {
@@ -24,7 +27,7 @@ export const RandomFailureGenerator = () => {
     const [failurePerTakeOff] = usePersistentNumberProperty('EFB_FAILURES_PER_TAKE_OFF', 1);
     const chanceFailureHighTakeOffRegime = 0.33;
     const chanceFailureMediumTakeOffRegime = 0.40;
-    const [meanTimeToFailureHour] = usePersistentNumberProperty('EFB_FAILURES_PER_HOUR', 12);
+    const [meanTimeToFailureHour] = usePersistentNumberProperty('EFB_MEAN_TIME_TO_FAILURE', 12 / 60);
     const [failureSpeedThreshold, setFailureSpeedThreshold] = useState<number>(-1);
     const [failureAltitudeThreshold, setFailureAltitudeThreshold] = React.useState<number>(-1);
     const minFailureTakeOffSpeed = 30;
@@ -35,6 +38,7 @@ export const RandomFailureGenerator = () => {
     const altitude = Simplane.getAltitudeAboveGround();
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.CLIMB || maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
+    const { allFailures, activate } = useFailuresOrchestrator();
 
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
@@ -80,7 +84,7 @@ export const RandomFailureGenerator = () => {
         if (failureFlightPhase === FailurePhases.TAKEOFF) {
             if ((altitude >= failureAltitudeThreshold && failureAltitudeThreshold !== -1) || (gs >= failureSpeedThreshold && failureSpeedThreshold !== -1)) {
                 console.info('Failure Take-Off triggered');
-                activateRandomFailure();
+                activateRandomFailure(allFailures, activate);
                 setFailureAltitudeThreshold(-1);
                 setFailureSpeedThreshold(-1);
             }
@@ -89,10 +93,11 @@ export const RandomFailureGenerator = () => {
 
     useEffect(() => {
         // MTTF failures
-        if (failureFlightPhase === FailurePhases.FLIGHT) {
-            if (Math.random() < meanTimeToFailureHour * 5 / 3600) {
+        if (failureFlightPhase === FailurePhases.FLIGHT && meanTimeToFailureHour > 0) {
+            const chancePerSecond = 1 / meanTimeToFailureHour / 3600;
+            if (Math.random() < chancePerSecond * 5) {
                 console.info('Failure MTTF triggered');
-                activateRandomFailure(0);
+                activateRandomFailure(allFailures, activate);
             }
         }
     }, [absoluteTime5s]);
