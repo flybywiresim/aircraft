@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
@@ -32,7 +32,9 @@ export const RandomFailureGenerator = () => {
     const [failuresPerHour, setFailuresPerHour] = usePersistentNumberProperty('EFB_FAILURE_PER_HOUR', 5);
     const [maxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
     const [failureTakeOffSpeedThreshold, setFailureTakeOffSpeedThreshold] = useState<number>(-1);
-    const [failureTakeOffAltitudeThreshold, setFailureTakeOffAltitudeThreshold] = React.useState<number>(-1);
+    const [failureTakeOffAltitudeThreshold, setFailureTakeOffAltitudeThreshold] = useState<number>(-1);
+    const [failureClimbAltitudeThreshold, setFailureClimbAltitudeThreshold] = useState<number>(-1);
+    const [failureDescentAltitudeThreshold, setFailureDescentAltitudeThreshold] = useState<number>(-1);
     const minFailureTakeOffSpeed = 30;
     const mediumTakeOffRegimeSpeed = 100;
     const maxFailureTakeOffSpeed = 140;
@@ -42,8 +44,9 @@ export const RandomFailureGenerator = () => {
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
     const { allFailures, activate, changingFailures, activeFailures } = useFailuresOrchestrator();
-    const [failureTime, setFailureTime] = React.useState<number>(-1);
+    const [failureTime, setFailureTime] = useState<number>(-1);
     const takeOffDeltaAltitudeEnd = 5000;
+    const [descentFailureArmed, setDescentFailureArmed] = useState<boolean>(false);
 
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
@@ -85,7 +88,12 @@ export const RandomFailureGenerator = () => {
     }, [failureFlightPhase]);
 
     // Remove once settings implemented
-    useEffect(() => setFailuresPerHour(6));
+    useEffect(() => {
+        setFailuresPerHour(0);
+        setFailureTime(1 * 1000 + absoluteTime500ms);
+        setFailureDescentAltitudeThreshold(altitude + 6000);
+        setFailureClimbAltitudeThreshold(altitude + 6000);
+    }, []);
 
     // to be verifier changing doesn't mean active but not critical
     const totalActiveFailures = changingFailures.size + activeFailures.size;
@@ -103,20 +111,38 @@ export const RandomFailureGenerator = () => {
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        // MTTF failures
-        if (failureFlightPhase === FailurePhases.FLIGHT && failuresPerHour > 0) {
-            const chancePerSecond = failuresPerHour / 3600;
-            const rollDice = Math.random();
-            console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
-            if (rollDice < chancePerSecond * 5) {
-                console.info('Failure MTTF triggered');
-                if (totalActiveFailures < maxFailuresAtOnce) activateRandomFailure(allFailures, activate);
+        if (totalActiveFailures < maxFailuresAtOnce) {
+            // MTTF failures
+            if (failureFlightPhase === FailurePhases.FLIGHT && failuresPerHour > 0) {
+                const chancePerSecond = failuresPerHour / 3600;
+                const rollDice = Math.random();
+                console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
+                if (rollDice < chancePerSecond * 5) {
+                    console.info('Failure MTTF triggered');
+                    activateRandomFailure(allFailures, activate);
+                }
             }
-        }
-        // Timer based failures
-        if (absoluteTime5s > failureTime && failureTime !== -1) {
-            if (totalActiveFailures < maxFailuresAtOnce) activateRandomFailure(allFailures, activate);
-            setFailureTime(-1);
+            // Timer based failures
+            if (absoluteTime5s > failureTime && failureTime !== -1) {
+                console.info('Timer based failure triggered');
+                activateRandomFailure(allFailures, activate);
+                setFailureTime(-1);
+            }
+            // Climb Altitude based failures
+            if (altitude > failureClimbAltitudeThreshold && failureClimbAltitudeThreshold !== -1) {
+                console.info('Climb altitude failure triggered');
+                activateRandomFailure(allFailures, activate);
+                setFailureClimbAltitudeThreshold(-1);
+            }
+            // Descent altitude based failures
+            if (failureDescentAltitudeThreshold !== -1) {
+                if (altitude > failureDescentAltitudeThreshold + 100 && !descentFailureArmed) setDescentFailureArmed(true);
+                if (altitude < failureDescentAltitudeThreshold && descentFailureArmed) {
+                    console.info('Descent altitude failure triggered');
+                    activateRandomFailure(allFailures, activate);
+                    setFailureDescentAltitudeThreshold(-1);
+                }
+            }
         }
     }, [absoluteTime5s]);
 };
