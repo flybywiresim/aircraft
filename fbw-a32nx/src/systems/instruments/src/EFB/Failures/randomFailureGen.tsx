@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
-const FlightPhases = {
-    PREFLIGHT: 0,
+const FailurePhases = {
+    DORMANT: 0,
     TAKEOFF: 1,
-    CLIMB: 2,
-    CRUISE: 3,
-    DESCENT: 4,
-    APPROACH: 5,
-    GOAROUND: 6,
-    DONE: 7,
+    INITIALCLIMB: 2,
+    FLIGHT: 3,
 };
 
 export const RandomFailureGenerator = () => {
@@ -22,10 +18,8 @@ export const RandomFailureGenerator = () => {
     const chanceFailureHighTakeOffRegime = 0.33;
     const chanceFailureMediumTakeOffRegime = 0.40;
     const [meanTimeToFailureHour] = usePersistentNumberProperty('EFB_FAILURES_PER_HOUR', 12);
-    const [runWayAltitude, setRunWayAltitude] = useState('EFB_RUNWAY_ALTITUDE_MEMORY', 0);
-    const [failureSpeedThreshold, setFailureSpeedThreshold] = useState('EFB_FAILURE_SPEED_THRESHOLD', 1000);
-    const [failureAltitudeThreshold, setFailureAltitudeThreshold] = useState('EFB_FAILURE_ALTITUDE_THRESHOLD', 0);
-    const fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
+    const [failureSpeedThreshold, setFailureSpeedThreshold] = useState<number>(-1);
+    const [failureAltitudeThreshold, setFailureAltitudeThreshold] = React.useState<number>(-1);
     const minFailureTakeOffSpeed = 30;
     const mediumTakeOffRegimeSpeed = 100;
     const maxFailureTakeOffSpeed = 140;
@@ -33,11 +27,22 @@ export const RandomFailureGenerator = () => {
     const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
     const altitude = Simplane.getAltitudeAboveGround();
     const { activate } = useFailuresOrchestrator();
+    const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
+    const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.CLIMB || maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
+
+    const failureFlightPhase = useMemo(() => {
+        if (isOnGround) {
+            if (throttleTakeOff) return FailurePhases.TAKEOFF;
+            return FailurePhases.DORMANT;
+        }
+        if (altitude < failureAltitudeThreshold) return FailurePhases.INITIALCLIMB;
+        return FailurePhases.FLIGHT;
+    }, [throttleTakeOff, isOnGround, gs, failureAltitudeThreshold]);
 
     useEffect(() => {
-        console.info('flight phase: %s', fwcFlightPhase);
+        console.info('Failure phase: %s', failureFlightPhase);
         // set the thresholds once per start of takeoff
-        if (fwcFlightPhase === FlightPhases.TAKEOFF) {
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
             if (Math.random() < failurePerTakeOff) {
                 console.info('A failure will occur during this Take-Off');
                 const rolledDice = Math.random();
@@ -59,24 +64,25 @@ export const RandomFailureGenerator = () => {
                 }
             }
         }
-    }, [fwcFlightPhase]);
+    }, [failureFlightPhase]);
 
     useEffect(() => {
-        if (fwcFlightPhase === FlightPhases.PREFLIGHT) {
-            setRunWayAltitude(altitude);
-        } else if (fwcFlightPhase === FlightPhases.TAKEOFF || fwcFlightPhase === FlightPhases.CLIMB) {
-            if ((altitude >= failureAltitudeThreshold || gs >= failureSpeedThreshold) && (failureAltitudeThreshold !== -1 || failureSpeedThreshold !== -1)) {
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            if ((altitude >= failureAltitudeThreshold && failureAltitudeThreshold !== -1) || (gs >= failureSpeedThreshold && failureSpeedThreshold !== -1)) {
                 console.info('Failure Take-Off triggered');
                 activate(0);
                 setFailureAltitudeThreshold(-1);
                 setFailureSpeedThreshold(-1);
             }
+        } else {
+            setFailureAltitudeThreshold(-1);
+            setFailureSpeedThreshold(-1);
         }
     }, [absoluteTime1s]);
 
     useEffect(() => {
-        if (fwcFlightPhase === FlightPhases.CRUISE || fwcFlightPhase === FlightPhases.DESCENT || fwcFlightPhase === FlightPhases.APPROACH || fwcFlightPhase === FlightPhases.GOAROUND) {
-            if (Math.random() > meanTimeToFailureHour * 5 / 3600) {
+        if (failureFlightPhase === FailurePhases.FLIGHT) {
+            if (Math.random() < meanTimeToFailureHour * 5 / 3600) {
                 console.info('Failure MTTF triggered');
                 activate(0);
             }
