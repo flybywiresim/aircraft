@@ -45,11 +45,11 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
         Self {
             is_initialised: false,
             previous_exterior_pressure: BoundedVecDeque::from_iter(
-                vec![Pressure::new::<hectopascal>(1013.25); 20],
+                [Pressure::new::<hectopascal>(1013.25); 20],
                 20,
             ),
             filtered_exterior_pressure: Pressure::new::<hectopascal>(1013.25),
-            previous_flow_in: BoundedVecDeque::from_iter(vec![MassRate::default(); 200], 200),
+            previous_flow_in: BoundedVecDeque::from_iter([MassRate::default(); 200], 200),
             filtered_flow_in: MassRate::default(),
 
             air_in: Air::new(),
@@ -97,7 +97,7 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             .set_temperature(air_conditioning_system.duct_temperature().iter().average());
 
         // Calculate zone temperatures
-        let flow_rate_per_cubic_meter: MassRate =
+        let flow_rate_per_cubic_meter =
             self.air_in.flow_rate() / (C::CABIN_VOLUME_CUBIC_METER + C::COCKPIT_VOLUME_CUBIC_METER);
 
         for zone in self.cabin_zones.iter_mut() {
@@ -115,8 +115,6 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             .cabin_zones
             .iter()
             .map(|zone| zone.zone_air_temperature())
-            .collect::<Vec<ThermodynamicTemperature>>()
-            .iter()
             .average();
 
         // Calculate flow out properties
@@ -258,7 +256,7 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
         let pressure_ratio =
             (self.filtered_exterior_pressure / self.internal_air.pressure()).get::<ratio>();
 
-        let flow_coefficient: f64 = self.flow_coefficient_calculation(pressure_ratio);
+        let flow_coefficient = self.flow_coefficient_calculation(pressure_ratio);
 
         if pressure_ratio < TRANSONIC_PR_VALUE {
             flow_coefficient
@@ -291,11 +289,10 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinSimulation
     for CabinAirSimulation<C, ZONES>
 {
     fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        let mut cabin_temperature_vector = Vec::new();
-        for zone in self.cabin_zones.iter() {
-            cabin_temperature_vector.append(&mut zone.cabin_temperature())
-        }
-        cabin_temperature_vector
+        self.cabin_zones
+            .iter()
+            .flat_map(|zone| zone.cabin_temperature())
+            .collect()
     }
 
     fn exterior_pressure(&self) -> Pressure {
@@ -329,7 +326,7 @@ pub struct CabinZone<C> {
 
 impl<C: PressurizationConstants> CabinZone<C> {
     pub fn new(context: &mut InitContext, zone_id: &ZoneType) -> Self {
-        let (passengers, zone_volume): (u8, Volume) = if matches!(zone_id, &ZoneType::Cockpit) {
+        let (passengers, zone_volume) = if matches!(zone_id, &ZoneType::Cockpit) {
             (2, Volume::new::<cubic_meter>(C::COCKPIT_VOLUME_CUBIC_METER))
         } else {
             (0, Volume::new::<cubic_meter>(C::CABIN_VOLUME_CUBIC_METER))
@@ -689,7 +686,6 @@ mod cabin_air_tests {
         }
     }
 
-    #[derive(Clone, Copy)]
     struct TestConstants;
 
     impl PressurizationConstants for TestConstants {

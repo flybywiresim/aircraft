@@ -89,11 +89,11 @@ impl OutflowValveMotor {
     fn update(&mut self, actuator: &impl ControllerSignal<OutflowValveSignal>, open_amount: Ratio) {
         self.open_amount = open_amount;
 
-        if let Some(target_open) = actuator.signal() {
-            self.target_open = target_open.target_open_amount()
+        self.target_open = if let Some(target_open) = actuator.signal() {
+            target_open.target_open_amount()
         } else {
-            self.target_open = self.open_amount;
-        }
+            self.open_amount
+        };
     }
 }
 
@@ -208,6 +208,8 @@ impl PressureValve {
 
 #[cfg(test)]
 mod pressure_valve_tests {
+    use ntest::assert_about_eq;
+
     use super::*;
     use crate::electrical::test::TestElectricitySource;
     use crate::electrical::{ElectricalBus, Electricity};
@@ -354,9 +356,10 @@ mod pressure_valve_tests {
 
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(
-            (test_bed.query(|a| a.valve_open_amount().get::<percent>()) - 100.).abs()
-                < error_margin
+        assert_about_eq!(
+            test_bed.query(|a| a.valve_open_amount().get::<percent>()),
+            100.,
+            error_margin
         );
     }
 
@@ -407,10 +410,7 @@ mod pressure_valve_tests {
         test_bed.command(|a| a.command_valve_close());
         test_bed.run();
 
-        assert_eq!(
-            test_bed.query(|a| a.valve_open_amount()),
-            Ratio::new::<percent>(0.)
-        );
+        assert_eq!(test_bed.query(|a| a.valve_open_amount()), Ratio::default());
     }
 
     #[test]

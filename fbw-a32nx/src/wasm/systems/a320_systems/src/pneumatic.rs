@@ -1456,7 +1456,7 @@ mod tests {
         }
     }
 
-    struct TestCabin {}
+    struct TestCabin;
     impl TestCabin {
         fn new() -> Self {
             Self {}
@@ -1493,7 +1493,7 @@ mod tests {
         }
     }
 
-    struct TestPressurization {}
+    struct TestPressurization;
     impl TestPressurization {
         fn new() -> Self {
             Self {}

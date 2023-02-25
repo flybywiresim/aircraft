@@ -151,12 +151,12 @@ impl A320Cabin {
         let passenger_rows_id = [
             None,
             Some(vec![
-                context.get_identifier(format!("PAX_TOTAL_ROWS_{}_{}", 1, 6)),
-                context.get_identifier(format!("PAX_TOTAL_ROWS_{}_{}", 7, 13)),
+                context.get_identifier("PAX_TOTAL_ROWS_1_6".to_owned()),
+                context.get_identifier("PAX_TOTAL_ROWS_7_13".to_owned()),
             ]),
             Some(vec![
-                context.get_identifier(format!("PAX_TOTAL_ROWS_{}_{}", 14, 21)),
-                context.get_identifier(format!("PAX_TOTAL_ROWS_{}_{}", 22, 29)),
+                context.get_identifier("PAX_TOTAL_ROWS_14_21".to_owned()),
+                context.get_identifier("PAX_TOTAL_ROWS_22_29".to_owned()),
             ]),
         ];
 
@@ -220,14 +220,13 @@ impl SimulationElement for A320Cabin {
         let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
         self.fwd_door_is_open = fwd_door_read > Ratio::default();
 
-        for (id, variable) in self.passenger_rows_id.iter().enumerate() {
+        for (zone_sum_passengers, variable) in self
+            .number_of_passengers
+            .iter_mut()
+            .zip(&self.passenger_rows_id)
+        {
             if let Some(var) = variable {
-                let mut zone_sum_passengers: u8 = 0;
-                for v in var.iter() {
-                    let passengers: u8 = reader.read(v);
-                    zone_sum_passengers += passengers;
-                }
-                self.number_of_passengers[id] = zone_sum_passengers;
+                *zone_sum_passengers = var.iter().map(|v| Read::<u8>::read(reader, v)).sum();
             }
         }
     }
@@ -252,10 +251,7 @@ struct A320PressurizationSystem {
 impl A320PressurizationSystem {
     pub fn new(context: &mut InitContext) -> Self {
         let random = random_number();
-        let mut active: usize = 1;
-        if random % 2 == 0 {
-            active = 2
-        }
+        let active = 2 - (random % 2);
 
         Self {
             active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
@@ -270,10 +266,10 @@ impl A320PressurizationSystem {
                     ElectricalBusType::DirectCurrent(2),
                 ],
                 vec![ElectricalBusType::DirectCurrentBattery],
-            ); 1],
+            )],
             safety_valve: SafetyValve::new(),
             residual_pressure_controller: ResidualPressureController::new(),
-            active_system: active,
+            active_system: active as usize,
         }
     }
 
@@ -384,7 +380,6 @@ impl SimulationElement for A320PressurizationSystem {
     }
 }
 
-#[derive(Clone, Copy)]
 struct A320PressurizationConstants;
 
 impl PressurizationConstants for A320PressurizationConstants {
@@ -500,7 +495,7 @@ impl ResidualPressureController {
         lgciu_gears_compressed: bool,
         cabin_delta_p: Pressure,
     ) {
-        if outflow_valve_open_amount < Ratio::new::<percent>(100.)
+        self.timer = if outflow_valve_open_amount < Ratio::new::<percent>(100.)
             && is_in_man_mode
             && lgciu_gears_compressed
             && (!(engines
@@ -510,9 +505,9 @@ impl ResidualPressureController {
             && (cabin_delta_p > Pressure::new::<hectopascal>(2.5)
                 || self.timer != Duration::from_secs(0))
         {
-            self.timer += context.delta();
+            self.timer + context.delta()
         } else {
-            self.timer = Duration::from_secs(0);
+            Duration::from_secs(0)
         }
     }
 }
@@ -629,7 +624,7 @@ mod tests {
     impl TestEngineFirePushButtons {
         fn new() -> Self {
             Self {
-                is_released: [false, false],
+                is_released: [false; 2],
             }
         }
     }
@@ -1342,13 +1337,7 @@ mod tests {
                 self.command_ambient_pressure(Pressure::new::<hectopascal>(
                     PRESSURE_CONSTANT - (((i * 1000) as f64) * (KPA_FT)),
                 ));
-                for _ in 1..10 {
-                    self.run();
-                    self.run();
-                    self.run();
-                    self.run();
-                    self.run();
-                }
+                self = self.iterate(45)
             }
             self.command_ambient_pressure(Pressure::new::<hectopascal>(
                 PRESSURE_CONSTANT - final_altitude.get::<foot>() * (KPA_FT),

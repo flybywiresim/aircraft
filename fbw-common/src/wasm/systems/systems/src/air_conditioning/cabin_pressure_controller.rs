@@ -172,8 +172,6 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         self.outflow_valve_open_amount = outflow_valve
             .iter()
             .map(|valve| valve.open_amount())
-            .collect::<Vec<Ratio>>()
-            .iter()
             .average();
         self.safety_valve_open_amount = safety_valve.open_amount();
 
@@ -194,25 +192,13 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         adirs: &impl AdirsToAirCondInterface,
     ) -> (Option<Velocity>, Option<Pressure>) {
         // TODO: Each CPC has a different order for checking the ADIRS
-        let mut adiru_check_order = [1, 2, 3].iter();
-        let adirs_airspeed: Option<Velocity> = loop {
-            let adiru_number = adiru_check_order.next().unwrap_or(&99_usize);
-            if adiru_number == &99_usize {
-                break None;
-            }
-            if let Some(data) = adirs.true_airspeed(*adiru_number).normal_value() {
-                break Some(data);
-            }
-        };
-        let adirs_ambient_pressure: Option<Pressure> = loop {
-            let adiru_number = adiru_check_order.next().unwrap_or(&99_usize);
-            if adiru_number == &99_usize {
-                break None;
-            }
-            if let Some(data) = adirs.ambient_static_pressure(*adiru_number).normal_value() {
-                break Some(data);
-            }
-        };
+        let adiru_check_order = [1, 2, 3];
+        let adirs_airspeed = adiru_check_order
+            .iter()
+            .find_map(|&adiru_number| adirs.true_airspeed(adiru_number).normal_value());
+        let adirs_ambient_pressure = adiru_check_order
+            .iter()
+            .find_map(|&adiru_number| adirs.ambient_static_pressure(adiru_number).normal_value());
         (adirs_airspeed, adirs_ambient_pressure)
     }
 
@@ -254,7 +240,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                     },
                 )
             }
-            Some(PressureScheduleManager::Cruise(_)) => Velocity::new::<foot_per_minute>(0.),
+            Some(PressureScheduleManager::Cruise(_)) => Velocity::default(),
             Some(PressureScheduleManager::DescentInternal(_)) => {
                 let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev(context).get::<foot>();
                 let target_vs_fpm = self.get_int_diff_with_ldg_elev().get::<foot>()
@@ -308,16 +294,9 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         }
 
         // TODO: Each CPC has a different order for checking the ADIRS - CPC1 1-2-3, CPC2 2-1-3
-        let mut adiru_check_order = [1, 2, 3].iter();
-        let altimeter_setting: Option<Pressure> = loop {
-            let adiru_number = adiru_check_order.next().unwrap_or(&99_usize);
-            if adiru_number == &99_usize {
-                break None;
-            }
-            if let Some(data) = adirs.baro_correction(*adiru_number).normal_value() {
-                break Some(data);
-            }
-        };
+        let altimeter_setting = [1, 2, 3]
+            .iter()
+            .find_map(|&adiru_number| adirs.baro_correction(adiru_number).normal_value());
 
         if matches!(
             self.pressure_schedule_manager,
@@ -419,12 +398,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     pub fn cabin_vertical_speed(&self) -> Velocity {
         // When on the ground with outflow valve open, V/S is always zero
         // Vertical speed word range is from -6400 to +6400 fpm (AMM)
-        if matches!(
-            self.pressure_schedule_manager,
-            Some(PressureScheduleManager::Ground(_))
-        ) && self.outflow_valve_open_amount == Ratio::new::<percent>(100.)
-        {
-            Velocity::new::<foot_per_minute>(0.)
+        if self.is_ground() && self.outflow_valve_open_amount == Ratio::new::<percent>(100.) {
+            Velocity::default()
         } else if self.cabin_filtered_vertical_speed.output()
             > Velocity::new::<foot_per_minute>(6400.)
         {

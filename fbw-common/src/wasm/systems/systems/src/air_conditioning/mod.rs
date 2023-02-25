@@ -661,15 +661,12 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         }
         self.outlet_air
             .set_temperature(self.duct_temperature().iter().average());
-        let flow_vector: Vec<f64> = self
+        let total_flow = self
             .trim_air_mixers
             .iter()
-            .map(|tam| tam.outlet_air.flow_rate().get::<kilogram_per_second>())
-            .collect();
-        self.outlet_air
-            .set_flow_rate(MassRate::new::<kilogram_per_second>(
-                flow_vector.iter().sum(),
-            ));
+            .map(|tam| tam.outlet_air.flow_rate())
+            .sum();
+        self.outlet_air.set_flow_rate(total_flow);
         self.outlet_air
             .set_pressure(self.trim_air_outlet_pressure());
     }
@@ -698,8 +695,6 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.trim_air_mixers
             .iter()
             .map(|tam| tam.outlet_air.pressure())
-            .collect::<Vec<Pressure>>()
-            .iter()
             .average()
     }
 

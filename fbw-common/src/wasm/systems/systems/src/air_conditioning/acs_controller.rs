@@ -149,16 +149,9 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
 
     fn ground_speed(&self, adirs: &impl AdirsToAirCondInterface) -> Option<Velocity> {
         // TODO: Verify ADIRU check order
-        let mut adiru_check_order = [1, 2, 3].iter();
-        loop {
-            let adiru_number = adiru_check_order.next().unwrap_or(&99_usize);
-            if adiru_number == &99_usize {
-                return None;
-            }
-            if let Some(data) = adirs.ground_speed(*adiru_number).normal_value() {
-                return Some(data);
-            }
-        }
+        [1, 2, 3]
+            .iter()
+            .find_map(|&adiru_number| adirs.ground_speed(adiru_number).normal_value())
     }
 
     pub(super) fn pack_fault_determination(
@@ -902,7 +895,7 @@ impl<const ZONES: usize, const ENGINES: usize> ControllerSignal<PackFlowValveSig
     fn signal(&self) -> Option<PackFlowValveSignal> {
         // Only send signal to move the valve if the computer is powered
         if !matches!(self.operation_mode, ACSCActiveComputer::None) {
-            let target_open: Ratio = Ratio::new::<ratio>(if self.should_open_fcv {
+            let target_open = Ratio::new::<ratio>(if self.should_open_fcv {
                 self.pid.output()
             } else {
                 0.
@@ -1854,7 +1847,6 @@ mod acs_controller_tests {
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 cabin_air_simulation: TestCabinAirSimulation::new(context),
-                // test_cabin: TestCabin::new(context),
                 trim_air_system: TrimAirSystem::new(
                     context,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1)],
@@ -1973,7 +1965,7 @@ mod acs_controller_tests {
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            let lgciu_gears_compressed = self.lgciu1.compressed() & self.lgciu2.compressed();
+            let lgciu_gears_compressed = self.lgciu1.compressed() && self.lgciu2.compressed();
 
             self.acsc.update(
                 context,
@@ -2060,9 +2052,6 @@ mod acs_controller_tests {
             test_bed.command_ground_speed(Velocity::new::<knot>(0.));
             test_bed.set_indicated_altitude(Length::new::<foot>(0.));
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-            // test_bed.command_measured_temperature(
-            //     [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
-            // );
             test_bed.command_pax_quantity(0);
             test_bed.command_pack_flow_selector_position(1);
 
