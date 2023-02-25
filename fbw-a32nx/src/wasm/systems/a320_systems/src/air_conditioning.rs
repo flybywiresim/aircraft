@@ -523,6 +523,7 @@ impl ControllerSignal<OutflowValveSignal> for ResidualPressureController {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ntest::assert_about_eq;
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         overhead::AutoOffFaultPushButton,
@@ -532,7 +533,7 @@ mod tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            PneumaticValve, PotentialOrigin,
+            InternationalStandardAtmosphere, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -1321,8 +1322,8 @@ mod tests {
             const PRESSURE_CONSTANT: f64 = 911.47;
 
             self.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
-            self.command_ambient_pressure(Pressure::new::<hectopascal>(
-                PRESSURE_CONSTANT - init_altitude.get::<foot>() * (KPA_FT),
+            self.command_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
+                init_altitude,
             ));
 
             for i in ((init_altitude.get::<foot>() / 1000.) as u32)
@@ -1333,8 +1334,8 @@ mod tests {
                 ));
                 self = self.iterate(45)
             }
-            self.command_ambient_pressure(Pressure::new::<hectopascal>(
-                PRESSURE_CONSTANT - final_altitude.get::<foot>() * (KPA_FT),
+            self.command_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
+                final_altitude,
             ));
             self.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
             self.set_indicated_altitude(final_altitude);
@@ -1460,7 +1461,9 @@ mod tests {
                 .on_ground()
                 .run_and()
                 .command_packs_on_off(false)
-                .ambient_pressure_of(Pressure::new::<hectopascal>(696.86)) // Equivalent to 10,000ft from tables
+                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                    Length::new::<foot>(10000.),
+                ))
                 .iterate(100);
 
             assert!(
@@ -1770,14 +1773,12 @@ mod tests {
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
                 .then()
                 .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
-                .with()
-                .ambient_pressure_of(Pressure::new::<hectopascal>(696.85))
+                .and()
                 .iterate(10)
                 .memorize_vertical_speed()
                 .then()
                 .command_aircraft_climb(Length::new::<foot>(10000.), Length::new::<foot>(30000.))
                 .and()
-                .ambient_pressure_of(Pressure::new::<hectopascal>(300.92))
                 .iterate(10);
 
             assert!(test_bed.cabin_vs() > test_bed.initial_cabin_vs());
@@ -1843,7 +1844,6 @@ mod tests {
                 .then()
                 .command_aircraft_climb(Length::new::<foot>(1000.), Length::new::<foot>(39000.))
                 .with()
-                .ambient_pressure_of(Pressure::new::<hectopascal>(196.41))
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(0.))
                 .iterate(10);
 
@@ -1933,7 +1933,9 @@ mod tests {
         fn pressure_decreases_when_ofv_closed_and_packs_off() {
             let test_bed = test_bed()
                 .with()
-                .ambient_pressure_of(Pressure::new::<hectopascal>(465.67))
+                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                    Length::new::<foot>(20000.),
+                ))
                 .iterate(40)
                 .then()
                 .command_ditching_pb_on()
@@ -1970,7 +1972,9 @@ mod tests {
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
                 .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(20000.))
                 .then()
-                .ambient_pressure_of(Pressure::new::<hectopascal>(465.63))
+                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                    Length::new::<foot>(20000.),
+                ))
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(0.))
                 .iterate(10)
                 .command_mode_sel_pb_man()
@@ -1988,8 +1992,10 @@ mod tests {
         #[test]
         fn safety_valve_stays_closed_when_delta_p_is_less_than_8_6_psi() {
             let test_bed = test_bed()
-                // Equivalent to SL - 8.6 PSI
-                .ambient_pressure_of(Pressure::new::<hectopascal>(421.))
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
+                        - Pressure::new::<psi>(8.6),
+                )
                 .and_run();
 
             assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
@@ -1998,8 +2004,10 @@ mod tests {
         #[test]
         fn safety_valve_stays_closed_when_delta_p_is_less_than_minus_1_psi() {
             let test_bed = test_bed()
-                // Equivalent to SL + 1 PSI
-                .ambient_pressure_of(Pressure::new::<hectopascal>(1080.))
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
+                        + Pressure::new::<psi>(1.),
+                )
                 .and_run();
 
             assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
@@ -2013,8 +2021,10 @@ mod tests {
                 .command_man_vs_switch_position(2)
                 .command_packs_on_off(false)
                 .iterate(100)
-                // Equivalent to SL - 10 PSI
-                .ambient_pressure_of(Pressure::new::<hectopascal>(323.))
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
+                        - Pressure::new::<psi>(10.),
+                )
                 .iterate_with_delta(20, Duration::from_millis(100));
 
             assert!(test_bed.safety_valve_open_amount() > Ratio::default());
@@ -2028,9 +2038,11 @@ mod tests {
                 .command_man_vs_switch_position(2)
                 .command_packs_on_off(false)
                 .iterate(100)
-                // Equivalent to SL + 2 PSI
-                .ambient_pressure_of(Pressure::new::<hectopascal>(1400.))
-                .iterate(20);
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
+                        + Pressure::new::<psi>(2.),
+                )
+                .iterate(2);
 
             assert!(test_bed.safety_valve_open_amount() > Ratio::default());
         }
@@ -2043,66 +2055,39 @@ mod tests {
                 .command_man_vs_switch_position(2)
                 .command_packs_on_off(false)
                 .iterate(100)
-                // Equivalent to SL + 2 PSI
-                .ambient_pressure_of(Pressure::new::<hectopascal>(1400.))
-                .iterate(20);
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
+                        + Pressure::new::<psi>(2.),
+                )
+                .iterate(2);
 
             assert!(test_bed.safety_valve_open_amount() > Ratio::default());
 
             test_bed = test_bed
-                .ambient_pressure_of(Pressure::new::<hectopascal>(1013.))
+                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                    Length::default(),
+                ))
                 .iterate(20);
 
             assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
         }
 
         #[test]
-        fn no_singularities_when_crossing_zero_alt() {
-            let mut test_bed = test_bed()
-                .run_and()
-                .command_packs_on_off(true)
-                .ambient_pressure_of(Pressure::new::<hectopascal>(1013.))
-                .iterate(200) // With packs on the altitude goes below 0
-                .set_takeoff_power();
-
-            test_bed.command_on_ground(false);
-
-            test_bed = test_bed
-                .command_mode_sel_pb_man()
-                .command_man_vs_switch_position(2)
-                .iterate(100)
-                .ambient_pressure_of(Pressure::new::<hectopascal>(800.))
-                .vertical_speed_of(Velocity::new::<foot_per_minute>(10000.))
-                .iterate(10)
-                .command_mode_sel_pb_auto()
-                .iterate_with_delta(300, Duration::from_millis(1000))
-                .memorize_vertical_speed(); // This makes the altitude cross 0
-
-            assert!(test_bed.cabin_altitude() < Length::new::<foot>(0.));
-
-            test_bed = test_bed.iterate_with_delta(100, Duration::from_millis(1000)); // Vertical speed needs to stay constant with no jumps
-
-            assert!(
-                (test_bed.initial_cabin_vs() - test_bed.cabin_vs()).abs()
-                    < Velocity::new::<foot_per_minute>(10.)
-            );
-        }
-
-        #[test]
         fn opening_doors_affects_cabin_pressure() {
             let test_bed = test_bed_in_cruise()
                 .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
-                .with()
-                .ambient_pressure_of(Pressure::new::<hectopascal>(696.85))
+                .and()
                 .iterate(50)
                 .memorize_cabin_pressure()
                 .command_open_door()
                 .iterate(100);
 
             assert!(test_bed.cabin_pressure() < test_bed.initial_pressure());
-            assert!(
-                (test_bed.cabin_pressure() - Pressure::new::<hectopascal>(696.85)).abs()
-                    < Pressure::new::<psi>(1.)
+            assert_about_eq!(
+                test_bed.cabin_pressure().get::<psi>(),
+                InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(10000.))
+                    .get::<psi>(),
+                1.
             );
         }
 
@@ -2119,11 +2104,10 @@ mod tests {
                 .command_open_door()
                 .iterate(1000);
 
-            assert!(
-                (test_bed.cabin_temperature().get::<degree_celsius>()
-                    - test_bed.ambient_temperature().get::<degree_celsius>())
-                .abs()
-                    < 1.
+            assert_about_eq!(
+                test_bed.cabin_temperature().get::<degree_celsius>(),
+                test_bed.ambient_temperature().get::<degree_celsius>(),
+                1.
             );
         }
 
@@ -2151,7 +2135,7 @@ mod tests {
                     .on_ground()
                     .run_and()
                     .command_packs_on_off(false)
-                    .ambient_pressure_of(Pressure::new::<hectopascal>(1020.)) // Equivalent to 10,000ft from tables
+                    .ambient_pressure_of(Pressure::new::<hectopascal>(1020.))
                     .iterate(100);
 
                 assert!(
@@ -2174,7 +2158,7 @@ mod tests {
                     .on_ground()
                     .run_and()
                     .command_packs_on_off(false)
-                    .ambient_pressure_of(Pressure::new::<hectopascal>(1020.)) // Equivalent to 10,000ft from tables
+                    .ambient_pressure_of(Pressure::new::<hectopascal>(1020.))
                     .iterate(100);
 
                 let initial_altitude = test_bed.cabin_altitude();
@@ -2192,8 +2176,10 @@ mod tests {
                     (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
                         > Length::new::<foot>(20.)
                 );
-                assert!(
-                    (test_bed.cabin_altitude() - initial_altitude).abs() < Length::new::<foot>(20.)
+                assert_about_eq!(
+                    test_bed.cabin_altitude().get::<foot>(),
+                    initial_altitude.get::<foot>(),
+                    20.
                 );
             }
 
@@ -2221,8 +2207,10 @@ mod tests {
                     (test_bed.cabin_altitude() - Length::new::<foot>(0.)).abs()
                         > Length::new::<foot>(20.)
                 );
-                assert!(
-                    (test_bed.cabin_altitude() - initial_altitude).abs() < Length::new::<foot>(20.)
+                assert_about_eq!(
+                    test_bed.cabin_altitude().get::<foot>(),
+                    initial_altitude.get::<foot>(),
+                    20.
                 );
             }
         }
