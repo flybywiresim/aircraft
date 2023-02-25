@@ -7,6 +7,7 @@ use crate::{
     electrical::Electricity,
     failures::FailureType,
     shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
+    shared::arinc825::{from_arinc825, to_arinc825, Arinc825Word},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 
@@ -636,6 +637,14 @@ pub trait Read<T: Copy> {
         Arinc429Word::new(self.convert(value.0), value.1)
     }
 
+    fn read_arinc825(&mut self, identifier: &VariableIdentifier) -> Arinc825Word<T>
+    where
+        Self: Sized + Reader,
+    {
+        let value = from_arinc825(self.read_f64(identifier));
+        Arinc825Word::new_with_status(self.convert(value.0), value.1)
+    }
+
     fn convert(&mut self, value: f64) -> T;
 }
 
@@ -687,6 +696,14 @@ pub trait Write<T> {
     {
         let value = self.convert(value);
         self.write_f64(identifier, to_arinc429(value, ssm));
+    }
+
+    fn write_arinc825(&mut self, identifier: &VariableIdentifier, value: T, status: u32)
+    where
+        Self: Sized + Writer,
+    {
+        let value = self.convert(value);
+        self.write_f64(identifier, to_arinc825(value, status));
     }
 
     fn convert(&mut self, value: T) -> f64;
