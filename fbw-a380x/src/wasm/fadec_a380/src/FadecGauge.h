@@ -114,6 +114,9 @@ class FadecGauge {
       return false;
     }
 
+      // read simulation data from simconnect
+      simConnectRequestData();
+
     isConnected = true;
 
     return true;
@@ -125,8 +128,7 @@ class FadecGauge {
   /// <returns>True if successful, false otherwise.</returns>
   bool onUpdate(double deltaTime) {
     if (isConnected == true) {
-      // read simulation data from simconnect
-      simConnectRequestData();
+
       simConnectReadData();
       // detect pause
       if ((simulationData.simulationTime == previousSimulationTime) || (simulationData.simulationTime < 0.2)) {
@@ -163,7 +165,7 @@ class FadecGauge {
 
     // request data
     HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataTypesID::SimulationDataTypeId, SIMCONNECT_OBJECT_ID_USER,
-                                                       SIMCONNECT_PERIOD_ONCE);
+                                                       SIMCONNECT_PERIOD_SIM_FRAME);
 
     // check result of data request
     if (result != S_OK) {
