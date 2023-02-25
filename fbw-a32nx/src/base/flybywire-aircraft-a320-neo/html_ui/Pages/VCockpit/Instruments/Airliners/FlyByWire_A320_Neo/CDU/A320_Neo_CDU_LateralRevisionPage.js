@@ -108,9 +108,10 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[2] = () => {
-                const nextLeg = mcdu.flightPlanManager.getWaypoint(waypointIndexFP + 1);
-                if (nextLeg && nextLeg.additionalData.legType >= 12 && nextLeg.additionalData.legType <= 14 /* HA, HF, HM */) {
-                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP + 1);
+                const nextLeg = targetPlan.maybeElementAt(waypointIndexFP + 1);
+
+                if (nextLeg && nextLeg.isDiscontinuity === false && nextLeg.isHX()) {
+                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP + 1, forPlan);
                 } else {
                     CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP, forPlan);
                 }
@@ -119,7 +120,7 @@ class CDULateralRevisionPage {
 
         let enableAltnLabel = "";
         let enableAltnCell = "";
-        if (!isDeparture && inAlternate) {
+        if (!isDeparture && inAlternate) { // TODO this is wrong, should only show in primary flight plan
             enableAltnLabel = "{sp}ENABLE[color]cyan";
             enableAltnCell = "{ALTN[color]cyan";
 
