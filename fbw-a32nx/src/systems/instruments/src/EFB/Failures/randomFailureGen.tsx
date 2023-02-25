@@ -12,7 +12,7 @@ const FailurePhases = {
 };
 
 export const RandomFailureGenerator = () => {
-    const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [failurePerTakeOff] = usePersistentNumberProperty('EFB_FAILURES_PER_TAKE_OFF', 1);
     const chanceFailureHighTakeOffRegime = 0.33;
@@ -63,6 +63,9 @@ export const RandomFailureGenerator = () => {
                     console.info('A failure will occur during this Take-Off at altitude %d', temp);
                 }
             }
+        } else {
+            setFailureAltitudeThreshold(-1);
+            setFailureSpeedThreshold(-1);
         }
     }, [failureFlightPhase]);
 
@@ -74,11 +77,8 @@ export const RandomFailureGenerator = () => {
                 setFailureAltitudeThreshold(-1);
                 setFailureSpeedThreshold(-1);
             }
-        } else {
-            setFailureAltitudeThreshold(-1);
-            setFailureSpeedThreshold(-1);
         }
-    }, [absoluteTime1s]);
+    }, [absoluteTime500ms]);
 
     useEffect(() => {
         if (failureFlightPhase === FailurePhases.FLIGHT) {
