@@ -6,7 +6,7 @@ use std::{cell::Cell, rc::Rc, time::Duration};
 use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
-    payload::{BoardingRate, Cargo, CargoInfo, Pax, PaxInfo},
+    payload::{BoardingRate, Cargo, CargoInfo, GsxState, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -164,17 +164,20 @@ impl SimulationElement for A320BoardingSounds {
         writer.write(&self.pax_ambience_id, self.pax_ambience);
     }
 }
+
 pub struct A320Payload {
     developer_state_id: VariableIdentifier,
     is_boarding_id: VariableIdentifier,
-    is_gsx_enabled_id: VariableIdentifier,
     board_rate_id: VariableIdentifier,
     per_pax_weight_id: VariableIdentifier,
+    is_gsx_enabled_id: VariableIdentifier,
+    gsx_boarding_state_id: VariableIdentifier,
     developer_state: i8,
     is_boarding: bool,
-    is_gsx_enabled: bool,
     board_rate: BoardingRate,
     per_pax_weight: Rc<Cell<Mass>>,
+    is_gsx_enabled: bool,
+    gsx_boarding_state: GsxState,
     pax: Vec<Pax>,
     cargo: Vec<Cargo>,
     boarding_sounds: A320BoardingSounds,
@@ -209,14 +212,16 @@ impl A320Payload {
         A320Payload {
             developer_state_id: context.get_identifier("DEVELOPER_STATE".to_owned()),
             is_boarding_id: context.get_identifier("BOARDING_STARTED_BY_USR".to_owned()),
-            is_gsx_enabled_id: context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
             board_rate_id: context.get_identifier("BOARDING_RATE".to_owned()),
             per_pax_weight_id: context.get_identifier("WB_PER_PAX_WEIGHT".to_owned()),
+            is_gsx_enabled_id: context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
+            gsx_boarding_state_id: context.get_identifier("FSDT_GSX_BOARDING_STATE".to_owned()),
             developer_state: 0,
             is_boarding: false,
-            is_gsx_enabled: false,
             board_rate: BoardingRate::Instant,
             per_pax_weight,
+            is_gsx_enabled: false,
+            gsx_boarding_state: GsxState::None,
             boarding_sounds: A320BoardingSounds::new(
                 context.get_identifier("SOUND_PAX_BOARDING".to_owned()),
                 context.get_identifier("SOUND_PAX_DEBOARDING".to_owned()),
@@ -525,6 +530,7 @@ impl SimulationElement for A320Payload {
         self.is_boarding = reader.read(&self.is_boarding_id);
         self.board_rate = reader.read(&self.board_rate_id);
         self.is_gsx_enabled = reader.read(&self.is_gsx_enabled_id);
+        self.gsx_boarding_state = reader.read(&self.gsx_boarding_state_id);
         self.per_pax_weight
             .replace(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
     }

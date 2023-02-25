@@ -111,8 +111,8 @@ impl<const ROWS: usize> SimulationElement for CabinZone<ROWS> {
         let zone_passengers: u8 = if let Some(rows) = &self.passenger_stations_id {
             let mut zone_sum_passengers: u8 = 0;
             for r in rows.iter() {
-                let PAX_: u64 = reader.read(r);
-                let passengers: u8 = u64::count_ones(PAX_) as u8;
+                let pax: u64 = reader.read(r);
+                let passengers: u8 = u64::count_ones(pax) as u8;
                 zone_sum_passengers += passengers;
             }
             zone_sum_passengers
