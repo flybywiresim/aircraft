@@ -13,17 +13,6 @@ function translateAtsuMessageType(type) {
     }
 }
 
-function fetchTimeValue() {
-    let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-    if (timeValue) {
-        const seconds = Number.parseInt(timeValue);
-        const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
-        timeValue = displayTime.toString();
-        return timeValue.substring(0, 5);
-    }
-    return null;
-}
-
 /**
  *  Converts lbs to kg
  * @param {string | number} value
