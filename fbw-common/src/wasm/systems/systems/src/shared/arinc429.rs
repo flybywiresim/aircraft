@@ -63,7 +63,6 @@ impl From<f64> for Arinc429Word<u32> {
 impl From<Arinc429Word<u32>> for f64 {
     fn from(value: Arinc429Word<u32>) -> f64 {
         let status: u64 = value.ssm.into();
-        // not quite right?
         let int_value: u64 = ((value.value as f32).to_bits() as u64) | status << 32;
 
         int_value as f64
