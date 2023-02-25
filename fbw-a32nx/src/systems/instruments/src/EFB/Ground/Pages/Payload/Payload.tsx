@@ -352,7 +352,7 @@ export const Payload = () => {
     }, [totalPaxDesired, totalPax, totalCargo, totalCargoDesired]);
 
     const calculateBoardingTime = useMemo(() => {
-        // factors taken from flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_Boarding.js line 175+
+        // factors taken from boarding.rs TODO: Simvar
         let boardingRateMultiplier = 0;
         if (boardingRate === 'REAL') {
             boardingRateMultiplier = 5;
@@ -360,7 +360,7 @@ export const Payload = () => {
             boardingRateMultiplier = 1;
         }
 
-        // value taken from flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_Boarding.js line 210
+        // factors taken from boarding.rs TODO: Simvar
         const cargoWeightPerWeightStep = 60;
 
         const differentialPax = Math.abs(totalPaxDesired - totalPax);
@@ -701,7 +701,7 @@ export const Payload = () => {
                                                     )
                                                 )}
                                             </td>
-                                            <td className="px-4 w-20 font-mono font-light whitespace-nowrap text-md">
+                                            <td className="px-4 w-20 font-mono whitespace-nowrap text-md">
                                                 <PayloadValueUnitDisplay value={displayZfw ? zfw : gw} padTo={5} unit={massUnitForDisplay} />
                                             </td>
                                         </tr>
@@ -727,7 +727,7 @@ export const Payload = () => {
                                             </td>
                                             <td>
                                                 <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFWCG')} ${40}%`}>
-                                                    <div className="px-4 font-light whitespace-nowrap text-md">
+                                                    <div className="px-4 font-mono whitespace-nowrap text-md">
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
                                                             <PayloadPercentUnitDisplay value={displayZfw ? zfwDesiredCg : desiredCg} />
@@ -746,7 +746,7 @@ export const Payload = () => {
                                                     </div>
                                                 </TooltipWrapper>
                                             </td>
-                                            <td className="px-4 font-light whitespace-nowrap text-md">
+                                            <td className="px-4 font-mono whitespace-nowrap text-md">
                                                 <PayloadPercentUnitDisplay value={displayZfw ? zfwCg : cg} />
                                             </td>
                                         </tr>
