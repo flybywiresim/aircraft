@@ -52,9 +52,9 @@ class Collection {
                                          EgpwcPresentLat,
                                          EgpwcPresentLong,
                                          EgpwcTerrOnNdRenderingMode,
-                                         Adirs1Altitude,
-                                         Adirs1TrueHeading,
-                                         Adirs1VerticalSpeed,
+                                         EgpwcAltitude,
+                                         EgpwcHeading,
+                                         EgpwcVerticalSpeed,
                                          EgpwcGearIsDown>>
       _aircraftStatus;
   std::shared_ptr<simconnect::LVarObject<EgpwcNdLeftRange,

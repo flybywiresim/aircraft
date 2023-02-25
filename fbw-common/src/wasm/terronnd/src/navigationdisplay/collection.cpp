@@ -21,7 +21,7 @@ Collection::Collection(simconnect::Connection& connection)
   this->_simconnectAircraftStatus->allocateArea(true);
 
   this->_aircraftStatus = connection.lvarObject<EgpwcDestinationLat, EgpwcDestinationLong, EgpwcPresentLat, EgpwcPresentLong,
-                                                EgpwcTerrOnNdRenderingMode, Adirs1Altitude, Adirs1TrueHeading, Adirs1VerticalSpeed,
+                                                EgpwcTerrOnNdRenderingMode, EgpwcAltitude, EgpwcHeading, EgpwcVerticalSpeed,
                                                 EgpwcGearIsDown>();
   this->_aircraftStatus->setUpdateCycleTime(100 * types::millisecond);
   this->_aircraftStatus->setOnChangeCallback([=]() {
