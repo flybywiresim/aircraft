@@ -12,12 +12,15 @@ const FailurePhases = {
 };
 
 const activateRandomFailure = (allFailures : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>)) => {
-    const failureArray = allFailures.map((it) => it.ata);
+    const failureArray = allFailures.map((it) => it.identifier);
     if (failureArray && failureArray.length > 0) {
         const pick = Math.floor(Math.random() * failureArray.length);
-        const pickedFailure = allFailures.find((failure : Failure) => failure.identifier === failureArray[pick]);
-        console.info('Failure triggered: %d "%s"', pick, pickedFailure.name);
-        activate(pickedFailure.identifier);
+        console.info('Failure triggered: %d', failureArray[pick]);
+        const pickedFailure = allFailures.find((failure) => failure.identifier === failureArray[pick]);
+        if (pickedFailure) {
+            console.info(pickedFailure.name);
+            activate(pickedFailure.identifier);
+        }
     }
 };
 
@@ -28,8 +31,9 @@ export const RandomFailureGenerator = () => {
     const chanceFailureHighTakeOffRegime = 0.33;
     const chanceFailureMediumTakeOffRegime = 0.40;
     const [meanTimeToFailureHour] = usePersistentNumberProperty('EFB_MEAN_TIME_TO_FAILURE', 12 / 60);
-    const [failureSpeedThreshold, setFailureSpeedThreshold] = useState<number>(-1);
-    const [failureAltitudeThreshold, setFailureAltitudeThreshold] = React.useState<number>(-1);
+    const [maxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
+    const [failureTakeOffSpeedThreshold, setFailureTakeOffSpeedThreshold] = useState<number>(-1);
+    const [failureTakeOffAltitudeThreshold, setFailureTakeOffAltitudeThreshold] = React.useState<number>(-1);
     const minFailureTakeOffSpeed = 30;
     const mediumTakeOffRegimeSpeed = 100;
     const maxFailureTakeOffSpeed = 140;
@@ -38,16 +42,17 @@ export const RandomFailureGenerator = () => {
     const altitude = Simplane.getAltitudeAboveGround();
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.CLIMB || maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
-    const { allFailures, activate } = useFailuresOrchestrator();
+    const { allFailures, activate, changingFailures, activeFailures } = useFailuresOrchestrator();
+    const [failureTime, setFailureTime] = React.useState<number>(-1);
 
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
             if (throttleTakeOff) return FailurePhases.TAKEOFF;
             return FailurePhases.DORMANT;
         }
-        if (altitude < failureAltitudeThreshold) return FailurePhases.INITIALCLIMB;
+        if (altitude < failureTakeOffAltitudeThreshold) return FailurePhases.INITIALCLIMB;
         return FailurePhases.FLIGHT;
-    }, [throttleTakeOff, isOnGround, gs, failureAltitudeThreshold]);
+    }, [throttleTakeOff, isOnGround, gs, failureTakeOffAltitudeThreshold]);
 
     useEffect(() => {
         console.info('Failure phase: %s', failureFlightPhase);
@@ -59,34 +64,34 @@ export const RandomFailureGenerator = () => {
                 if (rolledDice < chanceFailureMediumTakeOffRegime) {
                     // Low Take Off speed regime
                     const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
-                    setFailureSpeedThreshold(temp);
+                    setFailureTakeOffSpeedThreshold(temp);
                     console.info('A failure will occur during this Take-Off at the speed of %d', temp);
                 } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
                     // Medium Take Off speed regime
                     const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
-                    setFailureSpeedThreshold(temp);
+                    setFailureTakeOffSpeedThreshold(temp);
                     console.info('A failure will occur during this Take-Off at the speed of %d', temp);
                 } else {
                     // High Take Off speed regime
                     const temp = altitude + 10 + Math.random() * 1000;
-                    setFailureAltitudeThreshold(temp);
+                    setFailureTakeOffAltitudeThreshold(temp);
                     console.info('A failure will occur during this Take-Off at altitude %d', temp);
                 }
             }
         } else {
-            setFailureAltitudeThreshold(-1);
-            setFailureSpeedThreshold(-1);
+            setFailureTakeOffAltitudeThreshold(-1);
+            setFailureTakeOffSpeedThreshold(-1);
         }
     }, [failureFlightPhase]);
 
     useEffect(() => {
         // Take-Off failures
         if (failureFlightPhase === FailurePhases.TAKEOFF) {
-            if ((altitude >= failureAltitudeThreshold && failureAltitudeThreshold !== -1) || (gs >= failureSpeedThreshold && failureSpeedThreshold !== -1)) {
+            if ((altitude >= failureTakeOffAltitudeThreshold && failureTakeOffAltitudeThreshold !== -1) || (gs >= failureTakeOffSpeedThreshold && failureTakeOffSpeedThreshold !== -1)) {
                 console.info('Failure Take-Off triggered');
                 activateRandomFailure(allFailures, activate);
-                setFailureAltitudeThreshold(-1);
-                setFailureSpeedThreshold(-1);
+                setFailureTakeOffAltitudeThreshold(-1);
+                setFailureTakeOffSpeedThreshold(-1);
             }
         }
     }, [absoluteTime500ms]);
@@ -99,6 +104,11 @@ export const RandomFailureGenerator = () => {
                 console.info('Failure MTTF triggered');
                 activateRandomFailure(allFailures, activate);
             }
+        }
+        // Timer based failures
+        if (absoluteTime5s > failureTime && failureTime !== -1) {
+            activateRandomFailure(allFailures, activate);
+            setFailureTime(-1);
         }
     }, [absoluteTime5s]);
 };
