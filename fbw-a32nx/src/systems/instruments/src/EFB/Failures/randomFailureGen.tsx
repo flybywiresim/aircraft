@@ -4,6 +4,28 @@ import { Failure } from '@failures';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
+// keep this template for new failureGenerators
+export const failureGeneratorTEMPLATE = (failureFlightPhase : FailurePhases) => {
+    // FAILURE GENERATOR DESCRIPTION
+    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const { allFailures, activate } = useFailuresOrchestrator();
+
+    useEffect(() => {
+        // FAILURETYPE failures
+        const failureConditionPLACEHOLDER = false;
+        if (failureConditionPLACEHOLDER) {
+            console.info('TEMPLATE failure triggered');
+            activateRandomFailure(allFailures, activate);
+        }
+    }, [absoluteTime5s]);
+
+    useEffect(() => {
+        // failureSettings once per start of takeoff
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            // SPECIFIC INIT HERE
+        }
+    }, [failureFlightPhase]);
+};
 /*
 enum FailureGeneratorType {
     TAKE_OFF= 0,
@@ -14,84 +36,121 @@ enum FailureGeneratorType {
     SPEED_ACCEL= 5,
     SPEED_DECEL= 6,
 }
+*/
 
-export FailureGenerator = () => {
-    generatorType : FailureGeneratorType ;
-
-    fastPaced : boolean ;
-
-    contextData : ContextData;
-
-    static failureGenerators : FailureGenerator[] = new Array<FailureGenerator>(0)
-
-    static Add(newGenerator : FailureGenerator) : void {
-        FailureGenerator.failureGenerators.push(newGenerator);
-    }
-
-    protected constructor(contextData : ContextData, generatorType : FailureGeneratorType, fastPaced : boolean) {
-        this.generatorType = generatorType;
-        this.fastPaced = fastPaced;
-        this.contextData = contextData;
-    }
-
-    runGenerator : () => void
-
-    initializeGenerator : () => void
-}
-
-export class FailureGeneratorAltClimb extends FailureGenerator {
+export const failureGeneratorAltClimb = (failureFlightPhase : FailurePhases) => {
+    // FAILURE GENERATOR DESCRIPTION
+    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const { allFailures, activate } = useFailuresOrchestrator();
+    const altitude = Simplane.getAltitudeAboveGround();
     const [failureClimbAltitudeThreshold, setFailureClimbAltitudeThreshold] = useState<number>(-1);
-    constructor(contextData : ContextData) {
-        super(contextData, FailureGeneratorType.ALT_CLIMB, false);
-    }
 
-    runGenerator = () => {
-        // Climb Altitude based failures
-        if (this.contextData.altitude > failureClimbAltitudeThreshold && failureClimbAltitudeThreshold !== -1) {
+    useEffect(() => {
+    // Climb Altitude based failures
+        if (altitude > failureClimbAltitudeThreshold && failureClimbAltitudeThreshold !== -1) {
             console.info('Climb altitude failure triggered');
-            activateRandomFailure(this.contextData.allFailures, this.contextData.activate);
-            this.contextData.setFailureClimbAltitudeThreshold(-1);
+            activateRandomFailure(allFailures, activate);
+            setFailureClimbAltitudeThreshold(-1);
         }
-    }
+    }, [absoluteTime5s]);
 
-    initialize = () => {
-        this.contextData.setFailureClimbAltitudeThreshold(this.contextData.altitude + 6000);
-    }
-}
+    useEffect(() => {
+        // failureSettings once per start of takeoff
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            setFailureClimbAltitudeThreshold(altitude + 6000);
+        }
+    }, [failureFlightPhase]);
+};
 
-export class FailureGeneratorAltDesc extends FailureGenerator {
-    constructor(contextData : ContextData) {
-        super(contextData, FailureGeneratorType.ALT_DESC, false);
-    }
+export const failureGeneratorAltDesc = (failureFlightPhase : FailurePhases) => {
+    // FAILURE GENERATOR DESCRIPTION
+    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const { allFailures, activate } = useFailuresOrchestrator();
+    const [descentFailureArmed, setDescentFailureArmed] = useState<boolean>(false);
+    const [failureDescentAltitudeThreshold, setFailureDescentAltitudeThreshold] = useState<number>(-1);
+    const altitude = Simplane.getAltitudeAboveGround();
 
-    runGenerator = () => {
-        // Descent altitude based failures
-        const [descentFailureArmed, setDescentFailureArmed] = useState<boolean>(false);
-        const [failureDescentAltitudeThreshold, setFailureDescentAltitudeThreshold] = useState<number>(-1);
+    useEffect(() => {
+    // Descent altitude based failures
         if (failureDescentAltitudeThreshold !== -1) {
-            if (this.contextData.altitude > failureDescentAltitudeThreshold + 100 && !descentFailureArmed) setDescentFailureArmed(true);
-            if (this.contextData.altitude < failureDescentAltitudeThreshold && descentFailureArmed) {
+            if (altitude > failureDescentAltitudeThreshold + 100 && !descentFailureArmed) setDescentFailureArmed(true);
+            if (altitude < failureDescentAltitudeThreshold && descentFailureArmed) {
                 console.info('Descent altitude failure triggered');
                 activateRandomFailure(allFailures, activate);
                 setFailureDescentAltitudeThreshold(-1);
             }
         }
-    }
+    }, [absoluteTime5s]);
 
-    initialize = () => {
-        const [, setFailureDescentAltitudeThreshold] = useState<number>(-1);
-        setFailureDescentAltitudeThreshold(this.contextData.altitude + 6000);
-    }
-}
+    useEffect(() => {
+        // failureSettings once per start of takeoff
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            setFailureDescentAltitudeThreshold(altitude + 6000);
+        }
+    }, [failureFlightPhase]);
+};
 
-export class FailureGeneratorMTTF extends FailureGenerator {
-    constructor(contextData : ContextData) {
-        super(contextData, FailureGeneratorType.MTTF, false);
-    }
+export const failureGeneratorSpeedAccel = (failureFlightPhase : FailurePhases) => {
+    // Speed threshold in acceleration triggers failure once per take off
+    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const { allFailures, activate } = useFailuresOrchestrator();
+    const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+    const [failureAccelSpeedThreshold, setFailureAccelSpeedThreshold] = useState<number>(-1);
 
-    runGenerator = () => {
+    useEffect(() => {
+        // Climb Altitude based failures
+        if (gs > failureAccelSpeedThreshold && failureAccelSpeedThreshold !== -1) {
+            console.info('Speed accel altitude failure triggered');
+            activateRandomFailure(allFailures, activate);
+            setFailureAccelSpeedThreshold(-1);
+        }
+    }, [absoluteTime5s]);
+
+    useEffect(() => {
+        // failureSettings once per start of takeoff
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            setFailureAccelSpeedThreshold(100);
+        }
+    }, [failureFlightPhase]);
+};
+
+export const failureGeneratorSpeedDecel = (failureFlightPhase : FailurePhases) => {
+    // time based trigger after start of thrust
+    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const { allFailures, activate } = useFailuresOrchestrator();
+    const [failureDecelSpeedThreshold, setFailureDecelSpeedThreshold] = useState<number>(-1);
+    const [decelFailureArmed, setDecelFailureArmed] = useState<boolean>(false);
+    const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+
+    useEffect(() => {
+        // Timer based failures
+
+        if (failureDecelSpeedThreshold !== -1) {
+            if (gs > failureDecelSpeedThreshold + 10 && !decelFailureArmed) setDecelFailureArmed(true);
+            if (gs < failureDecelSpeedThreshold && decelFailureArmed) {
+                console.info('Speed decel failure triggered');
+                activateRandomFailure(allFailures, activate);
+                setFailureDecelSpeedThreshold(-1);
+            }
+        }
+    }, [absoluteTime5s]);
+
+    useEffect(() => {
+        // failureSettings once per start of takeoff
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            setFailureDecelSpeedThreshold(190);
+        }
+    }, [failureFlightPhase]);
+};
+
+export const failureGeneratorMTTF = (failureFlightPhase : FailurePhases) => {
+    // Mean Time To Failure based trigger when in flight
+    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const { allFailures, activate } = useFailuresOrchestrator();
+    const [failuresPerHour] = usePersistentNumberProperty('EFB_FAILURE_PER_HOUR', 5);
+
+    useEffect(() => {
         // MTTF failures
-        const [failuresPerHour] = usePersistentNumberProperty('EFB_FAILURE_PER_HOUR', 5);
         if (failureFlightPhase === FailurePhases.FLIGHT && failuresPerHour > 0) {
             const chancePerSecond = failuresPerHour / 3600;
             const rollDice = Math.random();
@@ -101,59 +160,13 @@ export class FailureGeneratorMTTF extends FailureGenerator {
                 activateRandomFailure(allFailures, activate);
             }
         }
-    }
+    }, [absoluteTime5s]);
 
-    initialize = () => {
-    }
-}
+    useEffect(() => {
+        // failureSettings once per start of takeoff
+    }, [failureFlightPhase]);
+};
 
-export class FailureGeneratorSpeedAccel extends FailureGenerator {
-    constructor(contextData : ContextData) {
-        super(contextData, FailureGeneratorType.SPEED_ACCEL, false);
-    }
-
-    runGenerator = () => {
-        // Climb Altitude based failures
-        const [failureAccelSpeedThreshold, setFailureAccelSpeedThreshold] = useState<number>(-1);
-        if (this.contextData.gs > failureAccelSpeedThreshold && failureAccelSpeedThreshold !== -1) {
-            console.info('Speed accel altitude failure triggered');
-            activateRandomFailure(allFailures, activate);
-            setFailureAccelSpeedThreshold(-1);
-        }
-    }
-
-    initialize = () => {
-        const [, setFailureAccelSpeedThreshold] = useState<number>(-1);
-        setFailureAccelSpeedThreshold(100);
-    }
-}
-
-export class FailureGeneratorSpeedDecel extends FailureGenerator {
-    constructor(contextData : ContextData) {
-        super(contextData, FailureGeneratorType.SPEED_DECEL, false);
-    }
-
-    runGenerator = () => {
-        const [failureDecelSpeedThreshold, setFailureDecelSpeedThreshold] = useState<number>(-1);
-        const [decelFailureArmed, setDecelFailureArmed] = useState<boolean>(false);
-
-        if (failureDecelSpeedThreshold !== -1) {
-            if (this.contextData.gs > failureDecelSpeedThreshold + 10 && !decelFailureArmed) setDecelFailureArmed(true);
-            if (this.contextData.gs < failureDecelSpeedThreshold && decelFailureArmed) {
-                console.info('Speed decel failure triggered');
-                activateRandomFailure(this.contextData.allFailures, this.contextData.activate);
-                setFailureDecelSpeedThreshold(-1);
-            }
-        }
-    }
-
-    initialize = () => {
-        const [, setFailureDecelSpeedThreshold] = useState<number>(-1);
-        setFailureDecelSpeedThreshold(190);
-    }
-}
-
-*/
 export const failureGeneratorTakeOff = (failureFlightPhase : FailurePhases) => {
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { allFailures, activate } = useFailuresOrchestrator();
@@ -257,18 +270,15 @@ export const RandomFailureGenerator = () => {
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
     const { changingFailures, activeFailures } = useFailuresOrchestrator();
-
     const failureGenerators : ((failureFlightPhase : FailurePhases) => void)[] = new Array<()=> void>(0);
-    failureGenerators.push(failureGeneratorTimeBased);
-    failureGenerators.push(failureGeneratorTakeOff);
-    /*
-    failureGenerators.push(failureGeneratorAltClimb);
+
+    // failureGenerators.push(failureGeneratorTimeBased);
+    // failureGenerators.push(failureGeneratorTakeOff);
     failureGenerators.push(failureGeneratorAltClimb);
     failureGenerators.push(failureGeneratorAltDesc);
     failureGenerators.push(failureGeneratorMTTF);
     failureGenerators.push(failureGeneratorSpeedAccel);
     failureGenerators.push(failureGeneratorSpeedDecel);
-    */
 
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
