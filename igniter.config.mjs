@@ -30,37 +30,37 @@ export default new TaskOfTasks("all", [
                 "npm run build-a32nx:atsu",
                 [
                     "fbw-a32nx/src/systems/atsu",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu"
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu"
                 ]),
             new ExecTask("failures",
                 "npm run build-a32nx:failures",
                 [
                     "fbw-a32nx/src/systems/failures",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/failures/failures.js"
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/failures/failures.js"
                 ]),
             new ExecTask("fmgc",
                 "npm run build-a32nx:fmgc",
                 [
                     "fbw-a32nx/src/systems/fmgc",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fmgc"
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/fmgc"
                 ]),
             new ExecTask("sentry-client",
                 "npm run build-a32nx:sentry-client",
                 [
                     "fbw-a32nx/src/systems/sentry-client",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/sentry-client"
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client"
                 ]),
             new ExecTask("simbridge-client",
                 "npm run build-a32nx:simbridge-client",
                 [
                     "fbw-a32nx/src/systems/simbridge-client",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/simbridge-client"
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/simbridge-client"
                 ]),
             new ExecTask("tcas",
                 "npm run build-a32nx:tcas",
                 [
                     "fbw-a32nx/src/systems/tcas",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/tcas"
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/tcas"
                 ]),
 
             new TaskOfTasks("instruments", getInstrumentsIgniterTasks(), true),
