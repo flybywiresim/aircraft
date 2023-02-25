@@ -42,6 +42,7 @@
 1. [EWD] Updated EWD to use MSFS Avionics framework - @Eearslya (Eearslya#7831)
 1. [HYD] Realistic randomized yellow accumulator starting state - @Crocket63 (crocket)
 1. [HYD] RAT code refactor to allow for hyd or elec rat design - @Crocket63 (crocket)
+1. [MCDU] Reset of flight plan and stored data on Database switch - @Maverickwoe (Garoomf#4683)
 1. [SYSTEM] Introduce Typescript based systems in VCockpit17 - @svengcz (Sven)
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
