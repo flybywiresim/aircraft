@@ -98,6 +98,21 @@ class Arinc429Word {
   }
 
   /**
+   * @brief Converts a simulator value to the Arinc 429 word
+   * @param simVar The simulator value
+   * @return Arinc429Word<T> The new word definition
+   */
+  static Arinc429Word<T> fromSimVar(double simVar, const T& factor) {
+    Arinc429Word<float> convertedWord = *reinterpret_cast<Arinc429Word<float>*>(&simVar);
+
+    Arinc429Word<T> word;
+    word.setData(convertedWord.value() * factor);
+    word.setSsm(convertedWord.ssm());
+
+    return std::move(word);
+  }
+
+  /**
    * @brief Creates an Arinc 429 word
    * @param data The value of the word
    * @param ssm The sign status
