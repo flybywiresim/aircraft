@@ -15,10 +15,9 @@ const activateRandomFailure = (allFailures : readonly Readonly<Failure>[], activ
     const failureArray = allFailures.map((it) => it.identifier);
     if (failureArray && failureArray.length > 0) {
         const pick = Math.floor(Math.random() * failureArray.length);
-        console.info('Failure triggered: %d', failureArray[pick]);
         const pickedFailure = allFailures.find((failure) => failure.identifier === failureArray[pick]);
         if (pickedFailure) {
-            console.info(pickedFailure.name);
+            console.info('Failure #%d triggered: %s', pickedFailure.identifier, pickedFailure.name);
             activate(pickedFailure.identifier);
         }
     }
@@ -30,7 +29,7 @@ export const RandomFailureGenerator = () => {
     const [failurePerTakeOff] = usePersistentNumberProperty('EFB_FAILURES_PER_TAKE_OFF', 1);
     const chanceFailureHighTakeOffRegime = 0.33;
     const chanceFailureMediumTakeOffRegime = 0.40;
-    const [meanTimeToFailureHour] = usePersistentNumberProperty('EFB_MEAN_TIME_TO_FAILURE', 12 / 60);
+    const [failuresPerHour, setFailuresPerHour] = usePersistentNumberProperty('EFB_FAILURE_PER_HOUR', 5);
     const [maxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
     const [failureTakeOffSpeedThreshold, setFailureTakeOffSpeedThreshold] = useState<number>(-1);
     const [failureTakeOffAltitudeThreshold, setFailureTakeOffAltitudeThreshold] = React.useState<number>(-1);
@@ -41,16 +40,17 @@ export const RandomFailureGenerator = () => {
     const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
     const altitude = Simplane.getAltitudeAboveGround();
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
-    const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.CLIMB || maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
+    const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
     const { allFailures, activate, changingFailures, activeFailures } = useFailuresOrchestrator();
     const [failureTime, setFailureTime] = React.useState<number>(-1);
+    const takeOffDeltaAltitudeEnd = 5000;
 
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
             if (throttleTakeOff) return FailurePhases.TAKEOFF;
             return FailurePhases.DORMANT;
         }
-        if (altitude < failureTakeOffAltitudeThreshold) return FailurePhases.INITIALCLIMB;
+        if (throttleTakeOff) return FailurePhases.INITIALCLIMB;
         return FailurePhases.FLIGHT;
     }, [throttleTakeOff, isOnGround, gs, failureTakeOffAltitudeThreshold]);
 
@@ -73,7 +73,7 @@ export const RandomFailureGenerator = () => {
                     console.info('A failure will occur during this Take-Off at the speed of %d', temp);
                 } else {
                     // High Take Off speed regime
-                    const temp = altitude + 10 + Math.random() * 1000;
+                    const temp = altitude + 10 + Math.random() * takeOffDeltaAltitudeEnd;
                     setFailureTakeOffAltitudeThreshold(temp);
                     console.info('A failure will occur during this Take-Off at altitude %d', temp);
                 }
@@ -84,9 +84,15 @@ export const RandomFailureGenerator = () => {
         }
     }, [failureFlightPhase]);
 
+    // Remove once settings implemented
+    useEffect(() => setFailuresPerHour(6));
+
+    // to be verifier changing doesn't mean active but not critical
+    const totalActiveFailures = changingFailures.size + activeFailures.size;
+
     useEffect(() => {
         // Take-Off failures
-        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+        if (failureFlightPhase === FailurePhases.TAKEOFF || failureFlightPhase === FailurePhases.INITIALCLIMB) {
             if ((altitude >= failureTakeOffAltitudeThreshold && failureTakeOffAltitudeThreshold !== -1) || (gs >= failureTakeOffSpeedThreshold && failureTakeOffSpeedThreshold !== -1)) {
                 console.info('Failure Take-Off triggered');
                 activateRandomFailure(allFailures, activate);
@@ -98,16 +104,18 @@ export const RandomFailureGenerator = () => {
 
     useEffect(() => {
         // MTTF failures
-        if (failureFlightPhase === FailurePhases.FLIGHT && meanTimeToFailureHour > 0) {
-            const chancePerSecond = 1 / meanTimeToFailureHour / 3600;
-            if (Math.random() < chancePerSecond * 5) {
+        if (failureFlightPhase === FailurePhases.FLIGHT && failuresPerHour > 0) {
+            const chancePerSecond = failuresPerHour / 3600;
+            const rollDice = Math.random();
+            console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
+            if (rollDice < chancePerSecond * 5) {
                 console.info('Failure MTTF triggered');
-                activateRandomFailure(allFailures, activate);
+                if (totalActiveFailures < maxFailuresAtOnce) activateRandomFailure(allFailures, activate);
             }
         }
         // Timer based failures
         if (absoluteTime5s > failureTime && failureTime !== -1) {
-            activateRandomFailure(allFailures, activate);
+            if (totalActiveFailures < maxFailuresAtOnce) activateRandomFailure(allFailures, activate);
             setFailureTime(-1);
         }
     }, [absoluteTime5s]);
