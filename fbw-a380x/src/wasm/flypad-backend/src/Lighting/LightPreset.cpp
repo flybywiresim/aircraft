@@ -17,7 +17,7 @@ void LightPreset::onUpdate(__attribute__((unused)) double deltaTime) {
   }
 
   // get aircraft AC power state
-  const bool isAC1powered = (bool)simVars->getElecAC1State();
+  const bool isAC1powered = (bool) simVars->getElecAC1State();
 
   if (isAC1powered) {
     // read the LVAR used to signal loading or saving
@@ -27,7 +27,8 @@ void LightPreset::onUpdate(__attribute__((unused)) double deltaTime) {
     // load becomes priority in case both vars are set.
     if (loadLightingPresetRequest) {
       loadLightingPreset(loadLightingPresetRequest);
-    } else if (saveLightingPresetRequest) {
+    }
+    else if (saveLightingPresetRequest) {
       saveLightingPreset(saveLightingPresetRequest);
     }
 
@@ -46,20 +47,24 @@ void LightPreset::loadLightingPreset(int64_t loadPresetRequest) {
   std::cout << "FLYPAD_BACKEND: Loading preset: " << loadPresetRequest << std::endl;
   if (readFromStore(loadPresetRequest)) {
     applyToAircraft();
-    std::cout << "FLYPAD_BACKEND: Lighting Preset: " << loadPresetRequest << " successfully loaded." << std::endl;
+    std::cout << "FLYPAD_BACKEND: Lighting Preset: " << loadPresetRequest << " successfully loaded."
+              << std::endl;
     return;
   }
-  std::cout << "FLYPAD_BACKEND: Loading Lighting Preset: " << loadPresetRequest << " failed." << std::endl;
+  std::cout << "FLYPAD_BACKEND: Loading Lighting Preset: " << loadPresetRequest << " failed."
+            << std::endl;
 }
 
 void LightPreset::saveLightingPreset(int64_t savePresetRequest) {
   std::cout << "FLYPAD_BACKEND: Save to Lighting Preset: " << savePresetRequest << std::endl;
   readFromAircraft();
   if (saveToStore(savePresetRequest)) {
-    std::cout << "FLYPAD_BACKEND: Lighting Preset: " << savePresetRequest << " successfully saved." << std::endl;
+    std::cout << "FLYPAD_BACKEND: Lighting Preset: " << savePresetRequest << " successfully saved."
+              << std::endl;
     return;
   }
-  std::cout << "FLYPAD_BACKEND: Saving Lighting Preset: " << savePresetRequest << " failed." << std::endl;
+  std::cout << "FLYPAD_BACKEND: Saving Lighting Preset: " << savePresetRequest << " failed."
+            << std::endl;
 }
 
 void LightPreset::readFromAircraft() {
@@ -235,9 +240,9 @@ __attribute__((unused)) std::string LightPreset::sprint() const {
   return os.str();
 }
 
-double LightPreset::iniGetOrDefault(const mINI::INIStructure& ini,
-                                    const std::string& section,
-                                    const std::string& key,
+double LightPreset::iniGetOrDefault(const mINI::INIStructure &ini,
+                                    const std::string &section,
+                                    const std::string &key,
                                     const double defaultValue) {
   if (ini.get(section).has(key)) {
     // As MSFS wasm does not support exceptions (try/catch) we can't use
@@ -246,9 +251,11 @@ double LightPreset::iniGetOrDefault(const mINI::INIStructure& ini,
     double value = defaultValue;
     if (input >> value) {
       return value;
-    } else {
+    }
+    else {
       std::cout << "FLYPAD_BACKEND: reading ini value for \""
-                << "[" << section << "] " << key << " = " << ini.get(section).get(key) << "\" failed." << std::endl;
+                << "[" << section << "] " << key << " = " << ini.get(section).get(key)
+                << "\" failed." << std::endl;
     }
   }
   return defaultValue;

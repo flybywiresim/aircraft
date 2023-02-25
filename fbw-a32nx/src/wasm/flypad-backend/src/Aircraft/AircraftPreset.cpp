@@ -40,7 +40,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
       // check if procedure ID exists
       const std::vector<const ProcedureStep*>* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
       if (requestedProcedure == nullptr) {
-        std::cout << "FLYPAD_BACKEND: Preset " << loadAircraftPresetRequest << " not found!" << std::endl;
+        std::cout << "FLYPAD_BACKEND: Preset " << loadAircraftPresetRequest << " not found!"
+                  << std::endl;
         setLoadAircraftPresetRequest(0);
         loadingIsActive = false;
         return;
@@ -55,7 +56,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
       loadingIsActive = true;
       setProgressAircraftPreset(0);
       setProgressAircraftPresetId(0);
-      std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " starting procedure!" << std::endl;
+      std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID
+                << " starting procedure!" << std::endl;
       return;
     }
 
@@ -66,7 +68,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
 
     // check if all procedure steps are done and the procedure is finished
     if (currentStep >= currentProcedure->size()) {
-      std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " done!" << std::endl;
+      std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " done!"
+                << std::endl;
       setProgressAircraftPreset(0);
       setProgressAircraftPresetId(0);
       setLoadAircraftPresetRequest(0);
@@ -99,7 +102,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
       setProgressAircraftPreset(static_cast<double>(currentStep) / currentProcedure->size());
       setProgressAircraftPresetId(currentStepPtr->id);
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
-      std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: " << currentStepPtr->description
+      std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Condition: "
+                << currentStepPtr->description
                 << " (delay between tests: " << currentStepPtr->delayAfter << ")" << std::endl;
       if (static_cast<bool>(fvalue)) {
         currentDelay = 0;
@@ -115,13 +119,15 @@ void AircraftPreset::onUpdate(double deltaTime) {
     svalue = "";
     if (!currentStepPtr->expectedStateCheckCode.empty()) {
 #ifdef DEBUG
-      std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Test: " << currentStepPtr->description << " TEST: \""
+      std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Test: "
+                << currentStepPtr->description << " TEST: \""
                 << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
 #endif
       execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
       if (static_cast<bool>(fvalue)) {
 #ifdef DEBUG
-        std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Skipping: " << currentStepPtr->description << " TEST: \""
+        std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Skipping: "
+                  << currentStepPtr->description << " TEST: \""
                   << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
 #endif
 
@@ -136,14 +142,17 @@ void AircraftPreset::onUpdate(double deltaTime) {
     setProgressAircraftPresetId(currentStepPtr->id);
 
     // execute code to set expected state
-    std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Execute: " << currentStepPtr->description
+    std::cout << "FLYPAD_BACKEND: Aircraft Preset Step " << currentStep << " Execute: "
+              << currentStepPtr->description
               << " (delay after: " << currentStepPtr->delayAfter << ")" << std::endl;
     execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
     currentStep++;
 
-  } else if (loadingIsActive) {
+  }
+  else if (loadingIsActive) {
     // request lvar has been set to 0 while we were executing a procedure ==> cancel loading
-    std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " loading cancelled!" << std::endl;
+    std::cout << "FLYPAD_BACKEND: Aircraft Preset " << currentProcedureID << " loading cancelled!"
+              << std::endl;
     loadingIsActive = false;
   }
 }
