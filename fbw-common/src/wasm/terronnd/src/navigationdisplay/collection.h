@@ -10,6 +10,7 @@
 #include "../simconnect/connection.hpp"
 #include "configuration.h"
 #include "display.h"
+#include "../types/quantity.hpp"
 
 namespace navigationdisplay {
 
@@ -19,13 +20,13 @@ namespace navigationdisplay {
 class Collection {
  private:
   struct EgpwcData {
-    types::Arinc429Word<float> destinationLatitude;
-    types::Arinc429Word<float> destinationLongitude;
-    types::Arinc429Word<float> presentLatitude;
-    types::Arinc429Word<float> presentLongitude;
-    types::Arinc429Word<float> altitude;
-    types::Arinc429Word<float> heading;
-    types::Arinc429Word<float> verticalSpeed;
+    types::Arinc429Word<types::Angle> destinationLatitude;
+    types::Arinc429Word<types::Angle> destinationLongitude;
+    types::Arinc429Word<types::Angle> presentLatitude;
+    types::Arinc429Word<types::Angle> presentLongitude;
+    types::Arinc429Word<types::Length> altitude;
+    types::Arinc429Word<types::Angle> heading;
+    types::Arinc429Word<types::Velocity> verticalSpeed;
     bool gearIsDown;
     std::uint8_t terrOnNdRenderingMode;
   };
