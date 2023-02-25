@@ -1,8 +1,8 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 #include "InertialDampener.h"
 #include "Pushback.h"
@@ -57,17 +57,16 @@ void Pushback::onUpdate(double deltaTime) {
   const bool parkBrakeEngaged = isParkingBrakeEngaged();
 
   const FLOAT64 tugCmdSpd = tugCmdSpdFactor * (parkBrakeEngaged ? (SPEED_RATIO / 10) : SPEED_RATIO);
-  set_named_variable_value(tugCommandedSpeed, tugCmdSpd); // debug
+  set_named_variable_value(tugCommandedSpeed, tugCmdSpd);  // debug
 
   const FLOAT64 inertiaSpeed = inertialDampenerPtr->updateSpeed(tugCmdSpd);
-  set_named_variable_value(tugInertiaSpeed, inertiaSpeed); // debug
+  set_named_variable_value(tugInertiaSpeed, inertiaSpeed);  // debug
 
   const FLOAT64 computedHdg = angleAdd(getAircraftTrueHeading(), -50 * getTugCmdHdgFactor());
-  set_named_variable_value(tugCommandedHeading, computedHdg); // debug
+  set_named_variable_value(tugCommandedHeading, computedHdg);  // debug
 
-  const FLOAT64 computedRotationVelocity = sgn<FLOAT64>(tugCmdSpd)
-                                           * getTugCmdHdgFactor()
-                                           * (parkBrakeEngaged ? (TURN_SPEED_RATIO / 10) : TURN_SPEED_RATIO);
+  const FLOAT64 computedRotationVelocity =
+      sgn<FLOAT64>(tugCmdSpd) * getTugCmdHdgFactor() * (parkBrakeEngaged ? (TURN_SPEED_RATIO / 10) : TURN_SPEED_RATIO);
 
   // As we might use the elevator for taxiing we compensate for wind to avoid
   // the aircraft lifting any gears.
@@ -75,27 +74,20 @@ void Pushback::onUpdate(double deltaTime) {
   FLOAT64 movementCounterRotAccel = windCounterRotAccel;
   if (inertiaSpeed > 0) {
     movementCounterRotAccel -= 0.5;
-  }
-  else if (inertiaSpeed < 0) {
+  } else if (inertiaSpeed < 0) {
     movementCounterRotAccel += 1.0;
-  }
-  else {
+  } else {
     movementCounterRotAccel = 0.0;
   }
-  set_named_variable_value(rotXOut, movementCounterRotAccel); // debug
+  set_named_variable_value(rotXOut, movementCounterRotAccel);  // debug
 
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   static const int32_t headingToInt32 = 0xffffffff / 360;
-  const auto convertedComputedHeading = static_cast<int32_t >(static_cast<uint32_t>(computedHdg * headingToInt32));
+  const auto convertedComputedHeading = static_cast<int32_t>(static_cast<uint32_t>(computedHdg * headingToInt32));
 
   // send K:KEY_TUG_HEADING event
-  HRESULT result = SimConnect_TransmitClientEvent(
-    hSimConnect,
-    0,
-    Events::KEY_TUG_HEADING_EVENT,
-    convertedComputedHeading,
-    SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-    SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+  HRESULT result = SimConnect_TransmitClientEvent(hSimConnect, 0, Events::KEY_TUG_HEADING_EVENT, convertedComputedHeading,
+                                                  SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
 
   //  K:KEY_TUG_SPEED - seems to actually do nothing
   //  result &= SimConnect_TransmitClientEvent(hSimConnect,
@@ -107,14 +99,8 @@ void Pushback::onUpdate(double deltaTime) {
   pushbackDataPtr->velBodyZ = inertiaSpeed;
   pushbackDataPtr->rotVelBodyY = computedRotationVelocity;
   pushbackDataPtr->rotAccelBodyX = movementCounterRotAccel;
-  result &= SimConnect_SetDataOnSimObject(
-    hSimConnect,
-    DataStructureIDs::PushbackDataID,
-    SIMCONNECT_OBJECT_ID_USER,
-    0,
-    0,
-    sizeof(*pushbackDataPtr),
-    pushbackDataPtr);
+  result &= SimConnect_SetDataOnSimObject(hSimConnect, DataStructureIDs::PushbackDataID, SIMCONNECT_OBJECT_ID_USER, 0, 0,
+                                          sizeof(*pushbackDataPtr), pushbackDataPtr);
 
   // check result of data request
   if (result != S_OK) {
