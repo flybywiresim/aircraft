@@ -115,7 +115,8 @@ class Display : public DisplayBase {
       this->destroyImage();
 
       if (!this->_ignoreNextFrame && this->_configuration.terrainActive) {
-        this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
+        this->_nanovgImage =
+            nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
         if (this->_nanovgImage == 0) {
           std::cerr << "TERR ON ND: Unable to decode the image from the stream" << std::endl;
         }

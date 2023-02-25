@@ -20,18 +20,23 @@ Collection::Collection(simconnect::Connection& connection)
   this->_simconnectAircraftStatus->defineArea("FBW_SIMBRIDGE_EGPWC_AIRCRAFT_STATUS");
   this->_simconnectAircraftStatus->allocateArea(true);
 
-  this->_aircraftStatus = connection.lvarObject<EgpwcDestinationLat, EgpwcDestinationLong, EgpwcPresentLat, EgpwcPresentLong,
-                                                EgpwcTerrOnNdRenderingMode, EgpwcAltitude, EgpwcHeading, EgpwcVerticalSpeed,
-                                                EgpwcGearIsDown>();
+  this->_aircraftStatus =
+      connection.lvarObject<EgpwcDestinationLat, EgpwcDestinationLong, EgpwcPresentLat, EgpwcPresentLong, EgpwcTerrOnNdRenderingMode,
+                            EgpwcAltitude, EgpwcHeading, EgpwcVerticalSpeed, EgpwcGearIsDown>();
   this->_aircraftStatus->setUpdateCycleTime(100 * types::millisecond);
   this->_aircraftStatus->setOnChangeCallback([=]() {
-    this->_egpwcData.destinationLatitude = types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcDestinationLat>(), types::degree);
-    this->_egpwcData.destinationLongitude = types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcDestinationLong>(), types::degree);
-    this->_egpwcData.presentLatitude = types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcPresentLat>(), types::degree);
-    this->_egpwcData.presentLongitude = types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcPresentLong>(), types::degree);
+    this->_egpwcData.destinationLatitude =
+        types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcDestinationLat>(), types::degree);
+    this->_egpwcData.destinationLongitude =
+        types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcDestinationLong>(), types::degree);
+    this->_egpwcData.presentLatitude =
+        types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcPresentLat>(), types::degree);
+    this->_egpwcData.presentLongitude =
+        types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcPresentLong>(), types::degree);
     this->_egpwcData.altitude = types::Arinc429Word<types::Length>::fromSimVar(this->_aircraftStatus->value<EgpwcAltitude>(), types::feet);
     this->_egpwcData.heading = types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcHeading>(), types::degree);
-    this->_egpwcData.verticalSpeed = types::Arinc429Word<types::Velocity>::fromSimVar(this->_aircraftStatus->value<EgpwcVerticalSpeed>(), types::ftpmin);
+    this->_egpwcData.verticalSpeed =
+        types::Arinc429Word<types::Velocity>::fromSimVar(this->_aircraftStatus->value<EgpwcVerticalSpeed>(), types::ftpmin);
     this->_egpwcData.gearIsDown = static_cast<std::uint8_t>(this->_aircraftStatus->value<EgpwcGearIsDown>()) != 0;
     this->_egpwcData.terrOnNdRenderingMode = static_cast<std::uint8_t>(this->_aircraftStatus->value<EgpwcTerrOnNdRenderingMode>());
 
@@ -113,7 +118,8 @@ void Collection::updateDisplay(FsContext context) {
     this->_simconnectAircraftStatus->data().longitude = this->_egpwcData.presentLongitude.value().convert(types::degree);
     this->_simconnectAircraftStatus->data().altitude = static_cast<std::int32_t>(this->_egpwcData.altitude.value().convert(types::feet));
     this->_simconnectAircraftStatus->data().heading = static_cast<std::int16_t>(this->_egpwcData.heading.value().convert(types::degree));
-    this->_simconnectAircraftStatus->data().verticalSpeed = static_cast<std::int16_t>(this->_egpwcData.verticalSpeed.value().convert(types::ftpmin));
+    this->_simconnectAircraftStatus->data().verticalSpeed =
+        static_cast<std::int16_t>(this->_egpwcData.verticalSpeed.value().convert(types::ftpmin));
     this->_simconnectAircraftStatus->data().gearIsDown = static_cast<std::uint8_t>(this->_egpwcData.gearIsDown);
 
     this->_simconnectAircraftStatus->data().destinationValid =
