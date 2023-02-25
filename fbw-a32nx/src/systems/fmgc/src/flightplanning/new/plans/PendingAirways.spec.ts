@@ -66,7 +66,7 @@ describe('pending airways entry', () => {
 
         FlightPlanService.temporaryInsert();
 
-        const wp1 = (await db.searchFix('TURON'))[0];
+        const wp1 = (await db.searchWaypoint('TURON'))[0];
 
         await FlightPlanService.nextWaypoint(3, wp1);
 
@@ -75,16 +75,16 @@ describe('pending airways entry', () => {
         FlightPlanService.startAirwayEntry(4);
         FlightPlanService.activeOrTemporary.pendingAirways.thenAirway(a1);
 
-        const wp2 = (await db.searchFix('ASDEB'))[0];
+        const wp2 = (await db.searchWaypoint('ASDEB'))[0];
 
         FlightPlanService.activeOrTemporary.pendingAirways.thenTo(wp2);
         FlightPlanService.activeOrTemporary.pendingAirways.finalize();
 
-        const wp3 = (await db.searchFix('KORUL'))[0];
+        const wp3 = (await db.searchWaypoint('KORUL'))[0];
 
         await FlightPlanService.nextWaypoint(4, wp3);
 
-        const wp4 = (await db.searchFix('TALIG'))[0];
+        const wp4 = (await db.searchWaypoint('TALIG'))[0];
 
         await FlightPlanService.nextWaypoint(5, wp4);
 
@@ -105,7 +105,7 @@ describe('pending airways entry', () => {
 
         FlightPlanService.activeOrTemporary.pendingAirways.thenAirway(a5);
 
-        const wp5 = (await db.searchFix('MONTY'))[2];
+        const wp5 = (await db.searchWaypoint('MONTY'))[2];
 
         FlightPlanService.activeOrTemporary.pendingAirways.thenTo(wp5);
         FlightPlanService.activeOrTemporary.pendingAirways.finalize();
@@ -130,7 +130,7 @@ describe('pending airways entry', () => {
 
         FlightPlanService.active.pendingAirways.thenAirway(airway);
 
-        const to = (await db.searchFix('DVR'))[0];
+        const to = (await db.searchWaypoint('DVR'))[0];
 
         FlightPlanService.active.pendingAirways.thenTo(to);
 
@@ -138,7 +138,7 @@ describe('pending airways entry', () => {
 
         FlightPlanService.active.pendingAirways.thenAirway(airway2);
 
-        const to2 = (await db.searchFix('KONAN'))[1];
+        const to2 = (await db.searchWaypoint('KONAN'))[1];
 
         FlightPlanService.active.pendingAirways.thenTo(to2);
 
@@ -146,18 +146,18 @@ describe('pending airways entry', () => {
 
         FlightPlanService.active.pendingAirways.thenAirway(airway3);
 
-        const to3 = (await db.searchFix('FERDI'))[0];
+        const to3 = (await db.searchWaypoint('FERDI'))[0];
 
         FlightPlanService.active.pendingAirways.thenTo(to3);
 
-        const to5 = (await db.searchFix('MATUG'))[0];
-        const to6 = (await db.searchFix('GUBAX'))[0];
-        const to7 = (await db.searchFix('BOREP'))[0];
-        const to8 = (await db.searchFix('ENITA'))[0];
-        const to9 = (await db.searchFix('PEPIK'))[0];
-        const to10 = (await db.searchFix('BALAP'))[0];
-        const to11 = (await db.searchFix('ARGES'))[0];
-        const to12 = (await db.searchFix('ARTAT'))[0];
+        const to5 = (await db.searchWaypoint('MATUG'))[0];
+        const to6 = (await db.searchWaypoint('GUBAX'))[0];
+        const to7 = (await db.searchWaypoint('BOREP'))[0];
+        const to8 = (await db.searchWaypoint('ENITA'))[0];
+        const to9 = (await db.searchWaypoint('PEPIK'))[0];
+        const to10 = (await db.searchWaypoint('BALAP'))[0];
+        const to11 = (await db.searchWaypoint('ARGES'))[0];
+        const to12 = (await db.searchWaypoint('ARTAT'))[0];
 
         FlightPlanService.active.pendingAirways.thenTo(to5);
         FlightPlanService.active.pendingAirways.thenTo(to6);
@@ -172,7 +172,7 @@ describe('pending airways entry', () => {
 
         FlightPlanService.active.pendingAirways.thenAirway(airway4);
 
-        const to13 = (await db.searchFix('ERGUN'))[0];
+        const to13 = (await db.searchWaypoint('ERGUN'))[0];
 
         FlightPlanService.active.pendingAirways.thenTo(to13);
 
