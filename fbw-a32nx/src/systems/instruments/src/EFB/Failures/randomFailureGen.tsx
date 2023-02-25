@@ -11,6 +11,13 @@ const FailurePhases = {
     FLIGHT: 3,
 };
 
+const activateRandomFailure = () => {
+    const { allFailures, activate } = useFailuresOrchestrator();
+    const failureArray = allFailures.map((it) => it.ata);
+    const pick = Math.floor(Math.random() * failureArray.length);
+    activate(pick);
+};
+
 export const RandomFailureGenerator = () => {
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
@@ -26,7 +33,6 @@ export const RandomFailureGenerator = () => {
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
     const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
     const altitude = Simplane.getAltitudeAboveGround();
-    const { activate } = useFailuresOrchestrator();
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.CLIMB || maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
 
@@ -70,10 +76,11 @@ export const RandomFailureGenerator = () => {
     }, [failureFlightPhase]);
 
     useEffect(() => {
+        // Take-Off failures
         if (failureFlightPhase === FailurePhases.TAKEOFF) {
             if ((altitude >= failureAltitudeThreshold && failureAltitudeThreshold !== -1) || (gs >= failureSpeedThreshold && failureSpeedThreshold !== -1)) {
                 console.info('Failure Take-Off triggered');
-                activate(0);
+                activateRandomFailure();
                 setFailureAltitudeThreshold(-1);
                 setFailureSpeedThreshold(-1);
             }
@@ -81,10 +88,11 @@ export const RandomFailureGenerator = () => {
     }, [absoluteTime500ms]);
 
     useEffect(() => {
+        // MTTF failures
         if (failureFlightPhase === FailurePhases.FLIGHT) {
             if (Math.random() < meanTimeToFailureHour * 5 / 3600) {
                 console.info('Failure MTTF triggered');
-                activate(0);
+                activateRandomFailure(0);
             }
         }
     }, [absoluteTime5s]);
