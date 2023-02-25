@@ -14,6 +14,7 @@ use std::vec::Vec;
 use uom::si::{
     angle::degree,
     f64::{Angle, Length, Velocity},
+    velocity::foot_per_minute,
 };
 
 pub mod navigation_display;
@@ -171,7 +172,11 @@ impl SimulationElement for EnhancedGroundProximityWarningComputer {
         writer.write(&self.egpwc_present_longitude_id, self.longitude);
         writer.write(&self.egpwc_present_heading_id, self.heading);
         writer.write(&self.egpwc_present_altitude_id, self.altitude);
-        writer.write(&self.egpwc_present_vertical_speed_id, self.vertical_speed);
+        writer.write_arinc429(
+            &self.egpwc_present_vertical_speed_id,
+            self.vertical_speed.value().get::<foot_per_minute>(),
+            self.vertical_speed.ssm(),
+        );
         writer.write(&self.egpwc_gear_is_down_id, self.gear_is_down);
         writer.write(
             &self.egpwc_terronnd_rendering_mode,
@@ -531,14 +536,10 @@ mod tests {
             test_bed.read_arinc429_by_name("EGPWC_PRESENT_ALTITUDE");
         assert!(present_altitude.is_normal_operation());
         assert_about_eq!(present_altitude.value().get::<foot>(), 15000.0);
-        let present_vertical_speed: Arinc429Word<Velocity> =
+        let present_vertical_speed: Arinc429Word<f64> =
             test_bed.read_arinc429_by_name("EGPWC_PRESENT_VERTICAL_SPEED");
         assert!(present_vertical_speed.is_normal_operation());
-        assert_about_eq!(
-            present_vertical_speed.value().get::<foot_per_minute>(),
-            1300.0,
-            1e-4
-        );
+        assert_about_eq!(present_vertical_speed.value(), 1300.0, 1e-4);
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
@@ -598,14 +599,10 @@ mod tests {
             test_bed.read_arinc429_by_name("EGPWC_PRESENT_ALTITUDE");
         assert!(present_altitude.is_normal_operation());
         assert_about_eq!(present_altitude.value().get::<foot>(), 15000.0);
-        let present_vertical_speed: Arinc429Word<Velocity> =
+        let present_vertical_speed: Arinc429Word<f64> =
             test_bed.read_arinc429_by_name("EGPWC_PRESENT_VERTICAL_SPEED");
         assert!(present_vertical_speed.is_normal_operation());
-        assert_about_eq!(
-            present_vertical_speed.value().get::<foot_per_minute>(),
-            1300.0,
-            1e-4
-        );
+        assert_about_eq!(present_vertical_speed.value(), 1300.0, 1e-4);
         let gear_down: bool = test_bed.read_by_name("EGPWC_GEAR_IS_DOWN");
         assert!(gear_down);
         let rendering_mode: u32 = test_bed.read_by_name("EGPWC_TERRONND_RENDERING_MODE");
