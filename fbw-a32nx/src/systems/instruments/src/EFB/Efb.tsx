@@ -12,7 +12,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import { RandomFailureGenerator } from 'instruments/src/EFB/Failures/randomFailureGen';
+import { randomFailureGenerator } from 'instruments/src/EFB/Failures/randomFailureGen';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
@@ -117,7 +117,7 @@ const Efb = () => {
 
     const history = useHistory();
 
-    // RandomFailureGenerator();
+    randomFailureGenerator();
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
