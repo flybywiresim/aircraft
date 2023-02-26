@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const SelfTest: React.FC = () => (
     <>
         <svg className="startup-text">

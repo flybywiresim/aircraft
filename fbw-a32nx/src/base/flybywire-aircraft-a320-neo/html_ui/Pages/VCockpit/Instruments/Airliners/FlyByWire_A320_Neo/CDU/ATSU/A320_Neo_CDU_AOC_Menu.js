@@ -11,7 +11,7 @@ class CDUAocMenu {
             ["", "RECEIVED\xa0"],
             ["<ATIS", "MESSAGES>"],
             ["", "SENT\xa0"],
-            ["<W/B[color]inop", "MESSAGES>"],
+            ["", "MESSAGES>"],
             [""],
             ["", "DIVERSION>[color]inop"],
             ["\xa0ATSU DLK"],

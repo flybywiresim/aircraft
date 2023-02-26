@@ -9,27 +9,29 @@ use self::{
 };
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 
-use uom::si::f64::*;
+use uom::si::{angular_velocity::revolution_per_minute, f64::*};
 
 #[cfg(test)]
 use systems::electrical::Battery;
 
+use std::time::Duration;
 use systems::simulation::VariableIdentifier;
 use systems::{
     accept_iterable,
     electrical::{
         AlternatingCurrentElectricalSystem, BatteryPushButtons, Electricity, EmergencyElectrical,
-        EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter,
-        TransformerRectifier,
+        EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource, GeneratorControlUnit,
+        RamAirTurbine, StaticInverter, TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
     shared::{
-        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorPower, EngineCorrectedN2,
-        EngineFirePushButtons, LgciuWeightOnWheels,
+        update_iterator::MaxStepLoop, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
+        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
+        RamAirTurbineController,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -46,8 +48,22 @@ pub(super) struct A380Electrical {
     secondary_galley: SecondaryGalley,
     emergency_elec: EmergencyElectrical,
     emergency_gen: EmergencyGenerator,
+
+    rat_physics_updater: MaxStepLoop,
+    gcu: GeneratorControlUnit<9>,
+    ram_air_turbine: RamAirTurbine,
+    rat_controller: A380RamAirTurbineController,
 }
 impl A380Electrical {
+    const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 2000.;
+
+    const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentHot(1);
+    const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentHot(2);
+
+    const RAT_SIM_TIME_STEP: Duration = Duration::from_millis(33);
+
     pub fn new(context: &mut InitContext) -> A380Electrical {
         A380Electrical {
             galley_is_shed_id: context.get_identifier("ELEC_GALLEY_IS_SHED".to_owned()),
@@ -56,7 +72,25 @@ impl A380Electrical {
             main_galley: MainGalley::new(),
             secondary_galley: SecondaryGalley::new(),
             emergency_elec: EmergencyElectrical::new(),
-            emergency_gen: EmergencyGenerator::new(context),
+            emergency_gen: EmergencyGenerator::new(
+                context,
+                AngularVelocity::new::<revolution_per_minute>(
+                    Self::MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY,
+                ),
+            ),
+
+            rat_physics_updater: MaxStepLoop::new(Self::RAT_SIM_TIME_STEP),
+            gcu: GeneratorControlUnit::new(
+                [
+                    0., 100., 1000., 3000., 10000., 12000., 14000., 14001., 30000.,
+                ],
+                [0., 0., 1000., 8000., 8000., 8000., 1000., 0., 0.],
+            ),
+            ram_air_turbine: RamAirTurbine::new(context),
+            rat_controller: A380RamAirTurbineController::new(
+                Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
+                Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
+            ),
         }
     }
 
@@ -87,8 +121,26 @@ impl A380Electrical {
         self.emergency_elec
             .update(context, electricity, &self.alternating_current);
 
-        // TODO update emergency gen to the A380 rat generator
-        // self.emergency_gen.update(gcu);
+        self.rat_controller
+            .update(context, emergency_overhead, &self.emergency_elec);
+
+        self.gcu.update(
+            &self.ram_air_turbine,
+            &self.emergency_elec,
+            emergency_overhead,
+            lgciu1,
+        );
+
+        self.rat_physics_updater.update(context);
+        for cur_time_step in self.rat_physics_updater {
+            self.ram_air_turbine.update(
+                &context.with_delta(cur_time_step),
+                &self.rat_controller,
+                &self.emergency_gen,
+            );
+        }
+
+        self.emergency_gen.update(&self.gcu);
 
         self.alternating_current.update(
             context,
@@ -184,7 +236,7 @@ impl A380Electrical {
     }
 
     pub fn in_emergency_elec(&self) -> bool {
-        self.emergency_elec.is_active()
+        self.emergency_elec.is_in_emergency_elec()
     }
 }
 impl SimulationElement for A380Electrical {
@@ -192,22 +244,14 @@ impl SimulationElement for A380Electrical {
         self.alternating_current.accept(visitor);
         self.direct_current.accept(visitor);
         self.emergency_gen.accept(visitor);
+        self.ram_air_turbine.accept(visitor);
+        self.rat_controller.accept(visitor);
 
         visitor.visit(self);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.galley_is_shed_id, self.galley_is_shed())
-    }
-}
-impl EmergencyElectricalState for A380Electrical {
-    fn is_in_emergency_elec(&self) -> bool {
-        self.in_emergency_elec()
-    }
-}
-impl EmergencyGeneratorPower for A380Electrical {
-    fn generated_power(&self) -> Power {
-        self.emergency_gen.generated_power()
     }
 }
 
@@ -396,6 +440,59 @@ impl EmergencyElectricalRatPushButton for A380EmergencyElectricalOverheadPanel {
         self.rat_and_emer_gen_man_on()
     }
 }
+
+struct A380RamAirTurbineController {
+    is_solenoid_1_powered: bool,
+    solenoid_1_bus: ElectricalBusType,
+
+    is_solenoid_2_powered: bool,
+    solenoid_2_bus: ElectricalBusType,
+
+    should_deploy: bool,
+}
+impl A380RamAirTurbineController {
+    fn new(solenoid_1_bus: ElectricalBusType, solenoid_2_bus: ElectricalBusType) -> Self {
+        Self {
+            is_solenoid_1_powered: false,
+            solenoid_1_bus,
+
+            is_solenoid_2_powered: false,
+            solenoid_2_bus,
+
+            should_deploy: false,
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
+        emergency_elec_state: &impl EmergencyElectricalState,
+    ) {
+        // TODO check actual A380 logic for deployment : solenoid 1 stubbed for now
+        let solenoid_1_should_trigger_deployment_if_powered = false;
+
+        let solenoid_2_should_trigger_deployment_if_powered =
+            emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
+
+        // due to initialization issues the RAT will not deployed in any case when simulation has just started
+        self.should_deploy = context.is_sim_ready()
+            && ((self.is_solenoid_1_powered && solenoid_1_should_trigger_deployment_if_powered)
+                || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered));
+    }
+}
+impl RamAirTurbineController for A380RamAirTurbineController {
+    fn should_deploy(&self) -> bool {
+        self.should_deploy
+    }
+}
+impl SimulationElement for A380RamAirTurbineController {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_solenoid_1_powered = buses.is_powered(self.solenoid_1_bus);
+        self.is_solenoid_2_powered = buses.is_powered(self.solenoid_2_bus);
+    }
+}
+
 #[cfg(test)]
 mod a380_electrical {
     use super::*;

@@ -16,7 +16,11 @@ export const pathify = (alias: string): string => alias.toLowerCase().replace(/[
 
 export const TabRoutes = ({ basePath, tabs }: PageRouteProps) => {
     const [routes] = useState(() => tabs.map((tab) => (
-        <Route path={`${basePath}/${pathify(tab.name)}`} component={() => tab.component} />
+        <Route
+            key={tab.name}
+            path={`${basePath}/${pathify(tab.name)}`}
+            component={() => tab.component}
+        />
     )));
 
     return (

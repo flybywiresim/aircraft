@@ -1,4 +1,4 @@
-import { Clock, ClockEvents, EventBus, FSComponent } from 'msfssdk';
+import { Clock, EventBus, FSComponent } from 'msfssdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdComponent } from './EWD';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
@@ -118,8 +118,8 @@ class A32NX_EWD extends BaseInstrument {
 
         FSComponent.render(<EwdComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
 
-        const sub = this.bus.getSubscriber<ClockEvents>();
-        sub.on('realTime').handle((deltaTime) => this.pseudoFwc.onUpdate(deltaTime));
+        // Remove "instrument didn't load" text
+        document.getElementById('EWD_CONTENT').querySelector(':scope > h1').remove();
     }
 
     public Update(): void {
@@ -134,6 +134,7 @@ class A32NX_EWD extends BaseInstrument {
         } else {
             this.simVarPublisher.onUpdate();
             this.clock.onUpdate();
+            this.pseudoFwc.onUpdate(this.deltaTime);
         }
     }
 }
