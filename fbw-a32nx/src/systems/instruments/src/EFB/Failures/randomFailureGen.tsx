@@ -124,7 +124,6 @@ export const failureGeneratorSpeedDecel = (failureFlightPhase : FailurePhases) =
 
     useEffect(() => {
         // Timer based failures
-
         if (failureDecelSpeedThreshold !== -1) {
             if (gs > failureDecelSpeedThreshold + 10 && !decelFailureArmed) setDecelFailureArmed(true);
             if (gs < failureDecelSpeedThreshold && decelFailureArmed) {
@@ -240,7 +239,7 @@ export const failureGeneratorTimeBased = (failureFlightPhase : FailurePhases) =>
     useEffect(() => {
         // failureSettings once per start of takeoff
         if (failureFlightPhase === FailurePhases.TAKEOFF) {
-            setFailureTime(60 + absoluteTime5s);
+            setFailureTime(7.5 + absoluteTime5s);
         }
     }, [failureFlightPhase]);
 };
@@ -272,13 +271,13 @@ export const RandomFailureGenerator = () => {
     const { changingFailures, activeFailures } = useFailuresOrchestrator();
     const failureGenerators : ((failureFlightPhase : FailurePhases) => void)[] = new Array<()=> void>(0);
 
-    // failureGenerators.push(failureGeneratorTimeBased);
+    failureGenerators.push(failureGeneratorTimeBased);
     // failureGenerators.push(failureGeneratorTakeOff);
-    failureGenerators.push(failureGeneratorAltClimb);
-    failureGenerators.push(failureGeneratorAltDesc);
-    failureGenerators.push(failureGeneratorMTTF);
-    failureGenerators.push(failureGeneratorSpeedAccel);
-    failureGenerators.push(failureGeneratorSpeedDecel);
+    // failureGenerators.push(failureGeneratorAltClimb);
+    // failureGenerators.push(failureGeneratorAltDesc);
+    // failureGenerators.push(failureGeneratorMTTF);
+    // failureGenerators.push(failureGeneratorSpeedAccel);
+    // failureGenerators.push(failureGeneratorSpeedDecel);
 
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
@@ -292,12 +291,20 @@ export const RandomFailureGenerator = () => {
     // TODO: to be improved, changing doesn't mean active but this is not critical
     const totalActiveFailures = changingFailures.size + activeFailures.size;
     if (totalActiveFailures < maxFailuresAtOnce) {
-        failureGenerators.forEach((failureGenerator) => failureGenerator(failureFlightPhase));
+        /*
+        for (let i = 0; i < failureGenerators.length; i++) {
+            failureGenerators[i](failureFlightPhase);
+        }
+        */
+        failureGenerators[0](failureFlightPhase);
     }
 
+    /*
     useEffect(() => {
-        console.info('Failure phase: %s', failureFlightPhase);
+        console.info('Failure phase: %d', failureFlightPhase);
     }, [failureFlightPhase]);
+    */
+
 /*
     useEffect(() => {
         const slowGenerators : FailureGenerator[] = FailureGenerator.failureGenerators.filter((element) => !element.fastPaced);
