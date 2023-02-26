@@ -7,7 +7,7 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
-import { closestSmallCircleIntersection, Coordinates, distanceTo } from 'msfs-geo';
+import { Coordinates, distanceTo, firstSmallCircleIntersection } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -61,7 +61,7 @@ export class CDLeg extends Leg {
     recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         this.predictedPath.length = 0;
 
-        const intersect = closestSmallCircleIntersection(
+        const intersect = firstSmallCircleIntersection(
             this.origin.location,
             this.dmeDistance,
             this.getPathStartPoint(),
