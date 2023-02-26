@@ -960,16 +960,18 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateHoldingSpeed() {
-        // TODO port over (fms-v2)
-        return;
+        /**
+         * @type {BaseFlightPlan}
+         */
+        const plan = this.flightPlanService.active;
 
-        const currentLegIndex = this.guidanceController.activeLegIndex;
+        const currentLegIndex = plan.activeLegIndex;
         const nextLegIndex = currentLegIndex + 1;
         const currentLegConstraints = this.managedProfile.get(currentLegIndex) || {};
         const nextLegConstraints = this.managedProfile.get(nextLegIndex) || {};
 
-        const currentLeg = this.flightPlanManager.getWaypoint(currentLegIndex);
-        const nextLeg = this.flightPlanManager.getWaypoint(nextLegIndex);
+        const currentLeg = plan.maybeElementAt(currentLegIndex);
+        const nextLeg = plan.maybeElementAt(nextLegIndex);
 
         const casWord = ADIRS.getCalibratedAirspeed();
         const cas = casWord.isNormalOperation() ? casWord.value : 0;
@@ -978,14 +980,15 @@ class FMCMainDisplay extends BaseAirliners {
         let holdSpeedTarget = 0;
         let holdDecelReached = this.holdDecelReached;
         // FIXME big hack until VNAV can do this
-        if (currentLeg && currentLeg.additionalData.legType === 14 /* HM */) {
+        if (currentLeg && currentLeg.isDiscontinuity === false && currentLeg.type === 'HM') {
             holdSpeedTarget = this.getHoldingSpeed(currentLegConstraints.descentSpeed, currentLegConstraints.descentAltitude);
             holdDecelReached = true;
             enableHoldSpeedWarning = !Simplane.getAutoPilotAirspeedManaged();
-            this.holdIndex = this.flightPlanManager.getActiveWaypointIndex();
-        } else if (nextLeg && nextLeg.additionalData.legType === 14 /* HM */) {
+            this.holdIndex = plan.activeLegIndex;
+        } else if (nextLeg && nextLeg.isDiscontinuity === false && nextLeg.type === 'HM') {
             const adirLat = ADIRS.getLatitude();
             const adirLong = ADIRS.getLongitude();
+
             if (adirLat.isNormalOperation() && adirLong.isNormalOperation()) {
                 holdSpeedTarget = this.getHoldingSpeed(nextLegConstraints.descentSpeed, nextLegConstraints.descentAltitude);
 
@@ -993,8 +996,8 @@ class FMCMainDisplay extends BaseAirliners {
                     lat: adirLat.value,
                     long: adirLong.value,
                 };
-                const stats = this.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
-                const dtg = stats.get(this.flightPlanManager.getActiveWaypointIndex()).distanceFromPpos;
+                const stats = plan.computeWaypointStatistics();
+                const dtg = stats.get(plan.activeLegIndex).distanceFromPpos;
                 // decel range limits are [3, 20] NM
                 const decelDist = this.calculateDecelDist(cas, holdSpeedTarget);
                 if (dtg < decelDist) {
@@ -1008,7 +1011,7 @@ class FMCMainDisplay extends BaseAirliners {
                     enableHoldSpeedWarning = true;
                 }
             }
-            this.holdIndex = this.flightPlanManager.getActiveWaypointIndex() + 1;
+            this.holdIndex = plan.activeLegIndex + 1;
         } else {
             this.holdIndex = 0;
             holdDecelReached = false;
