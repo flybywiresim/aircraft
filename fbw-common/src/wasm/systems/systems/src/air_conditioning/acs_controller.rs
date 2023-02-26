@@ -3301,7 +3301,7 @@ mod acs_controller_tests {
                 .powered_dc_2_bus()
                 .powered_ac_2_bus()
                 .iterate(2);
-            assert_eq!(test_bed.pack_flow(), MassRate::default(),);
+            assert_eq!(test_bed.pack_flow(), MassRate::default());
         }
     }
 

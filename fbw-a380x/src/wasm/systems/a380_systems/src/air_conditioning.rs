@@ -1092,7 +1092,7 @@ mod tests {
         }
 
         fn set_pressure_based_on_vs(&mut self, alt_diff: Length) {
-            // We find the atmosferic pressure that would give us the desired v/s
+            // We find the atmospheric  pressure that would give us the desired v/s
             let init_pressure_ratio: f64 =
                 self.adirs.ambient_pressure.get::<hectopascal>() / Self::P_0;
 
@@ -2036,9 +2036,6 @@ mod tests {
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
                 .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(20000.))
                 .then()
-                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
-                    Length::new::<foot>(20000.),
-                ))
                 .vertical_speed_of(Velocity::default())
                 .iterate(10)
                 .command_mode_sel_pb_man()
@@ -2253,7 +2250,7 @@ mod tests {
                     .on_ground()
                     .run_and()
                     .command_packs_on_off(false)
-                    .ambient_pressure_of(Pressure::new::<hectopascal>(1020.)) // Equivalent to 10,000ft from tables
+                    .ambient_pressure_of(Pressure::new::<hectopascal>(1020.))
                     .iterate(100);
 
                 let initial_altitude = test_bed.cabin_altitude();

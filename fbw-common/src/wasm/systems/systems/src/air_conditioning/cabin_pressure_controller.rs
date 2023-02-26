@@ -134,8 +134,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         outflow_valve: Vec<&OutflowValve>,
         safety_valve: &SafetyValve,
     ) {
-        let (adirs_airspeed, _): (Option<Velocity>, Option<Pressure>) =
-            self.adirs_values_calculation(adirs);
+        let (adirs_airspeed, _) = self.adirs_values_calculation(adirs);
 
         self.cabin_pressure = cabin_simulation.cabin_pressure();
 
@@ -200,8 +199,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
     ) {
-        let (_, adirs_ambient_pressure): (Option<Velocity>, Option<Pressure>) =
-            self.adirs_values_calculation(adirs);
+        let (_, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
 
         self.exterior_pressure.update(
             context.delta(),
