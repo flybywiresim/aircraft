@@ -56,6 +56,7 @@
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
 1. [FWC] Add GND SPLR NOT ARMED warning - @tracernz (Mike)
 1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
+1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
 
 ## 0.9.0
 
