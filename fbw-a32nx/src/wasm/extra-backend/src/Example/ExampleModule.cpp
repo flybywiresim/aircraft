@@ -141,7 +141,7 @@ bool ExampleModule::initialize() {
   );
 
   // Data definition variables
-  std::vector<DataDefinition> exampleDataDef = {
+  std::vector <DataDefinition> exampleDataDef = {
     {"LIGHT STROBE", 0, UNITS.Bool},
     {"LIGHT WING",   0, UNITS.Bool},
     {"ZULU TIME"},
@@ -266,6 +266,8 @@ bool ExampleModule::initialize() {
 
   // Simple client event - no mappings
   clientEventPtr = dataManager->make_client_event("A32NX.MY_CUSTOM_EVENT");
+  clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
+
   clientEventCallbackId = clientEventPtr->addCallback(
     [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2,
               const DWORD param3, const DWORD param4) {
@@ -276,10 +278,11 @@ bool ExampleModule::initialize() {
       std::cout << std::endl;
     }
   );
-  const int INPUT_ID_0 = 0;
-  clientEventPtr->mapInputEvent("VK_COMMA");
-  clientEventPtr->mapInputEvent("joystick:1:button:7");
-  clientEventPtr->setInputGroupState(INPUT_ID_0, SIMCONNECT_STATE_ON);
+  clientEventPtr->mapInputDownEvent("VK_COMMA", INPUT_GROUP_1);
+  clientEventPtr->mapInputUpEvent("VK_COMMA", INPUT_GROUP_1);
+  clientEventPtr->mapInputDownEvent("joystick:1:button:7", INPUT_GROUP_1);
+  clientEventPtr->mapInputUpEvent("joystick:1:button:7", INPUT_GROUP_1);
+  clientEventPtr->setInputGroupState(0, SIMCONNECT_STATE_ON);
 
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
@@ -327,16 +330,18 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
     [[maybe_unused]] const UINT64 tickCounter = msfsHandler.getTickCounter();
 
+    std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " ==================================" << std::endl;
+
     // ======================
     // Client Event Tests
 
     if (tickCounter % 2000 == 1000) {
-      clientEventPtr->removeFromSim();
+      clientEventPtr->removeCallback(clientEventCallbackId);
+      clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_1);
     }
     if (tickCounter % 2000 == 0) {
       clientEventPtr->mapToSimEvent();
-      clientEventPtr->subscribeToNotificationGroup();
-      clientEventPtr->removeCallback(clientEventCallbackId);
+      clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
       clientEventCallbackId = clientEventPtr->addCallback(
         [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2,
                   const DWORD param3, const DWORD param4) {
@@ -347,12 +352,13 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
           std::cout << std::endl;
         }
       );
-      clientEventPtr->unmapInputEvent("joystick:1:button:7");
-      clientEventPtr->setNotificationGroupId(999);
-      clientEventPtr->mapInputEvent("joystick:1:button:8");
-
+      //      clientEventPtr->mapInputEvent(0, "VK_COMMA", clientEventPtr);
+      //      clientEventPtr->mapInputEvent(0, "joystick:1:button:7", clientEventPtr);
+      //      clientEventPtr->mapInputEvent(0, "joystick:1:button:8", clientEventPtr);
     }
-    clientEventPtr->trigger(999);
+    if (tickCounter == 4000) {
+    }
+    // clientEventPtr->trigger(999);
 
 
     // difference if using different units

@@ -6,7 +6,6 @@
 #include "MsfsHandler.h"
 #include "NamedVariable.h"
 #include "AircraftVariable.h"
-#include "Event.h"
 #include "ClientEvent.h"
 
 bool DataManager::initialize(HANDLE hdlSimConnect) {
@@ -15,7 +14,7 @@ bool DataManager::initialize(HANDLE hdlSimConnect) {
   return true;
 }
 
-bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
+bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   LOG_TRACE("DataManager::preUpdate()");
   if (!isInitialized) {
     LOG_ERROR("DataManager::preUpdate() called but DataManager is not initialized");
@@ -31,11 +30,11 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (var.second->isAutoRead()) {
       var.second->updateFromSim(timeStamp, tickCounter);
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
-                    << var.second->getName() << " = " << var.second->get()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
+                  << var.second->getName() << " = " << var.second->get()
+                  << std::endl;
+      })
     }
   }
 
@@ -47,11 +46,11 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
                   + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::preUpdate() - auto read simobjects: "
-                    << ddv.second->getName()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::preUpdate() - auto read simobjects: "
+                  << ddv.second->getName()
+                  << std::endl;
+      })
     }
   }
 
@@ -71,7 +70,7 @@ bool DataManager::update([[maybe_unused]] sGaugeDrawData* pData) const {
   return true;
 }
 
-bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
+bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   LOG_TRACE("DataManager::postUpdate()");
   if (!isInitialized) {
     LOG_ERROR("DataManager::postUpdate() called but DataManager is not initialized");
@@ -83,11 +82,11 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (var.second->isAutoWrite()) {
       var.second->updateToSim();
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
-                    << var.second->getName() << " = " << var.second->get()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
+                  << var.second->getName() << " = " << var.second->get()
+                  << std::endl;
+      })
     }
   }
 
@@ -99,11 +98,11 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
                   + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
-        if (tickCounter % 100 == 0) {
-          std::cout << "DataManager::postUpdate() - auto write simobjects"
-                    << ddv.second->getName()
-                    << std::endl;
-        })
+      if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::postUpdate() - auto write simobjects"
+                  << ddv.second->getName()
+                  << std::endl;
+      })
     }
   }
 
@@ -120,13 +119,17 @@ bool DataManager::shutdown() {
   return true;
 }
 
-void DataManager::getRequestedData() {
+void DataManager::getRequestedData() const {
   DWORD cbData;
   SIMCONNECT_RECV* ptrData;
   while (SUCCEEDED(SimConnect_GetNextDispatch(hSimConnect, &ptrData, &cbData))) {
     processDispatchMessage(ptrData, &cbData);
   }
 }
+
+// =================================================================================================
+// Generators / make_ functions
+// =================================================================================================
 
 NamedVariablePtr DataManager::make_named_var(const std::string varName,
                                              Unit unit,
@@ -289,6 +292,10 @@ ClientEventPtr DataManager::make_client_event(const std::string &clientEventName
   return clientEvent;
 }
 
+// =================================================================================================
+// Key Events
+// =================================================================================================
+
 KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction &callback) {
   auto id = keyEventCallbackIDGen.getNextId();
   if (!keyEventCallbacks.contains(keyEventId)) {
@@ -347,7 +354,7 @@ void DataManager::processKeyEvent(
 // Private methods
 // =================================================================================================
 
-void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]] DWORD* cbData) {
+void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]] DWORD* cbData) const {
   switch (pRecv->dwID) {
     case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: // fallthrough
     case SIMCONNECT_RECV_ID_CLIENT_DATA:
@@ -386,7 +393,7 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
   }
 }
 
-void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) {
+void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) const {
   const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
   if (auto pair = simObjects.find(pSimobjectData->dwRequestID); pair != simObjects.end()) {
     pair->second->processSimData(pData, msfsHandler->getTimeStamp(), msfsHandler->getTickCounter());
@@ -396,7 +403,7 @@ void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) {
             + std::to_string(pSimobjectData->dwRequestID));
 }
 
-void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) {
+void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) const {
   if (auto pair = clientEvents.find(pRecv->uEventID); pair != clientEvents.end()) {
     pair->second->processEvent(pRecv->dwData);
     return;
@@ -410,7 +417,7 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) {
            + std::to_string(pRecv->uEventID));
 }
 
-void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) {
+void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) const {
   if (auto pair = clientEvents.find(pRecv->uEventID); pair != clientEvents.end()) {
     pair->second->processEvent(pRecv->dwData0, pRecv->dwData1, pRecv->dwData2, pRecv->dwData3, pRecv->dwData4);
     return;

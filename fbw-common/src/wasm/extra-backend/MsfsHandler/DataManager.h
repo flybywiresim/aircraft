@@ -50,9 +50,7 @@ typedef uint64_t KeyEventCallbackID;
  * @param number of parameters to use
  * @param parameters 0-4 to pass to the callback function
  */
-typedef std::function<void(
-  DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)>
-KeyEventCallbackFunction;
+typedef std::function<void( DWORD param0,DWORD param1, DWORD param2,DWORD param3, DWORD param4)> KeyEventCallbackFunction;
 
 /**
  * DataManager is responsible for managing all variables and events.
@@ -116,6 +114,10 @@ public:
   DataManager &operator=(const DataManager &) = delete; // no copy assignment
   ~DataManager() = default;
 
+  // ===============================================================================================
+  // Sim Loop Methods
+  // ===============================================================================================
+
   /**
    * Initializes the data manager.
    * This method must be called before any other method of the data manager.
@@ -131,7 +133,7 @@ public:
    * @param pData Pointer to the data structure of gauge pre-draw event
    * @return true if successful, false otherwise
    */
-  bool preUpdate([[maybe_unused]] sGaugeDrawData* pData);
+  bool preUpdate([[maybe_unused]] sGaugeDrawData* pData) const;
 
   /**
  * Called by the MsfsHandler update() method.
@@ -146,7 +148,7 @@ public:
  * @param pData Pointer to the data structure of gauge pre-draw event
  * @return true if successful, false otherwise
  */
-  bool postUpdate(sGaugeDrawData* pData);
+  bool postUpdate(sGaugeDrawData* pData) const;
 
   /**
    * Called by the MsfsHandler shutdown() method.
@@ -162,54 +164,11 @@ public:
    * Request data by calling any of the DataDefinitions::request...() methods
    * on the data definition variable.
    */
-  void getRequestedData();
+  void getRequestedData() const;
 
-  /**
-   * Adds a callback function to be called when a key event is triggered in the sim.<br/>
-   * OBS: The callback will be called even if the sim is paused.
-   * @param keyEventId The ID of the key event to listen to.
-   * @param callback
-   * @return The ID of the callback required for removing a callback.
-   * @see https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
-   * @see #define KEY_events in gauges.h.
-   */
-  [[nodiscard]]
-  KeyEventCallbackID addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction &callback);
-
-  /**
-   * Removes a callback from a key event.
-   * @param keyEventId The ID of the key event to remove the callback from.
-   * @param callbackId The ID receive when adding the callback.
-   */
-  bool removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId);
-
-  /**
-   * Sends a key event to the sim.
-   * @param keyEventId The ID of the key event to send.
-   * @param param0
-   * @param param1
-   * @param param2
-   * @param param3
-   * @param param4
-   * @return true if successful, false otherwise
-   * @see https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
-   * @see #define KEY_events in gauges.h.
-   */
-  bool sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4);
-
-  /**
-   * Is called by the MsfsHandler when a key event is triggered in the sim.
-   * @param event
-   * @param evdata0
-   * @param evdata1
-   * @param evdata2
-   * @param evdata3
-   * @param evdata4
-   * @param userdata
-   */
-  [[maybe_unused]]
-  void processKeyEvent(KeyEventID event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2,
-                       UINT32 evdata3, UINT32 evdata4);
+  // ===============================================================================================
+  // Generators / make_ methods
+  // ===============================================================================================
 
   /**
    * Creates a new named variable and adds it to the list of managed variables
@@ -276,6 +235,7 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0);
 
+  // @formatter:off - clion formatter is broken here
   /**
    * Creates a new data definition variable and adds it to the list of managed variables.
    * @typename T Type of the data structure to use to store the data
@@ -290,23 +250,23 @@ public:
   template<typename T>
   std::shared_ptr<DataDefinitionVariable<T>> make_datadefinition_var(
     const std::string name,
-    std::vector<DataDefinition> &dataDefinitions,
+    std::vector<DataDefinition>
+    &dataDefinitions,
     bool autoReading = false,
     bool autoWriting = false, FLOAT64
     maxAgeTime = 0.0, UINT64
     maxAgeTicks = 0) {
 
-    std::shared_ptr<DataDefinitionVariable<T>>
-      var = std::make_shared<DataDefinitionVariable<T>>(
-      hSimConnect,
-      std::move(name),
-      dataDefinitions,
-      dataDefIDGen.getNextId(),
-      dataReqIDGen.getNextId(),
-      autoReading,
-      autoWriting,
-      maxAgeTime,
-      maxAgeTicks);
+    std::shared_ptr<DataDefinitionVariable<T>> var = std::make_shared<DataDefinitionVariable <T>>(
+        hSimConnect,
+        std::move(name),
+        dataDefinitions,
+        dataDefIDGen.getNextId(),
+        dataReqIDGen.getNextId(),
+        autoReading,
+        autoWriting,
+        maxAgeTime,
+        maxAgeTicks);
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
     simObjects.insert({var->getRequestId(), var});
@@ -337,8 +297,7 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0) {
 
-    std::shared_ptr<ClientDataAreaVariable<T>>
-      var = std::make_shared<ClientDataAreaVariable<T>>(
+    std::shared_ptr <ClientDataAreaVariable<T>> var = std::make_shared < ClientDataAreaVariable<T>> (
       hSimConnect,
       std::move(clientDataName),
       clientDataIDGen.getNextId(),
@@ -374,8 +333,7 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0) {
 
-    std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>>
-      var = std::make_shared<ClientDataBufferedAreaVariable<T, ChunkSize>>(
+    std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>> var = std::make_shared<ClientDataBufferedAreaVariable<T, ChunkSize>> (
       hSimConnect,
       std::move(clientDataName),
       clientDataIDGen.getNextId(),
@@ -390,7 +348,7 @@ public:
     simObjects.insert({var->getRequestId(), var});
     return var;
   }
-
+  // @formatter:on
 
   /**
    * Creates a new event and adds it to the list of managed events.
@@ -414,13 +372,69 @@ public:
    */
   ClientEventPtr make_client_event(const std::string &clientEventName);
 
+  // ===============================================================================================
+  // Key Event Handling
+  // ===============================================================================================
+
+  /**
+   * Adds a callback function to be called when a key event is triggered in the sim.<br/>
+   * OBS: The callback will be called even if the sim is paused.
+   * @param keyEventId The ID of the key event to listen to.
+   * @param callback
+   * @return The ID of the callback required for removing a callback.
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
+   * @see #define KEY_events in gauges.h.
+   */
+  [[nodiscard]]
+  KeyEventCallbackID addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction &callback);
+
+  /**
+   * Removes a callback from a key event.
+   * @param keyEventId The ID of the key event to remove the callback from.
+   * @param callbackId The ID receive when adding the callback.
+   */
+  bool removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId);
+
+  /**
+   * Sends a key event to the sim.
+   * @param keyEventId The ID of the key event to send.
+   * @param param0
+   * @param param1
+   * @param param2
+   * @param param3
+   * @param param4
+   * @return true if successful, false otherwise
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
+   * @see #define KEY_events in gauges.h.
+   */
+  bool sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4);
+
+  /**
+   * Is called by the MsfsHandler when a key event is triggered in the sim.
+   * @param event
+   * @param evdata0
+   * @param evdata1
+   * @param evdata2
+   * @param evdata3
+   * @param evdata4
+   * @param userdata
+   */
+  void processKeyEvent(KeyEventID event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4);
+
+  // ===============================================================================================
+  // Getters and setters
+  // ===============================================================================================
+
   /**
    * @returns the current SimConnect handle
    */
-  [[maybe_unused]]
   HANDLE getSimConnectHandle() const { return hSimConnect; };
 
 private:
+
+  // =================================================================================================
+  // Private methods
+  // =================================================================================================
 
   /**
    * This is called everytime we receive a message from the sim in getRequestedData().
@@ -429,7 +443,7 @@ private:
    *
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_RECV.htm
    */
-  void processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]] DWORD* cbData);
+  void processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]] DWORD* cbData) const;
 
   /**
    * Callback for SimConnect_GetNextDispatch events in the MsfsHandler used for data definition
@@ -439,19 +453,19 @@ private:
    * @param data Pointer to the data structure of gauge pre-draw event
    * @return true if request ID has been processed, false otherwise
    */
-  void processSimObjectData(SIMCONNECT_RECV* data);
+  void processSimObjectData(SIMCONNECT_RECV* data) const;
 
   /**
    * Called from processDispatchMessage() for SIMCONNECT_RECV_ID_EVENT messages.
    * @param pRecv the SIMCONNECT_RECV_EVENT structure
    */
-  void processEvent(const SIMCONNECT_RECV_EVENT* pRecv);
+  void processEvent(const SIMCONNECT_RECV_EVENT* pRecv) const;
 
   /**
    * Called from processDispatchMessage() for SIMCONNECT_RECV_EVENT_EX1 messages.
    * @param pRecv the SIMCONNECT_RECV_EVENT_EX1 structure
    */
-  void processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv);
+  void processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) const;
 
 };
 
