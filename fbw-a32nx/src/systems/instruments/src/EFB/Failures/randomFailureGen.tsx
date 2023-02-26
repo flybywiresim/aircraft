@@ -122,7 +122,7 @@ export const failureGeneratorSpeedAccel = (failureFlightPhase : FailurePhases) =
     useEffect(() => {
         // Climb Altitude based failures
         if (gs > failureAccelSpeedThreshold && failureAccelSpeedThreshold !== -1 && totalActiveFailures < maxFailuresAtOnce) {
-            console.info('Speed accel altitude failure triggered');
+            console.info('Speed accel failure triggered');
             activateRandomFailure(allFailures, activate);
             setFailureAccelSpeedThreshold(-1);
         }
