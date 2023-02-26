@@ -12,7 +12,6 @@ use crate::{
 };
 
 use uom::si::{
-    angle::radian,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     length::meter,
@@ -99,14 +98,15 @@ impl RamAirTurbine {
     }
 
     fn resistant_torque(&mut self, generator_power: &impl EmergencyGeneratorPower) -> Torque {
-        let pump_torque = if self.wind_turbine.is_low_speed() {
-            (self.wind_turbine.position().get::<radian>() * 4.).cos() * 0.35 * 2.
+        if self.wind_turbine.speed().get::<radian_per_second>().abs() > 0.001 {
+            Torque::new::<newton_meter>(
+                generator_power.generated_power().get::<watt>()
+                    * -Self::GENERATOR_EFFICIENCY_PENALTY
+                    / self.wind_turbine.speed().get::<radian_per_second>(),
+            )
         } else {
-            generator_power.generated_power().get::<watt>() * -Self::GENERATOR_EFFICIENCY_PENALTY
-                / self.wind_turbine.speed().get::<radian_per_second>()
-        };
-
-        Torque::new::<newton_meter>(pump_torque)
+            Torque::default()
+        }
     }
 }
 impl SimulationElement for RamAirTurbine {
@@ -204,9 +204,11 @@ impl<const N: usize> EmergencyGeneratorControlUnit for GeneratorControlUnit<N> {
 
 #[cfg(test)]
 mod tests {
+    use ntest::assert_about_eq;
+
     use super::*;
     use crate::shared::update_iterator::MaxStepLoop;
-    use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
+    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
@@ -357,6 +359,18 @@ mod tests {
         fn set_in_emergency(&mut self, state: bool) {
             self.emergency_state.set_in_emergency(state);
         }
+
+        fn is_gcu_active(&self) -> bool {
+            self.gcu.is_active
+        }
+
+        fn generator_speed(&self) -> AngularVelocity {
+            self.gcu.motor_speed()
+        }
+
+        fn turbine_speed(&self) -> AngularVelocity {
+            self.rat.wind_turbine.speed()
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -392,46 +406,37 @@ mod tests {
     }
 
     #[test]
-    fn high_air_speed_conditions() {
+    fn deployed_and_turning_rat_with_active_gcu_gives_generator_rotating_at_correct_speed() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.write_by_name("AIRSPEED INDICATED", 340.);
+        test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
+        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-    }
 
-    #[test]
-    fn medium_air_speed_conditions() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        assert!(test_bed.query(|a| a.is_gcu_active()));
 
-        test_bed.write_by_name("AIRSPEED INDICATED", 200.);
+        let turbine_speed = test_bed.query(|a| a.turbine_speed());
+        let generator_speed = test_bed.query(|a| a.generator_speed());
 
-        test_bed.run_with_delta(Duration::from_secs_f64(5.));
-    }
+        assert!(turbine_speed.get::<revolution_per_minute>() > 3000.);
 
-    #[test]
-    fn min_air_speed_conditions() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
-
-        test_bed.write_by_name("AIRSPEED INDICATED", 140.);
-
-        test_bed.run_with_delta(Duration::from_secs_f64(5.));
-    }
-
-    #[test]
-    fn stalling_air_speed_conditions() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
-
-        test_bed.write_by_name("AIRSPEED INDICATED", 80.);
-
-        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        assert!(
+            (generator_speed.get::<revolution_per_minute>()
+                - turbine_speed.get::<revolution_per_minute>())
+            .abs()
+                < 5.
+        );
     }
 
     #[cfg(test)]
     fn gen_control_unit() -> GeneratorControlUnit<9> {
         GeneratorControlUnit::new(
-            [0., 1000., 4500., 5000., 5500., 7200., 9957., 11000., 12000.],
-            [0., 0., 0., 0., 40000., 58000., 70000., 0., 0.],
+            [
+                0., 1000., 6000., 7200., 8000., 9000., 10000., 11000., 12000.,
+            ],
+            [0., 0., 0., 40000., 50000., 58000., 70000., 0., 0.],
         )
     }
 }

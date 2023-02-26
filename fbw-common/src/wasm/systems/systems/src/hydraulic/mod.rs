@@ -21,7 +21,6 @@ use nalgebra::Vector3;
 use std::time::Duration;
 
 use uom::si::{
-    angle::radian,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     length::meter,

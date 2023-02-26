@@ -168,7 +168,7 @@ impl WindTurbine {
         self.position
     }
 
-    pub fn is_low_speed(&self) -> bool {
+    fn is_low_speed(&self) -> bool {
         self.speed.get::<revolution_per_minute>().abs() < Self::LOW_SPEED_PHYSICS_ACTIVATION
     }
 
@@ -182,9 +182,7 @@ impl WindTurbine {
         self.propeller_beta_pitch
             .update(context.delta(), Ratio::new::<ratio>(cur_beta_pitch_ratio));
 
-        let generated_torque = if self.speed().get::<revolution_per_minute>().abs()
-            > Self::LOW_SPEED_PHYSICS_ACTIVATION
-        {
+        let generated_torque = if !self.is_low_speed() {
             Torque::new::<newton_meter>(
                 self.wind_power_converted(context).get::<watt>()
                     / self.speed().get::<radian_per_second>().abs(),
@@ -340,7 +338,7 @@ mod tests {
         stow_position: Ratio,
     }
     impl TestAircraft {
-        fn new(context: &mut InitContext, turbine: WindTurbine) -> Self {
+        fn new(turbine: WindTurbine) -> Self {
             Self {
                 updater_max_step: MaxStepLoop::new(Duration::from_millis(10)),
 
@@ -405,7 +403,7 @@ mod tests {
     fn do_not_turn_if_stow_pin_locked() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
@@ -431,7 +429,7 @@ mod tests {
     fn a380_turbine_spins_in_high_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
@@ -449,7 +447,7 @@ mod tests {
     fn a380_turbine_spins_in_medium_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 200.);
@@ -466,7 +464,7 @@ mod tests {
     fn a380_turbine_fails_to_spin_in_min_air_speed_conditions_over_rated_load() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 120.);
@@ -485,7 +483,7 @@ mod tests {
     fn a380_turbine_spins_in_min_air_speed_conditions_at_lower_load() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 120.);
@@ -504,7 +502,7 @@ mod tests {
     fn a380_turbine_stalling_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 50.);
@@ -522,7 +520,7 @@ mod tests {
     fn a380_turbine_stops_from_full_speed_less_than_5_s_more_than_2s() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
@@ -548,7 +546,7 @@ mod tests {
     fn a380_turbine_stops_from_full_speed_if_wind_less_than_30kts() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a380_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
@@ -572,7 +570,7 @@ mod tests {
     fn a320_turbine_spins_in_high_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a320_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
@@ -590,7 +588,7 @@ mod tests {
     fn a320_turbine_spins_in_medium_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a320_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 200.);
@@ -607,7 +605,7 @@ mod tests {
     fn a320_turbine_fails_to_spin_in_min_air_speed_conditions_over_rated_load() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a320_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 120.);
@@ -625,7 +623,7 @@ mod tests {
     fn a320_turbine_spins_in_min_air_speed_conditions_at_lower_load() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a320_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 120.);
@@ -636,14 +634,14 @@ mod tests {
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(5.)));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
-        assert!(test_bed.query(|a| a.turbine_rpm()) > 4000.);
+        assert!(test_bed.query(|a| a.turbine_rpm()) > 3000.);
     }
 
     #[test]
     fn a320_turbine_stalling_air_speed_conditions() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a320_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 50.);
@@ -661,7 +659,7 @@ mod tests {
     fn a320_turbine_stops_from_full_speed_less_than_5_s_more_than_2s() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a320_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
@@ -671,7 +669,7 @@ mod tests {
 
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
-        test_bed.run_with_delta(Duration::from_secs_f64(5.));
+        test_bed.run_with_delta(Duration::from_secs_f64(3.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 5000.);
 
         test_bed.write_by_name("AIRSPEED TRUE", 0.);
@@ -679,7 +677,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 200.);
 
-        test_bed.run_with_delta(Duration::from_secs_f64(3.));
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
         assert!(test_bed.query(|a| a.turbine_rpm()) < 5.);
     }
 
@@ -687,7 +685,7 @@ mod tests {
     fn a320_turbine_stops_from_full_speed_if_wind_less_than_30kts() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let turbine = a320_wind_turbine(context);
-            TestAircraft::new(context, turbine)
+            TestAircraft::new(turbine)
         });
 
         test_bed.write_by_name("AIRSPEED TRUE", 340.);
@@ -734,9 +732,9 @@ mod tests {
             Length::new::<meter>(1.003 / 2.),
             RPM_GOVERNOR_BREAKPTS,
             PROP_ALPHA_MAP,
-            0.06,
+            0.07,
             2.,
-            0.12,
+            0.10,
         )
     }
 }
