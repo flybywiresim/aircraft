@@ -117,7 +117,7 @@ const Efb = () => {
 
     const history = useHistory();
 
-    RandomFailureGenerator();
+    // RandomFailureGenerator();
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
