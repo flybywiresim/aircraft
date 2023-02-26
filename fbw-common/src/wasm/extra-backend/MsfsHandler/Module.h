@@ -19,7 +19,7 @@
  * tremendously with finding any issues as it will be easier to locate the cause of the issue.
  */
 class Module {
-protected:
+ protected:
   /**
    * The MsfsHandler instance that is used to communicate with the simulator.
    */
@@ -30,18 +30,17 @@ protected:
    */
   bool isInitialized = false;
 
-public:
-
-  Module() = delete; // no default constructor
-  Module(const Module &) = delete; // no copy constructor
-  Module &operator=(const Module &) = delete; // no copy assignment
+ public:
+  Module() = delete;                          // no default constructor
+  Module(const Module&) = delete;             // no copy constructor
+  Module& operator=(const Module&) = delete;  // no copy assignment
   virtual ~Module() = default;
 
   /**
    * Creates a new module and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit Module(MsfsHandler& backRef) : msfsHandler(backRef){ msfsHandler.registerModule(this); }
+  explicit Module(MsfsHandler& backRef) : msfsHandler(backRef) { msfsHandler.registerModule(this); }
 
   /**
    * Called by the MsfsHandler instance once to initialize the module.
@@ -89,4 +88,4 @@ public:
   [[nodiscard]] bool isInitialized1() const { return isInitialized; }
 };
 
-#endif // FLYBYWIRE_MODULE_H
+#endif  // FLYBYWIRE_MODULE_H

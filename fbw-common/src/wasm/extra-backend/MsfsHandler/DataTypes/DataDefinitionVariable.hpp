@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "logging.h"
 #include "SimObjectBase.h"
+#include "logging.h"
 
 #define quote(x) #x
 
@@ -70,10 +70,9 @@ struct DataDefinition {
  * @see SimObjectBase
  * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToDataDefinition.htm
  */
-template<typename T>
+template <typename T>
 class DataDefinitionVariable : public SimObjectBase {
-private:
-
+ private:
   // The data manager is a friend, so it can access the private constructor.
   friend DataManager;
 
@@ -95,49 +94,43 @@ private:
    * @param hSimConnect Handle to the SimConnect object.
    * @param name Arbitrary name for the data definition variable for debugging purposes
    * @param dataDefinitions List of data definitions to add to the sim object data
-   * @param dataDefinitionId Each data definition variable has its own unique id so the sim can map registered data sim objects to data definitions.
-   * @param requestId Each request for sim object data requires a unique id so the sim can provide the request ID in the response (message SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
+   * @param dataDefinitionId Each data definition variable has its own unique id so the sim can map registered data sim objects to data
+   * definitions.
+   * @param requestId Each request for sim object data requires a unique id so the sim can provide the request ID in the response (message
+   * SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
    * @param autoReading Used by external classes to determine if the variable should updated from the sim when a sim update call occurs.
    * @param autoWriting Used by external classes to determine if the variable should written to the sim when a sim update call occurs.
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
    */
-  DataDefinitionVariable<T>(
-    HANDLE hSimConnect,
-    const std::string varName,
-    const std::vector<DataDefinition> &dataDefinitions,
-    SIMCONNECT_DATA_DEFINITION_ID dataDefId,
-    SIMCONNECT_DATA_REQUEST_ID requestId,
-    bool autoRead = false,
-    bool autoWrite = false,
-    FLOAT64 maxAgeTime = 0.0,
-    UINT64 maxAgeTicks = 0
-  )
-    : SimObjectBase(hSimConnect, std::move(varName), dataDefId, requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
-      dataDefinitions(dataDefinitions), dataStruct{} {
-
-    for (auto &ddef: dataDefinitions) {
+  DataDefinitionVariable<T>(HANDLE hSimConnect,
+                            const std::string varName,
+                            const std::vector<DataDefinition>& dataDefinitions,
+                            SIMCONNECT_DATA_DEFINITION_ID dataDefId,
+                            SIMCONNECT_DATA_REQUEST_ID requestId,
+                            bool autoRead = false,
+                            bool autoWrite = false,
+                            FLOAT64 maxAgeTime = 0.0,
+                            UINT64 maxAgeTicks = 0)
+      : SimObjectBase(hSimConnect, std::move(varName), dataDefId, requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
+        dataDefinitions(dataDefinitions),
+        dataStruct{} {
+    for (auto& ddef : dataDefinitions) {
       std::string fullVarName = ddef.name;
-      if (ddef.index != 0) fullVarName += ":" + std::to_string(ddef.index);
-      if (!SUCCEEDED(SimConnect_AddToDataDefinition(
-        hSimConnect,
-        dataDefId,
-        fullVarName.c_str(),
-        ddef.unit.name,
-        ddef.dataType,
-        ddef.epsilon))
-        ) {
+      if (ddef.index != 0)
+        fullVarName += ":" + std::to_string(ddef.index);
+      if (!SUCCEEDED(
+              SimConnect_AddToDataDefinition(hSimConnect, dataDefId, fullVarName.c_str(), ddef.unit.name, ddef.dataType, ddef.epsilon))) {
         LOG_ERROR("Failed to add " + ddef.name + " to data definition.");
       }
     }
   }
 
-public:
-
-  DataDefinitionVariable<T>() = delete; // no default constructor
-  DataDefinitionVariable<T>(const DataDefinitionVariable &) = delete; // no copy constructor
+ public:
+  DataDefinitionVariable<T>() = delete;                               // no default constructor
+  DataDefinitionVariable<T>(const DataDefinitionVariable&) = delete;  // no copy constructor
   // no copy assignment
-  DataDefinitionVariable<T> &operator=(const DataDefinitionVariable &) = delete;
+  DataDefinitionVariable<T>& operator=(const DataDefinitionVariable&) = delete;
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
@@ -152,13 +145,8 @@ public:
   };
 
   [[nodiscard]] bool requestDataFromSim() const override {
-    if (!SUCCEEDED(SimConnect_RequestDataOnSimObject(
-      hSimConnect,
-      requestId,
-      dataDefId,
-      SIMCONNECT_OBJECT_ID_USER,
-      SIMCONNECT_PERIOD_ONCE))
-      ) {
+    if (!SUCCEEDED(
+            SimConnect_RequestDataOnSimObject(hSimConnect, requestId, dataDefId, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE))) {
       LOG_ERROR("DataDefinitionVariable: Failed to request data from sim: " + name);
       return false;
     }
@@ -184,31 +172,21 @@ public:
    * @param limit The number of times the data should be transmitted before this communication is
    *              ended. The default is zero, which means the data should be transmitted endlessly.
    * @return true if the request was successful, false otherwise
-   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RequestDataOnSimObject.htm
+   * @see
+   * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RequestDataOnSimObject.htm
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_PERIOD.htm
    */
-  [[nodiscard]] bool requestPeriodicDataFromSim(
-    SIMCONNECT_PERIOD period,
-    DWORD periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
-    DWORD origin = 0,
-    DWORD interval = 0,
-    DWORD limit = 0
-  ) const {
+  [[nodiscard]] bool requestPeriodicDataFromSim(SIMCONNECT_PERIOD period,
+                                                DWORD periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
+                                                DWORD origin = 0,
+                                                DWORD interval = 0,
+                                                DWORD limit = 0) const {
     if (autoRead && period >= SIMCONNECT_PERIOD_ONCE) {
       LOG_ERROR("DataDefinitionVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;
     }
-    if (!SUCCEEDED(SimConnect_RequestDataOnSimObject(
-      hSimConnect,
-      requestId,
-      dataDefId,
-      SIMCONNECT_OBJECT_ID_USER,
-      period,
-      periodFlags,
-      origin,
-      interval,
-      limit))
-      ) {
+    if (!SUCCEEDED(SimConnect_RequestDataOnSimObject(hSimConnect, requestId, dataDefId, SIMCONNECT_OBJECT_ID_USER, period, periodFlags,
+                                                     origin, interval, limit))) {
       LOG_ERROR("DataDefinitionVariable: Failed to request data from sim: " + name);
       return false;
     }
@@ -217,8 +195,9 @@ public:
 
   [[nodiscard]] bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) override {
     if (!needsUpdateFromSim(timeStamp, tickCounter)) {
-      LOG_TRACE("DataDefinitionVariable::requestUpdateFromSim: Not requesting update from sim as "
-                "value is not older than max age.");
+      LOG_TRACE(
+          "DataDefinitionVariable::requestUpdateFromSim: Not requesting update from sim as "
+          "value is not older than max age.");
       return true;
     }
     LOG_TRACE("DataDefinitionVariable::requestUpdateFromSim: Requesting update from sim.");
@@ -243,11 +222,8 @@ public:
   };
 
   bool writeDataToSim() override {
-    if (!SUCCEEDED(SimConnect_SetDataOnSimObject(hSimConnect, dataDefId,
-                                                 SIMCONNECT_OBJECT_ID_USER,
-                                                 0, 0, sizeof(T), &dataStruct))) {
-      LOG_ERROR("Setting data to sim for " + name + " with dataDefId="
-                + std::to_string(dataDefId) + " failed!");
+    if (!SUCCEEDED(SimConnect_SetDataOnSimObject(hSimConnect, dataDefId, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(T), &dataStruct))) {
+      LOG_ERROR("Setting data to sim for " + name + " with dataDefId=" + std::to_string(dataDefId) + " failed!");
       return false;
     }
     return true;
@@ -258,25 +234,21 @@ public:
   /**
    * @return a constant reference to the data definition vector
    */
-  [[maybe_unused]] [[nodiscard]]
-  const std::vector<DataDefinition> &getDataDefinitions() const { return dataDefinitions; }
+  [[maybe_unused]] [[nodiscard]] const std::vector<DataDefinition>& getDataDefinitions() const { return dataDefinitions; }
 
   /**
    * Returns a modifiable reference to the data container
    * @return T& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]]
-  T &data() { return dataStruct; }
+  [[maybe_unused]] [[nodiscard]] T& data() { return dataStruct; }
 
   /**
    * Returns a constant reference to the data container
    * @return std::vector<T>& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]]
-  const T &data() const { return dataStruct; }
+  [[maybe_unused]] [[nodiscard]] const T& data() const { return dataStruct; }
 
-  [[nodiscard]]
-  std::string str() const override {
+  [[nodiscard]] std::string str() const override {
     std::stringstream ss;
     ss << "DataDefinition[ name=" << getName();
     ss << ", dataDefId=" << dataDefId;
@@ -296,7 +268,7 @@ public:
     return ss.str();
   }
 
-  friend std::ostream &operator<<(std::ostream &os, const DataDefinitionVariable &ddv);
+  friend std::ostream& operator<<(std::ostream& os, const DataDefinitionVariable& ddv);
 };
 
 /**
@@ -304,10 +276,10 @@ public:
  * @return returns a string representation of the DataDefinitionVariable as returned by
  *         DataDefinitionVariable::str()
  */
-template<typename T>
-std::ostream &operator<<(std::ostream &os, const DataDefinitionVariable<T> &ddv) {
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const DataDefinitionVariable<T>& ddv) {
   os << ddv.str();
   return os;
 }
 
-#endif //FLYBYWIRE_DATADEFINITIONVARIABLE_H
+#endif  // FLYBYWIRE_DATADEFINITIONVARIABLE_H

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include "DataManager.h"
-#include "SimconnectExceptionStrings.h"
-#include "MsfsHandler.h"
-#include "NamedVariable.h"
 #include "AircraftVariable.h"
 #include "ClientEvent.h"
+#include "MsfsHandler.h"
+#include "NamedVariable.h"
+#include "SimconnectExceptionStrings.h"
 
 bool DataManager::initialize(HANDLE hdlSimConnect) {
   hSimConnect = hdlSimConnect;
@@ -26,30 +26,24 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   UINT64 tickCounter = msfsHandler->getTickCounter();
 
   // get all variables set to automatically read
-  for (auto &var: variables) {
+  for (auto& var : variables) {
     if (var.second->isAutoRead()) {
       var.second->updateFromSim(timeStamp, tickCounter);
-      LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
-                  << var.second->getName() << " = " << var.second->get()
+      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::preUpdate() - auto read named and aircraft: " << var.second->getName() << " = " << var.second->get()
                   << std::endl;
       })
     }
   }
 
   // request all data definitions set to automatically read
-  for (auto &ddv: simObjects) {
+  for (auto& ddv : simObjects) {
     if (ddv.second->isAutoRead()) {
       if (!ddv.second->requestUpdateFromSim(timeStamp, tickCounter)) {
-        LOG_ERROR("DataManager::preUpdate(): requestUpdateFromSim() failed for "
-                  + ddv.second->getName());
+        LOG_ERROR("DataManager::preUpdate(): requestUpdateFromSim() failed for " + ddv.second->getName());
       }
-      LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::preUpdate() - auto read simobjects: "
-                  << ddv.second->getName()
-                  << std::endl;
+      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::preUpdate() - auto read simobjects: " << ddv.second->getName() << std::endl;
       })
     }
   }
@@ -78,30 +72,24 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   }
 
   // write all variables set to automatically write
-  for (auto &var: variables) {
+  for (auto& var : variables) {
     if (var.second->isAutoWrite()) {
       var.second->updateToSim();
-      LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
-                  << var.second->getName() << " = " << var.second->get()
+      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::postUpdate() - auto write named and aircraft: " << var.second->getName() << " = " << var.second->get()
                   << std::endl;
       })
     }
   }
 
   // write all data definitions set to automatically write
-  for (auto &ddv: simObjects) {
+  for (auto& ddv : simObjects) {
     if (ddv.second->isAutoWrite()) {
       if (!ddv.second->writeDataToSim()) {
-        LOG_ERROR("DataManager::postUpdate(): updateDataToSim() failed for "
-                  + ddv.second->getName());
+        LOG_ERROR("DataManager::postUpdate(): updateDataToSim() failed for " + ddv.second->getName());
       }
-      LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::postUpdate() - auto write simobjects"
-                  << ddv.second->getName()
-                  << std::endl;
+      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
+        std::cout << "DataManager::postUpdate() - auto write simobjects" << ddv.second->getName() << std::endl;
       })
     }
   }
@@ -163,8 +151,8 @@ NamedVariablePtr DataManager::make_named_var(const std::string varName,
   }
 
   // Create new var and store it in the map
-  NamedVariablePtr var = std::shared_ptr<NamedVariable>(
-    new NamedVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+  NamedVariablePtr var =
+      std::shared_ptr<NamedVariable>(new NamedVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
 
   variables[uniqueName] = var;
 
@@ -212,10 +200,10 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
   // Create new var and store it in the map
   AircraftVariablePtr var;
   var = setterEventName.empty()
-        ? std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), index, setterEvent,
-                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks))
-        : std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), index, std::move(setterEventName),
-                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+            ? std::shared_ptr<AircraftVariable>(
+                  new AircraftVariable(std::move(varName), index, setterEvent, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks))
+            : std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), index, std::move(setterEventName), unit,
+                                                                     autoReading, autoWriting, maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_aircraft_var(): created variable " + var->str());
@@ -223,13 +211,11 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
   return var;
 }
 
-AircraftVariablePtr DataManager::make_simple_aircraft_var(
-  const std::string varName,
-  Unit unit,
-  bool autoReading,
-  FLOAT64 maxAgeTime,
-  UINT64 maxAgeTicks) {
-
+AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string varName,
+                                                          Unit unit,
+                                                          bool autoReading,
+                                                          FLOAT64 maxAgeTime,
+                                                          UINT64 maxAgeTicks) {
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
   // used in different places with different expected values via Index and Units.
@@ -253,8 +239,8 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(
   }
 
   // Create new var and store it in the map
-  AircraftVariablePtr var = std::shared_ptr<AircraftVariable>(
-    new AircraftVariable(std::move(varName), 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks));
+  AircraftVariablePtr var =
+      std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks));
 
   variables[uniqueName] = var;
 
@@ -262,17 +248,17 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(
   return var;
 }
 
-ClientEventPtr DataManager::make_client_event(const std::string &clientEventName, SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
+ClientEventPtr DataManager::make_client_event(const std::string& clientEventName, SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
   // find existing event instance for this event
-  for (auto &event: clientEvents) {
+  for (auto& event : clientEvents) {
     if (event.second->getClientEventName() == clientEventName) {
       LOG_DEBUG("DataManager::make_event(): already exists: " + event.second->str());
       return event.second;
     }
   }
   // create a new event instance
-  ClientEventPtr clientEvent = std::shared_ptr<ClientEvent>(
-    new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName)));
+  ClientEventPtr clientEvent =
+      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName)));
   clientEvents[clientEvent->getClientEventId()] = clientEvent;
   if (notificationGroupId != SIMCONNECT_UNUSED) {
     clientEvent->addClientEventToNotificationGroup(notificationGroupId);
@@ -284,16 +270,15 @@ ClientEventPtr DataManager::make_client_event(const std::string &clientEventName
 // Key Events
 // =================================================================================================
 
-KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction &callback) {
+KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction& callback) {
   auto id = keyEventCallbackIDGen.getNextId();
   if (!keyEventCallbacks.contains(keyEventId)) {
     keyEventCallbacks.insert({keyEventId, {{id, callback}}});
-  }
-  else {
+  } else {
     keyEventCallbacks[keyEventId].insert({id, callback});
   }
-  LOG_DEBUG("Added callback to key event " + std::to_string(keyEventId) + " with ID " + std::to_string(id)
-            + " and " + std::to_string(keyEventCallbacks[keyEventId].size()) + " callbacks");
+  LOG_DEBUG("Added callback to key event " + std::to_string(keyEventId) + " with ID " + std::to_string(id) + " and " +
+            std::to_string(keyEventCallbacks[keyEventId].size()) + " callbacks");
   return id;
 }
 
@@ -301,8 +286,8 @@ bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallback
   if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
     if (auto callbackPair = eventPair->second.find(keyEventId); callbackPair != eventPair->second.end()) {
       eventPair->second.erase(callbackPair);
-      LOG_DEBUG("Removed callback from key event " + std::to_string(keyEventId) + " with ID " + std::to_string(callbackId)
-                + " and " + std::to_string(eventPair->second.size()) + " callbacks left");
+      LOG_DEBUG("Removed callback from key event " + std::to_string(keyEventId) + " with ID " + std::to_string(callbackId) + " and " +
+                std::to_string(eventPair->second.size()) + " callbacks left");
       if (eventPair->second.empty()) {
         keyEventCallbacks.erase(eventPair);
       }
@@ -313,26 +298,22 @@ bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallback
   return false;
 }
 
-bool DataManager::sendKeyEvent(KeyEventID keyEventId,
-                               DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
+bool DataManager::sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
   auto result = trigger_key_event_EX1(keyEventId, param0, param1, param2, param3, param4);
   if (result == 0) {
-    LOG_DEBUG("Sent key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", "
-              + std::to_string(param1) + ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", "
-              + std::to_string(param4));
+    LOG_DEBUG("Sent key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", " + std::to_string(param1) +
+              ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", " + std::to_string(param4));
     return true;
   }
-  LOG_WARN("Failed to send key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", "
-           + std::to_string(param1) + ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", "
-           + std::to_string(param4) + " with error code " + std::to_string(result));
+  LOG_WARN("Failed to send key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", " +
+           std::to_string(param1) + ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", " + std::to_string(param4) +
+           " with error code " + std::to_string(result));
   return false;
 }
 
-void DataManager::processKeyEvent(
-  KeyEventID keyEventId,
-  UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4) {
+void DataManager::processKeyEvent(KeyEventID keyEventId, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4) {
   if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
-    for (auto &callbackPair: eventPair->second) {
+    for (auto& callbackPair : eventPair->second) {
       callbackPair.second(evdata0, evdata1, evdata2, evdata3, evdata4);
     }
   }
@@ -344,7 +325,7 @@ void DataManager::processKeyEvent(
 
 void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]] DWORD* cbData) const {
   switch (pRecv->dwID) {
-    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: // fallthrough
+    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:  // fallthrough
     case SIMCONNECT_RECV_ID_CLIENT_DATA:
       processSimObjectData(pRecv);
       break;
@@ -367,11 +348,9 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
 
     case SIMCONNECT_RECV_ID_EXCEPTION: {
       auto* const pException = reinterpret_cast<SIMCONNECT_RECV_EXCEPTION*>(pRecv);
-      LOG_ERROR("DataManager: Exception in SimConnect connection: "
-                + SimconnectExceptionStrings::getSimConnectExceptionString(
-        static_cast<SIMCONNECT_EXCEPTION>(pException->dwException))
-                + " send_id:" + std::to_string(pException->dwSendID)
-                + " index:" + std::to_string(pException->dwIndex));
+      LOG_ERROR("DataManager: Exception in SimConnect connection: " +
+                SimconnectExceptionStrings::getSimConnectExceptionString(static_cast<SIMCONNECT_EXCEPTION>(pException->dwException)) +
+                " send_id:" + std::to_string(pException->dwSendID) + " index:" + std::to_string(pException->dwIndex));
       break;
     }
 
@@ -387,8 +366,7 @@ void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) const {
     pair->second->processSimData(pData, msfsHandler->getTimeStamp(), msfsHandler->getTickCounter());
     return;
   }
-  LOG_ERROR("DataManager::processSimObjectData() - unknown request id: "
-            + std::to_string(pSimobjectData->dwRequestID));
+  LOG_ERROR("DataManager::processSimObjectData() - unknown request id: " + std::to_string(pSimobjectData->dwRequestID));
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) const {
@@ -396,8 +374,7 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) const {
     pair->second->processEvent(pRecv->dwData);
     return;
   }
-  LOG_WARN("DataManager::processEvent() - unknown event id: "
-           + std::to_string(pRecv->uEventID));
+  LOG_WARN("DataManager::processEvent() - unknown event id: " + std::to_string(pRecv->uEventID));
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) const {
@@ -405,8 +382,5 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) const {
     pair->second->processEvent(pRecv->dwData0, pRecv->dwData1, pRecv->dwData2, pRecv->dwData3, pRecv->dwData4);
     return;
   }
-  LOG_WARN("DataManager::processEvent() - unknown event id: "
-           + std::to_string(pRecv->uEventID));
+  LOG_WARN("DataManager::processEvent() - unknown event id: " + std::to_string(pRecv->uEventID));
 }
-
-

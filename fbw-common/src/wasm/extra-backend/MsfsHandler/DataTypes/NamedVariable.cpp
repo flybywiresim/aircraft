@@ -32,7 +32,6 @@ std::string NamedVariable::str() const {
   return ss.str();
 }
 
-
 /**
  * Overload of the << operator for NamedVariable.
  * @return the a string representation of the NamedVariable as returned by NamedVariable::str()

@@ -13,10 +13,10 @@
 #ifdef NDEBUG
 #define SIMPLE_ASSERT(condition, message)
 #else
-#define SIMPLE_ASSERT(condition, message) \
-                    if (!(condition)) { std::cerr << "Assertion failed: " << message << std::endl; }
+#define SIMPLE_ASSERT(condition, message)                      \
+  if (!(condition)) {                                          \
+    std::cerr << "Assertion failed: " << message << std::endl; \
+  }
 #endif
 
-
-
-#endif //FLYBYWIRE_SIMPLE_ASSERT_H
+#endif  // FLYBYWIRE_SIMPLE_ASSERT_H

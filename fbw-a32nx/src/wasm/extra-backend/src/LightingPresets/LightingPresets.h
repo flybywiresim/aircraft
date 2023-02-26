@@ -4,8 +4,8 @@
 #ifndef FLYBYWIRE_LIGHTINGPRESETS_H
 #define FLYBYWIRE_LIGHTINGPRESETS_H
 
-#include "Module.h"
 #include "DataManager.h"
+#include "Module.h"
 #include "inih/ini.h"
 
 class MsfsHandler;
@@ -13,35 +13,35 @@ class MsfsHandler;
 // Struct to hold all relevant light levels
 struct LightingValues {
   // EFB
-  FLOAT64 efbBrightness;                  // A32NX_EFB_BRIGHTNESS
+  FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS
   // OVHD
-  FLOAT64 cabinLightLevel;                // 7 (0, 50, 100)
-  FLOAT64 ovhdIntegralLightLevel;         // 86
+  FLOAT64 cabinLightLevel;         // 7 (0, 50, 100)
+  FLOAT64 ovhdIntegralLightLevel;  // 86
   // Glareshield
   FLOAT64 glareshieldIntegralLightLevel;  // 84
   FLOAT64 glareshieldLcdLightLevel;       // 87
   FLOAT64 tableLightCptLevel;             // 10
   FLOAT64 tableLightFoLevel;              // 11
   // Instruments
-  FLOAT64 pfdBrtCptLevel;                 // 88
-  FLOAT64 ndBrtCptLevel;                  // 89
-  FLOAT64 wxTerrainBrtCptLevel;           // 94
-  FLOAT64 consoleLightCptLevel;           // 8 (0, 50, 100)
-  FLOAT64 pfdBrtFoLevel;                  // 90
-  FLOAT64 ndBrtFoLevel;                   // 91
-  FLOAT64 wxTerrainBrtFoLevel;            // 95
-  FLOAT64 consoleLightFoLevel;            // 9 (0, 50, 100)
+  FLOAT64 pfdBrtCptLevel;        // 88
+  FLOAT64 ndBrtCptLevel;         // 89
+  FLOAT64 wxTerrainBrtCptLevel;  // 94
+  FLOAT64 consoleLightCptLevel;  // 8 (0, 50, 100)
+  FLOAT64 pfdBrtFoLevel;         // 90
+  FLOAT64 ndBrtFoLevel;          // 91
+  FLOAT64 wxTerrainBrtFoLevel;   // 95
+  FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
   // ISIS display has automatic brightness adjustment.
-  FLOAT64 dcduLeftLightLevel;             // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
-  FLOAT64 dcduRightLightLevel;            // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
-  FLOAT64 mcduLeftLightLevel;             // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
-  FLOAT64 mcduRightLightLevel;            // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
+  FLOAT64 dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
+  FLOAT64 dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
+  FLOAT64 mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
+  FLOAT64 mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
   // Pedestal
-  FLOAT64 ecamUpperLightLevel;            // 92
-  FLOAT64 ecamLowerLightLevel;            // 93
-  FLOAT64 floodPnlLightLevel;             // 83
-  FLOAT64 pedestalIntegralLightLevel;     // 85
-  FLOAT64 floodPedLightLevel;             // 76
+  FLOAT64 ecamUpperLightLevel;         // 92
+  FLOAT64 ecamLowerLightLevel;         // 93
+  FLOAT64 floodPnlLightLevel;          // 83
+  FLOAT64 pedestalIntegralLightLevel;  // 85
+  FLOAT64 floodPedLightLevel;          // 76
 };
 
 /**
@@ -57,7 +57,7 @@ struct LightingValues {
  * lighting values.
  */
 class LightingPresets : public Module {
-private:
+ private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
 
   static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
@@ -105,14 +105,13 @@ private:
   // Lighting values
   LightingValues localLightValues{};
 
-public:
-
+ public:
   LightingPresets() = delete;
 
   /**
- * Creates a new LightingPresets instance and takes a reference to the MsfsHandler instance.
- * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
- */
+   * Creates a new LightingPresets instance and takes a reference to the MsfsHandler instance.
+   * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
+   */
   explicit LightingPresets(MsfsHandler& msfsHandler) : Module(msfsHandler) {}
 
   bool initialize() override;
@@ -122,13 +121,12 @@ public:
   bool shutdown() override;
 
   /**
- * Produces a string with the current settings and their values.
- * @return string with the current settings and their values.
- */
-  [[maybe_unused]] [[nodiscard]]
-  std::string sprint() const;
+   * Produces a string with the current settings and their values.
+   * @return string with the current settings and their values.
+   */
+  [[maybe_unused]] [[nodiscard]] std::string sprint() const;
 
-private:
+ private:
   /**
    * Loads a specified preset
    * @param loadPresetRequest the number of the preset to be loaded
@@ -169,14 +167,13 @@ private:
    */
   void loadFromData(LightingValues lv);
 
-  [[nodiscard]]
-  AircraftVariablePtr getLightPotentiometerVar(int index) const;
+  [[nodiscard]] AircraftVariablePtr getLightPotentiometerVar(int index) const;
 
   /**
    * cabin lights in the A32NX need to be controlled by two vars
    * one for the switch position and one for the actual light
    * @param level
-  */
+   */
   void setValidCabinLightValue(FLOAT64 level);
 
   /**
@@ -189,23 +186,16 @@ private:
    * @param defaultValue a default value that is returned if the key does not exist
    * @return the value of the key or the default value if the key does not exist
    */
-  static FLOAT64
-  iniGetOrDefault(const mINI::INIStructure &ini, const std::string &section, const std::string &key,
-                  FLOAT64 defaultValue);
+  static FLOAT64 iniGetOrDefault(const mINI::INIStructure& ini, const std::string& section, const std::string& key, FLOAT64 defaultValue);
 
-  const LightingValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                     50.0, 50.0, 50.0, 50.0, 50.0, 0.5, 0.5, 0.5, 0.5, 50.0, 50.0,
-                                     50.0, 50.0, 50.0};
+  const LightingValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+                                     50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
 
-  [[maybe_unused]]
-  const LightingValues DEFAULT_10 = {10.0, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
-                                     10.0, 10.0, 10.0, 10.0, 10.0, 0.1, 0.1, 0.1, 0.0, 10.0, 10.0,
-                                     10.0, 10.0, 10.0};
+  [[maybe_unused]] const LightingValues DEFAULT_10 = {10.0, 0.0,  10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                                                      10.0, 10.0, 10.0, 0.1,  0.1,  0.1,  0.0,  10.0, 10.0, 10.0, 10.0, 10.0};
 
-  [[maybe_unused]]
-  const LightingValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
-                                      100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 1.0, 1.0, 1.0, 1.0,
-                                      100.0, 100.0, 100.0, 100.0, 100.0};
+  [[maybe_unused]] const LightingValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                                                       100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
 };
 
-#endif // FLYBYWIRE_LIGHTINGPRESETS_H
+#endif  // FLYBYWIRE_LIGHTINGPRESETS_H

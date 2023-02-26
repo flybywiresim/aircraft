@@ -11,13 +11,8 @@ FLOAT64 AircraftVariable::rawReadFromSim() {
     return FLOAT64{};
   }
   const FLOAT64 d = aircraft_varget(dataID, unit.id, index);
-  LOG_TRACE("AircraftVariable::rawReadFromSim() "
-            + this->name
-            + std::to_string(this->index)
-            + " fromSim = " + std::to_string(d)
-            + " cached  = " + std::to_string(cachedValue.value_or(-999999))
-            + " as " + unit.name
-  );
+  LOG_TRACE("AircraftVariable::rawReadFromSim() " + this->name + std::to_string(this->index) + " fromSim = " + std::to_string(d) +
+            " cached  = " + std::to_string(cachedValue.value_or(-999999)) + " as " + unit.name);
   return d;
 }
 
@@ -61,8 +56,7 @@ void AircraftVariable::useEventSetter() {
   const auto data = static_cast<DWORD>(cachedValue.value());
   if (index != 0) {
     setterEvent->trigger_ex1(index, data, 0, 0, 0);
-  }
-  else {
+  } else {
     setterEvent->trigger_ex1(data, 0, 0, 0, 0);
   }
 }
@@ -75,8 +69,7 @@ void AircraftVariable::useCalculatorCodeSetter() {
     calculator_code += std::to_string(index);
     calculator_code += " ";
     calculator_code += " (>K:2:" + setterEventName + ")";
-  }
-  else {
+  } else {
     calculator_code += " (>K:" + setterEventName + ")";
   }
 
@@ -86,8 +79,7 @@ void AircraftVariable::useCalculatorCodeSetter() {
     if (!execute_calculator_code(pCompiled, nullptr, nullptr, nullptr)) {
       LOG_ERROR("AircraftVariable::setAndWriteToSim() failed to execute calculator code: [" + calculator_code + "]");
     }
-  }
-  else {
+  } else {
     LOG_ERROR("Failed to precompile calculator code for " + name);
   }
 }
@@ -113,7 +105,7 @@ std::string AircraftVariable::str() const {
  * Overload of the << operator for AircraftVariable.
  * @return the string representation of the variable as returned by AircraftVariable::str()
  */
-std::ostream &operator<<(std::ostream &os, const AircraftVariable &aircraftVariable) {
+std::ostream& operator<<(std::ostream& os, const AircraftVariable& aircraftVariable) {
   os << aircraftVariable.str();
   return os;
 }

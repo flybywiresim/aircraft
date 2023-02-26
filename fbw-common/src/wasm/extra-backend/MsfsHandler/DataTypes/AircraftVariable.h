@@ -7,9 +7,9 @@
 #include <iostream>
 #include <utility>
 
-#include "logging.h"
 #include "CacheableVariable.h"
 #include "ClientEvent.h"
+#include "logging.h"
 
 class DataManager;
 
@@ -28,8 +28,7 @@ class DataManager;
  * as it de-duplicates variables and only creates one instance of each name-index-unit combination.
  */
 class AircraftVariable : public CacheableVariable {
-private:
-
+ private:
   // The data manager is a friend, so it can access the private constructor.
   friend DataManager;
 
@@ -65,20 +64,20 @@ private:
    * @param maxAgeTicks The maximum age of an auto updated the variable in sim ticks.
    * @param setterEventName The calculator code to write to the variable.
    */
-  explicit AircraftVariable(
-    const std::string varName,
-    int varIndex = 0,
-    std::string setterEventName = "",
-    Unit unit = UNITS.Number,
-    bool autoReading = false,
-    bool autoWriting = false,
-    FLOAT64 maxAgeTime = 0.0,
-    UINT64 maxAgeTicks = 0)
-    : CacheableVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
-      index(varIndex), setterEventName(std::move(setterEventName)), setterEvent(nullptr) {
-
+  explicit AircraftVariable(const std::string varName,
+                            int varIndex = 0,
+                            std::string setterEventName = "",
+                            Unit unit = UNITS.Number,
+                            bool autoReading = false,
+                            bool autoWriting = false,
+                            FLOAT64 maxAgeTime = 0.0,
+                            UINT64 maxAgeTicks = 0)
+      : CacheableVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
+        index(varIndex),
+        setterEventName(std::move(setterEventName)),
+        setterEvent(nullptr) {
     dataID = get_aircraft_var_enum(varName.c_str());
-    if (dataID == -1) { // cannot throw an exception in MSFS
+    if (dataID == -1) {  // cannot throw an exception in MSFS
       LOG_ERROR("Aircraft variable " + varName + " not found in the Simulator");
     }
   }
@@ -98,29 +97,27 @@ private:
    * @param maxAgeTicks The maximum age of an auto updated the variable in sim ticks.
    * @param setterEventName The calculator code to write to the variable.
    */
-  explicit AircraftVariable(
-    const std::string &varName,
-    int varIndex = 0,
-    std::shared_ptr<ClientEvent> setterEvent = nullptr,
-    Unit unit = UNITS.Number,
-    bool autoReading = false,
-    bool autoWriting = false,
-    FLOAT64 maxAgeTime = 0.0,
-    UINT64 maxAgeTicks = 0)
-    : CacheableVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
-      index(varIndex), setterEvent(std::move(setterEvent)) {
-
+  explicit AircraftVariable(const std::string& varName,
+                            int varIndex = 0,
+                            std::shared_ptr<ClientEvent> setterEvent = nullptr,
+                            Unit unit = UNITS.Number,
+                            bool autoReading = false,
+                            bool autoWriting = false,
+                            FLOAT64 maxAgeTime = 0.0,
+                            UINT64 maxAgeTicks = 0)
+      : CacheableVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
+        index(varIndex),
+        setterEvent(std::move(setterEvent)) {
     dataID = get_aircraft_var_enum(varName.c_str());
-    if (dataID == -1) { // cannot throw an exception in MSFS
+    if (dataID == -1) {  // cannot throw an exception in MSFS
       LOG_ERROR("Aircraft variable " + varName + " not found in the Simulator");
     }
   }
 
-public:
-
-  AircraftVariable() = delete; // no default constructor
-  AircraftVariable(const AircraftVariable &) = delete; // no copy constructor
-  AircraftVariable &operator=(const AircraftVariable &) = delete; // no copy assignment
+ public:
+  AircraftVariable() = delete;                                    // no default constructor
+  AircraftVariable(const AircraftVariable&) = delete;             // no copy constructor
+  AircraftVariable& operator=(const AircraftVariable&) = delete;  // no copy assignment
 
   FLOAT64 rawReadFromSim() override;
   void rawWriteToSim() override;
@@ -129,12 +126,11 @@ public:
 
   [[nodiscard]] std::string str() const override;
 
-private:
+ private:
   void useEventSetter();
   void useCalculatorCodeSetter();
 
   friend std::ostream& operator<<(std::ostream& os, const AircraftVariable& aircraftVariable);
 };
 
-
-#endif //FLYBYWIRE_AIRCRAFTVARIABLE_H
+#endif  // FLYBYWIRE_AIRCRAFTVARIABLE_H

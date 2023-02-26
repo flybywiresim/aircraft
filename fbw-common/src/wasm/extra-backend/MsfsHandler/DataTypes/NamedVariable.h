@@ -7,8 +7,8 @@
 #include <iostream>
 #include <string>
 
-#include "aircraft_prefix.h"
 #include "CacheableVariable.h"
+#include "aircraft_prefix.h"
 
 class DataManager;
 
@@ -24,7 +24,6 @@ class DataManager;
  * @see CacheableVariable
  */
 class NamedVariable : public CacheableVariable {
-
   // The data manager is a friend, so it can access the private constructor.
   friend DataManager;
 
@@ -44,29 +43,20 @@ class NamedVariable : public CacheableVariable {
    * @param maxAgeTime The maximum age of an auto updated variable in seconds.
    * @param maxAgeTicks The maximum age of an auto updated variable in sim ticks.
    */
-  explicit NamedVariable(
-    const std::string& varName,
-    Unit unit = UNITS.Number,
-    bool autoReading = false,
-    bool autoWriting = false,
-    FLOAT64 maxAgeTime = 0.0,
-    UINT64 maxAgeTicks = 0)
-    : CacheableVariable(
-    std::string(AIRCRAFT_PREFIX) + varName,
-    unit,
-    autoReading,
-    autoWriting,
-    maxAgeTime,
-    maxAgeTicks) {
-
+  explicit NamedVariable(const std::string& varName,
+                         Unit unit = UNITS.Number,
+                         bool autoReading = false,
+                         bool autoWriting = false,
+                         FLOAT64 maxAgeTime = 0.0,
+                         UINT64 maxAgeTicks = 0)
+      : CacheableVariable(std::string(AIRCRAFT_PREFIX) + varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks) {
     dataID = register_named_variable(name.c_str());
   };
 
-public:
-
-  NamedVariable() = delete; // no default constructor
-  NamedVariable(const NamedVariable &) = delete; // no copy constructor
-  NamedVariable &operator=(const NamedVariable &) = delete; // no copy assignment
+ public:
+  NamedVariable() = delete;                                 // no default constructor
+  NamedVariable(const NamedVariable&) = delete;             // no copy constructor
+  NamedVariable& operator=(const NamedVariable&) = delete;  // no copy assignment
 
   FLOAT64 rawReadFromSim() override;
   void rawWriteToSim() override;
@@ -76,5 +66,4 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const NamedVariable& namedVariable);
 };
 
-
-#endif // FLYBYWIRE_NAMEDVARIABLE_H
+#endif  // FLYBYWIRE_NAMEDVARIABLE_H

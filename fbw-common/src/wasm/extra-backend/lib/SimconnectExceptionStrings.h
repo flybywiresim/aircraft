@@ -4,11 +4,11 @@
 #ifndef FLYBYWIRE_SIMCONNECTEXCEPTIONSTRINGS_H
 #define FLYBYWIRE_SIMCONNECTEXCEPTIONSTRINGS_H
 
-#include <string>
 #include <SimConnect.h>
+#include <string>
 
 class SimconnectExceptionStrings {
-public:
+ public:
   static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception) {
     switch (exception) {
       case SIMCONNECT_EXCEPTION_NONE:
@@ -93,5 +93,4 @@ public:
   };
 };
 
-
-#endif //FLYBYWIRE_SIMCONNECTEXCEPTIONSTRINGS_H
+#endif  // FLYBYWIRE_SIMCONNECTEXCEPTIONSTRINGS_H

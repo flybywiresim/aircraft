@@ -3,10 +3,10 @@
 
 #include <iostream>
 
-#include "logging.h"
-#include "math_utils.h"
 #include "CacheableVariable.h"
 #include "ManagedDataObjectBase.h"
+#include "logging.h"
+#include "math_utils.h"
 
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {
@@ -22,10 +22,7 @@ FLOAT64 CacheableVariable::get() const {
 FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) {
   if (cachedValue.has_value() && !needsUpdateFromSim(timeStamp, tickCounter)) {
     setChanged(false);
-    LOG_TRACE("CacheableVariable::updateFromSim() - from cache "
-              + this->name
-              + " " + str()
-    );
+    LOG_TRACE("CacheableVariable::updateFromSim() - from cache " + this->name + " " + str());
     return cachedValue.value();
   }
   LOG_TRACE("CacheableVariable::updateFromSim() - read from sim " + this->name + " " + str());
@@ -38,9 +35,9 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
 FLOAT64 CacheableVariable::readFromSim() {
   const FLOAT64 fromSim = rawReadFromSim();
   // compare the value from the sim with the cached value
-  bool changed = skipChangeCheck || !cachedValue.has_value()
-            || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
-  if (changed) cachedValue = fromSim;
+  bool changed = skipChangeCheck || !cachedValue.has_value() || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
+  if (changed)
+    cachedValue = fromSim;
   dirty = false;
   setChanged(changed);
   return cachedValue.value();
@@ -65,7 +62,6 @@ void CacheableVariable::setAndWriteToSim(FLOAT64 value) {
   set(value);
   writeToSim();
 }
-
 
 void CacheableVariable::writeToSim() {
   if (cachedValue.has_value()) {

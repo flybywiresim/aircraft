@@ -9,13 +9,11 @@
  * internal state value towards the input value with the given acceleration value.
  */
 class InertialDampener {
-
-private:
+ private:
   double lastValue{};
   double accelStepSize{};
 
-public:
-
+ public:
   /**
    * Creates a new instance of the InertialDampener
    * @param startValue initial value to avoid a too large delta for the first usage
@@ -38,6 +36,6 @@ public:
    */
   double updateSpeed(double newTargetValue);
 
-private:
+ private:
   static double round(double value, int decimalPrecision);
 };

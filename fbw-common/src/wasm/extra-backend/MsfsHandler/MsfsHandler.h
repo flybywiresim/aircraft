@@ -23,7 +23,6 @@ class Module;
  * It does not limit the direct usage of the SDK or Simconnect in any way!
  */
 class MsfsHandler {
-
   /**
    * A list of all modules that are currently loaded.
    * This list is used to call the preUpdate, update and postUpdate methods of each module.
@@ -83,7 +82,7 @@ class MsfsHandler {
   // Callback function for register_key_event_handler_EX1
   GAUGE_KEY_EVENT_HANDLER_EX1 keyEventHandlerEx1 = nullptr;
 
-public:
+ public:
   /**
    * Creates a new MsfsHandler instance.
    * @param name string containing an appropriate simconnect name for the client program.
@@ -120,39 +119,33 @@ public:
    */
   void registerModule(Module* pModule);
 
-
   // Getters and setters
-public:
-
+ public:
   /**
    * @return a modifiable reference to the data manager.
    */
-  DataManager &getDataManager() { return dataManager; }
+  DataManager& getDataManager() { return dataManager; }
 
   /**
    * @return value of LVAR A32NX_IS_READY
    */
-  [[maybe_unused]] [[nodiscard]]
-  bool getA32NxIsReady() const;
+  [[maybe_unused]] [[nodiscard]] bool getA32NxIsReady() const;
 
   /**
    *
    * @return value of LVAR A32NX_DEVELOPMENT_STATE
    */
-  [[maybe_unused]] [[nodiscard]]
-  FLOAT64 getA32NxIsDevelopmentState() const;
+  [[maybe_unused]] [[nodiscard]] FLOAT64 getA32NxIsDevelopmentState() const;
 
   /**
    * @return the current simulation time
    */
-  [[maybe_unused]] [[nodiscard]]
-  FLOAT64 getTimeStamp() const { return timeStamp; }
+  [[maybe_unused]] [[nodiscard]] FLOAT64 getTimeStamp() const { return timeStamp; }
 
   /**
    * @return the current tick counter
    */
-  [[maybe_unused]] [[nodiscard]]
-  UINT64 getTickCounter() const { return tickCounter; }
+  [[maybe_unused]] [[nodiscard]] UINT64 getTickCounter() const { return tickCounter; }
 };
 
-#endif // FLYBYWIRE_MSFSHANDLER_H
+#endif  // FLYBYWIRE_MSFSHANDLER_H

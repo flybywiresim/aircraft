@@ -4,11 +4,11 @@
 #include <MSFS/Legacy/gauges.h>
 #include <iostream>
 
-#include "logging.h"
-#include "MsfsHandler.h"
-#include "LightingPresets.h"
 #include "AircraftVariable.h"
+#include "LightingPresets.h"
+#include "MsfsHandler.h"
 #include "NamedVariable.h"
+#include "logging.h"
 
 ///
 // DataManager Howto Note:
@@ -29,12 +29,11 @@
 ///
 
 bool LightingPresets::initialize() {
-
-  dataManager = &msfsHandler->getDataManager();
+  dataManager = &msfsHandler.getDataManager();
 
   // Events for setting the aircraft variables
-  lightPotentiometerSetEvent = dataManager->make_event("LIGHT_POTENTIOMETER_SET");
-  cabinLightSetEvent = dataManager->make_event("CABIN_LIGHTS_SET");
+  lightPotentiometerSetEvent = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
+  cabinLightSetEvent = dataManager->make_client_event("CABIN_LIGHTS_SET", NOTIFICATION_GROUP_1);
 
   // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
   elecAC1Powered = dataManager->make_named_var("ELEC_AC_1_BUS_IS_POWERED", UNITS.Number, true, false);
@@ -86,18 +85,15 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     return false;
   }
 
-  // TODO: not yet available in the A380X
-  // if (!msfsHandler->getA32NxIsReady()) return true;
-
   // only run when aircraft is powered
-  if (!elecAC1Powered->getAsBool()) return true;
+  if (!msfsHandler.getA32NxIsReady() || !elecAC1Powered->getAsBool())
+    return true;
 
   // load becomes priority in case both vars are set.
   if (loadLightingPresetRequest->getAsBool()) {
     loadLightingPreset(loadLightingPresetRequest->getAsInt64());
 
-  }
-  else if (saveLightingPresetRequest->getAsBool()) {
+  } else if (saveLightingPresetRequest->getAsBool()) {
     saveLightingPreset(saveLightingPresetRequest->getAsInt64());
   }
 
@@ -286,8 +282,7 @@ void LightingPresets::loadFromData(LightingValues lv) {
   localLightValues = lv;
 }
 
-[[maybe_unused]]
-std::string LightingPresets::sprint() const {
+[[maybe_unused]] std::string LightingPresets::sprint() const {
   std::ostringstream os;
   os << "EFB Brightness: " << localLightValues.efbBrightness << std::endl;
   os << "Cabin Light: " << localLightValues.cabinLightLevel << std::endl;
@@ -316,12 +311,10 @@ std::string LightingPresets::sprint() const {
   return os.str();
 }
 
-double LightingPresets::iniGetOrDefault(
-  const mINI::INIStructure &ini,
-  const std::string &section,
-  const std::string &key,
-  const double defaultValue) {
-
+double LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
+                                        const std::string& section,
+                                        const std::string& key,
+                                        const double defaultValue) {
   if (ini.get(section).has(key)) {
     // As MSFS wasm does not support exceptions (try/catch) we can't use
     // std::stof here. Workaround with std::stringstreams.
@@ -329,20 +322,15 @@ double LightingPresets::iniGetOrDefault(
     double value = defaultValue;
     if (input >> value) {
       return value;
-    }
-    else {
-      LOG_WARN("LightingPresets: reading ini value for ["
-               + section + "] " + key + " = " + ini.get(section).get(key) + " failed.");
+    } else {
+      LOG_WARN("LightingPresets: reading ini value for [" + section + "] " + key + " = " + ini.get(section).get(key) + " failed.");
     }
   }
   return defaultValue;
 }
 
-std::shared_ptr<AircraftVariable>
-LightingPresets::getLightPotentiometerVar(int index) const {
-  return dataManager->make_aircraft_var(
-    "LIGHT POTENTIOMETER", index, "", lightPotentiometerSetEvent, UNITS.Percent,
-    false, false, 0.0, 0);
+std::shared_ptr<AircraftVariable> LightingPresets::getLightPotentiometerVar(int index) const {
+  return dataManager->make_aircraft_var("LIGHT POTENTIOMETER", index, "", lightPotentiometerSetEvent, UNITS.Percent, false, false, 0.0, 0);
 }
 
 void LightingPresets::setValidCabinLightValue(FLOAT64 level) {
@@ -350,11 +338,9 @@ void LightingPresets::setValidCabinLightValue(FLOAT64 level) {
   // in the aircraft to work.
   if (level <= 0.0) {
     level = 0.0;
-  }
-  else if (level > 0.0 && level <= 50.0) {
+  } else if (level > 0.0 && level <= 50.0) {
     level = 50.0;
-  }
-  else if ((level > 0.0 && level > 50.0)) {
+  } else if ((level > 0.0 && level > 50.0)) {
     level = 100.0;
   }
   // cabin lights in the A32NX need to be controlled by two vars

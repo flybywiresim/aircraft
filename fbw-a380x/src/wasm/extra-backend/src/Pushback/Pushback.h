@@ -4,9 +4,9 @@
 #ifndef FLYBYWIRE_PUSHBACK_H
 #define FLYBYWIRE_PUSHBACK_H
 
-#include "Module.h"
 #include "DataManager.h"
 #include "InertialDampener.h"
+#include "Module.h"
 
 #ifdef __cpp_lib_math_constants
 #include <numbers>
@@ -29,7 +29,8 @@ class MsfsHandler;
  * - SIM ON GROUND (simvar)
  */
 class Pushback : public Module {
-private:
+ private:
+  static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
 
   // Convenience pointer to the data manager
   DataManager* dataManager{};
@@ -65,17 +66,17 @@ private:
   std::shared_ptr<DataDefinitionVariable<PushbackData>> pushbackData;
 
   // Events
-  EventPtr tugHeadingEvent;
-  EventPtr tugSpeedEvent;
+  ClientEventPtr tugHeadingEvent;
+  ClientEventPtr tugSpeedEvent;
 
-public:
+ public:
   Pushback() = delete;
 
   /**
    * Creates a new Pushback instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit Pushback(MsfsHandler* msfsHandler) : Module(msfsHandler) {}
+  explicit Pushback(MsfsHandler& msfsHandler) : Module(msfsHandler) {}
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData* pData) override;
@@ -83,8 +84,7 @@ public:
   bool postUpdate(sGaugeDrawData* pData) override;
   bool shutdown() override;
 
-private:
-
+ private:
   /**
    * Adds two angles with wrap around to result in 0-360°
    * @param a - positive or negative angle
@@ -107,10 +107,10 @@ private:
    * @param val
    * @return sign of value or 0 when value==0
    */
-  template<typename T>
+  template <typename T>
   int sgn(T val) {
     return (T(0) < val) - (val < T(0));
   }
 };
 
-#endif //FLYBYWIRE_PUSHBACK_H
+#endif  // FLYBYWIRE_PUSHBACK_H

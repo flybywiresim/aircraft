@@ -4,9 +4,9 @@
 #ifndef FLYBYWIRE_AIRCRAFTPRESETS_H
 #define FLYBYWIRE_AIRCRAFTPRESETS_H
 
-#include "Module.h"
-#include "DataManager.h"
 #include "AircraftProcedures.h"
+#include "DataManager.h"
+#include "Module.h"
 
 class MsfsHandler;
 
@@ -15,7 +15,7 @@ class MsfsHandler;
  * It uses the AircraftProcedures.h definition of procedures to load the presets.
  */
 class AircraftPresets : public Module {
-private:
+ private:
   // Convenience pointer to the data manager
   DataManager* dataManager{};
 
@@ -44,7 +44,7 @@ private:
   // step number in the array of steps
   uint64_t currentStep = 0;
 
-public:
+ public:
   AircraftPresets() = delete;
 
   /**
@@ -60,5 +60,4 @@ public:
   bool shutdown() override;
 };
 
-
-#endif //FLYBYWIRE_AIRCRAFTPRESETS_H
+#endif  // FLYBYWIRE_AIRCRAFTPRESETS_H

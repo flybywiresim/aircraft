@@ -1,8 +1,9 @@
 #pragma once
 
-#include <vector>
 #include <algorithm>
+#include <optional>
 #include <string>
+#include <vector>
 
 #ifdef DEBUG
 #include <iostream>
@@ -28,7 +29,6 @@ typedef const std::vector<ProcedureStep> ProcedureDefinition;
 typedef std::vector<const ProcedureStep*> Procedure;
 
 class AircraftProcedures {
-
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // Please remember to also update the EFB Presets page for the step description
   // if you make any changes to this list.
@@ -238,22 +238,19 @@ class AircraftProcedures {
   Procedure readyForTaxi;
   Procedure readyForTakeoff;
 
-  static void
-  insert(Procedure &dest, ProcedureDefinition &src) {
-    std::transform(begin(src), end(src), back_inserter(dest), [](const auto &procedure) {
-      return &procedure;
-    });
+  static void insert(Procedure& dest, ProcedureDefinition& src) {
+    std::transform(begin(src), end(src), back_inserter(dest), [](const auto& procedure) { return &procedure; });
   }
 
 #ifdef DEBUG
-  static inline void printProcedure(ProcedureDefinition &procedures) {
-    for (const auto &p: procedures) {
+  static inline void printProcedure(ProcedureDefinition& procedures) {
+    for (const auto& p : procedures) {
       std::cout << p.id << " = " << p.description << std::endl;
     }
   }
 #endif
 
-public:
+ public:
   AircraftProcedures() {
 #ifdef DEBUG
     // Map the procedure groups
@@ -294,8 +291,7 @@ public:
     insert(readyForTakeoff, TAKEOFF_CONFIG_ON);
   }
 
-  [[nodiscard]]
-  const std::vector<const ProcedureStep*>* getProcedure(int64_t pID) const {
+  [[nodiscard]] std::optional<const Procedure*> getProcedure(int64_t pID) const {
     switch (pID) {
       case 1:
         return &coldAndDark;
@@ -308,7 +304,7 @@ public:
       case 5:
         return &readyForTakeoff;
       default:
-        return nullptr;
+        return std::nullopt;
     }
   }
 };

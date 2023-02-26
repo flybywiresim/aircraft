@@ -15,10 +15,9 @@ class DataManager;
  * @tparam T
  * @tparam ChunkSize
  */
-template<typename T, std::size_t ChunkSize>
+template <typename T, std::size_t ChunkSize>
 class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
-private:
-
+ private:
   // The data manager is a friend, so it can access the private constructor.
   friend DataManager;
 
@@ -38,29 +37,31 @@ private:
   // TODO: is this ok??
   using ClientDataAreaVariable<T>::data;
 
-  ClientDataBufferedAreaVariable<T, ChunkSize>(
-    HANDLE hSimConnect,
-    const std::string clientDataName,
-    SIMCONNECT_CLIENT_DATA_ID clientDataId,
-    SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
-    SIMCONNECT_DATA_REQUEST_ID requestId,
-    bool autoRead = false,
-    bool autoWrite = false,
-    FLOAT64 maxAgeTime = 0.0,
-    UINT64 maxAgeTicks = 0)
-    :
-    ClientDataAreaVariable<T>(hSimConnect, std::move(clientDataName), clientDataId, clientDataDefinitionId,
-                              requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks), content() {
-  }
+  ClientDataBufferedAreaVariable<T, ChunkSize>(HANDLE hSimConnect,
+                                               const std::string clientDataName,
+                                               SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                               SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
+                                               SIMCONNECT_DATA_REQUEST_ID requestId,
+                                               bool autoRead = false,
+                                               bool autoWrite = false,
+                                               FLOAT64 maxAgeTime = 0.0,
+                                               UINT64 maxAgeTicks = 0)
+      : ClientDataAreaVariable<T>(hSimConnect,
+                                  std::move(clientDataName),
+                                  clientDataId,
+                                  clientDataDefinitionId,
+                                  requestId,
+                                  autoRead,
+                                  autoWrite,
+                                  maxAgeTime,
+                                  maxAgeTicks),
+        content() {}
 
-public:
-
-  ClientDataBufferedAreaVariable<T, ChunkSize>() = delete; // no default constructor
-  ClientDataBufferedAreaVariable<T, ChunkSize>(
-    const ClientDataBufferedAreaVariable &) = delete; // no copy constructor
+ public:
+  ClientDataBufferedAreaVariable<T, ChunkSize>() = delete;                                       // no default constructor
+  ClientDataBufferedAreaVariable<T, ChunkSize>(const ClientDataBufferedAreaVariable&) = delete;  // no copy constructor
   // no copy assignment
-  ClientDataBufferedAreaVariable<T, ChunkSize> &
-  operator=(const ClientDataBufferedAreaVariable<T, ChunkSize> &) = delete;
+  ClientDataBufferedAreaVariable<T, ChunkSize>& operator=(const ClientDataBufferedAreaVariable<T, ChunkSize>&) = delete;
   ~ClientDataBufferedAreaVariable() override = default;
 
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
@@ -75,8 +76,8 @@ public:
     // memcpy into a vector ignores the vector's metadata and just copies the data
     // it is therefore faster than std::copy or std::back_inserter but
     // std::memcpy(&this->content.data()[this->receivedBytes], &pClientData->dwData, remainingBytes);
-    BYTE* const pDataStart = (BYTE*) &pClientData->dwData;
-    BYTE* const pDataEnd = (BYTE*) &pClientData->dwData + remainingBytes;
+    BYTE* const pDataStart = (BYTE*)&pClientData->dwData;
+    BYTE* const pDataEnd = (BYTE*)&pClientData->dwData + remainingBytes;
     // std::copy(pDataStart, pDataEnd, std::back_inserter(this->content));
     this->content.insert(this->content.end(), pDataStart, pDataEnd);
 
@@ -129,16 +130,16 @@ public:
   }
 
   /**
- * Returns a modifiable reference to the data container
- * @return T& Reference to the data container
- */
-  [[maybe_unused]] [[nodiscard]] std::vector<T> &getData() { return content; }
+   * Returns a modifiable reference to the data container
+   * @return T& Reference to the data container
+   */
+  [[maybe_unused]] [[nodiscard]] std::vector<T>& getData() { return content; }
 
   /**
    * Returns a constant reference to the data container
    * @return std::vector<T>& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]] const std::vector<T> &getData() const { return content; }
+  [[maybe_unused]] [[nodiscard]] const std::vector<T>& getData() const { return content; }
 
   /**
    * Returns the number of bytes received so far
@@ -152,8 +153,7 @@ public:
    */
   [[nodiscard]] std::size_t getReceivedChunks() const { return receivedChunks; }
 
-  [[nodiscard]] std::string str() const
-  override {
+  [[nodiscard]] std::string str() const override {
     std::stringstream ss;
     ss << "ClientDataBufferedAreaVariable[ name=" << this->getName();
     ss << ", clientDataId=" << this->clientDataId;
@@ -176,7 +176,7 @@ public:
     return ss.str();
   }
 
-  friend std::ostream &operator<<(std::ostream &os, const ClientDataBufferedAreaVariable &ddv);
+  friend std::ostream& operator<<(std::ostream& os, const ClientDataBufferedAreaVariable& ddv);
 };
 
 /**
@@ -184,10 +184,10 @@ public:
  * @return returns a string representation of the ClientDataAreaVariable as returned by
  *         ClientDataAreaVariable::str()
  */
-template<typename T, std::size_t ChunkSize>
-std::ostream &operator<<(std::ostream &os, const ClientDataBufferedAreaVariable<T, ChunkSize> &ddv) {
+template <typename T, std::size_t ChunkSize>
+std::ostream& operator<<(std::ostream& os, const ClientDataBufferedAreaVariable<T, ChunkSize>& ddv) {
   os << ddv.str();
   return os;
 }
 
-#endif //FLYBYWIRE_AIRCRAFT_CLIENTDATABUFFEREDAREAVARIABLE_HPP
+#endif  // FLYBYWIRE_AIRCRAFT_CLIENTDATABUFFEREDAREAVARIABLE_HPP

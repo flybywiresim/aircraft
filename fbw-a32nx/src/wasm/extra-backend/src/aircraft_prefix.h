@@ -20,4 +20,4 @@ static constexpr std::string_view AIRCRAFT_PREFIX = "UNKNOWN_";
 
 #endif
 
-#endif //FLYBYWIRE_AIRCRAFT_PREFIX_H
+#endif  // FLYBYWIRE_AIRCRAFT_PREFIX_H

@@ -12,11 +12,11 @@
  * Starts at one - never returns zero.
  */
 class IDGenerator {
-private:
+ private:
   uint64_t nextId = 1;
 
-public:
+ public:
   inline uint64_t getNextId() { return nextId++; };
 };
 
-#endif // FLYBYWIRE_IDGENERATOR_H
+#endif  // FLYBYWIRE_IDGENERATOR_H

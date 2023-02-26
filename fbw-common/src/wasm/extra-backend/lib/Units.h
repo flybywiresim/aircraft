@@ -16,11 +16,10 @@
  * Helper struct representing one unit
  */
 struct Unit {
-public:
+ public:
   const char* name;
   const ENUM id;
-  [[maybe_unused]]
-  explicit Unit(const char* nameInSim) : name(nameInSim), id(get_units_enum(name)) {
+  [[maybe_unused]] explicit Unit(const char* nameInSim) : name(nameInSim), id(get_units_enum(name)) {
     // LOG_INFO("Unit::Unit() " + std::string(name) + " = " + std::to_string(id));
   }
 };
@@ -30,10 +29,10 @@ public:
  * Add any additional required units here as the MSFS SDK has many more.
  */
 class Units {
-public:
+ public:
   // Selected commonly used units
 
-  const Unit None{""}; // special case for no unit (e.g. in conjunction with a data type)
+  const Unit None{""};  // special case for no unit (e.g. in conjunction with a data type)
   const Unit Bool{"Bool"};
   const Unit Celsius{"Celsius"};
   const Unit Feet{"Feet"};
@@ -416,4 +415,4 @@ public:
 // Global instance of the Units class
 inline Units UNITS{};
 
-#endif //FLYBYWIRE_UNITS_H
+#endif  // FLYBYWIRE_UNITS_H

@@ -4,20 +4,20 @@
 #ifndef FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 #define FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 
-#include "math_utils.h"
-#include "logging.h"
 #include <iostream>
-#include <utility>
-#include <string>
-#include <sstream>
 #include <optional>
+#include <sstream>
+#include <string>
+#include <utility>
+#include "logging.h"
+#include "math_utils.h"
 
 #include <MSFS/Legacy/gauges.h>
 
-#include "Units.h"
-#include "IDGenerator.h"
 #include "Callback.h"
 #include "DataObjectBase.h"
+#include "IDGenerator.h"
+#include "Units.h"
 
 // Used for callback registration to allow removal of callbacks
 typedef uint64_t CallbackID;
@@ -37,8 +37,7 @@ typedef std::function<void()> CallbackFunction;
  * the variable changes (TODO).
  */
 class ManagedDataObjectBase : public DataObjectBase {
-private:
-
+ private:
   /**
    * Used to generate unique IDs for callbacks.
    */
@@ -54,8 +53,7 @@ private:
   // listeners can be triggered.
   bool changed = false;
 
-protected:
-
+ protected:
   /**
    * Flag to indicate if the check for data changes should be skipped to save performance when the
    * check is not required.
@@ -108,14 +106,8 @@ protected:
    * @param maxAgeTime the maximum age of the value in sim time before it is updated from the sim
    * @param maxAgeTicks the maximum age of the value in ticks before it is updated from the sim
    */
-  ManagedDataObjectBase(
-    const std::string varName,
-    bool autoRead,
-    bool autoWrite,
-    FLOAT64 maxAgeTime,
-    UINT64 maxAgeTicks)
-    : DataObjectBase(std::move(varName)), autoRead(autoRead), autoWrite(autoWrite), maxAgeTime(maxAgeTime),
-      maxAgeTicks(maxAgeTicks) {}
+  ManagedDataObjectBase(const std::string varName, bool autoRead, bool autoWrite, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
+      : DataObjectBase(std::move(varName)), autoRead(autoRead), autoWrite(autoWrite), maxAgeTime(maxAgeTime), maxAgeTicks(maxAgeTicks) {}
 
   ~ManagedDataObjectBase() override = default;
 
@@ -127,23 +119,23 @@ protected:
   void setChanged(bool changed) {
     this->changed = changed;
     if (changed) {
-      for (const auto &[id, callback]: callbacks) {
+      for (const auto& [id, callback] : callbacks) {
         callback();
       }
     }
   }
 
-public:
-  ManagedDataObjectBase() = delete; // no default constructor
-  ManagedDataObjectBase(const ManagedDataObjectBase &) = delete; // no copy constructor
-  ManagedDataObjectBase &operator=(const ManagedDataObjectBase &) = delete; // no copy assignment
+ public:
+  ManagedDataObjectBase() = delete;                                         // no default constructor
+  ManagedDataObjectBase(const ManagedDataObjectBase&) = delete;             // no copy constructor
+  ManagedDataObjectBase& operator=(const ManagedDataObjectBase&) = delete;  // no copy assignment
 
   /**
    * Adds a callback function to be called when the data object's data changed.<p/>
    * @param callback
    * @return The ID of the callback required for removing a callback.
    */
-  CallbackID addCallback(const CallbackFunction &callback) {
+  CallbackID addCallback(const CallbackFunction& callback) {
     const auto id = callbackIdGen.getNextId();
     callbacks.insert({id, callback});
     LOG_DEBUG("Added callback to data object " + name + " with callback ID " + std::to_string(id));
@@ -173,8 +165,7 @@ public:
    * @param tickCounter - current tick counter
    * @return true if the variable needs to be updated from the sim, false otherwise
    */
-  [[nodiscard]]
-  bool needsUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) const {
+  [[nodiscard]] bool needsUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) const {
     const FLOAT64 timeStampPlusAge = timeStampSimTime + maxAgeTime;
     const UINT64 tickStampPlusAge = tickStamp + maxAgeTicks;
     return (timeStampPlusAge < timeStamp && tickStampPlusAge < tickCounter);
@@ -187,8 +178,7 @@ public:
    * has actually changed.
    * @return true if the value has changed since the last read from the sim.
    */
-  [[nodiscard]]
-  bool hasChanged() const { return this->changed; }
+  [[nodiscard]] bool hasChanged() const { return this->changed; }
 
   /**
    * @return true if the check for data changes should be skipped to save performance when the check is not required, false otherwise
@@ -207,8 +197,7 @@ public:
    * @return true if the variable should be automatically updated from the sim n the DataManagers
    *         postUpdate() method.
    */
-  [[nodiscard]]
-  bool isAutoRead() const { return autoRead; }
+  [[nodiscard]] bool isAutoRead() const { return autoRead; }
 
   /**
    * Sets the autoRead flag.
@@ -223,8 +212,7 @@ public:
   /**
    * @return true if the variable will be written to the sim in the DataManagers postUpdate() method.
    */
-  [[nodiscard]]
-  bool isAutoWrite() const { return autoWrite; }
+  [[nodiscard]] bool isAutoWrite() const { return autoWrite; }
 
   /**
    * Sets the autoWrite flag.
@@ -238,14 +226,12 @@ public:
   /**
    * @return the time stamp of the last read from the sim
    */
-  [[nodiscard]]
-  FLOAT64 getTimeStamp() const { return timeStampSimTime; }
+  [[nodiscard]] FLOAT64 getTimeStamp() const { return timeStampSimTime; }
 
   /**
    * @return the maximum age of the variable in seconds
    */
-  [[nodiscard]]
-  FLOAT64 getMaxAgeTime() const { return maxAgeTime; }
+  [[nodiscard]] FLOAT64 getMaxAgeTime() const { return maxAgeTime; }
 
   /**
    * Sets the maximum age of the variable in seconds
@@ -256,21 +242,18 @@ public:
   /**
    * @return the tick count when variable was last read from the sim
    */
-  [[nodiscard]]
-  UINT64 getTickStamp() const { return tickStamp; }
+  [[nodiscard]] UINT64 getTickStamp() const { return tickStamp; }
 
   /**
    * @return the maximum age of the variable in ticks
    */
-  [[nodiscard]]
-  UINT64 getMaxAgeTicks() const { return maxAgeTicks; }
+  [[nodiscard]] UINT64 getMaxAgeTicks() const { return maxAgeTicks; }
 
   /**
    * Sets the maximum age of the variable in ticks
    * @param maxAgeTicksInTicks the maximum age of the variable in ticks
    */
   void setMaxAgeTicks(UINT64 maxAgeTicksInTicks) { maxAgeTicks = maxAgeTicksInTicks; }
-
 };
 
-#endif //FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
+#endif  // FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H

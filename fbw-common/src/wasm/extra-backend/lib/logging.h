@@ -36,7 +36,6 @@
 #define LOG_CRITICAL_BLOCK(block) void(0);
 #endif
 
-
 #if LOG_LEVEL > CRITICAL_LVL
 #define LOG_ERROR(msg) logger->error(msg)
 #define LOG_ERROR_BLOCK(block) block
@@ -90,29 +89,30 @@
  * Very simple implementation for now.
  */
 class Logger {
-public:
+ public:
   Logger() = default;
   /** get the singleton instance of Logger */
   static Logger* instance() {
     static Logger instance;
     return &instance;
   }
-public:
+
+ public:
   // disallow copies
-  Logger(Logger const &) = delete;             // copy
-  Logger &operator=(const Logger &) = delete;  // copy assignment
-  Logger(Logger const &&) = delete;            // move
-  Logger &operator=(const Logger &&) = delete; // move assignment
+  Logger(Logger const&) = delete;              // copy
+  Logger& operator=(const Logger&) = delete;   // copy assignment
+  Logger(Logger const&&) = delete;             // move
+  Logger& operator=(const Logger&&) = delete;  // move assignment
 
   void critical(const std::string& msg) { std::cerr << "critical: " + msg; }
-  void error(const std::string& msg) { std::cerr << "error: "       + msg; }
-  void warn(const std::string& msg) { std::cerr << "warn: "         + msg; }
-  void info(const std::string& msg) { std::cout << "info: "        << msg << std::endl; }
-  void debug(const std::string& msg) { std::cout << "debug: "      << msg << std::endl; }
-  void verbose(const std::string& msg) { std::cout << "verbose: "      << msg << std::endl; }
-  void trace(const std::string& msg) { std::cout << "trace: "      << msg << std::endl; }
+  void error(const std::string& msg) { std::cerr << "error: " + msg; }
+  void warn(const std::string& msg) { std::cerr << "warn: " + msg; }
+  void info(const std::string& msg) { std::cout << "info: " << msg << std::endl; }
+  void debug(const std::string& msg) { std::cout << "debug: " << msg << std::endl; }
+  void verbose(const std::string& msg) { std::cout << "verbose: " << msg << std::endl; }
+  void trace(const std::string& msg) { std::cout << "trace: " << msg << std::endl; }
 };
 
 inline Logger* logger = Logger::instance();
 
-#endif//FLYBYWIRE_LOGGING_H
+#endif  // FLYBYWIRE_LOGGING_H

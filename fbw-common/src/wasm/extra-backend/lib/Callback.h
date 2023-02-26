@@ -19,7 +19,6 @@ struct Callback;
  */
 template <typename Ret, typename... Params>
 struct Callback<Ret(Params...)> {
-
   template <typename... Args>
   static Ret callback(Args... args) {
     return func(args...);
@@ -33,4 +32,4 @@ struct Callback<Ret(Params...)> {
 template <typename Ret, typename... Params>
 std::function<Ret(Params...)> Callback<Ret(Params...)>::func;
 
-#endif //FLYBYWIRE_AIRCRAFT_CALLBACK_H
+#endif  // FLYBYWIRE_AIRCRAFT_CALLBACK_H

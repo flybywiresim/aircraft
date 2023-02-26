@@ -4,10 +4,10 @@
 #ifndef FLYBYWIRE_AIRCRAFT_CLIENTEVENT_H
 #define FLYBYWIRE_AIRCRAFT_CLIENTEVENT_H
 
-#include <iostream>
-#include <string>
-#include <map>
 #include <functional>
+#include <iostream>
+#include <map>
+#include <string>
 #include <vector>
 
 #include <MSFS/Legacy/gauges.h>
@@ -31,12 +31,12 @@ typedef std::function<void(int number, DWORD param0, DWORD param1, DWORD param2,
  * TODO
  */
 class ClientEvent {
-private:
+ private:
   // allow DataManager to access the private constructor
   friend DataManager;
 
   // allow the streaming operator to access the private members
-  friend std::ostream &operator<<(std::ostream &os, const ClientEvent &event);
+  friend std::ostream& operator<<(std::ostream& os, const ClientEvent& event);
 
   // Simconnect handle
   HANDLE hSimConnect;
@@ -67,17 +67,15 @@ private:
    *                        Flight Simulator events include periods. If no entry is made for this
    *                        parameter, the event is private to the client.
    * @param inputDefinition
-   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientEventToSimEvent.htm
+   * @see
+   * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientEventToSimEvent.htm
    */
-  ClientEvent(HANDLE hSimConnect,
-              SIMCONNECT_CLIENT_EVENT_ID clientEventId,
-              const std::string &clientEventName);
+  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName);
 
-public:
-
-  ClientEvent() = delete; // no default constructor
-  ClientEvent(const ClientEvent &) = delete; // no copy constructor
-  ClientEvent &operator=(const ClientEvent &) = delete; // no copy assignment
+ public:
+  ClientEvent() = delete;                               // no default constructor
+  ClientEvent(const ClientEvent&) = delete;             // no copy constructor
+  ClientEvent& operator=(const ClientEvent&) = delete;  // no copy assignment
   ~ClientEvent();
 
   /**
@@ -96,8 +94,7 @@ public:
    *
    * Note: This uses the "SimConnect_TransmitClientEvent" function.
    */
-  [[maybe_unused]]
-  void trigger(DWORD data0) const;
+  [[maybe_unused]] void trigger(DWORD data0) const;
 
   /**
    * Sends the event with the given data to the sim.
@@ -120,8 +117,7 @@ public:
    * @param callback
    * @return The ID of the callback required for removing a callback.
    */
-  [[nodiscard]]
-  CallbackID addCallback(const EventCallbackFunction &callback);
+  [[nodiscard]] CallbackID addCallback(const EventCallbackFunction& callback);
 
   /**
    * Removes a callback from the event.
@@ -155,13 +151,12 @@ public:
    *
    * @param notificationGroupId The ID of the notification group to subscribe to.
    * @param maskEvent Flag to indicate if the event should be masked.
-   *                 From SDK doc: True indicates that the event will be masked by this client and will not be
-   *                 transmitted to any more clients, possibly including Microsoft Flight Simulator
-   *                 itself (if the priority of the client exceeds that of Flight Simulator).
-   *                 False is the default.
+   *                  From SDK doc: True indicates that the event will be masked by this client and will not be
+   *                  transmitted to any more clients, possibly including Microsoft Flight Simulator
+   *                  itself (if the priority of the client exceeds that of Flight Simulator).
+   *                  False is the default.
    */
-  void addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId,
-                                         bool maskEvent = false);
+  void addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId, bool maskEvent = false);
 
   /**
    * Removes the ClientEvent from the given notification group of the event.<br/>
@@ -187,8 +182,7 @@ public:
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_API_Reference.htm#simconnect-priorities
    * TODO: could be static
    */
-  void setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId,
-                                    DWORD notificationGroupPriority) const;
+  void setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId, DWORD notificationGroupPriority) const;
 
   // ===============================================================================================
   // Input Events
@@ -208,10 +202,11 @@ public:
    *                 more clients, possibly including Microsoft Flight Simulator itself (if the
    *                 priority of the client exceeds that of Flight Simulator) (default = false).
    *
-   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
+   * @see
+   * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    * TODO: Test adding down and up events to the same event
    */
-  void mapInputDownEvent(const std::string &inputDefinition,
+  void mapInputDownEvent(const std::string& inputDefinition,
                          SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
                          DWORD downValue = 0,
                          bool maskable = false) const;
@@ -230,9 +225,10 @@ public:
    *                 more clients, possibly including Microsoft Flight Simulator itself (if the
    *                 priority of the client exceeds that of Flight Simulator) (default = false).<br/>
    *
-   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
+   * @see
+   * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    */
-  void mapInputUpEvent(const std::string &inputDefinition,
+  void mapInputUpEvent(const std::string& inputDefinition,
                        SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
                        DWORD upValue = 0,
                        bool maskable = false) const;
@@ -251,7 +247,7 @@ public:
    *
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RemoveInputEvent.htm
    */
-  void unmapInputEvent(SIMCONNECT_INPUT_GROUP_ID inputGroupId, const std::string &inputDefinition) const;
+  void unmapInputEvent(SIMCONNECT_INPUT_GROUP_ID inputGroupId, const std::string& inputDefinition) const;
 
   /**
    * Removes the input group ID and all event ID mapped to it.
@@ -283,10 +279,9 @@ public:
   // ===============================================================================================
 
   /**
-  * @return A string representation of the event.
-  */
-  [[nodiscard]]
-  std::string str() const;
+   * @return A string representation of the event.
+   */
+  [[nodiscard]] std::string str() const;
 
   // ==================== Getter and setter ====================================
 
@@ -294,18 +289,16 @@ public:
 
   SIMCONNECT_CLIENT_EVENT_ID getClientEventId() const { return clientEventId; }
 
-  const std::string &getClientEventName() const { return clientEventName; }
+  const std::string& getClientEventName() const { return clientEventName; }
 
   bool isRegisteredToSim1() const { return isRegisteredToSim; }
 
   bool hasCallbacks() const { return !callbacks.empty(); }
 
-private:
-
+ private:
   // removes one input event from the client event without checking if it is actually
   // mapped to the client event
-  bool removeInputEventRaw(const std::string &inputDefinition, SIMCONNECT_NOTIFICATION_GROUP_ID groupId) const;
+  bool removeInputEventRaw(const std::string& inputDefinition, SIMCONNECT_NOTIFICATION_GROUP_ID groupId) const;
 };
 
-
-#endif //FLYBYWIRE_AIRCRAFT_CLIENTEVENT_H
+#endif  // FLYBYWIRE_AIRCRAFT_CLIENTEVENT_H

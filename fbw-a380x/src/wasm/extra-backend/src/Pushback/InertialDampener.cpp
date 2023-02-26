@@ -16,8 +16,7 @@ double InertialDampener::updateSpeed(double newTargetValue) {
   }
   if (newTargetValue > this->lastValue) {
     this->lastValue += this->accelStepSize;
-  }
-  else if (newTargetValue < this->lastValue) {
+  } else if (newTargetValue < this->lastValue) {
     this->lastValue -= this->accelStepSize;
   }
   return this->lastValue;

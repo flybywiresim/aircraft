@@ -3,12 +3,12 @@
 
 #include <iostream>
 
-#include "logging.h"
-#include "Units.h"
-#include "MsfsHandler.h"
-#include "Pushback.h"
 #include "AircraftVariable.h"
+#include "MsfsHandler.h"
 #include "NamedVariable.h"
+#include "Pushback.h"
+#include "Units.h"
+#include "logging.h"
 
 static constexpr double SPEED_RATIO = 18.0;
 static constexpr double TURN_SPEED_RATIO = 0.16;
@@ -53,14 +53,11 @@ bool Pushback::initialize() {
   windVelBodyZ = dataManager->make_simple_aircraft_var("RELATIVE WIND VELOCITY BODY Z");
 
   // Data definitions for PushbackDataID
-  std::vector<DataDefinition> pushBackDataDef = {
-    {"Pushback Wait",                0, UNITS.Bool},
-    {"VELOCITY BODY Z",              0, UNITS.FeetSec},
-    {"ROTATION VELOCITY BODY Y",     0, UNITS.FeetSec},
-    {"ROTATION ACCELERATION BODY X", 0, UNITS.RadSecSquared}
-  };
-  pushbackData = dataManager
-    ->make_datadefinition_var<PushbackData>("PUSHBACK DATA", pushBackDataDef);
+  std::vector<DataDefinition> pushBackDataDef = {{"Pushback Wait", 0, UNITS.Bool},
+                                                 {"VELOCITY BODY Z", 0, UNITS.FeetSec},
+                                                 {"ROTATION VELOCITY BODY Y", 0, UNITS.FeetSec},
+                                                 {"ROTATION ACCELERATION BODY X", 0, UNITS.RadSecSquared}};
+  pushbackData = dataManager->make_datadefinition_var<PushbackData>("PUSHBACK DATA", pushBackDataDef);
 
   // Events
   // Normally "KEY_..." events can't be treated like normal events, but in this case there is no
@@ -74,7 +71,7 @@ bool Pushback::initialize() {
   return true;
 }
 
-bool Pushback::preUpdate([[maybe_unused]]sGaugeDrawData* pData) {
+bool Pushback::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
   // empty
   return true;
 }
@@ -85,12 +82,11 @@ bool Pushback::update(sGaugeDrawData* pData) {
     return false;
   }
 
-  if (!msfsHandler.getA32NxIsReady()) return true;
+  if (!msfsHandler.getA32NxIsReady())
+    return true;
 
   // Check if the pushback system is enabled and conditions are met
-  if (!pushbackSystemEnabled->getAsBool()
-      || !pushbackAttached->getAsBool()
-      || !simOnGround->getAsBool()) {
+  if (!pushbackSystemEnabled->getAsBool() || !pushbackAttached->getAsBool() || !simOnGround->getAsBool()) {
     return true;
   }
 
@@ -109,24 +105,24 @@ bool Pushback::update(sGaugeDrawData* pData) {
 
   const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
 
-  const double parkingBrakeHdgFactor =
-    parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_RATIO / 10) : TURN_SPEED_RATIO;
-  const FLOAT64 computedRotationVelocity = sgn<FLOAT64>(tugCmdSpd)
-                                           * tugCommandedHeadingFactor->get()
-                                           * parkingBrakeHdgFactor;
+  const double parkingBrakeHdgFactor = parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_RATIO / 10) : TURN_SPEED_RATIO;
+  const FLOAT64 computedRotationVelocity = sgn<FLOAT64>(tugCmdSpd) * tugCommandedHeadingFactor->get() * parkingBrakeHdgFactor;
 
   // As we might use the elevator for taxiing we compensate for wind to avoid
   // the aircraft lifting any gears.
   const FLOAT64 windCounterRotAccel = windVelBodyZ->get() / 2000.0;
   FLOAT64 movementCounterRotAccel = windCounterRotAccel;
-  if (inertiaSpeed > 0) { movementCounterRotAccel -= 0.5; }
-  else if (inertiaSpeed < 0) { movementCounterRotAccel += 1.0; }
-  else { movementCounterRotAccel = 0.0; }
+  if (inertiaSpeed > 0) {
+    movementCounterRotAccel -= 0.5;
+  } else if (inertiaSpeed < 0) {
+    movementCounterRotAccel += 1.0;
+  } else {
+    movementCounterRotAccel = 0.0;
+  }
 
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   FLOAT64 aircraftHeadingDeg = aircraftHeading->get() * (180.0 / PI);
-  const FLOAT64 computedHdg = angleAdd(aircraftHeadingDeg,
-                                       -90 * tugCommandedHeadingFactor->get());
+  const FLOAT64 computedHdg = angleAdd(aircraftHeadingDeg, -90 * tugCommandedHeadingFactor->get());
 
   // TUG_HEADING units are a 32-bit integer (0 to 4294967295) which represent 0 to 360 degrees.
   // To set a 45-degree angle, for example, set the value to 4294967295 / 8.
@@ -135,11 +131,11 @@ bool Pushback::update(sGaugeDrawData* pData) {
   const DWORD convertedComputedHeading = static_cast<DWORD>(computedHdg) * headingToInt32;
 
   // send as LVARs for debugging in the flyPad
-  updateDelta->setAndWriteToSim(pData->dt); // debug value
-  tugInertiaSpeed->setAndWriteToSim(inertiaSpeed); // debug value
-  tugCommandedSpeed->setAndWriteToSim(tugCmdSpd); // debug value
-  rotXOut->setAndWriteToSim(movementCounterRotAccel); // debug value
-  tugCommandedHeading->setAndWriteToSim(computedHdg); // debug value
+  updateDelta->setAndWriteToSim(pData->dt);            // debug value
+  tugInertiaSpeed->setAndWriteToSim(inertiaSpeed);     // debug value
+  tugCommandedSpeed->setAndWriteToSim(tugCmdSpd);      // debug value
+  rotXOut->setAndWriteToSim(movementCounterRotAccel);  // debug value
+  tugCommandedHeading->setAndWriteToSim(computedHdg);  // debug value
 
   // send K:KEY_TUG_HEADING event
   tugHeadingEvent->trigger_ex1(convertedComputedHeading, 0, 0, 0, 0);
