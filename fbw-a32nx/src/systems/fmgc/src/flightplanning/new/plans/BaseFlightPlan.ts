@@ -355,6 +355,8 @@ export abstract class BaseFlightPlan {
     }
 
     public computeWaypointStatistics(): Map<number, WaypointStats> {
+        // TODO port over
+
         const stats = new Map<number, WaypointStats>();
 
         for (let i = 0; i < this.allLegs.length; i++) {

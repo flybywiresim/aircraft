@@ -240,7 +240,7 @@ class CDUFlightPlanPage {
         for (let rowI = 0, winI = offset; rowI < rowsCount; rowI++, winI++) {
             winI = winI % (waypointsAndMarkers.length);
 
-            const { /** @type {{wp: FlightPlanElement}} */ wp, pwp, marker, holdResumeExit, fpIndex, inAlternate} = waypointsAndMarkers[winI];
+            const { /** @type {FlightPlanElement} */ wp, pwp, marker, /** @type {FlightPlanElement} */ holdResumeExit, fpIndex, inAlternate} = waypointsAndMarkers[winI];
 
             const wpPrev = targetPlan.maybeElementAt(fpIndex - 1);
             const wpNext = targetPlan.maybeElementAt(fpIndex + 1);
@@ -617,7 +617,7 @@ class CDUFlightPlanPage {
                         CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
                     }, !mcdu.flightPlanService.hasTemporary);
                 });
-            } else if (holdResumeExit) {
+            } else if (holdResumeExit && holdResumeExit.isDiscontinuity === false) {
                 const isActive = fpIndex === targetPlan.activeLegIndex;
                 const isNext = fpIndex === (targetPlan.activeLegIndex + 1);
                 let color = "green";
@@ -631,8 +631,8 @@ class CDUFlightPlanPage {
                 const holdSpeed = fpIndex === mcdu.holdIndex && mcdu.holdSpeedTarget > 0 ? mcdu.holdSpeedTarget.toFixed(0) : '\xa0\xa0\xa0';
                 const turnDirection = holdResumeExit.definition.turnDirection;
                 // prompt should only be shown once entering decel for hold (3 - 20 NM before hold)
-                const immExit = decelReached && !holdResumeExit.additionalData.immExit;
-                const resumeHold = decelReached && holdResumeExit.additionalData.immExit;
+                const immExit = decelReached && !holdResumeExit.holdImmExit;
+                const resumeHold = decelReached && holdResumeExit.holdImmExit;
 
                 scrollWindow[rowI] = {
                     fpIndex,

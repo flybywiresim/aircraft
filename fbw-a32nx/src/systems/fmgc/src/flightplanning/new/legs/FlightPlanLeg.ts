@@ -57,6 +57,8 @@ export class FlightPlanLeg {
 
     modifiedHold: HoldData | undefined = undefined;
 
+    holdImmExit = false;
+
     serialize(): SerializedFlightPlanLeg {
         return {
             ident: this.ident,
