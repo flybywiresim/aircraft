@@ -188,6 +188,12 @@ export class FlightPlan extends BaseFlightPlan {
         targetLeg.modifiedHold = undefined;
     }
 
+    // TODO this is wrong and we need to redo all this
+    // we wanna end up with:
+    // - revise point
+    // - disco
+    // - destination airport
+    // - complete alternate routing
     enableAltn(atIndexInAlternate: number) {
         if (!this.alternateDestinationAirport) {
             throw new Error('[FMS/FPM] Cannot enable alternate with no alternate destination defined');
