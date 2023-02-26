@@ -308,7 +308,7 @@ impl Display for Variable {
             Self::Aircraft(name, _, index) => {
                 format!("Aircraft({})", Self::indexed_name(name, *index))
             }
-            Self::Named(name, has_prefix, ..) => format!("Named({})", name),
+            Self::Named(name, _has_prefix, ..) => format!("Named({})", name),
             Self::Aspect(name, ..) => format!("Aspect({})", name),
         };
 
