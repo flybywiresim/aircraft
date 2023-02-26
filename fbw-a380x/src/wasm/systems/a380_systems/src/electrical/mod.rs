@@ -2076,6 +2076,8 @@ mod a380_electrical_circuit_tests {
         let test_bed = test_bed_with()
             .running_engines()
             .and()
+            .flight_conditions_for_a_spinning_rat()
+            .and()
             .rat_and_emer_gen_man_on_pressed()
             .run_waiting_for(Duration::from_secs(100))
             .then_continue_with()
@@ -2540,6 +2542,13 @@ mod a380_electrical_circuit_tests {
 
         fn running_engines(self) -> Self {
             self.running_engine(1).and().running_engine(2)
+        }
+
+        fn flight_conditions_for_a_spinning_rat(mut self) -> Self {
+            self.write_by_name("AIRSPEED TRUE", 340.);
+            self.write_by_name("AMBIENT DENSITY", 0.002367190);
+            self.write_by_name("AMBIENT TEMPERATURE", 20.);
+            self
         }
 
         fn running_apu(mut self) -> Self {

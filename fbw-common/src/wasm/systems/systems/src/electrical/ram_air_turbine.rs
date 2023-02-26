@@ -204,11 +204,9 @@ impl<const N: usize> EmergencyGeneratorControlUnit for GeneratorControlUnit<N> {
 
 #[cfg(test)]
 mod tests {
-    use ntest::assert_about_eq;
-
     use super::*;
     use crate::shared::update_iterator::MaxStepLoop;
-    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName};
+    use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
@@ -216,18 +214,8 @@ mod tests {
         is_emergency: bool,
     }
     impl TestEmergencyState {
-        fn not_in_emergency() -> Self {
-            Self {
-                is_emergency: false,
-            }
-        }
-
         fn in_emergency() -> Self {
             Self { is_emergency: true }
-        }
-
-        fn set_in_emergency(&mut self, state: bool) {
-            self.is_emergency = state;
         }
     }
     impl EmergencyElectricalState for TestEmergencyState {
@@ -242,10 +230,6 @@ mod tests {
     impl TestRatManOn {
         fn not_pressed() -> Self {
             Self { is_pressed: false }
-        }
-
-        fn press(&mut self) {
-            self.is_pressed = true;
         }
     }
     impl EmergencyElectricalRatPushButton for TestRatManOn {
@@ -274,20 +258,10 @@ mod tests {
         main_gear_compressed: bool,
     }
     impl TestLgciuSensors {
-        fn compressed() -> Self {
-            Self {
-                main_gear_compressed: true,
-            }
-        }
-
         fn uncompressed() -> Self {
             Self {
                 main_gear_compressed: false,
             }
-        }
-
-        fn set_compressed(&mut self, is_compressed: bool) {
-            self.main_gear_compressed = is_compressed;
         }
     }
     impl LgciuWeightOnWheels for TestLgciuSensors {
@@ -350,14 +324,6 @@ mod tests {
                 emergency_state: TestEmergencyState::in_emergency(),
                 lgciu: TestLgciuSensors::uncompressed(),
             }
-        }
-
-        fn rat_man_on_pressed(&mut self) {
-            self.rat_man_on.press();
-        }
-
-        fn set_in_emergency(&mut self, state: bool) {
-            self.emergency_state.set_in_emergency(state);
         }
 
         fn is_gcu_active(&self) -> bool {
@@ -424,8 +390,9 @@ mod tests {
 
         assert!(
             (generator_speed.get::<revolution_per_minute>()
-                - turbine_speed.get::<revolution_per_minute>())
-            .abs()
+                - turbine_speed.get::<revolution_per_minute>()
+                    * RamAirTurbine::TURBINE_TO_GENERATOR_RATIO)
+                .abs()
                 < 5.
         );
     }
@@ -434,9 +401,9 @@ mod tests {
     fn gen_control_unit() -> GeneratorControlUnit<9> {
         GeneratorControlUnit::new(
             [
-                0., 1000., 6000., 7200., 8000., 9000., 10000., 11000., 12000.,
+                0., 1000., 6000., 6900., 7500., 8000., 10000., 11000., 12000.,
             ],
-            [0., 0., 0., 40000., 50000., 58000., 70000., 0., 0.],
+            [0., 0., 0., 0., 50000., 70000., 70000., 0., 0.],
         )
     }
 }
