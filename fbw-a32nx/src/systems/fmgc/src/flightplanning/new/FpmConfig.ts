@@ -35,7 +35,7 @@ export interface FpmConfig {
     CHECK_VIA_COMPATIBILITY: boolean,
 
     /**
-     * Whether the next abeam point of a DIR TO WITH ABEAM is considered as the TO waypoint emitted by the FPm
+     * Whether the next abeam point of a DIR TO WITH ABEAM is considered as the TO waypoint emitted by the FPM
      */
     DIR_TO_ABEAM_POINT_IS_TO_WPT: boolean,
 }
