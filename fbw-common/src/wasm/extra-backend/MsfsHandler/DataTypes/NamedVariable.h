@@ -10,6 +10,8 @@
 #include "aircraft_prefix.h"
 #include "CacheableVariable.h"
 
+class DataManager;
+
 /**
  * Specialized class for named cacheable variables (LVARS).<p/>
  *
@@ -23,11 +25,8 @@
  */
 class NamedVariable : public CacheableVariable {
 
-public:
-
-  NamedVariable() = delete; // no default constructor
-  NamedVariable(const NamedVariable &) = delete; // no copy constructor
-  NamedVariable &operator=(const NamedVariable &) = delete; // no copy assignment
+  // The data manager is a friend, so it can access the private constructor.
+  friend DataManager;
 
   /**
    * Creates an instance of a named variable.<p/>
@@ -62,6 +61,12 @@ public:
 
     dataID = register_named_variable(name.c_str());
   };
+
+public:
+
+  NamedVariable() = delete; // no default constructor
+  NamedVariable(const NamedVariable &) = delete; // no copy constructor
+  NamedVariable &operator=(const NamedVariable &) = delete; // no copy assignment
 
   FLOAT64 rawReadFromSim() override;
   void rawWriteToSim() override;

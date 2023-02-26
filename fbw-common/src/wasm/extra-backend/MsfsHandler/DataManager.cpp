@@ -163,8 +163,8 @@ NamedVariablePtr DataManager::make_named_var(const std::string varName,
   }
 
   // Create new var and store it in the map
-  NamedVariablePtr var
-    = std::make_shared<NamedVariable>(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks);
+  NamedVariablePtr var = std::shared_ptr<NamedVariable>(
+    new NamedVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
 
   variables[uniqueName] = var;
 

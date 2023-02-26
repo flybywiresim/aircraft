@@ -85,7 +85,6 @@ set(SOURCES
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/CacheableVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/NamedVariable.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/AircraftVariable.cpp
-        ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/Event.cpp
         ${FBW_ROOT}/fbw-common/src/wasm/extra-backend/MsfsHandler/DataTypes/ClientEvent.cpp
         src/Gauge_Extra_Backend.cpp
         src/Example/ExampleModule.cpp

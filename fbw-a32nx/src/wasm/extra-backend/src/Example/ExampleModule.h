@@ -11,7 +11,6 @@
 
 #include "Module.h"
 #include "DataManager.h"
-#include "Event.h"
 
 class MsfsHandler;
 
@@ -61,45 +60,45 @@ private:
     // being restricted to the size of the struct).
     [[maybe_unused]] char aircraftTTitle[256] = "";
   };
-  std::shared_ptr<DataDefinitionVariable<ExampleData>> exampleDataPtr;
+  std::shared_ptr<DataDefinitionVariable < ExampleData>> exampleDataPtr;
 
   // ClientDataArea variables
   struct ExampleClientData {
-    FLOAT64 aFloat64;
-    FLOAT32 aFloat32;
-    INT64 anInt64;
-    INT32 anInt32;
-    INT16 anInt16;
-    INT8 anInt8;
+    [[maybe_unused]] FLOAT64 aFloat64;
+    [[maybe_unused]] FLOAT32 aFloat32;
+    [[maybe_unused]] INT64 anInt64;
+    [[maybe_unused]] INT32 anInt32;
+    [[maybe_unused]] INT16 anInt16;
+    [[maybe_unused]] INT8 anInt8;
   } __attribute__((packed));
-  std::shared_ptr<ClientDataAreaVariable<ExampleClientData>> exampleClientDataPtr;
+  std::shared_ptr<ClientDataAreaVariable < ExampleClientData>> exampleClientDataPtr;
 
   // Second ClientDataArea variable identical to the first one for testing
   struct ExampleClientData2 {
-    INT8 anInt8;
-    INT16 anInt16;
-    INT32 anInt32;
-    INT64 anInt64;
-    FLOAT32 aFloat32;
-    FLOAT64 aFloat64;
+    [[maybe_unused]] INT8 anInt8;
+    [[maybe_unused]] INT16 anInt16;
+    [[maybe_unused]] INT32 anInt32;
+    [[maybe_unused]] INT64 anInt64;
+    [[maybe_unused]] FLOAT32 aFloat32;
+    [[maybe_unused]] FLOAT64 aFloat64;
   } __attribute__((packed));
-  std::shared_ptr<ClientDataAreaVariable<ExampleClientData2>> exampleClientData2Ptr;
+  std::shared_ptr<ClientDataAreaVariable < ExampleClientData2>> exampleClientData2Ptr;
 
   // ClientDataArea variable for testing
   struct BigClientData {
     std::array<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE> dataChunk;
   } __attribute__((packed));
-  std::shared_ptr<ClientDataAreaVariable<BigClientData>> bigClientDataPtr;
+  std::shared_ptr<ClientDataAreaVariable < BigClientData>> bigClientDataPtr;
 
   // ClientDataArea variable for meta data for ClientDataBufferedAreaVariable
   struct BufferedAreaMetaData {
     UINT64 size;
     UINT64 hash;
   } __attribute__((packed));
-  std::shared_ptr<ClientDataAreaVariable<BufferedAreaMetaData>> metaDataPtr;
+  std::shared_ptr<ClientDataAreaVariable < BufferedAreaMetaData>> metaDataPtr;
 
   // ClientDataBufferedArea variable for testing
-  std::shared_ptr<ClientDataBufferedAreaVariable<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
+  std::shared_ptr<ClientDataBufferedAreaVariable < BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
 
   // Events
   ClientEventPtr beaconLightSetEventPtr;
@@ -120,7 +119,7 @@ public:
    * Creates a new ExampleModule instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
    */
-  explicit ExampleModule(MsfsHandler& msfsHandler) : Module(msfsHandler) {};
+  explicit ExampleModule(MsfsHandler &msfsHandler) : Module(msfsHandler) {};
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData* pData) override;

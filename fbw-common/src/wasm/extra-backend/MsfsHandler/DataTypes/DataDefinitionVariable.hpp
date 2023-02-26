@@ -11,6 +11,8 @@
 
 #define quote(x) #x
 
+class DataManager;
+
 /**
  * DataDefinition to be used to register a data definition with the sim.<p/>
  * @field name: the name of the variable
@@ -70,8 +72,10 @@ struct DataDefinition {
  */
 template<typename T>
 class DataDefinitionVariable : public SimObjectBase {
-
 private:
+
+  // The data manager is a friend, so it can access the private constructor.
+  friend DataManager;
 
   // List of data definitions to add to the sim object data
   // Used for "SimConnect_AddToDataDefinition"
@@ -79,13 +83,6 @@ private:
 
   // The data struct that will be used to store the data from the sim.
   T dataStruct{};
-
-public:
-
-  DataDefinitionVariable<T>() = delete; // no default constructor
-  DataDefinitionVariable<T>(const DataDefinitionVariable &) = delete; // no copy constructor
-  // no copy assignment
-  DataDefinitionVariable<T> &operator=(const DataDefinitionVariable &) = delete;
 
   /**
    * Creates a new instance of a DataDefinitionVariable.<p/>
@@ -134,6 +131,13 @@ public:
       }
     }
   }
+
+public:
+
+  DataDefinitionVariable<T>() = delete; // no default constructor
+  DataDefinitionVariable<T>(const DataDefinitionVariable &) = delete; // no copy constructor
+  // no copy assignment
+  DataDefinitionVariable<T> &operator=(const DataDefinitionVariable &) = delete;
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory

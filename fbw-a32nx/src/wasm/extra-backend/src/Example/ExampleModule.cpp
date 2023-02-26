@@ -62,6 +62,7 @@ bool ExampleModule::initialize() {
   lightPotentiometerSetCallbackID = lightPotentiometerSetEventPtr->addCallback(
     [=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
         DWORD param4) {
+      if (param0 == 99) return;
       LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
                 + " params:"
                 + " 0: " + std::to_string(param0)
@@ -77,6 +78,7 @@ bool ExampleModule::initialize() {
   lightPotentiometerSetCallback2ID = lightPotentiometerSetEvent2Ptr->addCallback(
     [=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3,
         DWORD param4) {
+      if (param0 == 99) return;
       LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number)
                 + " params:"
                 + " 0: " + std::to_string(param0)

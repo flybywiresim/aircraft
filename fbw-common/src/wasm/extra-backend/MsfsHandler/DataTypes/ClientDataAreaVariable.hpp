@@ -13,6 +13,8 @@
 
 #define quote(x) #x
 
+class DataManager;
+
 /**
  * The ClientDataAreaVariable class is a template class that can be used to create a client data area
  * which uses a client data area (reserved memory) to exchange data with other SimConnect clients.<p/>
@@ -52,18 +54,15 @@
 template<typename T>
 class ClientDataAreaVariable : public SimObjectBase {
 protected:
+
+  // The data manager is a friend, so it can access the private constructor.
+  friend DataManager;
+
   // The client data area ID
   SIMCONNECT_CLIENT_DATA_ID clientDataId;
 
   // The data struct that will be used to store the data
   T dataStruct{};
-
-public:
-
-  ClientDataAreaVariable<T>() = delete; // no default constructor
-  ClientDataAreaVariable<T>(const ClientDataAreaVariable &) = delete; // no copy constructor
-  // no copy assignment
-  ClientDataAreaVariable<T> &operator=(const ClientDataAreaVariable<T> &) = delete;
 
   /**
    * Creates a new ClientDataAreaVariable object.<p/>
@@ -129,6 +128,13 @@ public:
       LOG_ERROR("ClientDataAreaVariable: Adding to client data definition failed: " + name);
     }
   }
+
+public:
+
+  ClientDataAreaVariable<T>() = delete; // no default constructor
+  ClientDataAreaVariable<T>(const ClientDataAreaVariable &) = delete; // no copy constructor
+  // no copy assignment
+  ClientDataAreaVariable<T> &operator=(const ClientDataAreaVariable<T> &) = delete;
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory

@@ -47,7 +47,14 @@ typedef uint64_t KeyEventCallbackID;
  * @param number of parameters to use
  * @param parameters 0-4 to pass to the callback function
  */
-typedef std::function<void( DWORD param0,DWORD param1, DWORD param2,DWORD param3, DWORD param4)> KeyEventCallbackFunction;
+typedef std::function<
+void( DWORD
+param0,
+DWORD param1, DWORD
+param2,
+DWORD param3, DWORD
+param4)>
+KeyEventCallbackFunction;
 
 /**
  * DataManager is responsible for managing all variables and events.
@@ -249,7 +256,8 @@ public:
     maxAgeTime = 0.0, UINT64
     maxAgeTicks = 0) {
 
-    std::shared_ptr<DataDefinitionVariable<T>> var = std::make_shared<DataDefinitionVariable <T>>(
+    std::shared_ptr<DataDefinitionVariable<T>> var =
+      std::shared_ptr<DataDefinitionVariable<T>>(new DataDefinitionVariable<T>(
         hSimConnect,
         std::move(name),
         dataDefinitions,
@@ -258,7 +266,7 @@ public:
         autoReading,
         autoWriting,
         maxAgeTime,
-        maxAgeTicks);
+        maxAgeTicks));
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
     simObjects.insert({var->getRequestId(), var});
@@ -289,16 +297,17 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0) {
 
-    std::shared_ptr <ClientDataAreaVariable<T>> var = std::make_shared < ClientDataAreaVariable<T>> (
-      hSimConnect,
-      std::move(clientDataName),
-      clientDataIDGen.getNextId(),
-      dataDefIDGen.getNextId(),
-      dataReqIDGen.getNextId(),
-      autoReading,
-      autoWriting,
-      maxAgeTime,
-      maxAgeTicks);
+    std::shared_ptr <ClientDataAreaVariable<T>> var =
+      std::shared_ptr<ClientDataAreaVariable<T>>(new ClientDataAreaVariable<T>(
+        hSimConnect,
+        std::move(clientDataName),
+        clientDataIDGen.getNextId(),
+        dataDefIDGen.getNextId(),
+        dataReqIDGen.getNextId(),
+        autoReading,
+        autoWriting,
+        maxAgeTime,
+        maxAgeTicks));
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
@@ -325,16 +334,17 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0) {
 
-    std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>> var = std::make_shared<ClientDataBufferedAreaVariable<T, ChunkSize>> (
-      hSimConnect,
-      std::move(clientDataName),
-      clientDataIDGen.getNextId(),
-      dataDefIDGen.getNextId(),
-      dataReqIDGen.getNextId(),
-      autoReading,
-      autoWriting,
-      maxAgeTime,
-      maxAgeTicks);
+    std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>> var =
+      std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>>(new ClientDataBufferedAreaVariable<T, ChunkSize>(
+        hSimConnect,
+        std::move(clientDataName),
+        clientDataIDGen.getNextId(),
+        dataDefIDGen.getNextId(),
+        dataReqIDGen.getNextId(),
+        autoReading,
+        autoWriting,
+        maxAgeTime,
+        maxAgeTicks));
 
     LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});

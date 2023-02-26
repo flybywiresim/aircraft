@@ -6,6 +6,8 @@
 
 #include "ClientDataAreaVariable.hpp"
 
+class DataManager;
+
 /**
  * FIXME: This class is not working yet
  * FIXME remove inheritance from ClientDataAreaVariable and change to
@@ -16,6 +18,9 @@
 template<typename T, std::size_t ChunkSize>
 class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
 private:
+
+  // The data manager is a friend, so it can access the private constructor.
+  friend DataManager;
 
   // the content of the client data area as a vector of T
   std::vector<T> content;
@@ -33,16 +38,6 @@ private:
   // TODO: is this ok??
   using ClientDataAreaVariable<T>::data;
 
-public:
-
-  ClientDataBufferedAreaVariable<T, ChunkSize>() = delete; // no default constructor
-  ClientDataBufferedAreaVariable<T, ChunkSize>(
-    const ClientDataBufferedAreaVariable &) = delete; // no copy constructor
-  // no copy assignment
-  ClientDataBufferedAreaVariable<T, ChunkSize> &
-  operator=(const ClientDataBufferedAreaVariable<T, ChunkSize> &) = delete;
-  ~ClientDataBufferedAreaVariable() override = default;
-
   ClientDataBufferedAreaVariable<T, ChunkSize>(
     HANDLE hSimConnect,
     const std::string clientDataName,
@@ -58,6 +53,15 @@ public:
                               requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks), content() {
   }
 
+public:
+
+  ClientDataBufferedAreaVariable<T, ChunkSize>() = delete; // no default constructor
+  ClientDataBufferedAreaVariable<T, ChunkSize>(
+    const ClientDataBufferedAreaVariable &) = delete; // no copy constructor
+  // no copy assignment
+  ClientDataBufferedAreaVariable<T, ChunkSize> &
+  operator=(const ClientDataBufferedAreaVariable<T, ChunkSize> &) = delete;
+  ~ClientDataBufferedAreaVariable() override = default;
 
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_TRACE("ClientDataBufferedAreaVariable: Received client data: " + this->name);
