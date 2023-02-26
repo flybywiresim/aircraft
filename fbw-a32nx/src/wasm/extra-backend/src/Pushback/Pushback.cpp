@@ -66,8 +66,8 @@ bool Pushback::initialize() {
   // Normally "KEY_..." events can't be treated like normal events, but in this case there is no
   // normal event (e.g. TUG_HEADING) that we can use. So we use the "KEY_..." events instead and
   // surprisingly the sim accepts them. This seems to be an inconsistency in the sim.
-  tugHeadingEvent = dataManager->make_event("KEY_TUG_HEADING");
-  tugSpeedEvent = dataManager->make_event("KEY_TUG_SPEED");
+  tugHeadingEvent = dataManager->make_client_event("KEY_TUG_HEADING", NOTIFICATION_GROUP_1);
+  tugSpeedEvent = dataManager->make_client_event("KEY_TUG_SPEED", NOTIFICATION_GROUP_1);
 
   isInitialized = true;
   LOG_INFO("Pushback initialized");

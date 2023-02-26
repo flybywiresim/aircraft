@@ -47,7 +47,6 @@ private:
   AircraftVariablePtr beaconLightSwitch3Ptr;
   AircraftVariablePtr fuelPumpSwitch1Ptr;
   AircraftVariablePtr fuelPumpSwitch2Ptr;
-  AircraftVariablePtr zuluTimePtr;  // E:ZULU TIME (can't this be requested as aircraft variable?)
 
   // DataDefinition variables
   struct ExampleData {
@@ -103,13 +102,11 @@ private:
   std::shared_ptr<ClientDataBufferedAreaVariable<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
 
   // Events
-  EventPtr beaconLightSetEventPtr;
+  ClientEventPtr beaconLightSetEventPtr;
   [[maybe_unused]] CallbackID beaconLightSetCallbackID{};
-  EventPtr toggleFlightDirectorEventPtr;
-  [[maybe_unused]] CallbackID toggleFlightDirectorCallbackID{};
-  EventPtr lightPotentiometerSetEventPtr;
+  ClientEventPtr lightPotentiometerSetEventPtr;
   [[maybe_unused]] CallbackID lightPotentiometerSetCallbackID{};
-  EventPtr lightPotentiometerSetEvent2Ptr;
+  ClientEventPtr lightPotentiometerSetEvent2Ptr;
   [[maybe_unused]] CallbackID lightPotentiometerSetCallback2ID{};
 
   // Input Events

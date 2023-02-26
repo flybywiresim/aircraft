@@ -60,6 +60,8 @@ class LightingPresets : public Module {
 private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
 
+  static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
+
   // Convenience pointer to the data manager
   DataManager* dataManager{};
 
@@ -97,8 +99,8 @@ private:
   AircraftVariablePtr pedestalIntegralLightLevel;
   AircraftVariablePtr floodPedLightLevel;
 
-  EventPtr lightPotentiometerSetEvent;
-  EventPtr cabinLightSetEvent;
+  ClientEventPtr lightPotentiometerSetEvent;
+  ClientEventPtr cabinLightSetEvent;
 
   // Lighting values
   LightingValues localLightValues{};

@@ -4,9 +4,8 @@
 #ifndef FLYBYWIRE_DATAMANAGER_H
 #define FLYBYWIRE_DATAMANAGER_H
 
-#include <vector>
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
 
 #include <MSFS/Legacy/gauges.h>
@@ -28,7 +27,6 @@ class NamedVariable;
 class AircraftVariable;
 class SimObjectBase;
 struct DataDefinition;
-class Event;
 class ClientEvent;
 
 // convenience typedefs
@@ -36,7 +34,6 @@ typedef std::shared_ptr<CacheableVariable> CacheableVariablePtr;
 typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
 typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
-typedef std::shared_ptr<Event> EventPtr;
 typedef std::shared_ptr<ClientEvent> ClientEventPtr;
 
 // Used to identify a key event
@@ -73,11 +70,6 @@ private:
   // A map of all registered SimObjects.
   // Map over the request id to quickly find the SimObject.
   std::map<SIMCONNECT_DATA_REQUEST_ID, SimObjectBasePtr> simObjects{};
-
-  // A map of all registered events.
-  // Map over the event id to quickly find the event - make creating an event a bit less efficient.
-  /** @deprecated */
-  std::map<SIMCONNECT_CLIENT_EVENT_ID, EventPtr> events{};
 
   // A map of all registered events.
   // Map over the event id to quickly find the event - make creating an event a bit less efficient.
@@ -209,7 +201,7 @@ public:
     const std::string varName,
     int index = 0,
     const std::string setterEventName = "",
-    EventPtr setterEvent = nullptr,
+    ClientEventPtr setterEvent = nullptr,
     Unit unit = UNITS.Number,
     bool autoReading = false,
     bool autoWriting = false,
@@ -351,26 +343,26 @@ public:
   // @formatter:on
 
   /**
-   * Creates a new event and adds it to the list of managed events.
+   * Creates a new client event and adds it to the list of managed events.<br/>
+   * Immediately after creation the event is registered with the sim.<br/>
+   * If a notification group is specified, the event will be added to the group immediately.<br/>
    *
-   * @param eventName Name of the event in the sim
-   * @param maksEvent True indicates that the event will be masked by this client and will not be
-   *                  transmitted to any more clients, possibly including Microsoft Flight Simulator
-   *                  itself (if the priority of the client exceeds that of Flight Simulator).
-   *                  False is the default.
-   * @return A shared pointer to the event instance
-   * @deprecated
+   * TODO: Consider de-duplicating events with the same name.
+   * @param clientEventName Specifies the Microsoft Flight Simulator event name. Refer to the Event
+   *                        IDs document for a list of event names (listed under String Name). If
+   *                        the event name includes one or more periods (such as "Custom.Event" in
+   *                        the example below) then they are custom events specified by the client,
+   *                        and will only be recognized by another client (and not Microsoft Flight
+   *                        Simulator) that has been coded to receive such events. No Microsoft
+   *                        Flight Simulator events include periods. If no entry is made for this
+   *                        parameter, the event is private to the client.
+   * @param notificationGroupId Specifies the notification group to which the event is added. If no
+   *                           entry is made for this parameter, the event is not added to a
+   *                           notification group.
+   * @return A shared pointer to the CLientEvent
    */
-  EventPtr make_event(const std::string &eventName, bool maskEvent = false);
-
-  /**
-   * TODO: document
-   * @param clientEventName
-   * @param simEventName
-   * @param inputDefinition
-   * @return
-   */
-  ClientEventPtr make_client_event(const std::string &clientEventName);
+  ClientEventPtr make_client_event(const std::string &clientEventName,
+                                   SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED);
 
   // ===============================================================================================
   // Key Event Handling

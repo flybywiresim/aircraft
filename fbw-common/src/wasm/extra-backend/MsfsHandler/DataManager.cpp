@@ -114,7 +114,7 @@ bool DataManager::shutdown() {
   isInitialized = false;
   variables.clear();
   simObjects.clear();
-  events.clear();
+  clientEvents.clear();
   LOG_INFO("DataManager::shutdown()");
   return true;
 }
@@ -176,7 +176,7 @@ NamedVariablePtr DataManager::make_named_var(const std::string varName,
 AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
                                                    int index,
                                                    const std::string setterEventName,
-                                                   EventPtr setterEvent,
+                                                   ClientEventPtr setterEvent,
                                                    Unit unit,
                                                    bool autoReading,
                                                    bool autoWriting,
@@ -212,10 +212,10 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
   // Create new var and store it in the map
   AircraftVariablePtr var;
   var = setterEventName.empty()
-        ? std::make_shared<AircraftVariable>(std::move(varName), index, setterEvent,
-                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks)
-        : std::make_shared<AircraftVariable>(std::move(varName), index, std::move(setterEventName),
-                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks);
+        ? std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), index, setterEvent,
+                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks))
+        : std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), index, std::move(setterEventName),
+                                             unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_aircraft_var(): created variable " + var->str());
@@ -253,7 +253,8 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(
   }
 
   // Create new var and store it in the map
-  AircraftVariablePtr var = std::make_shared<AircraftVariable>(std::move(varName), 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks);
+  AircraftVariablePtr var = std::shared_ptr<AircraftVariable>(
+    new AircraftVariable(std::move(varName), 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks));
 
   variables[uniqueName] = var;
 
@@ -261,34 +262,21 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(
   return var;
 }
 
-EventPtr DataManager::make_event(
-  const std::string &eventName,
-  bool maksEvent
-) {
-
-  // TODO: Probably not needed anymore as Events are ClientEvents
-  // TODO: Test if an event can be mappen to more than one sim event
+ClientEventPtr DataManager::make_client_event(const std::string &clientEventName, SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
   // find existing event instance for this event
-  for (auto &event: events) {
-    if (event.second->getEventName() == eventName) {
+  for (auto &event: clientEvents) {
+    if (event.second->getClientEventName() == clientEventName) {
       LOG_DEBUG("DataManager::make_event(): already exists: " + event.second->str());
       return event.second;
     }
   }
-
-  const SIMCONNECT_CLIENT_EVENT_ID id = clientEventIDGen.getNextId();
-  EventPtr event = std::make_shared<Event>(hSimConnect, std::move(eventName), id, maksEvent);
-
-  events[id] = event;
-
-  LOG_DEBUG("DataManager::make_event(): created event " + event->str());
-  return event;
-}
-
-ClientEventPtr DataManager::make_client_event(const std::string &clientEventName) {
+  // create a new event instance
   ClientEventPtr clientEvent = std::shared_ptr<ClientEvent>(
     new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName)));
   clientEvents[clientEvent->getClientEventId()] = clientEvent;
+  if (notificationGroupId != SIMCONNECT_UNUSED) {
+    clientEvent->addClientEventToNotificationGroup(notificationGroupId);
+  }
   return clientEvent;
 }
 
@@ -408,22 +396,12 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) const {
     pair->second->processEvent(pRecv->dwData);
     return;
   }
-  // FIXME: remove this once all events are converted to clientEvents
-  if (auto pair = events.find(pRecv->uEventID); pair != events.end()) {
-    pair->second->processEvent(pRecv->dwData);
-    return;
-  }
   LOG_WARN("DataManager::processEvent() - unknown event id: "
            + std::to_string(pRecv->uEventID));
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) const {
   if (auto pair = clientEvents.find(pRecv->uEventID); pair != clientEvents.end()) {
-    pair->second->processEvent(pRecv->dwData0, pRecv->dwData1, pRecv->dwData2, pRecv->dwData3, pRecv->dwData4);
-    return;
-  }
-  // FIXME: remove this once all events are converted to clientEvents
-  if (auto pair = events.find(pRecv->uEventID); pair != events.end()) {
     pair->second->processEvent(pRecv->dwData0, pRecv->dwData1, pRecv->dwData2, pRecv->dwData3, pRecv->dwData4);
     return;
   }

@@ -31,6 +31,8 @@ class MsfsHandler;
 class Pushback : public Module {
 private:
 
+  static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
+
   // Convenience pointer to the data manager
   DataManager* dataManager{};
 
@@ -65,8 +67,8 @@ private:
   std::shared_ptr<DataDefinitionVariable<PushbackData>> pushbackData;
 
   // Events
-  EventPtr tugHeadingEvent;
-  EventPtr tugSpeedEvent;
+  ClientEventPtr tugHeadingEvent;
+  ClientEventPtr tugSpeedEvent;
 
 public:
   Pushback() = delete;

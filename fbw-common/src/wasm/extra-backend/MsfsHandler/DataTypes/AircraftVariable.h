@@ -9,7 +9,9 @@
 
 #include "logging.h"
 #include "CacheableVariable.h"
-#include "Event.h"
+#include "ClientEvent.h"
+
+class DataManager;
 
 /**
  * Specialized class for aircraft cacheable variables (aka simvars or A:VARS).<p/>
@@ -28,6 +30,9 @@
 class AircraftVariable : public CacheableVariable {
 private:
 
+  // The data manager is a friend, so it can access the private constructor.
+  friend DataManager;
+
   /**
    * Index of an indexed variable.
    */
@@ -41,13 +46,7 @@ private:
   /**
    * the event used to write to the variable.
    */
-  std::shared_ptr<Event> setterEvent{};
-
-public:
-
-  AircraftVariable() = delete; // no default constructor
-  AircraftVariable(const AircraftVariable &) = delete; // no copy constructor
-  AircraftVariable &operator=(const AircraftVariable &) = delete; // no copy assignment
+  std::shared_ptr<ClientEvent> setterEvent{};
 
   /**
    * Creates an instance of a writable aircraft variable.<p/>
@@ -102,7 +101,7 @@ public:
   explicit AircraftVariable(
     const std::string &varName,
     int varIndex = 0,
-    std::shared_ptr<Event> setterEvent = nullptr,
+    std::shared_ptr<ClientEvent> setterEvent = nullptr,
     Unit unit = UNITS.Number,
     bool autoReading = false,
     bool autoWriting = false,
@@ -116,6 +115,12 @@ public:
       LOG_ERROR("Aircraft variable " + varName + " not found in the Simulator");
     }
   }
+
+public:
+
+  AircraftVariable() = delete; // no default constructor
+  AircraftVariable(const AircraftVariable &) = delete; // no copy constructor
+  AircraftVariable &operator=(const AircraftVariable &) = delete; // no copy assignment
 
   FLOAT64 rawReadFromSim() override;
   void rawWriteToSim() override;
