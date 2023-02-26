@@ -8,12 +8,19 @@
 
 Event::Event(
   HANDLE hdlSimConnect, const std::string &eventName, DWORD eventClientId, bool maskEvent)
-  : hSimConnect(hdlSimConnect), eventName(std::move(eventName)), eventClientID(eventClientId),
-    maskEvent(maskEvent) {
+  : hSimConnect(hdlSimConnect), eventName(std::move(eventName)), eventClientID(eventClientId), maskEvent(maskEvent) {
 
-  if (!SUCCEEDED(SimConnect_MapClientEventToSimEvent(hSimConnect, eventClientID, eventName.c_str()))) {
-    LOG_ERROR("Failed to map event " + eventName + " to client ID " + std::to_string(eventClientID));
+  // FIXME: This is not yet correct
+  if (this->eventName.empty()) {
+    LOG_DEBUG("Event name is empty, registering event without mapping to sim event");
+    this->eventName = "FBW_EVENT_" + std::to_string(eventClientID);
+    if (!SUCCEEDED(SimConnect_MapClientEventToSimEvent(hSimConnect, eventClientID))) {
+      LOG_ERROR("Failed to map event client ID " + std::to_string(eventClientID));
+    }
+    return;
   }
+
+  mapEventToSimEvent(this->eventName);
 }
 
 Event::~Event() {
@@ -93,12 +100,25 @@ void Event::processEvent(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWO
   }
 }
 
+bool Event::mapEventToSimEvent(const std::string &simEventName) {
+  const auto wasSubscribedToSim = isSubscribedToSim;
+  if (isSubscribedToSim) unsubscribeFromSim();
+  if (!SUCCEEDED(SimConnect_MapClientEventToSimEvent(hSimConnect, eventClientID, simEventName.c_str()))) {
+    LOG_ERROR("Failed to map event " + simEventName + " to client ID " + std::to_string(eventClientID));
+    return false;
+  }
+  LOG_DEBUG("Mapped event " + simEventName + " to client ID " + std::to_string(eventClientID));
+  if (wasSubscribedToSim) subscribeToSim();
+  return true;
+}
+
 bool Event::mapInputEvent(SIMCONNECT_INPUT_GROUP_ID groupId, const std::string &inputDefinition) {
   if (!SUCCEEDED(SimConnect_MapInputEventToClientEvent(
     this->hSimConnect, groupId, inputDefinition.c_str(), this->eventClientID))) {
     LOG_ERROR("Failed to map input event " + inputDefinition + " to client event " + std::to_string(this->eventClientID));
     return false;
   }
+  LOG_DEBUG("Mapped input event " + inputDefinition + " to client event " + std::to_string(this->eventClientID));
   return true;
 }
 
@@ -108,6 +128,7 @@ bool Event::unmapInputEvent(SIMCONNECT_INPUT_GROUP_ID groupId, const std::string
     LOG_ERROR("Failed to unmap input event " + inputDefinition + " from client event " + std::to_string(this->eventClientID));
     return false;
   }
+  LOG_DEBUG("Unmapped input event " + inputDefinition + " from client event " + std::to_string(this->eventClientID));
   return true;
 }
 
@@ -117,6 +138,7 @@ bool Event::setInputGroupState(SIMCONNECT_INPUT_GROUP_ID groupId, SIMCONNECT_STA
     LOG_ERROR("Failed to set input group state " + std::to_string(state) + " for group " + std::to_string(groupId));
     return false;
   }
+  LOG_DEBUG("Set input group state " + std::to_string(state) + " for group " + std::to_string(groupId));
   return true;
 }
 

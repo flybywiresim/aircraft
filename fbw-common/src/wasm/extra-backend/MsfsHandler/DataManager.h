@@ -29,6 +29,7 @@ class AircraftVariable;
 class SimObjectBase;
 struct DataDefinition;
 class Event;
+class ClientEvent;
 
 // convenience typedefs
 typedef std::shared_ptr<CacheableVariable> CacheableVariablePtr;
@@ -36,6 +37,7 @@ typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
 typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
 typedef std::shared_ptr<Event> EventPtr;
+typedef std::shared_ptr<ClientEvent> ClientEventPtr;
 
 // Used to identify a key event
 typedef unsigned int KeyEventID;
@@ -49,7 +51,8 @@ typedef uint64_t KeyEventCallbackID;
  * @param parameters 0-4 to pass to the callback function
  */
 typedef std::function<void(
-  DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> KeyEventCallbackFunction;
+  DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)>
+KeyEventCallbackFunction;
 
 /**
  * DataManager is responsible for managing all variables and events.
@@ -75,10 +78,15 @@ private:
 
   // A map of all registered events.
   // Map over the event id to quickly find the event - make creating an event a bit less efficient.
+  /** @deprecated */
   std::map<SIMCONNECT_CLIENT_EVENT_ID, EventPtr> events{};
 
+  // A map of all registered events.
+  // Map over the event id to quickly find the event - make creating an event a bit less efficient.
+  std::map<SIMCONNECT_CLIENT_EVENT_ID, ClientEventPtr> clientEvents{};
+
   // Map of callback vectors to be called when a key event is triggered in the sim.
-  std::map<KeyEventID , std::map<KeyEventCallbackID, KeyEventCallbackFunction>> keyEventCallbacks{};
+  std::map<KeyEventID, std::map<KeyEventCallbackID, KeyEventCallbackFunction>> keyEventCallbacks{};
 
   // Backreference to the MsfsHandler instance.
   MsfsHandler* msfsHandler;
@@ -93,7 +101,7 @@ private:
   IDGenerator dataDefIDGen{};
   IDGenerator dataReqIDGen{};
   IDGenerator clientDataIDGen{};
-  IDGenerator eventIDGen{};
+  IDGenerator clientEventIDGen{};
   IDGenerator keyEventCallbackIDGen{};
 
 public:
@@ -282,23 +290,23 @@ public:
   template<typename T>
   std::shared_ptr<DataDefinitionVariable<T>> make_datadefinition_var(
     const std::string name,
-    std::vector<DataDefinition>&dataDefinitions,
+    std::vector<DataDefinition> &dataDefinitions,
     bool autoReading = false,
     bool autoWriting = false, FLOAT64
     maxAgeTime = 0.0, UINT64
     maxAgeTicks = 0) {
 
     std::shared_ptr<DataDefinitionVariable<T>>
-      var = std::make_shared<DataDefinitionVariable<T>> (
-        hSimConnect,
-        std::move(name),
-        dataDefinitions,
-        dataDefIDGen.getNextId(),
-        dataReqIDGen.getNextId(),
-        autoReading,
-        autoWriting,
-        maxAgeTime,
-        maxAgeTicks);
+      var = std::make_shared<DataDefinitionVariable<T>>(
+      hSimConnect,
+      std::move(name),
+      dataDefinitions,
+      dataDefIDGen.getNextId(),
+      dataReqIDGen.getNextId(),
+      autoReading,
+      autoWriting,
+      maxAgeTime,
+      maxAgeTicks);
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
     simObjects.insert({var->getRequestId(), var});
@@ -329,17 +337,17 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0) {
 
-    std::shared_ptr <ClientDataAreaVariable<T>>
-      var = std::make_shared<ClientDataAreaVariable<T>> (
-        hSimConnect,
-        std::move(clientDataName),
-        clientDataIDGen.getNextId(),
-        dataDefIDGen.getNextId(),
-        dataReqIDGen.getNextId(),
-        autoReading,
-        autoWriting,
-        maxAgeTime,
-        maxAgeTicks);
+    std::shared_ptr<ClientDataAreaVariable<T>>
+      var = std::make_shared<ClientDataAreaVariable<T>>(
+      hSimConnect,
+      std::move(clientDataName),
+      clientDataIDGen.getNextId(),
+      dataDefIDGen.getNextId(),
+      dataReqIDGen.getNextId(),
+      autoReading,
+      autoWriting,
+      maxAgeTime,
+      maxAgeTicks);
 
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
@@ -366,17 +374,17 @@ public:
     FLOAT64 maxAgeTime = 0.0,
     UINT64 maxAgeTicks = 0) {
 
-    std::shared_ptr <ClientDataBufferedAreaVariable<T, ChunkSize>>
-      var = std::make_shared<ClientDataBufferedAreaVariable<T, ChunkSize>> (
-        hSimConnect,
-        std::move(clientDataName),
-        clientDataIDGen.getNextId(),
-        dataDefIDGen.getNextId(),
-        dataReqIDGen.getNextId(),
-        autoReading,
-        autoWriting,
-        maxAgeTime,
-        maxAgeTicks);
+    std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>>
+      var = std::make_shared<ClientDataBufferedAreaVariable<T, ChunkSize>>(
+      hSimConnect,
+      std::move(clientDataName),
+      clientDataIDGen.getNextId(),
+      dataDefIDGen.getNextId(),
+      dataReqIDGen.getNextId(),
+      autoReading,
+      autoWriting,
+      maxAgeTime,
+      maxAgeTicks);
 
     LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
@@ -386,16 +394,25 @@ public:
 
   /**
    * Creates a new event and adds it to the list of managed events.
-   * Per default does not subscribe to the event. Use the subscribeToSim() method
-   * to subscribeToSim to the event.
+   *
    * @param eventName Name of the event in the sim
    * @param maksEvent True indicates that the event will be masked by this client and will not be
    *                  transmitted to any more clients, possibly including Microsoft Flight Simulator
    *                  itself (if the priority of the client exceeds that of Flight Simulator).
    *                  False is the default.
    * @return A shared pointer to the event instance
+   * @deprecated
    */
-  EventPtr make_event(const std::string &eventName, bool maksEvent = false);
+  EventPtr make_event(const std::string &eventName, bool maskEvent = false);
+
+  /**
+   * TODO: document
+   * @param clientEventName
+   * @param simEventName
+   * @param inputDefinition
+   * @return
+   */
+  ClientEventPtr make_client_event(const std::string &clientEventName);
 
   /**
    * @returns the current SimConnect handle

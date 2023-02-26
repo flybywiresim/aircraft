@@ -104,8 +104,8 @@ private:
   [[maybe_unused]] CallbackID lightPotentiometerSetCallback2ID{};
 
   // Input Events
-  EventPtr inputEventBrakesPtr;
-  [[maybe_unused]] CallbackID inputEventBrakesCallbackID{};
+  ClientEventPtr clientEventPtr;
+  [[maybe_unused]] CallbackID clientEventCallbackId{};
 
 public:
   ExampleModule() = delete;

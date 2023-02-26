@@ -7,6 +7,7 @@
 #include "NamedVariable.h"
 #include "AircraftVariable.h"
 #include "Event.h"
+#include "ClientEvent.h"
 
 bool DataManager::initialize(HANDLE hdlSimConnect) {
   hSimConnect = hdlSimConnect;
@@ -30,11 +31,11 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (var.second->isAutoRead()) {
       var.second->updateFromSim(timeStamp, tickCounter);
       LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
-                  << var.second->getName() << " = " << var.second->get()
-                  << std::endl;
-      })
+        if (tickCounter % 100 == 0) {
+          std::cout << "DataManager::preUpdate() - auto read named and aircraft: "
+                    << var.second->getName() << " = " << var.second->get()
+                    << std::endl;
+        })
     }
   }
 
@@ -46,11 +47,11 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
                   + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::preUpdate() - auto read simobjects: "
-                  << ddv.second->getName()
-                  << std::endl;
-      })
+        if (tickCounter % 100 == 0) {
+          std::cout << "DataManager::preUpdate() - auto read simobjects: "
+                    << ddv.second->getName()
+                    << std::endl;
+        })
     }
   }
 
@@ -82,11 +83,11 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
     if (var.second->isAutoWrite()) {
       var.second->updateToSim();
       LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
-                  << var.second->getName() << " = " << var.second->get()
-                  << std::endl;
-      })
+        if (tickCounter % 100 == 0) {
+          std::cout << "DataManager::postUpdate() - auto write named and aircraft: "
+                    << var.second->getName() << " = " << var.second->get()
+                    << std::endl;
+        })
     }
   }
 
@@ -98,11 +99,11 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
                   + ddv.second->getName());
       }
       LOG_VERBOSE_BLOCK(
-      if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::postUpdate() - auto write simobjects"
-                  << ddv.second->getName()
-                  << std::endl;
-      })
+        if (tickCounter % 100 == 0) {
+          std::cout << "DataManager::postUpdate() - auto write simobjects"
+                    << ddv.second->getName()
+                    << std::endl;
+        })
     }
   }
 
@@ -261,6 +262,9 @@ EventPtr DataManager::make_event(
   const std::string &eventName,
   bool maksEvent
 ) {
+
+  // TODO: Probably not needed anymore as Events are ClientEvents
+  // TODO: Test if an event can be mappen to more than one sim event
   // find existing event instance for this event
   for (auto &event: events) {
     if (event.second->getEventName() == eventName) {
@@ -269,13 +273,20 @@ EventPtr DataManager::make_event(
     }
   }
 
-  const SIMCONNECT_CLIENT_EVENT_ID id = eventIDGen.getNextId();
+  const SIMCONNECT_CLIENT_EVENT_ID id = clientEventIDGen.getNextId();
   EventPtr event = std::make_shared<Event>(hSimConnect, std::move(eventName), id, maksEvent);
 
   events[id] = event;
 
   LOG_DEBUG("DataManager::make_event(): created event " + event->str());
   return event;
+}
+
+ClientEventPtr DataManager::make_client_event(const std::string &clientEventName) {
+  ClientEventPtr clientEvent = std::shared_ptr<ClientEvent>(
+    new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName)));
+  clientEvents[clientEvent->getClientEventId()] = clientEvent;
+  return clientEvent;
 }
 
 KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction &callback) {
@@ -386,6 +397,11 @@ void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) {
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) {
+  if (auto pair = clientEvents.find(pRecv->uEventID); pair != clientEvents.end()) {
+    pair->second->processEvent(pRecv->dwData);
+    return;
+  }
+  // FIXME: remove this once all events are converted to clientEvents
   if (auto pair = events.find(pRecv->uEventID); pair != events.end()) {
     pair->second->processEvent(pRecv->dwData);
     return;
@@ -395,6 +411,11 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) {
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) {
+  if (auto pair = clientEvents.find(pRecv->uEventID); pair != clientEvents.end()) {
+    pair->second->processEvent(pRecv->dwData0, pRecv->dwData1, pRecv->dwData2, pRecv->dwData3, pRecv->dwData4);
+    return;
+  }
+  // FIXME: remove this once all events are converted to clientEvents
   if (auto pair = events.find(pRecv->uEventID); pair != events.end()) {
     pair->second->processEvent(pRecv->dwData0, pRecv->dwData1, pRecv->dwData2, pRecv->dwData3, pRecv->dwData4);
     return;

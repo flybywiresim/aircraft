@@ -18,7 +18,7 @@ typedef uint64_t CallbackID;
 
 /**
  * Defines a callback function for an event
- * @param number of parameters to use
+ * @param number of parameters to use - TODO: maybe remove this
  * @param parameters 0-4 to pass to the callback function
  */
 typedef std::function<void(
@@ -26,11 +26,13 @@ typedef std::function<void(
   DWORD param4)> EventCallbackFunction;
 
 /**
+ * TODO: Change this to ClientEvent
  * Event class to wrap SimConnect events providing trigger and callback registration.
  *
  * It is recommended to use the DataManager's make_event() to create instances of Events as it
  * de-duplicates events and only creates one instance of each event. It also makes sure the ID of
  * the event is unique for the simconnect session.
+ * @deprecated
  */
 class Event {
 private:
@@ -45,7 +47,7 @@ private:
   /**
    * The name of the event in the sim. This is used to register the event.
    */
-  const std::string eventName;
+  std::string eventName;
 
   /**
    * The client's ID of the event. This is used to help the sim to map events to the clients ID.
@@ -160,6 +162,13 @@ public:
   void processEvent(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWORD data4);
 
   /**
+   * TODO
+   * @param simEventName
+   * @return
+   */
+  bool mapEventToSimEvent(const std::string &simEventName);
+
+  /**
    * Adds an input event to the event group and maps it to the event.
    *
    * @param groupId The ID of the group to add the event to. This is useful to be able to use
@@ -213,8 +222,6 @@ public:
    */
   [[nodiscard]]
   std::string str() const;
-
-private:
 
   /**
    * Subscribes the event to the sim to receive notifications when the event is triggered in the sim.
