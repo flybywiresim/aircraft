@@ -164,6 +164,11 @@ impl Pax {
         }
         self.load_payload();
     }
+
+    pub fn reset_pax_and_target(&mut self) {
+        self.pax = 0;
+        self.pax_target = 0;
+    }
 }
 impl SimulationElement for Pax {
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -173,6 +178,7 @@ impl SimulationElement for Pax {
     }
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pax_id, self.pax);
+        writer.write(&self.pax_target_id, self.pax_target);
         writer.write(&self.payload_id, self.payload.get::<pound>());
     }
 }
@@ -240,6 +246,16 @@ impl Cargo {
             self.cargo -= qty;
         }
         self.load_payload();
+    }
+
+    pub fn load_cargo_percent(&mut self, percent: f64) {
+        self.cargo = (percent / 100.) * self.cargo_target;
+        self.load_payload();
+    }
+
+    pub fn reset_cargo_and_target(&mut self) {
+        self.cargo = Mass::new::<kilogram>(0.);
+        self.cargo_target = Mass::new::<kilogram>(0.);
     }
 }
 impl SimulationElement for Cargo {
