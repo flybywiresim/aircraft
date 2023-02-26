@@ -3088,10 +3088,13 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
             return false;
         }
 
-        const accAlt = parseInt(match[1]);
+        const origin = this.flightPlanService.active.originAirport;
 
-        const origin = this.flightPlanManager.getPersistentOrigin();
-        let elevation = origin.infos.elevation !== undefined ? origin.infos.elevation : 0;
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+        if (origin) {
+            elevation = origin.location.alt;
+        }
+
         const minimumAltitude = elevation + 400;
 
         if (accAlt < minimumAltitude || accAlt > 45000) {
