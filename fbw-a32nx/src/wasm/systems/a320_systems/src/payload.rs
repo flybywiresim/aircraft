@@ -139,22 +139,6 @@ impl A320BoardingSounds {
     fn stop_pax_ambience(&mut self) {
         self.pax_ambience = false;
     }
-
-    fn pax_ambience(&self) -> bool {
-        self.pax_ambience
-    }
-
-    fn pax_boarding(&self) -> bool {
-        self.pax_boarding
-    }
-
-    fn pax_deboarding(&self) -> bool {
-        self.pax_deboarding
-    }
-
-    fn pax_complete(&self) -> bool {
-        self.pax_complete
-    }
 }
 impl SimulationElement for A320BoardingSounds {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -170,14 +154,28 @@ pub struct A320Payload {
     is_boarding_id: VariableIdentifier,
     board_rate_id: VariableIdentifier,
     per_pax_weight_id: VariableIdentifier,
+
     is_gsx_enabled_id: VariableIdentifier,
     gsx_boarding_state_id: VariableIdentifier,
+    gsx_deboarding_state_id: VariableIdentifier,
+    gsx_pax_boarding_id: VariableIdentifier,
+    gsx_pax_deboarding_id: VariableIdentifier,
+    gsx_cargo_boarding_pct_id: VariableIdentifier,
+    gsx_cargo_deboarding_pct_id: VariableIdentifier,
+
     developer_state: i8,
     is_boarding: bool,
     board_rate: BoardingRate,
     per_pax_weight: Rc<Cell<Mass>>,
+
     is_gsx_enabled: bool,
     gsx_boarding_state: GsxState,
+    gsx_deboarding_state: GsxState,
+    gsx_pax_boarding: u64,
+    gsx_pax_deboarding: u64,
+    gsx_cargo_boarding_pct: f64,
+    gsx_cargo_deboarding_pct: f64,
+
     pax: Vec<Pax>,
     cargo: Vec<Cargo>,
     boarding_sounds: A320BoardingSounds,
@@ -214,14 +212,30 @@ impl A320Payload {
             is_boarding_id: context.get_identifier("BOARDING_STARTED_BY_USR".to_owned()),
             board_rate_id: context.get_identifier("BOARDING_RATE".to_owned()),
             per_pax_weight_id: context.get_identifier("WB_PER_PAX_WEIGHT".to_owned()),
+
             is_gsx_enabled_id: context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
             gsx_boarding_state_id: context.get_identifier("FSDT_GSX_BOARDING_STATE".to_owned()),
+            gsx_deboarding_state_id: context.get_identifier("FSDT_GSX_DEBOARDING_STATE".to_owned()),
+            gsx_pax_boarding_id: context
+                .get_identifier("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL".to_owned()),
+            gsx_pax_deboarding_id: context
+                .get_identifier("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL".to_owned()),
+            gsx_cargo_boarding_pct_id: context
+                .get_identifier("FSDT_GSX_BOARDING_CARGO_PERCENT".to_owned()),
+            gsx_cargo_deboarding_pct_id: context
+                .get_identifier("FSDT_GSX_DEBOARDING_CARGO_PERCENT".to_owned()),
+
             developer_state: 0,
             is_boarding: false,
             board_rate: BoardingRate::Instant,
             per_pax_weight,
             is_gsx_enabled: false,
             gsx_boarding_state: GsxState::None,
+            gsx_deboarding_state: GsxState::None,
+            gsx_pax_boarding: 0,
+            gsx_pax_deboarding: 0,
+            gsx_cargo_boarding_pct: 0.,
+            gsx_cargo_deboarding_pct: 0.,
             boarding_sounds: A320BoardingSounds::new(
                 context.get_identifier("SOUND_PAX_BOARDING".to_owned()),
                 context.get_identifier("SOUND_PAX_DEBOARDING".to_owned()),
@@ -531,6 +545,11 @@ impl SimulationElement for A320Payload {
         self.board_rate = reader.read(&self.board_rate_id);
         self.is_gsx_enabled = reader.read(&self.is_gsx_enabled_id);
         self.gsx_boarding_state = reader.read(&self.gsx_boarding_state_id);
+        self.gsx_deboarding_state = reader.read(&self.gsx_deboarding_state_id);
+        self.gsx_pax_boarding = reader.read(&self.gsx_pax_boarding_id);
+        self.gsx_pax_deboarding = reader.read(&self.gsx_pax_deboarding_id);
+        self.gsx_cargo_boarding_pct = reader.read(&self.gsx_cargo_boarding_pct_id);
+        self.gsx_cargo_deboarding_pct = reader.read(&self.gsx_cargo_deboarding_pct_id);
         self.per_pax_weight
             .replace(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
     }
@@ -939,19 +958,19 @@ mod boarding_test {
         }
 
         fn sound_pax_ambience(&self) -> bool {
-            self.query(|a| a.boarding.boarding_sounds.pax_ambience())
+            self.query(|a| a.boarding.boarding_sounds.pax_ambience)
         }
 
         fn sound_pax_boarding(&self) -> bool {
-            self.query(|a| a.boarding.boarding_sounds.pax_boarding())
+            self.query(|a| a.boarding.boarding_sounds.pax_boarding)
         }
 
         fn sound_pax_deboarding(&self) -> bool {
-            self.query(|a| a.boarding.boarding_sounds.pax_deboarding())
+            self.query(|a| a.boarding.boarding_sounds.pax_deboarding)
         }
 
         fn sound_pax_complete(&self) -> bool {
-            self.query(|a| a.boarding.boarding_sounds.pax_complete())
+            self.query(|a| a.boarding.boarding_sounds.pax_complete)
         }
 
         fn pax_num(&self, ps: A320Pax) -> i8 {

@@ -352,7 +352,7 @@ export const Payload = () => {
     }, [totalPaxDesired, totalPax, totalCargo, totalCargoDesired]);
 
     const calculateBoardingTime = useMemo(() => {
-        // factors taken from boarding.rs TODO: Simvar
+        // factors taken from payload.rs TODO: Simvar
         let boardingRateMultiplier = 0;
         if (boardingRate === 'REAL') {
             boardingRateMultiplier = 5;
@@ -360,7 +360,7 @@ export const Payload = () => {
             boardingRateMultiplier = 1;
         }
 
-        // factors taken from boarding.rs TODO: Simvar
+        // factors taken from payload.rs TODO: Simvar
         const cargoWeightPerWeightStep = 60;
 
         const differentialPax = Math.abs(totalPaxDesired - totalPax);
