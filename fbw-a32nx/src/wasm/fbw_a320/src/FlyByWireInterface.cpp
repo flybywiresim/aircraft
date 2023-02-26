@@ -1299,7 +1299,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
     bool powerSupplyAvailable = false;
     if (elacIndex == 0) {
       powerSupplyAvailable =
-          idElecDcEssBusPowered->get() || (elacsDiscreteOutputs[elacIndex].batt_power_supply ? idElecBat1HotBusPowered->get() : false);
+          idElecDcEssBusPowered->get() ||
+          ((elacsDiscreteOutputs[0].batt_power_supply || secsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get() : false);
     } else {
       powerSupplyAvailable = idElecDcBus2Powered->get();
     }
@@ -1452,7 +1453,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     bool powerSupplyAvailable = false;
     if (secIndex == 0) {
       powerSupplyAvailable =
-          idElecDcEssBusPowered->get() || (secsDiscreteOutputs[secIndex].batt_power_supply ? idElecBat1HotBusPowered->get() : false);
+          idElecDcEssBusPowered->get() ||
+          ((secsDiscreteOutputs[0].batt_power_supply || elacsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get() : false);
     } else {
       powerSupplyAvailable = idElecDcBus2Powered->get();
     }
