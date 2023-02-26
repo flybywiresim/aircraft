@@ -143,13 +143,13 @@ export abstract class BaseFlightPlan {
             this.approachViaSegment.setApproachVia(this.approachViaSegment.approachViaProcedure?.ident);
 
             this.enqueueOperation(FlightPlanQueuedOperation.Restring);
-            this.flushOperationQueue();
+            this.flushOperationQueue().then(() => {
+                const activeIndex = this.allLegs.findIndex((it) => it === clonedMissedApproachLegs[0]);
 
-            const activeIndex = this.allLegs.findIndex((it) => it === clonedMissedApproachLegs[0]);
+                this.activeLegIndex = activeIndex;
 
-            this.activeLegIndex = activeIndex;
-
-            this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
+                this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
+            });
         } else {
             this.activeLegIndex++;
 
@@ -976,7 +976,7 @@ export abstract class BaseFlightPlan {
     }
 
     private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {
-        if (!first || !second || first.strung || first.allLegs.length === 0 || second.allLegs.length === 0) {
+        if (!first || !second || first.strung || first.allLegs.length === 0 || second.allLegs.length === 0 || (second instanceof EnrouteSegment && second.isSequencedMissedApproach)) {
             return;
         }
 
@@ -1146,8 +1146,10 @@ export abstract class BaseFlightPlan {
                         continue;
                     }
 
-                    // We can have duplicates after an enroute which is a sequenced missed approach and another segment
-                    if (segment instanceof EnrouteSegment && segment.isSequencedMissedApproach) {
+                    // We can have duplicates in or after an enroute which is a sequenced missed approach and another segment
+                    if ((segment instanceof EnrouteSegment && segment.isSequencedMissedApproach)
+                        || (duplicateSegment instanceof EnrouteSegment && duplicateSegment.isSequencedMissedApproach)
+                    ) {
                         continue;
                     }
 
