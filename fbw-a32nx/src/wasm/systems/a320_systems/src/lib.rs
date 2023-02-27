@@ -65,7 +65,7 @@ pub struct A320 {
     pressurization_overhead: PressurizationOverheadPanel,
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
-    reverse_thrust: ReverserForce<2>,
+    reverse_thrust: ReverserForce,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {

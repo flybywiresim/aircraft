@@ -1,9 +1,12 @@
 use uom::si::{
     acceleration::meter_per_second_squared,
+    angular_acceleration::radian_per_second_squared,
     f64::*,
     force::newton,
+    length::meter,
     mass::kilogram,
     ratio::{percent, ratio},
+    torque::kilogram_force_meter,
     velocity::{foot_per_second, meter_per_second},
 };
 
@@ -58,19 +61,28 @@ impl ReverserThrust {
     }
 }
 
-pub struct ReverserForce<const N: usize> {
+pub struct ReverserForce {
     reverser_delta_speed_id: VariableIdentifier,
+    reverser_angular_accel_id: VariableIdentifier,
 
-    reversers: [ReverserThrust; N],
+    reversers: [ReverserThrust; 2],
 
     plane_delta_speed_due_to_reverse_thrust: Velocity,
+
+    dissimetry_acceleration: AngularAcceleration,
 }
-impl<const N: usize> ReverserForce<N> {
+impl ReverserForce {
+    const DISTANCE_FROM_CG_TO_ENGINE_METER: f64 = 8.;
+
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             reverser_delta_speed_id: context.get_identifier("REVERSER_DELTA_SPEED".to_owned()),
-            reversers: [ReverserThrust::new(); N],
+            reverser_angular_accel_id: context
+                .get_identifier("REVERSER_ANGULAR_ACCELERATION".to_owned()),
+
+            reversers: [ReverserThrust::new(); 2],
             plane_delta_speed_due_to_reverse_thrust: Velocity::default(),
+            dissimetry_acceleration: AngularAcceleration::default(),
         }
     }
 
@@ -84,11 +96,7 @@ impl<const N: usize> ReverserForce<N> {
             reverser.update(engine_n1[engine_index], &reverser_position[engine_index]);
         }
 
-        let mut total_force = Force::default();
-
-        for reverser in &self.reversers {
-            total_force += reverser.current_thrust();
-        }
+        let total_force = self.reversers[0].current_thrust() + self.reversers[1].current_thrust();
 
         let acceleration = if context.total_weight().get::<kilogram>() > 0. {
             -total_force / context.total_weight()
@@ -108,14 +116,44 @@ impl<const N: usize> ReverserForce<N> {
         acceleration.get::<meter_per_second_squared>(),
         self.plane_delta_speed_due_to_reverse_thrust.get::<foot_per_second>()
         );
+
+        let total_dissimetry =
+            self.reversers[1].current_thrust() - self.reversers[0].current_thrust();
+
+        let dissimetry_torque = Torque::new::<kilogram_force_meter>(
+            total_dissimetry.get::<newton>() * Self::DISTANCE_FROM_CG_TO_ENGINE_METER,
+        );
+
+        self.dissimetry_acceleration = if context.total_yaw_inertia_kg_m2().abs() > 0. {
+            AngularAcceleration::new::<radian_per_second_squared>(
+                dissimetry_torque.get::<kilogram_force_meter>() / context.total_yaw_inertia_kg_m2(),
+            )
+        } else {
+            AngularAcceleration::default()
+        };
+
+        println!(
+            "DISSIMETRY THRUST:  {:.1}N TORQUE{:.1}Mkg INERTIA kgm²{:.2} ACCEL r/s {:.5}",
+            total_dissimetry.get::<newton>(),
+            dissimetry_torque.get::<kilogram_force_meter>(),
+            context.total_yaw_inertia_kg_m2(),
+            self.dissimetry_acceleration
+                .get::<radian_per_second_squared>(),
+        );
     }
 }
-impl SimulationElement for ReverserForce<2> {
+impl SimulationElement for ReverserForce {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.reverser_delta_speed_id,
             self.plane_delta_speed_due_to_reverse_thrust
                 .get::<foot_per_second>(),
+        );
+
+        writer.write(
+            &self.reverser_angular_accel_id,
+            self.dissimetry_acceleration
+                .get::<radian_per_second_squared>(),
         );
     }
 }

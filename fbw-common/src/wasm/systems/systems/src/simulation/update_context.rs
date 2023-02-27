@@ -163,6 +163,7 @@ pub struct UpdateContext {
     plane_height_id: VariableIdentifier,
     latitude_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
+    total_yaw_inertia_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -189,6 +190,7 @@ pub struct UpdateContext {
     latitude: Angle,
 
     total_weight: Mass,
+    total_yaw_inertia_slug_foot_squared: f64,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -216,10 +218,14 @@ impl UpdateContext {
     pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
+    pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
     const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(400);
+
+    // No UOM unit available for inertia
+    const SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION: f64 = 1.3558179619;
 
     #[deprecated(
         note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
@@ -271,6 +277,7 @@ impl UpdateContext {
             plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
+            total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -315,6 +322,7 @@ impl UpdateContext {
             plane_height_over_ground: Length::default(),
             latitude,
             total_weight: Mass::new::<kilogram>(50000.),
+            total_yaw_inertia_slug_foot_squared: 10.,
         }
     }
 
@@ -345,6 +353,7 @@ impl UpdateContext {
             plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
+            total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -386,6 +395,7 @@ impl UpdateContext {
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
             total_weight: Mass::new::<kilogram>(50000.),
+            total_yaw_inertia_slug_foot_squared: 1.,
         }
     }
 
@@ -444,6 +454,8 @@ impl UpdateContext {
         self.latitude = reader.read(&self.latitude_id);
 
         self.total_weight = reader.read(&self.total_weight_id);
+
+        self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
 
         self.update_relative_wind();
 
@@ -629,6 +641,11 @@ impl UpdateContext {
 
     pub fn total_weight(&self) -> Mass {
         self.total_weight
+    }
+
+    pub fn total_yaw_inertia_kg_m2(&self) -> f64 {
+        self.total_yaw_inertia_slug_foot_squared
+            * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
     }
 }
 
