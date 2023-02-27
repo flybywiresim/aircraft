@@ -7,7 +7,7 @@ import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 const failureGeneratorCommonFunction = () => {
     const [maxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
     const { changingFailures, activeFailures, allFailures, activate } = useFailuresOrchestrator();
-    const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size);
+    const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size, [changingFailures, activeFailures]);
     return { maxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
 };
 
@@ -18,9 +18,9 @@ export const failureGeneratorTEMPLATE = (failureFlightPhase : FailurePhases) => 
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSettingTEMPLATE] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TEMPLATE', '0,1');
     const [failureGeneratorArmedTEMPLATE, setFailureGeneratorArmedTEMPLATE] = useState<boolean[]>();
-    const settingsTEMPLATE : number[] = useMemo<string[]>(() => failureGeneratorSettingTEMPLATE.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingTEMPLATE]);
+    const settingsTEMPLATE : number[] = useMemo<number[]>(() => failureGeneratorSettingTEMPLATE.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingTEMPLATE]);
     const numberOfSettingsPerGenerator = 1;
-    const nbGeneratorTEMPLATE = useMemo(() => Math.floor(settingsTEMPLATE.length / numberOfSettingsPerGenerator));
+    const nbGeneratorTEMPLATE = useMemo(() => Math.floor(settingsTEMPLATE.length / numberOfSettingsPerGenerator), [settingsTEMPLATE]);
 
     useEffect(() => {
         // FAILURETYPE failures
@@ -250,11 +250,11 @@ export const failureGeneratorTimeBased : (failureFlightPhase: FailurePhases) => 
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSettingTIMEBASED] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMEBASED', '7.5,30');
     const [failureGeneratorArmedTIMEBASED, setFailureGeneratorArmedTIMEBASED] = useState<boolean[]>([false, false]);
-    const settingsTIMEBASED : number[] = useMemo<string[]>(() => failureGeneratorSettingTIMEBASED.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingTIMEBASED]);
+    const settingsTIMEBASED : number[] = useMemo<number[]>(() => failureGeneratorSettingTIMEBASED.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingTIMEBASED]);
     const numberOfSettingsPerGenerator = 1;
-    const nbGeneratorTIMEBASED = useMemo(() => Math.floor(settingsTIMEBASED.length / numberOfSettingsPerGenerator));
+    const nbGeneratorTIMEBASED = useMemo(() => Math.floor(settingsTIMEBASED.length / numberOfSettingsPerGenerator), [settingsTIMEBASED]);
     // Failure Specific memos
-    const [failureTime, setFailureTime] = useState<number>(-1);
+    const [failureTime, setFailureTime] = useState<number[]>([-1, -1]);
 
     useEffect(() => {
     // FAILURE CHECK AND ACTIVATION
@@ -273,7 +273,7 @@ export const failureGeneratorTimeBased : (failureFlightPhase: FailurePhases) => 
     useEffect(() => {
         // failureSettings once per start of takeoff
         const tempFailureGeneratorArmedTIMEBASED : boolean[] = Array.from(failureGeneratorArmedTIMEBASED);
-        const tempFailureTime = Array.from(failureTime);
+        const tempFailureTime : number[] = Array.from(failureTime);
         for (let i = 0; i < nbGeneratorTIMEBASED; i++) {
             if (failureFlightPhase === FailurePhases.TAKEOFF) {
                 tempFailureGeneratorArmedTIMEBASED[i] = true;
