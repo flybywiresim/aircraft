@@ -12,7 +12,7 @@ const failureGeneratorCommonFunction = () => {
 };
 
 // keep this template for new failureGenerators
-export const failureGeneratorTEMPLATE = (failureFlightPhase : FailurePhases) => {
+export const failureGeneratorTEMPLATE = () => {
     // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
@@ -40,13 +40,11 @@ export const failureGeneratorTEMPLATE = (failureFlightPhase : FailurePhases) => 
         // failureSettings once per start of takeoff
         const tempFailureGeneratorArmedTEMPLATE : boolean[] = Array.from(failureGeneratorArmedTEMPLATE);
         for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
-            if (failureFlightPhase === FailurePhases.TAKEOFF) {
-                // SPECIFIC INIT HERE PER GENERATOR
-                tempFailureGeneratorArmedTEMPLATE[i] = true;
-            }
+            // SPECIFIC INIT HERE PER GENERATOR
+            tempFailureGeneratorArmedTEMPLATE[i] = true;
         }
         setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmedTEMPLATE);
-    }, [failureFlightPhase]);
+    }, []); // specific update conditions
 };
 /*
 enum FailureGeneratorType {
@@ -60,28 +58,39 @@ enum FailureGeneratorType {
 }
 */
 
-export const failureGeneratorAltClimb = (failureFlightPhase : FailurePhases) => {
-    // FAILURE GENERATOR DESCRIPTION
+export const failureGeneratorAltClimb = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
+    const [failureGeneratorSettingAltClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB', '3000,6000');
+    const [failureGeneratorArmedAltClimb, setFailureGeneratorArmedAltClimb] = useState<boolean[]>();
+    const settingsAltClimb : number[] = useMemo<number[]>(() => failureGeneratorSettingAltClimb.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingAltClimb]);
+    const numberOfSettingsPerGenerator = 1;
+    const nbGeneratorAltClimb = useMemo(() => Math.floor(settingsAltClimb.length / numberOfSettingsPerGenerator), [settingsAltClimb]);
+
     const altitude = Simplane.getAltitudeAboveGround();
-    const [failureClimbAltitudeThreshold, setFailureClimbAltitudeThreshold] = useState<number>(-1);
 
     useEffect(() => {
-    // Climb Altitude based failures
-        if (altitude > failureClimbAltitudeThreshold && failureClimbAltitudeThreshold !== -1 && totalActiveFailures < maxFailuresAtOnce) {
-            console.info('Climb altitude failure triggered');
-            activateRandomFailure(allFailures, activate);
-            setFailureClimbAltitudeThreshold(-1);
+        const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltClimb);
+        for (let i = 0; i < nbGeneratorAltClimb; i++) {
+            if (tempFailureGeneratorArmed[i] && altitude > settingsAltClimb[i * numberOfSettingsPerGenerator + 0] && totalActiveFailures < maxFailuresAtOnce) {
+                activateRandomFailure(allFailures, activate);
+                console.info('Climb altitude failure triggered');
+                tempFailureGeneratorArmed[i] = false;
+            }
         }
+        setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
     }, [absoluteTime5s]);
 
     useEffect(() => {
         // failureSettings once per start of takeoff
-        if (failureFlightPhase === FailurePhases.TAKEOFF) {
-            setFailureClimbAltitudeThreshold(altitude + 6000);
+        const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltClimb);
+        for (let i = 0; i < nbGeneratorAltClimb; i++) {
+            if (altitude < settingsAltClimb[i * numberOfSettingsPerGenerator + 0] - 100) {
+                tempFailureGeneratorArmed[i] = true;
+            }
         }
-    }, [failureFlightPhase]);
+        setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
+    }, [altitude]);
 };
 
 export const failureGeneratorAltDesc = (failureFlightPhase : FailurePhases) => {
@@ -243,7 +252,7 @@ export const failureGeneratorTakeOff = (failureFlightPhase : FailurePhases) => {
     }, [failureFlightPhase]);
 };
 
-export const failureGeneratorTimeBased : (failureFlightPhase: FailurePhases) => void = (failureFlightPhase) => {
+export const failureGeneratorTimeBased : () => void = () => {
     // time based trigger after TO thrust
 
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
@@ -255,6 +264,7 @@ export const failureGeneratorTimeBased : (failureFlightPhase: FailurePhases) => 
     const nbGeneratorTIMEBASED = useMemo(() => Math.floor(settingsTIMEBASED.length / numberOfSettingsPerGenerator), [settingsTIMEBASED]);
     // Failure Specific memos
     const [failureTime, setFailureTime] = useState<number[]>([-1, -1]);
+    const { failureFlightPhase } = basicData();
 
     useEffect(() => {
     // FAILURE CHECK AND ACTIVATION
@@ -272,17 +282,17 @@ export const failureGeneratorTimeBased : (failureFlightPhase: FailurePhases) => 
 
     useEffect(() => {
         // failureSettings once per start of takeoff
-        const tempFailureGeneratorArmedTIMEBASED : boolean[] = Array.from(failureGeneratorArmedTIMEBASED);
-        const tempFailureTime : number[] = Array.from(failureTime);
-        for (let i = 0; i < nbGeneratorTIMEBASED; i++) {
-            if (failureFlightPhase === FailurePhases.TAKEOFF) {
-                tempFailureGeneratorArmedTIMEBASED[i] = true;
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            const tempFailureGeneratorArmedTIMEBASED : boolean[] = [];
+            const tempFailureTime : number[] = [];
+            for (let i = 0; i < nbGeneratorTIMEBASED; i++) {
+                tempFailureGeneratorArmedTIMEBASED.push(true);
                 // SPECIFIC INIT HERE PER GENERATOR
-                tempFailureTime[i] = settingsTIMEBASED[i] + absoluteTime5s;
+                tempFailureTime.push(settingsTIMEBASED[i * numberOfSettingsPerGenerator + 0] + absoluteTime5s);
             }
+            setFailureTime(tempFailureTime);
+            setFailureGeneratorArmedTIMEBASED(tempFailureGeneratorArmedTIMEBASED);
         }
-        setFailureTime(tempFailureTime);
-        setFailureGeneratorArmedTIMEBASED(tempFailureGeneratorArmedTIMEBASED);
     }, [failureFlightPhase]);
 };
 
@@ -306,20 +316,10 @@ const activateRandomFailure = (allFailures : readonly Readonly<Failure>[], activ
     }
 };
 
-export const randomFailureGenerator = () => {
+const basicData = () => {
     const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
-    const failureGenerators : ((failureFlightPhase : FailurePhases) => void)[] = [];
-
-    failureGenerators.push(failureGeneratorTimeBased);
-    failureGenerators.push(failureGeneratorTakeOff);
-    failureGenerators.push(failureGeneratorAltClimb);
-    failureGenerators.push(failureGeneratorAltDesc);
-    failureGenerators.push(failureGeneratorMTTF);
-    failureGenerators.push(failureGeneratorSpeedAccel);
-    failureGenerators.push(failureGeneratorSpeedDecel);
-
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
             if (throttleTakeOff) return FailurePhases.TAKEOFF;
@@ -328,11 +328,25 @@ export const randomFailureGenerator = () => {
         if (throttleTakeOff) return FailurePhases.INITIALCLIMB;
         return FailurePhases.FLIGHT;
     }, [throttleTakeOff, isOnGround]);
+    return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
+};
+
+export const randomFailureGenerator = () => {
+    const failureGenerators : (() => void)[] = [];
+    const { failureFlightPhase } = basicData();
+
+    failureGenerators.push(failureGeneratorTimeBased);
+    // failureGenerators.push(failureGeneratorTakeOff);
+    failureGenerators.push(failureGeneratorAltClimb);
+    // failureGenerators.push(failureGeneratorAltDesc);
+    // failureGenerators.push(failureGeneratorMTTF);
+    // failureGenerators.push(failureGeneratorSpeedAccel);
+    // failureGenerators.push(failureGeneratorSpeedDecel);
 
     // TODO: to be improved, changing doesn't mean active but this is not critical
 
     for (let i = 0; i < failureGenerators.length; i++) {
-        failureGenerators[i](failureFlightPhase);
+        failureGenerators[i]();
     }
 
     useEffect(() => {
