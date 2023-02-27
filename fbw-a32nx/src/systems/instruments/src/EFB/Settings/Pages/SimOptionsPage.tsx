@@ -53,6 +53,7 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
+                                    key={button.setting}
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
                                 >
@@ -66,6 +67,7 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {fpSyncButtons.map((button) => (
                                 <SelectItem
+                                    key={button.setting}
                                     onSelect={() => setFpSync(button.setting)}
                                     selected={fpSync === button.setting}
                                 >

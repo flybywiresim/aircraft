@@ -1,5 +1,7 @@
 const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+// Honeywell H4+ feature only
+const confirmDataBaseSwitch = false;
 
 function findNewMonthIndex(index) {
     if (index === 0) {
@@ -62,14 +64,35 @@ function calculateSecDate(date) {
     } else {
         return "ERR";
     }
+}
 
+async function switchDataBase(mcdu) {
+    // Only performing a reset of the MCDU for now, no secondary database
+    // Speed AP returns to selected
+    //const isSelected = Simplane.getAutoPilotAirspeedSelected();
+    //if (isSelected == false)
+    //    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
+    // flight plan
+    mcdu.resetCoroute();
+    mcdu.atsu.atc.resetAtisAutoUpdate();
+    await mcdu.flightPlanManager.clearFlightPlan();
+    // stored data
+    mcdu.dataManager.deleteAllStoredWaypoints();
+    // Reset MCDU apart from TakeOff config
+    mcdu.initVariables(false);
+}
+
+const ConfirmType = {
+    NoConfirm : 0,
+    DeleteStored : 1,
+    SwitchDataBase : 2,
 }
 
 class CDUIdentPage {
-    static ShowPage(mcdu, confirmDeleteAll = false) {
+    static ShowPage(mcdu, confirmType = ConfirmType.NoConfirm) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.IdentPage;
-        mcdu.activeSystem = 'FMGC';
+        mcdu.activeSystem = "FMGC";
 
         const date = mcdu.getNavDataDateRange();
         const stored = mcdu.dataManager.numberOfStoredElements();
@@ -78,40 +101,113 @@ class CDUIdentPage {
         let storedRoutesRunwaysCell = "";
         let storedWaypointsNavaidsCell = "";
         let storedDeleteCell = "";
-        if ((stored.routes + stored.runways + stored.waypoints + stored.navaids) > 0) {
+        let secondaryDBSubLine = "";
+        let secondaryDBTopLine = "";
+        if (
+            stored.routes + stored.runways + stored.waypoints + stored.navaids >
+            0
+        ) {
             storedTitleCell = "STORED\xa0\xa0\xa0\xa0";
-            storedRoutesRunwaysCell = `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`;
-            storedWaypointsNavaidsCell = `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`;
-            storedDeleteCell = confirmDeleteAll ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}';
+            storedRoutesRunwaysCell = `{green}${stored.routes
+                .toFixed(0)
+                .padStart(
+                    2,
+                    "0"
+                )}{end}{small}RTES{end}\xa0{green}${stored.runways
+                .toFixed(0)
+                .padStart(2, "0")}{end}{small}RWYS{end}`;
+            storedWaypointsNavaidsCell = `{green}{big}${stored.waypoints
+                .toFixed(0)
+                .padStart(
+                    2,
+                    "0"
+                )}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids
+                .toFixed(0)
+                .padStart(2, "0")}{end}{end}{small}NAVS{end}`;
+            storedDeleteCell =
+                confirmType === ConfirmType.DeleteStored
+                    ? "{amber}CONFIRM DEL*{end}"
+                    : "{cyan}DELETE ALL}{end}";
 
             // DELETE ALL
             mcdu.onRightInput[4] = () => {
-                if (confirmDeleteAll) {
+                if (confirmType == ConfirmType.DeleteStored) {
                     const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
                     if (!allDeleted) {
-                        mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
+                        mcdu.setScratchpadMessage(
+                            NXSystemMessages.fplnElementRetained
+                        );
                     }
                     CDUIdentPage.ShowPage(mcdu);
                 } else {
-                    CDUIdentPage.ShowPage(mcdu, true);
+                    CDUIdentPage.ShowPage(mcdu, ConfirmType.DeleteStored);
                 }
             };
         }
 
+        // H4+ only confirm prompt
+        if (confirmDataBaseSwitch) {
+            secondaryDBTopLine =
+                confirmType === ConfirmType.SwitchDataBase
+                    ? "{amber}{small} " + calculateActiveDate(date) + "{end}"
+                    : "\xa0SECOND NAV DATA BASE";
+            secondaryDBSubLine =
+                confirmType === ConfirmType.SwitchDataBase
+                    ? "{amber}{CANCEL    SWAP CONFIRM*{end}"
+                    : "{small}{" + calculateActiveDate(date) + "{end}[color]cyan";
+        } else {
+            secondaryDBTopLine = "\xa0SECOND NAV DATA BASE";
+            secondaryDBSubLine =
+                "{small}{" + calculateActiveDate(date) + "{end}[color]cyan";
+        }
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onLeftInput[2] = () => {
+            if (confirmDataBaseSwitch) {
+                if (confirmType === ConfirmType.SwitchDataBase) {
+                    CDUIdentPage.ShowPage(mcdu);
+                } else {
+                    CDUIdentPage.ShowPage(mcdu, ConfirmType.SwitchDataBase);
+                }
+            } else {
+                switchDataBase(mcdu).then(() => {
+                    CDUIdentPage.ShowPage(mcdu);
+                });
+            }
+        };
+
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[2] = () => {
+            if (confirmType === ConfirmType.SwitchDataBase) {
+                switchDataBase(mcdu).then(() => {
+                    CDUIdentPage.ShowPage(mcdu);
+                });
+            }
+        };
+
         mcdu.setTemplate([
-            ["A320-200"],//This aircraft code is correct and does not include the engine type.
+            ["A320-200"], //This aircraft code is correct and does not include the engine type.
             ["\xa0ENG"],
             ["LEAP-1A26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
-            ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
-            ["\xa0SECOND NAV DATA BASE"],
-            ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
+            [
+                "\xa0" + calculateActiveDate(date) + "[color]cyan",
+                "AIRAC[color]green",
+            ],
+            [secondaryDBTopLine],
+            [secondaryDBSubLine],
             ["", storedTitleCell],
             ["", storedRoutesRunwaysCell],
             ["CHG CODE", storedWaypointsNavaidsCell],
             ["{small}[  ]{end}[color]inop", storedDeleteCell],
             ["IDLE/PERF", "SOFTWARE"],
-            ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
+            ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"],
         ]);
     }
 }

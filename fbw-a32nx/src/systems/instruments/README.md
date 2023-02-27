@@ -1,15 +1,74 @@
-# React Source Files for Instruments
+# Source Files for Instruments
 
-This directory contains the source files for the instruments which are written in React.
-                                        
+This directory contains the source files for the instruments.
 
----
+## Overview
 
+The instruments build is powered by [Mach](https://github.com/Synaptic-Simulations/mach/). Mach uses `esbuild` internally, which uses native code to compile JavaScript sources quickly.
 
-!!! Below might be outdated information.
+### Building all instruments
 
-!!! TODO: Update Instrument docuemntation
+To build all instruments outside of the normal build process, one can simply run:
 
+```
+$ mach build
+```
+
+...provided that your working directory is `fbw-a32nx` or `fbw-a380x`. If it is not, you can specify a path to the config by adding `--config path/to/mach.config.js --work-in-config-dir`.
+
+```
+$ mach build --config path/to/mach.config.js --work-in-config-dir
+```
+
+### Building a specific instrument
+
+You can build only one instrument by using the `--filter / -f` flag (parsed as a RegEx):
+
+```
+$ mach build -f EWD
+```
+
+### Watch mode
+
+To watch an instrument and recompile when changes to source files are detected, simply use `watch` instead of `build`:
+
+```
+$ mach watch -f EWD
+```
+
+### Source maps
+
+You can append source maps to the end of instrument bundles using the `-u / --output-sourcemaps` flag.
+
+**Note:** Source maps currently do not work with React based instruments. This will be fixed in the future.
+
+### Adding a new instrument
+
+To add a new instrument, simply edit the `mach.config.js` file of your desired project folder.
+
+You can add an instrument to the list using the `reactInstrument / msfsAvionicsInstrument` helper functions. Note that React should be avoided for new instruments. Consult with the dev team on Discord if you have any questions.
+
+### A note on cross-platform usage
+
+Since compiling aircraft in this repository usually happens using the provided `dev-env` Docker image, the OS in which the commands are run can differ.
+
+This can cause issues with `esbuild`, as it relies on pre-compiled binaries to work correctly. For this reason, running `npx mach` after Mach was installed in the Linux `dev-env` container can cause errors.
+
+To solve this, install Mach globally on your PC:
+
+```
+$ npm install -g @synaptic-simulations/mach
+```
+
+### A note on ACE instruments builds
+
+If you are building instruments for use with ACE, the old `rollup` pipeline is still used. A convenience script is available:
+
+```
+$ npm run build:ace
+```
+
+This will be ported over to Mach in the future.
 
 ## How to create a new instrument
 
@@ -17,7 +76,7 @@ To create a new instrument, create a folder in `/src/systems/instruments/src`, w
 
 ```json
 {
-    "index": "./index.jsx",
+    "index": "./index.tsx",
     "isInteractive": false,
 }
 ```
@@ -34,89 +93,7 @@ import { renderTarget } from '../util.js';
 renderTarget.style.backgroundColor = 'red';
 
 // or use a rendering library...
-ReactDOM.render(<MyAwesomeThing/>, renderTarget);
+ReactDOM.render(<MyAwesomeThing />, renderTarget);
 
 // or something else!
 ```
-
-## Build process
-
-The build process is based on `rollup` and has two configurations:
-
-- `buildSrc/simulatorBuild.mjs` - this creates a configuration which includes both the base compile (babel, postcss, ...) and the MSFS VCockpit template generation;
-- `buildSrc/browserBuild.mjs` - this creates a configuration which includes both the base compile (babel, postcss, ...), without any MSFS extras.
-
-The instruments and ECAM pages to build are provided by `buildSrc/igniter/tasks.mjs`.
-
-### Igniter task generation
-
-For `igniter` builds, `buildSrc/igniter/tasks.mjs` generates a list of `igniter` tasks which are run by the aircraft build.
-
-## How to build in watch mode
-
-After running `npm install`, from the root folder, run:
-
-```
-rollup -wc .\src\instruments\buildSrc\simulatorBuild.mjs
-```
-
-### ERROR: Javascript heap out of memory
-
-#### Increase memory limit
-
-```
-node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\src\instruments\buildSrc\simulatorBuild.mjs
-```
-
-#### Custom ES Module (.mjs)
-
-Note: If you are memory resource constrained, create a custom ``build.mjs`` targeted at ``.\src\instruments\buildSrc\custom\``
-i.e.
-
-``rollup -wc src\instruments\buildSrc\custom\mfdBuild.mjs``
-
-```
-import fs from 'fs';
-import { join } from 'path';
-import { baseCompile } from '../plugins.mjs';
-import { getTemplatePlugin } from '../templatePlugins.mjs';
-import { Directories } from '../directories.mjs';
-import { getInputs } from '../igniter/tasks.mjs';
-
-process.chdir(Directories.src);
-
-export default getInputs()
-    .filter(({ path, name }) => name === 'ND' || name === 'PFD')
-    .map(({ path, name, isInstrument }) => {
-        const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));
-
-        const additionalImports = config.additionalImports ? config.additionalImports : [];
-        return {
-            watch: true,
-            name,
-            input: join(Directories.instruments, 'src', path, config.index),
-            output: {
-                file: join(Directories.temp, 'bundle.js'),
-                format: 'iife',
-            },
-            plugins: [
-                ...baseCompile(name, path),
-                getTemplatePlugin({
-                    name,
-                    path,
-                    imports: [
-                        '/JS/dataStorage.js',
-                        '/Pages/VCockpit/Instruments/FlightElements/A32NX_Waypoint.js',
-                        ...additionalImports,
-                    ],
-                    config,
-                    isInstrument,
-                }),
-            ],
-        };
-    });
-```
-
-This module only watches ``PFD`` and ``ND`` and no other instruments, reducing rollup memory usage.
-
-IMPORTANT NOTE: Increasing memory size is greatly preferred to this, as you must be careful of any unwatched dependencies. It is highly recommended to occasionally check with `` .\scripts\dev-env\run.cmd ./scripts/setup.sh`` and ``.\scripts\dev-env\run.cmd ./scripts/build.sh --no-cache``
