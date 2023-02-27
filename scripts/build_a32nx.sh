@@ -14,7 +14,7 @@ fi
 # Loop through the arguments
 for arg in "$@"; do
   if [ "$arg" == "--no-cache" ]; then
-    echo "Cleaning build directories"
+    echo "Removing out directory /external/fbw-a32nx/out"
     rm -rf /external/fbw-a32nx/out
   fi
 done
