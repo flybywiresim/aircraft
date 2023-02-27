@@ -13,9 +13,7 @@ fi
 
 # Loop through the arguments
 for arg in "$@"; do
-  # If the argument is not "-clean", add it to the array
   if [ "$arg" == "--no-cache" ]; then
-    # If the argument is "-clean", remove the build directories
     echo "Cleaning build directories"
     rm -rf /external/fbw-ingamepanels-checklist-fix/out
   fi
