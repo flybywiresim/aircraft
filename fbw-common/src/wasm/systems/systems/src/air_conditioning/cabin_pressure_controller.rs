@@ -442,16 +442,13 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         // Vertical speed word range is from -6400 to +6400 fpm (AMM)
         if self.is_ground() && self.outflow_valve_open_amount == Ratio::new::<percent>(100.) {
             Velocity::default()
-        } else if self.cabin_filtered_vertical_speed.output()
-            > Velocity::new::<foot_per_minute>(6400.)
-        {
-            Velocity::new::<foot_per_minute>(6400.)
-        } else if self.cabin_filtered_vertical_speed.output()
-            < Velocity::new::<foot_per_minute>(-6400.)
-        {
-            Velocity::new::<foot_per_minute>(-6400.)
         } else {
-            self.cabin_filtered_vertical_speed.output()
+            Velocity::new::<foot_per_minute>(
+                self.cabin_filtered_vertical_speed
+                    .output()
+                    .get::<foot_per_minute>()
+                    .clamp(-6400., 6400.),
+            )
         }
     }
 
