@@ -51,7 +51,7 @@ impl ReverserThrust {
 
     fn max_theoretical_thrust_from_n1(engine_n1: &impl EngineCorrectedN1) -> Force {
         let n1_breakpoints = [0., 15., 20., 50., 55.];
-        let reverse_thrust = [0., 0., 80000., 200000., 210000.];
+        let reverse_thrust = [0., 0., 10000., 20000., 21000.];
 
         Force::new::<newton>(interpolation(
             &n1_breakpoints,
@@ -132,14 +132,14 @@ impl ReverserForce {
             AngularAcceleration::default()
         };
 
-        println!(
-            "DISSIMETRY THRUST:  {:.1}N TORQUE{:.1}Mkg INERTIA kgm²{:.2} ACCEL r/s {:.5}",
-            total_dissimetry.get::<newton>(),
-            dissimetry_torque.get::<kilogram_force_meter>(),
-            context.total_yaw_inertia_kg_m2(),
-            self.dissimetry_acceleration
-                .get::<radian_per_second_squared>(),
-        );
+        // println!(
+        //     "DISSIMETRY THRUST:  {:.1}N TORQUE{:.1}Mkg INERTIA kgm²{:.2} ACCEL r/s {:.5}",
+        //     total_dissimetry.get::<newton>(),
+        //     dissimetry_torque.get::<kilogram_force_meter>(),
+        //     context.total_yaw_inertia_kg_m2(),
+        //     self.dissimetry_acceleration
+        //         .get::<radian_per_second_squared>(),
+        // );
     }
 }
 impl SimulationElement for ReverserForce {
