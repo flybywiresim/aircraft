@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorMTTF = (failureFlightPhase : FailurePhases) => {
     // Mean Time To Failure based trigger when in flight
