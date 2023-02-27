@@ -64,6 +64,7 @@ export const failureGeneratorTimeBased : () => void = () => {
                 tempFailureGeneratorArmedTIMEBASED.push(true);
                 // SPECIFIC INIT HERE PER GENERATOR
                 tempFailureTime.push(settingsTIMEBASED[i * numberOfSettingsPerGenerator + 0] + absoluteTime5s);
+                console.info('Timer based failure armed at %.1f s', settingsTIMEBASED[i * numberOfSettingsPerGenerator + 0]);
             }
             setFailureTime(tempFailureTime);
             setFailureGeneratorArmedTIMEBASED(tempFailureGeneratorArmedTIMEBASED);
