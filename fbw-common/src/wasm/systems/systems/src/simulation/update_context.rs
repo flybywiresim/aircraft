@@ -3,6 +3,7 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
     f64::*,
+    mass::kilogram,
     mass_density::kilogram_per_cubic_meter,
     pressure::inch_of_mercury,
     time::second,
@@ -161,6 +162,7 @@ pub struct UpdateContext {
     mach_number_id: VariableIdentifier,
     plane_height_id: VariableIdentifier,
     latitude_id: VariableIdentifier,
+    total_weight_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -185,6 +187,8 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
+
+    total_weight: Mass,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -211,6 +215,7 @@ impl UpdateContext {
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
     pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
+    pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -265,6 +270,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
             plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
+            total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -308,6 +314,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude,
+            total_weight: Mass::new::<kilogram>(50000.),
         }
     }
 
@@ -337,6 +344,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
             plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
+            total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -377,6 +385,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
+            total_weight: Mass::new::<kilogram>(50000.),
         }
     }
 
@@ -433,6 +442,8 @@ impl UpdateContext {
         self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.latitude = reader.read(&self.latitude_id);
+
+        self.total_weight = reader.read(&self.total_weight_id);
 
         self.update_relative_wind();
 
@@ -614,6 +625,10 @@ impl UpdateContext {
 
     pub fn plane_height_over_ground(&self) -> Length {
         self.plane_height_over_ground
+    }
+
+    pub fn total_weight(&self) -> Mass {
+        self.total_weight
     }
 }
 

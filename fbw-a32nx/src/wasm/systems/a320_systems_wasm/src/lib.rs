@@ -5,6 +5,7 @@ mod elevators;
 mod flaps;
 mod gear;
 mod nose_wheel_steering;
+mod reversers;
 mod rudder;
 mod spoilers;
 mod trimmable_horizontal_stabilizer;
@@ -17,6 +18,7 @@ use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
+use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
@@ -246,6 +248,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
@@ -300,6 +303,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(spoilers)?
     .with_aspect(ailerons)?
     .with_aspect(elevators)?
+    .with_aspect(reversers)?
     .with_aspect(rudder)?
     .with_aspect(gear)?
     .with_aspect(trimmable_horizontal_stabilizer)?

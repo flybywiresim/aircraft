@@ -64,7 +64,7 @@ use systems::{
         EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
         EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
         LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, RamAirTurbineController,
-        ReservoirAirPressure, SectionPressure, TrimmableHorizontalStabilizer,
+        ReservoirAirPressure, ReverserPosition, SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1910,6 +1910,10 @@ impl A320Hydraulic {
 
     pub fn yellow_reservoir(&self) -> &Reservoir {
         self.yellow_circuit.reservoir()
+    }
+
+    pub fn reversers_position(&self) -> &[impl ReverserPosition] {
+        self.reversers_assembly.reversers_position()
     }
 
     #[cfg(test)]
@@ -6208,6 +6212,10 @@ impl A320Reversers {
 
     fn reverser_feedback(&self, reverser_index: usize) -> &impl ReverserFeedback {
         &self.reversers[reverser_index]
+    }
+
+    fn reversers_position(&self) -> &[impl ReverserPosition] {
+        &self.reversers[..]
     }
 }
 impl SimulationElement for A320Reversers {

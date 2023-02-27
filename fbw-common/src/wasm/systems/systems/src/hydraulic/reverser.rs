@@ -4,7 +4,7 @@ use uom::si::{f64::*, pressure::psi, ratio::ratio};
 use crate::{
     shared::{
         low_pass_filter::LowPassFilter, random_from_normal_distribution, ElectricalBusType,
-        ElectricalBuses,
+        ElectricalBuses, ReverserPosition,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -402,10 +402,6 @@ impl ReverserAssembly {
             self.electrical_lock.is_locked(),
         );
     }
-
-    pub fn reverser_position(&self) -> Ratio {
-        self.actuator.position()
-    }
 }
 impl ReverserFeedback for ReverserAssembly {
     fn position_sensor(&self) -> Ratio {
@@ -426,6 +422,11 @@ impl ReverserFeedback for ReverserAssembly {
 
     fn tertiary_lock_is_locked(&self) -> bool {
         self.electrical_lock.is_locked()
+    }
+}
+impl ReverserPosition for ReverserAssembly {
+    fn reverser_position(&self) -> Ratio {
+        self.actuator.position()
     }
 }
 impl SimulationElement for ReverserAssembly {
@@ -489,6 +490,10 @@ mod tests {
 
         fn should_deploy_reverser(&self) -> bool {
             self.should_deploy_reversers
+        }
+
+        fn should_power_valves(&self) -> bool {
+            true
         }
     }
 
