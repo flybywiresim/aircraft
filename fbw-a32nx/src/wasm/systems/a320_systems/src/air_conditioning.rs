@@ -1086,7 +1086,7 @@ mod tests {
         }
 
         fn set_pressure_based_on_vs(&mut self, alt_diff: Length) {
-            // We find the atmospheric  pressure that would give us the desired v/s
+            // We find the atmospheric pressure that would give us the desired v/s
             let init_pressure_ratio: f64 =
                 self.adirs.ambient_pressure.get::<hectopascal>() / Self::P_0;
 
