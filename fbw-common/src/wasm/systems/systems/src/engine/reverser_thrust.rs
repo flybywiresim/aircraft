@@ -51,7 +51,7 @@ impl ReverserThrust {
 
     fn max_theoretical_thrust_from_n1(engine_n1: &impl EngineCorrectedN1) -> Force {
         let n1_breakpoints = [0., 15., 20., 50., 55.];
-        let reverse_thrust = [0., 0., 10000., 20000., 21000.];
+        let reverse_thrust = [0., 0., 10000., 40000., 41000.];
 
         Force::new::<newton>(interpolation(
             &n1_breakpoints,
