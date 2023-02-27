@@ -49,8 +49,8 @@ use systems::{
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, litre_per_minute::litre_per_minute, low_pass_filter::LowPassFilter,
-        random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirDataSource,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
+        random_from_range, update_iterator::MaxStepLoop, ActuatorSide, AdirsDiscreteOutputs,
+        AirDataSource, AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
         LgciuWeightOnWheels, ReservoirAirPressure, SFCCChannel, SectionPressure,
@@ -6122,12 +6122,6 @@ impl SimulationElement for RudderSystemHydraulicController {
             reader.read(&self.lower_rudder_yellow_actuator_electric_solenoid_id),
         ];
     }
-}
-
-#[derive(PartialEq, Clone, Copy)]
-enum ActuatorSide {
-    Left,
-    Right,
 }
 
 #[derive(PartialEq, Clone, Copy)]

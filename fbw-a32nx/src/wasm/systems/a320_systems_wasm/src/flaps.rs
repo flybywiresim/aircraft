@@ -54,10 +54,34 @@ pub(super) fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error
         left_flap: 0.,
         right_flap: 0.,
     }));
-    builder.variables_to_object(Box::new(SlatsSurface {
-        left_slat: 0.,
-        right_slat: 0.,
-    }));
+    // builder.variables_to_object(Box::new(SlatsSurface {
+    //     left_slat: 0.,
+    //     right_slat: 0.,
+    // }));
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("LEFT_SLATS_1_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_2_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_3_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_4_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_5_POSITION_PERCENT"),
+        ],
+        |values| values.iter().sum::<f64>() / (values.len() as f64),
+        Variable::named("LEFT_SLATS_POSITION_PERCENT"),
+    );
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("RIGHT_SLATS_1_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_2_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_3_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_4_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_5_POSITION_PERCENT"),
+        ],
+        |values| values.iter().sum::<f64>() / (values.len() as f64),
+        Variable::named("RIGHT_SLATS_POSITION_PERCENT"),
+    );
     builder.variables_to_object(Box::new(FlapsHandleIndex { index: 0. }));
 
     Ok(())
@@ -128,34 +152,34 @@ impl VariablesToObject for FlapsSurface {
     [LEFT | RIGHT] {1..5}               SLAT
 */
 
-#[sim_connect::data_definition]
-struct SlatsSurface {
-    #[name = "LEADING EDGE FLAPS LEFT PERCENT"]
-    #[unit = "Percent"]
-    left_slat: f64,
+// #[sim_connect::data_definition]
+// struct SlatsSurface {
+//     #[name = "LEADING EDGE FLAPS LEFT PERCENT"]
+//     #[unit = "Percent"]
+//     left_slat: f64,
 
-    #[name = "LEADING EDGE FLAPS RIGHT PERCENT"]
-    #[unit = "Percent"]
-    right_slat: f64,
-}
+//     #[name = "LEADING EDGE FLAPS RIGHT PERCENT"]
+//     #[unit = "Percent"]
+//     right_slat: f64,
+// }
 
-impl VariablesToObject for SlatsSurface {
-    fn variables(&self) -> Vec<Variable> {
-        vec![
-            Variable::named("LEFT_SLATS_POSITION_PERCENT"),
-            Variable::named("RIGHT_SLATS_POSITION_PERCENT"),
-        ]
-    }
+// impl VariablesToObject for SlatsSurface {
+//     fn variables(&self) -> Vec<Variable> {
+//         vec![
+//             Variable::named("LEFT_SLATS_POSITION_PERCENT"),
+//             Variable::named("RIGHT_SLATS_POSITION_PERCENT"),
+//         ]
+//     }
 
-    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        self.left_slat = values[0];
-        self.right_slat = values[1];
+//     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
+//         self.left_slat = values[0];
+//         self.right_slat = values[1];
 
-        ObjectWrite::default()
-    }
+//         ObjectWrite::default()
+//     }
 
-    set_data_on_sim_object!();
-}
+//     set_data_on_sim_object!();
+// }
 
 #[sim_connect::data_definition]
 struct FlapsHandleIndex {

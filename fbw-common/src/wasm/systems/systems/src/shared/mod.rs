@@ -100,6 +100,10 @@ pub trait PowerControlUnitInterface {
     fn pob_energise(&self) -> SolenoidStatus;
 }
 
+pub trait HighLiftDevices {
+    fn get_surface_position(&self) -> Angle;
+}
+
 pub trait PositionPickoffUnit {
     fn fppu_angle(&self) -> Angle;
     fn appu_left_angle(&self) -> Angle;

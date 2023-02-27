@@ -215,11 +215,11 @@
     <Template Name="FBW_HANDLING_Slat_Template">
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>l_slat_percent_key</ANIM_NAME>
-            <ANIM_CODE>(A:LEADING EDGE FLAPS LEFT PERCENT, number) 100 *</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_LEFT_SLATS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
         </UseTemplate>
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>r_slat_percent_key</ANIM_NAME>
-            <ANIM_CODE>(A:LEADING EDGE FLAPS RIGHT PERCENT, number) 100 *</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_RIGHT_SLATS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
         </UseTemplate>
     </Template>
 
