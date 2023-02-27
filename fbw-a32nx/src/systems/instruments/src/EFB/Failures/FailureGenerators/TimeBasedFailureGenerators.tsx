@@ -3,31 +3,40 @@ import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
 
-export const failureGeneratorMTTF = (failureFlightPhase : FailurePhases) => {
-    // Mean Time To Failure based trigger when in flight
+export const failureGeneratorPerHour = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
-    const [failuresPerHour] = usePersistentNumberProperty('EFB_FAILURE_PER_HOUR', 5);
+    const [failureGeneratorSettingPerHour] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '5,10');
+    const settingsPerHour : number[] = useMemo<number[]>(() => failureGeneratorSettingPerHour.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingPerHour]);
+    const numberOfSettingsPerGenerator = 1;
+    const { failureFlightPhase } = basicData();
+    const nbGeneratorPerHour = useMemo(() => Math.floor(settingsPerHour.length / numberOfSettingsPerGenerator), [settingsPerHour]);
 
     useEffect(() => {
-        // MTTF failures
-        if (failureFlightPhase === FailurePhases.FLIGHT && failuresPerHour > 0 && totalActiveFailures < maxFailuresAtOnce) {
-            const chancePerSecond = failuresPerHour / 3600;
-            const rollDice = Math.random();
-            console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
-            if (rollDice < chancePerSecond * 5) {
-                console.info('Failure MTTF triggered');
-                activateRandomFailure(allFailures, activate);
+        if (failureFlightPhase === FailurePhases.FLIGHT) {
+            for (let i = 0; i < nbGeneratorPerHour; i++) {
+                const tempSetting = settingsPerHour[i * numberOfSettingsPerGenerator + 0];
+                if (tempSetting > 0 && totalActiveFailures < maxFailuresAtOnce) {
+                    const chancePerSecond = tempSetting / 3600;
+                    const rollDice = Math.random();
+                    console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
+                    if (rollDice < chancePerSecond * 5) {
+                        console.info('PerHour Failure triggered');
+                        activateRandomFailure(allFailures, activate);
+                    }
+                }
             }
         }
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        // failureSettings once per start of takeoff
-    }, [failureFlightPhase]);
+        for (let i = 0; i < nbGeneratorPerHour; i++) {
+            console.info('Failure set at %.4f per hour ', failureGeneratorSettingPerHour[i]);
+        }
+    }, [failureGeneratorSettingPerHour]);
 };
 
-export const failureGeneratorTimeBased : () => void = () => {
+export const failureGeneratorTimerBased : () => void = () => {
     // time based trigger after TO thrust
 
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);

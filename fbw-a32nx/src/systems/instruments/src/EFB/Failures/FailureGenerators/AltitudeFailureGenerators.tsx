@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { activateRandomFailure, failureGeneratorCommonFunction } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorAltClimb = () => {
