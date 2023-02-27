@@ -13,7 +13,6 @@ use systems::{
     },
 };
 
-
 #[cfg(test)]
 pub mod test;
 
@@ -47,8 +46,8 @@ impl A320Cargo {
             A320Cargo::AftBaggage,
             A320Cargo::AftBulkLoose,
         ]
-            .iter()
-            .copied()
+        .iter()
+        .copied()
     }
 }
 

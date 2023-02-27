@@ -175,8 +175,7 @@ impl BoardingTestBed {
     fn load_pax(&mut self, ps: A320Pax, pax_qty: i8) {
         assert!(pax_qty <= A320_PAX[ps].max_pax);
 
-        let per_pax_weight: Mass =
-            Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
+        let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         let seed = 380320;
         let mut rng = rand_pcg::Pcg32::seed_from_u64(seed);
@@ -365,13 +364,11 @@ impl BoardingTestBed {
     }
 
     fn has_half_pax(&mut self) {
-        let per_pax_weight: Mass =
-            Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
+        let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         for ps in A320Pax::iterator() {
             let pax_num = A320_PAX[ps].max_pax / 2;
-            let pax_payload =
-                Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
+            let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
                 pax_payload.get::<pound>().floor()
@@ -380,13 +377,11 @@ impl BoardingTestBed {
     }
 
     fn has_full_pax(&mut self) {
-        let per_pax_weight: Mass =
-            Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
+        let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         for ps in A320Pax::iterator() {
             let pax_num = A320_PAX[ps].max_pax;
-            let pax_payload =
-                Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
+            let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
             assert_eq!(self.pax_num(ps), pax_num);
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
