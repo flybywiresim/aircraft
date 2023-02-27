@@ -5,6 +5,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
 import { failureGeneratorPerHour, failureGeneratorTimerBased } from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
+import { failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -103,13 +104,13 @@ export const randomFailureGenerator = () => {
     const failureGenerators : (() => void)[] = [];
     const { failureFlightPhase } = basicData();
 
-    failureGenerators.push(failureGeneratorTimerBased);
-    // failureGenerators.push(failureGeneratorTakeOff);
-    failureGenerators.push(failureGeneratorAltClimb);
-    failureGenerators.push(failureGeneratorAltDesc);
-    failureGenerators.push(failureGeneratorPerHour);
-    failureGenerators.push(failureGeneratorSpeedAccel);
-    failureGenerators.push(failureGeneratorSpeedDecel);
+    // failureGenerators.push(failureGeneratorTimerBased);
+    failureGenerators.push(failureGeneratorTakeOff);
+    // failureGenerators.push(failureGeneratorAltClimb);
+    // failureGenerators.push(failureGeneratorAltDesc);
+    // failureGenerators.push(failureGeneratorPerHour);
+    // failureGenerators.push(failureGeneratorSpeedAccel);
+    // failureGenerators.push(failureGeneratorSpeedDecel);
 
     // TODO: to be improved, changing doesn't mean active but this is not critical
 

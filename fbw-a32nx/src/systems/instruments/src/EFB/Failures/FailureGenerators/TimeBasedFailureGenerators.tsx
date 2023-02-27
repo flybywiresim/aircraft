@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
-import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
+import { usePersistentProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorPerHour = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);

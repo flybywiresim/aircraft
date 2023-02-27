@@ -1,59 +1,87 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
-import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { usePersistentProperty } from '@instruments/common/persistence';
 
-export const failureGeneratorTakeOff = (failureFlightPhase : FailurePhases) => {
+// keep this template for new failureGenerators
+export const failureGeneratorTakeOff = () => {
+    // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
-    const [failureTakeOffSpeedThreshold, setFailureTakeOffSpeedThreshold] = useState<number>(-1);
-    const [failureTakeOffAltitudeThreshold, setFailureTakeOffAltitudeThreshold] = useState<number>(-1);
-    const [failurePerTakeOff] = usePersistentNumberProperty('EFB_FAILURES_PER_TAKE_OFF', 1);
+    const [failureGeneratorSettingTakeOff] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TAKEOFF', '1,0.33,0.40,30,100,140,5000,1,0.33,0.40,30,100,140,5000');
+
+    const [failureGeneratorArmedTakeOff, setFailureGeneratorArmedTakeOff] = useState<boolean[]>([false, false]);
+    const settingsTakeOff : number[] = useMemo<number[]>(() => failureGeneratorSettingTakeOff.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingTakeOff]);
+    const [failureTakeOffSpeedThreshold, setFailureTakeOffSpeedThreshold] = useState<number[]>([-1, -1]);
+    const [failureTakeOffAltitudeThreshold, setFailureTakeOffAltitudeThreshold] = useState<number[]>([-1, -1]);
+    const numberOfSettingsPerGenerator = 7;
+    const nbGeneratorTakeOff = useMemo(() => Math.floor(settingsTakeOff.length / numberOfSettingsPerGenerator), [settingsTakeOff]);
+    const { failureFlightPhase } = basicData();
+
     const altitude = Simplane.getAltitudeAboveGround();
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
     useEffect(() => {
-        // Take-Off failures
-        if ((failureFlightPhase === FailurePhases.TAKEOFF || failureFlightPhase === FailurePhases.INITIALCLIMB) && totalActiveFailures < maxFailuresAtOnce) {
-            if ((altitude >= failureTakeOffAltitudeThreshold && failureTakeOffAltitudeThreshold !== -1)
-            || (gs >= failureTakeOffSpeedThreshold && failureTakeOffSpeedThreshold !== -1)) {
-                console.info('Failure Take-Off triggered');
-                activateRandomFailure(allFailures, activate);
-                setFailureTakeOffAltitudeThreshold(-1);
-                setFailureTakeOffSpeedThreshold(-1);
+        // FAILURETYPE failures
+        if (totalActiveFailures < maxFailuresAtOnce) {
+            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTakeOff);
+            for (let i = 0; i < nbGeneratorTakeOff; i++) {
+                const failureConditionTakeOff = ((altitude >= failureTakeOffAltitudeThreshold[i] && failureTakeOffAltitudeThreshold[i] !== -1)
+                || (gs >= failureTakeOffSpeedThreshold[i] && failureTakeOffSpeedThreshold[i] !== -1));
+                if (tempFailureGeneratorArmed[i] && failureConditionTakeOff && totalActiveFailures < maxFailuresAtOnce) {
+                    activateRandomFailure(allFailures, activate);
+                    console.info('Take-off failure triggered');
+                    tempFailureGeneratorArmed[i] = false;
+                }
             }
+            setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
         }
     }, [absoluteTime500ms]);
 
     useEffect(() => {
         // failureSettings once per start of takeoff
-        const chanceFailureHighTakeOffRegime : number = 0.33;
-        const chanceFailureMediumTakeOffRegime : number = 0.40;
-        const minFailureTakeOffSpeed : number = 30;
-        const mediumTakeOffRegimeSpeed : number = 100;
-        const maxFailureTakeOffSpeed : number = 140;
-        const takeOffDeltaAltitudeEnd : number = 5000;
-        if (failureFlightPhase === FailurePhases.TAKEOFF && totalActiveFailures < maxFailuresAtOnce) {
-            if (Math.random() < failurePerTakeOff) {
-                console.info('A failure will occur during this Take-Off');
-                const rolledDice = Math.random();
-                if (rolledDice < chanceFailureMediumTakeOffRegime) {
-                    // Low Take Off speed regime
-                    const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
-                    setFailureTakeOffSpeedThreshold(temp);
-                    console.info('A failure will occur during this Take-Off at the speed of %d', temp);
-                } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
-                    // Medium Take Off speed regime
-                    const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
-                    setFailureTakeOffSpeedThreshold(temp);
-                    console.info('A failure will occur during this Take-Off at the speed of %d', temp);
-                } else {
-                    // High Take Off speed regime
-                    const temp = altitude + 10 + Math.random() * takeOffDeltaAltitudeEnd;
-                    setFailureTakeOffAltitudeThreshold(temp);
-                    console.info('A failure will occur during this Take-Off at altitude %d', temp);
+        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+            const tempFailureGeneratorArmed : boolean[] = [];
+            const tempFailureTakeOffSpeedThreshold : number[] = [];
+            const tempFailureTakeOffAltitudeThreshold : number[] = [];
+            for (let i = 0; i < nbGeneratorTakeOff; i++) {
+                if (!tempFailureGeneratorArmed[i]) {
+                    if (Math.random() < settingsTakeOff[i * numberOfSettingsPerGenerator + 0]) {
+                        console.info('A failure will occur during this Take-Off');
+                        const chanceFailureHighTakeOffRegime : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 1];
+                        const chanceFailureMediumTakeOffRegime : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 2];
+                        const minFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 3];
+                        const mediumTakeOffRegimeSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 4];
+                        const maxFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 5];
+                        const takeOffDeltaAltitudeEnd : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 6];
+                        const rolledDice = Math.random();
+                        if (rolledDice < chanceFailureMediumTakeOffRegime) {
+                            // Low Take Off speed regime
+                            const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
+                            tempFailureTakeOffAltitudeThreshold.push(-1);
+                            tempFailureTakeOffSpeedThreshold.push(temp);
+                            console.info('A failure will occur during this Take-Off at the speed of %d knots', temp);
+                        } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
+                            // Medium Take Off speed regime
+                            const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
+                            tempFailureTakeOffAltitudeThreshold.push(-1);
+                            tempFailureTakeOffSpeedThreshold.push(temp);
+                            console.info('A failure will occur during this Take-Off at the speed of %d knots', temp);
+                        } else {
+                            // High Take Off speed regime
+                            const temp = altitude + 10 + Math.random() * takeOffDeltaAltitudeEnd;
+                            tempFailureTakeOffAltitudeThreshold.push(temp);
+                            tempFailureTakeOffSpeedThreshold.push(-1);
+                            console.info('A failure will occur during this Take-Off at altitude %d', temp);
+                        }
+                    }
+                    console.info('new failure setting');
+                    tempFailureGeneratorArmed.push(true);
                 }
             }
+            setFailureTakeOffSpeedThreshold(tempFailureTakeOffSpeedThreshold);
+            setFailureTakeOffAltitudeThreshold(tempFailureTakeOffAltitudeThreshold);
+            setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
         }
-    }, [failureFlightPhase]);
+    }, [failureFlightPhase]); // specific update conditions
 };
