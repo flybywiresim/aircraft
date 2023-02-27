@@ -14,7 +14,7 @@ fi
 # Loop through the arguments
 for arg in "$@"; do
   if [ "$arg" == "--no-cache" ]; then
-    echo "Cleaning build directories"
+    echo "Removing out directories..."
     rm -rf /external/fbw-a32nx/out
     rm -rf /external/fbw-a380x/out
     rm -rf /external/fbw-ingamepanels-checklist-fix/out
