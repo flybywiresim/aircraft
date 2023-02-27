@@ -12,7 +12,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
-import { randomFailureGenerator } from 'instruments/src/EFB/Failures/randomFailureGen';
+import { randomFailureGenerator } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
