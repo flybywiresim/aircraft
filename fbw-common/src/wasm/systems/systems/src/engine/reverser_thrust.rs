@@ -24,7 +24,7 @@ struct ReverserThrust {
     current_thrust: Force,
 }
 impl ReverserThrust {
-    const MIN_REVERSER_POS: f64 = 0.5;
+    const MIN_REVERSER_POS: f64 = 0.2;
 
     fn new() -> Self {
         Self {
@@ -51,7 +51,7 @@ impl ReverserThrust {
 
     fn max_theoretical_thrust_from_n1(engine_n1: &impl EngineCorrectedN1) -> Force {
         let n1_breakpoints = [0., 15., 20., 50., 55.];
-        let reverse_thrust = [0., 0., 10000., 40000., 41000.];
+        let reverse_thrust = [0., 0., 9000., 50000., 51000.];
 
         Force::new::<newton>(interpolation(
             &n1_breakpoints,
