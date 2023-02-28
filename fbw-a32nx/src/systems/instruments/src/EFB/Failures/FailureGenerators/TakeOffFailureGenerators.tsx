@@ -55,20 +55,20 @@ export const failureGeneratorTakeOff = () => {
             for (let i = 0; i < nbGeneratorTakeOff; i++) {
                 if (!tempFailureGeneratorArmed[i] && settingsTakeOff[i * numberOfSettingsPerGenerator + 0] > 0) {
                     if (Math.random() < settingsTakeOff[i * numberOfSettingsPerGenerator + 1]) {
-                        const chanceFailureHighTakeOffRegime : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 2];
+                        const chanceFailureLowTakeOffRegime : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 2];
                         const chanceFailureMediumTakeOffRegime : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 3];
                         const minFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 4];
                         const mediumTakeOffRegimeSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 5];
                         const maxFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 6];
                         const takeOffDeltaAltitudeEnd : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 7];
                         const rolledDice = Math.random();
-                        if (rolledDice < chanceFailureMediumTakeOffRegime) {
+                        if (rolledDice < chanceFailureLowTakeOffRegime) {
                             // Low Take Off speed regime
                             const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
                             tempFailureTakeOffAltitudeThreshold.push(-1);
                             tempFailureTakeOffSpeedThreshold.push(temp);
                             console.info('A failure will occur during this Take-Off at the speed of %d knots', temp);
-                        } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureHighTakeOffRegime) {
+                        } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureLowTakeOffRegime) {
                             // Medium Take Off speed regime
                             const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
                             tempFailureTakeOffAltitudeThreshold.push(-1);
