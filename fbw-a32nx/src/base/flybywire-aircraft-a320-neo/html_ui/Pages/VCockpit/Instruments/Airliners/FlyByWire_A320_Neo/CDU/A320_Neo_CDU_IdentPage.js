@@ -86,7 +86,7 @@ const ConfirmType = {
     NoConfirm : 0,
     DeleteStored : 1,
     SwitchDataBase : 2,
-}
+};
 
 class CDUIdentPage {
     static ShowPage(mcdu, confirmType = ConfirmType.NoConfirm) {
