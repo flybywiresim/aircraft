@@ -60,7 +60,10 @@ export const failureGeneratorPerHour = () => {
 
     useEffect(() => {
         // remove for release
-        setFailureGeneratorSetting('1,120,2,120,3,120');
+        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedPerHour);
+        failureGeneratorArmedPerHour.foreach(() => tempFailureGeneratorArmed.push(false));
+        setFailureGeneratorArmedPerHour(tempFailureGeneratorArmed);
+        setFailureGeneratorSetting('1,130,2,120,3,100');
     }, []);
 };
 
@@ -124,6 +127,9 @@ export const failureGeneratorTimer : () => void = () => {
 
     useEffect(() => {
         // remove for release
-        setFailureGeneratorSetting('1,8,3,9');
+        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedTimer);
+        failureGeneratorArmedTimer.foreach(() => tempFailureGeneratorArmed.push(false));
+        setFailureGeneratorArmedTimer(tempFailureGeneratorArmed);
+        setFailureGeneratorSetting('0,8,0,9');
     }, []);
 };

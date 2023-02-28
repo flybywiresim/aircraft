@@ -69,6 +69,13 @@ export const failureGeneratorTEMPLATE = () => {
         }
         if (changed) setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
     }, [absoluteTime500ms]); // specific update conditions
+
+    useEffect(() => {
+        // remove for release
+        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedTEMPLATE);
+        failureGeneratorArmedTEMPLATE.foreach(() => tempFailureGeneratorArmed.push(false));
+        setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
+    }, []);
 };
 /*
 enum FailureGeneratorType {
@@ -134,7 +141,7 @@ export const randomFailureGenerator = () => {
     // failureGenerators.push(failureGeneratorTakeOff);
     // failureGenerators.push(failureGeneratorAltClimb);
     // failureGenerators.push(failureGeneratorAltDesc);
-    // failureGenerators.push(failureGeneratorPerHour);
+    failureGenerators.push(failureGeneratorPerHour);
     // failureGenerators.push(failureGeneratorSpeedAccel);
     // failureGenerators.push(failureGeneratorSpeedDecel);
 
