@@ -49,7 +49,7 @@ export const failureGeneratorTakeOff = () => {
     useEffect(() => {
         // failureSettings once per start of takeoff
         if (failureFlightPhase === FailurePhases.TAKEOFF && gs < 1.0) {
-            const tempFailureGeneratorArmed : boolean[] = [];
+            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTakeOff);
             const tempFailureTakeOffSpeedThreshold : number[] = [];
             const tempFailureTakeOffAltitudeThreshold : number[] = [];
             for (let i = 0; i < nbGeneratorTakeOff; i++) {
@@ -82,7 +82,7 @@ export const failureGeneratorTakeOff = () => {
                             console.info('A failure will occur during this Take-Off at altitude %d', temp);
                         }
                     }
-                    tempFailureGeneratorArmed.push(true);
+                    tempFailureGeneratorArmed[i] = true;
                 }
             }
             setFailureTakeOffSpeedThreshold(tempFailureTakeOffSpeedThreshold);
