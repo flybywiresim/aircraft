@@ -24,7 +24,7 @@
 1. [EFB] Show correct runway numbers in landing calculator's runway widget when heading is between 0-5 degrees - @2hwk (2Cas#1022)
 1. [ADIRU/ND/PFD] Initial support for polar navigation - @tracernz (Mike)
 1. [FLIGHTMODEL] Update gear drag - @donstim (donbikes#4084)
-1. [FLIGHT MODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
+1. [FLIGHTMODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
 1. [HYD] Fix gear sequence starting when failing prox sensor - @Crocket63 (crocket)
 1. [MISC] Added aircraft version check and uer notification - @frankkopp (Frank Kopp)
 1. [EFB] Added QuickControls to flyPad StatusBar - @Benjozork (Benjamin Dupont) @frankkopp (Frank Kopp)
@@ -42,6 +42,7 @@
 1. [HYD] Realistic randomized yellow accumulator starting state - @Crocket63 (crocket)
 1. [HYD] RAT code refactor to allow for hyd or elec rat design - @Crocket63 (crocket)
 1. [MCDU] Reset of flight plan and stored data on Database switch - @Maverickwoe (Garoomf#4683)
+1. [FLIGHTMODEL/FUEL] Increased rate of fuel transfer from outer to inner tanks - @donstim (donbikes#4084)
 1. [MISC] Flight deck brightness and lighting is set automatically at spawn - @tracernz (Mike)
 
 ## 0.9.0
