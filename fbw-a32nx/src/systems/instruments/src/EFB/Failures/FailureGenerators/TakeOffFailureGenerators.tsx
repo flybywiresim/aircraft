@@ -31,7 +31,7 @@ export const failureGeneratorTakeOff = () => {
             for (let i = 0; i < nbGeneratorTakeOff; i++) {
                 const failureConditionTakeOff = ((altitude >= failureTakeOffAltitudeThreshold[i] && failureTakeOffAltitudeThreshold[i] !== -1)
                 || (gs >= failureTakeOffSpeedThreshold[i] && failureTakeOffSpeedThreshold[i] !== -1));
-                if (tempFailureGeneratorArmed[i] && failureConditionTakeOff && totalActiveFailures < maxFailuresAtOnce) {
+                if (tempFailureGeneratorArmed[i] && failureConditionTakeOff) {
                     activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
                     console.info('Take-off failure triggered');
                     tempFailureGeneratorArmed[i] = false;
@@ -50,8 +50,9 @@ export const failureGeneratorTakeOff = () => {
         // failureSettings once per start of takeoff
         if (failureFlightPhase === FailurePhases.TAKEOFF && gs < 1.0) {
             const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTakeOff);
-            const tempFailureTakeOffSpeedThreshold : number[] = [];
-            const tempFailureTakeOffAltitudeThreshold : number[] = [];
+            const tempFailureTakeOffSpeedThreshold : number[] = Array.from(failureTakeOffSpeedThreshold);
+            const tempFailureTakeOffAltitudeThreshold : number[] = Array.from(failureTakeOffAltitudeThreshold);
+            let changed = false;
             for (let i = 0; i < nbGeneratorTakeOff; i++) {
                 if (!tempFailureGeneratorArmed[i] && settingsTakeOff[i * numberOfSettingsPerGenerator + 0] > 0) {
                     if (Math.random() < settingsTakeOff[i * numberOfSettingsPerGenerator + 1]) {
@@ -81,13 +82,16 @@ export const failureGeneratorTakeOff = () => {
                             tempFailureTakeOffSpeedThreshold.push(-1);
                             console.info('A failure will occur during this Take-Off at altitude %d', temp);
                         }
+                        tempFailureGeneratorArmed[i] = true;
+                        changed = true;
                     }
-                    tempFailureGeneratorArmed[i] = true;
                 }
             }
-            setFailureTakeOffSpeedThreshold(tempFailureTakeOffSpeedThreshold);
-            setFailureTakeOffAltitudeThreshold(tempFailureTakeOffAltitudeThreshold);
-            setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
+            if (changed) {
+                setFailureTakeOffSpeedThreshold(tempFailureTakeOffSpeedThreshold);
+                setFailureTakeOffAltitudeThreshold(tempFailureTakeOffAltitudeThreshold);
+                setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
+            }
         }
     }, [absoluteTime500ms]); // specific update conditions
 
