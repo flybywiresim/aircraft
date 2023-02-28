@@ -17,6 +17,7 @@ pub mod engine;
 pub mod failures;
 pub mod hydraulic;
 pub mod indicating_recording;
+pub mod integrated_modular_avionics;
 pub mod landing_gear;
 pub mod navigation;
 pub mod overhead;
