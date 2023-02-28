@@ -19,6 +19,7 @@ export const failureGeneratorCommonFunction = () => {
 export const failureGeneratorTEMPLATE = () => {
     // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TEMPLATE', '2,0,2,1');
     const [failureGeneratorArmedTEMPLATE, setFailureGeneratorArmedTEMPLATE] = useState<boolean[]>([false, false]);
@@ -67,7 +68,7 @@ export const failureGeneratorTEMPLATE = () => {
             }
         }
         if (changed) setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
-    }, [failureFlightPhase, failureGeneratorArmedTEMPLATE]); // specific update conditions
+    }, [absoluteTime500ms]); // specific update conditions
 };
 /*
 enum FailureGeneratorType {

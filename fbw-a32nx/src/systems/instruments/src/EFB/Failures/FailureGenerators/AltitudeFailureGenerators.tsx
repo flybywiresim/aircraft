@@ -5,6 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorAltClimb = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB', '2,3000,2,6000');
     const [failureGeneratorArmedAltClimb, setFailureGeneratorArmedAltClimb] = useState<boolean[]>([false, false]);
@@ -50,11 +51,12 @@ export const failureGeneratorAltClimb = () => {
             }
         }
         setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
-    }, [altitude, failureFlightPhase, failureGeneratorArmedAltClimb]);
+    }, [absoluteTime500ms]);
 };
 
 export const failureGeneratorAltDesc = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC', '2,3000,2,6000');
     const [failureGeneratorArmedAltDesc, setFailureGeneratorArmedAltDesc] = useState<boolean[]>([false, false]);
@@ -100,5 +102,5 @@ export const failureGeneratorAltDesc = () => {
             }
         }
         setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
-    }, [altitude, failureFlightPhase, failureGeneratorArmedAltDesc]);
+    }, [absoluteTime500ms]);
 };

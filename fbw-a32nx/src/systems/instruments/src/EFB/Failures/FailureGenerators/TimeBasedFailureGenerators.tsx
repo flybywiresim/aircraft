@@ -5,6 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorPerHour = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '2,5,2,10');
     const [failureGeneratorArmedPerHour, setFailureGeneratorArmedPerHour] = useState<boolean[]>([false, false]);
@@ -55,7 +56,7 @@ export const failureGeneratorPerHour = () => {
             }
             if (changed) setFailureGeneratorArmedPerHour(tempFailureGeneratorArmed);
         }
-    }, [failureGeneratorSetting, failureFlightPhase, absoluteTime5s, failureGeneratorArmedPerHour]);
+    }, [absoluteTime500ms]);
 
     useEffect(() => {
         // remove for release
@@ -67,6 +68,7 @@ export const failureGeneratorTimer : () => void = () => {
     // time based trigger after TO thrust
 
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMER', '0,60');
     const [failureGeneratorArmedTimer, setFailureGeneratorArmedTimer] = useState<boolean[]>([false, false]);
@@ -84,8 +86,7 @@ export const failureGeneratorTimer : () => void = () => {
             const tempSettings : number[] = Array.from(settingsTimer);
             let change = false;
             for (let i = 0; i < nbGeneratorTimer; i++) {
-                const failureConditionTimerBased = absoluteTime5s > failureTime[i]; // Failure Specific Condition
-                if (tempFailureGeneratorArmedTimerBased[i] && failureConditionTimerBased) {
+                if (failureGeneratorArmedTimer[i] && absoluteTime5s > failureTime[i]) {
                     activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
                     console.info('Time based failure triggered');
                     tempFailureGeneratorArmedTimerBased[i] = false;
@@ -106,9 +107,9 @@ export const failureGeneratorTimer : () => void = () => {
         const tempFailureTime = Array.from(failureTime);
         let changed = false;
         for (let i = 0; i < nbGeneratorTimer; i++) {
-            if (!failureGeneratorArmedTimer[i] && settingsTimer[i * numberOfSettingsPerGenerator + 0] === 1
+            if (!failureGeneratorArmedTimer[i] && (settingsTimer[i * numberOfSettingsPerGenerator + 0] === 1
                     || (failureFlightPhase === FailurePhases.TAKEOFF && settingsTimer[i * numberOfSettingsPerGenerator + 0] === 2)
-                    || settingsTimer[i * numberOfSettingsPerGenerator + 0] === 3) {
+                    || settingsTimer[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 tempFailureGeneratorArmed[i] = true;
                 tempFailureTime[i] = settingsTimer[i * numberOfSettingsPerGenerator + 1] + absoluteTime5s;
                 console.info('Timer based failure armed at %.1f s', settingsTimer[i * numberOfSettingsPerGenerator + 1]);
@@ -119,7 +120,7 @@ export const failureGeneratorTimer : () => void = () => {
             setFailureTime(tempFailureTime);
             setFailureGeneratorArmedTimer(tempFailureGeneratorArmed);
         }
-    }, [failureFlightPhase, failureGeneratorArmedTimer]);
+    }, [absoluteTime500ms]);
 
     useEffect(() => {
         // remove for release

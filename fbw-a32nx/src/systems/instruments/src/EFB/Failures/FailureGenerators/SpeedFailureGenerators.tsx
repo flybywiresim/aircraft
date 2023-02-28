@@ -5,6 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorSpeedAccel = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDACCEL', '2,200,2,250');
     const [failureGeneratorArmedSpeedAccel, setFailureGeneratorArmedSpeedAccel] = useState<boolean[]>([false, false]);
@@ -50,11 +51,12 @@ export const failureGeneratorSpeedAccel = () => {
             }
         }
         setFailureGeneratorArmedSpeedAccel(tempFailureGeneratorArmed);
-    }, [gs, failureFlightPhase, failureGeneratorArmedSpeedAccel]);
+    }, [absoluteTime500ms]);
 };
 
 export const failureGeneratorSpeedDecel = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL', '2,200,2,250');
     const [failureGeneratorArmedSpeedDecel, setFailureGeneratorArmedSpeedDecel] = useState<boolean[]>([false, false]);
@@ -100,5 +102,5 @@ export const failureGeneratorSpeedDecel = () => {
             }
         }
         setFailureGeneratorArmedSpeedDecel(tempFailureGeneratorArmed);
-    }, [gs, failureFlightPhase, failureGeneratorArmedSpeedDecel]);
+    }, [absoluteTime500ms]);
 };
