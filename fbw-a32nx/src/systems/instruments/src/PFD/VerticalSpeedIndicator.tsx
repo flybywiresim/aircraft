@@ -234,9 +234,10 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
             const absVSpeed = Math.abs(vs.value);
 
             if (absVSpeed < 200) {
-                this.visibilitySub.set('none');
+                this.visibilitySub.set('hidden');
+            } else {
+                this.visibilitySub.set('visible');
             }
-            this.visibilitySub.set('');
 
             const sign = Math.sign(vs.value);
 
@@ -255,7 +256,7 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
 
     render(): VNode {
         return (
-            <g ref={this.groupRef} display={this.visibilitySub} id="VSpeedTextGroup">
+            <g ref={this.groupRef} visibility={this.visibilitySub} id="VSpeedTextGroup">
                 <path class="BackgroundFill" d="m158.4 83.011h-7.0514v-4.3989h7.0514z" />
                 <text ref={this.vsTextRef} id="VSpeedText" x="155.14055" y="82.554756" />
             </g>

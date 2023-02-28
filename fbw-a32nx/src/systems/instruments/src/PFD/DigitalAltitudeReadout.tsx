@@ -88,7 +88,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
             this.updateColor();
         });
 
-        sub.on('altitudeAr').withArinc429Precision(3).handle((altitude) => {
+        sub.on('altitudeAr').withArinc429Precision(2).handle((altitude) => {
             const isNegative = altitude.value < 0;
             this.isNegativeSub.set(isNegative ? 'visible' : 'hidden');
 
@@ -242,13 +242,13 @@ class Drum extends DisplayComponent<DrumProperties> {
             const digitRef = FSComponent.createRef<SVGTextElement>();
 
             if (this.props.type === 'hundreds') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="11.631" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontLargest MiddleAlign ${this.color}`} x="11.631" y="7.1" />);
             } else if (this.props.type === 'thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="7.18" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontLargest MiddleAlign ${this.color}`} x="7.18" y="7.1" />);
             } else if (this.props.type === 'ten-thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="2.498" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontLargest MiddleAlign ${this.color}`} x="2.498" y="7.1" />);
             } else if (this.props.type === 'tens') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontSmallest MiddleAlign ${this.color}`} x="4.5894" y="8.9133" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontSmallest MiddleAlign ${this.color}`} x="4.5894" y="8.9133" />);
             }
             this.digitRefElements.push(digitRef);
         }
@@ -257,9 +257,7 @@ class Drum extends DisplayComponent<DrumProperties> {
     }
 
     private getOffset(position: number) {
-        const className = `translate3d(0px, ${position * this.props.distanceSpacing / this.props.valueSpacing}px, 0px)`;
-
-        this.gRef.instance.setAttribute('style', `transform: ${className}`);
+        this.gRef.instance.style.transform = `translate3d(0px, ${position * this.props.distanceSpacing / this.props.valueSpacing}px, 0px)`;
     }
 
     private updateValue() {
@@ -283,7 +281,7 @@ class Drum extends DisplayComponent<DrumProperties> {
 
             const text = this.props.getText(elementVal);
 
-            this.digitRefElements[i].instance.setAttribute('style', `transform: translate3d(0px, ${offset}px, 0px)`);
+            this.digitRefElements[i].instance.setAttribute('transform', `translate(0 ${offset})`);
             if (this.digitRefElements[i].instance.textContent !== text
             ) {
                 this.digitRefElements[i].instance.textContent = text;
