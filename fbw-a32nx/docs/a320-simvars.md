@@ -16,12 +16,13 @@
   - [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
   - [Pneumatic](#pneumatic)
   - [Autoflight (ATA 22)](#autoflight-ata-22)
+  - [Communications (ATA 23)](#communications-ata-23)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
-  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
+  - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
 
@@ -2826,6 +2827,62 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 19  | Right Main Gear Pressed           |
       | 20  | Main Gear Out                     |
       | 29  | Alpha Floor Condition             |
+
+## Communications (ATA 23)
+- A32NX_CIDS_FLIGHT_PHASE
+  - Enum
+  - Holds the current CIDS flight phase.
+  - Possible transitions
+    - `1 -> 2`
+    - `1 -> 3`
+    - `2 -> 3`
+    - `3 -> 4`
+    - `3 -> 11` (returning to gate)
+    - `4 -> 5`
+    - `4 -> 11` (returning to gate)
+    - `5 -> 6`
+    - `6 -> 7`
+    - `6 -> 8`
+    - `7 -> 8`
+    - `8 -> 9`
+    - `9 -> 10`
+    - `10 -> 11`
+    - `11 -> 12`
+    - `12 -> 1`
+    - `12 -> 2`
+    - `12 -> 3`
+
+| State | Value | Conditions
+|-------|-------| ----------
+| 1 | BOARDING | - A/C on ground <br> - A/C stationary <br> - Boarding in progress |
+| 2 | PUSHBACK | - A/C on ground <br> - A/C stationary <br> - All A/C doors closed <br> - NW STRG pin inserted |
+| 3 | TAXI BEFORE TAKEOFF | - A/C on ground <br> - GS > 0 <br> - All A/C doors closed <br> - THR LVR not in FLEX/MCT or TOGA |
+| 4 | TAKEOFF AND INITIAL CLIMB | - THR LVR FLEX/MCT or TOGA <br> - ALT < 10 000 ft  |
+| 5 | FINAL CLIMB | - ALT > 10 000 ft <br> - ALT < CRZ ALT <br> - ALT CRZ not active |
+| 6 | CRUISE | - ALT CRZ is active |
+| 7 | TOP OF DESCENT | - FCU selected ALT < 20 000 ft <br> - ALT > 10 000 ft <br> **and** <br> ( <br>&emsp;- OP DES active <br>&emsp;**or** <br>&emsp;- DES active <br>&emsp;**or** <br>&emsp;- VS active **and** VS selected < 0 fpm <br>&emsp;**or** <br>&emsp;- FPA active **and** FPA selected < 0° <br>) |
+| 8 | APPROACH | - ALT <= 10 000 ft <br> - LDG GEAR **not** DOWN |
+| 9 | FINAL APPROACH AND LANDING | - LDG GEAR DOWN <br> - GS >= 80 kts |
+| 10 | TAXI AFTER LANDING | - A/C on ground <br> - GS < 80 kts |
+| 11 | DISEMBARKATION | - A/C on ground <br> - A/C stationary <br> - Deboarding in progress |
+| 12 | AFTER PASSENGER DISEMBARKATION | - Total PAX on board == 0 <br> - A/C stationary |
+
+- A32NX_CIDS_DIR_{number}_FAULT
+  - Bool
+  - {number}
+    - 1
+    - 2
+  - Fault discrete signal of the respective director.
+
+- A32NX_CIDS_DIR_{number}_ACTIVE
+  - Bool
+  - {number}
+    - 1
+    - 2
+  - Active discrete signal of the respective director.
+    - The opposite state of "active" is "passive".
+    - Only one director can be active.
+    - Only the active director can output data.
 
 ## Flaps / Slats (ATA 27)
 

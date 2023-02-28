@@ -44,6 +44,13 @@ export default new TaskOfTasks("all", [
                     "fbw-a32nx/src/systems/fmgc",
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fmgc"
                 ]),
+
+            new ExecTask("cids",
+                "npm run build-a32nx:cids",
+                [
+                    "fbw-a32nx/src/systems/cids",
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/cids"
+                ]),
             new ExecTask("sentry-client",
                 "npm run build-a32nx:sentry-client",
                 [

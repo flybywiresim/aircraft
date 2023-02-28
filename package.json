@@ -16,6 +16,7 @@
     "build-a32nx:atsu": "rollup -c fbw-a32nx/src/systems/atsu/rollup.config.js",
     "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
     "build-a32nx:fmgc": "rollup -c fbw-a32nx/src/systems/fmgc/rollup.config.js",
+    "build-a32nx:cids": "rollup -c fbw-a32nx/src/systems/cids/rollup.config.js",
     "build-a32nx:sentry-client": "rollup -c fbw-a32nx/src/systems/sentry-client/rollup.config.js",
     "build-a32nx:simbridge-client": "rollup -c fbw-a32nx/src/systems/simbridge-client/rollup.config.js",
     "build-a32nx:tcas": "rollup -c fbw-a32nx/src/systems/tcas/rollup.config.js",

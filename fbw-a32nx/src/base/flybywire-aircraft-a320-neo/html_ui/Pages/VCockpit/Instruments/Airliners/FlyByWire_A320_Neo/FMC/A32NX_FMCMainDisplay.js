@@ -209,6 +209,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedProfile = undefined;
         this.speedLimitExceeded = undefined;
 
+        // CIDS
+        this.cids = undefined;
+
         this.onAirport = undefined;
     }
 
@@ -317,6 +320,10 @@ class FMCMainDisplay extends BaseAirliners {
         }, 15000);
 
         SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
+
+        // CIDS
+        this.cids = new Cids.CidsOrchestrator();
+        this.cids.init();
     }
 
     initVariables(resetTakeoffData = true) {
@@ -656,7 +663,9 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
-        }
+        };
+
+        this.cids.update(_deltaTime);
     }
 
     /**
