@@ -157,7 +157,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
                         <path d="m151.84 117.39h-1.9151v1.4615h1.9151z" />
                         <path d="m151.84 127.59h-1.9151v1.2095h1.9151z" />
                     </g>
-                    <g class="SmallStroke  White">
+                    <g class="SmallStroke White">
                         <path d="m149.92 67.216h1.7135h0" />
                         <path d="m151.84 48.569h-1.9151h0" />
                         <path d="m151.84 38.489h-1.9151h0" />
@@ -223,19 +223,20 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
 
     private groupRef = FSComponent.createRef<SVGGElement>();
 
+    private visibilitySub = Subject.create('hidden');
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<Arinc429Values>();
 
-        sub.on('vs').handle((vs) => {
+        sub.on('vs').withArinc429Precision(3).handle((vs) => {
             const absVSpeed = Math.abs(vs.value);
 
             if (absVSpeed < 200) {
-                this.groupRef.instance.setAttribute('visibility', 'hidden');
-                return;
+                this.visibilitySub.set('none');
             }
-            this.groupRef.instance.setAttribute('visibility', 'visible');
+            this.visibilitySub.set('');
 
             const sign = Math.sign(vs.value);
 
@@ -243,7 +244,7 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
 
             const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
             this.vsTextRef.instance.textContent = text;
-            this.groupRef.instance.setAttribute('transform', `translate(0 ${textOffset})`);
+            this.groupRef.instance.style.transform = `translate3d(0px, ${textOffset}px, 0px)`;
         });
 
         this.props.textColour.sub((colour) => {
@@ -254,7 +255,7 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
 
     render(): VNode {
         return (
-            <g ref={this.groupRef} id="VSpeedTextGroup">
+            <g ref={this.groupRef} display={this.visibilitySub} id="VSpeedTextGroup">
                 <path class="BackgroundFill" d="m158.4 83.011h-7.0514v-4.3989h7.0514z" />
                 <text ref={this.vsTextRef} id="VSpeedText" x="155.14055" y="82.554756" />
             </g>

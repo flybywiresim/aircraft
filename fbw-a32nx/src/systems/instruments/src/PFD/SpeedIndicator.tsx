@@ -124,8 +124,6 @@ interface AirspeedIndicatorProps {
 export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> {
     private speedSub = Subject.create<number>(0);
 
-    private speedTapeOutlineRef: NodeReference<SVGPathElement> = FSComponent.createRef();
-
     private speedTapeElements: NodeReference<SVGGElement> = FSComponent.createRef();
 
     private failedGroup: NodeReference<SVGGElement> = FSComponent.createRef();
@@ -143,6 +141,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     private leftMainGearCompressed: boolean;
 
     private rightMainGearCompressed: boolean;
+
+    private pathSub = Subject.create('');
 
     private setOutline() {
         let airspeedValue: number;
@@ -164,7 +164,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         }
 
         const length = 42.9 + Math.max(Math.max(Math.min(Number.isNaN(airspeedValue) ? 100 : airspeedValue, 72.1), 30) - 30, 0);
-        this.speedTapeOutlineRef.instance.setAttribute('d', `m19.031 38.086v${length}`);
+        this.pathSub.set(`m19.031 38.086v${length}`);
     }
 
     onAfterRender(node: VNode): void {
@@ -214,7 +214,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     }
 
     render(): VNode {
-        const length = 42.9 + Math.max(Math.max(Math.min(100, 72.1), 30) - 30, 0);
         return (
 
             <>
@@ -222,14 +221,14 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
                     <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
                     <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>
-                    <path id="SpeedTapeOutlineRight" ref={this.speedTapeOutlineRef} class="NormalStroke Red" d={`m19.031 38.086v${length}`} />
+                    <path id="SpeedTapeOutlineRight" class="NormalStroke Red" d={this.pathSub} />
 
                 </g>
 
                 <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements}>
                     <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
                     {/* Outline */}
-                    <path id="SpeedTapeOutlineRight" ref={this.speedTapeOutlineRef} class="NormalStroke White" d={`m19.031 38.086v${length}`} />
+                    <path id="SpeedTapeOutlineRight" class="NormalStroke White" d={this.pathSub} />
                     <VerticalTape
                         tapeValue={this.speedSub}
                         lowerLimit={30}
@@ -360,7 +359,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
             this.onGround = this.leftMainGearCompressed || g;
         });
 
-        sub.on('speedAr').handle((speed) => {
+        sub.on('speedAr').withArinc429Precision(3).handle((speed) => {
             let airspeedValue: number;
             if (speed.isFailureWarning() || (speed.isNoComputedData() && !this.onGround)) {
                 airspeedValue = NaN;

@@ -71,11 +71,11 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
             const dX = this.props.distanceSpacing / this.props.valueSpacing * headingOffset;
 
             if (headingOffset % 10 === 0) {
-                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} transform={`translate(${dX} 0)`} />);
-                result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} transform={`translate(${-dX} 0)`} />);
+                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
+                result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             } else {
-                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} transform={`translate(${dX} 0)`} />);
-                result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} transform={`translate(${-dX} 0)`} />);
+                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0p,x 0px)`} />);
+                result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             }
 
             if (headingOffset % 10 === 0) {
@@ -88,7 +88,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                         ref={textRef}
                         x="68.979425"
                         y="154.64206"
-                        transform={`translate(${-dX} 0)`}
+                        style={`transform: translate3d(${-dX}px, 0px, 0px)`}
                     >
                         {headingOffset}
 
@@ -103,7 +103,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                         ref={textRef}
                         x="68.979425"
                         y="154.64206"
-                        transform={`translate(${dX} 0)`}
+                        style={`transform: translate3d(${dX}px, 0px, 0px)`}
                     >
                         {(360 - headingOffset)}
 
@@ -126,7 +126,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
             this.refElement.instance.style.transform = `translate3d(${this.tapeOffset}px, ${yOffset}px, 0px)`;
         });
 
-        pf.on('heading').handle((newVal) => {
+        pf.on('heading').withArinc429Precision(2).handle((newVal) => {
             const multiplier = 100;
             const currentValueAtPrecision = Math.round(newVal.value * multiplier) / multiplier;
             const tapeOffset = -currentValueAtPrecision % 10 * this.props.distanceSpacing / this.props.valueSpacing;

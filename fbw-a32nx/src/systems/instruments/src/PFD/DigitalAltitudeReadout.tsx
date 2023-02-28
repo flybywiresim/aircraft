@@ -76,6 +76,8 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
     private tenThousandsPosition = Subject.create(0);
 
+    private altReadoutOutline = Subject.create('NormalStroke Yellow');
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -86,7 +88,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
             this.updateColor();
         });
 
-        sub.on('altitudeAr').handle((altitude) => {
+        sub.on('altitudeAr').withArinc429Precision(3).handle((altitude) => {
             const isNegative = altitude.value < 0;
             this.isNegativeSub.set(isNegative ? 'visible' : 'hidden');
 
@@ -193,7 +195,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                     </svg>
                 </g>
                 <path id="AltReadoutReducedAccurMarks" class="NormalStroke Amber" style="display: none" d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345" />
-                <path id="AltReadoutOutline" class="NormalStroke Yellow" d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
+                <path id="AltReadoutOutline" class={this.altReadoutOutline} d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
 
                 <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
                     <text class="White" x="121.51714" y="77.956947">N</text>
@@ -255,9 +257,9 @@ class Drum extends DisplayComponent<DrumProperties> {
     }
 
     private getOffset(position: number) {
-        const className = `translate(0 ${position * this.props.distanceSpacing / this.props.valueSpacing})`;
+        const className = `translate3d(0px, ${position * this.props.distanceSpacing / this.props.valueSpacing}px, 0px)`;
 
-        this.gRef.instance.setAttribute('transform', className);
+        this.gRef.instance.setAttribute('style', `transform: ${className}`);
     }
 
     private updateValue() {
@@ -281,7 +283,7 @@ class Drum extends DisplayComponent<DrumProperties> {
 
             const text = this.props.getText(elementVal);
 
-            this.digitRefElements[i].instance.setAttribute('transform', `translate(0 ${offset})`);
+            this.digitRefElements[i].instance.setAttribute('style', `transform: translate3d(0px, ${offset}px, 0px)`);
             if (this.digitRefElements[i].instance.textContent !== text
             ) {
                 this.digitRefElements[i].instance.textContent = text;

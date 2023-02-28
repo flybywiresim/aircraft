@@ -56,9 +56,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
 
     private fwcFlightPhase = 0;
 
-    private firstBorderRef = FSComponent.createRef<SVGPathElement>();
+    private firstBorderSub = Subject.create('');
 
-    private secondBorderRef = FSComponent.createRef<SVGPathElement>();
+    private secondBorderSub = Subject.create('');
 
     private AB3Message = Subject.create(false);
 
@@ -89,8 +89,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
         }
 
         this.AB3Message.set(AB3Message);
-        this.firstBorderRef.instance.setAttribute('d', firstBorder);
-        this.secondBorderRef.instance.setAttribute('d', secondBorder);
+        this.firstBorderSub.set(firstBorder);
+        this.secondBorderSub.set(secondBorder);
     }
 
     onAfterRender(node: VNode): void {
@@ -141,7 +141,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
             this.handleFMABorders();
         });
 
-        sub.on('fcdcDiscreteWord1').whenChanged().handle((fcdcDiscreteWord1) => {
+        sub.on('fcdcDiscreteWord1').atFrequency(1).handle((fcdcDiscreteWord1) => {
             this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
             this.handleFMABorders();
         });
@@ -156,8 +156,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
         return (
             <g id="FMA">
                 <g class="NormalStroke Grey">
-                    <path ref={this.firstBorderRef} />
-                    <path ref={this.secondBorderRef} />
+                    <path d={this.firstBorderSub} />
+                    <path d={this.secondBorderSub} />
                     <path d="m102.52 0.33732v20.864" />
                     <path d="m133.72 0.33732v20.864" />
                 </g>
@@ -1309,7 +1309,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
             this.fillBC3Cell();
         });
 
-        sub.on('fcdcDiscreteWord1').whenChanged().handle((fcdcDiscreteWord1) => {
+        sub.on('fcdcDiscreteWord1').atFrequency(1).handle((fcdcDiscreteWord1) => {
             this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
             this.fillBC3Cell();
         });
