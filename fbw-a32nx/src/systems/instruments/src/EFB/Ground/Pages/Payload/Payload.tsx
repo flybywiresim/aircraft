@@ -684,11 +684,11 @@ export const Payload = () => {
                                                         </TooltipWrapper>
                                                     )
                                                     : (
-                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${usingMetric ? Loadsheet.specs.weights.maxZfw.toFixed(0) : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxGW')} ${usingMetric ? Loadsheet.specs.weights.maxGw.toFixed(0) : Units.kilogramToPound(Loadsheet.specs.weights.maxGw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
                                                             <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                                 <PayloadValueInput
                                                                     min={Math.round(usingMetric ? emptyWeight : Units.kilogramToPound(emptyWeight))}
-                                                                    max={Math.round(usingMetric ? Loadsheet.specs.weights.maxZfw : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw))}
+                                                                    max={Math.round(usingMetric ? Loadsheet.specs.weights.maxGw : Units.kilogramToPound(Loadsheet.specs.weights.maxGw))}
                                                                     value={usingMetric ? gwDesired : Units.kilogramToPound(gwDesired)}
                                                                     onBlur={(x) => {
                                                                         if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
@@ -726,7 +726,7 @@ export const Payload = () => {
                                                 </div>
                                             </td>
                                             <td>
-                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFWCG')} ${40}%`}>
+                                                <TooltipWrapper text={displayZfw ? `${t('Ground.Payload.TT.MaxZFWCG')} ${Loadsheet.specs.weights.maxZfwCg}%` : `${t('Ground.Payload.TT.MaxZFWCG')} ${Loadsheet.specs.weights.maxGwCg}%`}>
                                                     <div className="px-4 font-mono whitespace-nowrap text-md">
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
