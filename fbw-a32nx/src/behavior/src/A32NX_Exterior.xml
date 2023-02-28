@@ -204,11 +204,11 @@
     <Template Name="FBW_HANDLING_Flap_Template">
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>l_flap_percent_key</ANIM_NAME>
-            <ANIM_CODE>(A:TRAILING EDGE FLAPS LEFT PERCENT, number) 100 *</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_LEFT_FLAPS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
         </UseTemplate>
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>r_flap_percent_key</ANIM_NAME>
-            <ANIM_CODE>(A:TRAILING EDGE FLAPS RIGHT PERCENT, number) 100 *</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
         </UseTemplate>
     </Template>
 

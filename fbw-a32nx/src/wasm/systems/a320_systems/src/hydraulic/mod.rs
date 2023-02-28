@@ -27,7 +27,7 @@ use systems::{
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
-        flap_slat::{FlapSlatAssy, SlatElement, SlatGroup},
+        flap_slat::{FlapSlatAssy, FlapSlatElement, FlapSlatGroup},
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticPowered, HydraulicAssemblyController,
@@ -120,6 +120,35 @@ impl A320FlapFactory {
             Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
         )
     }
+
+    fn new_flaps_linkage(context: &mut InitContext) -> FlapSlatLinkage<2> {
+        let max_position = Angle::new::<degree>(
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES
+                .last()
+                .unwrap()
+                .clone(),
+        );
+
+        let left_group =
+            A320FlapFactory::new_a320_flap_group(context, ActuatorSide::Left, max_position);
+
+        let right_group =
+            A320FlapFactory::new_a320_flap_group(context, ActuatorSide::Right, max_position);
+
+        FlapSlatLinkage::new(context, left_group, right_group)
+    }
+
+    fn new_a320_flap_group(
+        context: &mut InitContext,
+        id: ActuatorSide,
+        max_position: Angle,
+    ) -> FlapSlatGroup<2> {
+        let surface_id = "FLAPS";
+        let flap_inboard = FlapSlatElement::new(context, id, surface_id, "INBOARD", max_position);
+        let flap_outboard = FlapSlatElement::new(context, id, surface_id, "OUTBOARD", max_position);
+
+        FlapSlatGroup::new(context, [flap_inboard, flap_outboard])
+    }
 }
 
 pub struct A320SlatFactory {}
@@ -162,44 +191,36 @@ impl A320SlatFactory {
         )
     }
 
-    fn new_slats_linkage(context: &mut InitContext) -> SlatLinkage {
-        SlatLinkage::new(
-            context,
-            Angle::new::<degree>(
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES
-                    .last()
-                    .unwrap()
-                    .clone(),
-            ),
-        )
+    fn new_slats_linkage(context: &mut InitContext) -> FlapSlatLinkage<5> {
+        let max_position = Angle::new::<degree>(
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES
+                .last()
+                .unwrap()
+                .clone(),
+        );
+
+        let left_group =
+            A320SlatFactory::new_a320_slat_group(context, ActuatorSide::Left, max_position);
+
+        let right_group =
+            A320SlatFactory::new_a320_slat_group(context, ActuatorSide::Right, max_position);
+
+        FlapSlatLinkage::new(context, left_group, right_group)
     }
 
     fn new_a320_slat_group(
         context: &mut InitContext,
         id: ActuatorSide,
         max_position: Angle,
-    ) -> SlatGroup {
-        let slat_1 = Self::new_a320_slat_element(context, id, 1, max_position);
-        let slat_2 = Self::new_a320_slat_element(context, id, 2, max_position);
-        let slat_3 = Self::new_a320_slat_element(context, id, 3, max_position);
-        let slat_4 = Self::new_a320_slat_element(context, id, 4, max_position);
-        let slat_5 = Self::new_a320_slat_element(context, id, 5, max_position);
+    ) -> FlapSlatGroup<5> {
+        let surface_id = "SLATS";
+        let slat_1 = FlapSlatElement::new(context, id, surface_id, "1", max_position);
+        let slat_2 = FlapSlatElement::new(context, id, surface_id, "2", max_position);
+        let slat_3 = FlapSlatElement::new(context, id, surface_id, "3", max_position);
+        let slat_4 = FlapSlatElement::new(context, id, surface_id, "4", max_position);
+        let slat_5 = FlapSlatElement::new(context, id, surface_id, "5", max_position);
 
-        match id {
-            ActuatorSide::Left => SlatGroup::new(context, [slat_1, slat_2, slat_3, slat_4, slat_5]),
-            ActuatorSide::Right => {
-                SlatGroup::new(context, [slat_1, slat_2, slat_3, slat_4, slat_5])
-            }
-        }
-    }
-
-    fn new_a320_slat_element(
-        context: &mut InitContext,
-        id: ActuatorSide,
-        id_number: usize,
-        max_position: Angle,
-    ) -> SlatElement {
-        SlatElement::new(context, id, id_number, max_position)
+        FlapSlatGroup::new(context, [slat_1, slat_2, slat_3, slat_4, slat_5])
     }
 }
 
@@ -1607,8 +1628,9 @@ pub(super) struct A320Hydraulic {
     braking_force: A320BrakingForce,
 
     flap_system: FlapSlatAssy<7>,
+    flap_linkage: FlapSlatLinkage<2>,
     slat_system: FlapSlatAssy<7>,
-    slat_linkage: SlatLinkage,
+    slat_linkage: FlapSlatLinkage<5>,
     slats_flaps_complex: SlatFlapComplex,
 
     gcu: GeneratorControlUnit<9>,
@@ -1814,6 +1836,7 @@ impl A320Hydraulic {
             braking_force: A320BrakingForce::new(context),
 
             flap_system: A320FlapFactory::new_flaps(context),
+            flap_linkage: A320FlapFactory::new_flaps_linkage(context),
             slat_system: A320SlatFactory::new_slats(context),
             slat_linkage: A320SlatFactory::new_slats_linkage(context),
             slats_flaps_complex: SlatFlapComplex::new(context),
@@ -2212,6 +2235,7 @@ impl A320Hydraulic {
             self.slats_flaps_complex
                 .get_pcu_solenoids_commands(1, SFCCChannel::FlapChannel),
         );
+        self.flap_linkage.update(&self.flap_system);
 
         self.slat_system.update(
             context,
@@ -2222,7 +2246,6 @@ impl A320Hydraulic {
             self.slats_flaps_complex
                 .get_pcu_solenoids_commands(1, SFCCChannel::SlatChannel),
         );
-
         self.slat_linkage.update(&self.slat_system);
 
         self.forward_cargo_door_controller.update(
@@ -2646,6 +2669,7 @@ impl SimulationElement for A320Hydraulic {
 
         self.slats_flaps_complex.accept(visitor);
         self.flap_system.accept(visitor);
+        self.flap_linkage.accept(visitor);
         self.slat_system.accept(visitor);
         self.slat_linkage.accept(visitor);
 
@@ -5766,23 +5790,19 @@ impl SimulationElement for RudderAssembly {
     }
 }
 
-struct SlatLinkage {
-    left_linkage: SlatGroup,
-    right_linkage: SlatGroup,
+struct FlapSlatLinkage<const N: usize> {
+    left_linkage: FlapSlatGroup<N>,
+    right_linkage: FlapSlatGroup<N>,
 }
-impl SlatLinkage {
-    pub fn new(context: &mut InitContext, max_position: Angle) -> Self {
+impl<const N: usize> FlapSlatLinkage<N> {
+    pub fn new(
+        _context: &mut InitContext,
+        left_linkage: FlapSlatGroup<N>,
+        right_linkage: FlapSlatGroup<N>,
+    ) -> Self {
         Self {
-            left_linkage: A320SlatFactory::new_a320_slat_group(
-                context,
-                ActuatorSide::Left,
-                max_position,
-            ),
-            right_linkage: A320SlatFactory::new_a320_slat_group(
-                context,
-                ActuatorSide::Right,
-                max_position,
-            ),
+            left_linkage,
+            right_linkage,
         }
     }
 
@@ -5791,7 +5811,7 @@ impl SlatLinkage {
         self.right_linkage.update(hls);
     }
 }
-impl SimulationElement for SlatLinkage {
+impl<const N: usize> SimulationElement for FlapSlatLinkage<N> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.left_linkage.accept(visitor);
         self.right_linkage.accept(visitor);

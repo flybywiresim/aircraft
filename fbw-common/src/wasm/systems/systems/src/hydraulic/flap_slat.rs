@@ -400,11 +400,6 @@ impl<const N: usize> PowerControlUnit<N> {
 }
 
 pub struct FlapSlatAssy<const N: usize> {
-    // angle_left_id: VariableIdentifier,
-    // angle_right_id: VariableIdentifier,
-
-    // position_left_percent_id: VariableIdentifier,
-    // position_right_percent_id: VariableIdentifier,
     ippu_angle_id: VariableIdentifier,
     fppu_angle_id: VariableIdentifier,
     left_appu_angle_id: VariableIdentifier,
@@ -445,13 +440,6 @@ impl<const N: usize> FlapSlatAssy<N> {
         surface_position_breakpoints: [f64; 12],
     ) -> Self {
         Self {
-            // angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
-            // angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
-
-            // position_left_percent_id: context
-            //     .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
-            // position_right_percent_id: context
-            //     .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
             ippu_angle_id: context.get_identifier(format!("{}_IPPU_ANGLE", id)),
             fppu_angle_id: context.get_identifier(format!("{}_FPPU_ANGLE", id)),
             left_appu_angle_id: context.get_identifier(format!("LEFT_{}_APPU_ANGLE", id)),
@@ -591,15 +579,6 @@ impl<const N: usize> PositionPickoffUnit for FlapSlatAssy<N> {
 }
 impl<const N: usize> SimulationElement for FlapSlatAssy<N> {
     fn write(&self, writer: &mut SimulatorWriter) {
-        // let surface_angle = self.get_surface_position().get::<degree>();
-        // writer.write(&self.angle_left_id, surface_angle);
-        // writer.write(&self.angle_right_id, surface_angle);
-
-        // let position_percent =
-        //     (surface_angle / self.surface_position_breakpoints.last().unwrap()) * 100.;
-        // writer.write(&self.position_left_percent_id, position_percent);
-        // writer.write(&self.position_right_percent_id, position_percent);
-
         writer.write(&self.ippu_angle_id, self.ippu_angle().get::<degree>());
         writer.write(&self.fppu_angle_id, self.fppu_angle().get::<degree>());
         writer.write(
@@ -620,23 +599,23 @@ impl<const N: usize> SimulationElement for FlapSlatAssy<N> {
     [LEFT | RIGHT] {1..5}               SLAT
 */
 
-pub struct SlatGroup {
-    slats: [SlatElement; 5],
+pub struct FlapSlatGroup<const N: usize> {
+    flap_slat_elements: [FlapSlatElement; N],
 }
-impl SlatGroup {
-    pub fn new(_context: &mut InitContext, slats: [SlatElement; 5]) -> Self {
-        Self { slats }
+impl<const N: usize> FlapSlatGroup<N> {
+    pub fn new(_context: &mut InitContext, flap_slat_elements: [FlapSlatElement; N]) -> Self {
+        Self { flap_slat_elements }
     }
 
     pub fn update(&mut self, hls: &dyn HighLiftDevices) {
-        for slat in self.slats.iter_mut() {
+        for slat in self.flap_slat_elements.iter_mut() {
             slat.update(hls);
         }
     }
 }
-impl SimulationElement for SlatGroup {
+impl<const N: usize> SimulationElement for FlapSlatGroup<N> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for slat in &mut self.slats {
+        for slat in &mut self.flap_slat_elements {
             slat.accept(visitor);
         }
 
@@ -644,7 +623,7 @@ impl SimulationElement for SlatGroup {
     }
 }
 
-pub struct SlatElement {
+pub struct FlapSlatElement {
     position_id: VariableIdentifier,
     percent_id: VariableIdentifier,
 
@@ -652,14 +631,14 @@ pub struct SlatElement {
     position_angle: Angle,
     position_percent: Ratio,
 }
-impl SlatElement {
+impl FlapSlatElement {
     pub fn new(
         context: &mut InitContext,
         id: ActuatorSide,
-        id_num: usize,
+        surface_id: &str,
+        id_num: &str,
         max_position: Angle,
     ) -> Self {
-        let surface_id = "SLATS";
         Self {
             position_id: match id {
                 ActuatorSide::Left => {
@@ -685,7 +664,7 @@ impl SlatElement {
     fn update_position(&mut self, hls: &dyn HighLiftDevices) {
         self.position_angle = hls.get_surface_position();
         self.position_angle = self.position_angle.min(self.max_position);
-        self.position_percent = self.position_angle / self.max_position;
+        self.position_percent = (self.position_angle / self.max_position) * 100.;
     }
 
     pub fn update(&mut self, hls: &dyn HighLiftDevices) {
@@ -700,53 +679,12 @@ impl SlatElement {
         self.position_percent.get::<ratio>()
     }
 }
-impl SimulationElement for SlatElement {
+impl SimulationElement for FlapSlatElement {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_id, self.get_position_deg());
         writer.write(&self.percent_id, self.get_position_percent());
     }
 }
-
-// pub struct FlapLinkage {
-//     angle_left_inboard_id: VariableIdentifier,
-//     angle_left_outboard_id: VariableIdentifier,
-
-//     angle_right_inboard_id: VariableIdentifier,
-//     angle_right_outboard_id: VariableIdentifier,
-
-//     position_left_inboard_percent_id: VariableIdentifier,
-//     position_left_outboard_percent_id: VariableIdentifier,
-
-//     position_right_inboard_percent_id: VariableIdentifier,
-//     position_right_outboard_percent_id: VariableIdentifier,
-// }
-// impl FlapLinkage {
-//     pub fn new(context: &mut InitContext) -> Self {
-//         let id = "FLAPS";
-//         Self {
-//             angle_left_inboard_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
-//             angle_left_outboard_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
-
-//             angle_right_inboard_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
-//             angle_right_outboard_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
-
-//             position_left_inboard_percent_id: context
-//                 .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
-//             position_left_outboard_percent_id: context
-//                 .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
-
-//             position_right_inboard_percent_id: context
-//                 .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
-//             position_right_outboard_percent_id: context
-//                 .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
-//         }
-//     }
-// }
-// impl SimulationElement for FlapLinkage {
-//     fn write(&self, writer: &mut SimulatorWriter) {
-
-//     }
-// }
 
 /// Simple hydraulic motor directly driven with a speed.
 /// Speed is smoothly rising or lowering to simulate transients states
