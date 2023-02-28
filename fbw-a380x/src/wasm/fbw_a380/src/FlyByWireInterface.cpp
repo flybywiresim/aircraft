@@ -121,9 +121,9 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updatePrim(calculatedSampleTime, i);
   }
 
-  // for (int i = 0; i < 3; i++) {
-  //   result &= updateSec(calculatedSampleTime, i);
-  // }
+  for (int i = 0; i < 3; i++) {
+    result &= updateSec(calculatedSampleTime, i);
+  }
 
   for (int i = 0; i < 2; i++) {
     result &= updateFac(calculatedSampleTime, i);
@@ -227,14 +227,14 @@ void FlyByWireInterface::loadConfiguration() {
   flightControlsKeyChangeRudder = abs(flightControlsKeyChangeRudder);
   disableXboxCompatibilityRudderAxisPlusMinus =
       INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS", false);
-  enableRudder2AxisMode =
-      INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "ENABLE_RUDDER_2_AXIS", false);
+  enableRudder2AxisMode = INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "ENABLE_RUDDER_2_AXIS", false);
 
   // print configuration into console
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << std::endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << std::endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << std::endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus << std::endl;
+  std::cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
+            << std::endl;
   std::cout << "WASM: FLIGHT_CONTROLS : ENABLE_RUDDER_2_AXIS = " << enableRudder2AxisMode << std::endl;
 
   // --------------------------------------------------------------------------
@@ -826,6 +826,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // reset input
   simConnectInterface.resetSimInputAutopilot();
 
+  simConnectInterface.resetSimInputPitchTrim();
+
   simConnectInterface.resetSimInputRudderTrim();
 
   // set logging options
@@ -1250,6 +1252,7 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
 bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
+  SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
 
   double leftAileron1Position;
   double rightAileron1Position;
@@ -1280,8 +1283,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     thsPosition = idThsPosition->get();
 
-    rudder1Position = idLowerRudderPosition->get();
-    rudder2Position = idUpperRudderPosition->get();
+    rudder1Position = idUpperRudderPosition->get();
+    rudder2Position = idLowerRudderPosition->get();
 
     ra1Bus = raBusOutputs[0];
     ra2Bus = raBusOutputs[2];
@@ -1342,16 +1345,16 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.is_unit_3 = primIndex == 2;
   prims[primIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
   prims[primIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.ap_1_puhsbutton_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.ap_2_puhsbutton_pressed = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.fcu_healthy = false;
   prims[primIndex].modelInputs.in.discrete_inputs.athr_pushbutton = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.adr_3_on_fo = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
+  prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   prims[primIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
 
@@ -1376,7 +1379,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.analog_inputs.left_spoiler_pos_deg = -50. * leftSpoilerPosition;
   prims[primIndex].modelInputs.in.analog_inputs.right_spoiler_pos_deg = -50. * rightSpoilerPosition;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
-  prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder1Position;
+  prims[primIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
   prims[primIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2];
   prims[primIndex].modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
   prims[primIndex].modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
@@ -1422,9 +1425,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     prims[primIndex].modelInputs.in.bus_inputs.prim_y_bus = primsBusOutputs[1];
   }
 
-  prims[primIndex].modelInputs.in.bus_inputs.sec_1_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = {};
+  prims[primIndex].modelInputs.in.bus_inputs.sec_1_bus = secsBusOutputs[0];
+  prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
+  prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
@@ -1451,7 +1454,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     primsBusOutputs[primIndex] = prims[primIndex].getBusOutputs();
   }
 
-  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1 || facDisabled != -1) {
+  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1) {
     simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
@@ -1460,159 +1463,199 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   return true;
 }
 
-// bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
-//   const int oppSecIndex = secIndex == 0 ? 1 : 0;
-//   SimData simData = simConnectInterface.getSimData();
-//   SimInput simInput = simConnectInterface.getSimInput();
-//
-//   secs[secIndex].modelInputs.in.time.dt = sampleTime;
-//   secs[secIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
-//   secs[secIndex].modelInputs.in.time.monotonic_time = monotonicTime;
-//
-//   secs[secIndex].modelInputs.in.sim_data.slew_on = wasInSlew;
-//   secs[secIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
-//   secs[secIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
-//   secs[secIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
-//
-//   secs[secIndex].modelInputs.in.discrete_inputs.sec_engaged_from_switch = idSecPushbuttonPressed[secIndex]->get();
-//   secs[secIndex].modelInputs.in.discrete_inputs.sec_in_emergency_powersupply = false;
-//   secs[secIndex].modelInputs.in.discrete_inputs.is_unit_1 = secIndex == 0;
-//   secs[secIndex].modelInputs.in.discrete_inputs.is_unit_2 = secIndex == 1;
-//   secs[secIndex].modelInputs.in.discrete_inputs.is_unit_3 = secIndex == 2;
-//   if (secIndex < 2) {
-//     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_1 = !elacsDiscreteOutputs[0].pitch_axis_ok;
-//     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_2 = !elacsDiscreteOutputs[1].pitch_axis_ok;
-//     secs[secIndex].modelInputs.in.discrete_inputs.left_elev_not_avail_sec_opp = !secsDiscreteOutputs[oppSecIndex].left_elevator_ok;
-//     secs[secIndex].modelInputs.in.discrete_inputs.right_elev_not_avail_sec_opp = !secsDiscreteOutputs[oppSecIndex].right_elevator_ok;
-//     secs[secIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = idElevFaultLeft[secIndex]->get();
-//     secs[secIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[secIndex]->get();
-//     secs[secIndex].modelInputs.in.discrete_inputs.ths_override_active = idThsOverrideActive->get();
-//   } else {
-//     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_1 = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_2 = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.left_elev_not_avail_sec_opp = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.right_elev_not_avail_sec_opp = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.ths_override_active = false;
-//   }
-//
-//   secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_1 = !elacsDiscreteOutputs[0].digital_output_validated;
-//   secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_2 = !elacsDiscreteOutputs[1].digital_output_validated;
-//   secs[secIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
-//   secs[secIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
-//   secs[secIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
-//   secs[secIndex].modelInputs.in.discrete_inputs.sfcc_1_slats_out = false;
-//   secs[secIndex].modelInputs.in.discrete_inputs.sfcc_2_slats_out = false;
-//
-//   int splrIndex = secIndex == 2 ? 0 : (secIndex == 0 ? 2 : 4);
-//
-//   secs[secIndex].modelInputs.in.discrete_inputs.l_spoiler_1_servo_failed = idSplrFaultLeft[splrIndex]->get();
-//   secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_1_servo_failed = idSplrFaultRight[splrIndex]->get();
-//   if (secIndex != 1) {
-//     secs[secIndex].modelInputs.in.discrete_inputs.l_spoiler_2_servo_failed = idSplrFaultLeft[splrIndex + 1]->get();
-//     secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_2_servo_failed = idSplrFaultRight[splrIndex + 1]->get();
-//   } else {
-//     secs[secIndex].modelInputs.in.discrete_inputs.l_spoiler_2_servo_failed = false;
-//     secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_2_servo_failed = false;
-//   }
-//
-//   secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
-//   secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
-//
-//   if (secIndex < 2) {
-//     secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
-//     secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
-//     double leftElevPos = -idLeftElevatorPosition->get();
-//     double rightElevPos = -idRightElevatorPosition->get();
-//     secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos * 30;
-//     secs[secIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos * 30;
-//     secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = -simData.eta_trim_deg;
-//     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
-//     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
-//   } else {
-//     secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = 0;
-//     secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
-//     secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = 0;
-//     secs[secIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = 0;
-//     secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
-//     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
-//     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
-//   }
-//   secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
-//   secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
-//   secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos =
-//       spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
-//   secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
-//   secs[secIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
-//   secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_1_pos_deg = -idLeftSpoilerPosition[splrIndex]->get() * 50;
-//   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_1_pos_deg = -idRightSpoilerPosition[splrIndex]->get() * 50;
-//   secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_2_pos_deg = -idLeftSpoilerPosition[splrIndex + 1]->get() * 50;
-//   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -idRightSpoilerPosition[splrIndex + 1]->get() * 50;
-//   secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_left = simData.wheelRpmLeft * 0.118921;
-//   secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_right = simData.wheelRpmRight * 0.118921;
-//
-//   if (secIndex == 0) {
-//     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
-//     secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[2];
-//     secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
-//     secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[2];
-//   } else if (secIndex == 1) {
-//     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
-//     secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
-//     secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
-//     secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[1];
-//   } else if (secIndex == 2) {
-//     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[1];
-//     secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[2];
-//     secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[1];
-//     secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[2];
-//   }
-//
-//   secs[secIndex].modelInputs.in.bus_inputs.fcdc_1_bus = fcdcsBusOutputs[0];
-//   secs[secIndex].modelInputs.in.bus_inputs.fcdc_2_bus = fcdcsBusOutputs[1];
-//   secs[secIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
-//   secs[secIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
-//   secs[secIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
-//   secs[secIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
-//   secs[secIndex].modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
-//   secs[secIndex].modelInputs.in.bus_inputs.lgciu_2_bus = lgciuBusOutputs[1];
-//
-//   if (secIndex == secDisabled) {
-//     simConnectInterface.setClientDataSecDiscretes(secs[secIndex].modelInputs.in.discrete_inputs);
-//     simConnectInterface.setClientDataSecAnalog(secs[secIndex].modelInputs.in.analog_inputs);
-//
-//     secsDiscreteOutputs[secIndex] = simConnectInterface.getClientDataSecDiscretesOutput();
-//     secsAnalogOutputs[secIndex] = simConnectInterface.getClientDataSecAnalogsOutput();
-//     secsBusOutputs[secIndex] = simConnectInterface.getClientDataSecBusOutput();
-//   } else {
-//     bool powerSupplyAvailable = false;
-//     if (secIndex == 0) {
-//       powerSupplyAvailable =
-//           idElecDcEssBusPowered->get() || (secsDiscreteOutputs[secIndex].batt_power_supply ? idElecBat1HotBusPowered->get() : false);
-//     } else {
-//       powerSupplyAvailable = idElecDcBus2Powered->get();
-//     }
-//
-//     Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
-//     secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable);
-//
-//     secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
-//     secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
-//     secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
-//   }
-//
-//   if (elacDisabled != -1 && secIndex < 2) {
-//     simConnectInterface.setClientDataSecBus(secsBusOutputs[secIndex], secIndex);
-//   }
-//
-//   idSecFaultLightOn[secIndex]->set(secsDiscreteOutputs[secIndex].sec_failed);
-//   idSecGroundSpoilersOut[secIndex]->set(secsDiscreteOutputs[secIndex].ground_spoiler_out);
-//
-//   return true;
-// }
+bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
+  const int oppSecIndex = secIndex == 0 ? 1 : 0;
+  SimData simData = simConnectInterface.getSimData();
+  SimInput simInput = simConnectInterface.getSimInput();
+  SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
+  SimInputRudderTrim rudderTrimInput = simConnectInterface.getSimInputRudderTrim();
+
+  double leftAileron1Position;
+  double rightAileron1Position;
+  double leftAileron2Position;
+  double rightAileron2Position;
+  double leftSpoiler1Position;
+  double rightSpoiler1Position;
+  double leftSpoiler2Position;
+  double rightSpoiler2Position;
+  double elevator1Position;
+  double elevator2Position;
+  double elevator3Position;
+  double thsPosition;
+  double rudder1Position;
+  double rudder2Position;
+
+  if (secIndex == 0) {
+    leftAileron1Position = idLeftAileronInwardPosition->get();
+    rightAileron1Position = idRightAileronInwardPosition->get();
+    leftAileron2Position = idLeftAileronMiddlePosition->get();
+    rightAileron2Position = idRightAileronMiddlePosition->get();
+
+    leftSpoiler1Position = idLeftSpoilerPosition[2]->get();
+    rightSpoiler1Position = idRightSpoilerPosition[2]->get();
+    leftSpoiler2Position = 0;
+    rightSpoiler2Position = 0;
+
+    elevator1Position = idLeftElevatorOutwardPosition->get();
+    elevator2Position = idLeftElevatorInwardPosition->get();
+    elevator3Position = idRightElevatorOutwardPosition->get();
+
+    thsPosition = idThsPosition->get();
+
+    rudder1Position = idLowerRudderPosition->get();
+    rudder2Position = idUpperRudderPosition->get();
+  } else if (secIndex == 1) {
+    leftAileron1Position = idLeftAileronOutwardPosition->get();
+    rightAileron1Position = idRightAileronOutwardPosition->get();
+    leftAileron2Position = idLeftAileronInwardPosition->get();
+    rightAileron2Position = idRightAileronInwardPosition->get();
+
+    leftSpoiler1Position = idLeftSpoilerPosition[1]->get();
+    rightSpoiler1Position = idRightSpoilerPosition[1]->get();
+    leftSpoiler2Position = idLeftSpoilerPosition[6]->get();
+    rightSpoiler2Position = idRightSpoilerPosition[6]->get();
+
+    elevator1Position = idRightElevatorOutwardPosition->get();
+    elevator2Position = idLeftElevatorOutwardPosition->get();
+    elevator3Position = idRightElevatorInwardPosition->get();
+
+    thsPosition = 0;
+
+    rudder1Position = idUpperRudderPosition->get();
+    rudder2Position = 0;
+  } else {
+    leftAileron1Position = idLeftAileronMiddlePosition->get();
+    rightAileron1Position = idRightAileronMiddlePosition->get();
+    leftAileron2Position = idLeftAileronOutwardPosition->get();
+    rightAileron2Position = idRightAileronOutwardPosition->get();
+
+    leftSpoiler1Position = idLeftSpoilerPosition[0]->get();
+    rightSpoiler1Position = idRightSpoilerPosition[0]->get();
+    leftSpoiler2Position = idLeftSpoilerPosition[7]->get();
+    rightSpoiler2Position = idRightSpoilerPosition[7]->get();
+
+    elevator1Position = idLeftElevatorInwardPosition->get();
+    elevator2Position = idRightElevatorInwardPosition->get();
+    elevator3Position = 0;
+
+    thsPosition = idThsPosition->get();
+
+    rudder1Position = idLowerRudderPosition->get();
+    rudder2Position = 0;
+  }
+
+  secs[secIndex].modelInputs.in.time.dt = sampleTime;
+  secs[secIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
+  secs[secIndex].modelInputs.in.time.monotonic_time = monotonicTime;
+
+  secs[secIndex].modelInputs.in.sim_data.slew_on = wasInSlew;
+  secs[secIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
+  secs[secIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
+  secs[secIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
+
+  secs[secIndex].modelInputs.in.discrete_inputs.sec_overhead_button_pressed = idSecPushbuttonPressed[secIndex]->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.is_unit_1 = secIndex == 0;
+  secs[secIndex].modelInputs.in.discrete_inputs.is_unit_2 = secIndex == 1;
+  secs[secIndex].modelInputs.in.discrete_inputs.is_unit_3 = secIndex == 2;
+  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_left_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimSwitchLeft;
+  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_right_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimSwitchRight;
+  secs[secIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_pressed = secIndex == 1 ? false : rudderTrimInput.rudderTrimReset;
+  secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_up_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchUp;
+  secs[secIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = secIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
+  secs[secIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
+
+  secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
+  secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
+  secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_1_pos_deg = 30. * elevator1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_2_pos_deg = 30. * elevator2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.elevator_3_pos_deg = 30. * elevator3Position;
+  secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = thsPosition;
+  secs[secIndex].modelInputs.in.analog_inputs.left_aileron_1_pos_deg = 30. * leftAileron1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.left_aileron_2_pos_deg = 30. * leftAileron2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.right_aileron_1_pos_deg = -30. * rightAileron1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.right_aileron_2_pos_deg = -30. * rightAileron2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_1_pos_deg = -50. * leftSpoiler1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_1_pos_deg = -50. * rightSpoiler1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_2_pos_deg = -50. * leftSpoiler2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -50. * rightSpoiler2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_1_pos_deg = -30. * rudder1Position;
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_2_pos_deg = -30. * rudder2Position;
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_pedal_pos_deg = -simInput.inputs[2];
+  secs[secIndex].modelInputs.in.analog_inputs.rudder_trim_pos_deg = 0;
+
+  if (secIndex == 0) {
+    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
+    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[1];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[1];
+  } else if (secIndex == 1) {
+    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[1];
+    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[2];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[1];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[2];
+  } else if (secIndex == 2) {
+    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adrBusOutputs[0];
+    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adrBusOutputs[2];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = irBusOutputs[0];
+    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = irBusOutputs[2];
+  }
+
+  secs[secIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
+  secs[secIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
+  secs[secIndex].modelInputs.in.bus_inputs.irdc_5_a_bus = 0;
+  secs[secIndex].modelInputs.in.bus_inputs.irdc_5_b_bus = 0;
+  secs[secIndex].modelInputs.in.bus_inputs.prim_1_bus = primsBusOutputs[0];
+  secs[secIndex].modelInputs.in.bus_inputs.prim_2_bus = primsBusOutputs[1];
+  secs[secIndex].modelInputs.in.bus_inputs.prim_3_bus = primsBusOutputs[2];
+  if (secIndex == 0) {
+    secs[secIndex].modelInputs.in.bus_inputs.sec_x_bus = secsBusOutputs[1];
+    secs[secIndex].modelInputs.in.bus_inputs.sec_y_bus = secsBusOutputs[2];
+  } else if (secIndex == 1) {
+    secs[secIndex].modelInputs.in.bus_inputs.sec_x_bus = secsBusOutputs[0];
+    secs[secIndex].modelInputs.in.bus_inputs.sec_y_bus = secsBusOutputs[2];
+  } else {
+    secs[secIndex].modelInputs.in.bus_inputs.sec_x_bus = secsBusOutputs[0];
+    secs[secIndex].modelInputs.in.bus_inputs.sec_y_bus = secsBusOutputs[1];
+  }
+
+  if (secIndex == secDisabled) {
+    simConnectInterface.setClientDataSecDiscretes(secs[secIndex].modelInputs.in.discrete_inputs);
+    simConnectInterface.setClientDataSecAnalog(secs[secIndex].modelInputs.in.analog_inputs);
+
+    secsDiscreteOutputs[secIndex] = simConnectInterface.getClientDataSecDiscretesOutput();
+    secsAnalogOutputs[secIndex] = simConnectInterface.getClientDataSecAnalogsOutput();
+    secsBusOutputs[secIndex] = simConnectInterface.getClientDataSecBusOutput();
+  } else {
+    bool powerSupplyAvailable = false;
+    if (secIndex == 0) {
+      powerSupplyAvailable = idElecDcEssBusPowered->get();
+    } else if (secIndex == 1) {
+      powerSupplyAvailable = idElecDcBus2Powered->get();
+    } else {
+      powerSupplyAvailable = idElecDcBus2Powered->get();
+    }
+
+    Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
+    secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable);
+
+    secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
+    secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
+    secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
+  }
+
+  if ((secDisabled != -1 && secIndex != secDisabled) || primDisabled != -1) {
+    simConnectInterface.setClientDataSecBus(secsBusOutputs[secIndex], secIndex);
+  }
+
+  idSecHealthy[secIndex]->set(secsDiscreteOutputs[secIndex].sec_healthy);
+
+  return true;
+}
 
 // bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 //   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
@@ -1793,23 +1836,39 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
 }
 
 bool FlyByWireInterface::updateServoSolenoidStatus() {
-  idLeftInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].left_aileron_1_active_mode);
-  idLeftInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].left_aileron_1_pos_order_deg);
-  idLeftInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].left_aileron_2_active_mode);
-  idLeftInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].left_aileron_2_pos_order_deg);
-  idRightInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].right_aileron_1_active_mode);
-  idRightInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].right_aileron_1_pos_order_deg);
-  idRightInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].right_aileron_2_active_mode);
-  idRightInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].right_aileron_2_pos_order_deg);
+  idLeftInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].left_aileron_1_active_mode ||
+                                                secsDiscreteOutputs[0].left_aileron_1_active_mode);
+  idLeftInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].left_aileron_1_pos_order_deg +
+                                                secsAnalogOutputs[0].left_aileron_1_pos_order_deg);
+  idLeftInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].left_aileron_2_active_mode ||
+                                                secsDiscreteOutputs[1].left_aileron_2_active_mode);
+  idLeftInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].left_aileron_2_pos_order_deg +
+                                                secsAnalogOutputs[1].left_aileron_2_pos_order_deg);
+  idRightInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].right_aileron_1_active_mode ||
+                                                 secsDiscreteOutputs[0].right_aileron_1_active_mode);
+  idRightInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].right_aileron_1_pos_order_deg +
+                                                 secsAnalogOutputs[0].right_aileron_1_pos_order_deg);
+  idRightInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].right_aileron_2_active_mode ||
+                                                 secsDiscreteOutputs[1].right_aileron_2_active_mode);
+  idRightInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].right_aileron_2_pos_order_deg +
+                                                 secsAnalogOutputs[1].right_aileron_2_pos_order_deg);
 
-  idLeftMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].left_aileron_1_active_mode);
-  idLeftMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].left_aileron_1_pos_order_deg);
-  idLeftMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].left_aileron_2_active_mode);
-  idLeftMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].left_aileron_2_pos_order_deg);
-  idRightMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].right_aileron_1_active_mode);
-  idRightMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].right_aileron_1_pos_order_deg);
-  idRightMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].right_aileron_2_active_mode);
-  idRightMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].right_aileron_2_pos_order_deg);
+  idLeftMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].left_aileron_1_active_mode ||
+                                                 secsDiscreteOutputs[2].left_aileron_1_active_mode);
+  idLeftMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].left_aileron_1_pos_order_deg +
+                                                 secsAnalogOutputs[2].left_aileron_1_pos_order_deg);
+  idLeftMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].left_aileron_2_active_mode ||
+                                                 secsDiscreteOutputs[0].left_aileron_2_active_mode);
+  idLeftMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].left_aileron_2_pos_order_deg +
+                                                 secsAnalogOutputs[0].left_aileron_2_pos_order_deg);
+  idRightMidboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[2].right_aileron_1_active_mode ||
+                                                  secsDiscreteOutputs[2].right_aileron_1_active_mode);
+  idRightMidboardAileronCommandedPosition[0]->set(primsAnalogOutputs[2].right_aileron_1_pos_order_deg +
+                                                  secsAnalogOutputs[2].right_aileron_1_pos_order_deg);
+  idRightMidboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[0].right_aileron_2_active_mode ||
+                                                  secsDiscreteOutputs[0].right_aileron_2_active_mode);
+  idRightMidboardAileronCommandedPosition[1]->set(primsAnalogOutputs[0].right_aileron_2_pos_order_deg +
+                                                  secsAnalogOutputs[0].right_aileron_2_pos_order_deg);
 
   idLeftOutboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[1].left_aileron_1_active_mode);
   idLeftOutboardAileronCommandedPosition[0]->set(primsAnalogOutputs[1].left_aileron_1_pos_order_deg);
@@ -1820,12 +1879,12 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightOutboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[2].right_aileron_2_active_mode);
   idRightOutboardAileronCommandedPosition[1]->set(primsAnalogOutputs[2].right_aileron_2_pos_order_deg);
 
-  idLeftSpoilerCommandedPosition[0]->set(0);
-  idRightSpoilerCommandedPosition[0]->set(0);
-  idLeftSpoilerCommandedPosition[1]->set(0);
-  idRightSpoilerCommandedPosition[1]->set(0);
-  idLeftSpoilerCommandedPosition[2]->set(0);
-  idRightSpoilerCommandedPosition[2]->set(0);
+  idLeftSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[1].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[1].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
   idLeftSpoilerCommandedPosition[3]->set(-primsAnalogOutputs[2].left_spoiler_pos_order_deg);
   idRightSpoilerCommandedPosition[3]->set(-primsAnalogOutputs[2].right_spoiler_pos_order_deg);
   idLeftSpoilerCommandedPosition[4]->set(-primsAnalogOutputs[1].left_spoiler_pos_order_deg);
@@ -1834,62 +1893,86 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idLeftSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].left_spoiler_pos_order_deg);
   idRightSpoiler6EbhaElectronicEnable->set(primsDiscreteOutputs[0].right_spoiler_electronic_module_enable);
   idRightSpoilerCommandedPosition[5]->set(-primsAnalogOutputs[0].right_spoiler_pos_order_deg);
-  idLeftSpoilerCommandedPosition[6]->set(0);
-  idRightSpoilerCommandedPosition[6]->set(0);
-  idLeftSpoilerCommandedPosition[7]->set(0);
-  idRightSpoilerCommandedPosition[7]->set(0);
+  idLeftSpoilerCommandedPosition[6]->set(-secsAnalogOutputs[1].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[6]->set(-secsAnalogOutputs[1].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[7]->set(-secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[7]->set(-secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
 
-  idLeftInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_1_active_mode);
-  idLeftInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_1_pos_order_deg);
-  idLeftInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_2_active_mode);
-  idLeftInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_2_pos_order_deg);
-  idRightInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_2_active_mode);
-  idRightInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_2_pos_order_deg);
-  idRightInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_3_active_mode);
-  idRightInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_3_pos_order_deg);
+  idLeftInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_1_active_mode ||
+                                                 secsDiscreteOutputs[2].elevator_1_active_mode);
+  idLeftInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_1_pos_order_deg +
+                                                 secsAnalogOutputs[2].elevator_1_pos_order_deg);
+  idLeftInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_2_active_mode ||
+                                                 secsDiscreteOutputs[0].elevator_2_active_mode);
+  idLeftInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_2_pos_order_deg +
+                                                 secsAnalogOutputs[0].elevator_2_pos_order_deg);
+  idRightInboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[2].elevator_2_active_mode ||
+                                                  secsDiscreteOutputs[2].elevator_2_active_mode);
+  idRightInboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[2].elevator_2_pos_order_deg +
+                                                  secsAnalogOutputs[2].elevator_2_pos_order_deg);
+  idRightInboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_3_active_mode ||
+                                                  secsDiscreteOutputs[1].elevator_3_active_mode);
+  idRightInboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_3_pos_order_deg +
+                                                  secsAnalogOutputs[1].elevator_3_pos_order_deg);
 
-  idLeftOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[0].elevator_1_active_mode);
-  idLeftOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[0].elevator_1_pos_order_deg);
-  idLeftOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_2_active_mode);
-  idLeftOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_2_pos_order_deg);
-  idRightOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[1].elevator_1_active_mode);
-  idRightOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[1].elevator_1_pos_order_deg);
-  idRightOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_3_active_mode);
-  idRightOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_3_pos_order_deg);
+  idLeftOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[0].elevator_1_active_mode ||
+                                                  secsDiscreteOutputs[0].elevator_1_active_mode);
+  idLeftOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[0].elevator_1_pos_order_deg +
+                                                  secsAnalogOutputs[0].elevator_1_pos_order_deg);
+  idLeftOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_2_active_mode ||
+                                                  secsDiscreteOutputs[1].elevator_2_active_mode);
+  idLeftOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_2_pos_order_deg +
+                                                  secsAnalogOutputs[1].elevator_2_pos_order_deg);
+  idRightOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[1].elevator_1_active_mode ||
+                                                   secsDiscreteOutputs[1].elevator_1_active_mode);
+  idRightOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[1].elevator_1_pos_order_deg +
+                                                   secsAnalogOutputs[1].elevator_1_pos_order_deg);
+  idRightOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_3_active_mode ||
+                                                   secsDiscreteOutputs[0].elevator_3_active_mode);
+  idRightOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_3_pos_order_deg +
+                                                   secsAnalogOutputs[0].elevator_3_pos_order_deg);
 
-  idTHSSolenoidEnergized[0]->set(primsDiscreteOutputs[2].ths_active_mode);
-  idTHSCommandedPosition[0]->set(primsAnalogOutputs[2].ths_pos_order_deg);
-  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode);
-  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg);
+  idTHSSolenoidEnergized[0]->set(primsDiscreteOutputs[2].ths_active_mode || secsDiscreteOutputs[2].ths_active_mode);
+  idTHSCommandedPosition[0]->set(primsAnalogOutputs[2].ths_pos_order_deg + secsAnalogOutputs[2].ths_pos_order_deg);
+  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode || secsDiscreteOutputs[0].ths_active_mode);
+  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[0].ths_pos_order_deg);
 
-  idUpperRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_hydraulic_active_mode);
-  idUpperRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_electric_active_mode);
-  idUpperRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_1_pos_order_deg);
-  idUpperRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_hydraulic_active_mode);
-  idUpperRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_electric_active_mode);
-  idUpperRudderCommandedPosition[1]->set(primsAnalogOutputs[1].rudder_1_pos_order_deg);
+  idUpperRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[0].rudder_1_hydraulic_active_mode);
+  idUpperRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_electric_active_mode ||
+                                                     secsDiscreteOutputs[0].rudder_1_electric_active_mode);
+  idUpperRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_1_pos_order_deg + secsAnalogOutputs[0].rudder_1_pos_order_deg);
+  idUpperRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[1].rudder_1_hydraulic_active_mode);
+  idUpperRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_electric_active_mode ||
+                                                     secsDiscreteOutputs[1].rudder_1_electric_active_mode);
+  idUpperRudderCommandedPosition[1]->set(primsAnalogOutputs[1].rudder_1_pos_order_deg + secsAnalogOutputs[1].rudder_1_pos_order_deg);
 
-  idLowerRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_hydraulic_active_mode);
-  idLowerRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_electric_active_mode);
-  idLowerRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_2_pos_order_deg);
-  idLowerRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_hydraulic_active_mode);
-  idLowerRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_electric_active_mode);
-  idLowerRudderCommandedPosition[1]->set(primsAnalogOutputs[2].rudder_1_pos_order_deg);
+  idLowerRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[0].rudder_2_hydraulic_active_mode);
+  idLowerRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_electric_active_mode ||
+                                                     secsDiscreteOutputs[0].rudder_2_electric_active_mode);
+  idLowerRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_2_pos_order_deg + secsAnalogOutputs[0].rudder_2_pos_order_deg);
+  idLowerRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_hydraulic_active_mode ||
+                                                      secsDiscreteOutputs[2].rudder_1_hydraulic_active_mode);
+  idLowerRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_electric_active_mode ||
+                                                     secsDiscreteOutputs[2].rudder_1_electric_active_mode);
+  idLowerRudderCommandedPosition[1]->set(primsAnalogOutputs[2].rudder_1_pos_order_deg + secsAnalogOutputs[2].rudder_1_pos_order_deg);
 
-  for (int i = 0; i < 2; i++) {
-    std::string idString = std::to_string(i + 1);
-
-    idRudderTrimActiveModeCommanded[i]->set(0);
-    idRudderTrimCommandedPosition[i]->set(0);
-  }
+  idRudderTrimActiveModeCommanded[0]->set(secsDiscreteOutputs[0].rudder_trim_active_mode);
+  idRudderTrimCommandedPosition[0]->set(secsAnalogOutputs[0].rudder_trim_pos_order_deg);
+  idRudderTrimActiveModeCommanded[1]->set(secsDiscreteOutputs[2].rudder_trim_active_mode);
+  idRudderTrimCommandedPosition[1]->set(secsAnalogOutputs[2].rudder_trim_pos_order_deg);
 
   double totalSpoilersLeftDeflection = idLeftSpoilerPosition[0]->get() + idLeftSpoilerPosition[1]->get() + idLeftSpoilerPosition[2]->get() +
-                                       idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get();
+                                       idLeftSpoilerPosition[3]->get() + idLeftSpoilerPosition[4]->get() + idLeftSpoilerPosition[5]->get() +
+                                       idLeftSpoilerPosition[6]->get() + idLeftSpoilerPosition[7]->get();
   double totalSpoilersRightDeflection = idRightSpoilerPosition[0]->get() + idRightSpoilerPosition[1]->get() +
                                         idRightSpoilerPosition[2]->get() + idRightSpoilerPosition[3]->get() +
-                                        idRightSpoilerPosition[4]->get();
-  totalSpoilersLeftDeflection /= 5;
-  totalSpoilersRightDeflection /= 5;
+                                        idRightSpoilerPosition[4]->get() + idRightSpoilerPosition[5]->get() +
+                                        idRightSpoilerPosition[6]->get() + idRightSpoilerPosition[7]->get();
+  totalSpoilersLeftDeflection /= 8;
+  totalSpoilersRightDeflection /= 8;
   double totalSpoilerDeflection = (totalSpoilersLeftDeflection + totalSpoilersRightDeflection) / 2;
   double totalAssymmetricSpoilerDeflection = fabs(totalSpoilersLeftDeflection - totalSpoilersRightDeflection) / 2;
 

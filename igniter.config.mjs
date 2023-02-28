@@ -63,13 +63,7 @@ export default new TaskOfTasks("all", [
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/tcas"
                 ]),
 
-            new TaskOfTasks("instruments",
-                [
-                    ...getInstrumentsIgniterTasks(),
-                    new ExecTask("PFD", "npm run build-a32nx:pfd", ["fbw-a32nx/src/systems/instruments/src/PFD", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD"]),
-                    new ExecTask("Clock", "npm run build-a32nx:clock", ["fbw-a32nx/src/systems/instruments/src/Clock", "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/Clock"])
-                ],
-                true)
+            new TaskOfTasks("instruments", getInstrumentsIgniterTasks(), true),
         ], true),
 
         // Group all WASM build tasks together but separate from the rest of the tasks as build run more stable like this.
@@ -119,9 +113,7 @@ export default new TaskOfTasks("all", [
 
         new TaskOfTasks("preparation", [
             new ExecTask("copy-base-files", [
-                "npm run build-a380x:copy-base-files",
-                // temporary until folder exists
-                "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/"
+                "npm run build-a380x:copy-base-files"
             ])
         ], true),
 
@@ -133,7 +125,7 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/systems",
                     "Cargo.lock",
                     "Cargo.toml",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/systems.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm"
                 ]),
             new ExecTask("systems-fadec",
                 "npm run build-a380x:fadec",
@@ -141,23 +133,34 @@ export default new TaskOfTasks("all", [
                     "fbw-a380x/src/wasm/fadec_a380",
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-common/src/wasm/fadec_common",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/fadec.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm"
                 ]),
             new ExecTask("systems-fbw",
                 "npm run build-a380x:fbw",
                 [
                     "fbw-a380x/src/wasm/fbw_a380",
                     "fbw-common/src/wasm/fbw_common",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/fbw.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm"
                 ]),
             new ExecTask("flypad-backend",
                 "npm run build-a380x:flypad-backend",
                 [
                     "fbw-a380x/src/wasm/flypad-backend",
                     "fbw-common/src/wasm/fbw_common",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_841/panel/flypad-backend.wasm"
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm"
                 ])
         ], true)
-    ])
+    ]),
 
+    // InGamePanels Checklist Fix Tasks
+    new TaskOfTasks("ingamepanels-checklist-fix", [
+        // Prepare the out folder and any other pre tasks.
+        // Currently, these can be run in parallel but in the future, we may need to run them in sequence if there are any dependencies.
+        new TaskOfTasks("preparation", [
+            new ExecTask("copy-base-files", "npm run build-ingamepanels-checklist-fix:copy-base-files")
+        ], true),
+        new TaskOfTasks("dist", [
+            new ExecTask("manifests", "npm run build-ingamepanels-checklist-fix:manifest")
+        ])
+    ])
 ]);

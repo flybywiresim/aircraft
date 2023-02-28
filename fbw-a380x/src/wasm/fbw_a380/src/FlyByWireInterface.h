@@ -20,7 +20,7 @@
 #include "model/Autothrust.h"
 // #include "fcdc/Fcdc.h"
 #include "prim/Prim.h"
-// #include "sec/Sec.h"
+#include "sec/Sec.h"
 
 #include "utils/HysteresisNode.h"
 
@@ -131,10 +131,10 @@ class FlyByWireInterface {
   base_prim_analog_outputs primsAnalogOutputs[3] = {};
   base_prim_out_bus primsBusOutputs[3] = {};
 
-  // Sec secs[3] = {Sec(true, false), Sec(false, false), Sec(false, true)};
-  // base_sec_discrete_outputs secsDiscreteOutputs[3] = {};
-  // base_sec_analog_outputs secsAnalogOutputs[3] = {};
-  // base_sec_out_bus secsBusOutputs[3] = {};
+  Sec secs[3] = {Sec(true, false, false), Sec(false, true, false), Sec(false, false, true)};
+  base_sec_discrete_outputs secsDiscreteOutputs[3] = {};
+  base_sec_analog_outputs secsAnalogOutputs[3] = {};
+  base_sec_out_bus secsBusOutputs[3] = {};
   //
   // Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   // FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
@@ -599,7 +599,7 @@ class FlyByWireInterface {
 
   bool updatePrim(double sampleTime, int primIndex);
 
-  // bool updateSec(double sampleTime, int secIndex);
+  bool updateSec(double sampleTime, int secIndex);
 
   // bool updateFcdc(double sampleTime, int fcdcIndex);
 

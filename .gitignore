@@ -38,6 +38,8 @@
 
 /fbw-a32nx/*
 !/fbw-a32nx/README.md
+!/fbw-a32nx/mach.config.js
+!/fbw-a32nx/.env
 !/fbw-a32nx/docs/
 !/fbw-a32nx/docs/**
 !/fbw-a32nx/src/
@@ -64,6 +66,14 @@
 !/fbw-common/**
 /fbw-common/msfs-avionics-mirror/src/sdk/build
 /fbw-common/msfs-avionics-mirror/src/sdk/build/**
+
+/fbw-ingamepanels-checklist-fix/*
+!/fbw-ingamepanels-checklist-fix/README.md
+!/fbw-ingamepanels-checklist-fix/docs/
+!/fbw-ingamepanels-checklist-fix/docs/**
+!/fbw-ingamepanels-checklist-fix/src/
+!/fbw-ingamepanels-checklist-fix/src/**
+/fbw-ingamepanels-checklist-fix/out
 
 !/scripts/**
 

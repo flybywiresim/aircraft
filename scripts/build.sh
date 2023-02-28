@@ -11,6 +11,16 @@ if [ "${GITHUB_ACTIONS}" == "true" ]; then
   chown -R root:root /external
 fi
 
+# Loop through the arguments
+for arg in "$@"; do
+  if [ "$arg" == "--no-cache" ]; then
+    echo "Removing out directories..."
+    rm -rf /external/fbw-a32nx/out
+    rm -rf /external/fbw-a380x/out
+    rm -rf /external/fbw-ingamepanels-checklist-fix/out
+  fi
+done
+
 # run build
 time npx igniter "$@"
 

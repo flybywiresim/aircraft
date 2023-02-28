@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const WaitingForData: React.FC = () => (
     <>
         <svg className="startup-text">

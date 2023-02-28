@@ -1,6 +1,6 @@
 import { NXDataStore } from '@shared/persistence';
 
-export const getSimBridgeUrl = (): string => `http://localhost:${NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380')}`;
+export const getSimBridgeUrl = (): string => `http://${NXDataStore.get('CONFIG_SIMBRIDGE_IP', 'localhost')}:${NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380')}`;
 
 export const fetchWithTimeout = (resource: RequestInfo, options?: object, timeout: number = 200): Promise<Response> => new Promise((resolve, reject) => {
     // AbortController not available in Coherent -_-

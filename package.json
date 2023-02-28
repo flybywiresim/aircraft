@@ -19,8 +19,13 @@
     "build-a32nx:sentry-client": "rollup -c fbw-a32nx/src/systems/sentry-client/rollup.config.js",
     "build-a32nx:simbridge-client": "rollup -c fbw-a32nx/src/systems/simbridge-client/rollup.config.js",
     "build-a32nx:tcas": "rollup -c fbw-a32nx/src/systems/tcas/rollup.config.js",
+
+    "=======deprecated=========": "===========================",
     "build-a32nx:pfd": "cd fbw-a32nx/src/systems/instruments/src/PFD && rollup -c",
     "build-a32nx:clock": "cd fbw-a32nx/src/systems/instruments/src/Clock && rollup -c",
+    "build-a32nx:ewd": "cd fbw-a32nx/src/systems/instruments/src/EWD && rollup -c",
+
+    "build-a32nx:instruments": "mach build --config fbw-a32nx/mach.config.js --work-in-config-dir",
 
     "build-a32nx:systems": "cargo build -p a320_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm /external/target/wasm32-wasi/release/a320_systems_wasm.wasm",
     "build-a32nx:fadec": "cd fbw-a32nx/src/wasm/fadec_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm",
@@ -44,12 +49,18 @@
     "====== A380 =================": "==========================================",
 
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
-    "build-a380x:systems": "cargo build -p a380_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/systems.wasm /external/target/wasm32-wasi/release/a380_systems_wasm.wasm",
-    "build-a380x:fadec": "cd fbw-a380x/src/wasm/fadec_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fadec.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fadec.wasm",
-    "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/fbw.wasm",
-    "build-a380x:flypad-backend": "cd fbw-a380x/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/flypad-backend.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/fbw_a380X/panel/flypad-backend.wasm",
+    "build-a380x:systems": "cargo build -p a380_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm /external/target/wasm32-wasi/release/a380_systems_wasm.wasm",
+    "build-a380x:fadec": "cd fbw-a380x/src/wasm/fadec_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm",
+    "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm",
+    "build-a380x:flypad-backend": "cd fbw-a380x/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm",
 
     "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend",
+
+    "====== INGAMEPANELS CHECKLIST FIX ====": "==========================================",
+
+    "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
+    "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",
+    "build-ingamepanels-checklist-fix:manifest": "node scripts/build_ingamepanels_checklist_fix.js",
 
     "====== COMMON ================": "==========================================",
 
@@ -83,6 +94,7 @@
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-typescript": "~8.0.0",
     "@sentry/types": "^6.17.7",
+    "@synaptic-simulations/mach": "^1.0.0",
     "@types/jest": "^27.0.2",
     "@types/react": "~17.0.11",
     "@types/react-dom": "~17.0.8",
@@ -95,6 +107,7 @@
     "babel-plugin-module-resolver": "^4.1.0",
     "dotenv": "^8.2.0",
     "es5lib": "^0.1.1",
+    "esbuild-sass-plugin": "^2.4.0",
     "eslint": "^7.21.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jest": "^24.4.0",
@@ -147,6 +160,8 @@
     "@types/react-canvas-draw": "^1.1.1",
     "byte-data": "^19.0.1",
     "classnames": "^2.2.6",
+    "esbuild-plugin-inline-image": "^0.0.8",
+    "esbuild-style-plugin": "^1.6.0",
     "geolib": "^3.3.3",
     "i18next": "^21.6.14",
     "immer": "^9.0.3",
