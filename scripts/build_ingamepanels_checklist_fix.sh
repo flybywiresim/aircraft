@@ -11,6 +11,14 @@ if [ "${GITHUB_ACTIONS}" == "true" ]; then
   chown -R root:root /external
 fi
 
+# Loop through the arguments
+for arg in "$@"; do
+  if [ "$arg" == "--no-cache" ]; then
+    echo "Removing out directory /external/fbw-ingamepanels-checklist-fix/out"
+    rm -rf /external/fbw-ingamepanels-checklist-fix/out
+  fi
+done
+
 # run build
 time npx igniter -r 'ingamepanels-checklist-fix' "$@"
 
