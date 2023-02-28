@@ -51,7 +51,7 @@ export const failureGeneratorPerHour = () => {
                     || (settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
                     || settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 tempFailureGeneratorArmed[i] = true;
-                console.info('Failure set at %.4f per hour ', failureGeneratorSetting[i]);
+                console.info('Failure set at %.4f per hour ', settingsPerHour[i * numberOfSettingsPerGenerator + 1]);
                 changed = true;
             }
             if (changed) setFailureGeneratorArmedPerHour(tempFailureGeneratorArmed);
@@ -60,10 +60,10 @@ export const failureGeneratorPerHour = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedPerHour);
+        const tempFailureGeneratorArmed : boolean[] = [];
         failureGeneratorArmedPerHour.foreach(() => tempFailureGeneratorArmed.push(false));
         setFailureGeneratorArmedPerHour(tempFailureGeneratorArmed);
-        setFailureGeneratorSetting('1,130,2,120,3,100');
+        setFailureGeneratorSetting('0,130,0,120,0,100');
     }, []);
 };
 
@@ -127,7 +127,7 @@ export const failureGeneratorTimer : () => void = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedTimer);
+        const tempFailureGeneratorArmed : boolean[] = [];
         failureGeneratorArmedTimer.foreach(() => tempFailureGeneratorArmed.push(false));
         setFailureGeneratorArmedTimer(tempFailureGeneratorArmed);
         setFailureGeneratorSetting('0,8,0,9');

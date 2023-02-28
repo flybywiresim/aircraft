@@ -48,7 +48,7 @@ export const failureGeneratorTakeOff = () => {
 
     useEffect(() => {
         // failureSettings once per start of takeoff
-        if (failureFlightPhase === FailurePhases.TAKEOFF) {
+        if (failureFlightPhase === FailurePhases.TAKEOFF && gs < 1.0) {
             const tempFailureGeneratorArmed : boolean[] = [];
             const tempFailureTakeOffSpeedThreshold : number[] = [];
             const tempFailureTakeOffAltitudeThreshold : number[] = [];
@@ -89,5 +89,13 @@ export const failureGeneratorTakeOff = () => {
             setFailureTakeOffAltitudeThreshold(tempFailureTakeOffAltitudeThreshold);
             setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
         }
-    }, [failureFlightPhase, failureGeneratorArmedTakeOff]); // specific update conditions
+    }, [absoluteTime500ms]); // specific update conditions
+
+    useEffect(() => {
+        // remove for release
+        const tempFailureGeneratorArmed : boolean[] = [];
+        failureGeneratorArmedTakeOff.foreach(() => tempFailureGeneratorArmed.push(false));
+        setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
+        setFailureGeneratorSetting('1,1,1,0,30,30,0,0,3,1,0,1,0,50,50,0');
+    }, []);
 };

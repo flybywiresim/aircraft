@@ -138,12 +138,12 @@ export const randomFailureGenerator = () => {
     const { failureFlightPhase } = basicData();
 
     failureGenerators.push(failureGeneratorTimer);
-    // failureGenerators.push(failureGeneratorTakeOff);
-    // failureGenerators.push(failureGeneratorAltClimb);
-    // failureGenerators.push(failureGeneratorAltDesc);
+    failureGenerators.push(failureGeneratorTakeOff);
+    failureGenerators.push(failureGeneratorAltClimb);
+    failureGenerators.push(failureGeneratorAltDesc);
     failureGenerators.push(failureGeneratorPerHour);
-    // failureGenerators.push(failureGeneratorSpeedAccel);
-    // failureGenerators.push(failureGeneratorSpeedDecel);
+    failureGenerators.push(failureGeneratorSpeedAccel);
+    failureGenerators.push(failureGeneratorSpeedDecel);
 
     // TODO: to be improved, changing doesn't mean active but this is not critical
 
