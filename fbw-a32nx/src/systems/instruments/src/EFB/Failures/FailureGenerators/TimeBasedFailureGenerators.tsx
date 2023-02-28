@@ -63,7 +63,7 @@ export const failureGeneratorTimer : () => void = () => {
 
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMER', '2,7.5,2,30');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMER', '0,60');
     const [failureGeneratorArmedTimer, setFailureGeneratorArmedTimer] = useState<boolean[]>([false, false]);
     const settingsTimer : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const numberOfSettingsPerGenerator = 2;
@@ -101,9 +101,9 @@ export const failureGeneratorTimer : () => void = () => {
         const tempFailureTime = Array.from(failureTime);
         let changed = false;
         for (let i = 0; i < nbGeneratorTimer; i++) {
-            if (settingsTimer[i * numberOfSettingsPerGenerator + 1] === 1
-                    || (failureFlightPhase === FailurePhases.TAKEOFF && settingsTimer[i * numberOfSettingsPerGenerator + 1] === 2)
-                    || settingsTimer[i * numberOfSettingsPerGenerator + 1] === 3) {
+            if (settingsTimer[i * numberOfSettingsPerGenerator + 0] === 1
+                    || (failureFlightPhase === FailurePhases.TAKEOFF && settingsTimer[i * numberOfSettingsPerGenerator + 0] === 2)
+                    || settingsTimer[i * numberOfSettingsPerGenerator + 0] === 3) {
                 tempFailureGeneratorArmed[i] = true;
                 tempFailureTime[i] = settingsTimer[i * numberOfSettingsPerGenerator + 1] + absoluteTime5s;
                 console.info('Timer based failure armed at %.1f s', settingsTimer[i * numberOfSettingsPerGenerator + 1]);
@@ -115,4 +115,9 @@ export const failureGeneratorTimer : () => void = () => {
             setFailureGeneratorArmedTimer(tempFailureGeneratorArmed);
         }
     }, [failureFlightPhase]);
+
+    useEffect(() => {
+        // remove for release
+        setFailureGeneratorSetting('1,8,3,9');
+    }, []);
 };
