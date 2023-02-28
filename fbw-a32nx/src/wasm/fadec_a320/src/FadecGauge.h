@@ -105,7 +105,6 @@ class FadecGauge {
     isConnected = true;
     // start requesting simulation data from simconnect
     simConnectRequestData();
-    simConnectRequestDataAcftInfo();
     return true;
   }
 
@@ -139,8 +138,8 @@ class FadecGauge {
     }
 
     // request data
-    return S_OK == SimConnect_RequestDataOnSimObject(hSimConnect, 8, DataTypesID::AcftInfo, SIMCONNECT_OBJECT_ID_USER,
-                                                     SIMCONNECT_PERIOD_VISUAL_FRAME);
+    return S_OK ==
+           SimConnect_RequestDataOnSimObject(hSimConnect, 8, DataTypesID::AcftInfo, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
   }
 
   bool simConnectRequestData() {
@@ -381,6 +380,7 @@ class FadecGauge {
    */
   bool fetchNeededData() {
     // This two lines request aircraft registration
+    simConnectRequestDataAcftInfo();
     simConnectReadData();
 
     _isReady = isRegistrationFound();
