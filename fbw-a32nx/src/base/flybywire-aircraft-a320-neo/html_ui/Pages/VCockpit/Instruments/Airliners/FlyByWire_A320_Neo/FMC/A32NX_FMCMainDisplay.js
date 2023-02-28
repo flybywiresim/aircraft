@@ -657,6 +657,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
         }
+
+        this.updateMinimums();
     }
 
     /**
@@ -1632,6 +1634,20 @@ class FMCMainDisplay extends BaseAirliners {
 
             this.setBnrArincSimVar('DEST_LONG', longitude ? longitude : 0, ssm, 18, 180, -180);
         }
+    }
+
+    updateMinimums() {
+        const ssm = this.shouldTransmitMinimums() ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+
+        this.setBnrArincSimVar('MDA', this.perfApprMDA ? this.perfApprMDA : 0, ssm, 17, 131072, 0);
+        this.setBnrArincSimVar('DH', this.perfApprDH ? this.perfApprDH : 0, ssm, 16, 8192, 0);
+    }
+
+    shouldTransmitMinimums() {
+        //Only transmit when in Cruise or later phase and within 200NM of destination
+        return (this.flightPhaseManager != FmgcFlightPhases.PREFLIGHT
+            && this.flightPhaseManager != FmgcFlightPhases.TAKEOFF
+            && this.flightPlanManager.getDistanceToDestination() <= 200);
     }
 
     async setBnrArincSimVar(name, value, ssm, bits, rangeMax, rangeMin = 0) {
