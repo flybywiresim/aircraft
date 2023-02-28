@@ -113,7 +113,7 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
     const loadedToOff = () => {
         setShowQuickControlsPane(false);
-        power.setPowerState(PowerStates.LOADING);
+        power.setPowerState(PowerStates.SHUTDOWN);
         setTimeout(() => {
             power.setPowerState(PowerStates.SHUTOFF);
         }, 1000);
@@ -173,10 +173,10 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
     return (
         <>
-            <div className="absolute top-0 left-0 z-30 w-screen h-screen bg-theme-body opacity-70" onMouseDown={() => setShowQuickControlsPane(false)} />
+            <div className="absolute top-0 left-0 z-30 w-screen h-screen opacity-70 bg-theme-body" onMouseDown={() => setShowQuickControlsPane(false)} />
 
             <div
-                className="absolute z-40 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
+                className="absolute z-40 py-6 px-6 rounded-md border transition duration-100 bg-theme-accent border-theme-secondary"
                 style={{ top: '40px', right: '50px', width: '620px' }}
             >
                 <div className="flex flex-row justify-end items-center mb-5">
@@ -273,8 +273,8 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
                         <button
                             type="button"
                             onClick={handleAutoBrightness}
-                            className={`flex justify-center items-center ml-4 text-theme-text 
-                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md 
+                            className={`flex justify-center items-center ml-4 text-theme-text
+                                                    bg-theme-body hover:border-4 hover:border-theme-highlight rounded-md
                                                     transition duration-100 ${usingAutobrightness === 1 ? 'bg-utility-green text-theme-body' : ''}`}
                             style={{ width: '80px', height: '50px' }}
                         >
