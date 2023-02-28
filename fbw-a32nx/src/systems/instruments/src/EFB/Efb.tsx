@@ -56,6 +56,7 @@ const EmptyBatteryScreen = () => (
 
 export enum PowerStates {
     SHUTOFF,
+    SHUTDOWN,
     STANDBY,
     LOADING,
     LOADED,
@@ -97,7 +98,7 @@ const Efb = () => {
 
     const [ac1BusIsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 1000);
     const [, setLoadLightingPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
-    const [autoDisplayBrightness] = useSimVar('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'number', 1000);
+    const [autoDisplayBrightness] = useSimVar('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent', 1000);
     const [timeOfDay] = useSimVar('E:TIME OF DAY', 'number', 5000);
     const [autoLoadLightingPresetEnabled] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD', 0);
     const [autoLoadDayLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAY', 0);
@@ -263,20 +264,15 @@ const Efb = () => {
     const { posX, posY, shown, text } = useAppSelector((state) => state.tooltip);
 
     useEffect(() => {
-        if (usingAutobrightness && powerState === PowerStates.LOADED) {
+        if (powerState !== PowerStates.LOADED && powerState !== PowerStates.SHUTDOWN) {
+            // die, retinas!
+            setBrightness(100);
+        } else if (usingAutobrightness) {
             setBrightness(autoDisplayBrightness);
-        }
-    }, [powerState, autoDisplayBrightness, usingAutobrightness]);
-
-    useEffect(() => {
-        if (!usingAutobrightness) {
+        } else {
             setBrightness(brightnessSetting);
         }
-    }, [usingAutobrightness]);
-
-    useEffect(() => {
-        setBrightness(brightnessSetting);
-    }, [powerState]);
+    }, [powerState, brightnessSetting, autoDisplayBrightness, usingAutobrightness]);
 
     // =========================================================================
     // <Pushback>
@@ -301,6 +297,7 @@ const Efb = () => {
     case PowerStates.STANDBY:
         return <div className="w-screen h-screen" onClick={offToLoaded} />;
     case PowerStates.LOADING:
+    case PowerStates.SHUTDOWN:
         return <LoadingScreen />;
     case PowerStates.EMPTY:
         if (dc2BusIsPowered === 1) {
