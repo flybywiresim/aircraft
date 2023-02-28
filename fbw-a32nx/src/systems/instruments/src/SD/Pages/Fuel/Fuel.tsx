@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
@@ -29,6 +29,8 @@ export const FuelPage = () => {
     const rightFuelUsed = fuelForDisplay(rightConsumption, unit);
 
     const [fuelWeightPerGallon] = useSimVar('FUEL WEIGHT PER GALLON', 'kilogram', 60_000);
+
+    const [onGround] = useSimVar('SIM ON GROUND', 'bool', 1000);
 
     return (
         // This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM
@@ -97,9 +99,26 @@ export const FuelPage = () => {
                     </>
                 )}
 
-                {/* Pumps */}
-                <Pump x={267} y={223} pumpNumber={1} centreTank tankQuantity={tankCenter} />
-                <Pump x={302} y={223} pumpNumber={4} centreTank tankQuantity={tankCenter} />
+                {/* Centre Tank Transfer Valves */}
+                {/* FIXME MODE SEL not implemented */}
+                <CentreToInnerTransfer
+                    x={267}
+                    y={223}
+                    side="L"
+                    centreTankLevel={tankCenter}
+                    modeSelectManual={false}
+                    onGround={onGround}
+                    innerTankLevel={tankLeftInner}
+                />
+                <CentreToInnerTransfer
+                    x={302}
+                    y={223}
+                    side="R"
+                    centreTankLevel={tankCenter}
+                    modeSelectManual={false}
+                    onGround={onGround}
+                    innerTankLevel={tankRightInner}
+                />
 
                 {/* Quantities */}
                 <text className="TankQuantity" x={330} y={315}>{fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}</text>
@@ -351,6 +370,89 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: 
                     {(pumpNumber === 4) && <Triangle x={x + 59} y={y + 60} colour="Green" fill={0} orientation={90} />}
                 </g>
             )}
+        </g>
+    );
+};
+
+interface CentreToInnerTransferProps {
+    x: number,
+    y: number,
+    side: 'L' | 'R',
+    centreTankLevel: number,
+    innerTankLevel: number,
+    modeSelectManual: boolean,
+    onGround: boolean,
+}
+
+const CentreToInnerTransfer: FC<CentreToInnerTransferProps> = ({ side, centreTankLevel, innerTankLevel, x, y, modeSelectManual, onGround }) => {
+    // the valve is actually implemented as a pair of valves in series due to the way the MSFS fuel system triggers work
+    const [transferValveAuto] = useSimVar(`A:FUELSYSTEM VALVE OPEN:${side === 'R' ? 10 : 9}`, 'percent over 100', 1000);
+    const [transferValveInhibit] = useSimVar(`A:FUELSYSTEM VALVE OPEN:${side === 'R' ? 12 : 11}`, 'percent over 100', 1000);
+    const [transferValveSwitch] = useSimVar(`A:FUELSYSTEM VALVE SWITCH:${side === 'R' ? 12 : 11}`, 'boolean', 1000);
+    const [transferValveFullyOpen, setTransferValveFullyOpen] = useState(false);
+    const [transferValveFullyClosed, setTransferValveFullyClosed] = useState(false);
+    const [autoShutoffRequired, setAutoShutoffRequired] = useState(false);
+    const [innerTankHighLevel, setInnerTankHighLevel] = useState(false);
+    const [centreTankLowLevel, setCentreTankLowLevel] = useState(false);
+
+    const [pumpClass, setPumpClass] = useState('GreenLine');
+    const [closedClass, setClosedClass] = useState('Hide');
+    const [openClass, setOpenClass] = useState('Hide');
+    const [faultClass, setFaultClass] = useState('Hide');
+    const [transferClass, setTransferClass] = useState('Hide');
+
+    useEffect(() => setInnerTankHighLevel(innerTankLevel >= 468), [innerTankLevel]);
+    useEffect(() => setCentreTankLowLevel(centreTankLevel >= 468), [centreTankLevel]);
+    useEffect(() => setAutoShutoffRequired(innerTankHighLevel && transferValveAuto > 0.01), [innerTankHighLevel, transferValveAuto]);
+
+    useEffect(() => {
+        const valvePosition = Math.min(transferValveAuto, transferValveInhibit);
+        setTransferValveFullyOpen(valvePosition > 0.99);
+        setTransferValveFullyClosed(valvePosition < 0.01);
+    }, [transferValveAuto, transferValveInhibit]);
+
+    // "pump" state
+    useEffect(() => {
+        const fault = transferValveFullyOpen && transferValveFullyClosed; // FIXME also data valid, or neither state for >= 6 seconds
+        const amber = !fault && ((transferValveFullyClosed && !(!modeSelectManual && (onGround || !centreTankLowLevel) && transferValveSwitch > 0 && autoShutoffRequired))
+            || !transferValveSwitch || (autoShutoffRequired && !modeSelectManual));
+
+        const colourClass = amber ? 'AmberLine' : 'GreenLine';
+        setPumpClass(colourClass);
+        setClosedClass(transferValveFullyClosed && !fault ? colourClass : 'Hide');
+        setOpenClass(!transferValveFullyClosed && !fault ? colourClass : 'Hide');
+        setFaultClass(fault ? 'AmberLine' : 'Hide');
+    }, [transferValveFullyOpen, transferValveFullyClosed, modeSelectManual, onGround, centreTankLowLevel, transferValveSwitch, autoShutoffRequired]);
+
+    // transfer state
+    useEffect(() => {
+        if (transferValveFullyClosed) {
+            setTransferClass('Hide'); // FIXME also data invalid
+        } else if (!transferValveSwitch || (autoShutoffRequired && !modeSelectManual)) {
+            setTransferClass('AmberLine');
+        } else {
+            setTransferClass('GreenLine');
+        }
+    }, [transferValveFullyClosed, transferValveSwitch, autoShutoffRequired, modeSelectManual]);
+
+    return (
+        <g id={`CentreToInnerTransferValve${side}`} className="ThickShape">
+            {/* "pump" symbol */}
+            <rect x={x} y={y} width="30" height="30" className={pumpClass} />
+            <line x1={x + 15} y1={y} x2={x + 15} y2={y + 30} className={openClass} />
+            <line x1={x + 5} y1={y + 15} x2={x + 25} y2={y + 15} className={closedClass} />
+            <text fontSize={16} className={faultClass} x={x + 6} y={y + 19}>XX</text>
+            {/* transfer arrow */}
+            <line x1={x + 15} y1={y + 30} x2={x + 15} y2={y + 60} className={transferClass} />
+            <line x1={side === 'R' ? x + 16 : x + 14} y1={y + 60} x2={side === 'L' ? x - 8 : x + 40} y2={y + 60} className={transferClass} />
+            <Triangle
+                x={x + (side === 'L' ? -26 : 59)}
+                y={y + 60}
+                colour={transferClass === 'AmberLine' ? 'Amber' : 'Green'}
+                fill={transferClass === 'AmberLine' ? 1 : 0}
+                orientation={side === 'L' ? -90 : 90}
+                hidden={transferClass === 'Hide'}
+            />
         </g>
     );
 };
