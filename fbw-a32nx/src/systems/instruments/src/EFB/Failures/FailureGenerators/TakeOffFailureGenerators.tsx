@@ -89,5 +89,5 @@ export const failureGeneratorTakeOff = () => {
             setFailureTakeOffAltitudeThreshold(tempFailureTakeOffAltitudeThreshold);
             setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
         }
-    }, [failureFlightPhase]); // specific update conditions
+    }, [failureFlightPhase, failureGeneratorArmedTakeOff]); // specific update conditions
 };

@@ -50,7 +50,7 @@ export const failureGeneratorAltClimb = () => {
             }
         }
         setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
-    }, [altitude, failureFlightPhase]);
+    }, [altitude, failureFlightPhase, failureGeneratorArmedAltClimb]);
 };
 
 export const failureGeneratorAltDesc = () => {
@@ -100,5 +100,5 @@ export const failureGeneratorAltDesc = () => {
             }
         }
         setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
-    }, [altitude, failureFlightPhase]);
+    }, [altitude, failureFlightPhase, failureGeneratorArmedAltDesc]);
 };

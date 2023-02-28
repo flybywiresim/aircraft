@@ -50,7 +50,7 @@ export const failureGeneratorSpeedAccel = () => {
             }
         }
         setFailureGeneratorArmedSpeedAccel(tempFailureGeneratorArmed);
-    }, [gs, failureFlightPhase]);
+    }, [gs, failureFlightPhase, failureGeneratorArmedSpeedAccel]);
 };
 
 export const failureGeneratorSpeedDecel = () => {
@@ -100,5 +100,5 @@ export const failureGeneratorSpeedDecel = () => {
             }
         }
         setFailureGeneratorArmedSpeedDecel(tempFailureGeneratorArmed);
-    }, [gs, failureFlightPhase]);
+    }, [gs, failureFlightPhase, failureGeneratorArmedSpeedDecel]);
 };

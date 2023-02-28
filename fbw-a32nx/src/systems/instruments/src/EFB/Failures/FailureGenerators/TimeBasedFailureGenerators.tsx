@@ -55,7 +55,12 @@ export const failureGeneratorPerHour = () => {
             }
             if (changed) setFailureGeneratorArmedPerHour(tempFailureGeneratorArmed);
         }
-    }, [failureGeneratorSetting, failureFlightPhase, absoluteTime5s]);
+    }, [failureGeneratorSetting, failureFlightPhase, absoluteTime5s, failureGeneratorArmedPerHour]);
+
+    useEffect(() => {
+        // remove for release
+        setFailureGeneratorSetting('1,120,2,120,3,120');
+    }, []);
 };
 
 export const failureGeneratorTimer : () => void = () => {
@@ -101,7 +106,7 @@ export const failureGeneratorTimer : () => void = () => {
         const tempFailureTime = Array.from(failureTime);
         let changed = false;
         for (let i = 0; i < nbGeneratorTimer; i++) {
-            if (settingsTimer[i * numberOfSettingsPerGenerator + 0] === 1
+            if (!failureGeneratorArmedTimer[i] && settingsTimer[i * numberOfSettingsPerGenerator + 0] === 1
                     || (failureFlightPhase === FailurePhases.TAKEOFF && settingsTimer[i * numberOfSettingsPerGenerator + 0] === 2)
                     || settingsTimer[i * numberOfSettingsPerGenerator + 0] === 3) {
                 tempFailureGeneratorArmed[i] = true;
@@ -114,7 +119,7 @@ export const failureGeneratorTimer : () => void = () => {
             setFailureTime(tempFailureTime);
             setFailureGeneratorArmedTimer(tempFailureGeneratorArmed);
         }
-    }, [failureFlightPhase]);
+    }, [failureFlightPhase, failureGeneratorArmedTimer]);
 
     useEffect(() => {
         // remove for release

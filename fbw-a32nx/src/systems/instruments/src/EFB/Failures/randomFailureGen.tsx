@@ -145,5 +145,5 @@ export const randomFailureGenerator = () => {
 
     useEffect(() => {
         console.info('Failure phase: %d', failureFlightPhase);
-    }, [failureFlightPhase]);
+    }, [failureFlightPhase, failureGeneratorTEMPLATE]);
 };
