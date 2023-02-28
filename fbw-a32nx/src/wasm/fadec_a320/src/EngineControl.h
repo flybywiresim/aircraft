@@ -751,7 +751,8 @@ class EngineControl {
     double fuelLeftAux = 0;
     double fuelRightAux = 0;
     double fuelCenter = 0;
-    double xfrCenter = 0;
+    double xfrCenterToLeft = 0;
+    double xfrCenterToRight = 0;
     double xfrAuxLeft = 0;
     double xfrAuxRight = 0;
     double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
@@ -862,6 +863,11 @@ class EngineControl {
         if (fuelAuxLeftPre > leftAuxQuantity) {
           xfrAuxLeft = fuelAuxLeftPre - leftAuxQuantity;
         }
+
+        // Fuel transfer from the centre tank to the left inner tank via jet pumps
+        if (fuelLeftPre < leftQuantity) {
+          xfrCenterToLeft = leftQuantity - fuelLeftPre;
+        }
       } else if (fuelLeftPre <= 0) {
         fuelBurn1 = 0;
         fuelLeftPre = 0;
@@ -887,6 +893,11 @@ class EngineControl {
         if (fuelAuxRightPre > rightAuxQuantity) {
           xfrAuxRight = fuelAuxRightPre - rightAuxQuantity;
         }
+
+        // Fuel transfer from the centre tank to the right inner tank via jet pumps
+        if (fuelRightPre < rightQuantity) {
+          xfrCenterToRight = rightQuantity - fuelRightPre;
+        }
       } else if (fuelRightPre <= 0) {
         fuelBurn2 = 0;
         fuelRightPre = 0;
@@ -895,15 +906,8 @@ class EngineControl {
         fuelRightPre = -10;
       }
 
-      //--------------------------------------------
-      // Center Tank transfer routine
-      //--------------------------------------------
-      if (fuelCenterPre > centerQuantity) {
-        xfrCenter = fuelCenterPre - centerQuantity;
-      }
-
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);     // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + (xfrCenter / 2);  // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft;     // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;  // LBS
 
       // Checking for Inner Tank overflow - Will be taken off with Rust code
       if (fuelLeft > 12167.1 && fuelRight > 12167.1) {
