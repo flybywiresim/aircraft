@@ -1,6 +1,6 @@
 {
   "extends": "../../../../.eslintrc",
   "ignorePatterns": [
-    "fbw-a32nx/src/base/flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/math.js"
+    "html_ui/Pages/A32NX_Core/math.js"
   ]
 }

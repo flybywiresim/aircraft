@@ -14,7 +14,8 @@
     "CMakeFiles/*",
     "cmake*",
     "fbw-a32nx/out/*",
-    "fbw-a380x/out/*"
+    "fbw-a380x/out/*",
+    "fbw-a32nx/bundles/*"
   ],
   // DO NOT CHANGE THIS FILE (unless you are an admin) (if admin, make sure you change the same file in the latest asobo branch as well)
   "rules": {
