@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod avionics_data_communication_network;
 mod control_display_system;
 mod electrical;
 mod fuel;
@@ -11,6 +12,7 @@ mod power_consumption;
 
 use self::{
     air_conditioning::A380AirConditioning,
+    avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
     control_display_system::A380ControlDisplaySystem,
     fuel::A380Fuel,
     pneumatic::{A380Pneumatic, A380PneumaticOverheadPanel},
@@ -43,6 +45,7 @@ use systems::{
 };
 
 pub struct A380 {
+    adcn: A380AvionicsDataCommunicationNetwork,
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
@@ -76,6 +79,7 @@ pub struct A380 {
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
         A380 {
+            adcn: A380AvionicsDataCommunicationNetwork::new(context),
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
@@ -162,6 +166,7 @@ impl Aircraft for A380 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
+        self.adcn.update();
         self.lgcius.update(
             context,
             &self.landing_gear,
@@ -237,12 +242,12 @@ impl Aircraft for A380 {
         );
 
         self.engines_flex_physics.update(context);
-
         self.cds.update();
     }
 }
 impl SimulationElement for A380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.adcn.accept(visitor);
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
         self.air_conditioning.accept(visitor);
