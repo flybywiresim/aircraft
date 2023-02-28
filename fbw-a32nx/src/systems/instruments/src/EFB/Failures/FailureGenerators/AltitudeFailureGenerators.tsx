@@ -55,9 +55,7 @@ export const failureGeneratorAltClimb = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed : boolean[] = [];
-        failureGeneratorArmedAltClimb.foreach(() => tempFailureGeneratorArmed.push(false));
-        setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
+        setFailureGeneratorArmedAltClimb([false, false, false]);
         setFailureGeneratorSetting('0,2000,0,3000,0,4000');
     }, []);
 };
@@ -114,9 +112,7 @@ export const failureGeneratorAltDesc = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed : boolean[] = [];
-        failureGeneratorArmedAltDesc.foreach(() => tempFailureGeneratorArmed.push(false));
-        setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
+        setFailureGeneratorArmedAltDesc([false, false]);
         setFailureGeneratorSetting('0,2000,0,3000,0,4000');
     }, []);
 };

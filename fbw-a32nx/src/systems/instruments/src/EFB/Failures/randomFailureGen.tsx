@@ -72,9 +72,7 @@ export const failureGeneratorTEMPLATE = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedTEMPLATE);
-        failureGeneratorArmedTEMPLATE.foreach(() => tempFailureGeneratorArmed.push(false));
-        setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
+        setFailureGeneratorArmedTEMPLATE([false, false]);
     }, []);
 };
 /*

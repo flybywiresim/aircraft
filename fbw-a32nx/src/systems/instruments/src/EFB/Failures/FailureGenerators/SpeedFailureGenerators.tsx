@@ -55,9 +55,7 @@ export const failureGeneratorSpeedAccel = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed : boolean[] = [];
-        failureGeneratorArmedSpeedAccel.foreach(() => tempFailureGeneratorArmed.push(false));
-        setFailureGeneratorArmedSpeedAccel(tempFailureGeneratorArmed);
+        setFailureGeneratorArmedSpeedAccel([false, false, false]);
         setFailureGeneratorSetting('0,190,0,200,0,210');
     }, []);
 };
@@ -114,9 +112,7 @@ export const failureGeneratorSpeedDecel = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed : boolean[] = [];
-        failureGeneratorArmedSpeedDecel.foreach(() => tempFailureGeneratorArmed.push(false));
-        setFailureGeneratorArmedSpeedDecel(tempFailureGeneratorArmed);
+        setFailureGeneratorArmedSpeedDecel([false, false, false]);
         setFailureGeneratorSetting('0,190,0,200,0,210');
     }, []);
 };

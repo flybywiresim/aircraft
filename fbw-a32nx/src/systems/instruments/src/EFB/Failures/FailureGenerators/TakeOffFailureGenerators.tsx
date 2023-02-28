@@ -93,9 +93,7 @@ export const failureGeneratorTakeOff = () => {
 
     useEffect(() => {
         // remove for release
-        const tempFailureGeneratorArmed : boolean[] = [];
-        failureGeneratorArmedTakeOff.foreach(() => tempFailureGeneratorArmed.push(false));
-        setFailureGeneratorArmedTakeOff(tempFailureGeneratorArmed);
+        setFailureGeneratorArmedTakeOff([false, false]);
         setFailureGeneratorSetting('1,1,1,0,30,30,0,0,3,1,0,1,0,50,50,0');
     }, []);
 };
