@@ -143,8 +143,8 @@
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <PART_ID>#NODE_ID#</PART_ID>
-                <LEFT_SINGLE_CODE>0 (&gt;H:A32NX_ISIS_#BTN_ID#_PRESSED)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>1 (&gt;H:A32NX_ISIS_#BTN_ID#_PRESSED)</LEFT_LEAVE_CODE>
+                <LEFT_SINGLE_CODE>1 (&gt;H:A32NX_ISIS_#BTN_ID#_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>1 (&gt;H:A32NX_ISIS_#BTN_ID#_RELEASED)</LEFT_LEAVE_CODE>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
