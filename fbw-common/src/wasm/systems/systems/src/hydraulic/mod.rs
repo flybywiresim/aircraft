@@ -2157,6 +2157,8 @@ struct FluidPhysics {
 impl FluidPhysics {
     const MEAN_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 20.;
     const STD_DEV_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 4.;
+    const ABSOLUTE_MIN_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 8.;
+    const ABSOLUTE_MAX_G_TRAP_CAVITY_TIME_DURATION_SECONDS: f64 = 32.;
 
     const SPRING_K_CONSTANT: f64 = 5000.;
     const SPRING_DAMPING_CONSTANT: f64 = 500.;
@@ -2175,6 +2177,10 @@ impl FluidPhysics {
                 random_from_normal_distribution(
                     Self::MEAN_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
                     Self::STD_DEV_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
+                )
+                .clamp(
+                    Self::ABSOLUTE_MIN_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
+                    Self::ABSOLUTE_MAX_G_TRAP_CAVITY_TIME_DURATION_SECONDS,
                 ),
             )),
         }
@@ -3367,8 +3373,8 @@ mod tests {
 
         test_bed.write_by_name("PLANE BANK DEGREES", 180.);
 
-        // 100*100ms = 10s run
-        for _ in 0..100 {
+        // 70*100ms = 7s run
+        for _ in 0..70 {
             test_bed.run_with_delta(Duration::from_millis(100));
         }
         assert_about_eq!(
@@ -3377,9 +3383,9 @@ mod tests {
             1.
         );
 
-        // After 15s more, no more fluid available
-        // 200*100ms = 20s run
-        for _ in 0..200 {
+        // After 30s more, no more fluid available
+        // 300*100ms = 30s run
+        for _ in 0..300 {
             test_bed.run_with_delta(Duration::from_millis(100));
         }
 
