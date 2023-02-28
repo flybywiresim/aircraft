@@ -10,7 +10,7 @@ class A32NX_PayloadConstructor {
                 stationIndex: 0 + 1,
                 position: 20.0,
                 seatsRange: [1, 36],
-                simVar: 'A32NX_PAX_TOTAL_ROWS_1_6',
+                simVar: "A32NX_PAX_TOTAL_ROWS_1_6"
             },
             rows7_13: {
                 name: 'ROWS [7-13]',
@@ -21,7 +21,7 @@ class A32NX_PayloadConstructor {
                 stationIndex: 1 + 1,
                 position: 0.9,
                 seatsRange: [37, 78],
-                simVar: 'A32NX_PAX_TOTAL_ROWS_7_13',
+                simVar: "A32NX_PAX_TOTAL_ROWS_7_13"
             },
             rows14_21: {
                 name: 'ROWS [14-21]',
@@ -32,7 +32,7 @@ class A32NX_PayloadConstructor {
                 stationIndex: 2 + 1,
                 position: -17.3,
                 seatsRange: [79, 126],
-                simVar: 'A32NX_PAX_TOTAL_ROWS_14_21',
+                simVar: "A32NX_PAX_TOTAL_ROWS_14_21"
             },
             rows22_29: {
                 name: 'ROWS [22-29]',
@@ -43,7 +43,7 @@ class A32NX_PayloadConstructor {
                 stationIndex: 3 + 1,
                 position: -36.3,
                 seatsRange: [127, 174],
-                simVar: 'A32NX_PAX_TOTAL_ROWS_22_29',
+                simVar: "A32NX_PAX_TOTAL_ROWS_22_29"
             },
         };
 
@@ -97,16 +97,17 @@ const MAX_SEAT_AVAILABLE = 174;
      * Calculate %MAC ZWFCG of all stations
      */
 function getZfwcg() {
+
     const leMacZ = -5.383; // Accurate to 3 decimals, replaces debug weight values
     const macSize = 13.464; // Accurate to 3 decimals, replaces debug weight values
 
-    const emptyWeight = (SimVar.GetSimVarValue('EMPTY WEIGHT', getUserUnit()));
+    const emptyWeight = (SimVar.GetSimVarValue("EMPTY WEIGHT", getUserUnit()));
     const emptyPosition = -9.42; // Value from flight_model.cfg
     const emptyMoment = emptyPosition * emptyWeight;
-    const PAX_WEIGHT = SimVar.GetSimVarValue('L:A32NX_WB_PER_PAX_WEIGHT', 'Number');
+    const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
 
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, 'Number') * PAX_WEIGHT)).reduce((acc, cur) => acc + cur, 0);
-    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, 'Number') * PAX_WEIGHT) * station.position).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT)).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT) * station.position).reduce((acc, cur) => acc + cur, 0);
 
     const cargoTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, getUserUnit())).reduce((acc, cur) => acc + cur, 0);
     const cargoTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, getUserUnit()) * station.position)).reduce((acc, cur) => acc + cur, 0);
@@ -133,11 +134,11 @@ function getTotalPayload() {
 }
 
 function getZfw() {
-    const emptyWeight = (SimVar.GetSimVarValue('EMPTY WEIGHT', getUserUnit()));
+    const emptyWeight = (SimVar.GetSimVarValue("EMPTY WEIGHT", getUserUnit()));
     return emptyWeight + getTotalPayload();
 }
 
 function getUserUnit() {
-    const defaultUnit = (NXUnits.userWeightUnit() == 'KG') ? 'Kilograms' : 'Pounds';
+    const defaultUnit = (NXUnits.userWeightUnit() == "KG") ? "Kilograms" : "Pounds";
     return defaultUnit;
 }

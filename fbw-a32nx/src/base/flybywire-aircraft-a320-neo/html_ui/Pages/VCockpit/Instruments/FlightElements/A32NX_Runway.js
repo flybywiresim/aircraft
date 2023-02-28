@@ -12,20 +12,20 @@ class Runway {
 
     designatorChar(designator) {
         switch (designator) {
-        case RunwayDesignator.RUNWAY_DESIGNATOR_LEFT:
-            return 'L';
-        case RunwayDesignator.RUNWAY_DESIGNATOR_RIGHT:
-            return 'R';
-        case RunwayDesignator.RUNWAY_DESIGNATOR_CENTER:
-            return 'C';
-        default:
-            return '';
+            case RunwayDesignator.RUNWAY_DESIGNATOR_LEFT:
+                return "L";
+            case RunwayDesignator.RUNWAY_DESIGNATOR_RIGHT:
+                return "R";
+            case RunwayDesignator.RUNWAY_DESIGNATOR_CENTER:
+                return "C";
+            default:
+                return "";
         }
     }
 
     splitIfTwoWays() {
         const splitRunways = [];
-        const designations = this.designation.split('-');
+        const designations = this.designation.split("-");
         for (let i = 0; i < designations.length; i++) {
             const newRunway = new Runway();
             newRunway.designation = Avionics.Utils.formatRunway(designations[i]);
@@ -63,48 +63,48 @@ class Runway {
 
     getSurfaceString() {
         switch (this.surface) {
-        case 0:
-            return 'Unknown';
-        case 1:
-            return 'Concrete';
-        case 2:
-            return 'Asphalt';
-        case 101:
-            return 'Grass';
-        case 102:
-            return 'Turf';
-        case 103:
-            return 'Dirt';
-        case 104:
-            return 'Coral';
-        case 105:
-            return 'Gravel';
-        case 106:
-            return 'Oil Treated';
-        case 107:
-            return 'Steel';
-        case 108:
-            return 'Bituminus';
-        case 109:
-            return 'Brick';
-        case 110:
-            return 'Macadam';
-        case 111:
-            return 'Planks';
-        case 112:
-            return 'Sand';
-        case 113:
-            return 'Shale';
-        case 114:
-            return 'Tarmac';
-        case 115:
-            return 'Snow';
-        case 116:
-            return 'Ice';
-        case 201:
-            return 'Water';
-        default:
-            return 'Unknown';
+            case 0:
+                return "Unknown";
+            case 1:
+                return "Concrete";
+            case 2:
+                return "Asphalt";
+            case 101:
+                return "Grass";
+            case 102:
+                return "Turf";
+            case 103:
+                return "Dirt";
+            case 104:
+                return "Coral";
+            case 105:
+                return "Gravel";
+            case 106:
+                return "Oil Treated";
+            case 107:
+                return "Steel";
+            case 108:
+                return "Bituminus";
+            case 109:
+                return "Brick";
+            case 110:
+                return "Macadam";
+            case 111:
+                return "Planks";
+            case 112:
+                return "Sand";
+            case 113:
+                return "Shale";
+            case 114:
+                return "Tarmac";
+            case 115:
+                return "Snow";
+            case 116:
+                return "Ice";
+            case 201:
+                return "Water";
+            default:
+                return "Unknown";
         }
     }
 }

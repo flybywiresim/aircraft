@@ -12,12 +12,12 @@ class LiveryRegistration extends TemplateElement {
     }
 
     get templateID() {
-        return 'LiveryRegistration';
+        return "LiveryRegistration";
     }
 
     connectedCallback() {
         super.connectedCallback();
-        this.text = this.querySelector('#text');
+        this.text = this.querySelector("#text");
         if (this.text) {
             NXDataStore.getAndSubscribe('DYNAMIC_REGISTRATION_DECAL', (key, value) => {
                 const wasEnabled = this.regEnabled;
@@ -48,7 +48,7 @@ class LiveryRegistration extends TemplateElement {
     Update() {
         if ((this.frameCount++ % 100) == 0) {
             if (this.regEnabled) {
-                const atcId = SimVar.GetSimVarValue('ATC ID', 'string');
+                const atcId = SimVar.GetSimVarValue("ATC ID", "string");
                 if (atcId && atcId !== this.registration) {
                     this.registration = atcId;
                     this.needUpdate = true;
@@ -62,26 +62,26 @@ class LiveryRegistration extends TemplateElement {
             this.needUpdate = false;
             if (this.regEnabled && this.registration.trim().length > 0) {
                 diffAndSetText(this.text, this.registration);
-                const rect = this.getBoundingClientRect();
+                var rect = this.getBoundingClientRect();
                 if (rect.width > 0 && rect.height > 0) {
-                    let maxWidth = rect.width;
-                    let maxHeight = rect.height;
+                    var maxWidth = rect.width;
+                    var maxHeight = rect.height;
                     maxWidth *= 0.9;
                     maxHeight *= 1.5;
-                    let charHeight = 1;
-                    this.text.style.fontSize = `${charHeight}px`;
+                    var charHeight = 1;
+                    this.text.style.fontSize = charHeight + "px";
                     while ((this.text.clientWidth < maxWidth) && (this.text.clientHeight < maxHeight)) {
                         charHeight++;
-                        this.text.style.fontSize = `${charHeight}px`;
+                        this.text.style.fontSize = charHeight + "px";
                     }
                     charHeight--;
-                    this.text.style.fontSize = `${charHeight}px`;
+                    this.text.style.fontSize = charHeight + "px";
                     const textWidth = Math.ceil(this.text.clientWidth);
                     const textHeight = Math.ceil(this.text.clientHeight);
-                    const deltaW = rect.width - textWidth;
-                    const deltaH = rect.height - textHeight;
-                    this.text.style.marginLeft = `${deltaW * 0.5}px`;
-                    this.text.style.marginTop = `${deltaH * 0.5}px`;
+                    var deltaW = rect.width - textWidth;
+                    var deltaH = rect.height - textHeight;
+                    this.text.style.marginLeft = deltaW * 0.5 + "px";
+                    this.text.style.marginTop = deltaH * 0.5 + "px";
                 }
             } else {
                 diffAndSetText(this.text, '');
@@ -89,5 +89,5 @@ class LiveryRegistration extends TemplateElement {
         }
     }
 }
-registerLivery('livery-registration-element', LiveryRegistration);
-// # sourceMappingURL=Registration.js.map
+registerLivery("livery-registration-element", LiveryRegistration);
+//# sourceMappingURL=Registration.js.map

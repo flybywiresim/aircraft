@@ -11,6 +11,7 @@ const ENABLE_DUMPING = true;
 const ENABLE_COUNTING = true;
 
 class ObjectDumper {
+
     static flatten(object, visited, outInstrumentId) {
         const result = {};
         if (typeof object === 'object' && object !== null) {
@@ -22,6 +23,7 @@ class ObjectDumper {
                 if (key === '_instrumentId') {
                     outInstrumentId.push(child);
                 }
+
             }
         } else if (Array.isArray(object)) {
             for (let i = 0; i < object.length; i++) {
@@ -41,37 +43,38 @@ class ObjectDumper {
                 visited.add(child);
             }
             return this.flatten(child, visited, outInstrumentId);
+        } else {
+            return "cyclic";
         }
-        return 'cyclic';
     }
 
     static flattenDom(dom, visited, outInstrumentId) {
         const result = this.flatten(dom, visited, outInstrumentId);
-        result.nodeName = dom.nodeName;
-        result.children = [];
+        result["nodeName"] = dom.nodeName;
+        result["children"] = [];
         for (let i = 0; i < dom.children.length; i++) {
-            result.children.push(this.flattenDom(dom.children[i], visited, outInstrumentId));
+            result["children"].push(this.flattenDom(dom.children[i], visited, outInstrumentId));
         }
         return result;
     }
 
     static dump() {
-        fetch('http://127.0.0.1:5000/ping', {
+        fetch("http://127.0.0.1:5000/ping", {
             mode: 'cors',
-            method: 'GET',
+            method: 'GET'
         }).then((response) => {
             if (response.status !== 501) {
                 return;
             }
-            console.log('Tracing active');
+            console.log("Tracing active");
             const visited = new Set();
             const instrumentId = [];
             const result = {
-                dom: this.flattenDom(document.getRootNode(), visited, instrumentId),
-                window: this.flatten(window, visited),
+                'dom' : this.flattenDom(document.getRootNode(), visited, instrumentId),
+                'window' : this.flatten(window, visited)
             };
             const dataToSend = JSON.stringify(result);
-            fetch(`http://127.0.0.1:5000/collect?instrument=${instrumentId[0]}`, {
+            fetch("http://127.0.0.1:5000/collect?instrument=" + instrumentId[0], {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -80,9 +83,9 @@ class ObjectDumper {
                 },
                 body: dataToSend,
             }).then((response) => {
-                console.log('Posted objects!');
+                console.log("Posted objects!");
             }).catch((reason) => {
-                console.log(`Failed! ${reason}`);
+                console.log("Failed! " + reason);
             });
         });
     }
@@ -101,7 +104,7 @@ class ObjectCounter {
                 }
             }
             return 1 + count;
-        } if (Array.isArray(object)) {
+        } else if (Array.isArray(object)) {
             let count = 0;
             for (let i = 0; i < object.length; i++) {
                 const child = object[i];
@@ -111,8 +114,9 @@ class ObjectCounter {
                 }
             }
             return 1 + count;
+        } else {
+            return 1;
         }
-        return 1;
     }
 
     static countDom(dom, visited) {
@@ -125,9 +129,9 @@ class ObjectCounter {
 
     static countObjects() {
         const visited = new Set();
-        const count = this.countObject(window, visited)
-            + this.countDom(window.document.getRootNode(), visited);
-        console.log(`Count: ${count}`);
+        const count = this.countObject(window, visited) +
+            this.countDom(window.document.getRootNode(), visited);
+        console.log("Count: " + count);
     }
 }
 

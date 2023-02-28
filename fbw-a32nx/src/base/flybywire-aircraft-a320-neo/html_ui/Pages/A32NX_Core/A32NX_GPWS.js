@@ -28,8 +28,8 @@ class A32NX_GPWS {
                 type: [
                     {},
                     { sound: soundList.sink_rate, soundPeriod: 1.1, gpwsLight: true },
-                    { gpwsLight: true, pullUp: true },
-                ],
+                    { gpwsLight: true, pullUp: true }
+                ]
             },
             // Mode 2 is currently inactive.
             {
@@ -43,7 +43,7 @@ class A32NX_GPWS {
                 // 0: no warning, 1: "don't sink"
                 current: 0,
                 previous: 0,
-                type: [{}, { sound: soundList.dont_sink, soundPeriod: 1.1, gpwsLight: true }],
+                type: [{}, { sound: soundList.dont_sink, soundPeriod: 1.1, gpwsLight: true }]
             },
             // Mode 4
             {
@@ -54,8 +54,8 @@ class A32NX_GPWS {
                     {},
                     { sound: soundList.too_low_gear, soundPeriod: 1.1, gpwsLight: true },
                     { sound: soundList.too_low_flaps, soundPeriod: 1.1, gpwsLight: true },
-                    { sound: soundList.too_low_terrain, soundPeriod: 1.1, gpwsLight: true },
-                ],
+                    { sound: soundList.too_low_terrain, soundPeriod: 1.1, gpwsLight: true }
+                ]
             },
             // Mode 5, not all warnings are fully implemented
             {
@@ -68,17 +68,17 @@ class A32NX_GPWS {
                     {},
                 ],
                 onChange: (current, _) => {
-                    SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', current >= 1);
-                },
-            },
+                    SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", current >= 1);
+                }
+            }
         ];
 
         this.PrevShouldPullUpPlay = 0;
 
         this.AltCallState = A32NX_Util.createMachine(AltCallStateMachine);
-        this.AltCallState.setState('ground');
+        this.AltCallState.setState("ground");
         this.RetardState = A32NX_Util.createMachine(RetardStateMachine);
-        this.RetardState.setState('landed');
+        this.RetardState.setState("landed");
     }
 
     init() {
@@ -86,47 +86,47 @@ class A32NX_GPWS {
 
         this.radnav.init(NavMode.FOUR_SLOTS);
 
-        SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', 0);
-        SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', 0);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
     }
 
     update(deltaTime, _core) {
         this.gpws(deltaTime);
     }
-
     gpws(deltaTime) {
-        const radioAlt1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
-        const radioAlt2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
+        const radioAlt1 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_1_RADIO_ALTITUDE`);
+        const radioAlt2 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_2_RADIO_ALTITUDE`);
         const radioAlt = radioAlt1.isFailureWarning() || radioAlt1.isNoComputedData() ? radioAlt2 : radioAlt1;
         const radioAltValid = radioAlt.isNormalOperation();
-        const onGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
+        const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
 
         this.UpdateAltState(radioAltValid ? radioAlt.value : NaN);
         this.differentiate_radioalt(radioAltValid ? radioAlt.value : NaN, deltaTime);
 
-        const mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
-        const dh = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
-        const phase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
+        const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
+        const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
+        const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
         if (
-            radioAltValid && radioAlt.value >= 10 && radioAlt.value <= 2450
-            && !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool')
-        ) { // Activate between 10 - 2450 radio alt unless SYS is off
-            const FlapPushButton = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool');
-            const FlapPosition = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
+            radioAltValid && radioAlt.value >= 10 && radioAlt.value <= 2450 &&
+            !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")
+        ) { //Activate between 10 - 2450 radio alt unless SYS is off
+            const FlapPushButton = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool");
+            const FlapPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
             const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
             const vSpeed = Simplane.getVerticalSpeed();
-            const Airspeed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'Knots');
-            const gearExtended = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'Percent') > 0.9;
+            const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
+            const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
 
             this.update_maxRA(radioAlt.value, onGround, phase);
 
             this.GPWSMode1(this.modes[0], radioAlt.value, vSpeed);
-            // Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
-            // this.GPWSMode2(this.modes[1], radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
+            //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
+            //this.GPWSMode2(this.modes[1], radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
             this.GPWSMode3(this.modes[2], radioAlt.value, phase);
             this.GPWSMode4(this.modes[3], radioAlt.value, Airspeed, FlapsInLandingConfig, gearExtended, phase);
             this.GPWSMode5(this.modes[4], radioAlt.value);
+
         } else {
             this.modes.forEach((mode) => {
                 mode.current = 0;
@@ -137,16 +137,16 @@ class A32NX_GPWS {
                 this.Mode4MaxRAAlt = NaN;
             }
 
-            SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', 0);
-            SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', 0);
+            SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
         }
 
         this.GPWSComputeLightsAndCallouts();
 
         if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
-            let minimumsDA; // MDA or DH
-            let minimumsIA; // radio or baro altitude
-            const baroAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+            let minimumsDA; //MDA or DH
+            let minimumsIA; //radio or baro altitude
+            const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
             if (dh >= 0) {
                 minimumsDA = dh;
                 minimumsIA = radioAlt.isNormalOperation() || radioAlt.isFunctionalTest() ? radioAlt.value : NaN;
@@ -243,7 +243,7 @@ class A32NX_GPWS {
         }
 
         const illuminateGpwsLight = activeTypes.some((type) => type.gpwsLight);
-        SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', illuminateGpwsLight);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", illuminateGpwsLight);
     }
 
     /**
@@ -340,7 +340,7 @@ class A32NX_GPWS {
             return;
         }
 
-        const baroAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+        const baroAlt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
 
         const maxAltLoss = 0.09 * radioAlt + 7.1;
 
@@ -369,7 +369,7 @@ class A32NX_GPWS {
             mode.current = 0;
             return;
         }
-        const FlapModeOff = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool');
+        const FlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool");
 
         // Mode 4 A and B logic
         if (!gearExtended && phase === FmgcFlightPhases.APPROACH) {
@@ -406,7 +406,7 @@ class A32NX_GPWS {
      * @constructor
      */
     GPWSMode5(mode, radioAlt) {
-        if (radioAlt > 1000 || radioAlt < 30 || SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool')) {
+        if (radioAlt > 1000 || radioAlt < 30 || SimVar.GetSimVarValue("L:A32NX_GPWS_GS_OFF", "Bool")) {
             mode.current = 0;
             return;
         }
@@ -416,7 +416,7 @@ class A32NX_GPWS {
             return;
         }
         const error = SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number');
-        const dots = -error * 2.5; // According to the FCOM, one dot is approx. 0.4 degrees. 1/0.4 = 2.5
+        const dots = -error * 2.5; //According to the FCOM, one dot is approx. 0.4 degrees. 1/0.4 = 2.5
 
         const minAltForWarning = dots < 2.9 ? -75 * dots + 247.5 : 30;
         const minAltForHardWarning = dots < 3.8 ? -66.66 * dots + 283.33 : 30;
@@ -435,234 +435,310 @@ class A32NX_GPWS {
             return;
         }
         switch (this.AltCallState.value) {
-        case 'ground':
-            if (radioAlt > 6) {
-                this.AltCallState.action('up');
-            }
-            break;
-        case 'over5':
-            if (radioAlt > 12) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 6) {
-                if (this.RetardState.value !== 'retardPlaying') {
-                    this.core.soundManager.tryPlaySound(soundList.alt_5);
+            case "ground":
+                if (radioAlt > 6) {
+                    this.AltCallState.action("up");
                 }
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over10':
-            if (radioAlt > 22) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 12) {
-                if (this.RetardState.value !== 'retardPlaying') {
-                    this.core.soundManager.tryPlaySound(soundList.alt_10);
+                break;
+            case "over5":
+                if (radioAlt > 12) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 6) {
+                    if (this.RetardState.value !== "retardPlaying") {
+                        this.core.soundManager.tryPlaySound(soundList.alt_5);
+                    }
+                    this.AltCallState.action("down");
                 }
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over20':
-            if (radioAlt > 32) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 22) {
-                this.core.soundManager.tryPlaySound(soundList.alt_20);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over30':
-            if (radioAlt > 42) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 32) {
-                this.core.soundManager.tryPlaySound(soundList.alt_30);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over40':
-            if (radioAlt > 53) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 42) {
-                this.core.soundManager.tryPlaySound(soundList.alt_40);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over50':
-            if (radioAlt > 110) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 53) {
-                this.core.soundManager.tryPlaySound(soundList.alt_50);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over100':
-            if (radioAlt > 210) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 110) {
-                this.core.soundManager.tryPlaySound(soundList.alt_100);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over200':
-            if (radioAlt > 310) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 210) {
-                this.core.soundManager.tryPlaySound(soundList.alt_200);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over300':
-            if (radioAlt > 410) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 310) {
-                this.core.soundManager.tryPlaySound(soundList.alt_300);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over400':
-            if (radioAlt > 513) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 410) {
-                this.core.soundManager.tryPlaySound(soundList.alt_400);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over500':
-            if (radioAlt > 1020) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 513) {
-                this.core.soundManager.tryPlaySound(soundList.alt_500);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over1000':
-            if (radioAlt > 2530) {
-                this.AltCallState.action('up');
-            } else if (radioAlt <= 1020) {
-                this.core.soundManager.tryPlaySound(soundList.alt_1000);
-                this.AltCallState.action('down');
-            }
-            break;
-        case 'over2500':
-            if (radioAlt <= 2530) {
-                this.core.soundManager.tryPlaySound(soundList.alt_2500);
-                this.AltCallState.action('down');
-            }
-            break;
+                break;
+            case "over10":
+                if (radioAlt > 22) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 12) {
+                    if (this.RetardState.value !== "retardPlaying") {
+                        this.core.soundManager.tryPlaySound(soundList.alt_10);
+                    }
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over20":
+                if (radioAlt > 32) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 22) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_20);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over30":
+                if (radioAlt > 42) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 32) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_30);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over40":
+                if (radioAlt > 53) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 42) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_40);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over50":
+                if (radioAlt > 110) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 53) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_50);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over100":
+                if (radioAlt > 210) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 110) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_100);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over200":
+                if (radioAlt > 310) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 210) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_200);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over300":
+                if (radioAlt > 410) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 310) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_300);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over400":
+                if (radioAlt > 513) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 410) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_400);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over500":
+                if (radioAlt > 1020) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 513) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_500);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over1000":
+                if (radioAlt > 2530) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 1020) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_1000);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over2500":
+                if (radioAlt <= 2530) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_2500);
+                    this.AltCallState.action("down");
+                }
+                break;
         }
 
         switch (this.RetardState.value) {
-        case 'overRetard':
-            if (radioAlt < 20) {
-                if (!SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool')) {
-                    this.RetardState.action('play');
-                    this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
-                } else if (radioAlt < 10) {
-                    this.RetardState.action('play');
-                    this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
+            case "overRetard":
+                if (radioAlt < 20) {
+                    if (!SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "Bool")) {
+                        this.RetardState.action("play");
+                        this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
+                    } else if (radioAlt < 10) {
+                        this.RetardState.action("play");
+                        this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
+                    }
                 }
-            }
-            break;
-        case 'retardPlaying':
-            if (SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number') < 2.6 || SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number') < 2.6) {
-                this.RetardState.action('land');
-                this.core.soundManager.removePeriodicSound(soundList.retard);
-            } else if (SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum') === FmgcFlightPhases.GOAROUND || radioAlt > 20) {
-                this.RetardState.action('go_around');
-                this.core.soundManager.removePeriodicSound(soundList.retard);
-            }
-            break;
-        case 'landed':
-            if (radioAlt > 20) {
-                this.RetardState.action('up');
-            }
-            break;
+                break;
+            case "retardPlaying":
+                if (SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number") < 2.6 || SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number") < 2.6) {
+                    this.RetardState.action("land");
+                    this.core.soundManager.removePeriodicSound(soundList.retard);
+                } else if (SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum") === FmgcFlightPhases.GOAROUND || radioAlt > 20) {
+                    this.RetardState.action("go_around");
+                    this.core.soundManager.removePeriodicSound(soundList.retard);
+                }
+                break;
+            case "landed":
+                if (radioAlt > 20) {
+                    this.RetardState.action("up");
+                }
+                break;
         }
     }
 }
 
 const RetardStateMachine = {
-    overRetard: { transitions: { play: { target: 'retardPlaying' } } },
+    overRetard: {
+        transitions: {
+            play: {
+                target: "retardPlaying"
+            }
+        }
+    },
     retardPlaying: {
         transitions: {
-            land: { target: 'landed' },
-            go_around: { target: 'overRetard' },
-        },
+            land: {
+                target: "landed"
+            },
+            go_around: {
+                target: "overRetard"
+            }
+        }
     },
-    landed: { transitions: { up: { target: 'overRetard' } } },
+    landed: {
+        transitions: {
+            up: {
+                target: "overRetard"
+            }
+        }
+    }
 };
 
 const AltCallStateMachine = {
-    init: 'ground',
-    over2500: { transitions: { down: { target: 'over1000' } } },
+    init: "ground",
+    over2500: {
+        transitions: {
+            down: {
+                target: "over1000"
+            }
+        }
+    },
     over1000: {
         transitions: {
-            down: { target: 'over500' },
-            up: { target: 'over2500' },
-        },
+            down: {
+                target: "over500"
+            },
+            up: {
+                target: "over2500"
+            }
+        }
     },
     over500: {
         transitions: {
-            down: { target: 'over400' },
-            up: { target: 'over1000' },
-        },
+            down: {
+                target: "over400"
+            },
+            up: {
+                target: "over1000"
+            }
+        }
     },
     over400: {
         transitions: {
-            down: { target: 'over300' },
-            up: { target: 'over500' },
-        },
+            down: {
+                target: "over300"
+            },
+            up: {
+                target: "over500"
+            }
+        }
     },
     over300: {
         transitions: {
-            down: { target: 'over200' },
-            up: { target: 'over400' },
-        },
+            down: {
+                target: "over200"
+            },
+            up: {
+                target: "over400"
+            }
+        }
     },
     over200: {
         transitions: {
-            down: { target: 'over100' },
-            up: { target: 'over300' },
-        },
+            down: {
+                target: "over100"
+            },
+            up: {
+                target: "over300"
+            }
+        }
     },
     over100: {
         transitions: {
-            down: { target: 'over50' },
-            up: { target: 'over200' },
-        },
+            down: {
+                target: "over50"
+            },
+            up: {
+                target: "over200"
+            }
+        }
     },
     over50: {
         transitions: {
-            down: { target: 'over40' },
-            up: { target: 'over100' },
-        },
+            down: {
+                target: "over40"
+            },
+            up: {
+                target: "over100"
+            }
+        }
     },
     over40: {
         transitions: {
-            down: { target: 'over30' },
-            up: { target: 'over50' },
-        },
+            down: {
+                target: "over30"
+            },
+            up: {
+                target: "over50"
+            }
+        }
     },
     over30: {
         transitions: {
-            down: { target: 'over20' },
-            up: { target: 'over40' },
-        },
+            down: {
+                target: "over20"
+            },
+            up: {
+                target: "over40"
+            }
+        }
     },
     over20: {
         transitions: {
-            down: { target: 'over10' },
-            up: { target: 'over30' },
-        },
+            down: {
+                target: "over10"
+            },
+            up: {
+                target: "over30"
+            }
+        }
     },
     over10: {
         transitions: {
-            down: { target: 'over5' },
-            up: { target: 'over20' },
-        },
+            down: {
+                target: "over5"
+            },
+            up: {
+                target: "over20"
+            }
+        }
     },
     over5: {
         transitions: {
-            down: { target: 'ground' },
-            up: { target: 'over10' },
-        },
+            down: {
+                target: "ground"
+            },
+            up: {
+                target: "over10"
+            }
+        }
     },
-    ground: { transitions: { up: { target: 'over5' } } },
+    ground: {
+        transitions: {
+            up: {
+                target: "over5"
+            }
+        }
+    }
 };

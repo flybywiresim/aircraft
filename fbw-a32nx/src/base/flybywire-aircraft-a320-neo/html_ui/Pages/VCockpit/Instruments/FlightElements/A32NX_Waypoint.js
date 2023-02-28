@@ -2,7 +2,6 @@ class Airway {
     constructor() {
         this.icaos = [];
     }
-
     SetFromIAirwayData(data) {
         this.name = data.name;
         this.type = data.type;
@@ -35,36 +34,33 @@ class WayPoint {
         this.waypointReachedAt = 0;
         this.additionalData = {};
     }
-
     getSvgElement(index) {
         if (this.infos) {
             return this.infos.getSvgElement(index);
         }
     }
-
     SetTypeFromEnum(_enum) {
         switch (_enum) {
-        case 1:
-            this.type = 'A';
-            break;
-        case 2:
-            this.type = 'I';
-            break;
-        case 3:
-            this.type = 'V';
-            break;
-        case 4:
-            this.type = 'N';
-            break;
-        case 5:
-            this.type = 'U';
-            break;
-        case 6:
-            this.type = 'ATC';
-            break;
+            case 1:
+                this.type = 'A';
+                break;
+            case 2:
+                this.type = 'I';
+                break;
+            case 3:
+                this.type = 'V';
+                break;
+            case 4:
+                this.type = 'N';
+                break;
+            case 5:
+                this.type = 'U';
+                break;
+            case 6:
+                this.type = 'ATC';
+                break;
         }
     }
-
     UpdateInfos(_CallBack = null, loadFacilitiesTransitively = true) {
         this.instrument.facilityLoader.getFacilityDataCB(this.icao, (data) => {
             this.SetFromIFacility(data, () => {}, loadFacilitiesTransitively);
@@ -73,29 +69,26 @@ class WayPoint {
             }
         });
     }
-
     UpdateApproaches() {
         if (this.type == 'A') {
             this.infos.UpdateInfos(null, true);
         }
     }
-
     GetInfos() {
         switch (this.type) {
-        case 'A':
-            return this.infos;
-        case 'N':
-            return this.infos;
-        case 'V':
-            return this.infos;
-        case 'I':
-        case 'W':
-            return this.infos;
-        default:
-            return this.infos;
+            case 'A':
+                return this.infos;
+            case 'N':
+                return this.infos;
+            case 'V':
+                return this.infos;
+            case 'I':
+            case 'W':
+                return this.infos;
+            default:
+                return this.infos;
         }
     }
-
     SetICAO(_ICAO, _endLoadCallback = null, _LoadApproaches = true) {
         if (this.icao != _ICAO || this.infos.icao != _ICAO) {
             this.icao = _ICAO;
@@ -103,58 +96,54 @@ class WayPoint {
             this.UpdateInfos(_endLoadCallback, _LoadApproaches);
         }
     }
-
     SetIdent(_Ident) {
-        if (_Ident != '') {
+        if (_Ident != "") {
             this.ident = _Ident;
             this.infos.ident = _Ident;
         }
     }
-
     SetFromIFacility(data, callback = EmptyCallback.Void, loadFacilitiesTransitively = false) {
         this.icao = data.icao;
         if (!this.icao) {
-            console.warn('FacilityData without ICAO was used to Set a Waypoint, expect the unexpected.');
+            console.warn("FacilityData without ICAO was used to Set a Waypoint, expect the unexpected.");
             console.log(data);
             return;
         }
         this.ident = WayPoint.formatIdentFromIcao(this.icao);
         this.type = this.icao[0];
-        if (this.type === 'A') {
+        if (this.type === "A") {
             this.infos = new AirportInfo(this.instrument);
             this.infos.SetFromIFacilityAirport(data, loadFacilitiesTransitively);
             return callback();
-        } if (this.type === 'W') {
+        } else if (this.type === "W") {
             this.infos = new IntersectionInfo(this.instrument);
             this.infos.SetFromIFacilityIntersection(data, callback, loadFacilitiesTransitively);
-        } else if (this.type === 'V') {
+        } else if (this.type === "V") {
             this.infos = new VORInfo(this.instrument);
             this.infos.SetFromIFacilityVOR(data, callback, loadFacilitiesTransitively);
-        } else if (this.type === 'N') {
+        } else if (this.type === "N") {
             this.infos = new NDBInfo(this.instrument);
             this.infos.SetFromIFacilityNDB(data, callback, loadFacilitiesTransitively);
         }
     }
-
     static formatIdentFromIcao(icao) {
         if (icao.match(/^WXX[A-Z0-9]{4}CF[0-9]{2}[LCRT]?\s*$/)) {
             return 'CF';
         }
         return icao.substring(7, 12).trim();
     }
-
     imageFileName() {
-        let fileName = 'ICON_MAP_INTERSECTION';
+        let fileName = "ICON_MAP_INTERSECTION";
         if (this.isInFlightPlan) {
-            fileName += '_FLIGHTPLAN';
+            fileName += "_FLIGHTPLAN";
         }
         if (this.isActiveInFlightPlan) {
-            fileName += '_ACTIVE';
+            fileName += "_ACTIVE";
         }
         if (BaseInstrument.useSvgImages) {
-            return `${fileName}.svg`;
+            return fileName + ".svg";
         }
-        return `${fileName}.png`;
+        return fileName + ".png";
     }
 }
 class WayPointInfo {
@@ -171,7 +160,7 @@ class WayPointInfo {
         this.totalDistInFP = 0;
         this.fuelConsInFP = 0;
         this.totalFuelConsInFP = 0;
-        this.airwayIdentInFP = '';
+        this.airwayIdentInFP = "";
         this.coordinates = new LatLongAlt();
         this.loaded = false;
         this.airways = [];
@@ -181,39 +170,35 @@ class WayPointInfo {
         this.instrument = _instrument;
         this.loaded = true;
     }
-
     get lat() {
         return this.coordinates.lat;
     }
-
+    ;
     set lat(l) {
         this.coordinates.lat = l;
     }
-
+    ;
     get long() {
         return this.coordinates.long;
     }
-
+    ;
     set long(l) {
         this.coordinates.long = l;
     }
-
+    ;
     id() {
-        return `waypoint-${this.icao}`;
+        return "waypoint-" + this.icao;
     }
-
     getSvgElement(index) {
         if (!this._svgElements[index]) {
             this._svgElements[index] = new SvgNearestIntersectionElement(this);
         }
         return this._svgElements[index];
     }
-
     CopyBaseInfosFrom(_WP) {
         this.icao = _WP.icao;
         this.ident = _WP.ident;
     }
-
     UpdateInfos(_CallBack = null) {
         this.loaded = false;
         this.instrument.facilityLoader.getFacilityDataCB(this.icao, (data) => {
@@ -224,51 +209,43 @@ class WayPointInfo {
             }
         });
     }
-
     GetSymbol() {
-        return '';
+        return "";
     }
-
     imageFileName() {
-        return '';
+        return "";
     }
-
     getWaypointType() {
-        return '';
+        return "";
     }
-
     setEndCallbackIfUnset(_Callback) {
         if (!this.endLoadCallback) {
             this.endLoadCallback = _Callback;
         }
     }
-
     SetFromIFacilityWaypoint(data) {
         this.icao = data.icao;
         this.ident = WayPoint.formatIdentFromIcao(data.icao);
         this.name = Utils.Translate(data.name);
         this.region = Utils.Translate(data.region);
-        const separatedCity = data.city.split(', ');
-        this.city = separatedCity.length > 1 ? `${Utils.Translate(separatedCity[0])}, ${Utils.Translate(separatedCity[1])}` : Utils.Translate(data.city);
+        const separatedCity = data.city.split(", ");
+        this.city = separatedCity.length > 1 ? Utils.Translate(separatedCity[0]) + ", " + Utils.Translate(separatedCity[1]) : Utils.Translate(data.city);
         this.lat = data.lat;
         this.long = data.lon;
     }
-
     async UpdateAirway(name) {
         await this.ensureRouteData();
-        if (this.airways.findIndex((airway) => airway.name === name) === -1) {
+        if (this.airways.findIndex(airway => airway.name === name) === -1) {
             const airways = await this.instrument.facilityLoader.getAllAirways(this, name);
             if (airways.length === 1) {
                 this.airways.push(airways[0]);
             }
         }
     }
-
     async UpdateAirways() {
         await this.ensureRouteData();
         this.airways = await this.instrument.facilityLoader.getAllAirways(this);
     }
-
     async ensureRouteData() {
         // only needed for navaids
     }
@@ -293,22 +270,19 @@ class AirportInfo extends WayPointInfo {
         this.privateType = 0;
         this.radarCoverage = 0;
         this.needReload = false;
-        this.fuel = '';
-        this.bestApproach = '';
-        this.airspaceType = '';
+        this.fuel = "";
+        this.bestApproach = "";
+        this.airspaceType = "";
     }
-
     getWaypointType() {
-        return 'A';
+        return "A";
     }
-
     getSvgElement(index) {
         if (!this._svgElements[index]) {
             this._svgElements[index] = new SvgNearestAirportElement(this);
         }
         return this._svgElements[index];
     }
-
     UpdateInfos(_CallBack = null, _LoadApproaches = true) {
         this.loaded = false;
         this.instrument.facilityLoader.getAirportDataCB(this.icao, (data) => {
@@ -319,91 +293,90 @@ class AirportInfo extends WayPointInfo {
             }
         });
     }
-
     GetSymbolFileName() {
-        let logo = '';
+        var logo = "";
         if (this.airportClass == 2 || this.airportClass == 3) {
-            logo = 'GPS/Airport_Soft.png';
+            logo = "GPS/Airport_Soft.png";
         } else if (this.airportClass == 1) {
             switch (Math.round((this.longestRunwayDirection % 180) / 45.0)) {
-            case 0:
-            case 4:
-                logo = 'GPS/Airport_Hard_NS.png';
-                break;
-            case 1:
-                logo = 'GPS/Airport_Hard_NE_SW.png';
-                break;
-            case 2:
-                logo = 'GPS/Airport_Hard_EW.png';
-                break;
-            case 3:
-                logo = 'GPS/Airport_Hard_NW_SE.png';
-                break;
+                case 0:
+                case 4:
+                    logo = "GPS/Airport_Hard_NS.png";
+                    break;
+                case 1:
+                    logo = "GPS/Airport_Hard_NE_SW.png";
+                    break;
+                case 2:
+                    logo = "GPS/Airport_Hard_EW.png";
+                    break;
+                case 3:
+                    logo = "GPS/Airport_Hard_NW_SE.png";
+                    break;
             }
         } else if (this.airportClass == 4) {
-            logo = 'GPS/Helipad.png';
+            logo = "GPS/Helipad.png";
         } else if (this.airportClass == 5) {
-            logo = 'GPS/Private_Airfield.png';
+            logo = "GPS/Private_Airfield.png";
         }
         return logo;
     }
-
     imageFileName() {
-        let fName = '';
+        var fName = "";
         if (this.airportClass === 0) {
-            fName = 'ICON_MAP_AIRPORT_UNKNOWN_PINK.svg';
+            fName = "ICON_MAP_AIRPORT_UNKNOWN_PINK.svg";
         } else if (this.airportClass === 1) {
             if (this.towered) {
-                if (this.fuel !== '') {
-                    fName = 'ICON_MAP_AIRPORT_TOWERED_SERVICED_BLUE.svg';
+                if (this.fuel !== "") {
+                    fName = "ICON_MAP_AIRPORT_TOWERED_SERVICED_BLUE.svg";
                 } else {
-                    fName = 'ICON_MAP_AIRPORT_TOWERED_NON_SERVICED_BLUE.svg';
+                    fName = "ICON_MAP_AIRPORT_TOWERED_NON_SERVICED_BLUE.svg";
                 }
-            } else if (this.fuel !== '') {
-                fName = 'ICON_MAP_AIRPORT_NON_TOWERED_SERVICED_PINK.svg';
             } else {
-                fName = 'ICON_MAP_AIRPORT_NON_TOWERED_NON_SERVICED_PINK.svg';
+                if (this.fuel !== "") {
+                    fName = "ICON_MAP_AIRPORT_NON_TOWERED_SERVICED_PINK.svg";
+                } else {
+                    fName = "ICON_MAP_AIRPORT_NON_TOWERED_NON_SERVICED_PINK.svg";
+                }
             }
         } else if (this.airportClass === 2) {
-            if (this.fuel !== '') {
-                fName = 'ICON_MAP_AIRPORT7.svg';
+            if (this.fuel !== "") {
+                fName = "ICON_MAP_AIRPORT7.svg";
             } else {
-                fName = 'ICON_MAP_AIRPORT8.svg';
+                fName = "ICON_MAP_AIRPORT8.svg";
             }
         } else if (this.airportClass === 3) {
             if (this.towered) {
-                fName = 'ICON_MAP_AIRPORT_TOWERED_SEAPLANE_CIV_BLUE.svg';
+                fName = "ICON_MAP_AIRPORT_TOWERED_SEAPLANE_CIV_BLUE.svg";
             } else {
-                fName = 'ICON_MAP_AIRPORT_NON_TOWERED_SEAPLANE_CIV_PINK.svg';
+                fName = "ICON_MAP_AIRPORT_NON_TOWERED_SEAPLANE_CIV_PINK.svg";
             }
         } else if (this.airportClass === 4) {
-            fName = 'ICON_MAP_AIRPORT_HELIPORT_PINK.svg';
+            fName = "ICON_MAP_AIRPORT_HELIPORT_PINK.svg";
         } else if (this.airportClass === 5) {
-            fName = 'ICON_MAP_AIRPORT_PRIVATE_PINK.svg';
+            fName = "ICON_MAP_AIRPORT_PRIVATE_PINK.svg";
         }
-        if (fName === '') {
+        if (fName === "") {
         }
         if (BaseInstrument.useSvgImages) {
             return fName;
         }
-        return fName.replace('.svg', '.png');
+        return fName.replace(".svg", ".png");
     }
-
     GetSize() {
-        let minX = 0;
-        let minY = 0;
-        let maxX = 0;
-        let maxY = 0;
-        const latCos = Math.cos((this.lat / 180) * Math.PI);
-        for (let i = 0; i < this.runways.length; i++) {
-            const centerY = (this.lat - this.runways[i].latitude) * 60;
-            const centerX = (this.runways[i].longitude - this.long) * latCos * 60;
-            const forwardY = -this.runways[i].cosDirection;
-            const forwardX = this.runways[i].sinDirection;
-            const beginX = centerX - (forwardX * ((this.runways[i].length / 2) * 0.000164579));
-            const beginY = centerY - (forwardY * ((this.runways[i].length / 2) * 0.000164579));
-            const endX = centerX + (forwardX * ((this.runways[i].length / 2) * 0.000164579));
-            const endY = centerY + (forwardY * ((this.runways[i].length / 2) * 0.000164579));
+        var minX = 0;
+        var minY = 0;
+        var maxX = 0;
+        var maxY = 0;
+        var latCos = Math.cos((this.lat / 180) * Math.PI);
+        for (var i = 0; i < this.runways.length; i++) {
+            var centerY = (this.lat - this.runways[i].latitude) * 60;
+            var centerX = (this.runways[i].longitude - this.long) * latCos * 60;
+            var forwardY = -this.runways[i].cosDirection;
+            var forwardX = this.runways[i].sinDirection;
+            var beginX = centerX - (forwardX * ((this.runways[i].length / 2) * 0.000164579));
+            var beginY = centerY - (forwardY * ((this.runways[i].length / 2) * 0.000164579));
+            var endX = centerX + (forwardX * ((this.runways[i].length / 2) * 0.000164579));
+            var endY = centerY + (forwardY * ((this.runways[i].length / 2) * 0.000164579));
             if (beginX < minX) {
                 minX = beginX;
             }
@@ -431,7 +404,6 @@ class AirportInfo extends WayPointInfo {
         }
         return new Vec2(2 * Math.max(-minX, maxX) + 0.1, 2 * Math.max(-minY, maxY) + 0.1);
     }
-
     getClassSize() {
         if (!this.runways || !this.runways[0]) {
             return AirportSize.Small;
@@ -447,24 +419,22 @@ class AirportInfo extends WayPointInfo {
         }
         return AirportSize.Medium;
     }
-
     IsUpToDate() {
         return this.loaded;
     }
-
     SetFromIFacilityAirport(data, loadApproachesData = true) {
         super.SetFromIFacilityWaypoint(data);
         this.coordinates.alt = 3.28084 * data.runways.reduce((sum, r) => sum + r.elevation, 0) / data.runways.length;
         this.privateType = data.airportPrivateType;
-        this.fuel = `${data.fuel1} ${data.fuel2}`;
+        this.fuel = data.fuel1 + " " + data.fuel2;
         this.bestApproach = data.bestApproach;
         this.radarCoverage = data.radarCoverage;
-        this.airspaceType = `${data.airspaceType}`;
+        this.airspaceType = data.airspaceType + "";
         this.airportClass = data.airportClass;
         this.towered = data.towered;
         this.name = Utils.Translate(data.name);
-        const separatedCity = data.city.split(', ');
-        this.city = separatedCity.length > 1 ? `${Utils.Translate(separatedCity[0])}, ${Utils.Translate(separatedCity[1])}` : Utils.Translate(data.city);
+        const separatedCity = data.city.split(", ");
+        this.city = separatedCity.length > 1 ? Utils.Translate(separatedCity[0]) + ", " + Utils.Translate(separatedCity[1]) : Utils.Translate(data.city);
         this.region = Utils.Translate(data.region);
         this.frequencies = [];
         if (data.frequencies) {
@@ -499,19 +469,19 @@ class AirportInfo extends WayPointInfo {
             this.oneWayRunways = this.oneWayRunways.sort((r1, r2) => {
                 if (parseInt(r1.designation) === parseInt(r2.designation)) {
                     let v1 = 0;
-                    if (r1.designation.indexOf('L') != -1) {
+                    if (r1.designation.indexOf("L") != -1) {
                         v1 = 1;
-                    } else if (r1.designation.indexOf('C') != -1) {
+                    } else if (r1.designation.indexOf("C") != -1) {
                         v1 = 2;
-                    } else if (r1.designation.indexOf('R') != -1) {
+                    } else if (r1.designation.indexOf("R") != -1) {
                         v1 = 3;
                     }
                     let v2 = 0;
-                    if (r2.designation.indexOf('L') != -1) {
+                    if (r2.designation.indexOf("L") != -1) {
                         v2 = 1;
-                    } else if (r2.designation.indexOf('C') != -1) {
+                    } else if (r2.designation.indexOf("C") != -1) {
                         v2 = 2;
-                    } else if (r2.designation.indexOf('R') != -1) {
+                    } else if (r2.designation.indexOf("R") != -1) {
                         v2 = 3;
                     }
                     return v1 - v2;
@@ -550,13 +520,13 @@ class AirportInfo extends WayPointInfo {
                         wp.distanceInFP = approachData.transitions[i].legs[j].distance;
                         transition.waypoints.push(wp);
                         if (loadApproachesData) {
-                            this.instrument.facilityLoader.getFacility(approachData.transitions[i].legs[j].fixIcao).then(((_legs, _index, _waypoint) => {
+                            this.instrument.facilityLoader.getFacility(approachData.transitions[i].legs[j].fixIcao).then(function (_legs, _index, _waypoint) {
                                 if (_waypoint) {
                                     _legs[_index] = _waypoint;
                                     _waypoint.bearingInFP = wp.bearingInFP;
                                     _waypoint.distanceInFP = wp.distanceInFP;
                                 }
-                            }).bind(this, transition.waypoints, j));
+                            }.bind(this, transition.waypoints, j));
                         }
                     }
                     approach.transitions.push(transition);
@@ -609,17 +579,17 @@ class AirportInfo extends WayPointInfo {
         this.departures = data.departures;
         for (let i = 0; i < this.departures.length; i++) {
             for (let j = 0; j < this.departures[i].runwayTransitions.length; j++) {
-                this.departures[i].runwayTransitions[j].name = `RW${this.departures[i].runwayTransitions[j].runwayNumber.toString()}`;
+                this.departures[i].runwayTransitions[j].name = "RW" + this.departures[i].runwayTransitions[j].runwayNumber.toString();
                 switch (this.departures[i].runwayTransitions[j].runwayDesignation) {
-                case 1:
-                    this.departures[i].runwayTransitions[j].name += 'L';
-                    break;
-                case 2:
-                    this.departures[i].runwayTransitions[j].name += 'R';
-                    break;
-                case 3:
-                    this.departures[i].runwayTransitions[j].name += 'C';
-                    break;
+                    case 1:
+                        this.departures[i].runwayTransitions[j].name += "L";
+                        break;
+                    case 2:
+                        this.departures[i].runwayTransitions[j].name += "R";
+                        break;
+                    case 3:
+                        this.departures[i].runwayTransitions[j].name += "C";
+                        break;
                 }
             }
             for (let j = 0; j < this.departures[i].enRouteTransitions.length; j++) {
@@ -632,17 +602,17 @@ class AirportInfo extends WayPointInfo {
         this.arrivals = data.arrivals;
         for (let i = 0; i < this.arrivals.length; i++) {
             for (let j = 0; j < this.arrivals[i].runwayTransitions.length; j++) {
-                this.arrivals[i].runwayTransitions[j].name = `RW${this.arrivals[i].runwayTransitions[j].runwayNumber.toString()}`;
+                this.arrivals[i].runwayTransitions[j].name = "RW" + this.arrivals[i].runwayTransitions[j].runwayNumber.toString();
                 switch (this.arrivals[i].runwayTransitions[j].runwayDesignation) {
-                case 1:
-                    this.arrivals[i].runwayTransitions[j].name += 'L';
-                    break;
-                case 2:
-                    this.arrivals[i].runwayTransitions[j].name += 'R';
-                    break;
-                case 3:
-                    this.arrivals[i].runwayTransitions[j].name += 'C';
-                    break;
+                    case 1:
+                        this.arrivals[i].runwayTransitions[j].name += "L";
+                        break;
+                    case 2:
+                        this.arrivals[i].runwayTransitions[j].name += "R";
+                        break;
+                    case 3:
+                        this.arrivals[i].runwayTransitions[j].name += "C";
+                        break;
                 }
             }
             for (let j = 0; j < this.arrivals[i].enRouteTransitions.length; j++) {
@@ -652,7 +622,6 @@ class AirportInfo extends WayPointInfo {
             }
         }
     }
-
     async UpdateNamedFrequencies() {
         if (this.namedFrequencies.length === 0) {
             this.namedFrequencies = await this.instrument.facilityLoader.GetAirportNamedFrequencies(this.icao);
@@ -677,69 +646,63 @@ class VORInfo extends NavaidInfo {
     constructor(_instrument) {
         super(_instrument);
     }
-
     getWaypointType() {
-        return 'V';
+        return "V";
     }
-
     getSvgElement(index) {
         if (!this._svgElements[index]) {
             this._svgElements[index] = new SvgNearestVORElement(this);
         }
         return this._svgElements[index];
     }
-
     IsUpToDate() {
         return this.loaded;
     }
-
     GetSymbol() {
-        let image = '';
+        var image = "";
         switch (this.type) {
-        case 1:
-            image = 'GPS/Vor.png';
-            break;
-        case 2:
-            image = 'GPS/Vor_DME.png';
-            break;
-        case 3:
-            image = 'GPS/DME.png';
-            break;
-        case 4:
-            image = 'GPS/Tacan.png';
-            break;
-        case 5:
-            image = 'GPS/Vor_Tac.png';
-            break;
-        case 6:
-            image = 'GPS/Localizer.png';
-            break;
+            case 1:
+                image = "GPS/Vor.png";
+                break;
+            case 2:
+                image = "GPS/Vor_DME.png";
+                break;
+            case 3:
+                image = "GPS/DME.png";
+                break;
+            case 4:
+                image = "GPS/Tacan.png";
+                break;
+            case 5:
+                image = "GPS/Vor_Tac.png";
+                break;
+            case 6:
+                image = "GPS/Localizer.png";
+                break;
         }
         return image;
     }
-
     imageFileName() {
-        let fName = '';
+        let fName = "";
         switch (this.type) {
-        case 1:
-            fName = 'ICON_MAP_VOR.svg';
-        case 2:
-            fName = 'ICON_MAP_VOR_DME.svg';
-        case 3:
-            fName = 'ICON_MAP_VOR_DME.svg';
-        case 4:
-            fName = 'ICON_MAP_VOR_TACAN.svg';
-        case 5:
-            fName = 'ICON_MAP_VOR_VORTAC.svg';
-        case 6:
-            fName = 'ICON_MAP_VOR.svg';
+            case 1:
+                fName = "ICON_MAP_VOR.svg";
+            case 2:
+                fName = "ICON_MAP_VOR_DME.svg";
+            case 3:
+                fName = "ICON_MAP_VOR_DME.svg";
+            case 4:
+                fName = "ICON_MAP_VOR_TACAN.svg";
+            case 5:
+                fName = "ICON_MAP_VOR_VORTAC.svg";
+            case 6:
+                fName = "ICON_MAP_VOR.svg";
         }
         if (BaseInstrument.useSvgImages) {
             return fName;
         }
-        return fName.replace('.svg', '.png');
+        return fName.replace(".svg", ".png");
     }
-
     UpdateInfos(_CallBack = null, loadFacilitiesTransitively = true) {
         this.loaded = false;
         this.instrument.facilityLoader.getVorDataCB(this.icao, (data) => {
@@ -751,25 +714,23 @@ class VORInfo extends NavaidInfo {
             }, loadFacilitiesTransitively);
         });
     }
-
     getClassName() {
         switch (this.vorClass) {
-        case 1:
-            return 'Terminal';
-        case 2:
-            return 'Low_Alt';
-        case 3:
-            return 'High_Alt';
-        case 4:
-            return 'ILS';
-        case 5:
-            return 'VOT';
-        case 0:
-        default:
-            return 'Unknown';
+            case 1:
+                return "Terminal";
+            case 2:
+                return "Low_Alt";
+            case 3:
+                return "High_Alt";
+            case 4:
+                return "ILS";
+            case 5:
+                return "VOT";
+            case 0:
+            default:
+                return "Unknown";
         }
     }
-
     SetFromIFacilityVOR(data, callback = EmptyCallback.Void, loadAirways = true) {
         super.SetFromIFacilityWaypoint(data);
         this.frequencyMHz = data.freqMHz;
@@ -784,7 +745,7 @@ class VORInfo extends NavaidInfo {
             }
             this.routes = data.routes;
             if (loadAirways) {
-                this.instrument.facilityLoader.getAllAirways(this).then((airways) => {
+                this.instrument.facilityLoader.getAllAirways(this).then(airways => {
                     this.airways = airways;
                     return callback();
                 });
@@ -798,39 +759,33 @@ class NDBInfo extends NavaidInfo {
     constructor(_instrument) {
         super(_instrument);
     }
-
     getSvgElement(index) {
         if (!this._svgElements[index]) {
             this._svgElements[index] = new SvgNearestNDBElement(this);
         }
         return this._svgElements[index];
     }
-
     getWaypointType() {
-        return 'N';
+        return "N";
     }
-
     GetSymbol() {
-        return (this.type == 1 ? 'GPS/Marker.png' : 'GPS/Ndb.png');
+        return (this.type == 1 ? "GPS/Marker.png" : "GPS/Ndb.png");
     }
-
     imageFileName() {
-        let fName = '';
+        let fName = "";
         if (this.type === 1) {
-            fName = 'ICON_MAP_NDB_WAYPOINT.svg';
+            fName = "ICON_MAP_NDB_WAYPOINT.svg";
         } else {
-            fName = 'ICON_MAP_NDB_WAYPOINT.svg';
+            fName = "ICON_MAP_NDB_WAYPOINT.svg";
         }
         if (BaseInstrument.useSvgImages) {
             return fName;
         }
-        return fName.replace('.svg', '.png');
+        return fName.replace(".svg", ".png");
     }
-
     IsUpToDate() {
         return this.loaded;
     }
-
     UpdateInfos(_CallBack = null, loadFacilitiesTransitively = true) {
         this.loaded = false;
         this.instrument.facilityLoader.getNdbDataCB(this.icao, (data) => {
@@ -842,22 +797,20 @@ class NDBInfo extends NavaidInfo {
             }, loadFacilitiesTransitively);
         });
     }
-
     getTypeString() {
         switch (this.type) {
-        case 1:
-            return 'Compass Point';
-        case 2:
-            return 'MH';
-        case 3:
-            return 'H';
-        case 4:
-            return 'HH';
-        default:
-            return 'Unknown';
+            case 1:
+                return "Compass Point";
+            case 2:
+                return "MH";
+            case 3:
+                return "H";
+            case 4:
+                return "HH";
+            default:
+                return "Unknown";
         }
     }
-
     SetFromIFacilityNDB(data, callback = EmptyCallback.Void, loadAirways = true) {
         super.SetFromIFacilityWaypoint(data);
         this.type = data.type;
@@ -869,7 +822,7 @@ class NDBInfo extends NavaidInfo {
             }
             this.routes = data.routes;
             if (loadAirways) {
-                this.instrument.facilityLoader.getAllAirways(this).then((airways) => {
+                this.instrument.facilityLoader.getAllAirways(this).then(airways => {
                     this.airways = airways;
                     return callback();
                 });
@@ -883,54 +836,48 @@ class IntersectionInfo extends WayPointInfo {
     constructor(_instrument) {
         super(_instrument);
     }
-
     getWaypointType() {
-        return 'W';
+        return "W";
     }
-
     IsUpToDate() {
         return this.loaded;
     }
-
     GetSymbol() {
-        return 'GPS/Intersection.png';
+        return "GPS/Intersection.png";
     }
-
     imageFileName() {
-        if (this.name == '(DECEL)') {
+        if (this.name == "(DECEL)") {
             if (BaseInstrument.useSvgImages) {
-                return 'A32NX_DECEL.svg';
+                return "A32NX_DECEL.svg";
             }
-            return 'A32NX_DECEL.png';
+            return "A32NX_DECEL.png";
         }
         if (BaseInstrument.useSvgImages) {
-            return 'ICON_MAP_INTERSECTION.svg';
+            return "ICON_MAP_INTERSECTION.svg";
         }
-        return 'ICON_MAP_INTERSECTION.png';
+        return "ICON_MAP_INTERSECTION.png";
     }
-
     vorImageFileNameSync() {
-        let fName = '';
+        let fName = "";
         switch (this.nearestVORType) {
-        case 1:
-            fName = 'ICON_MAP_VOR.svg';
-        case 2:
-            fName = 'ICON_MAP_VOR_DME.svg';
-        case 3:
-            fName = 'ICON_MAP_VOR_DME.svg';
-        case 4:
-            fName = 'ICON_MAP_VOR_TACAN.svg';
-        case 5:
-            fName = 'ICON_MAP_VOR_VORTAC.svg';
-        case 6:
-            fName = 'ICON_MAP_VOR.svg';
+            case 1:
+                fName = "ICON_MAP_VOR.svg";
+            case 2:
+                fName = "ICON_MAP_VOR_DME.svg";
+            case 3:
+                fName = "ICON_MAP_VOR_DME.svg";
+            case 4:
+                fName = "ICON_MAP_VOR_TACAN.svg";
+            case 5:
+                fName = "ICON_MAP_VOR_VORTAC.svg";
+            case 6:
+                fName = "ICON_MAP_VOR.svg";
         }
         if (BaseInstrument.useSvgImages) {
             return fName;
         }
-        return fName.replace('.svg', '.png');
+        return fName.replace(".svg", ".png");
     }
-
     UpdateInfos(_CallBack = null, loadFacilitiesTransitively = true) {
         this.loaded = false;
         this.instrument.facilityLoader.getIntersectionDataCB(this.icao, (data) => {
@@ -942,43 +889,39 @@ class IntersectionInfo extends WayPointInfo {
             }, loadFacilitiesTransitively);
         });
     }
-
     GetRouteToIdent(ident) {
         ident = ident.trim();
         for (let i = 0; i < this.routes.length; i++) {
             const route = this.routes[i];
             if (route.nextIcao.indexOf(ident) !== -1) {
                 return route;
-            } if (route.prevIcao.indexOf(ident) !== -1) {
+            } else if (route.prevIcao.indexOf(ident) !== -1) {
                 return route;
             }
         }
     }
-
     GetIcaoViaRouteByIdent(ident) {
         ident = ident.trim();
         for (let i = 0; i < this.routes.length; i++) {
             const route = this.routes[i];
             if (route.nextIcao.indexOf(ident) !== -1) {
                 return route.nextIcao;
-            } if (route.prevIcao.indexOf(ident) !== -1) {
+            } else if (route.prevIcao.indexOf(ident) !== -1) {
                 return route.prevIcao;
             }
         }
     }
-
     GetRouteToIcao(icao) {
         icao = icao.trim();
         for (let i = 0; i < this.routes.length; i++) {
             const route = this.routes[i];
             if (route.nextIcao.trim() === icao) {
                 return route;
-            } if (route.prevIcao.trim() === icao) {
+            } else if (route.prevIcao.trim() === icao) {
                 return route;
             }
         }
     }
-
     GetNextIcaoVia(routeName) {
         for (let i = 0; i < this.routes.length; i++) {
             const route = this.routes[i];
@@ -987,14 +930,12 @@ class IntersectionInfo extends WayPointInfo {
             }
         }
     }
-
     async GetNextWayPointVia(routeName) {
         const nextIcao = this.GetNextIcaoVia(routeName);
         if (nextIcao) {
             return this.instrument.facilityLoader.getFacility(nextIcao);
         }
     }
-
     SetFromIFacilityIntersection(data, callback = EmptyCallback.Void, loadAirways = true) {
         super.SetFromIFacilityWaypoint(data);
         this.routes = data.routes;
@@ -1002,12 +943,12 @@ class IntersectionInfo extends WayPointInfo {
         this.nearestVORICAO = data.nearestVorICAO;
         this.nearestVORFrequencyBCD16 = data.nearestVorFrequencyBCD16;
         this.nearestVORFrequencyMHz = data.nearestVorFrequencyMHz;
-        this.nearestVORIdent = data.nearestVorICAO ? data.nearestVorICAO.substring(7, 12).replace(new RegExp(' ', 'g'), '') : '';
+        this.nearestVORIdent = data.nearestVorICAO ? data.nearestVorICAO.substring(7, 12).replace(new RegExp(" ", "g"), "") : "";
         this.nearestVORTrueRadial = data.nearestVorTrueRadial;
         this.nearestVORMagneticRadial = data.nearestVorMagneticRadial;
         this.nearestVORDistance = data.nearestVorDistance;
         if (loadAirways) {
-            this.instrument.facilityLoader.getAllAirways(this).then((airways) => {
+            this.instrument.facilityLoader.getAllAirways(this).then(airways => {
                 this.airways = airways;
                 return callback();
             });
@@ -1015,11 +956,9 @@ class IntersectionInfo extends WayPointInfo {
             return callback();
         }
     }
-
     async UpdateAirways() {
         this.airways = await this.instrument.facilityLoader.getAllAirways(this);
     }
-
     static GetCommonAirway(wp1, wp2) {
         if (wp1 && wp2) {
             if (wp1.infos instanceof IntersectionInfo) {

@@ -8,11 +8,11 @@ class Column {
     constructor(index, text, ...att) {
         this.index = index;
         this.raw = text;
-        this.color = att.find((e) => e.color) || Column.white;
+        this.color = att.find(e => e.color) || Column.white;
         this.length = text.length;
-        this.anchorPos = att.find((e) => e.align) ? index - this.length + 1 : index;
-        const size = att.find((e) => e.size);
-        this.size = size ? [`{${size.size}}`, '{end}'] : ['', ''];
+        this.anchorPos = !!att.find(e => e.align) ? index - this.length + 1 : index;
+        const size = att.find(e => e.size);
+        this.size = !!size ? [`{${size["size"]}}`, "{end}"] : ["", ""];
     }
 
     /**
@@ -40,9 +40,9 @@ class Column {
      * @param {...({ color: string } | { size: string })} att - attributes of the text, e.g. text size and/or color
      */
     updateAttributes(...att) {
-        this.color = att.find((e) => e.color) || this.color;
-        const size = att.find((e) => e.size);
-        this.size = size ? [`{${size.size}}`, '{end}'] : this.size;
+        this.color = att.find(e => e.color) || this.color;
+        const size = att.find(e => e.size);
+        this.size = !!size ? [`{${size["size"]}}`, "{end}"] : this.size;
     }
 
     /**
@@ -55,24 +55,24 @@ class Column {
     }
 }
 
-Column.right = { align: true };
-Column.small = { size: 'small' };
-Column.big = { size: 'big' };
-Column.amber = { color: 'amber' };
-Column.red = { color: 'red' };
-Column.green = { color: 'green' };
-Column.cyan = { color: 'cyan' };
-Column.white = { color: 'white' };
-Column.magenta = { color: 'magenta' };
-Column.yellow = { color: 'yellow' };
-Column.inop = { color: 'inop' };
+Column.right = { "align": true };
+Column.small = { "size": "small" };
+Column.big = { "size": "big" };
+Column.amber = { "color": "amber" };
+Column.red = { "color": "red" };
+Column.green = { "color": "green" };
+Column.cyan = { "color": "cyan" };
+Column.white = { "color": "white" };
+Column.magenta = { "color": "magenta" };
+Column.yellow = { "color": "yellow" };
+Column.inop = { "color": "inop" };
 
 /**
  * Returns a formatted mcdu page template
  * @param {Column[][]} lines - mcdu lines
  * @returns {string[][]} mcdu template
  */
-const FormatTemplate = (lines) => lines.map((line) => FormatLine(...line));
+const FormatTemplate = lines => lines.map(line => FormatLine(...line));
 
 /**
  * Returns a formatted mcdu line
@@ -82,7 +82,7 @@ const FormatTemplate = (lines) => lines.map((line) => FormatLine(...line));
 function FormatLine(...columns) {
     columns.sort((a, b) => a.anchorPos - b.anchorPos);
 
-    let line = ''.padStart(24);
+    let line = "".padStart(24);
     let pos = -1; // refers to an imaginary index on the 24 char limited mcdu line
     let index = 0; // points at the "cursor" of the actual line
 
@@ -112,5 +112,5 @@ function FormatLine(...columns) {
     }
 
     // '{small}{end}{big}{end}' fixes the lines "jumping" (line moves up or down a few pixels) when entering small and large content into the same line.
-    return [`${line.replace(/\s/g, '{sp}')}{small}{end}{big}{end}`];
+    return [line.replace(/\s/g, '{sp}') + "{small}{end}{big}{end}"];
 }

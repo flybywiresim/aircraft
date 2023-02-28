@@ -16,12 +16,12 @@ class CDUAocInit {
         let fltNbr = '_______[color]amber';
         let originIcao = '____[color]amber';
         let destinationIcao = '____[color]amber';
-        let ete = '____[color]amber';
-        let fob = '{small}---.-{end}[color]white';
-        let requestButton = 'INIT DATA REQ*[color]cyan';
-        let gmt = '0000[color]green';
+        let ete = "____[color]amber";
+        let fob = `{small}---.-{end}[color]white`;
+        let requestButton = "INIT DATA REQ*[color]cyan";
+        let gmt = "0000[color]green";
 
-        const seconds = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
 
         function updateView() {
@@ -35,8 +35,8 @@ class CDUAocInit {
             updateView();
         }, mcdu.PageTimeout.Default);
 
-        if (mcdu.simbrief.sendStatus !== 'READY' && mcdu.simbrief.sendStatus !== 'DONE') {
-            requestButton = 'INIT DATA REQ [color]cyan';
+        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
+            requestButton = "INIT DATA REQ [color]cyan";
         }
         if (mcdu.simbrief.originIcao) {
             originIcao = `${mcdu.simbrief.originIcao}[color]cyan`;
@@ -57,32 +57,38 @@ class CDUAocInit {
         }
 
         mcdu.setTemplate([
-            ['INIT/REVIEW', '1', '2', 'AOC'],
-            ['\xa0FMC FLT NO', 'GMT\xa0'],
+            ["INIT/REVIEW", "1", "2", "AOC"],
+            ["\xa0FMC FLT NO", "GMT\xa0"],
             [fltNbr, gmt],
-            ['\xa0DEP'],
+            ["\xa0DEP"],
             [originIcao],
-            ['\xa0DEST'],
-            [destinationIcao, 'CREW DETAILS>[color]inop'],
-            ['\xa0FOB'],
-            [`   ${fob}`],
-            ['\xa0ETE'],
+            ["\xa0DEST"],
+            [destinationIcao, "CREW DETAILS>[color]inop"],
+            ["\xa0FOB"],
+            ["   " + fob],
+            ["\xa0ETE"],
             [ete, requestButton],
-            ['', 'ADVISORY\xa0'],
-            ['<AOC MENU'],
+            ["", "ADVISORY\xa0"],
+            ["<AOC MENU"]
         ]);
 
-        mcdu.rightInputDelay[2] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[2] = () => {
             // Crew Details
         };
 
-        mcdu.rightInputDelay[4] = () => mcdu.getDelayBasic();
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelayBasic();
+        };
         mcdu.onRightInput[4] = () => {
             getSimBriefOfp(mcdu, updateView);
         };
 
-        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
         };
@@ -108,17 +114,17 @@ class CDUAocInit {
             On: remains blank until Landing time
             In: remains blank until brakes set to park AND the first door opens
          */
-        let fob = '{small}---.-{end}[color]white';
-        let fltTime = '----[color]white';
-        let outTime = '----[color]white';
-        let doorsTime = '----[color]white';
-        let offTime = '----[color]white';
-        let onTime = '----[color]white';
-        let inTime = '----[color]white';
-        let blockTime = '----[color]white';
-        let gmt = '0000[color]green';
+        let fob = `{small}---.-{end}[color]white`;
+        let fltTime = `----[color]white`;
+        let outTime = `----[color]white`;
+        let doorsTime = `----[color]white`;
+        let offTime = `----[color]white`;
+        let onTime = `----[color]white`;
+        let inTime = `----[color]white`;
+        let blockTime = `----[color]white`;
+        let gmt = "0000[color]green";
 
-        const seconds = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
 
         if (currentFob) {
@@ -146,7 +152,7 @@ class CDUAocInit {
         if (mcdu.aocTimes.in) {
             inTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
         }
-        if (mcdu.simbrief.blockTime) {
+        if (mcdu.simbrief["blockTime"]) {
             blockTime = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.blockTime)}[color]green`;
         }
 
@@ -155,19 +161,19 @@ class CDUAocInit {
                 return;
             }
             const display = [
-                ['INIT/REVIEW', '2', '2', 'AOC'],
-                [' OUT', 'OFF ', 'DOORS'],
+                ["INIT/REVIEW", "2", "2", "AOC"],
+                [" OUT", "OFF ", "DOORS"],
                 [outTime, offTime, doorsTime],
-                [' ON', 'IN ', 'GMT'],
+                [" ON", "IN ", "GMT"],
                 [onTime, inTime, gmt],
-                [' BLK TIME', 'FLT TIME '],
+                [" BLK TIME", "FLT TIME "],
                 [blockTime, fltTime],
-                [' FUEL REM', 'LDG PILOT '],
-                [`   ${fob}`, '-------'],
-                ['', ''],
-                ['*AUTOLAND <{small}n{end}>[color]cyan'],
-                ['', 'ADVISORY '],
-                ['<AOC MENU'],
+                [" FUEL REM", "LDG PILOT "],
+                ["   " + fob, "-------"],
+                ["", ""],
+                ["*AUTOLAND <{small}n{end}>[color]cyan"],
+                ["", "ADVISORY "],
+                ["<AOC MENU"]
             ];
             mcdu.setTemplate(display);
         }
@@ -177,7 +183,9 @@ class CDUAocInit {
             updateView();
         }, mcdu.PageTimeout.Default);
 
-        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
         };

@@ -11,7 +11,7 @@ class Arinc429Word {
     }
 
     static fromSimVarValue(name) {
-        return new Arinc429Word(SimVar.GetSimVarValue(name, 'number'));
+        return new Arinc429Word(SimVar.GetSimVarValue(name, "number"));
     }
 
     isFailureWarning() {
@@ -39,7 +39,7 @@ class Arinc429Word {
 
     equals(other) {
         return this === other
-            || (typeof other !== 'undefined' && other !== null && this.value === other.value && this.ssm === other.ssm);
+            || (typeof other !== "undefined" && other !== null && this.value === other.value && this.ssm === other.ssm);
     }
 }
 

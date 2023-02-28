@@ -12,39 +12,39 @@ class CDUWaypointPage {
         };
 
         mcdu.setTemplate([
-            ['WAYPOINT'],
-            ['\xa0IDENT'],
-            ['_______[color]amber'],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
+            ["WAYPOINT"],
+            ["\xa0IDENT"],
+            ["_______[color]amber"],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""]
         ]);
 
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(value, (res) => {
+            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(value, res => {
                 if (res) {
                     mcdu.clearDisplay();
                     mcdu.setTemplate([
-                        ['WAYPOINT'],
-                        ['\xa0IDENT'],
+                        ["WAYPOINT"],
+                        ["\xa0IDENT"],
                         [`${value}`],
-                        ['\xa0LAT/LONG'],
+                        ["\xa0LAT/LONG"],
                         [`${new LatLong(res.infos.coordinates.lat, res.infos.coordinates.long).toShortDegreeString()}[color]green`],
-                        [''],
-                        [''],
-                        [''],
-                        [''],
-                        [''],
-                        [''],
-                        [''],
-                        [''],
+                        [""],
+                        [""],
+                        [""],
+                        [""],
+                        [""],
+                        [""],
+                        [""],
+                        [""]
                     ]);
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);

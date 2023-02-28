@@ -1,18 +1,20 @@
-const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 function findNewMonthIndex(index) {
     if (index === 0) {
         return 11;
+    } else {
+        return index - 1;
     }
-    return index - 1;
 }
 
 function lessThan10(num) {
     if (num < 10) {
         return `0${num}`;
+    } else {
+        return num;
     }
-    return num;
 }
 
 function calculateActiveDate(date) {
@@ -24,8 +26,9 @@ function calculateActiveDate(date) {
         const endDay = date.slice(8, 10);
 
         return `${startDay}${startMonth}-${endDay}${endMonth}`;
+    } else {
+        return date;
     }
-    return date;
 }
 
 function calculateSecDate(date) {
@@ -36,7 +39,7 @@ function calculateSecDate(date) {
         const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
 
         if (primStartMonthIndex === -1) {
-            return 'ERR';
+            return "ERR";
         }
 
         let newEndMonth = primStartMonth;
@@ -56,8 +59,10 @@ function calculateSecDate(date) {
         }
 
         return `${lessThan10(newStartDay)}${newStartMonth}-${lessThan10(newEndDay)}${newEndMonth}`;
+    } else {
+        return "ERR";
     }
-    return 'ERR';
+
 }
 
 class CDUIdentPage {
@@ -69,12 +74,12 @@ class CDUIdentPage {
         const date = mcdu.getNavDataDateRange();
         const stored = mcdu.dataManager.numberOfStoredElements();
 
-        let storedTitleCell = '';
-        let storedRoutesRunwaysCell = '';
-        let storedWaypointsNavaidsCell = '';
-        let storedDeleteCell = '';
+        let storedTitleCell = "";
+        let storedRoutesRunwaysCell = "";
+        let storedWaypointsNavaidsCell = "";
+        let storedDeleteCell = "";
         if ((stored.routes + stored.runways + stored.waypoints + stored.navaids) > 0) {
-            storedTitleCell = 'STORED\xa0\xa0\xa0\xa0';
+            storedTitleCell = "STORED\xa0\xa0\xa0\xa0";
             storedRoutesRunwaysCell = `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`;
             storedWaypointsNavaidsCell = `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`;
             storedDeleteCell = confirmDeleteAll ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}';
@@ -94,19 +99,19 @@ class CDUIdentPage {
         }
 
         mcdu.setTemplate([
-            ['A320-200'], // This aircraft code is correct and does not include the engine type.
-            ['\xa0ENG'],
-            ['LEAP-1A26[color]green'],
-            ['\xa0ACTIVE NAV DATA BASE'],
-            [`\xa0${calculateActiveDate(date)}[color]cyan`, 'AIRAC[color]green'],
-            ['\xa0SECOND NAV DATA BASE'],
-            [`{small}{${calculateSecDate(date)}{end}[color]inop`],
-            ['', storedTitleCell],
-            ['', storedRoutesRunwaysCell],
-            ['CHG CODE', storedWaypointsNavaidsCell],
-            ['{small}[  ]{end}[color]inop', storedDeleteCell],
-            ['IDLE/PERF', 'SOFTWARE'],
-            ['+0.0/+0.0[color]green', 'STATUS/XLOAD>[color]inop'],
+            ["A320-200"],//This aircraft code is correct and does not include the engine type.
+            ["\xa0ENG"],
+            ["LEAP-1A26[color]green"],
+            ["\xa0ACTIVE NAV DATA BASE"],
+            ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
+            ["\xa0SECOND NAV DATA BASE"],
+            ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
+            ["", storedTitleCell],
+            ["", storedRoutesRunwaysCell],
+            ["CHG CODE", storedWaypointsNavaidsCell],
+            ["{small}[  ]{end}[color]inop", storedDeleteCell],
+            ["IDLE/PERF", "SOFTWARE"],
+            ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
         ]);
     }
 }

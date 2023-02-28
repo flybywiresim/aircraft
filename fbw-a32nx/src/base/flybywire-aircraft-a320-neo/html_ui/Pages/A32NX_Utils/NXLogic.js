@@ -16,9 +16,8 @@ class NXLogic_TriggeredMonostableNode {
         this._timer = 0;
         this._previousValue = null;
     }
-
     write(value, _deltaTime) {
-        if (this._previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
+        if (this._previousValue === null && SimVar.GetSimVarValue("L:A32NX_FWC_SKIP_STARTUP", "Bool")) {
             this._previousValue = value;
         }
         if (this.risingEdge) {
@@ -26,7 +25,7 @@ class NXLogic_TriggeredMonostableNode {
                 this._timer = Math.max(this._timer - _deltaTime / 1000, 0);
                 this._previousValue = value;
                 return true;
-            } if (!this._previousValue && value) {
+            } else if (!this._previousValue && value) {
                 this._timer = this.t;
                 this._previousValue = value;
                 return true;
@@ -36,7 +35,7 @@ class NXLogic_TriggeredMonostableNode {
                 this._timer = Math.max(this._timer - _deltaTime / 1000, 0);
                 this._previousValue = value;
                 return true;
-            } if (this._previousValue && !value) {
+            } else if (this._previousValue && !value) {
                 this._timer = this.t;
                 this._previousValue = value;
                 return true;
@@ -62,9 +61,8 @@ class NXLogic_ConfirmNode {
         this._previousInput = null;
         this._previousOutput = null;
     }
-
     write(value, _deltaTime) {
-        if (this._previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
+        if (this._previousInput === null && SimVar.GetSimVarValue("L:A32NX_FWC_SKIP_STARTUP", "Bool")) {
             this._previousInput = value;
             this._previousOutput = value;
         }
@@ -82,24 +80,25 @@ class NXLogic_ConfirmNode {
                 this._previousOutput = !value;
                 return !value;
             }
-        } else if (value) {
-            this._timer = 0;
-        } else if (this._timer > 0) {
-            this._timer = Math.max(this._timer - _deltaTime / 1000, 0);
-            this._previousInput = value;
-            this._previousOutput = !value;
-            return !value;
-        } else if (this._previousInput && !value) {
-            this._timer = this.t;
-            this._previousInput = value;
-            this._previousOutput = !value;
-            return !value;
+        } else {
+            if (value) {
+                this._timer = 0;
+            } else if (this._timer > 0) {
+                this._timer = Math.max(this._timer - _deltaTime / 1000, 0);
+                this._previousInput = value;
+                this._previousOutput = !value;
+                return !value;
+            } else if (this._previousInput && !value) {
+                this._timer = this.t;
+                this._previousInput = value;
+                this._previousOutput = !value;
+                return !value;
+            }
         }
         this._previousInput = value;
         this._previousOutput = value;
         return value;
     }
-
     read() {
         return this._previousOutput;
     }
@@ -125,7 +124,6 @@ class NXLogic_MemoryNode {
         this.nvm = nvm; // TODO in future, reset non-nvm on power cycle
         this._value = false;
     }
-
     write(set, reset) {
         if (set && reset) {
             this._value = this.setStar;
@@ -136,7 +134,6 @@ class NXLogic_MemoryNode {
         }
         return this._value;
     }
-
     read() {
         return this._value;
     }

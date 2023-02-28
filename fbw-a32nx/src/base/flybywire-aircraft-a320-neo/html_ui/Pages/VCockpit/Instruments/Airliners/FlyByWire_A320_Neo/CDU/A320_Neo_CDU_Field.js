@@ -4,7 +4,6 @@ class CDU_Field {
         this.selectedCallback = selectedCallback;
         this.currentValue = null;
     }
-
     setOptions(options) {
         for (const option in options) {
             this[option] = options[option];
@@ -12,7 +11,7 @@ class CDU_Field {
     }
 
     getValue() {
-        return '';
+        return "";
     }
 
     /**
@@ -26,34 +25,34 @@ class CDU_Field {
         const text = this.getValue();
         let color = Column.white;
 
-        if (text.includes('[color]amber')) {
+        if (text.includes("[color]amber")) {
             color = Column.amber;
-        } else if (text.includes('[color]red')) {
+        } else if (text.includes("[color]red")) {
             color = Column.red;
-        } else if (text.includes('[color]green')) {
+        } else if (text.includes("[color]green")) {
             color = Column.green;
-        } else if (text.includes('[color]cyan')) {
+        } else if (text.includes("[color]cyan")) {
             color = Column.cyan;
-        } else if (text.includes('[color]magenta')) {
+        } else if (text.includes("[color]magenta")) {
             color = Column.magenta;
-        } else if (text.includes('[color]yellow')) {
+        } else if (text.includes("[color]yellow")) {
             color = Column.yellow;
-        } else if (text.includes('[color]inop')) {
+        } else if (text.includes("[color]inop")) {
             color = Column.inop;
         }
 
         return [
             this.onSelect.bind(this),
             text
-                .replace('[color]white', '')
-                .replace('[color]amber', '')
-                .replace('[color]red', '')
-                .replace('[color]green', '')
-                .replace('[color]cyan', '')
-                .replace('[color]magenta', '')
-                .replace('[color]yellow', '')
-                .replace('[color]inop', ''),
-            color,
+                .replace("[color]white", "")
+                .replace("[color]amber", "")
+                .replace("[color]red", "")
+                .replace("[color]green", "")
+                .replace("[color]cyan", "")
+                .replace("[color]magenta", "")
+                .replace("[color]yellow", "")
+                .replace("[color]inop", "")
+            , color
         ];
     }
 }
@@ -71,7 +70,6 @@ class CDU_InopField extends CDU_Field {
         super(mcdu, () => {});
         this.value = inopColor ? `${value}[color]inop` : value;
     }
-
     getValue() {
         return this.value;
     }
@@ -80,6 +78,7 @@ class CDU_InopField extends CDU_Field {
         this.mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         super.onSelect();
     }
+
 }
 
 class CDU_SingleValueField extends CDU_Field {
@@ -104,12 +103,12 @@ class CDU_SingleValueField extends CDU_Field {
         this.type = type;
         this.currentValue = value;
         this.clearable = false;
-        this.emptyValue = '';
+        this.emptyValue = "";
         this.maxLength = Infinity;
         this.minValue = -Infinity;
         this.maxValue = Infinity;
-        this.prefix = '';
-        this.suffix = '';
+        this.prefix = "";
+        this.suffix = "";
         this.setOptions(options);
     }
 
@@ -118,10 +117,10 @@ class CDU_SingleValueField extends CDU_Field {
      */
     getValue() {
         let value = this.currentValue;
-        if (value === '' || value == null) {
+        if (value === "" || value == null) {
             return this.emptyValue;
         }
-        if (this.type === 'number' && isFinite(this.maxDisplayedDecimalPlaces)) {
+        if (this.type === "number" && isFinite(this.maxDisplayedDecimalPlaces)) {
             value = value.toFixed(this.maxDisplayedDecimalPlaces);
         }
         return `${this.prefix}${value}${this.suffix}`;
@@ -138,49 +137,48 @@ class CDU_SingleValueField extends CDU_Field {
         }
 
         switch (this.type) {
-        case 'string':
-            // Check max length
-            if (value.length > this.maxLength) {
-                this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                return false;
-            }
-            break;
-        case 'int':
-            // Make sure value is an integer and is within the min/max
-            const valueAsInt = Number.parseInt(value, 10);
-            if (!isFinite(valueAsInt) || value.includes('.')) {
-                this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                return false;
-            }
-            if (valueAsInt > this.maxValue || valueAsInt < this.minValue) {
-                this.mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                return false;
-            }
-            value = valueAsInt;
-            break;
-        case 'number':
-            // Make sure value is a valid number and is within the min/max
-            const valueAsFloat = Number.parseFloat(value);
-            if (!isFinite(valueAsFloat)) {
-                this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-                return false;
-            }
-            if (valueAsFloat > this.maxValue || valueAsFloat < this.minValue) {
-                this.mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                return false;
-            }
-            value = valueAsFloat;
-            break;
+            case "string":
+                // Check max length
+                if (value.length > this.maxLength) {
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                    return false;
+                }
+                break;
+            case "int":
+                // Make sure value is an integer and is within the min/max
+                const valueAsInt = Number.parseInt(value, 10);
+                if (!isFinite(valueAsInt) || value.includes(".")) {
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                    return false;
+                }
+                if (valueAsInt > this.maxValue || valueAsInt < this.minValue) {
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+                value = valueAsInt;
+                break;
+            case "number":
+                // Make sure value is a valid number and is within the min/max
+                const valueAsFloat = Number.parseFloat(value);
+                if (!isFinite(valueAsFloat)) {
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                    return false;
+                }
+                if (valueAsFloat > this.maxValue || valueAsFloat < this.minValue) {
+                    this.mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+                value = valueAsFloat;
+                break;
         }
         // Update the value
         this.currentValue = value;
         return true;
     }
-
     clearValue() {
         if (this.clearable) {
-            if (this.type === 'string') {
-                this.currentValue = '';
+            if (this.type === "string") {
+                this.currentValue = "";
             } else {
                 this.currentValue = null;
             }
@@ -188,12 +186,13 @@ class CDU_SingleValueField extends CDU_Field {
             this.mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
         }
     }
-
     onSelect(value) {
         if (value === FMCMainDisplay.clrValue) {
             this.clearValue();
-        } else if (!this.setValue(value)) {
-            this.mcdu.setScratchpadUserData(value);
+        } else {
+            if (!this.setValue(value)) {
+                this.mcdu.setScratchpadUserData(value);
+            }
         }
         super.onSelect();
     }

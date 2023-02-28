@@ -1,8 +1,8 @@
 class CDUAtcMessageModifyUM131 {
     static CreateDataBlock(message) {
         return {
-            personsOnBoard: message.Response.Content[0].Content[1].Value !== '' ? message.Response.Content[0].Content[1].Value : null,
-            endurance: message.Response.Content[0].Content[0].Value !== '' ? message.Response.Content[0].Content[0].Value : null,
+            personsOnBoard: message.Response.Content[0].Content[1].Value !== "" ? message.Response.Content[0].Content[1].Value : null,
+            endurance: message.Response.Content[0].Content[0].Value !== "" ? message.Response.Content[0].Content[0].Value : null
         };
     }
 
@@ -16,17 +16,17 @@ class CDUAtcMessageModifyUM131 {
     }
 
     static ShowPage(mcdu, message, data = CDUAtcMessageModifyUM131.CreateDataBlock(message)) {
-        let cancel = '\xa0CANCEL';
-        let addText = 'ADD TEXT\xa0';
-        let transfer = 'DCDU\xa0';
+        let cancel = "\xa0CANCEL";
+        let addText = "ADD TEXT\xa0";
+        let transfer = "DCDU\xa0";
         if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
-            cancel = '*CANCEL';
-            addText = 'ADD TEXT>';
-            transfer = 'DCDU*';
+            cancel = "*CANCEL";
+            addText = "ADD TEXT>";
+            transfer = "DCDU*";
         }
 
-        let personsOnBoard = '{cyan}[ ]{end}';
-        let endurance = '{cyan}[   ]{end}';
+        let personsOnBoard = "{cyan}[ ]{end}";
+        let endurance = "{cyan}[   ]{end}";
         if (data.personsOnBoard) {
             personsOnBoard = `{cyan}${data.personsOnBoard}{end}`;
         }
@@ -35,22 +35,24 @@ class CDUAtcMessageModifyUM131 {
         }
 
         mcdu.setTemplate([
-            ['MODIFY'],
-            [''],
-            [''],
-            ['\xa0POB', 'ENDURANCE\xa0'],
+            ["MODIFY"],
+            [""],
+            [""],
+            ["\xa0POB", "ENDURANCE\xa0"],
             [personsOnBoard, endurance],
-            [''],
-            [''],
-            [''],
-            [''],
-            ['{cyan}\xa0PAGE{end}'],
+            [""],
+            [""],
+            [""],
+            [""],
+            ["{cyan}\xa0PAGE{end}"],
             [`{cyan}${cancel}{end}`, `{white}${addText}{end}`],
-            ['\xa0ATC MENU', '{cyan}XFR TO\xa0{end}'],
-            ['<RETURN', `{cyan}${transfer}{end}`],
+            ["\xa0ATC MENU", "{cyan}XFR TO\xa0{end}"],
+            ["<RETURN", `{cyan}${transfer}{end}`]
         ]);
 
-        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.personsOnBoard = null;
@@ -65,7 +67,9 @@ class CDUAtcMessageModifyUM131 {
             CDUAtcMessageModifyUM131.ShowPage(mcdu, message, data);
         };
 
-        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[4] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 mcdu.atsu.atc.updateMessage(message);
@@ -73,12 +77,16 @@ class CDUAtcMessageModifyUM131 {
             }
         };
 
-        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[1] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.endurance = null;
@@ -93,7 +101,9 @@ class CDUAtcMessageModifyUM131 {
             CDUAtcMessageModifyUM131.ShowPage(mcdu, message, data);
         };
 
-        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 CDUAtcMessageModifyUM131.UpdateResponseMessage(message, data);
@@ -105,7 +115,9 @@ class CDUAtcMessageModifyUM131 {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 CDUAtcMessageModifyUM131.UpdateResponseMessage(message, data);

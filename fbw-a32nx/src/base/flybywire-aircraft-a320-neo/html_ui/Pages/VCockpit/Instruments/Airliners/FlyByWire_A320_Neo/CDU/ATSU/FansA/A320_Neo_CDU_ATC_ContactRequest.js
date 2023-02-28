@@ -1,6 +1,8 @@
 class CDUAtcContactRequest {
     static CreateDataBlock() {
-        return { requestContact: false };
+        return {
+            requestContact: false,
+        };
     }
 
     static CanSendData(data) {
@@ -23,7 +25,7 @@ class CDUAtcContactRequest {
         const retval = [];
 
         if (data.requestContact) {
-            retval.push(CDUAtcContactRequest.CreateRequest(mcdu, 'DM20'));
+            retval.push(CDUAtcContactRequest.CreateRequest(mcdu, "DM20"));
         }
 
         return retval;
@@ -32,37 +34,39 @@ class CDUAtcContactRequest {
     static ShowPage(mcdu, data = CDUAtcContactRequest.CreateDataBlock()) {
         mcdu.clearDisplay();
 
-        let requestContact = '{cyan}{{end}REQ VOICE CONTACT';
+        let requestContact = "{cyan}{{end}REQ VOICE CONTACT";
         if (data.altitude) {
-            requestContact = '{cyan}\xa0REQ VOICE CONTACT{end]';
+            requestContact = "{cyan}\xa0REQ VOICE CONTACT{end]";
         }
 
-        let text = 'ADD TEXT\xa0';
-        let erase = '\xa0ERASE';
-        let reqDisplay = 'DCDU\xa0[color]cyan';
+        let text = "ADD TEXT\xa0";
+        let erase = "\xa0ERASE";
+        let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcContactRequest.CanSendData(data)) {
-            reqDisplay = 'DCDU*[color]cyan';
-            text = 'ADD TEXT>';
-            erase = '*ERASE';
+            reqDisplay = "DCDU*[color]cyan";
+            text = "ADD TEXT>";
+            erase = "*ERASE";
         }
 
         mcdu.setTemplate([
-            ['CONTACT REQ'],
-            [''],
+            ["CONTACT REQ"],
+            [""],
             [requestContact],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
-            [''],
-            ['\xa0ALL FIELDS'],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            ["\xa0ALL FIELDS"],
             [erase, text],
-            ['\xa0FLIGHT REQ', 'XFR TO\xa0[color]cyan'],
-            ['<RETURN', reqDisplay],
+            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
+            ["<RETURN", reqDisplay]
         ]);
 
-        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.climb = null;
@@ -77,7 +81,9 @@ class CDUAtcContactRequest {
             CDUAtcContactRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.altitude = null;
@@ -92,17 +98,23 @@ class CDUAtcContactRequest {
             CDUAtcContactRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[4] = () => {
             CDUAtcContactRequest.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAtcFlightReq.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcContactRequest.CanSendData(data)) {
                 const messages = CDUAtcContactRequest.CreateRequests(mcdu, data);
@@ -112,10 +124,12 @@ class CDUAtcContactRequest {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcContactRequest.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === '') {
+                if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcContactRequest.CreateRequests(mcdu, data);

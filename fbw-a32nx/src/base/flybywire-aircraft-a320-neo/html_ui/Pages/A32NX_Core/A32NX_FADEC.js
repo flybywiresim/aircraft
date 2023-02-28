@@ -11,8 +11,8 @@ class A32NX_FADEC {
 
     update(deltaTime) {
         const dcEssIsPowered = this.isDcEssPowered();
-        const masterState = SimVar.GetSimVarValue(`FUELSYSTEM VALVE SWITCH:${this.engine}`, 'Bool');
-        const ignitionState = SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum') == 2;
+        const masterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:" + (this.engine), "Bool");
+        const ignitionState = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
 
         if ((this.dcEssPoweredInPreviousUpdate != dcEssIsPowered && dcEssIsPowered == 1) || this.lastMasterState != masterState) {
             this.fadecTimer = 5 * 60;
@@ -27,19 +27,19 @@ class A32NX_FADEC {
     }
 
     updateSimVars() {
-        this.lastMasterState = SimVar.GetSimVarValue(`FUELSYSTEM VALVE SWITCH:${this.engine}`, 'Bool');
-        this.lastIgnitionState = SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum') == 2;
-        SimVar.SetSimVarValue(`L:A32NX_FADEC_POWERED_ENG${this.engine}`, 'Bool', this.isPowered() ? 1 : 0);
+        this.lastMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:" + (this.engine), "Bool");
+        this.lastIgnitionState = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
+        SimVar.SetSimVarValue("L:A32NX_FADEC_POWERED_ENG" + this.engine, "Bool", this.isPowered() ? 1 : 0);
     }
 
     isPowered() {
-        if (SimVar.GetSimVarValue(`L:A32NX_FIRE_BUTTON_ENG${this.engine}`, 'Bool') == 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_FIRE_BUTTON_ENG" + this.engine, "Bool") == 1) {
             return false;
         }
-        if (SimVar.GetSimVarValue(`TURB ENG N2:${this.engine}`, 'Percent') > 15) {
+        if (SimVar.GetSimVarValue("TURB ENG N2:" + this.engine, "Percent") > 15) {
             return true;
         }
-        if (SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum') == 2) {
+        if (SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2) {
             return true;
         }
         if (this.fadecTimer > 0) {
@@ -51,6 +51,6 @@ class A32NX_FADEC {
     isDcEssPowered() {
         // This will have to be revisited when implementing the FADEC. One shouldn't consider this reference
         // to DC ESS valuable: it might be powered by multiple buses or related to other things altogether.
-        return SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool');
+        return SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
     }
 }

@@ -2,10 +2,10 @@
 class ScratchpadDisplay {
     constructor(scratchpadElement) {
         this._scratchpadElement = scratchpadElement;
-        this._scratchpadElement.className = 'white';
+        this._scratchpadElement.className = "white";
     }
 
-    write(value = '', color = 'white') {
+    write(value = "", color = "white") {
         this._scratchpadElement.textContent = value;
         this._scratchpadElement.className = color;
     }
@@ -18,7 +18,7 @@ class ScratchpadDisplay {
 class ScratchpadDataLink {
     constructor(mcdu, displayUnit) {
         this.guid = `SP-${Utils.generateGUID()}`;
-        this._text = '';
+        this._text = "";
         this._message = {};
         this._status = 0;
         this._mcdu = mcdu;
@@ -36,12 +36,12 @@ class ScratchpadDataLink {
             return;
         }
         this._message = message;
-        this._display(message.text, message.isAmber ? 'amber' : 'white');
+        this._display(message.text, message.isAmber ? "amber" : "white");
     }
 
     removeMessage(messageText) {
         if (this._message && this._message.text === messageText) {
-            this.setText('');
+            this.setText("");
         }
     }
 
@@ -57,7 +57,7 @@ class ScratchpadDataLink {
         if (this._status === SpDisplayStatus.empty) {
             this.setText(FMCMainDisplay.clrValue);
         } else if (this._status === SpDisplayStatus.clrValue) {
-            this.setText('');
+            this.setText("");
         } else if (this._status === SpDisplayStatus.userContent) {
             this.setText(this._text.slice(0, -1));
         } else {
@@ -68,17 +68,17 @@ class ScratchpadDataLink {
 
     clearHeld() {
         if (this._status === SpDisplayStatus.clrValue || this._status === SpDisplayStatus.userContent) {
-            this.setText('');
+            this.setText("");
         }
     }
 
     isClearStop() {
         return this._status !== SpDisplayStatus.userContent;
-    }
+    };
 
     plusMinus(char) {
-        if (this._status === SpDisplayStatus.userContent && this._text.slice(-1) === '-') {
-            this.setText(`${this._text.slice(0, -1)}+`);
+        if (this._status === SpDisplayStatus.userContent && this._text.slice(-1) === "-") {
+            this.setText(this._text.slice(0, -1) + "+");
         } else {
             this.addChar(char);
         }
@@ -91,7 +91,7 @@ class ScratchpadDataLink {
     removeUserContentFromScratchpadAndDisplayAndReturnTextContent() {
         const userContent = this._text;
         if (this._status < SpDisplayStatus.typeOneMessage) {
-            this.setText('');
+            this.setText("");
         }
         return userContent;
     }
@@ -102,7 +102,7 @@ class ScratchpadDataLink {
 
     getText() {
         return this._text;
-    }
+    };
 
     getDisplayText() {
         return this._displayUnit._scratchpadElement.textContent;
@@ -112,7 +112,7 @@ class ScratchpadDataLink {
         return this._displayUnit._scratchpadElement.className;
     }
 
-    _display(value, color = 'white') {
+    _display(value, color = "white") {
         this._displayUnit.write(value, color);
         this._updateStatus(value);
         this._mcdu.sendUpdate();
@@ -121,13 +121,15 @@ class ScratchpadDataLink {
     _updateStatus(scratchpadText) {
         if (this._message) {
             this._status = this._message.isTypeTwo ? SpDisplayStatus.typeTwoMessage : SpDisplayStatus.typeOneMessage;
-        } else if (this._text === '' || scratchpadText === '') {
-            this._status = SpDisplayStatus.empty;
-            setTimeout(() => this._mcdu.updateMessageQueue(), 150);
-        } else if (this._text === FMCMainDisplay.clrValue) {
-            this._status = SpDisplayStatus.clrValue;
         } else {
-            this._status = SpDisplayStatus.userContent;
+            if (this._text === "" || scratchpadText === "") {
+                this._status = SpDisplayStatus.empty;
+                setTimeout(() => this._mcdu.updateMessageQueue(), 150);
+            } else if (this._text === FMCMainDisplay.clrValue) {
+                this._status = SpDisplayStatus.clrValue;
+            } else {
+                this._status = SpDisplayStatus.userContent;
+            }
         }
     }
 }
@@ -137,5 +139,5 @@ const SpDisplayStatus = {
     clrValue: 1,
     userContent: 2,
     typeOneMessage: 3,
-    typeTwoMessage: 4,
+    typeTwoMessage: 4
 };

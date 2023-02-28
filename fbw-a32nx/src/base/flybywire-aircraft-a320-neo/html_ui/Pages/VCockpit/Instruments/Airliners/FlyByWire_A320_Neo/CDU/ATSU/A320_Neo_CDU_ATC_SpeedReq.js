@@ -30,10 +30,10 @@ class CDUAtcSpeedRequest {
         const retval = [];
 
         if (data.speed) {
-            retval.push(CDUAtcSpeedRequest.CreateRequest(mcdu, 'DM18', [data.speed]));
+            retval.push(CDUAtcSpeedRequest.CreateRequest(mcdu, "DM18", [data.speed]));
         }
         if (data.whenSpeed) {
-            retval.push(CDUAtcSpeedRequest.CreateRequest(mcdu, 'DM49', [data.whenSpeed]));
+            retval.push(CDUAtcSpeedRequest.CreateRequest(mcdu, "DM49", [data.whenSpeed]));
         }
 
         return retval;
@@ -42,49 +42,51 @@ class CDUAtcSpeedRequest {
     static ShowPage(mcdu, data = CDUAtcSpeedRequest.CreateDataBlock()) {
         mcdu.clearDisplay();
 
-        let speed = '[ ][color]cyan';
+        let speed = "[ ][color]cyan";
         if (data.speed) {
             speed = `${data.speed}[color]cyan`;
         }
 
-        let speedWhenSmall = '';
-        let speedWhen = '';
+        let speedWhenSmall = "";
+        let speedWhen = "";
         if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
-            speedWhenSmall = '\xa0WHEN CAN WE EXPECT SPD';
-            speedWhen = '[ ][color]cyan';
+            speedWhenSmall = "\xa0WHEN CAN WE EXPECT SPD";
+            speedWhen = "[ ][color]cyan";
             if (data.whenSpeed) {
                 speedWhen = `${data.whenSpeed}[color]cyan`;
             }
         }
 
-        let text = 'ADD TEXT\xa0';
-        let erase = '\xa0ERASE';
-        let reqDisplay = 'DCDU\xa0[color]cyan';
+        let text = "ADD TEXT\xa0";
+        let erase = "\xa0ERASE";
+        let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcSpeedRequest.CanSendData(data)) {
-            reqDisplay = 'DCDU*[color]cyan';
-            text = 'ADD TEXT>';
+            reqDisplay = "DCDU*[color]cyan";
+            text = "ADD TEXT>";
         }
         if (CDUAtcSpeedRequest.CanEraseData(data)) {
-            erase = '*ERASE';
+            erase = "*ERASE";
         }
 
         mcdu.setTemplate([
-            ['ATC SPEED REQ'],
-            ['\xa0SPEED[color]white'],
+            ["ATC SPEED REQ"],
+            ["\xa0SPEED[color]white"],
             [speed],
             [speedWhenSmall],
             [speedWhen],
-            [''],
-            [''],
-            [''],
-            [''],
-            ['\xa0ALL FIELDS'],
+            [""],
+            [""],
+            [""],
+            [""],
+            ["\xa0ALL FIELDS"],
             [erase, text],
-            ['\xa0FLIGHT REQ', 'XFR TO\xa0[color]cyan'],
-            ['<RETURN', reqDisplay],
+            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
+            ["<RETURN", reqDisplay]
         ]);
 
-        mcdu.leftInputDelay[0] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.speed = null;
@@ -99,7 +101,9 @@ class CDUAtcSpeedRequest {
             CDUAtcSpeedRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[1] = (value) => {
             if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
                 if (value === FMCMainDisplay.clrValue) {
@@ -116,17 +120,23 @@ class CDUAtcSpeedRequest {
             }
         };
 
-        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[4] = () => {
             CDUAtcSpeedRequest.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAtcFlightReq.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[1] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.offset = null;
@@ -142,7 +152,9 @@ class CDUAtcSpeedRequest {
             CDUAtcSpeedRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[2] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[2] = async (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.weatherDeviation = null;
@@ -157,7 +169,9 @@ class CDUAtcSpeedRequest {
             CDUAtcSpeedRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[3] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.backOnTrack = false;
@@ -167,7 +181,9 @@ class CDUAtcSpeedRequest {
             CDUAtcSpeedRequest.ShowPage(mcdu, data);
         };
 
-        mcdu.rightInputDelay[4] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcSpeedRequest.CanSendData(data)) {
                 const messages = CDUAtcSpeedRequest.CreateRequests(mcdu, data);
@@ -177,10 +193,12 @@ class CDUAtcSpeedRequest {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcSpeedRequest.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === '') {
+                if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcSpeedRequest.CreateRequests(mcdu, data);
