@@ -1,84 +1,118 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorPerHour = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '5,10');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '2,5,2,10');
+    const [failureGeneratorArmedPerHour, setFailureGeneratorArmedPerHour] = useState<boolean[]>([false, false]);
     const settingsPerHour : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
-    const numberOfSettingsPerGenerator = 1;
+    const numberOfSettingsPerGenerator = 2;
     const { failureFlightPhase } = basicData();
     const nbGeneratorPerHour = useMemo(() => Math.floor(settingsPerHour.length / numberOfSettingsPerGenerator), [settingsPerHour]);
     const uniqueGenPrefix = 'E';
 
     useEffect(() => {
-        if (failureFlightPhase === FailurePhases.FLIGHT) {
+        if (totalActiveFailures < maxFailuresAtOnce) {
+            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedPerHour);
+            const tempSettings : number[] = Array.from(settingsPerHour);
+            let change = false;
             for (let i = 0; i < nbGeneratorPerHour; i++) {
-                const tempSetting = settingsPerHour[i * numberOfSettingsPerGenerator + 0];
-                if (tempSetting > 0 && totalActiveFailures < maxFailuresAtOnce) {
+                const tempSetting = settingsPerHour[i * numberOfSettingsPerGenerator + 1];
+                if (tempFailureGeneratorArmed[i] && tempSetting > 0) {
                     const chancePerSecond = tempSetting / 3600;
                     const rollDice = Math.random();
                     console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
                     if (rollDice < chancePerSecond * 5) {
                         console.info('PerHour Failure triggered');
                         activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                        tempFailureGeneratorArmed[i] = false;
+                        change = true;
+                        if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
                     }
                 }
+            }
+            if (change) {
+                setFailureGeneratorArmedPerHour(tempFailureGeneratorArmed);
+                setFailureGeneratorSetting(flatten(tempSettings));
             }
         }
     }, [absoluteTime5s]);
 
     useEffect(() => {
+        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedPerHour);
+        let changed = false;
         for (let i = 0; i < nbGeneratorPerHour; i++) {
-            console.info('Failure set at %.4f per hour ', failureGeneratorSetting[i]);
+            if (!tempFailureGeneratorArmed[i]
+                && (settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 1
+                    || (settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                    || settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 3)) {
+                tempFailureGeneratorArmed[i] = true;
+                console.info('Failure set at %.4f per hour ', failureGeneratorSetting[i]);
+                changed = true;
+            }
+            if (changed) setFailureGeneratorArmedPerHour(tempFailureGeneratorArmed);
         }
-    }, [failureGeneratorSetting]);
+    }, [failureGeneratorSetting, failureFlightPhase, absoluteTime5s]);
 };
 
-export const failureGeneratorTimerBased : () => void = () => {
+export const failureGeneratorTimer : () => void = () => {
     // time based trigger after TO thrust
 
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
-    const [failureGeneratorSettingTIMEBASED] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMEBASED', '7.5,30');
-    const [failureGeneratorArmedTIMEBASED, setFailureGeneratorArmedTIMEBASED] = useState<boolean[]>([false, false]);
-    const settingsTIMEBASED : number[] = useMemo<number[]>(() => failureGeneratorSettingTIMEBASED.split(',').map(((it) => parseFloat(it))), [failureGeneratorSettingTIMEBASED]);
-    const numberOfSettingsPerGenerator = 1;
-    const nbGeneratorTIMEBASED = useMemo(() => Math.floor(settingsTIMEBASED.length / numberOfSettingsPerGenerator), [settingsTIMEBASED]);
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMER', '2,7.5,2,30');
+    const [failureGeneratorArmedTimer, setFailureGeneratorArmedTimer] = useState<boolean[]>([false, false]);
+    const settingsTimer : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
+    const numberOfSettingsPerGenerator = 2;
+    const nbGeneratorTimer = useMemo(() => Math.floor(settingsTimer.length / numberOfSettingsPerGenerator), [settingsTimer]);
     // Failure Specific memos
     const [failureTime, setFailureTime] = useState<number[]>([-1, -1]);
     const { failureFlightPhase } = basicData();
     const uniqueGenPrefix = 'F';
 
     useEffect(() => {
-    // FAILURE CHECK AND ACTIVATION
-        const tempFailureGeneratorArmedTIMEBASED : boolean[] = Array.from(failureGeneratorArmedTIMEBASED);
-        for (let i = 0; i < nbGeneratorTIMEBASED; i++) {
-            const failureConditionTIMEBASED = absoluteTime5s > failureTime[i * numberOfSettingsPerGenerator + 0]; // Failure Specific Condition
-            if (tempFailureGeneratorArmedTIMEBASED[i] && failureConditionTIMEBASED && totalActiveFailures < maxFailuresAtOnce) {
-                activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
-                console.info('Time based failure triggered');
-                tempFailureGeneratorArmedTIMEBASED[i] = false;
+        if (totalActiveFailures < maxFailuresAtOnce) {
+            const tempFailureGeneratorArmedTimerBased : boolean[] = Array.from(failureGeneratorArmedTimer);
+            const tempSettings : number[] = Array.from(settingsTimer);
+            let change = false;
+            for (let i = 0; i < nbGeneratorTimer; i++) {
+                const failureConditionTimerBased = absoluteTime5s > failureTime[i]; // Failure Specific Condition
+                if (tempFailureGeneratorArmedTimerBased[i] && failureConditionTimerBased) {
+                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    console.info('Time based failure triggered');
+                    tempFailureGeneratorArmedTimerBased[i] = false;
+                    change = true;
+                    if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+                }
+            }
+            if (change) {
+                setFailureGeneratorArmedTimer(tempFailureGeneratorArmedTimerBased);
+                setFailureGeneratorSetting(flatten(tempSettings));
             }
         }
-        setFailureGeneratorArmedTIMEBASED(tempFailureGeneratorArmedTIMEBASED);
     }, [absoluteTime5s]);
 
     useEffect(() => {
         // failureSettings once per start of takeoff
-        if (failureFlightPhase === FailurePhases.TAKEOFF) {
-            const tempFailureGeneratorArmedTIMEBASED : boolean[] = [];
-            const tempFailureTime : number[] = [];
-            for (let i = 0; i < nbGeneratorTIMEBASED; i++) {
-                tempFailureGeneratorArmedTIMEBASED.push(true);
-                // SPECIFIC INIT HERE PER GENERATOR
-                tempFailureTime.push(settingsTIMEBASED[i * numberOfSettingsPerGenerator + 0] + absoluteTime5s);
-                console.info('Timer based failure armed at %.1f s', settingsTIMEBASED[i * numberOfSettingsPerGenerator + 0]);
+        const tempFailureGeneratorArmed = Array.from(failureGeneratorArmedTimer);
+        const tempFailureTime = Array.from(failureTime);
+        let changed = false;
+        for (let i = 0; i < nbGeneratorTimer; i++) {
+            if (settingsTimer[i * numberOfSettingsPerGenerator + 1] === 1
+                    || (failureFlightPhase === FailurePhases.TAKEOFF && settingsTimer[i * numberOfSettingsPerGenerator + 1] === 2)
+                    || settingsTimer[i * numberOfSettingsPerGenerator + 1] === 3) {
+                tempFailureGeneratorArmed[i] = true;
+                tempFailureTime[i] = settingsTimer[i * numberOfSettingsPerGenerator + 1] + absoluteTime5s;
+                console.info('Timer based failure armed at %.1f s', settingsTimer[i * numberOfSettingsPerGenerator + 1]);
+                changed = true;
             }
+        }
+        if (changed) {
             setFailureTime(tempFailureTime);
-            setFailureGeneratorArmedTIMEBASED(tempFailureGeneratorArmedTIMEBASED);
+            setFailureGeneratorArmedTimer(tempFailureGeneratorArmed);
         }
     }, [failureFlightPhase]);
 };

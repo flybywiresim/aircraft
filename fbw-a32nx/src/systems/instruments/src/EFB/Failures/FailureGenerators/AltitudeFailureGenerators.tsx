@@ -17,21 +17,23 @@ export const failureGeneratorAltClimb = () => {
     const altitude = Simplane.getAltitudeAboveGround();
 
     useEffect(() => {
-        const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltClimb);
-        const tempSettings : number[] = Array.from(settingsAltClimb);
-        let change = false;
-        for (let i = 0; i < nbGeneratorAltClimb; i++) {
-            if (tempFailureGeneratorArmed[i] && altitude > settingsAltClimb[i * numberOfSettingsPerGenerator + 1] && totalActiveFailures < maxFailuresAtOnce) {
-                activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
-                console.info('Climb altitude failure triggered');
-                tempFailureGeneratorArmed[i] = false;
-                change = true;
-                if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+        if (totalActiveFailures < maxFailuresAtOnce) {
+            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltClimb);
+            const tempSettings : number[] = Array.from(settingsAltClimb);
+            let change = false;
+            for (let i = 0; i < nbGeneratorAltClimb; i++) {
+                if (tempFailureGeneratorArmed[i] && altitude > settingsAltClimb[i * numberOfSettingsPerGenerator + 1]) {
+                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    console.info('Climb altitude failure triggered');
+                    tempFailureGeneratorArmed[i] = false;
+                    change = true;
+                    if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+                }
             }
-        }
-        if (change) {
-            setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
-            setFailureGeneratorSetting(flatten(tempSettings));
+            if (change) {
+                setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
+                setFailureGeneratorSetting(flatten(tempSettings));
+            }
         }
     }, [absoluteTime5s]);
 
@@ -48,7 +50,7 @@ export const failureGeneratorAltClimb = () => {
             }
         }
         setFailureGeneratorArmedAltClimb(tempFailureGeneratorArmed);
-    }, [altitude]);
+    }, [altitude, failureFlightPhase]);
 };
 
 export const failureGeneratorAltDesc = () => {
@@ -65,21 +67,23 @@ export const failureGeneratorAltDesc = () => {
     const altitude = Simplane.getAltitudeAboveGround();
 
     useEffect(() => {
-        const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltDesc);
-        const tempSettings : number[] = Array.from(settingsAltDesc);
-        let change = false;
-        for (let i = 0; i < nbGeneratorAltDesc; i++) {
-            if (tempFailureGeneratorArmed[i] && altitude < settingsAltDesc[i * numberOfSettingsPerGenerator + 1] && totalActiveFailures < maxFailuresAtOnce) {
-                activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
-                console.info('Descent altitude failure triggered');
-                tempFailureGeneratorArmed[i] = false;
-                change = true;
-                if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+        if (totalActiveFailures < maxFailuresAtOnce) {
+            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltDesc);
+            const tempSettings : number[] = Array.from(settingsAltDesc);
+            let change = false;
+            for (let i = 0; i < nbGeneratorAltDesc; i++) {
+                if (tempFailureGeneratorArmed[i] && altitude < settingsAltDesc[i * numberOfSettingsPerGenerator + 1]) {
+                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    console.info('Descent altitude failure triggered');
+                    tempFailureGeneratorArmed[i] = false;
+                    change = true;
+                    if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+                }
             }
-        }
-        if (change) {
-            setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
-            setFailureGeneratorSetting(flatten(tempSettings));
+            if (change) {
+                setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
+                setFailureGeneratorSetting(flatten(tempSettings));
+            }
         }
     }, [absoluteTime5s]);
 
@@ -96,5 +100,5 @@ export const failureGeneratorAltDesc = () => {
             }
         }
         setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
-    }, [altitude]);
+    }, [altitude, failureFlightPhase]);
 };

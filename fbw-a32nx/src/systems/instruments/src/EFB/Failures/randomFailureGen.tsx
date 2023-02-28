@@ -30,28 +30,31 @@ export const failureGeneratorTEMPLATE = () => {
 
     useEffect(() => {
         // FAILURETYPE failures
-        const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTEMPLATE);
-        const tempSettings : number[] = Array.from(settingsTEMPLATE);
-        let change = false;
-        for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
-            const failureConditionPLACEHOLDER = settingsTEMPLATE[i * numberOfSettingsPerGenerator + 1] >= 1; // CONDITIONS HERE
-            if (tempFailureGeneratorArmed[i] && failureConditionPLACEHOLDER && totalActiveFailures < maxFailuresAtOnce) {
-                activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
-                console.info('TEMPLATE failure triggered');
-                tempFailureGeneratorArmed[i] = false;
-                change = true;
-                if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+        if (totalActiveFailures < maxFailuresAtOnce) {
+            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTEMPLATE);
+            const tempSettings : number[] = Array.from(settingsTEMPLATE);
+            let change = false;
+            for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
+                const failureConditionPLACEHOLDER = settingsTEMPLATE[i * numberOfSettingsPerGenerator + 1] >= 1; // CONDITIONS HERE
+                if (tempFailureGeneratorArmed[i] && failureConditionPLACEHOLDER) {
+                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    console.info('TEMPLATE failure triggered');
+                    tempFailureGeneratorArmed[i] = false;
+                    change = true;
+                    if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+                }
             }
-        }
-        if (change) {
-            setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
-            setFailureGeneratorSetting(flatten(tempSettings));
+            if (change) {
+                setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
+                setFailureGeneratorSetting(flatten(tempSettings));
+            }
         }
     }, [absoluteTime5s]);
 
     useEffect(() => {
         // failureSettings once per start of takeoff
         const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTEMPLATE);
+        let changed = false;
         for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
             if (!tempFailureGeneratorArmed[i]
                 && (settingsTEMPLATE[i * numberOfSettingsPerGenerator + 0] === 1
@@ -60,9 +63,10 @@ export const failureGeneratorTEMPLATE = () => {
                 // SPECIFIC INIT HERE PER GENERATOR
                 console.info('new failure setting');
                 tempFailureGeneratorArmed[i] = true;
+                changed = true;
             }
         }
-        setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
+        if (changed) setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
     }, [failureFlightPhase, failureGeneratorArmedTEMPLATE]); // specific update conditions
 };
 /*
