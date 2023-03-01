@@ -68,6 +68,11 @@ class MsfsHandler {
   NamedVariablePtr a32nxIsDevelopmentState;
   std::shared_ptr<DataDefinitionVariable<BaseSimData>> baseSimData;
 
+  // Pause detection - not working because of sim issue - see initialize() for details
+  NamedVariablePtr a32nxPauseDetected;
+  ClientEventPtr pauseDetectedEvent;
+  [[maybe_unused]] CallbackID pauseDetectedEventCallbackId;
+
   /**
    * Current simulation time used for pause detection and time stamping variable updates
    */
