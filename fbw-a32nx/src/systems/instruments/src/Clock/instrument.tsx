@@ -55,6 +55,9 @@ class A32NX_Clock extends BaseInstrument {
         this.simVarPublisher.subscribe('dc2IsPowered');
 
         FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
+
+        // Remove "instrument didn't load" text
+        document.getElementById('Clock_CONTENT').querySelector(':scope > h1').remove();
     }
 
     public Update(): void {
