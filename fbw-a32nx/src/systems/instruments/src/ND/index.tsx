@@ -113,13 +113,6 @@ const NavigationDisplay: React.FC = () => {
         >
             <FlightPlanProvider>
                 <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
-                    <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
-                    <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
-
-                    {true && (
-                        <LnavStatus />
-                    )}
-
                     {modeIndex === EfisNdMode.PLAN && (
                         <PlanMode
                             adirsAlign={adirsAlign}
@@ -156,6 +149,12 @@ const NavigationDisplay: React.FC = () => {
                     )}
 
                     <Chrono side={side} />
+                    <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
+                    <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
+
+                    {true && (
+                        <LnavStatus />
+                    )}
 
                     <TerrainMapThresholds side={side} />
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
