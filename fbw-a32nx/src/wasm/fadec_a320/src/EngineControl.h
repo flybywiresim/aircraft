@@ -728,10 +728,15 @@ class EngineControl {
     double pumpStateRight = simVars->getPumpStateRight();
     double xfrValveCenterLeft = simVars->getValve(9);
     double xfrValveCenterRight = simVars->getValve(10);
+    double xfrDisableValveCenterLeft = simVars->getValve(11);
+    double xfrDisableValveCenterRight = simVars->getValve(12);
     double xfrValveOuterLeft1 = simVars->getValve(6);
     double xfrValveOuterLeft2 = simVars->getValve(4);
     double xfrValveOuterRight1 = simVars->getValve(7);
     double xfrValveOuterRight2 = simVars->getValve(5);
+    double lineLeftToCenterFlow = simVars->getLineFlow(23);
+    double lineRightToCenterFlow = simVars->getLineFlow(24);
+    double lineFlowRatio = 0;
 
     double engine1PreFF = simVars->getEngine1PreFF();  // KG/H
     double engine2PreFF = simVars->getEngine2PreFF();  // KG/H
@@ -935,20 +940,19 @@ class EngineControl {
 
       //--------------------------------------------
       // Center Tank transfer routine
-      if (xfrValveCenterLeft > 0.0 && xfrValveCenterRight > 0.0) {
-        xfrCenterToLeft = (fuelCenterPre - centerQuantity) / 2;
-        xfrCenterToRight = xfrCenterToLeft;
-      } else if (xfrValveCenterLeft > 0.0)
+      if (xfrValveCenterLeft > 0.0 && xfrValveCenterRight > 0.0 && xfrDisableValveCenterLeft > 0.0 && xfrDisableValveCenterRight > 0.0) {
+        lineFlowRatio = lineLeftToCenterFlow / (lineLeftToCenterFlow + lineRightToCenterFlow);
+        xfrCenterToLeft = (fuelCenterPre - centerQuantity) * lineFlowRatio;
+        xfrCenterToRight = (fuelCenterPre - centerQuantity) * (1 - lineFlowRatio);
+      } else if (xfrValveCenterLeft > 0.0 && xfrDisableValveCenterLeft > 0.0)
         xfrCenterToLeft = fuelCenterPre - centerQuantity;
-      else if (xfrValveCenterRight > 0.0)
+      else if (xfrValveCenterRight > 0.0 && xfrDisableValveCenterRight > 0.0)
         xfrCenterToRight = fuelCenterPre - centerQuantity;
 
       //--------------------------------------------
       // Final Fuel levels for left and right inner tanks
       fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft;      // LBS
       fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;  // LBS
-
-      double fuelTotalNew = fuelLeft + fuelRight + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
 
       //--------------------------------------------
       // Setting new pre-cycle conditions
