@@ -117,10 +117,8 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     xtk: number;
     ldevRequestLeft: boolean;
     ldevRequestRight: boolean;
-    landingElevation1: number;
-    landingElevation1Ssm: number;
-    landingElevation2: number;
-    landingElevation2Ssm: number;
+    landingElevation1Raw: number;
+    landingElevation2Raw: number;
     fac1Healthy: boolean;
     fac2Healthy: boolean;
     fac1VAlphaProtRaw: number;
@@ -266,10 +264,8 @@ export enum PFDVars {
     xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
     ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
     ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
-    landingElevation1 = 'L:A32NX_FM1_LANDING_ELEVATION',
-    landingElevation1Ssm = 'L:A32NX_FM1_LANDING_ELEVATION_SSM',
-    landingElevation2 = 'L:A32NX_FM2_LANDING_ELEVATION',
-    landingElevation2Ssm = 'L:A32NX_FM2_LANDING_ELEVATION_SSM',
+    landingElevation1Raw = 'L:A32NX_FM1_LANDING_ELEVATION',
+    landingElevation2Raw = 'L:A32NX_FM2_LANDING_ELEVATION',
     fac1Healthy = 'L:A32NX_FAC_1_HEALTHY',
     fac2Healthy = 'L:A32NX_FAC_2_HEALTHY',
     fac1VAlphaProtRaw = 'L:A32NX_FAC_1_V_ALPHA_PROT',
@@ -419,10 +415,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
         ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
         ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
-        ['landingElevation1', { name: PFDVars.landingElevation1, type: SimVarValueType.Number }],
-        ['landingElevation1Ssm', { name: PFDVars.landingElevation1Ssm, type: SimVarValueType.Number }],
-        ['landingElevation2', { name: PFDVars.landingElevation2, type: SimVarValueType.Number }],
-        ['landingElevation2Ssm', { name: PFDVars.landingElevation2Ssm, type: SimVarValueType.Number }],
+        ['landingElevation1Raw', { name: PFDVars.landingElevation1Raw, type: SimVarValueType.Number }],
+        ['landingElevation2Raw', { name: PFDVars.landingElevation2Raw, type: SimVarValueType.Number }],
         ['fac1Healthy', { name: PFDVars.fac1Healthy, type: SimVarValueType.Bool }],
         ['fac2Healthy', { name: PFDVars.fac2Healthy, type: SimVarValueType.Bool }],
         ['fac1VAlphaProtRaw', { name: PFDVars.fac1VAlphaProtRaw, type: SimVarValueType.Number }],

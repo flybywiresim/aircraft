@@ -258,6 +258,12 @@ class AltTapeBackground extends DisplayComponent<any> {
     filteredRadioAltitude: Subscribable<number>;
 }
 
+enum TargetAltitudeColor {
+    Cyan,
+    Magenta,
+    White
+}
+
 export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicatorOfftapeProps> {
     private abnormal = FSComponent.createRef<SVGGElement>();
 
@@ -267,10 +273,20 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
     private altitude = Subject.create(0);
 
+    private targetAltitudeSelected = 0;
+
+    private shownTargetAltitude = Subject.create<number>(0);
+
+    private constraint = 0;
+
+    private activeVerticalMode = 0;
+
+    private targetAltitudeColor = Subject.create<TargetAltitudeColor>(TargetAltitudeColor.Cyan);
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
         sub.on('altitudeAr').handle((altitude) => {
             if (!altitude.isNormalOperation()) {
@@ -289,6 +305,21 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             } else {
                 this.tcasFailed.instance.style.display = 'none';
             }
+        });
+
+        sub.on('activeVerticalMode').whenChanged().handle((v) => {
+            this.activeVerticalMode = v;
+            this.handleAltManagedChange();
+        });
+
+        sub.on('selectedAltitude').whenChanged().handle((alt) => {
+            this.targetAltitudeSelected = alt;
+            this.handleAltManagedChange();
+        });
+
+        sub.on('altConstraint').whenChanged().handle((cstr) => {
+            this.constraint = cstr;
+            this.handleAltManagedChange();
         });
     }
 
@@ -310,9 +341,9 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
                 <g ref={this.normal} style="display: none">
                     <path id="AltTapeOutline" class="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
                     <MinimumDescentAltitudeIndicator bus={this.props.bus} />
-                    <SelectedAltIndicator bus={this.props.bus} />
+                    <SelectedAltIndicator bus={this.props.bus} selectedAltitude={this.shownTargetAltitude} altitudeColor={this.targetAltitudeColor} />
                     <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
-                    <MetricAltIndicator bus={this.props.bus} />
+                    <MetricAltIndicator bus={this.props.bus} targetAlt={this.shownTargetAltitude} altitudeColor={this.targetAltitudeColor} />
                     <path id="AltReadoutBackground" class="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
                     <RadioAltIndicator bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAltitude} />
                     <DigitalAltitudeReadout bus={this.props.bus} />
@@ -320,10 +351,31 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             </>
         );
     }
+
+    private handleAltManagedChange() {
+        // TODO find proper logic for this (what happens when a constraint is sent by the fms but vertical mode is not managed)
+        const isManagedModeActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES
+                            && this.activeVerticalMode !== VerticalMode.VS && this.activeVerticalMode !== VerticalMode.FPA;
+        const hasConstraint = this.constraint > 0 && isManagedModeActive;
+
+        const selectedAltIgnored = this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT || this.activeVerticalMode === VerticalMode.FINAL;
+
+        this.shownTargetAltitude.set(hasConstraint && !selectedAltIgnored ? this.constraint : this.targetAltitudeSelected);
+
+        if (selectedAltIgnored) {
+            this.targetAltitudeColor.set(TargetAltitudeColor.White);
+        } else if (hasConstraint) {
+            this.targetAltitudeColor.set(TargetAltitudeColor.Magenta);
+        } else {
+            this.targetAltitudeColor.set(TargetAltitudeColor.Cyan);
+        }
+    }
 }
 
 interface SelectedAltIndicatorProps {
     bus: EventBus
+    selectedAltitude: Subscribable<number>
+    altitudeColor: Subscribable<TargetAltitudeColor>
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
@@ -351,132 +403,40 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private altitude = new Arinc429Word(0);
 
-    private targetAltitudeSelected = 0;
-
     private shownTargetAltitude = 0;
-
-    private constraint = 0;
 
     private textSub = Subject.create('');
 
-    private isManaged = false;
+    private updateAltitudeColor(color: TargetAltitudeColor) {
+        this.selectedAltLowerFLText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltLowerFLText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltLowerFLText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-    private activeVerticalMode = 0;
+        this.selectedAltLowerText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltLowerText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltLowerText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-    private handleAltManagedChange() {
-        // TODO find proper logic for this (what happens when a constraint is sent by the fms but vertical mode is not managed)
-        const clbActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES
-                            && this.activeVerticalMode !== VerticalMode.VS && this.activeVerticalMode !== VerticalMode.FPA;
+        this.selectedAltUpperFLText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltUpperFLText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltUpperFLText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-        const selectedAltIgnored = this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT || this.activeVerticalMode === VerticalMode.FINAL;
+        this.selectedAltUpperText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.selectedAltUpperText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.selectedAltUpperText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-        this.isManaged = this.constraint > 0 && clbActive;
+        this.altTapeTargetText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.altTapeTargetText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.altTapeTargetText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
 
-        this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
-
-        if (selectedAltIgnored) {
-            this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-            this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-            this.selectedAltLowerFLText.instance.classList.add('White');
-
-            this.selectedAltLowerText.instance.classList.remove('Cyan');
-            this.selectedAltLowerText.instance.classList.remove('Magenta');
-            this.selectedAltLowerText.instance.classList.add('White');
-
-            this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-            this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-            this.selectedAltUpperFLText.instance.classList.add('White');
-
-            this.selectedAltUpperText.instance.classList.remove('Cyan');
-            this.selectedAltUpperText.instance.classList.remove('Magenta');
-            this.selectedAltUpperText.instance.classList.add('White');
-
-            this.altTapeTargetText.instance.classList.remove('Cyan');
-            this.altTapeTargetText.instance.classList.add('White');
-
-            this.targetSymbolRef.instance.classList.remove('Cyan');
-            this.targetSymbolRef.instance.classList.remove('Magenta');
-
-            this.targetSymbolRef.instance.classList.add('White');
-        } else if (this.isManaged) {
-            this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-            this.selectedAltLowerFLText.instance.classList.remove('White');
-            this.selectedAltLowerFLText.instance.classList.add('Magenta');
-
-            this.selectedAltLowerText.instance.classList.remove('Cyan');
-            this.selectedAltLowerText.instance.classList.remove('White');
-            this.selectedAltLowerText.instance.classList.add('Magenta');
-
-            this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-            this.selectedAltUpperFLText.instance.classList.remove('White');
-            this.selectedAltUpperFLText.instance.classList.add('Magenta');
-
-            this.selectedAltUpperText.instance.classList.remove('Cyan');
-            this.selectedAltUpperText.instance.classList.remove('White');
-            this.selectedAltUpperText.instance.classList.add('Magenta');
-
-            this.altTapeTargetText.instance.classList.remove('Cyan');
-            this.altTapeTargetText.instance.classList.remove('White');
-            this.altTapeTargetText.instance.classList.add('Magenta');
-
-            this.targetSymbolRef.instance.classList.remove('Cyan');
-            this.targetSymbolRef.instance.classList.remove('White');
-            this.targetSymbolRef.instance.classList.add('Magenta');
-        } else {
-            this.selectedAltLowerFLText.instance.classList.add('Cyan');
-            this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-            this.selectedAltLowerFLText.instance.classList.remove('White');
-
-            this.selectedAltLowerText.instance.classList.add('Cyan');
-            this.selectedAltLowerText.instance.classList.remove('Magenta');
-            this.selectedAltLowerText.instance.classList.remove('White');
-
-            this.selectedAltUpperFLText.instance.classList.add('Cyan');
-            this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-            this.selectedAltUpperFLText.instance.classList.remove('White');
-
-            this.selectedAltUpperText.instance.classList.add('Cyan');
-            this.selectedAltUpperText.instance.classList.remove('Magenta');
-            this.selectedAltUpperText.instance.classList.remove('White');
-
-            this.altTapeTargetText.instance.classList.add('Cyan');
-            this.altTapeTargetText.instance.classList.remove('Magenta');
-            this.altTapeTargetText.instance.classList.remove('White');
-
-            this.targetSymbolRef.instance.classList.add('Cyan');
-            this.targetSymbolRef.instance.classList.remove('Magenta');
-            this.targetSymbolRef.instance.classList.remove('White');
-        }
+        this.targetSymbolRef.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
+        this.targetSymbolRef.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
+        this.targetSymbolRef.instance.classList.toggle('White', color === TargetAltitudeColor.White);
     }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
-
-        sub.on('activeVerticalMode').whenChanged().handle((v) => {
-            this.activeVerticalMode = v;
-            this.handleAltManagedChange();
-            this.getOffset();
-            this.handleAltitudeDisplay();
-            this.setText();
-        });
-
-        sub.on('selectedAltitude').whenChanged().handle((m) => {
-            this.targetAltitudeSelected = m;
-            this.handleAltManagedChange();
-            this.getOffset();
-            this.handleAltitudeDisplay();
-            this.setText();
-        });
-
-        sub.on('altConstraint').whenChanged().handle((m) => {
-            this.constraint = m;
-            this.handleAltManagedChange();
-            this.getOffset();
-            this.handleAltitudeDisplay();
-            this.setText();
-        });
 
         sub.on('altitudeAr').withArinc429Precision(2).handle((a) => {
             this.altitude = a;
@@ -497,10 +457,17 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.handleAltitudeDisplay();
             this.setText();
         });
-    }
 
-    private updateTargetAltitude(targetAltitude: number, isManaged: boolean, constraint: number) {
-        return isManaged ? constraint : targetAltitude;
+        this.props.altitudeColor.sub((color) => {
+            this.updateAltitudeColor(color);
+        });
+
+        this.props.selectedAltitude.sub((alt) => {
+            this.shownTargetAltitude = alt;
+            this.getOffset();
+            this.handleAltitudeDisplay();
+            this.setText();
+        });
     }
 
     private handleAltitudeDisplay() {
@@ -698,13 +665,18 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
  interface MetricAltIndicatorState {
     altitude: Arinc429Word;
     MDA: number;
-    targetAltSelected: number;
-    targetAltManaged: number;
-    altIsManaged: boolean;
+    targetAlt: number;
+    altitudeColor: TargetAltitudeColor;
     metricAltToggle: boolean;
 }
 
-class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
+interface MetricAltIndicatorProps {
+    bus: EventBus;
+    targetAlt: Subscribable<number>
+    altitudeColor: Subscribable<TargetAltitudeColor>
+}
+
+class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
     private needsUpdate = false;
 
     private metricAlt = FSComponent.createRef<SVGGElement>();
@@ -716,9 +688,8 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
     private state: MetricAltIndicatorState = {
         altitude: new Arinc429Word(0),
         MDA: 0,
-        targetAltSelected: 0,
-        targetAltManaged: 0,
-        altIsManaged: false,
+        altitudeColor: TargetAltitudeColor.Cyan,
+        targetAlt: 0,
         metricAltToggle: false,
     }
 
@@ -737,12 +708,13 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
             this.needsUpdate = true;
         });
 
-        sub.on('selectedAltitude').whenChanged().handle((m) => {
-            this.state.targetAltSelected = m;
+        this.props.altitudeColor.sub((color) => {
+            this.state.altitudeColor = color;
             this.needsUpdate = true;
         });
-        sub.on('altConstraint').handle((m) => {
-            this.state.targetAltManaged = m;
+
+        this.props.targetAlt.sub((alt) => {
+            this.state.targetAlt = alt;
             this.needsUpdate = true;
         });
 
@@ -752,6 +724,12 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
         });
 
         sub.on('realTime').handle(this.updateState.bind(this));
+    }
+
+    private updateAltitudeColor() {
+        this.metricAltTargetText.instance.classList.toggle('Cyan', this.state.altitudeColor === TargetAltitudeColor.Cyan);
+        this.metricAltTargetText.instance.classList.toggle('Magenta', this.state.altitudeColor === TargetAltitudeColor.Magenta);
+        this.metricAltTargetText.instance.classList.toggle('White', this.state.altitudeColor === TargetAltitudeColor.White);
     }
 
     private updateState(_time: number) {
@@ -765,16 +743,12 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
                 const currentMetricAlt = Math.round(this.state.altitude.value * 0.3048 / 10) * 10;
                 this.metricAltText.instance.textContent = currentMetricAlt.toString();
 
-                const targetMetric = Math.round((this.state.altIsManaged ? this.state.targetAltManaged : this.state.targetAltSelected) * 0.3048 / 10) * 10;
+                const targetMetric = Math.round(this.state.targetAlt * 0.3048 / 10) * 10;
                 this.metricAltTargetText.instance.textContent = targetMetric.toString();
 
-                if (this.state.altIsManaged) {
-                    this.metricAltTargetText.instance.classList.replace('Cyan', 'Magenta');
-                } else {
-                    this.metricAltTargetText.instance.classList.replace('Magenta', 'Cyan');
-                }
+                this.updateAltitudeColor();
 
-                if (this.state.altitude.value > this.state.MDA) {
+                if (this.state.altitude.value < this.state.MDA) {
                     this.metricAltText.instance.classList.replace('Green', 'Amber');
                 } else {
                     this.metricAltText.instance.classList.replace('Amber', 'Green');
@@ -788,9 +762,9 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
             <g id="MetricAltGroup" ref={this.metricAlt}>
                 <path class="NormalStroke Yellow" d="m116.56 140.22h29.213v7.0556h-29.213z" />
                 <text class="FontMedium Cyan MiddleAlign" x="142.03537" y="145.8689">M</text>
-                <text ref={this.metricAltText} id="MetricAltText" class="FontMedium Cyan MiddleAlign" x="128.64708" y="145.86191">0</text>
+                <text ref={this.metricAltText} id="MetricAltText" class="FontMedium Green MiddleAlign" x="128.64708" y="145.86191">0</text>
                 <g id="MetricAltTargetGroup">
-                    <text id="MetricAltTargetText" ref={this.metricAltTargetText} class="FontSmallest Green MiddleAlign" x="94.088852" y="37.926617">0</text>
+                    <text id="MetricAltTargetText" ref={this.metricAltTargetText} class="FontSmallest Cyan MiddleAlign" x="94.088852" y="37.926617">0</text>
                     <text class="FontSmallest Cyan MiddleAlign" x="105.25774" y="37.872921">M</text>
                 </g>
             </g>
