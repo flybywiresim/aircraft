@@ -441,10 +441,12 @@
     - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry, -1 if not entered
 
 - A32NX_TO_CONFIG_THS_ENTERED
+    - ** Deprecated, see `A32NX_FM{number}_TO_PITCH_TRIM`
     - Bool
     - True if the pilot has entered a THS value in the PERF TAKEO FF takeoff
 
 - A32NX_TO_CONFIG_THS
+    - ** Deprecated, see `A32NX_FM{number}_TO_PITCH_TRIM`
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
 
@@ -1738,9 +1740,53 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
+- A32NX_FM{number}_DEST_LAT
+    - Destination latitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_DEST_LONG
+    - Destination longitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 13  | Takeoff flap conf 0               |
+      | 14  | Takeoff flap conf 1               |
+      | 15  | Takeoff flap conf 2               |
+      | 16  | Takeoff flap conf 3               |
+
+- A32NX_FM{number}_DISCRETE_WORD_3
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 16  | V1/Vr/V2 disagree                 |
+      | 17  | Takeoff speeds too low            |
+      | 18  | Takeoff speeds not inserted       |
+
 - L:A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_TO_PITCH_TRIM
+    - Takeoff pitch trim set by the pilot on the PERF TO MCDU page
+    - Arinc429<Angle>
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -2484,7 +2530,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent open of the cabin pressure safety valves
 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
-    - **Deprecated**
+    - **Deprecated**, - ** Deprecated, see `A32NX_FM{number}_LANDING_ELEVATION`
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
 
