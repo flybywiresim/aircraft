@@ -165,6 +165,7 @@
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
                     let id = #ID, number#;
+                    alias sel = (L:A32NX_RMP_SEL_LIGHT_ON, bool);
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
@@ -174,7 +175,7 @@
                     let rmpLeftAbnormal = (selectedModeLeft &gt; 1 and selectedModeLeft &lt; 6);
                     let rmpRightAbnormal = (selectedModeRight != 2 and selectedModeRight &lt; 6);
 
-                    (if (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered {
+                    (if (toggleSwitch and (sel or (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0))) and indicatorsPowered {
                         (L:A32NX_RMP_SEL_LIGHT_ON, number) = 1;
                         1 * emissiveDim
                     } else {

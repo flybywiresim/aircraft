@@ -8,15 +8,15 @@ use systems_wasm::Variable;
 
 pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.variable_to_event(
-        Variable::aspect("PILOT_TRANSMIT"),
+        Variable::aspect("PILOT_TRANSMIT_CHANNEL"),
         VariableToEventMapping::EventDataRaw,
-        VariableToEventWriteOn::EveryTick,
+        VariableToEventWriteOn::Change,
         "PILOT_TRANSMITTER_SET",
     )?;
     builder.variable_to_event(
-        Variable::aspect("COPILOT_TRANSMIT"),
+        Variable::aspect("COPILOT_TRANSMIT_CHANNEL"),
         VariableToEventMapping::EventDataRaw,
-        VariableToEventWriteOn::EveryTick,
+        VariableToEventWriteOn::Change,
         "COPILOT_TRANSMITTER_SET",
     )?;
     builder.variable_to_event(

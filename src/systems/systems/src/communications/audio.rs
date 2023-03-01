@@ -3,6 +3,7 @@ use crate::simulation::{
     SimulatorWriter, VariableIdentifier, Write,
 };
 
+#[derive(Copy, Clone)]
 pub struct AudioControlPanel {
     id: usize,
     transmit_channel_id: VariableIdentifier,
@@ -49,12 +50,8 @@ impl AudioControlPanel {
         }
     }
 
-    pub fn get_transmit_com1(&self) -> bool {
-        self.transmit_channel == 1
-    }
-
-    pub fn get_transmit_com2(&self) -> bool {
-        self.transmit_channel == 2
+    pub fn get_transmit_channel_value(&self) -> u8 {
+        self.transmit_channel
     }
 
     pub fn get_volume_com1(&self) -> u8 {
@@ -190,58 +187,54 @@ impl AudioControlPanel {
         self.int_rad_switch == 0
     }
 
+    pub fn update_transmit(&mut self, other_acp: &AudioControlPanel) {
+        self.transmit_channel = other_acp.get_transmit_channel_value();
+    }
+
     pub fn update_volume(&mut self, other_acp: &AudioControlPanel) {
-        if self.id != 1 {
-            self.vhfs[0].set_volume(other_acp.get_volume_com1());
-            self.vhfs[1].set_volume(other_acp.get_volume_com2());
-            self.vhfs[2].set_volume(other_acp.get_volume_com3());
+        self.vhfs[0].set_volume(other_acp.get_volume_com1());
+        self.vhfs[1].set_volume(other_acp.get_volume_com2());
+        self.vhfs[2].set_volume(other_acp.get_volume_com3());
 
-            self.comms[0].set_volume(other_acp.get_volume_hf1());
-            self.comms[1].set_volume(other_acp.get_volume_hf2());
-            self.comms[2].set_volume(other_acp.get_volume_pa());
-            self.comms[3].set_volume(other_acp.get_volume_mech());
-            self.comms[4].set_volume(other_acp.get_volume_att());
+        self.comms[0].set_volume(other_acp.get_volume_hf1());
+        self.comms[1].set_volume(other_acp.get_volume_hf2());
+        self.comms[2].set_volume(other_acp.get_volume_pa());
+        self.comms[3].set_volume(other_acp.get_volume_mech());
+        self.comms[4].set_volume(other_acp.get_volume_att());
 
-            self.vors[0].set_volume(other_acp.get_volume_vor1());
-            self.vors[1].set_volume(other_acp.get_volume_vor2());
+        self.vors[0].set_volume(other_acp.get_volume_vor1());
+        self.vors[1].set_volume(other_acp.get_volume_vor2());
 
-            self.adfs[0].set_volume(other_acp.get_volume_adf1());
-            self.adfs[1].set_volume(other_acp.get_volume_adf2());
+        self.adfs[0].set_volume(other_acp.get_volume_adf1());
+        self.adfs[1].set_volume(other_acp.get_volume_adf2());
 
-            self.ils.set_volume(other_acp.get_volume_ils());
-            self.gls.set_volume(other_acp.get_volume_gls());
+        self.ils.set_volume(other_acp.get_volume_ils());
+        self.gls.set_volume(other_acp.get_volume_gls());
 
-            self.markers.set_volume(other_acp.get_volume_markers());
-        } else {
-            panic!("update_volume is meant to update ACP 2 or 3");
-        }
+        self.markers.set_volume(other_acp.get_volume_markers());
     }
 
     pub fn update_receive(&mut self, other_acp: &AudioControlPanel) {
-        if self.id != 1 {
-            self.vhfs[0].set_receive(other_acp.get_receive_com1());
-            self.vhfs[1].set_receive(other_acp.get_receive_com2());
-            self.vhfs[2].set_receive(other_acp.get_receive_com3());
+        self.vhfs[0].set_receive(other_acp.get_receive_com1());
+        self.vhfs[1].set_receive(other_acp.get_receive_com2());
+        self.vhfs[2].set_receive(other_acp.get_receive_com3());
 
-            self.comms[0].set_receive(other_acp.get_receive_hf1());
-            self.comms[1].set_receive(other_acp.get_receive_hf2());
-            self.comms[2].set_receive(other_acp.get_receive_pa());
-            self.comms[3].set_receive(other_acp.get_receive_mech());
-            self.comms[4].set_receive(other_acp.get_receive_att());
+        self.comms[0].set_receive(other_acp.get_receive_hf1());
+        self.comms[1].set_receive(other_acp.get_receive_hf2());
+        self.comms[2].set_receive(other_acp.get_receive_pa());
+        self.comms[3].set_receive(other_acp.get_receive_mech());
+        self.comms[4].set_receive(other_acp.get_receive_att());
 
-            self.vors[0].set_receive(other_acp.get_receive_vor1());
-            self.vors[1].set_receive(other_acp.get_receive_vor2());
+        self.vors[0].set_receive(other_acp.get_receive_vor1());
+        self.vors[1].set_receive(other_acp.get_receive_vor2());
 
-            self.adfs[0].set_receive(other_acp.get_receive_adf1());
-            self.adfs[1].set_receive(other_acp.get_receive_adf2());
+        self.adfs[0].set_receive(other_acp.get_receive_adf1());
+        self.adfs[1].set_receive(other_acp.get_receive_adf2());
 
-            self.ils.set_receive(other_acp.get_receive_ils());
-            self.gls.set_receive(other_acp.get_receive_gls());
+        self.ils.set_receive(other_acp.get_receive_ils());
+        self.gls.set_receive(other_acp.get_receive_gls());
 
-            self.markers.set_receive(other_acp.get_receive_markers());
-        } else {
-            panic!("update_receive is meant to update ACP 2 or 3");
-        }
+        self.markers.set_receive(other_acp.get_receive_markers());
     }
 
     pub fn update_misc(&mut self, other_acp: &AudioControlPanel) {
@@ -281,6 +274,7 @@ impl SimulationElement for AudioControlPanel {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.int_rad_switch_id, self.int_rad_switch);
         writer.write(&self.voice_button_id, self.voice_button);
+        writer.write(&self.transmit_channel_id, self.transmit_channel);
     }
 }
 
@@ -291,6 +285,7 @@ pub trait Transceiver {
     fn set_receive(&mut self, receive: bool);
 }
 
+#[derive(Copy, Clone)]
 pub struct VHF {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
@@ -356,7 +351,7 @@ impl SimulationElement for VHF {
     }
 }
 
-// To manage
+#[derive(Copy, Clone)]
 pub struct COMM {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
@@ -421,6 +416,7 @@ impl SimulationElement for COMM {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ADF {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
@@ -471,6 +467,7 @@ impl SimulationElement for ADF {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct VOR {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
@@ -521,6 +518,7 @@ impl SimulationElement for VOR {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ILS {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
@@ -567,6 +565,7 @@ impl SimulationElement for ILS {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct GLS {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
@@ -613,6 +612,7 @@ impl SimulationElement for GLS {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct MARKERS {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,

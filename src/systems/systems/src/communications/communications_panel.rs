@@ -4,6 +4,7 @@ use crate::simulation::{
 
 use crate::communications::audio::AudioControlPanel;
 
+#[derive(Copy, Clone)]
 pub struct CommunicationsPanel {
     id: usize,
     acp: AudioControlPanel,
@@ -17,12 +18,8 @@ impl CommunicationsPanel {
         }
     }
 
-    pub fn get_transmit_com1(&self) -> bool {
-        self.acp.get_transmit_com1()
-    }
-
-    pub fn get_transmit_com2(&self) -> bool {
-        self.acp.get_transmit_com2()
+    pub fn get_transmit_channel_value(&self) -> u8 {
+        self.acp.get_transmit_channel_value()
     }
 
     pub fn get_volume_com1(&self) -> u8 {
@@ -151,6 +148,10 @@ impl CommunicationsPanel {
 
     pub fn is_emitting(&self) -> bool {
         self.acp.is_emitting()
+    }
+
+    pub fn update_transmit(&mut self, other_panel: &CommunicationsPanel) {
+        self.acp.update_transmit(&other_panel.acp);
     }
 
     pub fn update_volume(&mut self, other_panel: &CommunicationsPanel) {

@@ -556,9 +556,22 @@
     - Number
     - Volume of ADF 1/2 on the left/right/overhead ACP
 
+- L:A32NX_ACP{1,2,3}_SWITCH_INT
+    - Number
+    - Set to 0 whenever on RAD position. 50 whenever neutral position. 100 whenever in INT position
+
 - L:A32NX_IS_EMITTING_ON_FREQUENCY
     - Bool
     - True if the INTRAD switch on the ACPs (depending on controlling mode) is on RAD thus transmitting
+
+- L:A32NX_SIDE_CONTROLLING
+    - Enum
+    - Indicates which side controls the communications
+      Value | Meaning
+      --- | ---
+      0 | Captain
+      1 | FO
+      2 | Both sides
 
 - A32NX_TO_CONFIG_FLAPS_ENTERED
     - Bool

@@ -10,23 +10,11 @@ use crate::{
 };
 use std::time::Duration;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum SideTransmission {
-    CAPTAIN,
+#[derive(Clone, Copy, Debug)]
+enum ACPName {
+    CAPTAIN = 1,
     FO,
-    BOTH,
-}
-
-read_write_enum!(SideTransmission);
-
-impl From<f64> for SideTransmission {
-    fn from(value: f64) -> Self {
-        match value as u8 {
-            0 => SideTransmission::CAPTAIN,
-            1 => SideTransmission::FO,
-            _ => SideTransmission::BOTH,
-        }
-    }
+    OVHD,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -36,10 +24,11 @@ pub enum AudioSwitchingKnobPosition {
     FO,
 }
 
-enum CommunicationsPanelChosen {
-    CommunicationsPanelCaptain,
-    CommunicationsPanelFO,
-    CommunicationsPanelOVHD,
+pub enum TransmissionCom {
+    COM1,
+    COM2,
+    DUMMY,
+    NONE,
 }
 
 pub struct Communications {
@@ -49,6 +38,9 @@ pub struct Communications {
 
     audio_switching_knob_id: VariableIdentifier,
     audio_switching_knob: AudioSwitchingKnobPosition,
+
+    pilot_transmit_id: VariableIdentifier,
+    copilot_transmit_id: VariableIdentifier,
 
     receive_com1_id: VariableIdentifier,
     receive_com2_id: VariableIdentifier,
@@ -84,6 +76,12 @@ pub struct Communications {
 
     voice_button_id: VariableIdentifier,
     is_emitting_id: VariableIdentifier,
+    update_comms_id: VariableIdentifier,
+
+    previous_side_controlling: SideControlling,
+
+    pilot_transmit_channel: u8,
+    copilot_transmit_channel: u8,
 
     receive_com1: bool,
     receive_com2: bool,
@@ -103,6 +101,8 @@ pub struct Communications {
 
     voice_button: bool,
     is_emitting: bool,
+    update_comms: u8,
+    last_acp_used: u8,
 
     volume_com1: u8,
     volume_com2: u8,
@@ -136,6 +136,9 @@ impl Communications {
 
             audio_switching_knob_id: context.get_identifier("AUDIOSWITCHING_KNOB".to_owned()),
             audio_switching_knob: AudioSwitchingKnobPosition::NORM,
+
+            pilot_transmit_id: context.get_identifier("PILOT_TRANSMIT_CHANNEL".to_owned()),
+            copilot_transmit_id: context.get_identifier("COPILOT_TRANSMIT_CHANNEL".to_owned()),
 
             receive_com1_id: context.get_identifier("COM1_RECEIVE".to_owned()),
             receive_com2_id: context.get_identifier("COM2_RECEIVE".to_owned()),
@@ -172,6 +175,11 @@ impl Communications {
 
             voice_button_id: context.get_identifier("VOICE_BUTTON_DOWN".to_owned()),
             is_emitting_id: context.get_identifier("IS_EMITTING_ON_FREQUENCY".to_owned()),
+            update_comms_id: context.get_identifier("UPDATE_COMMS".to_owned()),
+            previous_side_controlling: SideControlling::BOTH,
+
+            pilot_transmit_channel: 1,
+            copilot_transmit_channel: 1,
 
             receive_com1: false,
             receive_com2: false,
@@ -187,9 +195,12 @@ impl Communications {
             receive_ils: false,
             receive_gls: false,
             receive_markers: false,
+
             sound_markers: false,
             voice_button: false,
             is_emitting: false,
+            update_comms: 0,
+            last_acp_used: 1,
 
             volume_com1: 0,
             volume_com2: 0,
@@ -224,76 +235,91 @@ impl Communications {
      * and it's update within the Behaviors
      */
     pub fn update(&mut self, context: &UpdateContext) {
-        let chosen_panel: &CommunicationsPanel = match self.guess_panel(&context.side_controlling())
-        {
-            CommunicationsPanelChosen::CommunicationsPanelCaptain => {
-                &(self.communications_panel_captain)
+        if self.update_comms != 0 || self.previous_side_controlling != context.side_controlling() {
+            // Whenever the player presses BOTH on the EFB, let's configure the ACPs with the last ACP used
+            if context.side_controlling() == SideControlling::BOTH && context.side_controlling() != self.previous_side_controlling {
+                self.update_comms = (self.previous_side_controlling as u8) + 1;
             }
-            CommunicationsPanelChosen::CommunicationsPanelFO => {
-                &(self.communications_panel_first_officer)
+
+            self.previous_side_controlling = context.side_controlling();
+
+            if let Some(chosen_panel) = self.guess_panel(context.side_controlling()) {
+                self.last_acp_used = self.update_comms;
+
+                self.voice_button = chosen_panel.get_voice_button();
+                self.is_emitting = chosen_panel.is_emitting();
+
+                self.pilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+                self.copilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+
+                self.receive_com1 = chosen_panel.get_receive_com1();
+                self.receive_com2 = chosen_panel.get_receive_com2();
+                self.receive_hf1 = chosen_panel.get_receive_hf1();
+                self.receive_hf2 = chosen_panel.get_receive_hf2();
+                self.receive_mech = chosen_panel.get_receive_mech();
+                self.receive_att = chosen_panel.get_receive_att();
+                self.receive_pa = chosen_panel.get_receive_pa();
+                self.receive_adf1 = chosen_panel.get_receive_adf1();
+                self.receive_adf2 = chosen_panel.get_receive_adf2();
+                self.receive_vor1 = chosen_panel.get_receive_vor1();
+                self.receive_vor2 = chosen_panel.get_receive_vor2();
+                self.receive_ils = chosen_panel.get_receive_ils();
+                self.receive_gls = chosen_panel.get_receive_gls();
+
+                self.receive_markers = (self.sound_markers && !chosen_panel.get_receive_markers())
+                    || (!self.sound_markers && chosen_panel.get_receive_markers());
+
+                self.volume_com1 = chosen_panel.get_volume_com1();
+                self.volume_com2 = chosen_panel.get_volume_com2();
+                self.volume_adf1 = chosen_panel.get_volume_adf1();
+                self.volume_adf2 = chosen_panel.get_volume_adf2();
+                self.volume_vor1 = chosen_panel.get_volume_vor1();
+                self.volume_vor2 = chosen_panel.get_volume_vor2();
+                self.volume_ils = chosen_panel.get_volume_ils();
+                self.volume_gls = chosen_panel.get_volume_gls();
+                self.volume_hf1 = chosen_panel.get_volume_hf1();
+                self.volume_hf2 = chosen_panel.get_volume_hf2();
+                self.volume_pa = chosen_panel.get_volume_pa();
+                self.volume_att = chosen_panel.get_volume_att();
+                self.volume_mech = chosen_panel.get_volume_mech();
+                self.volume_markers = chosen_panel.get_volume_markers();
+
+                self.morse_adf1.update(context);
+                self.morse_adf2.update(context);
+                self.morse_vor1.update(context);
+                self.morse_vor2.update(context);
+                self.morse_ils.update(context);
+                self.morse_gls.update(context);
+
+                if context.side_controlling() == SideControlling::BOTH {
+                    self.communications_panel_captain
+                        .update_transmit(&chosen_panel);
+                    self.communications_panel_first_officer
+                        .update_transmit(&chosen_panel);
+                    self.communications_panel_ovhd.update_transmit(&chosen_panel);
+
+                    self.communications_panel_captain
+                    .update_receive(&chosen_panel);
+                        self.communications_panel_first_officer
+                    .update_receive(&chosen_panel);
+                    self.communications_panel_ovhd.update_receive(&chosen_panel);
+
+                    self.communications_panel_captain
+                        .update_volume(&chosen_panel);
+                    self.communications_panel_first_officer
+                        .update_volume(&chosen_panel);
+                    self.communications_panel_ovhd.update_volume(&chosen_panel);
+
+                    self.communications_panel_captain.update_misc(&chosen_panel);
+                    self.communications_panel_first_officer
+                        .update_misc(&chosen_panel);
+                    self.communications_panel_ovhd.update_misc(&chosen_panel);
+                } else if context.side_controlling() == SideControlling::CAPTAIN {
+                    self.copilot_transmit_channel = 4;
+                } else {
+                    self.pilot_transmit_channel = 4;
+                }
             }
-            CommunicationsPanelChosen::CommunicationsPanelOVHD => &(self.communications_panel_ovhd),
-        };
-
-        self.voice_button = chosen_panel.get_voice_button();
-        self.is_emitting = chosen_panel.is_emitting();
-
-        self.receive_com1 = chosen_panel.get_receive_com1();
-        self.receive_com2 = chosen_panel.get_receive_com2();
-        self.receive_hf1 = chosen_panel.get_receive_hf1();
-        self.receive_hf2 = chosen_panel.get_receive_hf2();
-        self.receive_mech = chosen_panel.get_receive_mech();
-        self.receive_att = chosen_panel.get_receive_att();
-        self.receive_pa = chosen_panel.get_receive_pa();
-        self.receive_adf1 = chosen_panel.get_receive_adf1();
-        self.receive_adf2 = chosen_panel.get_receive_adf2();
-        self.receive_vor1 = chosen_panel.get_receive_vor1();
-        self.receive_vor2 = chosen_panel.get_receive_vor2();
-        self.receive_ils = chosen_panel.get_receive_ils();
-        self.receive_gls = chosen_panel.get_receive_gls();
-
-        self.receive_markers = (self.sound_markers && !chosen_panel.get_receive_markers())
-            || (!self.sound_markers && chosen_panel.get_receive_markers());
-
-        self.volume_com1 = chosen_panel.get_volume_com1();
-        self.volume_com2 = chosen_panel.get_volume_com2();
-        self.volume_adf1 = chosen_panel.get_volume_adf1();
-        self.volume_adf2 = chosen_panel.get_volume_adf2();
-        self.volume_vor1 = chosen_panel.get_volume_vor1();
-        self.volume_vor2 = chosen_panel.get_volume_vor2();
-        self.volume_ils = chosen_panel.get_volume_ils();
-        self.volume_gls = chosen_panel.get_volume_gls();
-        self.volume_hf1 = chosen_panel.get_volume_hf1();
-        self.volume_hf2 = chosen_panel.get_volume_hf2();
-        self.volume_pa = chosen_panel.get_volume_pa();
-        self.volume_att = chosen_panel.get_volume_att();
-        self.volume_mech = chosen_panel.get_volume_mech();
-        self.volume_markers = chosen_panel.get_volume_markers();
-
-        self.morse_adf1.update(context);
-        self.morse_adf2.update(context);
-        self.morse_vor1.update(context);
-        self.morse_vor2.update(context);
-        self.morse_ils.update(context);
-        self.morse_gls.update(context);
-
-        // Update ACP 2/3 with ACP1 as ACP1 is the preffered one
-        // when both sides are synchronised
-        if context.side_controlling() == SideControlling::BOTH {
-            self.communications_panel_first_officer
-                .update_volume(&self.communications_panel_captain);
-            self.communications_panel_ovhd
-                .update_volume(&self.communications_panel_captain);
-
-            self.communications_panel_first_officer
-                .update_receive(&self.communications_panel_captain);
-            self.communications_panel_ovhd
-                .update_receive(&self.communications_panel_captain);
-
-            self.communications_panel_first_officer
-                .update_misc(&self.communications_panel_captain);
-            self.communications_panel_ovhd
-                .update_misc(&self.communications_panel_captain);
         }
     }
 
@@ -302,28 +328,36 @@ impl Communications {
      * according to AudioSwitchingKnob position and the side
      * the player is playing on
      */
-    fn guess_panel(&self, side_controlling: &SideControlling) -> CommunicationsPanelChosen {
-        let mut chosen_panel = CommunicationsPanelChosen::CommunicationsPanelCaptain;
+    fn guess_panel(&self, side_controlling: SideControlling) -> Option<CommunicationsPanel> {
+        let mut chosen_panel = None;
 
-        // If the sides are sync, let's choose ACP1 as it doewn't matter
-        if !matches!(side_controlling, SideControlling::BOTH) {
-            if self.audio_switching_knob != AudioSwitchingKnobPosition::NORM {
-                chosen_panel = CommunicationsPanelChosen::CommunicationsPanelOVHD;
+        println!("ACP USED = {}", self.last_acp_used);
+        println!("update_comms = {}", self.update_comms);
+        println!("audio_switching_knob = {}", self.audio_switching_knob as u8);
+        println!("side = {}", side_controlling as u8);
 
-                if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
-                    if matches!(side_controlling, SideControlling::FO) {
-                        chosen_panel = CommunicationsPanelChosen::CommunicationsPanelFO;
-                    }
-                } else {
-                    if matches!(side_controlling, SideControlling::CAPTAIN) {
-                        chosen_panel = CommunicationsPanelChosen::CommunicationsPanelCaptain;
-                    }
-                }
-            } else {
-                if matches!(side_controlling, SideControlling::FO) {
-                    chosen_panel = CommunicationsPanelChosen::CommunicationsPanelFO;
-                }
+        // ACP1 disabled if ACP3 in Captain mode OR the FO is controlling (via the EFB)
+        if self.update_comms == ACPName::CAPTAIN as u8 {
+            if self.audio_switching_knob != AudioSwitchingKnobPosition::CAPTAIN
+                && side_controlling != SideControlling::FO
+            {
+                println!("AAAA=");
+                chosen_panel = Some(self.communications_panel_captain);
             }
+        // ACP2 disabled if ACP3 in FO mode OR the Captain is controlling (via the EFB)
+        } else if self.update_comms == ACPName::FO as u8 {
+            if self.audio_switching_knob != AudioSwitchingKnobPosition::FO
+                && side_controlling != SideControlling::CAPTAIN
+            {
+                println!("BBBB=");
+                chosen_panel = Some(self.communications_panel_first_officer);
+            }
+        // ACP3 taken into account only if the audioswitching knob is in Captain or FO mode
+        } else if self.update_comms == ACPName::OVHD as u8
+            && self.audio_switching_knob != AudioSwitchingKnobPosition::NORM
+        {
+            println!("CCCC=");
+            chosen_panel = Some(self.communications_panel_ovhd);
         }
 
         chosen_panel
@@ -352,48 +386,55 @@ impl SimulationElement for Communications {
             2 => AudioSwitchingKnobPosition::FO,
             _ => AudioSwitchingKnobPosition::NORM,
         };
-
         self.sound_markers = reader.read(&self.sound_markers_id);
+        self.update_comms = reader.read(&self.update_comms_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.is_emitting_id, self.is_emitting);
-        writer.write(&self.voice_button_id, self.voice_button);
+        if self.update_comms != 0 {
+            writer.write(&self.update_comms_id, 0);
 
-        writer.write(&self.receive_com1_id, self.receive_com1);
-        writer.write(&self.receive_com2_id, self.receive_com2);
-        writer.write(&self.receive_hf1_id, self.receive_hf1);
-        writer.write(&self.receive_hf2_id, self.receive_hf2);
-        writer.write(&self.receive_mech_id, self.receive_mech);
-        writer.write(&self.receive_att_id, self.receive_att);
-        writer.write(&self.receive_pa_id, self.receive_pa);
+            writer.write(&self.is_emitting_id, self.is_emitting);
+            writer.write(&self.voice_button_id, self.voice_button);
 
-        writer.write(&self.receive_adf1_id, self.receive_adf1);
-        writer.write(&self.receive_adf2_id, self.receive_adf2);
-        writer.write(&self.receive_vor1_id, self.receive_vor1);
-        writer.write(&self.receive_vor2_id, self.receive_vor2);
-        writer.write(&self.receive_ils_id, self.receive_ils);
-        writer.write(&self.receive_gls_id, self.receive_gls);
+            writer.write(&self.pilot_transmit_id, self.pilot_transmit_channel);
+            writer.write(&self.copilot_transmit_id, self.copilot_transmit_channel);
 
-        // Special case for markers as there's no XXXX_SET function. Only Toggle
-        if self.receive_markers {
-            writer.write(&self.receive_markers_id, self.receive_markers);
+            writer.write(&self.receive_com1_id, self.receive_com1);
+            writer.write(&self.receive_com2_id, self.receive_com2);
+            writer.write(&self.receive_hf1_id, self.receive_hf1);
+            writer.write(&self.receive_hf2_id, self.receive_hf2);
+            writer.write(&self.receive_mech_id, self.receive_mech);
+            writer.write(&self.receive_att_id, self.receive_att);
+            writer.write(&self.receive_pa_id, self.receive_pa);
+
+            writer.write(&self.receive_adf1_id, self.receive_adf1);
+            writer.write(&self.receive_adf2_id, self.receive_adf2);
+            writer.write(&self.receive_vor1_id, self.receive_vor1);
+            writer.write(&self.receive_vor2_id, self.receive_vor2);
+            writer.write(&self.receive_ils_id, self.receive_ils);
+            writer.write(&self.receive_gls_id, self.receive_gls);
+
+            // Special case for markers as there's no XXXX_SET function. Only Toggle
+            if self.receive_markers {
+                writer.write(&self.receive_markers_id, self.receive_markers);
+            }
+
+            writer.write(&self.volume_com1_id, self.volume_com1);
+            writer.write(&self.volume_com2_id, self.volume_com2);
+            writer.write(&self.volume_adf1_id, self.volume_adf1);
+            writer.write(&self.volume_adf2_id, self.volume_adf2);
+            writer.write(&self.volume_vor1_id, self.volume_vor1);
+            writer.write(&self.volume_vor2_id, self.volume_vor2);
+            writer.write(&self.volume_ils_id, self.volume_ils);
+            writer.write(&self.volume_gls_id, self.volume_gls);
+            writer.write(&self.volume_hf1_id, self.volume_hf1);
+            writer.write(&self.volume_hf2_id, self.volume_hf2);
+            writer.write(&self.volume_pa_id, self.volume_pa);
+            writer.write(&self.volume_att_id, self.volume_att);
+            writer.write(&self.volume_mech_id, self.volume_mech);
+            writer.write(&self.volume_markers_id, self.volume_markers);
         }
-
-        writer.write(&self.volume_com1_id, self.volume_com1);
-        writer.write(&self.volume_com2_id, self.volume_com2);
-        writer.write(&self.volume_adf1_id, self.volume_adf1);
-        writer.write(&self.volume_adf2_id, self.volume_adf2);
-        writer.write(&self.volume_vor1_id, self.volume_vor1);
-        writer.write(&self.volume_vor2_id, self.volume_vor2);
-        writer.write(&self.volume_ils_id, self.volume_ils);
-        writer.write(&self.volume_gls_id, self.volume_gls);
-        writer.write(&self.volume_hf1_id, self.volume_hf1);
-        writer.write(&self.volume_hf2_id, self.volume_hf2);
-        writer.write(&self.volume_pa_id, self.volume_pa);
-        writer.write(&self.volume_att_id, self.volume_att);
-        writer.write(&self.volume_mech_id, self.volume_mech);
-        writer.write(&self.volume_markers_id, self.volume_markers);
     }
 }
 
