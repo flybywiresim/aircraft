@@ -1,19 +1,15 @@
-use crate::simulation::{
-    InitContext, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-};
+use crate::simulation::{InitContext, SimulationElement, SimulationElementVisitor};
 
 use crate::communications::audio::AudioControlPanel;
 
 #[derive(Copy, Clone)]
 pub struct CommunicationsPanel {
-    id: usize,
     acp: AudioControlPanel,
     // We could think of adding a rmp here in the future
 }
 impl CommunicationsPanel {
     pub fn new(context: &mut InitContext, id_panel: usize) -> Self {
         Self {
-            id: id_panel,
             acp: AudioControlPanel::new(context, id_panel),
         }
     }
@@ -173,8 +169,4 @@ impl SimulationElement for CommunicationsPanel {
 
         visitor.visit(self);
     }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {}
-
-    fn write(&self, writer: &mut SimulatorWriter) {}
 }

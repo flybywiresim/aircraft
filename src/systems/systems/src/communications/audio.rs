@@ -5,7 +5,6 @@ use crate::simulation::{
 
 #[derive(Copy, Clone)]
 pub struct AudioControlPanel {
-    id: usize,
     transmit_channel_id: VariableIdentifier,
     voice_button_id: VariableIdentifier,
     int_rad_switch_id: VariableIdentifier,
@@ -23,7 +22,6 @@ pub struct AudioControlPanel {
 impl AudioControlPanel {
     pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
         Self {
-            id: id_acp,
             voice_button_id: context.get_identifier(format!("ACP{}_VOICE_BUTTON_DOWN", id_acp)),
             transmit_channel_id: context.get_identifier(format!("ACP{}_TRANSMIT_CHANNEL", id_acp)),
             int_rad_switch_id: context.get_identifier(format!("ACP{}_SWITCH_INT", id_acp)),
@@ -66,6 +64,26 @@ impl AudioControlPanel {
         self.vhfs[2].get_volume()
     }
 
+    pub fn get_volume_hf1(&self) -> u8 {
+        self.comms[0].get_volume()
+    }
+
+    pub fn get_volume_hf2(&self) -> u8 {
+        self.comms[1].get_volume()
+    }
+
+    pub fn get_volume_mech(&self) -> u8 {
+        self.comms[3].get_volume()
+    }
+
+    pub fn get_volume_att(&self) -> u8 {
+        self.comms[4].get_volume()
+    }
+
+    pub fn get_volume_pa(&self) -> u8 {
+        self.comms[2].get_volume()
+    }
+
     pub fn get_volume_adf1(&self) -> u8 {
         self.adfs[0].get_volume()
     }
@@ -88,26 +106,6 @@ impl AudioControlPanel {
 
     pub fn get_volume_gls(&self) -> u8 {
         self.gls.get_volume()
-    }
-
-    pub fn get_volume_hf1(&self) -> u8 {
-        self.comms[0].get_volume()
-    }
-
-    pub fn get_volume_hf2(&self) -> u8 {
-        self.comms[1].get_volume()
-    }
-
-    pub fn get_volume_pa(&self) -> u8 {
-        self.comms[2].get_volume()
-    }
-
-    pub fn get_volume_mech(&self) -> u8 {
-        self.comms[3].get_volume()
-    }
-
-    pub fn get_volume_att(&self) -> u8 {
-        self.comms[4].get_volume()
     }
 
     pub fn get_volume_markers(&self) -> u8 {
@@ -133,17 +131,16 @@ impl AudioControlPanel {
     pub fn get_receive_hf2(&self) -> bool {
         self.comms[1].get_receive()
     }
-
-    pub fn get_receive_pa(&self) -> bool {
-        self.comms[2].get_receive()
-    }
-
     pub fn get_receive_mech(&self) -> bool {
         self.comms[3].get_receive()
     }
 
     pub fn get_receive_att(&self) -> bool {
         self.comms[4].get_receive()
+    }
+
+    pub fn get_receive_pa(&self) -> bool {
+        self.comms[2].get_receive()
     }
 
     pub fn get_receive_adf1(&self) -> bool {
