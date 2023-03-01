@@ -198,13 +198,35 @@ class ClientEvent {
    *                setInputGroupState() to enable/disable the group without unmapping the events.
    *                (default = 0)
    * @param downValue The value to pass to the event when the input is pressed (default = 0).
+   * @param upValue The value to pass to the event when the input is released (default = 0).
    * @param maskable True if the event should be masked by this client and not be transmitted to any
    *                 more clients, possibly including Microsoft Flight Simulator itself (if the
    *                 priority of the client exceeds that of Flight Simulator) (default = false).
-   *
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
-   * TODO: Test adding down and up events to the same event
+   */
+   void mapInputDownUpEvent(const std::string& inputDefinition,
+                           SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
+                           DWORD downValue = 0,
+                           DWORD upValue = 0,
+                           bool maskable = false);
+
+  /**
+   * Adds an down input event to this client event and add it to an input group.<br/>
+   * The input group can be used to enable/disable the input events with setInputGroupState().<p/>
+   * If you want to map down and up events to the same client event, use mapInputDownUpEvent().
+   *
+   * @param inputDefinition The input definition to map to the event. See the SDK documentation
+   *                        linked below.
+   * @param groupId The ID of the group to add the event to. This is useful to be able to use
+   *                setInputGroupState() to enable/disable the group without unmapping the events.
+   *                (default = 0)
+   * @param downValue The value to pass to the event when the input is pressed (default = 0).
+   * @param maskable True if the event should be masked by this client and not be transmitted to any
+   *                 more clients, possibly including Microsoft Flight Simulator itself (if the
+   *                 priority of the client exceeds that of Flight Simulator) (default = false).
+   * @see
+   * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    */
   void mapInputDownEvent(const std::string& inputDefinition,
                          SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
@@ -213,7 +235,8 @@ class ClientEvent {
 
   /**
    * Adds an up input event to this client event and add it to an input group.<br/>
-   * The input group can be used to enable/disable the input events with setInputGroupState().
+   * The input group can be used to enable/disable the input events with setInputGroupState().<p/>
+   * If you want to map down and up events to the same client event, use mapInputDownUpEvent().
    *
    * @param inputDefinition The input definition to map to the event. See the SDK documentation
    *                        linked below.
@@ -224,7 +247,6 @@ class ClientEvent {
    * @param maskable True if the event should be masked by this client and not be transmitted to any
    *                 more clients, possibly including Microsoft Flight Simulator itself (if the
    *                 priority of the client exceeds that of Flight Simulator) (default = false).<br/>
-   *
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    */
@@ -247,7 +269,7 @@ class ClientEvent {
    *
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RemoveInputEvent.htm
    */
-  void unmapInputEvent(SIMCONNECT_INPUT_GROUP_ID inputGroupId, const std::string& inputDefinition) const;
+  void unmapInputEvent(const std::string& inputDefinition, SIMCONNECT_INPUT_GROUP_ID inputGroupId) const;
 
   /**
    * Removes the input group ID and all event ID mapped to it.
@@ -255,7 +277,6 @@ class ClientEvent {
    * @param inputGroupId
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_ClearInputGroup.htm
    * @see https://devsupport.flightsimulator.com/questions/6515/simconnect-clearinputgroup-not-working.html
-   * TODO: could be static
    */
   void clearInputGroup(SIMCONNECT_INPUT_GROUP_ID inputGroupId) const;
 
