@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
-export const failureGeneratorPerHour = () => {
+export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
@@ -28,7 +28,8 @@ export const failureGeneratorPerHour = () => {
                     console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
                     if (rollDice < chancePerSecond * 5) {
                         console.info('PerHour Failure triggered');
-                        activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
+                        activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
+                            activate, activeFailures, uniqueGenPrefix + i.toString());
                         tempFailureGeneratorArmed[i] = false;
                         change = true;
                         if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
@@ -65,9 +66,7 @@ export const failureGeneratorPerHour = () => {
     }, []);
 };
 
-export const failureGeneratorTimer : () => void = () => {
-    // time based trigger after TO thrust
-
+export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
@@ -88,7 +87,8 @@ export const failureGeneratorTimer : () => void = () => {
             let change = false;
             for (let i = 0; i < nbGeneratorTimer; i++) {
                 if (failureGeneratorArmedTimer[i] && absoluteTime5s > failureTime[i]) {
-                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
+                        activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Time based failure triggered');
                     tempFailureGeneratorArmedTimerBased[i] = false;
                     change = true;

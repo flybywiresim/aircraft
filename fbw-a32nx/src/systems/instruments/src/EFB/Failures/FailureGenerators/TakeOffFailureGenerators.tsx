@@ -4,7 +4,7 @@ import { activateRandomFailure, basicData, failureGeneratorCommonFunction, Failu
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 // keep this template for new failureGenerators
-export const failureGeneratorTakeOff = () => {
+export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {
     // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
@@ -32,7 +32,8 @@ export const failureGeneratorTakeOff = () => {
                 if (tempFailureGeneratorArmed[i]
                     && ((altitude >= failureTakeOffAltitudeThreshold[i] && failureTakeOffAltitudeThreshold[i] !== -1)
                     || (gs >= failureTakeOffSpeedThreshold[i] && failureTakeOffSpeedThreshold[i] !== -1))) {
-                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
+                        activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Take-off failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;

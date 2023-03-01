@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
-export const failureGeneratorSpeedAccel = () => {
+export const failureGeneratorSpeedAccel = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
@@ -24,7 +24,8 @@ export const failureGeneratorSpeedAccel = () => {
             let change = false;
             for (let i = 0; i < nbGeneratorSpeedAccel; i++) {
                 if (tempFailureGeneratorArmed[i] && gs > settingsSpeedAccel[i * numberOfSettingsPerGenerator + 1]) {
-                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
+                        activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Accel speed failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;
@@ -60,7 +61,7 @@ export const failureGeneratorSpeedAccel = () => {
     }, []);
 };
 
-export const failureGeneratorSpeedDecel = () => {
+export const failureGeneratorSpeedDecel = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
@@ -81,7 +82,8 @@ export const failureGeneratorSpeedDecel = () => {
             let change = false;
             for (let i = 0; i < nbGeneratorSpeedDecel; i++) {
                 if (tempFailureGeneratorArmed[i] && gs > settingsSpeedDecel[i * numberOfSettingsPerGenerator + 1]) {
-                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
+                        activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Decel speed failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;

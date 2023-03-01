@@ -16,7 +16,7 @@ export const failureGeneratorCommonFunction = () => {
 };
 
 // keep this template for new failureGenerators
-export const failureGeneratorTEMPLATE = () => {
+export const failureGeneratorTEMPLATE = (generatorFailuresGetters : Map<number, string>) => {
     // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
@@ -38,7 +38,8 @@ export const failureGeneratorTEMPLATE = () => {
             for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
                 const failureConditionPLACEHOLDER = settingsTEMPLATE[i * numberOfSettingsPerGenerator + 1] >= 1; // CONDITIONS HERE
                 if (tempFailureGeneratorArmed[i] && failureConditionPLACEHOLDER) {
-                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
+                        activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('TEMPLATE failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;
@@ -75,17 +76,6 @@ export const failureGeneratorTEMPLATE = () => {
         setFailureGeneratorArmedTEMPLATE([false, false]);
     }, []);
 };
-/*
-enum FailureGeneratorType {
-    TAKE_OFF= 0,
-    TIMEBASED= 1,
-    MTTF= 2,
-    ALT_CLIMB= 3,
-    ALT_DESC= 4,
-    SPEED_ACCEL= 5,
-    SPEED_DECEL= 6,
-}
-*/
 
 export const flatten = (settings : number[]) => {
     let settingString = '';
@@ -103,11 +93,24 @@ export enum FailurePhases {
     FLIGHT= 3,
 }
 
-export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorUniqueID: string) => {
+export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[]) => {
+    const generatorFailuresGetters : Map<number, string> = new Map();
+    const generatorFailuresSetters : Map<number, (value: string) => void> = new Map();
+    if (allFailures.length > 0) {
+        allFailures.forEach((failure) => {
+            const [generatorSetting, setGeneratorSetting] = usePersistentProperty(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
+            generatorFailuresGetters.set(failure.identifier, generatorSetting);
+            generatorFailuresSetters.set(failure.identifier, setGeneratorSetting);
+        });
+    }
+    return { generatorFailuresGetters, generatorFailuresSetters };
+};
+
+export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>, generatorUniqueID: string) => {
     const failureIDs : Failure[] = [];
     if (allFailures.length > 0) {
         allFailures.forEach((failure) => {
-            const [generatorSetting] = usePersistentProperty(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
+            const generatorSetting = generatorFailuresGetters[failure.identifier];
             const failureGeneratorsTable = generatorSetting.split(',');
             if (failureGeneratorsTable.length > 0) {
                 failureGeneratorsTable.forEach((generator) => {
@@ -147,9 +150,10 @@ export const basicData = () => {
 };
 
 export const randomFailureGenerator = () => {
-    const failureGenerators : (() => void)[] = [];
+    const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [];
     const { failureFlightPhase } = basicData();
-    const [, setGeneratorSetting] = usePersistentProperty('EFB_FAILURE_27002_GENERATORS', '');
+    const { allFailures } = failureGeneratorCommonFunction();
+    const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
 
     failureGenerators.push(failureGeneratorTimer);
     failureGenerators.push(failureGeneratorTakeOff);
@@ -162,7 +166,7 @@ export const randomFailureGenerator = () => {
     // TODO: to be improved, changing doesn't mean active but this is not critical
 
     for (let i = 0; i < failureGenerators.length; i++) {
-        failureGenerators[i]();
+        failureGenerators[i](generatorFailuresGetters);
     }
 
     useEffect(() => {
@@ -170,6 +174,7 @@ export const randomFailureGenerator = () => {
     }, [failureFlightPhase, failureGeneratorTEMPLATE]);
 
     useEffect(() => {
-        setGeneratorSetting('G0');
+        generatorFailuresSetters[27002]('G0');
+        generatorFailuresSetters[27003]('G1');
     }, []);
 };
