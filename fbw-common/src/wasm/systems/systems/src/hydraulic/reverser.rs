@@ -1,5 +1,5 @@
 use std::time::Duration;
-use uom::si::{f64::*, pressure::psi, ratio::ratio};
+use uom::si::{f64::*, pressure::psi, ratio::ratio, volume::gallon};
 
 use crate::{
     shared::{
@@ -12,7 +12,7 @@ use crate::{
     },
 };
 
-use super::{PressureSwitch, PressureSwitchState, PressureSwitchType};
+use super::{linear_actuator::Actuator, PressureSwitch, PressureSwitchState, PressureSwitchType};
 
 struct ReverserActuator {
     position: Ratio,
@@ -20,12 +20,17 @@ struct ReverserActuator {
     nominal_speed: f64,
 
     nominal_pressure: Pressure,
+
+    volume_to_actuator_accumulator: Volume,
+    volume_to_res_accumulator: Volume,
 }
 impl ReverserActuator {
     const NOMINAL_SPEED_RATIO_PER_S: f64 = 0.6;
     const SPEED_RATIO_STD_DEVIATION: f64 = 0.05;
 
     const SPEED_TIME_CONSTANT: Duration = Duration::from_millis(250);
+
+    const SPEED_TO_HYD_FLOW_GAIN: f64 = 0.0005;
 
     fn new(nominal_pressure: Pressure) -> Self {
         Self {
@@ -36,6 +41,9 @@ impl ReverserActuator {
                 Self::SPEED_RATIO_STD_DEVIATION,
             ),
             nominal_pressure,
+
+            volume_to_actuator_accumulator: Volume::default(),
+            volume_to_res_accumulator: Volume::default(),
         }
     }
 
@@ -67,6 +75,8 @@ impl ReverserActuator {
             .position
             .max(Ratio::default())
             .min(Ratio::new::<ratio>(1.));
+
+        self.update_flow(context);
     }
 
     fn update_current_speed(
@@ -83,6 +93,19 @@ impl ReverserActuator {
         }
     }
 
+    fn update_flow(&mut self, context: &UpdateContext) {
+        let volume_used = Volume::new::<gallon>(
+            self.current_speed.output().get::<ratio>().abs() * Self::SPEED_TO_HYD_FLOW_GAIN,
+        );
+        self.volume_to_actuator_accumulator += volume_used;
+        self.volume_to_res_accumulator += volume_used;
+
+        println!(
+            "ACTUATOR FLOW USED GPM {:.3}",
+            60. * volume_used.get::<gallon>() / context.delta_as_secs_f64()
+        );
+    }
+
     fn max_speed_from_pressure(&self, pressure: Pressure) -> Ratio {
         let pressure_ratio: Ratio = pressure / self.nominal_pressure;
 
@@ -91,6 +114,20 @@ impl ReverserActuator {
 
     fn position(&self) -> Ratio {
         self.position
+    }
+}
+impl Actuator for ReverserActuator {
+    fn used_volume(&self) -> Volume {
+        self.volume_to_actuator_accumulator
+    }
+
+    fn reservoir_return(&self) -> Volume {
+        self.volume_to_res_accumulator
+    }
+
+    fn reset_volumes(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -401,6 +438,10 @@ impl ReverserAssembly {
             self.hydraulic_manifold.actuator_pressure(),
             self.electrical_lock.is_locked(),
         );
+    }
+
+    pub fn actuator(&mut self) -> &mut impl Actuator {
+        &mut self.actuator
     }
 }
 impl ReverserFeedback for ReverserAssembly {

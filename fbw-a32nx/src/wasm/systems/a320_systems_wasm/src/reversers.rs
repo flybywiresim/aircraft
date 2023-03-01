@@ -15,6 +15,13 @@ pub(super) fn reversers(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
     Ok(())
 }
 
+const LOW_SPEED_MODE_SPEED_THRESHOLD_FOOT_PER_SEC: f64 = -0.2;
+
+// Multiplier that will artificially increase reverser thrust at low speed to overcome magical MSFS static ground friction in reverse
+const LOW_SPEED_MODE_SPEED_FORCE_MULTIPLIER: f64 = 3.;
+
+const ASYMETRY_EFFECT_MAGIC_MULTIPLIER: f64 = 10.;
+
 #[sim_connect::data_definition]
 struct ReverserThrust {
     #[name = "VELOCITY BODY Z"]
@@ -22,18 +29,18 @@ struct ReverserThrust {
     velocity_z: f64,
 
     #[name = "ROTATION ACCELERATION BODY Y"]
-    #[unit = "Radians per second squared"]
+    #[unit = "Radian per second squared"]
     angular_acc_y: f64,
 }
 
 impl VariablesToObject for ReverserThrust {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::aircraft("VELOCITY BODY Z", "feet per second squared", 0),
-            Variable::named("REVERSER_DELTA_SPEED"),
+            Variable::aircraft("VELOCITY BODY Z", "Feet per second", 0),
+            Variable::aspect("REVERSER_DELTA_SPEED"),
             Variable::aircraft(
                 "ROTATION ACCELERATION BODY Y",
-                "Radians per second squared",
+                "Radian per second squared",
                 0,
             ),
             Variable::named("REVERSER_ANGULAR_ACCELERATION"),
@@ -41,13 +48,14 @@ impl VariablesToObject for ReverserThrust {
     }
 
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        self.velocity_z = values[0] + values[1];
-        self.angular_acc_y = values[2] + values[3];
+        self.velocity_z =
+            if values[0] < 0. && values[0] > LOW_SPEED_MODE_SPEED_THRESHOLD_FOOT_PER_SEC {
+                values[0] + LOW_SPEED_MODE_SPEED_FORCE_MULTIPLIER * values[1]
+            } else {
+                values[0] + values[1]
+            };
 
-        // println!(
-        //     "WRITEBACK CURR SPEED= {:.4} REVERSER_DELTA= {:.4}  FINAL WRITE VEL{:.4} FINAL WRITE AngAcc{:.4}",
-        //     values[0], values[1], self.velocity_z, self.angular_acc_y
-        // );
+        self.angular_acc_y = values[2] + ASYMETRY_EFFECT_MAGIC_MULTIPLIER * values[3];
 
         ObjectWrite::on(values[1].abs() > 0. || values[3].abs() > 0.)
     }

@@ -1,0 +1,26 @@
+<!-- Copyright (c) 2022 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <!--
+    Animate a turbine thrust reverser (ID is used to identify which engine to look for)
+
+    Main parameters:
+            - ID        1    Engine number (1-based)
+    -->
+    <Template Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_SubTemplate"></UseTemplate>
+    </Template>
+    <Template Name="FBW_ENGINE_Turbine_ReverseThrust_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>ENGINE_Turbine_ReverseThrust_#ID#</ANIM_NAME>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_CODE>(L:A32NX_REVERSER#ID#_POSITION) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

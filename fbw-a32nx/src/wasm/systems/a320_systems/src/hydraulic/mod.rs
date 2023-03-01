@@ -2211,6 +2211,9 @@ impl A320Hydraulic {
 
         self.green_circuit
             .update_system_actuator_volumes(self.rudder_mechanical_assembly.green_actuator());
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.reversers_assembly.green_actuator());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -2252,6 +2255,9 @@ impl A320Hydraulic {
 
         self.yellow_circuit
             .update_system_actuator_volumes(self.rudder_mechanical_assembly.yellow_actuator());
+
+        self.yellow_circuit
+            .update_system_actuator_volumes(self.reversers_assembly.yellow_actuator());
     }
 
     fn update_blue_actuators_volume(&mut self) {
@@ -6216,6 +6222,14 @@ impl A320Reversers {
 
     fn reversers_position(&self) -> &[impl ReverserPosition] {
         &self.reversers[..]
+    }
+
+    fn yellow_actuator(&mut self) -> &mut impl Actuator {
+        self.reversers[1].actuator()
+    }
+
+    fn green_actuator(&mut self) -> &mut impl Actuator {
+        self.reversers[0].actuator()
     }
 }
 impl SimulationElement for A320Reversers {
