@@ -175,10 +175,8 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('xtk');
         this.simVarPublisher.subscribe('ldevRequestLeft');
         this.simVarPublisher.subscribe('ldevRequestRight');
-        this.simVarPublisher.subscribe('landingElevation1');
-        this.simVarPublisher.subscribe('landingElevation1Ssm');
-        this.simVarPublisher.subscribe('landingElevation2');
-        this.simVarPublisher.subscribe('landingElevation2Ssm');
+        this.simVarPublisher.subscribe('landingElevation1Raw');
+        this.simVarPublisher.subscribe('landingElevation2Raw');
 
         this.simVarPublisher.subscribe('fcdc1DiscreteWord1Raw');
         this.simVarPublisher.subscribe('fcdc2DiscreteWord1Raw');
