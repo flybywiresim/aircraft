@@ -894,8 +894,8 @@ export class PseudoFWC {
         this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
         /* 22 - AUTOFLIGHT */
-        const fm1DiscreteWord3 = SimVar.GetSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3', 'number');
-        const fm2DiscreteWord3 = SimVar.GetSimVarValue('L:A32NX_FM2_DISCRETE_WORD_3', 'number');
+        const fm1DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3');
+        const fm2DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FM2_DISCRETE_WORD_3');
 
         if (!this.flightPhase23.get()) {
             this.toConfigCheckedInPhase2Or3 = false;
@@ -904,7 +904,7 @@ export class PseudoFWC {
         }
 
         // TO SPEEDS NOT INSERTED
-        const fmToSpeedsNotInserted = ((fm1DiscreteWord3 & fm2DiscreteWord3 & 1 << 18) > 0);
+        const fmToSpeedsNotInserted = fm1DiscreteWord3.getBitValueOr(18, false) && fm2DiscreteWord3.getBitValueOr(18, false);
 
         this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && this.toConfigTestRaw, deltaTime);
 
@@ -918,31 +918,31 @@ export class PseudoFWC {
         this.toSpeedsNotInsertedWarning.set(!this.toConfigAndNoToSpeedsPulseNode.read() && this.toSpeedsNotInserted && !this.flightPhase3PulseNode.read());
 
         // TO SPEEDS TOO LOW
-        const toSpeedsTooLow = ((fm1DiscreteWord3 & fm2DiscreteWord3 & 1 << 17) > 0);
+        const toSpeedsTooLow = fm1DiscreteWord3.getBitValueOr(17, false) && fm2DiscreteWord3.getBitValueOr(17, false);
         this.toSpeedsTooLowWarning.set(
             (this.toConfigCheckedInPhase2Or3 || this.fwcFlightPhase.get() === 3)
             && !this.toConfigPulseNode.read() && !this.flightPhase3PulseNode.read() && toSpeedsTooLow,
         );
 
         // TO V1/VR/V2 DISAGREE
-        const toV2VRV2Disagree = ((fm1DiscreteWord3 & fm2DiscreteWord3 & 1 << 16) > 0);
+        const toV2VRV2Disagree = fm1DiscreteWord3.getBitValueOr(16, false) && fm2DiscreteWord3.getBitValueOr(16, false);
         this.toV2VRV2DisagreeWarning.set(
             (this.toConfigCheckedInPhase2Or3 || this.fwcFlightPhase.get() === 3)
             && !this.toConfigPulseNode.read() && !this.flightPhase3PulseNode.read() && toV2VRV2Disagree,
         );
 
         // FMS takeoff flap settings
-        const fm1DiscreteWord2 = SimVar.GetSimVarValue('L:A32NX_FM1_DISCRETE_WORD_2', 'number');
-        const fm2DiscreteWord2 = SimVar.GetSimVarValue('L:A32NX_FM2_DISCRETE_WORD_2', 'number');
+        const fm1DiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_FM1_DISCRETE_WORD_2');
+        const fm2DiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_FM2_DISCRETE_WORD_2');
 
         /** MCDU TO CONF 0 selected */
-        const mcduToFlapPos0 = (fm1DiscreteWord2 & 1 << 13) > 0 || (fm2DiscreteWord2 & 1 << 13) > 0;
+        const mcduToFlapPos0 = fm1DiscreteWord2.getBitValueOr(13, false) || fm2DiscreteWord2.getBitValueOr(13, false);
         /** MCDU TO CONF 1 selected */
-        const mcduToFlapPos1 = (fm1DiscreteWord2 & 1 << 14) > 0 || (fm2DiscreteWord2 & 1 << 14) > 0;
+        const mcduToFlapPos1 = fm1DiscreteWord2.getBitValueOr(14, false) || fm2DiscreteWord2.getBitValueOr(14, false);
         /** MCDU TO CONF 2 selected */
-        const mcduToFlapPos2 = (fm1DiscreteWord2 & 1 << 15) > 0 || (fm2DiscreteWord2 & 1 << 15) > 0;
+        const mcduToFlapPos2 = fm1DiscreteWord2.getBitValueOr(15, false) || fm2DiscreteWord2.getBitValueOr(15, false);
         /** MCDU TO CONF 3 selected */
-        const mcduToFlapPos3 = (fm1DiscreteWord2 & 1 << 16) > 0 || (fm2DiscreteWord2 & 1 << 16) > 0;
+        const mcduToFlapPos3 = fm1DiscreteWord2.getBitValueOr(16, false) || fm2DiscreteWord2.getBitValueOr(16, false);
 
         /* ELECTRICAL */
 
@@ -1178,12 +1178,8 @@ export class PseudoFWC {
 
         // pitch trim/mcdu disagree
         // we don't check the trim calculated from CG as it's not available yet
-        const fm1PitchTrim = new Arinc429Word(0);
-        fm1PitchTrim.value = SimVar.GetSimVarValue('L:A32NX_FM1_TO_PITCH_TRIM', 'number');
-        fm1PitchTrim.ssm = SimVar.GetSimVarValue('L:A32NX_FM1_TO_PITCH_TRIM_SSM', 'number');
-        const fm2PitchTrim = new Arinc429Word(0);
-        fm2PitchTrim.value = SimVar.GetSimVarValue('L:A32NX_FM2_TO_PITCH_TRIM', 'number');
-        fm2PitchTrim.ssm = SimVar.GetSimVarValue('L:A32NX_FM2_TO_PITCH_TRIM_SSM', 'number');
+        const fm1PitchTrim = Arinc429Word.fromSimVarValue('L:A32NX_FM1_TO_PITCH_TRIM');
+        const fm2PitchTrim = Arinc429Word.fromSimVarValue('L:A32NX_FM2_TO_PITCH_TRIM');
         const fmPitchTrim = !fm1PitchTrim.isNormalOperation() && fm2PitchTrim.isNormalOperation() ? fm2PitchTrim : fm1PitchTrim;
         this.trimDisagreeMcduStab1Conf.write(!stab1PosInvalid && fmPitchTrim.isNormalOperation() && Math.abs(fmPitchTrim.value - stab1Pos) > 1.2, deltaTime);
         this.trimDisagreeMcduStab2Conf.write(!stab2PosInvalid && fmPitchTrim.isNormalOperation() && Math.abs(fmPitchTrim.value - stab2Pos) > 1.2, deltaTime);

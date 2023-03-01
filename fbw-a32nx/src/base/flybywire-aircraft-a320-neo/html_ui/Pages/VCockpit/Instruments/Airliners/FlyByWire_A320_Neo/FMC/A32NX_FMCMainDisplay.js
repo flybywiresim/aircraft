@@ -214,6 +214,24 @@ class FMCMainDisplay extends BaseAirliners {
         this.vSpeedDisagree = false;
 
         this.onAirport = undefined;
+
+        // arinc bus output words
+        this.arincDiscreteWord2 = FmArinc429OutputWord.empty("DISCRETE_WORD_2");
+        this.arincDiscreteWord3 = FmArinc429OutputWord.empty("DISCRETE_WORD_3");
+        this.arincTakeoffPitchTrim = FmArinc429OutputWord.empty("TO_PITCH_TRIM");
+        this.arincLandingElevation = FmArinc429OutputWord.empty("LANDING_ELEVATION");
+        this.arincDestinationLatitude = FmArinc429OutputWord.empty("DEST_LAT");
+        this.arincDestinationLongitude = FmArinc429OutputWord.empty("DEST_LONG");
+
+        /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
+        this.arincBusOutputs = [
+            this.arincDiscreteWord2,
+            this.arincDiscreteWord3,
+            this.arincTakeoffPitchTrim,
+            this.arincLandingElevation,
+            this.arincDestinationLatitude,
+            this.arincDestinationLongitude,
+        ];
     }
 
     Init() {
@@ -610,6 +628,12 @@ class FMCMainDisplay extends BaseAirliners {
                 this.engineOutAccelerationAltitude
             );
         }
+
+        this.arincBusOutputs.forEach((word) => {
+            word.value = 0;
+            word.ssm = Arinc429Word.SignStatusMatrix.NoComputedData;
+        });
+
         this.toSpeedsChecks(true);
     }
 
@@ -673,6 +697,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
         }
+
+        this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
 
     /**
@@ -1648,7 +1674,8 @@ class FMCMainDisplay extends BaseAirliners {
 
             const ssm = landingElevation !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
-            this.setBnrArincSimVar('LANDING_ELEVATION', landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+            this.arincLandingElevation.setBnrValue(landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+
             // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
             SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
         }
@@ -1658,7 +1685,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             const ssm = latitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
-            this.setBnrArincSimVar('DEST_LAT', latitude ? latitude : 0, ssm, 18, 180, -180);
+            this.arincDestinationLatitude.setBnrValue(latitude ? latitude : 0, ssm, 18, 180, -180);
         }
 
         if (this.destinationLongitude !== longitude) {
@@ -1666,21 +1693,8 @@ class FMCMainDisplay extends BaseAirliners {
 
             const ssm = longitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
-            this.setBnrArincSimVar('DEST_LONG', longitude ? longitude : 0, ssm, 18, 180, -180);
+            this.arincDestinationLongitude.setBnrValue(longitude ? longitude : 0, ssm, 18, 180, -180);
         }
-    }
-
-    async setBnrArincSimVar(name, value, ssm, bits, rangeMax, rangeMin = 0) {
-        const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
-        const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
-
-        // TODO change our ARINC429 format so JS can write it, then drop the SSM simvars
-        return Promise.all([
-            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}`, "number", data),
-            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}_SSM`, "number", ssm),
-            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}`, "number", data),
-            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}_SSM`, "number", ssm),
-        ]);
     }
 
     getClbManagedSpeedFromCostIndex() {
@@ -2991,17 +3005,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     toSpeedsChecks(init = false) {
-        let dirty = init;
         const toSpeedsNotInserted = !this.v1Speed || !this.vRSpeed || !this.v2Speed;
         if (toSpeedsNotInserted !== this.toSpeedsNotInserted) {
             this.toSpeedsNotInserted = toSpeedsNotInserted;
-            dirty = true;
         }
 
         const toSpeedsTooLow = this.getToSpeedsTooLow();
         if (toSpeedsTooLow !== this.toSpeedsTooLow) {
             this.toSpeedsTooLow = toSpeedsTooLow;
-            dirty = true;
             if (toSpeedsTooLow) {
                 this.addMessageToQueue(NXSystemMessages.toSpeedTooLow, () => !this.getToSpeedsTooLow());
             }
@@ -3010,28 +3021,15 @@ class FMCMainDisplay extends BaseAirliners {
         const vSpeedDisagree = !this.vSpeedsValid();
         if (vSpeedDisagree !== this.vSpeedDisagree) {
             this.vSpeedDisagree = vSpeedDisagree;
-            dirty = true;
             if (vSpeedDisagree) {
                 this.addMessageToQueue(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
             }
         }
 
-        if (dirty) {
-            let discrete3 = 0;
-            if (toSpeedsNotInserted) {
-                discrete3 |= 1 << 18;
-            }
-            if (toSpeedsTooLow) {
-                discrete3 |= 1 << 17;
-            }
-            if (vSpeedDisagree) {
-                discrete3 |= 1 << 16;
-            }
-
-            // FIXME use https://github.com/flybywiresim/a32nx/pull/7766
-            SimVar.SetSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3', 'number', discrete3);
-            SimVar.SetSimVarValue('L:A32NX_FM2_DISCRETE_WORD_3', 'number', discrete3);
-        }
+        this.arincDiscreteWord3.setBitValue(16, vSpeedDisagree);
+        this.arincDiscreteWord3.setBitValue(17, toSpeedsTooLow);
+        this.arincDiscreteWord3.setBitValue(18, toSpeedsNotInserted);
+        this.arincDiscreteWord3.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
     //Needs PR Merge #3082
@@ -4387,10 +4385,11 @@ class FMCMainDisplay extends BaseAirliners {
             this.flaps = flaps;
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", this.flaps !== null ? this.flaps : -1);
 
-            let word2 = (this.flaps !== null && this.flaps >= 0 && this.flaps <= 3) ? 1 << (13 + this.flaps) : 0;
-            // FIXME use https://github.com/flybywiresim/a32nx/pull/7766
-            SimVar.SetSimVarValue("L:A32NX_FM1_DISCRETE_WORD_2", "number", word2);
-            SimVar.SetSimVarValue("L:A32NX_FM2_DISCRETE_WORD_2", "number", word2);
+            this.arincDiscreteWord2.setBitValue(13, this.flaps === 0);
+            this.arincDiscreteWord2.setBitValue(14, this.flaps === 1);
+            this.arincDiscreteWord2.setBitValue(15, this.flaps === 2);
+            this.arincDiscreteWord2.setBitValue(16, this.flaps === 3);
+            this.arincDiscreteWord2.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
         }
     }
 
@@ -4401,11 +4400,13 @@ class FMCMainDisplay extends BaseAirliners {
     /* private */ setTakeoffTrim(ths) {
         if (ths !== this.ths) {
             this.ths = ths;
+            // legacy vars
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", this.ths ? this.ths : 0);
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", this.ths !== null);
 
             const ssm = this.ths !== null ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
-            this.setBnrArincSimVar('TO_PITCH_TRIM', this.ths ? -this.ths : 0, ssm, 12, 180, -180);
+
+            this.arincTakeoffPitchTrim.setBnrValue(this.ths ? -this.ths : 0, ssm, 12, 180, -180);
         }
     }
 
@@ -5235,3 +5236,59 @@ const FlightPlans = Object.freeze({
     Active: 0,
     Temporary: 1,
 });
+
+class FmArinc429OutputWord extends Arinc429Word {
+    constructor(name, value = 0) {
+        super(0);
+
+        this.name = name;
+        this.dirty = true;
+        this._value = value;
+        this._ssm = 0;
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(value) {
+        if (this._value !== value) {
+            this.dirty = true;
+        }
+        this._value = value;
+    }
+
+    get ssm() {
+        return this._ssm;
+    }
+
+    set ssm(ssm) {
+        if (this._ssm !== ssm) {
+            this.dirty = true;
+        }
+        this._ssm = ssm;
+    }
+
+    static empty(name) {
+        return new FmArinc429OutputWord(name, 0);
+    }
+
+    async writeToSimVarIfDirty() {
+        if (this.dirty) {
+            this.dirty = false;
+            return Promise.all([
+                Arinc429Word.toSimVarValue(`L:A32NX_FM1_${this.name}`, this.value, this.ssm),
+                Arinc429Word.toSimVarValue(`L:A32NX_FM2_${this.name}`, this.value, this.ssm),
+            ]);
+        }
+        return Promise.resolve();
+    }
+
+    setBnrValue(value, ssm, bits, rangeMax, rangeMin = 0) {
+        const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
+        const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
+
+        this.value = data;
+        this.ssm = ssm;
+    }
+}
