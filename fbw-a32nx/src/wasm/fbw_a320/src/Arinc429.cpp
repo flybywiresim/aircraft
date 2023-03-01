@@ -5,9 +5,10 @@ Arinc429Word<T>::Arinc429Word() {}
 
 template <typename T>
 void Arinc429Word<T>::setFromSimVar(double simVar) {
-  Arinc429Word<T> convertedWord = *reinterpret_cast<Arinc429Word*>(&simVar);
-  rawSsm = convertedWord.ssm();
-  rawData = convertedWord.value();
+  const auto u64Val = static_cast<uint64_t>(simVar);
+  const uint32_t u32Val = u64Val & 0xffffffff;
+  rawSsm = u64Val >> 32;
+  rawData = *reinterpret_cast<const float*>(&u32Val);
 }
 template void Arinc429Word<uint32_t>::setFromSimVar(double simVar);
 template void Arinc429Word<float>::setFromSimVar(double simVar);
@@ -22,7 +23,8 @@ template void Arinc429Word<float>::setFromData(float data, Arinc429SignStatus ss
 
 template <typename T>
 double Arinc429Word<T>::toSimVar() {
-  return *reinterpret_cast<double*>(this);
+  const uint64_t u64Val = *reinterpret_cast<const uint32_t*>(&rawData) | static_cast<uint64_t>(rawSsm) << 32;
+  return static_cast<double>(u64Val);
 }
 template double Arinc429Word<uint32_t>::toSimVar();
 template double Arinc429Word<float>::toSimVar();
