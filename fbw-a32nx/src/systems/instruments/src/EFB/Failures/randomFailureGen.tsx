@@ -80,7 +80,7 @@ export const failureGeneratorTEMPLATE = (generatorFailuresGetters : Map<number, 
 export const flatten = (settings : number[]) => {
     let settingString = '';
     for (let i = 0; i < settings.length; i++) {
-        settingString += Math.round(settings[i]).toString();
+        settingString += settings[i].toString();
         if (i < settings.length - 1) settingString += ',';
     }
     return settingString;
@@ -107,26 +107,30 @@ export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[])
 };
 
 export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>, generatorUniqueID: string) => {
+    // console.info('Looking for failures on generator %s', generatorUniqueID);
     const failureIDs : Failure[] = [];
     if (allFailures.length > 0) {
         allFailures.forEach((failure) => {
-            const generatorSetting = generatorFailuresGetters[failure.identifier];
-            const failureGeneratorsTable = generatorSetting.split(',');
-            if (failureGeneratorsTable.length > 0) {
-                failureGeneratorsTable.forEach((generator) => {
-                    if (generator === generatorUniqueID) failureIDs.push(failure);
-                });
+            const generatorSetting = generatorFailuresGetters.get(failure.identifier);
+            if (generatorSetting) {
+                const failureGeneratorsTable = generatorSetting.split(',');
+                if (failureGeneratorsTable.length > 0) {
+                    failureGeneratorsTable.forEach((generator) => {
+                        if (generator === generatorUniqueID) failureIDs.push(failure);
+                    });
+                }
             }
         });
     }
     return failureIDs;
 };
 
-export const activateRandomFailure = (allFailures : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>), activeFailures : Set<number>, _generatorID : string) => {
-    const failuresOffMap = allFailures.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
+export const activateRandomFailure = (failureList : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>), activeFailures : Set<number>, _generatorID : string) => {
+    const failuresOffMap = failureList.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
+    console.info('list of #%d failures, only %d active', failureList.length, failuresOffMap.length);
     if (failuresOffMap.length > 0) {
         const pick = Math.floor(Math.random() * failuresOffMap.length);
-        const pickedFailure = allFailures.find((failure) => failure.identifier === failuresOffMap[pick]);
+        const pickedFailure = failureList.find((failure) => failure.identifier === failuresOffMap[pick]);
         if (pickedFailure) {
             console.info('Failure #%d triggered: %s', pickedFailure.identifier, pickedFailure.name);
             activate(failuresOffMap[pick]);
@@ -171,10 +175,10 @@ export const randomFailureGenerator = () => {
 
     useEffect(() => {
         console.info('Failure phase: %d', failureFlightPhase);
-    }, [failureFlightPhase, failureGeneratorTEMPLATE]);
+    }, [failureFlightPhase]);
 
     useEffect(() => {
-        generatorFailuresSetters[27002]('G0');
-        generatorFailuresSetters[27003]('G1');
+        generatorFailuresSetters.get(27002)('G0');
+        generatorFailuresSetters.get(27003)('G1');
     }, []);
 };
