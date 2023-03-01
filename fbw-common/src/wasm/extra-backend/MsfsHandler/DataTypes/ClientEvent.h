@@ -66,11 +66,13 @@ class ClientEvent {
    *                        Simulator) that has been coded to receive such events. No Microsoft
    *                        Flight Simulator events include periods. If no entry is made for this
    *                        parameter, the event is private to the client.
-   * @param inputDefinition
+   * @param registerToSim  Flag to indicate if the event should be registered to the sim immediately.
+   *                       This is required to be false for example when using SimConnect_SubscribeToSystemEvent
+   *                       as this function does the registering itself (default=true).
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientEventToSimEvent.htm
    */
-  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName);
+  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName, bool registerToSim = true);
 
  public:
   ClientEvent() = delete;                               // no default constructor
@@ -149,30 +151,29 @@ class ClientEvent {
    * Adds the ClientEvent to the given notification group of the event.<br/>
    * Prints an error message if the event is already subscribed to a notification group.
    *
-   * @param notificationGroupId The ID of the notification group to subscribe to.
+   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
    * @param maskEvent Flag to indicate if the event should be masked.
    *                  From SDK doc: True indicates that the event will be masked by this client and will not be
    *                  transmitted to any more clients, possibly including Microsoft Flight Simulator
    *                  itself (if the priority of the client exceeds that of Flight Simulator).
    *                  False is the default.
    */
-  void addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId, bool maskEvent = false);
+  void addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0, bool maskEvent = false);
 
   /**
    * Removes the ClientEvent from the given notification group of the event.<br/>
    *
-   * @param notificationGroupId
+   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
    */
-  void removeClientEventFromNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId);
+  void removeClientEventFromNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0);
 
   /**
    * Removes the notification group.<br/>
    * This will remove all events from the notification group.
    *
-   * @param notificationGroupId The ID of the notification group to clear.
-   * TODO: could be static
+   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
    */
-  void clearNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId);
+  void clearNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0);
 
   /**
    * Sets the priority of the notification group.<br/>

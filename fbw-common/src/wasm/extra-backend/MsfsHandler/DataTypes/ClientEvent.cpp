@@ -7,9 +7,14 @@
 #include "ClientEvent.h"
 #include "logging.h"
 
-ClientEvent::ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName)
+ClientEvent::ClientEvent(HANDLE hSimConnect,
+                         SIMCONNECT_CLIENT_EVENT_ID clientEventId,
+                         const std::string& clientEventName,
+                         bool registerToSim)
     : hSimConnect(hSimConnect), clientEventId(clientEventId), clientEventName(std::move(clientEventName)) {
-  mapToSimEvent();
+  if (registerToSim) {
+    mapToSimEvent();
+  }
 }
 
 ClientEvent::~ClientEvent() {

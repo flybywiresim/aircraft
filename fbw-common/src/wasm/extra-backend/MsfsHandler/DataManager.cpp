@@ -157,7 +157,6 @@ NamedVariablePtr DataManager::make_named_var(const std::string varName,
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_named_var(): created variable " + var->str());
-
   return var;
 }
 
@@ -207,7 +206,6 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_aircraft_var(): created variable " + var->str());
-
   return var;
 }
 
@@ -244,11 +242,13 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string varN
 
   variables[uniqueName] = var;
 
-  LOG_DEBUG("DataManager::make_simple_aircraft_var(): already exists: " + var->str());
+  LOG_DEBUG("DataManager::make_simple_aircraft_var(): created variable " + var->str());
   return var;
 }
 
-ClientEventPtr DataManager::make_client_event(const std::string& clientEventName, SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
+ClientEventPtr DataManager::make_client_event(const std::string& clientEventName,
+                                              bool registerToSim,
+                                              SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
   // find existing event instance for this event
   for (auto& event : clientEvents) {
     if (event.second->getClientEventName() == clientEventName) {
@@ -258,11 +258,12 @@ ClientEventPtr DataManager::make_client_event(const std::string& clientEventName
   }
   // create a new event instance
   ClientEventPtr clientEvent =
-      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName)));
+      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName), registerToSim));
   clientEvents[clientEvent->getClientEventId()] = clientEvent;
   if (notificationGroupId != SIMCONNECT_UNUSED) {
     clientEvent->addClientEventToNotificationGroup(notificationGroupId);
   }
+  LOG_DEBUG("DataManager::make_client_event(): created client event " + clientEvent->str());
   return clientEvent;
 }
 
