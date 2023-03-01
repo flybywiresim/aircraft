@@ -46,6 +46,7 @@ class Units {
   ENUM Psi = get_units_enum("Psi");
   ENUM Pph = get_units_enum("Pounds per hour");
   ENUM Gallons = get_units_enum("Gallons");
+  ENUM Gph = get_units_enum("Gallons per hour");
   ENUM Feet = get_units_enum("Feet");
   ENUM FootPounds = get_units_enum("Foot pounds");
   ENUM FeetMin = get_units_enum("Feet per minute");
@@ -100,6 +101,7 @@ class SimVars {
 
   ENUM FuelPump = get_aircraft_var_enum("FUELSYSTEM PUMP ACTIVE");
   ENUM FuelValve = get_aircraft_var_enum("FUELSYSTEM VALVE OPEN");
+  ENUM FuelLineFlow = get_aircraft_var_enum("FUELSYSTEM LINE FUEL FLOW");
 
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
 
@@ -417,4 +419,5 @@ class SimVars {
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
   FLOAT64 getPump(int index) { return aircraft_varget(FuelPump, m_Units->Number, index); }
   FLOAT64 getValve(int index) { return aircraft_varget(FuelValve, m_Units->Number, index); }
+  FLOAT64 getLineFlow(int index) { return aircraft_varget(FuelLineFlow, m_Units->Gph, index); }
 };
