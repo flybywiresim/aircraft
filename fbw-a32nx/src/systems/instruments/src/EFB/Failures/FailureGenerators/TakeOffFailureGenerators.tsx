@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 // keep this template for new failureGenerators
 export const failureGeneratorTakeOff = () => {
     // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
-    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
+    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TAKEOFF', '2,1,0.33,0.40,30,100,140,5000,2,1,0.33,0.40,30,100,140,5000');
 
     const [failureGeneratorArmedTakeOff, setFailureGeneratorArmedTakeOff] = useState<boolean[]>([false, false]);
@@ -23,17 +23,16 @@ export const failureGeneratorTakeOff = () => {
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
     useEffect(() => {
-        // FAILURETYPE failures
         if (totalActiveFailures < maxFailuresAtOnce) {
             const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTakeOff);
             const tempSettings : number[] = Array.from(settingsTakeOff);
             let change = false;
             for (let i = 0; i < nbGeneratorTakeOff; i++) {
-                // console.info(failureTakeOffAltitudeThreshold[i], failureTakeOffAltitudeThreshold[i], tempFailureGeneratorArmed[i]);
+                // console.info(failureTakeOffSpeedThreshold[i], failureTakeOffAltitudeThreshold[i], tempFailureGeneratorArmed[i]);
                 if (tempFailureGeneratorArmed[i]
                     && ((altitude >= failureTakeOffAltitudeThreshold[i] && failureTakeOffAltitudeThreshold[i] !== -1)
-                    || (gs >= failureTakeOffAltitudeThreshold[i] && failureTakeOffSpeedThreshold[i] !== -1))) {
-                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    || (gs >= failureTakeOffSpeedThreshold[i] && failureTakeOffSpeedThreshold[i] !== -1))) {
+                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Take-off failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;
@@ -62,7 +61,7 @@ export const failureGeneratorTakeOff = () => {
                         const minFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 4];
                         const mediumTakeOffRegimeSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 5];
                         const maxFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 6];
-                        const takeOffDeltaAltitudeEnd : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 7];
+                        const takeOffDeltaAltitudeEnd : number = 100 * settingsTakeOff[i * numberOfSettingsPerGenerator + 7];
                         const rolledDice = Math.random();
                         if (rolledDice < chanceFailureLowTakeOffRegime) {
                             // Low Take Off speed regime

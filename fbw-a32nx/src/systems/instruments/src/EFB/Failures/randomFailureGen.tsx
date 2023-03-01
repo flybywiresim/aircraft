@@ -20,7 +20,7 @@ export const failureGeneratorTEMPLATE = () => {
     // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
-    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
+    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TEMPLATE', '2,0,2,1');
     const [failureGeneratorArmedTEMPLATE, setFailureGeneratorArmedTEMPLATE] = useState<boolean[]>([false, false]);
     const settingsTEMPLATE : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
@@ -38,7 +38,7 @@ export const failureGeneratorTEMPLATE = () => {
             for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
                 const failureConditionPLACEHOLDER = settingsTEMPLATE[i * numberOfSettingsPerGenerator + 1] >= 1; // CONDITIONS HERE
                 if (tempFailureGeneratorArmed[i] && failureConditionPLACEHOLDER) {
-                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('TEMPLATE failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;
@@ -103,15 +103,30 @@ export enum FailurePhases {
     FLIGHT= 3,
 }
 
-export const activateRandomFailure = (allFailures : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>), _generatorID : string) => {
-    const failureArray = allFailures.map((it) => it.identifier);
-    // Object.values(allFailures)
-    if (failureArray.length > 0) {
-        const pick = Math.floor(Math.random() * failureArray.length);
-        const pickedFailure = allFailures.find((failure) => failure.identifier === failureArray[pick]);
+export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorUniqueID: string) => {
+    const failureIDs : Failure[] = [];
+    if (allFailures.length > 0) {
+        allFailures.forEach((failure) => {
+            const [generatorSetting] = usePersistentProperty(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
+            const failureGeneratorsTable = generatorSetting.split(',');
+            if (failureGeneratorsTable.length > 0) {
+                failureGeneratorsTable.forEach((generator) => {
+                    if (generator === generatorUniqueID) failureIDs.push(failure);
+                });
+            }
+        });
+    }
+    return failureIDs;
+};
+
+export const activateRandomFailure = (allFailures : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>), activeFailures : Set<number>, _generatorID : string) => {
+    const failuresOffMap = allFailures.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
+    if (failuresOffMap.length > 0) {
+        const pick = Math.floor(Math.random() * failuresOffMap.length);
+        const pickedFailure = allFailures.find((failure) => failure.identifier === failuresOffMap[pick]);
         if (pickedFailure) {
             console.info('Failure #%d triggered: %s', pickedFailure.identifier, pickedFailure.name);
-            activate(pickedFailure.identifier);
+            activate(failuresOffMap[pick]);
         }
     }
 };
@@ -134,6 +149,7 @@ export const basicData = () => {
 export const randomFailureGenerator = () => {
     const failureGenerators : (() => void)[] = [];
     const { failureFlightPhase } = basicData();
+    const [, setGeneratorSetting] = usePersistentProperty('EFB_FAILURE_27002_GENERATORS', '');
 
     failureGenerators.push(failureGeneratorTimer);
     failureGenerators.push(failureGeneratorTakeOff);
@@ -152,4 +168,8 @@ export const randomFailureGenerator = () => {
     useEffect(() => {
         console.info('Failure phase: %d', failureFlightPhase);
     }, [failureFlightPhase, failureGeneratorTEMPLATE]);
+
+    useEffect(() => {
+        setGeneratorSetting('G0');
+    }, []);
 };

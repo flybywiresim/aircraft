@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 export const failureGeneratorAltClimb = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
-    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
+    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB', '2,3000,2,6000');
     const [failureGeneratorArmedAltClimb, setFailureGeneratorArmedAltClimb] = useState<boolean[]>([false, false]);
     const settingsAltClimb : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
@@ -24,7 +24,7 @@ export const failureGeneratorAltClimb = () => {
             let change = false;
             for (let i = 0; i < nbGeneratorAltClimb; i++) {
                 if (tempFailureGeneratorArmed[i] && altitude > settingsAltClimb[i * numberOfSettingsPerGenerator + 1]) {
-                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Climb altitude failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;
@@ -63,7 +63,7 @@ export const failureGeneratorAltClimb = () => {
 export const failureGeneratorAltDesc = () => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
-    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate } = failureGeneratorCommonFunction();
+    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC', '2,3000,2,6000');
     const [failureGeneratorArmedAltDesc, setFailureGeneratorArmedAltDesc] = useState<boolean[]>([false, false]);
     const settingsAltDesc : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
@@ -81,7 +81,7 @@ export const failureGeneratorAltDesc = () => {
             let change = false;
             for (let i = 0; i < nbGeneratorAltDesc; i++) {
                 if (tempFailureGeneratorArmed[i] && altitude < settingsAltDesc[i * numberOfSettingsPerGenerator + 1]) {
-                    activateRandomFailure(allFailures, activate, uniqueGenPrefix + i.toString());
+                    activateRandomFailure(findGeneratorFailures(allFailures, uniqueGenPrefix + i.toString()), activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Descent altitude failure triggered');
                     tempFailureGeneratorArmed[i] = false;
                     change = true;
