@@ -45,7 +45,7 @@ function msfsAvionicsInstrument(name) {
             templateId: `A32NX_${name}`,
             mountElementId: `${name}_CONTENT`,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js'],
+            imports: ['/JS/dataStorage.js','/JS/A32NX_Simvars.js'],
         },
     };
 }
@@ -58,7 +58,7 @@ function reactInstrument(name, additionalImports) {
             type: 'react',
             isInteractive: false,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js', ...(additionalImports ?? [])],
+            imports: ['/JS/dataStorage.js','/JS/A32NX_Simvars.js', ...(additionalImports ?? [])],
         },
     };
 }
