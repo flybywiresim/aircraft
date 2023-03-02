@@ -7,19 +7,16 @@
 #include "ClientEvent.h"
 #include "logging.h"
 
-ClientEvent::ClientEvent(HANDLE hSimConnect,
-                         SIMCONNECT_CLIENT_EVENT_ID clientEventId,
-                         const std::string& clientEventName,
-                         bool registerToSim)
-    : hSimConnect(hSimConnect), clientEventId(clientEventId), clientEventName(std::move(clientEventName)) {
-  if (registerToSim) {
-    mapToSimEvent();
-  }
-}
+ClientEvent::ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName)
+    : hSimConnect(hSimConnect), clientEventId(clientEventId), clientEventName(std::move(clientEventName)) {}
 
 ClientEvent::~ClientEvent() {
   callbacks.clear();
 }
+
+// =================================================================================================
+// Registration / Mapping of the Client Event to Sim Events
+// =================================================================================================
 
 void ClientEvent::mapToSimEvent() {
   if (!SUCCEEDED(SimConnect_MapClientEventToSimEvent(hSimConnect, clientEventId, clientEventName.c_str()))) {
@@ -28,6 +25,38 @@ void ClientEvent::mapToSimEvent() {
   }
   LOG_DEBUG("Mapped client event " + clientEventName + " with client ID " + std::to_string(clientEventId));
   isRegisteredToSim = true;
+}
+
+void ClientEvent::subscribeToSimSystemEvent(const std::string& eventName) {
+  if (!SUCCEEDED(SimConnect_SubscribeToSystemEvent(hSimConnect, getClientEventId(), eventName.c_str()))) {
+    LOG_ERROR("Failed to map client event " + clientEventName + " with client ID " + std::to_string(clientEventId) +
+              " to sim system event " + eventName);
+    return;
+  }
+  LOG_DEBUG("Mapped client event " + clientEventName + " with client ID " + std::to_string(clientEventId) + " to sim system event " +
+            eventName);
+  isRegisteredToSim = true;
+}
+
+void ClientEvent::unsubscribeFromSimSystemEvent() {
+  if (!SUCCEEDED(SimConnect_UnsubscribeFromSystemEvent(hSimConnect, getClientEventId()))) {
+    LOG_ERROR("Failed to unsubscribe client event " + clientEventName + " with client ID " + std::to_string(clientEventId) +
+              " from sim system event: " + clientEventName);
+    return;
+  }
+  LOG_DEBUG("Unsubscribed client event " + clientEventName + " with client ID " + std::to_string(clientEventId) +
+            " from sim system event: " + clientEventName);
+  isRegisteredToSim = false;
+}
+
+void ClientEvent::setSystemEventState(SIMCONNECT_STATE state) {
+  if (!SUCCEEDED(SimConnect_SetSystemEventState(hSimConnect, getClientEventId(), state))) {
+    LOG_ERROR("Failed to set system event state " + std::to_string(state) + " for client event " + clientEventName + " with client ID " +
+              std::to_string(clientEventId));
+    return;
+  }
+  LOG_DEBUG("Set system event state " + std::to_string(state) + " for client event " + clientEventName + " with client ID " +
+            std::to_string(clientEventId));
 }
 
 // =================================================================================================

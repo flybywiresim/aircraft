@@ -258,7 +258,10 @@ ClientEventPtr DataManager::make_client_event(const std::string& clientEventName
   }
   // create a new event instance
   ClientEventPtr clientEvent =
-      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName), registerToSim));
+      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName)));
+  if (registerToSim) {
+    clientEvent->mapToSimEvent();
+  }
   clientEvents[clientEvent->getClientEventId()] = clientEvent;
   if (notificationGroupId != SIMCONNECT_UNUSED) {
     clientEvent->addClientEventToNotificationGroup(notificationGroupId);

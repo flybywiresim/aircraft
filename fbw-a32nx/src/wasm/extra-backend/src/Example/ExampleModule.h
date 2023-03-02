@@ -107,6 +107,10 @@ class ExampleModule : public Module {
   ClientEventPtr clientEventPtr;
   [[maybe_unused]] CallbackID clientEventCallbackId{};
 
+  // System Events
+  ClientEventPtr systemEventPtr;
+  [[maybe_unused]] CallbackID systemEventCallbackId{};
+
  public:
   ExampleModule() = delete;
 
@@ -123,9 +127,11 @@ class ExampleModule : public Module {
   bool shutdown() override;
 
  private:
-
   // key event test function
-  void keyEventTest(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4);
+  void keyEventTest(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
+    std::cout << "ExampleModule::keyEventTest() - param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
+              << " param3 = " << param3 << " param4 = " << param4 << std::endl;
+  }
 
   // Fowler-Noll-Vo hash function
   uint64_t fingerPrintFVN(std::vector<BYTE>& data) {

@@ -152,9 +152,9 @@ bool ExampleModule::initialize() {
               << std::endl;
     std::cout << std::endl;
   });
-  //  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
 
   // ClientDataBufferedAreaVariable test
   hugeClientDataPtr = dataManager->make_clientdatabufferedarea_var<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
@@ -176,9 +176,9 @@ bool ExampleModule::initialize() {
               << "]" << std::endl;
     std::cout << std::endl;
   });
-  //  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
 
   // Key event tests
   // Test callback a member method using this->
@@ -197,10 +197,9 @@ bool ExampleModule::initialize() {
   // ======================
   // Client Event tests
 
-  // Simple client event - no mappings
+  // Simple custom client event - no mappings
   clientEventPtr = dataManager->make_client_event("A32NX.MY_CUSTOM_EVENT");
   clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
-
   clientEventCallbackId = clientEventPtr->addCallback(
       [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl;
@@ -210,11 +209,26 @@ bool ExampleModule::initialize() {
                   << " param3 = " << param3 << " param4 = " << param4 << std::endl;
         std::cout << std::endl;
       });
-  clientEventPtr->mapInputDownEvent("VK_COMMA", INPUT_GROUP_1);
-  clientEventPtr->mapInputUpEvent("VK_COMMA", INPUT_GROUP_1);
-  clientEventPtr->mapInputDownEvent("joystick:1:button:7", INPUT_GROUP_1);
-  clientEventPtr->mapInputUpEvent("joystick:1:button:7", INPUT_GROUP_1);
-  clientEventPtr->setInputGroupState(0, SIMCONNECT_STATE_ON);
+  clientEventPtr->mapInputDownUpEvent("VK_COMMA", INPUT_GROUP_1);
+  clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_1);
+  clientEventPtr->setInputGroupState(INPUT_GROUP_1, SIMCONNECT_STATE_ON);
+
+  // System Events
+  // Create the client event with the registerToSim flag set to false, so we can add
+  // client event to system event. When this is set to true (default) the client event
+  // will be registered to the sim either as a custom event or a mapped event (if the event name exists) and an
+  // error will be thrown if you try to register the system event to the sim.
+  systemEventPtr = dataManager->make_client_event("A32NX.SYSTEM_EVENT_VIEW", false);
+  systemEventCallbackId = systemEventPtr->addCallback(
+      [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
+        std::cout << "--- CALLBACK: A32NX.SYSTEM_EVENT_VIEW" << std::endl;
+        std::cout << systemEventPtr->str() << std::endl;
+        std::cout << "A32NX.SYSTEM_EVENT_VIEW"
+                  << " number = " << number << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
+                  << " param3 = " << param3 << " param4 = " << param4 << std::endl;
+        std::cout << std::endl;
+      });
+  systemEventPtr->subscribeToSimSystemEvent("View");
 
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
@@ -262,33 +276,32 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
     [[maybe_unused]] const UINT64 tickCounter = msfsHandler.getTickCounter();
 
-    std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " ==================================" << std::endl;
+    std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
 
     // ======================
     // Client Event Tests
 
-    if (tickCounter % 2000 == 1000) {
-      clientEventPtr->removeCallback(clientEventCallbackId);
-      clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_1);
-    }
-    if (tickCounter % 2000 == 0) {
-      clientEventPtr->mapToSimEvent();
-      clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
-      clientEventCallbackId = clientEventPtr->addCallback(
-          [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
-            std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl;
-            std::cout << clientEventPtr->str() << std::endl;
-            std::cout << "CUSTOM_EVENT "
-                      << " number = " << number << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
-                      << " param3 = " << param3 << " param4 = " << param4 << std::endl;
-            std::cout << std::endl;
-          });
-      //      clientEventPtr->mapInputEvent(0, "VK_COMMA", clientEventPtr);
-      //      clientEventPtr->mapInputEvent(0, "joystick:1:button:7", clientEventPtr);
-      //      clientEventPtr->mapInputEvent(0, "joystick:1:button:8", clientEventPtr);
-    }
-    if (tickCounter == 4000) {
-    }
+    /*    if (tickCounter % 2000 == 1000) {
+          clientEventPtr->unmapInputEvent("VK_COMMA", INPUT_GROUP_1);
+          clientEventPtr->unmapInputEvent("joystick:1:button:7", INPUT_GROUP_1);
+          clientEventPtr->removeCallback(clientEventCallbackId);
+          clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_1);
+        }
+        if (tickCounter % 2000 == 0) {
+          clientEventPtr->mapToSimEvent();
+          clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
+          clientEventCallbackId = clientEventPtr->addCallback(
+              [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD
+       param4) { std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl; std::cout << clientEventPtr->str() << std::endl; std::cout
+       << "CUSTOM_EVENT "
+                          << " number = " << number << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
+                          << " param3 = " << param3 << " param4 = " << param4 << std::endl;
+                std::cout << std::endl;
+              });
+          clientEventPtr->mapInputDownUpEvent("VK_COMMA", INPUT_GROUP_1);
+          clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_1);
+          clientEventPtr->setInputGroupState(INPUT_GROUP_1, SIMCONNECT_STATE_ON);
+        }*/
     // clientEventPtr->trigger(999);
 
     // difference if using different units
@@ -476,11 +489,6 @@ bool ExampleModule::shutdown() {
   isInitialized = false;
   std::cout << "ExampleModule::shutdown()" << std::endl;
   return true;
-}
-
-void ExampleModule::keyEventTest(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
-  std::cout << "ExampleModule::keyEventTest() - param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
-            << " param3 = " << param3 << " param4 = " << param4 << std::endl;
 }
 
 #endif

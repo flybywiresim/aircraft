@@ -327,12 +327,14 @@ class DataManager {
    *                        Flight Simulator events include periods. If no entry is made for this
    *                        parameter, the event is private to the client.
    * @param registerToSim  Flag to indicate if the event should be registered to the sim immediately.
-   *                       This is required to be false for example when using SimConnect_SubscribeToSystemEvent
-   *                       as this function does the registering itself (default=true).
+   *                       A custom event will be registered and a sim event will be mapped if a
+   *                       sim event with this name exists. Otherwise SimConnect will throw an error.
+   *                       This must be false when it is intended to map the client event
+   *                       to a system event with ClientEvent::subscribeToSystemEvent() afterwards.
    * @param notificationGroupId Specifies the notification group to which the event is added. If no
    *                           entry is made for this parameter, the event is not added to a
    *                           notification group.
-   * @return A shared pointer to the CLientEvent
+   * @return A shared pointer to the ClientEvent
    */
   ClientEventPtr make_client_event(const std::string& clientEventName,
                                    bool registerToSim = true,

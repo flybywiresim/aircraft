@@ -28,7 +28,20 @@ typedef uint64_t CallbackID;
 typedef std::function<void(int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> EventCallbackFunction;
 
 /**
- * TODO
+ * The ClientEvent class represents a client event which can be used to:<br/>
+ * - create a custom event
+ * - be mapped to a sim event
+ * - be mapped to a system event
+ * <p/>
+ * A ClientEvent has a unique id and a name. The name can be used to map the event to a sim event or
+ * to create a custom event.<br/>
+ * Custom events must have a name that contains a period (e.g. "Custom.Event") to the sim recognizes
+ * it as a custom event.<br/>
+ * Top map to sim events the name must be identical to the name of the sim event otherwise there will be
+ * a SimConnect exception that the event is unknown.<br/>
+ * If the ClientEvent is intended to be used as a system event then it must be constructed with the
+ * registerToSim parameter set to false. This will prevent the event from being registered to the sim.
+ * See constructor documentation for more details.
  */
 class ClientEvent {
  private:
@@ -53,9 +66,13 @@ class ClientEvent {
   bool isRegisteredToSim = false;
 
   /**
-   * TODO
-   * maps the client event to the sim event
-   * adds the client event to the notification group
+   * Creates a new ClientEvent instance with the given name and a given id. The id must be unique
+   * for all client events within a SimConnect session. The name can be used to map the event to a
+   * sim event or to create a custom event. Custom events must have a name that contains a period
+   * (e.g. "Custom.Event") so the sim recognizes it as a custom event. Top map to sim events the
+   * name must be identical to the name of the sim event.
+   *
+   * Use mapToSimEvent() to map the client event to a sim event or to register as a custom event.
    *
    * @param hSimConnect
    * @param clientEventName Specifies the Microsoft Flight Simulator event name. Refer to the Event
@@ -66,13 +83,10 @@ class ClientEvent {
    *                        Simulator) that has been coded to receive such events. No Microsoft
    *                        Flight Simulator events include periods. If no entry is made for this
    *                        parameter, the event is private to the client.
-   * @param registerToSim  Flag to indicate if the event should be registered to the sim immediately.
-   *                       This is required to be false for example when using SimConnect_SubscribeToSystemEvent
-   *                       as this function does the registering itself (default=true).
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientEventToSimEvent.htm
    */
-  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName, bool registerToSim = true);
+  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName);
 
  public:
   ClientEvent() = delete;                               // no default constructor
@@ -80,11 +94,44 @@ class ClientEvent {
   ClientEvent& operator=(const ClientEvent&) = delete;  // no copy assignment
   ~ClientEvent();
 
+  // =================================================================================================
+  // Registration / Mapping of the Client Event to Sim Events
+  // =================================================================================================
+
   /**
-   * TODO
-   * @param eventName
+   * Maps the client event to a sim event. The name of the client event must be identical to the
+   * name of the sim event otherwise there will be a SimConnect exception that the event is unknown.
+   * If the name of the client event contains a period then it will be registered as a custom event.
    */
   void mapToSimEvent();
+
+  /**
+   * Maps the client event to a sim system event. The name of the client event must contain a period
+   * otherwise there will be a SimConnect exception that the event is unknown. The event must not have
+   * been mapped to a sim event before.
+   * @param eventName The name of the system event to map to. See the SimConnect documentation for a list of
+   *                  system events.
+   * @see
+   * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_SubscribeToSystemEvent.htm
+   */
+  void subscribeToSimSystemEvent(const std::string& eventName);
+
+  /**
+   * Unsubscribes from the system event. The event must have been mapped to a sim system event before.
+   */
+  void unsubscribeFromSimSystemEvent();
+
+  /**
+   * Use this function to turn system events temporarily on and off, rather than make multiple calls
+   * to subscribeToSimSystemEvent and unsubscribeFromSimSystemEvent, which is less efficient.
+   *
+   * Use the SIMCONNECT_STATE enum to set the state.<br/>
+   *     SIMCONNECT_STATE_OFF <br/>
+   *     SIMCONNECT_STATE_ON  <br/>
+   *
+   * @param state SIMCONNECT_STATE_ON or SIMCONNECT_STATE_OFF
+   */
+  void setSystemEventState(SIMCONNECT_STATE state);
 
   // ===============================================================================================
   // Triggering events
@@ -206,7 +253,7 @@ class ClientEvent {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapInputEventToClientEvent.htm
    */
-   void mapInputDownUpEvent(const std::string& inputDefinition,
+  void mapInputDownUpEvent(const std::string& inputDefinition,
                            SIMCONNECT_INPUT_GROUP_ID inputGroupId = 0,
                            DWORD downValue = 0,
                            DWORD upValue = 0,
@@ -257,12 +304,12 @@ class ClientEvent {
                        bool maskable = false) const;
 
   /**
-   * Removes down and up input events from the event group and unmaps them from the event.
+   * Removes down and up input events from the event input group and unmaps them from the event.
    *
-   * TODO: double check
    * OBS: Tests have shown that this does not work reliably in MSFS 2020. It seems that the input event
    *      mapping is not removed from the client event and input group. This is probably a bug in the
    *      MSFS 2020 SDK.
+   * TODO: double check
    *
    * @param groupId The ID of the group to remove the event from.
    * @param inputDefinition The input definition to unmap from the event. This must be exactly the same
@@ -292,7 +339,6 @@ class ClientEvent {
    * @param inputGroupId The ID of the group to enable/disable.
    * @param state The state to set the group to.
    * @return true if the state was successfully set, false otherwise.
-   * TODO: could be static
    */
   bool setInputGroupState(SIMCONNECT_INPUT_GROUP_ID inputGroupId, SIMCONNECT_STATE state) const;
 
@@ -307,14 +353,30 @@ class ClientEvent {
 
   // ==================== Getter and setter ====================================
 
+  /**
+   * @return The SimConnect handle of the instance.
+   */
   HANDLE getHSimConnect() const { return hSimConnect; }
 
+  /**
+   * @return The ID of the client event.
+   */
   SIMCONNECT_CLIENT_EVENT_ID getClientEventId() const { return clientEventId; }
 
+  /**
+   * @return The name of the client event.
+   */
   const std::string& getClientEventName() const { return clientEventName; }
 
+  /**
+   * @return True if the client event is registered to the sim either as a custom event, or
+   * mapped to a sim event or mapped to a system event.
+   */
   bool isRegisteredToSim1() const { return isRegisteredToSim; }
 
+  /**
+   * @return True if the client event has callbacks registered to it.
+   */
   bool hasCallbacks() const { return !callbacks.empty(); }
 
  private:
