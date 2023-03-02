@@ -941,7 +941,11 @@ class EngineControl {
       //--------------------------------------------
       // Center Tank transfer routine
       if (xfrValveCenterLeft > 0.0 && xfrValveCenterRight > 0.0 && xfrDisableValveCenterLeft > 0.0 && xfrDisableValveCenterRight > 0.0) {
-        lineFlowRatio = lineLeftToCenterFlow / (lineLeftToCenterFlow + lineRightToCenterFlow);
+        if (lineLeftToCenterFlow < 0.1 && lineRightToCenterFlow < 0.1)
+          lineFlowRatio = 0.5;
+        else
+          lineFlowRatio = lineLeftToCenterFlow / (lineLeftToCenterFlow + lineRightToCenterFlow);
+        
         xfrCenterToLeft = (fuelCenterPre - centerQuantity) * lineFlowRatio;
         xfrCenterToRight = (fuelCenterPre - centerQuantity) * (1 - lineFlowRatio);
       } else if (xfrValveCenterLeft > 0.0 && xfrDisableValveCenterLeft > 0.0)
