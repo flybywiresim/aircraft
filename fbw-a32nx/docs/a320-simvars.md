@@ -1741,7 +1741,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - L:A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
-    - **Temporary:** there are also simvars with _SSM suffix to carry the SSM until JS is able to write ARINC simvars
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
