@@ -240,10 +240,11 @@ impl Communications {
     }
 
     /*
-     * This function does its job only if there are some changes on any ACP, AudioSwitching knob or side played via EFB option
+     * This function elects an ACP from which the simvars will be updated.
+     * This election is based on which side the player is playing (EFB option) AND AudioSwitching knob.
      *
-     * This function gets the ACP on which the changes occured via "update_comms" variable.
-     * Depending on AudioSwitching knob position and side played option, it applies ACP data to simvars or other ACPs
+     * Once elected, the ACP's data are used to update the simvars and/or the other ACPs.
+     * It is possible that no ACP is elected for update. For example if the AudioSwitching knob is on FO and the EFB option is on Captain.
      *
      * "Last ACP used" stands for the last ACP which was used to feed the simvars.
      * For example, ACP3 can become the last used when the AudioSwitching knob is rotated although none of its knobs/buttons were rotated/pushed
@@ -251,12 +252,12 @@ impl Communications {
      *
      */
     pub fn update(&mut self, context: &UpdateContext) {
+        // Doing the job only if there was an action on an ACP, EFB option or AudioSwitching knob
         if self.update_comms != ACPName::NONE
             || self.previous_side_controlling != context.side_controlling()
             || self.audio_switching_knob != self.previous_audio_switching_knob
         {
-            // If guess_panel() return None, it means the ACP was taken into account
-            // Most likely due to AudioSwitching knob position or EFB mode
+            // If guess_panel() return None, it means that no ACP was elected
             if let Some(chosen_panel) = self.guess_panel(context.side_controlling()) {
                 self.last_acp_used = self.update_comms;
 
@@ -310,6 +311,7 @@ impl Communications {
                 self.morse_gls.update(context);
 
                 // Updating all ACPs with same values if EFB option is on BOTH
+                // We are updating an ACP with itself but not a big deal
                 if context.side_controlling() == SideControlling::BOTH {
                     self.communications_panel_captain
                         .update_transmit(&chosen_panel);
@@ -347,19 +349,30 @@ impl Communications {
     }
 
     /*
-     * This functions guesses which ACP to use for display and simvars update
-     * depending on AudioSwitchingKnob position and the side the player is playing on (EFB option)
+     * guess_panel()
      *
-     * A lot of comparisons but needed for shared cockpit cases
+     * @param mut self
+     * @param side_controlling Which side the player is playing on
+     *
+     * This functions does two things. Decision making is based AudioSwitching knob and EFB option.
+     *
+     * 1) It elects the ACP to use detecting changes on AudioSwitchingKnob position
+     * and the side the player is playing on (EFB option)
+     *
+     * 2) In case of any changes on one ACP, it decides whether the panel on which the changes took place can be taken into account
+     * to update the simvars/other ACPs or not
+     *
+     * A lot of comparisons but necessary for shared cockpit cases
      */
     fn guess_panel(&mut self, side_controlling: SideControlling) -> Option<CommunicationsPanel> {
         let mut chosen_panel = None;
 
         /*
-         * Here, let's detect the changes in the EFB and AudioSwitching knob
+         * Here, let's detect the changes in the EFB and AudioSwitching knob, if any.
          *
-         * These conditions are intended to guess the ACP to use upon action on EFB option or AudioSwitching knob ONLY
-         * in order to update simvars
+         * Why detect these changes?
+         *      To simulate real life behavior and for shared cockpit purposes.
+         *      Whenever you rotate the AudioSwitching knob, your volumes/channels get updated
          */
 
         if side_controlling != self.previous_side_controlling {
@@ -369,39 +382,40 @@ impl Communications {
                 // See last_acp_used definition in update() top comment
                 self.update_comms = self.last_acp_used;
             } else if side_controlling == SideControlling::CAPTAIN {
-                // If Captain is now controlling, let's base our guess on AudioSwitching knob position
-                // ACP1 is the chosen one
+                // If Captain is now controlling, ACP3 is chosen if AudioSwitching knob on Captain
                 self.update_comms = match self.audio_switching_knob {
-                    AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::FO => {
-                        ACPName::CAPTAIN
-                    }
-                    _ => ACPName::OVHD,
+                    AudioSwitchingKnobPosition::CAPTAIN => ACPName::OVHD,
+                    _ => ACPName::CAPTAIN,
                 }
             } else {
+                // If FO is now controlling, ACP3 is chosen if AudioSwitching knob on FO
                 self.update_comms = match self.audio_switching_knob {
-                    AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::CAPTAIN => {
-                        ACPName::FO
-                    }
-                    _ => ACPName::OVHD,
+                    AudioSwitchingKnobPosition::FO => ACPName::OVHD,
+                    _ => ACPName::FO,
                 }
             }
 
             // Whenever the player switches the AudioSwitching knob
-            // If the switch is on Capt or FO, let's choose the ovhd panel to be the chosen one
-            // If NORM, let's guess using the EFB option as we cannot guess otherwise (ACP1 preferred)
+            // If knob position and EFB option are matching, OVHD ACP is preferred
         } else if self.audio_switching_knob != self.previous_audio_switching_knob {
             self.update_comms = match self.audio_switching_knob {
                 AudioSwitchingKnobPosition::NORM => match side_controlling {
                     SideControlling::BOTH | SideControlling::CAPTAIN => ACPName::CAPTAIN,
                     SideControlling::FO => ACPName::FO,
                 },
-                _ => ACPName::OVHD,
+                AudioSwitchingKnobPosition::CAPTAIN => match side_controlling {
+                    SideControlling::BOTH | SideControlling::CAPTAIN => ACPName::OVHD,
+                    SideControlling::FO => ACPName::FO,
+                },
+                AudioSwitchingKnobPosition::FO => match side_controlling {
+                    SideControlling::BOTH | SideControlling::FO => ACPName::OVHD,
+                    SideControlling::CAPTAIN => ACPName::CAPTAIN,
+                },
             }
         }
 
         /*
          * Here, let's get ACP object according to previous detection and/or player actions on the ACPs
-         *
          */
 
         // ACP1 disabled if ACP3 in Captain mode OR the FO is controlling (via the EFB)

@@ -29,16 +29,16 @@ impl AudioControlPanel {
             transmit_channel: 1,
             int_rad_switch: 50,
             vhfs: [
-                VHF::new_vhf1(context, id_acp),
-                VHF::new_vhf2(context, id_acp),
-                VHF::new_vhf3(context, id_acp),
+                VHF::new(context, "VHF1", id_acp),
+                VHF::new(context, "VHF2", id_acp),
+                VHF::new(context, "VHF3", id_acp),
             ],
             comms: [
-                COMM::new_long(context, "HF", 1, id_acp),
-                COMM::new_long(context, "HF", 2, id_acp),
-                COMM::new_short(context, "PA", id_acp),
-                COMM::new_short(context, "MECH", id_acp),
-                COMM::new_short(context, "ATT", id_acp),
+                COMM::new(context, "HF1", id_acp),
+                COMM::new(context, "HF2", id_acp),
+                COMM::new(context, "PA", id_acp),
+                COMM::new(context, "MECH", id_acp),
+                COMM::new(context, "ATT", id_acp),
             ],
             adfs: [ADF::new(context, 1, id_acp), ADF::new(context, 2, id_acp)],
             vors: [VOR::new(context, 1, id_acp), VOR::new(context, 2, id_acp)],
@@ -290,30 +290,12 @@ pub struct VHF {
     volume: u8,
 }
 impl VHF {
-    pub fn new_vhf1(context: &mut InitContext, id_acp: usize) -> Self {
+    pub fn new(context: &mut InitContext, name: &str, id_acp: usize) -> Self {
         Self {
-            volume_id: context.get_identifier(format!("ACP{}_VHF1_VOLUME", id_acp)),
-            knob_id: context.get_identifier(format!("ACP{}_VHF1_KNOB_VOLUME_DOWN", id_acp)),
+            volume_id: context.get_identifier(format!("ACP{}_{}_VOLUME", id_acp, name)),
+            knob_id: context.get_identifier(format!("ACP{}_{}_KNOB_VOLUME_DOWN", id_acp, name)),
+            volume: 0,
             knob: false,
-            volume: 0,
-        }
-    }
-
-    pub fn new_vhf2(context: &mut InitContext, id_acp: usize) -> Self {
-        Self {
-            volume_id: context.get_identifier(format!("ACP{}_VHF2_VOLUME", id_acp)),
-            knob_id: context.get_identifier(format!("ACP{}_VHF2_KNOB_VOLUME_DOWN", id_acp)),
-            knob: true,
-            volume: 0,
-        }
-    }
-
-    pub fn new_vhf3(context: &mut InitContext, id_acp: usize) -> Self {
-        Self {
-            volume_id: context.get_identifier(format!("ACP{}_VHF3_VOLUME", id_acp)),
-            knob_id: context.get_identifier(format!("ACP{}_VHF3_KNOB_VOLUME_DOWN", id_acp)),
-            knob: false,
-            volume: 0,
         }
     }
 }
@@ -356,25 +338,7 @@ pub struct COMM {
     knob: bool,
 }
 impl COMM {
-    pub fn new_long(
-        context: &mut InitContext,
-        name: &str,
-        id_transceiver: usize,
-        id_acp: usize,
-    ) -> Self {
-        Self {
-            volume_id: context
-                .get_identifier(format!("ACP{}_{}{}_VOLUME", id_acp, name, id_transceiver)),
-            knob_id: context.get_identifier(format!(
-                "ACP{}_{}{}_KNOB_VOLUME_DOWN",
-                id_acp, name, id_transceiver
-            )),
-            volume: 0,
-            knob: false,
-        }
-    }
-
-    pub fn new_short(context: &mut InitContext, name: &str, id_acp: usize) -> Self {
+    pub fn new(context: &mut InitContext, name: &str, id_acp: usize) -> Self {
         Self {
             volume_id: context.get_identifier(format!("ACP{}_{}_VOLUME", id_acp, name)),
             knob_id: context.get_identifier(format!("ACP{}_{}_KNOB_VOLUME_DOWN", id_acp, name)),
