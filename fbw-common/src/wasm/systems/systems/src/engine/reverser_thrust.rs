@@ -1,7 +1,6 @@
 use uom::si::{
     acceleration::meter_per_second_squared,
     angular_acceleration::radian_per_second_squared,
-    angular_velocity::radian_per_second,
     f64::*,
     force::newton,
     mass::{kilogram, pound},
