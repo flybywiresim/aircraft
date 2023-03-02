@@ -93,7 +93,12 @@ class Arinc429Word {
    * @return Arinc429Word<T> The new word definition
    */
   static Arinc429Word<T> fromSimVar(double simVar) {
-    Arinc429Word<T> convertedWord = *reinterpret_cast<Arinc429Word<T>*>(&simVar);
+    const auto qWord = static_cast<std::uint64_t>(simVar);
+    const auto lowerDWord = static_cast<std::uint32_t>(qWord & 0xffffffff);
+
+    Arinc429Word<T> convertedWord;
+    convertedWord._rawSsm = static_cast<std::uint32_t>(qWord >> 32);
+    convertedWord._rawData = *reinterpret_cast<const T*>(&lowerDWord);
     return std::move(convertedWord);
   }
 
@@ -103,7 +108,7 @@ class Arinc429Word {
    * @return Arinc429Word<T> The new word definition
    */
   static Arinc429Word<T> fromSimVar(double simVar, const T& factor) {
-    Arinc429Word<float> convertedWord = *reinterpret_cast<Arinc429Word<float>*>(&simVar);
+    Arinc429Word<float> convertedWord = Arinc429Word<float>::fromSimVar(simVar);
 
     Arinc429Word<T> word;
     word.setData(convertedWord.value() * factor);
