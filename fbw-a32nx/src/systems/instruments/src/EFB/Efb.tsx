@@ -29,7 +29,7 @@ import { Performance } from './Performance/Performance';
 import { Navigation } from './Navigation/Navigation';
 import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
-import { Failures } from './Failures/Failures';
+import { FailuresHome } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
@@ -358,7 +358,7 @@ const Efb = () => {
                                     <Route path="/performance" component={Performance} />
                                     <Route path="/navigation" component={Navigation} />
                                     <Route path="/atc" component={ATC} />
-                                    <Route path="/failures" component={Failures} />
+                                    <Route path="/failures" component={FailuresHome} />
                                     <Route path="/checklists" component={Checklists} />
                                     <Route path="/presets" component={Presets} />
                                     <Route path="/settings" component={Settings} />

@@ -13,6 +13,42 @@ import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { setSearchQuery } from '../Store/features/failuresPage';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 
+export const FailuresHome = () => {
+    const tabs: PageLink[] = [
+        { name: 'Failures', alias: t('Failures.Title'), component: <Failures /> },
+        { name: 'Generators', alias: t('Failures.Generators'), component: <FailureGeneratorsUI /> },
+    ];
+
+    return (
+        <>
+            <div className="flex flex-row justify-between space-x-4">
+                <Navbar basePath="/failures" tabs={tabs} />
+                <div className="flex flex-row items-center py-1 px-4 space-x-2 rounded-md bg-colors-yellow-400">
+                    <InfoCircleFill className="text-black" />
+                    <p className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</p>
+                </div>
+            </div>
+
+            <Route path="/failures">
+                <Failures />
+            </Route>
+
+            <Route path="/failures">
+                <FailureGeneratorsUI />
+            </Route>
+            <PageRedirect basePath="/failures" tabs={tabs} />
+        </>
+    );
+};
+
+export const FailureGeneratorsUI = () => (
+    <>
+        <div className="flex flex-row justify-between space-x-4">
+            <p className="text-black">coucou</p>
+        </div>
+    </>
+);
+
 export const Failures = () => {
     const { allFailures } = useFailuresOrchestrator();
     const chapters = Array.from(new Set(allFailures.map((it) => it.ata))).sort((a, b) => a - b);
@@ -41,16 +77,7 @@ export const Failures = () => {
 
     return (
         <>
-            <div className="flex flex-row justify-between space-x-4">
-                <h1 className="font-bold">{t('Failures.Title')}</h1>
-
-                <div className="flex flex-row items-center py-1 px-4 space-x-2 rounded-md bg-colors-yellow-400">
-                    <InfoCircleFill className="text-black" />
-                    <p className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</p>
-                </div>
-            </div>
-
-            <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="p-4 mt-4 space-y-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
                 <div className="flex flex-row space-x-4">
                     <SimpleInput
                         placeholder={t('Failures.Search')}
