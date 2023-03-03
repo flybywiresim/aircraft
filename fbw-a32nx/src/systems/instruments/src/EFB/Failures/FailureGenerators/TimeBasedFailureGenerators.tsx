@@ -1,28 +1,45 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 const numberOfSettingsPerGenerator = 2;
+const uniqueGenPrefix = 'E';
 
-export const failureGeneratorPerHourAdd = () => {
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '');
+export const failureGeneratorAddPerHour = () => {
+    error here const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '');
     const tempSettings : string = failureGeneratorSetting;
     const additionalSetting = '3,0.1';
     if (tempSettings.length > 0) setFailureGeneratorSetting(`${failureGeneratorSetting},${additionalSetting}`);
     else setFailureGeneratorSetting(additionalSetting);
 };
 
+export const failureGeneratorButtonsPerHour = () => {
+    const [failureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '');
+    const nbGeneratorPerHour = Math.floor(failureGeneratorSetting.split.length / numberOfSettingsPerGenerator);
+    let htmlReturn = '';
+    for (let i = 0; i < nbGeneratorPerHour; i++) {
+        htmlReturn += (
+            <button
+                type="button"
+                className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+            >
+                {`${uniqueGenPrefix}${i.toString()}`}
+            </button>
+        );
+    }
+    return htmlReturn;
+};
+
 export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '2,5,2,10');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '');
     const [failureGeneratorArmedPerHour, setFailureGeneratorArmedPerHour] = useState<boolean[]>([false, false]);
     const settingsPerHour : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
     const nbGeneratorPerHour = useMemo(() => Math.floor(settingsPerHour.length / numberOfSettingsPerGenerator), [settingsPerHour]);
-    const uniqueGenPrefix = 'E';
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {

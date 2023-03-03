@@ -3,9 +3,12 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
-import { failureGeneratorPerHour, failureGeneratorPerHourAdd, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
+import {
+    failureGeneratorButtonsPerHour, failureGeneratorPerHour,
+    failureGeneratorAddPerHour, failureGeneratorTimer,
+} from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
-import { failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
+import { failureGeneratorAddTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
@@ -154,9 +157,20 @@ export const basicData = () => {
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
 
+export const failureGeneratorNames: GeneratorOption[] = [
+    { name: 'PerHour', alias: t('Failures.Generators.GenPerHour') },
+    { name: 'TakeOff', alias: t('Failures.Generators.GenTakeOff') },
+    { name: 'SpeedAccel', alias: t('Failures.Generators.GenSpeedAccel') },
+    { name: 'SpeedDecel', alias: t('Failures.Generators.GenSpeedDecel') },
+    { name: 'Timer', alias: t('Failures.Generators.GenTimer') },
+    { name: 'AltClimb', alias: t('Failures.Generators.GenAltClimb') },
+    { name: 'AltDescent', alias: t('Failures.Generators.GenAltDesc') },
+];
+
 export const addGenerator = (chosenGen : string) => {
     switch (chosenGen) {
-    case 'PerHour': return failureGeneratorPerHourAdd;
+    case 'PerHour': return failureGeneratorAddPerHour;
+    case 'TakeOff': return failureGeneratorAddTakeOff;
     default: return () => {};
     }
 };
@@ -166,17 +180,19 @@ interface GeneratorOption {
     alias: string;
 }
 
-export const failureGeneratorNames: GeneratorOption[] = [
-    { name: 'PerHour', alias: t('Failures.Generators.GenTimer') },
-/*
-    nameArray.push(t('Failures.Generators.GenTakeOff'));
-    nameArray.push(t('Failures.Generators.GenAltClimb'));
-    nameArray.push(t('Failures.Generators.GenAltDesc'));
-    nameArray.push(t('Failures.Generators.GenPerHour'));
-    nameArray.push(t('Failures.Generators.GenSpeedAccel'));
-    nameArray.push(t('Failures.Generators.GenSpeedDecel'));
-    */
+export const failureGeneratorButtons: (()=>{})[] = [
+    failureGeneratorButtonsPerHour,
 ];
+
+export const generatorsButtonList = () => {
+    let htmlReturn = '';
+
+    failureGeneratorButtons.forEach((element : () => string) => {
+        htmlReturn += element();
+    });
+
+    return htmlReturn;
+};
 
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
     failureGeneratorTimer,

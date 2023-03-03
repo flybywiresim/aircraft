@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { AtaChaptersTitle } from '@shared/ata';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
-import { SettingItem } from 'instruments/src/EFB/Settings/Settings';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
-import { addGenerator, failureGeneratorNames } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { addGenerator, failureGeneratorNames, generatorsButtonList } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -46,31 +45,35 @@ export const FailuresHome = () => {
 };
 
 export const FailureGeneratorsUI = () => {
-    const [chosenGen, setChosenGen] = useState(t('Failures.Generators.DefaultSelect'));
+    const [chosenGen, setChosenGen] = useState<string>();
     return (
         <>
-            <div className="flex flex-row justify-between py-2 space-x-4">
-                <SettingItem name={t('Failures.Generators.Select')}>
-                    <SelectInput
-                        className="flex py-2 px-2 w-72"
-                        value={chosenGen}
-                        onChange={(value) => setChosenGen(value as string)}
-                        options={failureGeneratorNames.map((option) => ({
-                            value: option.name,
-                            displayValue: `${option.alias}`,
-                        }))}
-                        maxHeight={32}
-                    />
-                    <button
-                        onClick={addGenerator(chosenGen)}
-                        type="button"
-                        className="flex py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-                    >
-                        <h2>{t('Failures.Generators.Add')}</h2>
-                    </button>
-                </SettingItem>
+            <div className="flex justify-between py-2 space-x-4">
+                <h2>
+                    {t('Failures.Generators.Select')}
+                </h2>
+                <SelectInput
+                    className="flex py-2 px-2 w-72"
+                    value={chosenGen}
+                    defaultValue={t('Failures.Generators.DefaultSelect')}
+                    onChange={(value) => setChosenGen(value as string)}
+                    options={failureGeneratorNames.map((option) => ({
+                        value: option.name,
+                        displayValue: `${option.alias}`,
+                    }))}
+                    maxHeight={32}
+                />
+                <button
+                    onClick={addGenerator(chosenGen)}
+                    type="button"
+                    className="flex py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                >
+                    <h2>{t('Failures.Generators.Add')}</h2>
+                </button>
             </div>
-            <ScrollableContainer height={48} />
+            <ScrollableContainer height={48}>
+                {generatorsButtonList()}
+            </ScrollableContainer>
         </>
     );
 };

@@ -1,23 +1,50 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
+
+const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
+const numberOfSettingsPerGenerator = 8;
+const uniqueGenPrefix = 'G';
+
+export const failureGeneratorAddTakeOff = () => {
+    error here const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
+    const tempSettings : string = failureGeneratorSetting;
+    const additionalSetting = '2,1,0.33,0.33,30,95,140,40';
+    if (tempSettings.length > 0) setFailureGeneratorSetting(`${failureGeneratorSetting},${additionalSetting}`);
+    else setFailureGeneratorSetting(additionalSetting);
+};
+
+export const failureGeneratorButtonsPerHour = () => {
+    const [failureGeneratorSetting] = usePersistentProperty(settingName, '');
+    const nbGeneratorPerHour = Math.floor(failureGeneratorSetting.split.length / numberOfSettingsPerGenerator);
+    let htmlReturn = '';
+    for (let i = 0; i < nbGeneratorPerHour; i++) {
+        htmlReturn += (
+            <button
+                type="button"
+                className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+            >
+                {`${uniqueGenPrefix}${i.toString()}`}
+            </button>
+        );
+    }
+    return htmlReturn;
+};
 
 // keep this template for new failureGenerators
 export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {
     // FAILURE GENERATOR DESCRIPTION
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TAKEOFF', '2,1,0.33,0.40,30,100,140,5000,2,1,0.33,0.40,30,100,140,5000');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '2,1,0.33,0.40,30,100,140,5000,2,1,0.33,0.40,30,100,140,5000');
 
     const [failureGeneratorArmedTakeOff, setFailureGeneratorArmedTakeOff] = useState<boolean[]>([false, false]);
     const settingsTakeOff : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const [failureTakeOffSpeedThreshold, setFailureTakeOffSpeedThreshold] = useState<number[]>([-1, -1]);
     const [failureTakeOffAltitudeThreshold, setFailureTakeOffAltitudeThreshold] = useState<number[]>([-1, -1]);
-    const numberOfSettingsPerGenerator = 8;
     const nbGeneratorTakeOff = useMemo(() => Math.floor(settingsTakeOff.length / numberOfSettingsPerGenerator), [settingsTakeOff]);
     const { failureFlightPhase } = basicData();
-    const uniqueGenPrefix = 'G';
 
     const altitude = Simplane.getAltitudeAboveGround();
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
