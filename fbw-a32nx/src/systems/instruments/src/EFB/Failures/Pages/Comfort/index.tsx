@@ -25,14 +25,14 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
     return (
         <Link
             to={`/failures/comfort/${pathify(ataNumber.toString())}`}
-            className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent hover:border-theme-highlight transition duration-100"
+            className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight"
         >
             <div
-                className="flex justify-center items-center w-1/5 font-title text-5xl font-bold bg-theme-accent rounded-md"
+                className="flex justify-center items-center w-1/5 text-5xl font-bold rounded-md font-title bg-theme-accent"
             >
                 {`ATA ${ataNumber}`}
 
-                <div className="inline-block relative -right-7 bottom-16 w-0 h-0 text-utility-red fill-current">
+                <div className="inline-block relative -right-7 bottom-16 w-0 h-0 fill-current text-utility-red">
                     {hasActiveFailure && (
                         <svg style={{ width: '30px', height: '30px' }} viewBox="0 0 20 20">
                             <circle cx={10} cy={10} r={5} />
@@ -61,7 +61,7 @@ interface ComfortUIProps {
 
 export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUIProps) => (
     <>
-        <Route exact path="/failures/comfort">
+        <Route exact path="/failures/failureslist/comfort">
             <ScrollableContainer height={48}>
                 {filteredChapters.map((chapter) => (
                     <ATAChapterCard
@@ -82,7 +82,7 @@ export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUI
         {allChapters.map((chapter) => (
             <Route
                 key={chapter}
-                path={`/failures/comfort/${chapter.toString()}`}
+                path={`/failures/failureslist/comfort/${chapter.toString()}`}
             >
                 <AtaChapterPage chapter={chapter} failures={failures} />
             </Route>

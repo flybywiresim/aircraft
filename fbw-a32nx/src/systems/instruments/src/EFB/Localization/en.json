@@ -115,7 +115,8 @@
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "Comfort",
+      "Generators": "Failure Generators"
     },
     "Compact": {
       "Title": "Compact"

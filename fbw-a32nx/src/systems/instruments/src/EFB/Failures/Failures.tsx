@@ -22,7 +22,8 @@ export const FailuresHome = () => {
     return (
         <>
             <div className="flex flex-row justify-between space-x-4">
-                <Navbar basePath="/failures" tabs={tabs} />
+                <h1 className="font-bold">{t('Failures.Title')}</h1>
+                <Navbar basePath="/failures" tabs={tabs} className="absolute top-0 right-0" />
                 <div className="flex flex-row items-center py-1 px-4 space-x-2 rounded-md bg-colors-yellow-400">
                     <InfoCircleFill className="text-black" />
                     <p className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</p>
