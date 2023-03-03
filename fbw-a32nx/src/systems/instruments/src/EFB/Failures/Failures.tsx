@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AtaChaptersTitle } from '@shared/ata';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
-import { t } from '../translation';
+import { SettingItem } from 'instruments/src/EFB/Settings/Settings';
+import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
+import { t } from 'instruments/src/EFB/translation';
+import { addGenerator, failureGeneratorNames } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -42,13 +45,34 @@ export const FailuresHome = () => {
     );
 };
 
-export const FailureGeneratorsUI = () => (
-    <>
-        <div className="flex flex-row justify-between space-x-4">
-            <p className="text-white">coucou</p>
-        </div>
-    </>
-);
+export const FailureGeneratorsUI = () => {
+    const [chosenGen, setChosenGen] = useState('');
+    return (
+        <>
+            <div className="flex flex-row justify-between space-x-4">
+                <SettingItem name={t('Failures.Generators.Select')}>
+                    <SelectInput
+                        className="w-72"
+                        value={chosenGen}
+                        onChange={(value) => setChosenGen(value as string)}
+                        options={failureGeneratorNames.map((option) => ({
+                            value: option.name,
+                            displayValue: `${option.alias}`,
+                        }))}
+                        maxHeight={32}
+                    />
+                </SettingItem>
+                <button
+                    onClick={addGenerator(chosenGen)}
+                    type="button"
+                    className="flex px-2 pt-3 pb-2 ml-4 h-36 text-left rounded-md border-t-4 bg-theme-accent blue"
+                >
+                    <h2>{t('Failures.Generators.Add')}</h2>
+                </button>
+            </div>
+        </>
+    );
+};
 
 export const Failures = () => {
     const { allFailures } = useFailuresOrchestrator();

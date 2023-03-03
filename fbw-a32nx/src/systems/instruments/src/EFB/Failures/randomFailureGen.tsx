@@ -3,9 +3,10 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
-import { failureGeneratorPerHour, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
+import { failureGeneratorPerHour, failureGeneratorPerHourAdd, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
 import { failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
+import { t } from 'instruments/src/EFB/translation';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -152,6 +153,30 @@ export const basicData = () => {
     }, [throttleTakeOff, isOnGround]);
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
+
+export const addGenerator = (chosenGen : string) => {
+    switch (chosenGen) {
+    case 'PerHour': return failureGeneratorPerHourAdd;
+    default: return () => {};
+    }
+};
+
+interface GeneratorOption {
+    name: string;
+    alias: string;
+}
+
+export const failureGeneratorNames: GeneratorOption[] = [
+    { name: 'PerHour', alias: t('Failures.Generators.GenTimer') },
+/*
+    nameArray.push(t('Failures.Generators.GenTakeOff'));
+    nameArray.push(t('Failures.Generators.GenAltClimb'));
+    nameArray.push(t('Failures.Generators.GenAltDesc'));
+    nameArray.push(t('Failures.Generators.GenPerHour'));
+    nameArray.push(t('Failures.Generators.GenSpeedAccel'));
+    nameArray.push(t('Failures.Generators.GenSpeedDecel'));
+    */
+];
 
 export const randomFailureGenerator = () => {
     const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [];

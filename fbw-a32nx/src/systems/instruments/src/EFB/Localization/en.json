@@ -124,7 +124,15 @@
     "Search": "Search",
     "Title": "Failures",
     "Generators": {
-      "Title": "Failure Generators"
+      "Title": "Failure Generator",
+      "GenTimer": "Timed Failure",
+      "GenTakeOff": "Take-Off",
+      "GenAltClimb": "Altitude threshold (climb)",
+      "GenAltDesc": "Altitude threshold (descent)",
+      "GenPerHour": "Chance over time",
+      "GenSpeedAccel": "Speed threshold (acceleration)",
+      "GenSpeedDecel": "Speed threshold (deceleration)",
+      "Add": "Add"
     }
   },
   "Ground": {
