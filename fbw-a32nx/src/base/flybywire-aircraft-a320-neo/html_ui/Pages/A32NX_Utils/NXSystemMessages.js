@@ -89,6 +89,7 @@ const NXSystemMessages = {
     setHoldSpeed:           new TypeIIMessage("SET HOLD SPEED"),
     spdLimExceeded:         new TypeIIMessage("SPD LIM EXCEEDED", true),
     systemBusy:             new TypeIMessage("SYSTEM BUSY-TRY LATER"),
+    toSpeedTooLow:          new TypeIIMessage("TO SPEEDS TOO LOW", true),
     uplinkInsertInProg:     new TypeIIMessage("UPLINK INSERT IN PROG"),
     vToDisagree:            new TypeIIMessage("V1/VR/V2 DISAGREE", true),
     waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE")

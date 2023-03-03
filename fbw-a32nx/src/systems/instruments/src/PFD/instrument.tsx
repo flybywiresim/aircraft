@@ -74,7 +74,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('pitch');
         this.simVarPublisher.subscribe('roll');
         this.simVarPublisher.subscribe('magHeadingRaw');
-        this.simVarPublisher.subscribe('altitude');
+        this.simVarPublisher.subscribe('baroCorrectedAltitude');
         this.simVarPublisher.subscribe('speed');
         this.simVarPublisher.subscribe('noseGearCompressed');
         this.simVarPublisher.subscribe('leftMainGearCompressed');
