@@ -14,7 +14,7 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     pitch: number;
     roll: number;
     magHeadingRaw: number;
-    altitude: number;
+    baroCorrectedAltitude: number;
     speed: number;
     noseGearCompressed: boolean;
     leftMainGearCompressed: boolean;
@@ -161,7 +161,7 @@ export enum PFDVars {
     pitch = 'L:A32NX_ADIRS_IR_1_PITCH',
     roll = 'L:A32NX_ADIRS_IR_1_ROLL',
     magHeadingRaw = 'L:A32NX_ADIRS_IR_1_HEADING',
-    altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
+    baroCorrectedAltitude1 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1',
     speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
     noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
     leftMainGearCompressed = 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED',
@@ -312,7 +312,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['pitch', { name: PFDVars.pitch, type: SimVarValueType.Number }],
         ['roll', { name: PFDVars.roll, type: SimVarValueType.Number }],
         ['magHeadingRaw', { name: PFDVars.magHeadingRaw, type: SimVarValueType.Number }],
-        ['altitude', { name: PFDVars.altitude, type: SimVarValueType.Number }],
+        ['baroCorrectedAltitude', { name: PFDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
         ['speed', { name: PFDVars.speed, type: SimVarValueType.Number }],
         ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
         ['leftMainGearCompressed', { name: PFDVars.leftMainGearCompressed, type: SimVarValueType.Bool }],

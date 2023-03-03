@@ -13,7 +13,7 @@ export interface AdirsSimVars {
     magHeadingRaw: number;
     heading: number;
     trueHeading: number;
-    altitude: number;
+    baroCorrectedAltitude: number;
     speed: number;
     vsInert: number;
     vsBaro: number;
@@ -40,7 +40,7 @@ export enum AdirsVars {
     roll = 'L:A32NX_ADIRS_IR_1_ROLL',
     heading = 'L:A32NX_ADIRS_IR_1_HEADING',
     trueHeading = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
-    altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
+    baroCorrectedAltitude1 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1',
     speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
     vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
     vsBaro = 'L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED',
@@ -62,7 +62,7 @@ export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefiniti
     ['roll', { name: AdirsVars.roll, type: SimVarValueType.Number }],
     ['heading', { name: AdirsVars.heading, type: SimVarValueType.Number }],
     ['trueHeading', { name: AdirsVars.trueHeading, type: SimVarValueType.Number }],
-    ['altitude', { name: AdirsVars.altitude, type: SimVarValueType.Number }],
+    ['baroCorrectedAltitude', { name: AdirsVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
     ['speed', { name: AdirsVars.speed, type: SimVarValueType.Number }],
     ['groundTrack', { name: AdirsVars.groundTrack, type: SimVarValueType.Number }],
     ['trueGroundTrack', { name: AdirsVars.trueGroundTrack, type: SimVarValueType.Number }],

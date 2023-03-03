@@ -129,7 +129,7 @@ export class ArincValueProvider {
             publisher.pub('speedAr', this.speed);
         });
 
-        subscriber.on('altitude').handle((a) => {
+        subscriber.on('baroCorrectedAltitude').handle((a) => {
             this.altitude = new Arinc429Word(a);
             publisher.pub('altitudeAr', this.altitude);
         });
