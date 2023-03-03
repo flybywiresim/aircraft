@@ -16,7 +16,7 @@ import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 export const FailuresHome = () => {
     const tabs: PageLink[] = [
         { name: 'FailuresList', alias: t('Failures.Title'), component: <Failures /> },
-        { name: 'FailureGenerators', alias: t('Failures.Generators'), component: <FailureGeneratorsUI /> },
+        { name: 'FailureGenerators', alias: t('Failures.Generators.Title'), component: <FailureGeneratorsUI /> },
     ];
 
     return (

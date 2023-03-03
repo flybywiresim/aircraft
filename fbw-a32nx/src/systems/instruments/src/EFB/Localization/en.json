@@ -115,15 +115,17 @@
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort",
-      "Generators": "Failure Generators"
+      "Title": "Comfort"
     },
     "Compact": {
       "Title": "Compact"
     },
     "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
     "Search": "Search",
-    "Title": "Failures"
+    "Title": "Failures",
+    "Generators": {
+      "Title": "Failure Generators"
+    }
   },
   "Ground": {
     "Fuel": {
