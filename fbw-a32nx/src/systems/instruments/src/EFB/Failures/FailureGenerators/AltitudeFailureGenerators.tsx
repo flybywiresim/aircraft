@@ -55,9 +55,10 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        // remove for release
-        setFailureGeneratorArmedAltClimb([false, false, false]);
-        setFailureGeneratorSetting('0,2000,0,3000,0,4000');
+        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
+        const tempArmed : boolean[] = [];
+        for (let i = 0; i < generatorNumber; i++) tempArmed.push(false);
+        setFailureGeneratorArmedAltClimb(tempArmed);
     }, []);
 };
 
@@ -113,8 +114,9 @@ export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, s
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        // remove for release
-        setFailureGeneratorArmedAltDesc([false, false]);
-        setFailureGeneratorSetting('0,2000,0,3000,0,4000');
+        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
+        const tempArmed : boolean[] = [];
+        for (let i = 0; i < generatorNumber; i++) tempArmed.push(false);
+        setFailureGeneratorArmedAltDesc(tempArmed);
     }, []);
 };

@@ -26,11 +26,11 @@ export const FailuresHome = () => {
         <>
             <div className="flex flex-row justify-between space-x-4">
                 <h1 className="font-bold">{t('Failures.Title')}</h1>
-                <Navbar basePath="/failures" tabs={tabs} className="absolute top-0 right-0" />
                 <div className="flex flex-row items-center py-1 px-4 space-x-2 rounded-md bg-colors-yellow-400">
                     <InfoCircleFill className="text-black" />
-                    <p className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</p>
+                    <div className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</div>
                 </div>
+                <Navbar basePath="/failures" tabs={tabs} className="flex flex-row items-center" />
             </div>
 
             <Route path="/failures/failureslist">
@@ -46,13 +46,13 @@ export const FailuresHome = () => {
 };
 
 export const FailureGeneratorsUI = () => {
-    const [chosenGen, setChosenGen] = useState('');
+    const [chosenGen, setChosenGen] = useState(t('Failures.Generators.DefaultSelect'));
     return (
         <>
-            <div className="flex flex-row justify-between space-x-4">
+            <div className="flex flex-row justify-between py-2 space-x-4">
                 <SettingItem name={t('Failures.Generators.Select')}>
                     <SelectInput
-                        className="w-72"
+                        className="flex py-2 px-2 w-72"
                         value={chosenGen}
                         onChange={(value) => setChosenGen(value as string)}
                         options={failureGeneratorNames.map((option) => ({
@@ -61,15 +61,16 @@ export const FailureGeneratorsUI = () => {
                         }))}
                         maxHeight={32}
                     />
+                    <button
+                        onClick={addGenerator(chosenGen)}
+                        type="button"
+                        className="flex py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                    >
+                        <h2>{t('Failures.Generators.Add')}</h2>
+                    </button>
                 </SettingItem>
-                <button
-                    onClick={addGenerator(chosenGen)}
-                    type="button"
-                    className="flex px-2 pt-3 pb-2 ml-4 h-36 text-left rounded-md border-t-4 bg-theme-accent blue"
-                >
-                    <h2>{t('Failures.Generators.Add')}</h2>
-                </button>
             </div>
+            <ScrollableContainer height={48} />
         </>
     );
 };

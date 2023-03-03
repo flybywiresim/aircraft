@@ -55,9 +55,10 @@ export const failureGeneratorSpeedAccel = (generatorFailuresGetters : Map<number
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        // remove for release
-        setFailureGeneratorArmedSpeedAccel([false, false, false]);
-        setFailureGeneratorSetting('0,190,0,200,0,210');
+        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
+        const tempArmed : boolean[] = [];
+        for (let i = 0; i < generatorNumber; i++) tempArmed.push(false);
+        setFailureGeneratorArmedSpeedAccel(tempArmed);
     }, []);
 };
 
@@ -113,8 +114,9 @@ export const failureGeneratorSpeedDecel = (generatorFailuresGetters : Map<number
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        // remove for release
-        setFailureGeneratorArmedSpeedDecel([false, false, false]);
-        setFailureGeneratorSetting('0,190,0,200,0,210');
+        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
+        const tempArmed : boolean[] = [];
+        for (let i = 0; i < generatorNumber; i++) tempArmed.push(false);
+        setFailureGeneratorArmedSpeedDecel(tempArmed);
     }, []);
 };

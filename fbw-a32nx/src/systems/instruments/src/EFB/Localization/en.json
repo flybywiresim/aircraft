@@ -132,7 +132,9 @@
       "GenPerHour": "Chance over time",
       "GenSpeedAccel": "Speed threshold (acceleration)",
       "GenSpeedDecel": "Speed threshold (deceleration)",
-      "Add": "Add"
+      "Add": "Add",
+      "Select": "Select Failure Generator",
+      "DefaultSelect": "Select a default generator"
     }
   },
   "Ground": {

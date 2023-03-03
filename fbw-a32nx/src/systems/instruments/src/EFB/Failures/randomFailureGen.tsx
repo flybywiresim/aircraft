@@ -178,19 +178,20 @@ export const failureGeneratorNames: GeneratorOption[] = [
     */
 ];
 
+const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
+    failureGeneratorTimer,
+    failureGeneratorTakeOff,
+    failureGeneratorAltClimb,
+    failureGeneratorAltDesc,
+    failureGeneratorPerHour,
+    failureGeneratorSpeedAccel,
+    failureGeneratorSpeedDecel,
+];
+
 export const randomFailureGenerator = () => {
-    const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [];
     const { failureFlightPhase } = basicData();
     const { allFailures } = failureGeneratorCommonFunction();
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
-
-    failureGenerators.push(failureGeneratorTimer);
-    failureGenerators.push(failureGeneratorTakeOff);
-    failureGenerators.push(failureGeneratorAltClimb);
-    failureGenerators.push(failureGeneratorAltDesc);
-    failureGenerators.push(failureGeneratorPerHour);
-    failureGenerators.push(failureGeneratorSpeedAccel);
-    failureGenerators.push(failureGeneratorSpeedDecel);
 
     // TODO: to be improved, changing doesn't mean active but this is not critical
 

@@ -69,9 +69,10 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        // remove for release
-        setFailureGeneratorArmedPerHour([false, false, false]);
-        setFailureGeneratorSetting('0,130,0,120,0,100');
+        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
+        const tempArmed : boolean[] = [];
+        for (let i = 0; i < generatorNumber; i++) tempArmed.push(false);
+        setFailureGeneratorArmedPerHour(tempArmed);
     }, []);
 };
 
@@ -133,8 +134,9 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        // remove for release
-        setFailureGeneratorArmedTimer([false, false]);
-        setFailureGeneratorSetting('0,8,0,9');
+        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
+        const tempArmed : boolean[] = [];
+        for (let i = 0; i < generatorNumber; i++) tempArmed.push(false);
+        setFailureGeneratorArmedTimer(tempArmed);
     }, []);
 };
