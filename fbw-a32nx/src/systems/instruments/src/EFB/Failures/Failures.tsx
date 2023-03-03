@@ -15,8 +15,8 @@ import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 
 export const FailuresHome = () => {
     const tabs: PageLink[] = [
-        { name: 'Failures', alias: t('Failures.Title'), component: <Failures /> },
-        { name: 'Generators', alias: t('Failures.Generators'), component: <FailureGeneratorsUI /> },
+        { name: 'FailuresList', alias: t('Failures.Title'), component: <Failures /> },
+        { name: 'FailureGenerators', alias: t('Failures.Generators'), component: <FailureGeneratorsUI /> },
     ];
 
     return (
@@ -29,11 +29,11 @@ export const FailuresHome = () => {
                 </div>
             </div>
 
-            <Route path="/failures">
+            <Route path="/failures/failureslist">
                 <Failures />
             </Route>
 
-            <Route path="/failures">
+            <Route path="/failures/failuregenerators">
                 <FailureGeneratorsUI />
             </Route>
             <PageRedirect basePath="/failures" tabs={tabs} />
@@ -44,7 +44,7 @@ export const FailuresHome = () => {
 export const FailureGeneratorsUI = () => (
     <>
         <div className="flex flex-row justify-between space-x-4">
-            <p className="text-black">coucou</p>
+            <p className="text-white">coucou</p>
         </div>
     </>
 );
@@ -85,21 +85,21 @@ export const Failures = () => {
                         value={searchQuery}
                         onChange={(value) => dispatch(setSearchQuery(value.toUpperCase()))}
                     />
-                    <Navbar basePath="/failures" tabs={tabs} />
+                    <Navbar basePath="/failures/failureslist" tabs={tabs} />
                 </div>
 
-                <Route path="/failures/comfort">
+                <Route path="/failures/failureslist/comfort">
                     <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} />
                 </Route>
 
                 <ScrollableContainer height={48}>
-                    <Route path="/failures/compact">
+                    <Route path="/failures/failureslist/compact">
                         <CompactUI chapters={filteredChapters} failures={filteredFailures} />
                     </Route>
                 </ScrollableContainer>
             </div>
 
-            <PageRedirect basePath="/failures" tabs={tabs} />
+            <PageRedirect basePath="/failures/failureslist" tabs={tabs} />
         </>
     );
 };
