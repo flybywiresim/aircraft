@@ -6039,7 +6039,7 @@ impl A320ReverserController {
     ) {
         let is_confirmed_stowed_available_for_deploy =
             reverser_feedback.position_sensor().get::<ratio>() <= 0.1
-                && reverser_feedback.proximity_sensor_stowed()
+                && reverser_feedback.proximity_sensor_all_stowed()
                 && !reverser_feedback.pressure_switch_pressurised();
 
         let deploy_authorized = engine.corrected_n2().get::<percent>() > 50.
@@ -6077,7 +6077,7 @@ impl A320ReverserController {
                 }
             }
             ReverserControlState::TransitOpening => {
-                if reverser_feedback.proximity_sensor_all_opened() {
+                if reverser_feedback.proximity_sensor_all_deployed() {
                     ReverserControlState::FullyOpened
                 } else if !deploy_authorized || !allow_power_to_valves {
                     ReverserControlState::TransitClosing
@@ -6086,7 +6086,7 @@ impl A320ReverserController {
                 }
             }
             ReverserControlState::TransitClosing => {
-                if reverser_feedback.proximity_sensor_stowed() {
+                if reverser_feedback.proximity_sensor_all_stowed() {
                     ReverserControlState::StowedOff
                 } else if allow_directional_valve_to_deploy && deploy_authorized {
                     ReverserControlState::TransitOpening
@@ -6144,7 +6144,16 @@ struct A320Reversers {
     reverser1_position_id: VariableIdentifier,
     reverser2_position_id: VariableIdentifier,
 
+    reverser1_in_transition_id: VariableIdentifier,
+    reverser2_in_transition_id: VariableIdentifier,
+
+    reverser1_deployed_id: VariableIdentifier,
+    reverser2_deployed_id: VariableIdentifier,
+
     reversers: [ReverserAssembly; 2],
+
+    reversers_in_transition: [bool; 2],
+    reversers_deployed: [bool; 2],
 }
 impl A320Reversers {
     //TODO Check busses
@@ -6165,6 +6174,13 @@ impl A320Reversers {
         Self {
             reverser1_position_id: context.get_identifier("REVERSER1_POSITION".to_owned()),
             reverser2_position_id: context.get_identifier("REVERSER2_POSITION".to_owned()),
+
+            reverser1_in_transition_id: context.get_identifier("REVERSER1_DEPLOYING".to_owned()),
+            reverser2_in_transition_id: context.get_identifier("REVERSER2_DEPLOYING".to_owned()),
+
+            reverser1_deployed_id: context.get_identifier("REVERSER1_DEPLOYED".to_owned()),
+            reverser2_deployed_id: context.get_identifier("REVERSER2_DEPLOYED".to_owned()),
+
             reversers: [
                 ReverserAssembly::new(
                     Pressure::new::<psi>(
@@ -6193,6 +6209,8 @@ impl A320Reversers {
                     Self::REVERSER2_ISOLATION_VALVE_SUPPLY_POWER_BUS,
                 ),
             ],
+            reversers_in_transition: [false, false],
+            reversers_deployed: [false, false],
         }
     }
 
@@ -6214,6 +6232,17 @@ impl A320Reversers {
             &reverser_controllers[1],
             right_reverser_section.pressure(),
         );
+
+        self.update_sensors_state();
+    }
+
+    fn update_sensors_state(&mut self) {
+        for (idx, reverser) in self.reversers.iter().enumerate() {
+            self.reversers_deployed[idx] = reverser.proximity_sensor_all_deployed();
+
+            self.reversers_in_transition[idx] = !reverser.proximity_sensor_all_deployed()
+                || !reverser.proximity_sensor_all_stowed();
+        }
     }
 
     fn reverser_feedback(&self, reverser_index: usize) -> &impl ReverserFeedback {
@@ -6248,6 +6277,18 @@ impl SimulationElement for A320Reversers {
             &self.reverser2_position_id,
             self.reversers[1].reverser_position().get::<ratio>(),
         );
+
+        writer.write(
+            &self.reverser1_in_transition_id,
+            self.reversers_in_transition[0],
+        );
+        writer.write(
+            &self.reverser2_in_transition_id,
+            self.reversers_in_transition[1],
+        );
+
+        writer.write(&self.reverser1_deployed_id, self.reversers_deployed[0]);
+        writer.write(&self.reverser2_deployed_id, self.reversers_deployed[1]);
     }
 }
 

@@ -310,8 +310,9 @@ pub trait ReverserInterface {
 
 pub trait ReverserFeedback {
     fn position_sensor(&self) -> Ratio;
-    fn proximity_sensor_stowed(&self) -> bool;
-    fn proximity_sensor_all_opened(&self) -> bool;
+    fn proximity_sensor_all_stowed(&self) -> bool;
+    fn proximity_sensor_at_least_one_stowed(&self) -> bool;
+    fn proximity_sensor_all_deployed(&self) -> bool;
     fn pressure_switch_pressurised(&self) -> bool;
     fn tertiary_lock_is_locked(&self) -> bool;
 }
@@ -449,12 +450,18 @@ impl ReverserFeedback for ReverserAssembly {
         self.reverser_position()
     }
 
-    fn proximity_sensor_stowed(&self) -> bool {
-        self.reverser_position().get::<ratio>() < 0.05
+    fn proximity_sensor_all_stowed(&self) -> bool {
+        self.reverser_position().get::<ratio>() < 0.01
     }
 
-    fn proximity_sensor_all_opened(&self) -> bool {
-        self.reverser_position().get::<ratio>() > 0.99
+    fn proximity_sensor_all_deployed(&self) -> bool {
+        self.reverser_position().get::<ratio>() > 0.95
+    }
+
+    fn proximity_sensor_at_least_one_stowed(&self) -> bool {
+        // We do not model multiple doors for now, placeholder is a higher threshold for one door stowed only
+        self.reverser_position().get::<ratio>() < 0.2
+            && self.reverser_position().get::<ratio>() >= 0.01
     }
 
     fn pressure_switch_pressurised(&self) -> bool {

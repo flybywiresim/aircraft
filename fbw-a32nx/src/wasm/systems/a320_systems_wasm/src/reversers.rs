@@ -20,6 +20,7 @@ const LOW_SPEED_MODE_SPEED_THRESHOLD_FOOT_PER_SEC: f64 = -0.2;
 // Multiplier that will artificially increase reverser thrust at low speed to overcome magical MSFS static ground friction in reverse
 const LOW_SPEED_MODE_SPEED_FORCE_MULTIPLIER: f64 = 3.;
 
+// Multiplier to tune the angular torque caused by thrust reverser asymetry
 const ASYMETRY_EFFECT_MAGIC_MULTIPLIER: f64 = 10.;
 
 #[sim_connect::data_definition]
