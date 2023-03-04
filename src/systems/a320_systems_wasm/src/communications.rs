@@ -13,10 +13,13 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         VariableToEventWriteOn::Change,
         "PILOT_TRANSMITTER_SET",
     )?;
+    //EveryTick due to a bug within the SDK
+    // Whenever the pilot version is set, the copilot version is too
+    // Therefore as workaround, we need to constantly update the copilot version
     builder.variable_to_event(
         Variable::aspect("COPILOT_TRANSMIT_CHANNEL"),
         VariableToEventMapping::EventDataRaw,
-        VariableToEventWriteOn::Change,
+        VariableToEventWriteOn::EveryTick,
         "COPILOT_TRANSMITTER_SET",
     )?;
     builder.variable_to_event(
@@ -86,7 +89,7 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         "MARKER_VOLUME_SET",
     )?;
     builder.variable_to_event(
-        Variable::aspect("MKR_IDENT"),
+        Variable::aspect("MARKER_IDENT"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::Change,
         "MARKER_SOUND_TOGGLE",
@@ -143,8 +146,4 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
     )?;
 
     Ok(())
-}
-
-fn to_percent_max(accumulator: f64, item: f64) -> f64 {
-    max(accumulator, item * 100.)
 }

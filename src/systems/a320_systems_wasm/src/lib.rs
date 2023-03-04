@@ -227,7 +227,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("NAV SOUND", "Bool", 4)?
     .provides_aircraft_variable("ADF SOUND", "Bool", 1)?
     .provides_aircraft_variable("ADF SOUND", "Bool", 2)?
-    .provides_aircraft_variable("MARKER SOUND", "Bool", 1)?
+    .provides_aircraft_variable("MARKER SOUND", "Bool", 0)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),

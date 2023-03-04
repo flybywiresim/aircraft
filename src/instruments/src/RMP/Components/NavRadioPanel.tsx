@@ -81,9 +81,9 @@ const useCourse = (receiver: number, side: string) => {
 const setActiveFrequencySimVar = (receiver: number, index: number, frequency: number) => {
     if (receiver === TransceiverType.ADF) {
         SimVar.SetSimVarValue(`K:ADF${index === 1 ? '' : index}_ACTIVE_SET`, 'Frequency ADF BCD32', Avionics.Utils.make_adf_bcd32(frequency));
+    } else {
+        SimVar.SetSimVarValue(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', frequency);
     }
-
-    SimVar.SetSimVarValue(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', frequency);
 };
 
 /**

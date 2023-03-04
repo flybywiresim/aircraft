@@ -8,10 +8,9 @@ use crate::{
         SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
-use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-enum ACPName {
+pub enum CommunicationPanelSideName {
     NONE,
     CAPTAIN,
     FO,
@@ -26,6 +25,7 @@ pub enum AudioSwitchingKnobPosition {
 }
 
 pub struct Communications {
+    communications_panel_elected: Option<CommunicationsPanel>,
     communications_panel_captain: CommunicationsPanel,
     communications_panel_first_officer: CommunicationsPanel,
     communications_panel_ovhd: CommunicationsPanel,
@@ -77,6 +77,8 @@ pub struct Communications {
     //
     is_emitting_id: VariableIdentifier,
     update_comms_id: VariableIdentifier,
+    ls_fcu1_pressed_id: VariableIdentifier,
+    ls_fcu2_pressed_id: VariableIdentifier,
 
     previous_side_controlling: SideControlling,
     previous_audio_switching_knob: AudioSwitchingKnobPosition,
@@ -94,6 +96,10 @@ pub struct Communications {
     receive_gls: bool,
     receive_markers: bool,
     sound_markers: bool,
+    ls_fcu1_pressed: bool,
+    ls_fcu2_pressed: bool,
+    previous_ls_fcu1_pressed: bool,
+    previous_ls_fcu2_pressed: bool,
 
     // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
     // receive_hf1: bool,
@@ -103,8 +109,8 @@ pub struct Communications {
     // receive_pa: bool,
     //
     is_emitting: bool,
-    update_comms: ACPName,
-    last_acp_used: ACPName,
+    update_comms: CommunicationPanelSideName,
+    last_acp_used: CommunicationPanelSideName,
 
     volume_com1: u8,
     volume_com2: u8,
@@ -115,25 +121,19 @@ pub struct Communications {
     volume_ils: u8,
     volume_gls: u8,
     volume_markers: u8,
-
+    //
     // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
     // volume_hf1: u8,
     // volume_hf2: u8,
     // volume_att: u8,
     // volume_mech: u8,
     // volume_pa: u8,
-    //
-    morse_adf1: Morse,
-    morse_adf2: Morse,
-    morse_vor1: Morse,
-    morse_vor2: Morse,
-    morse_ils: Morse,
-    morse_gls: Morse,
 }
 
 impl Communications {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
+            communications_panel_elected: None,
             communications_panel_captain: CommunicationsPanel::new(context, 1),
             communications_panel_first_officer: CommunicationsPanel::new(context, 2),
             communications_panel_ovhd: CommunicationsPanel::new(context, 3),
@@ -185,6 +185,9 @@ impl Communications {
             //
             is_emitting_id: context.get_identifier("IS_EMITTING_ON_FREQUENCY".to_owned()),
             update_comms_id: context.get_identifier("UPDATE_COMMS".to_owned()),
+            ls_fcu1_pressed_id: context.get_identifier("BTN_LS_1_FILTER_ACTIVE".to_owned()),
+            ls_fcu2_pressed_id: context.get_identifier("BTN_LS_2_FILTER_ACTIVE".to_owned()),
+
             previous_side_controlling: SideControlling::BOTH,
             previous_audio_switching_knob: AudioSwitchingKnobPosition::NORM,
 
@@ -200,6 +203,10 @@ impl Communications {
             receive_ils: false,
             receive_gls: false,
             receive_markers: false,
+            ls_fcu1_pressed: false,
+            ls_fcu2_pressed: false,
+            previous_ls_fcu1_pressed: false,
+            previous_ls_fcu2_pressed: false,
 
             // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
             // receive_hf1: false,
@@ -211,8 +218,8 @@ impl Communications {
             //
             sound_markers: false,
             is_emitting: false,
-            update_comms: ACPName::CAPTAIN,
-            last_acp_used: ACPName::CAPTAIN,
+            update_comms: CommunicationPanelSideName::CAPTAIN,
+            last_acp_used: CommunicationPanelSideName::CAPTAIN,
 
             volume_com1: 0,
             volume_com2: 0,
@@ -223,6 +230,7 @@ impl Communications {
             volume_ils: 0,
             volume_gls: 0,
             volume_markers: 0,
+            //
             // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
             // volume_hf1: 0,
             // volume_hf2: 0,
@@ -230,12 +238,6 @@ impl Communications {
             // volume_mech: 0,
             // volume_pa: 0,
             //
-            morse_adf1: Morse::new(context, "ADF", 1),
-            morse_adf2: Morse::new(context, "ADF", 2),
-            morse_vor1: Morse::new(context, "NAV", 1),
-            morse_vor2: Morse::new(context, "NAV", 2),
-            morse_ils: Morse::new(context, "NAV", 3),
-            morse_gls: Morse::new(context, "NAV", 4),
         }
     }
 
@@ -247,199 +249,243 @@ impl Communications {
      * It is possible that no ACP is elected for update. For example if the AudioSwitching knob is on FO and the EFB option is on Captain.
      *
      * "Last ACP used" stands for the last ACP which was used to feed the simvars.
+     *
      * For example, ACP3 can become the last used when the AudioSwitching knob is rotated although none of its knobs/buttons were rotated/pushed
      * Similarly, even if ACP2 knobs get rotated, it would not be the last used if the AudioSwitching knob is on FO and the EFB option is on Captain
      *
      */
     pub fn update(&mut self, context: &UpdateContext) {
-        // Doing the job only if there was an action on an ACP, EFB option or AudioSwitching knob
-        if self.update_comms != ACPName::NONE
-            || self.previous_side_controlling != context.side_controlling()
-            || self.audio_switching_knob != self.previous_audio_switching_knob
-        {
-            // If guess_panel() return None, it means that no ACP was elected
-            if let Some(chosen_panel) = self.guess_panel(context.side_controlling()) {
-                self.last_acp_used = self.update_comms;
+        self.guess_panel_other_actions_based(context.side_controlling());
 
-                self.is_emitting = chosen_panel.is_emitting();
+        if self.communications_panel_elected.is_none() {
+            self.guess_panel_acp_actions_based(context.side_controlling());
+        }
 
-                self.pilot_transmit_channel = chosen_panel.get_transmit_channel_value();
-                self.copilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+        if let Some(chosen_panel) = self.communications_panel_elected {
+            self.last_acp_used = self.update_comms;
 
-                self.receive_com1 = chosen_panel.get_receive_com1();
-                self.receive_com2 = chosen_panel.get_receive_com2();
-                self.receive_adf1 = chosen_panel.get_receive_adf1();
-                self.receive_adf2 = chosen_panel.get_receive_adf2();
-                self.receive_vor1 = chosen_panel.get_receive_vor1();
-                self.receive_vor2 = chosen_panel.get_receive_vor2();
-                self.receive_ils = chosen_panel.get_receive_ils();
-                self.receive_gls = chosen_panel.get_receive_gls();
+            self.is_emitting = chosen_panel.is_emitting();
 
-                self.receive_markers = (self.sound_markers && !chosen_panel.get_receive_markers())
-                    || (!self.sound_markers && chosen_panel.get_receive_markers());
+            self.pilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+            self.copilot_transmit_channel = chosen_panel.get_transmit_channel_value();
 
-                // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
-                // self.receive_hf1 = chosen_panel.get_receive_hf1();
-                // self.receive_hf2 = chosen_panel.get_receive_hf2();
-                // self.receive_mech = chosen_panel.get_receive_mech();
-                // self.receive_att = chosen_panel.get_receive_att();
-                // self.receive_pa = chosen_panel.get_receive_pa();
-                // self.voice_button = chosen_panel.get_voice_button();
+            self.receive_com1 = chosen_panel.get_receive_com1();
+            self.receive_com2 = chosen_panel.get_receive_com2();
+            self.receive_adf1 = chosen_panel.get_receive_adf1();
+            self.receive_adf2 = chosen_panel.get_receive_adf2();
+            self.receive_vor1 = chosen_panel.get_receive_vor1();
+            self.receive_vor2 = chosen_panel.get_receive_vor2();
+            self.receive_ils = chosen_panel.get_receive_ils();
+            // FCOM compliant: ILS can be listened to only if LS is pressed
+            self.receive_ils &= match chosen_panel.get_name() {
+                CommunicationPanelSideName::OVHD => match self.audio_switching_knob {
+                    AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::CAPTAIN => {
+                        self.ls_fcu1_pressed
+                    }
+                    AudioSwitchingKnobPosition::FO => self.ls_fcu1_pressed,
+                },
+                CommunicationPanelSideName::CAPTAIN => self.ls_fcu1_pressed,
+                CommunicationPanelSideName::FO => self.ls_fcu2_pressed,
+                CommunicationPanelSideName::NONE => false,
+            };
+            self.receive_gls = chosen_panel.get_receive_gls();
 
-                self.volume_com1 = chosen_panel.get_volume_com1();
-                self.volume_com2 = chosen_panel.get_volume_com2();
-                self.volume_adf1 = chosen_panel.get_volume_adf1();
-                self.volume_adf2 = chosen_panel.get_volume_adf2();
-                self.volume_vor1 = chosen_panel.get_volume_vor1();
-                self.volume_vor2 = chosen_panel.get_volume_vor2();
-                self.volume_ils = chosen_panel.get_volume_ils();
-                self.volume_gls = chosen_panel.get_volume_gls();
-                self.volume_markers = chosen_panel.get_volume_markers();
+            self.receive_markers = (self.sound_markers && !chosen_panel.get_receive_markers())
+                || (!self.sound_markers && chosen_panel.get_receive_markers());
 
-                // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
-                // self.volume_hf1 = chosen_panel.get_volume_hf1();
-                // self.volume_hf2 = chosen_panel.get_volume_hf2();
-                // self.volume_att = chosen_panel.get_volume_att();
-                // self.volume_mech = chosen_panel.get_volume_mech();
-                // self.volume_pa = chosen_panel.get_volume_pa();
+            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+            // self.receive_hf1 = chosen_panel.get_receive_hf1();
+            // self.receive_hf2 = chosen_panel.get_receive_hf2();
+            // self.receive_mech = chosen_panel.get_receive_mech();
+            // self.receive_att = chosen_panel.get_receive_att();
+            // self.receive_pa = chosen_panel.get_receive_pa();
+            // self.voice_button = chosen_panel.get_voice_button();
 
-                self.morse_adf1.update(context);
-                self.morse_adf2.update(context);
-                self.morse_vor1.update(context);
-                self.morse_vor2.update(context);
-                self.morse_ils.update(context);
-                self.morse_gls.update(context);
+            self.volume_com1 = chosen_panel.get_volume_com1();
+            self.volume_com2 = chosen_panel.get_volume_com2();
+            self.volume_adf1 = chosen_panel.get_volume_adf1();
+            self.volume_adf2 = chosen_panel.get_volume_adf2();
+            self.volume_vor1 = chosen_panel.get_volume_vor1();
+            self.volume_vor2 = chosen_panel.get_volume_vor2();
+            self.volume_ils = chosen_panel.get_volume_ils();
+            self.volume_gls = chosen_panel.get_volume_gls();
+            self.volume_markers = chosen_panel.get_volume_markers();
 
-                // Updating all ACPs with same values if EFB option is on BOTH
-                // We are updating an ACP with itself but not a big deal
-                if context.side_controlling() == SideControlling::BOTH {
-                    self.communications_panel_captain
-                        .update_transmit(&chosen_panel);
-                    self.communications_panel_first_officer
-                        .update_transmit(&chosen_panel);
-                    self.communications_panel_ovhd
-                        .update_transmit(&chosen_panel);
+            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+            // self.volume_hf1 = chosen_panel.get_volume_hf1();
+            // self.volume_hf2 = chosen_panel.get_volume_hf2();
+            // self.volume_att = chosen_panel.get_volume_att();
+            // self.volume_mech = chosen_panel.get_volume_mech();
+            // self.volume_pa = chosen_panel.get_volume_pa();
 
-                    self.communications_panel_captain
-                        .update_receive(&chosen_panel);
-                    self.communications_panel_first_officer
-                        .update_receive(&chosen_panel);
-                    self.communications_panel_ovhd.update_receive(&chosen_panel);
+            // Updating all ACPs with same values if EFB option is on BOTH
+            // We are updating an ACP with itself but not a big deal
+            if context.side_controlling() == SideControlling::BOTH {
+                self.communications_panel_captain
+                    .update_transmit(&chosen_panel);
+                self.communications_panel_first_officer
+                    .update_transmit(&chosen_panel);
+                self.communications_panel_ovhd
+                    .update_transmit(&chosen_panel);
 
-                    self.communications_panel_captain
-                        .update_volume(&chosen_panel);
-                    self.communications_panel_first_officer
-                        .update_volume(&chosen_panel);
-                    self.communications_panel_ovhd.update_volume(&chosen_panel);
+                self.communications_panel_captain
+                    .update_receive(&chosen_panel);
+                self.communications_panel_first_officer
+                    .update_receive(&chosen_panel);
+                self.communications_panel_ovhd.update_receive(&chosen_panel);
 
-                    self.communications_panel_captain.update_misc(&chosen_panel);
-                    self.communications_panel_first_officer
-                        .update_misc(&chosen_panel);
-                    self.communications_panel_ovhd.update_misc(&chosen_panel);
-                } else if context.side_controlling() == SideControlling::CAPTAIN {
-                    self.copilot_transmit_channel = 4;
-                } else {
-                    self.pilot_transmit_channel = 4;
-                }
+                self.communications_panel_captain
+                    .update_volume(&chosen_panel);
+                self.communications_panel_first_officer
+                    .update_volume(&chosen_panel);
+                self.communications_panel_ovhd.update_volume(&chosen_panel);
+
+                self.communications_panel_captain.update_misc(&chosen_panel);
+                self.communications_panel_first_officer
+                    .update_misc(&chosen_panel);
+                self.communications_panel_ovhd.update_misc(&chosen_panel);
+            } else if context.side_controlling() == SideControlling::CAPTAIN {
+                self.copilot_transmit_channel = 4;
+            } else {
+                self.pilot_transmit_channel = 4;
             }
-
-            self.previous_side_controlling = context.side_controlling();
-            self.previous_audio_switching_knob = self.audio_switching_knob;
         }
     }
 
     /*
-     * guess_panel()
+     * guess_panel_other_actions_based()
      *
-     * @param mut self
-     * @param side_controlling Which side the player is playing on
+     * This function detects any changes on AudioSwitching knob, EFB option or LS FCU button.
+     * If there are any changes, that mean the configuration has changed.
+     * Therefore it elects an ACP which will be used to update the simvars.
      *
-     * This functions does two things. Decision making is based AudioSwitching knob and EFB option.
-     *
-     * 1) It elects the ACP to use detecting changes on AudioSwitchingKnob position
-     * and the side the player is playing on (EFB option)
-     *
-     * 2) In case of any changes on one ACP, it decides whether the panel on which the changes took place can be taken into account
-     * to update the simvars/other ACPs or not
-     *
-     * A lot of comparisons but necessary for shared cockpit cases
+     * @return None if there was no ACP elected. The elected ACP otherwise.
      */
-    fn guess_panel(&mut self, side_controlling: SideControlling) -> Option<CommunicationsPanel> {
-        let mut chosen_panel = None;
-
-        /*
-         * Here, let's detect the changes in the EFB and AudioSwitching knob, if any.
-         *
-         * Why detect these changes?
-         *      To simulate real life behavior and for shared cockpit purposes.
-         *      Whenever you rotate the AudioSwitching knob, your volumes/channels get updated
-         */
+    fn guess_panel_other_actions_based(
+        &mut self,
+        side_controlling: SideControlling,
+    ) -> Option<CommunicationsPanel> {
+        self.communications_panel_elected = None;
 
         if side_controlling != self.previous_side_controlling {
             // Whenever the player presses BOTH on the EFB
             // Let's configure the ACPs with the last ACP used as we cannot guess otherwise
             if side_controlling == SideControlling::BOTH {
                 // See last_acp_used definition in update() top comment
-                self.update_comms = self.last_acp_used;
+                self.communications_panel_elected = match self.last_acp_used {
+                    CommunicationPanelSideName::CAPTAIN => Some(self.communications_panel_captain),
+                    CommunicationPanelSideName::FO => Some(self.communications_panel_first_officer),
+                    CommunicationPanelSideName::OVHD => Some(self.communications_panel_ovhd),
+                    _ => None,
+                };
             } else if side_controlling == SideControlling::CAPTAIN {
                 // If Captain is now controlling, ACP3 is chosen if AudioSwitching knob on Captain
-                self.update_comms = match self.audio_switching_knob {
-                    AudioSwitchingKnobPosition::CAPTAIN => ACPName::OVHD,
-                    _ => ACPName::CAPTAIN,
+                self.communications_panel_elected = match self.audio_switching_knob {
+                    AudioSwitchingKnobPosition::CAPTAIN => Some(self.communications_panel_ovhd),
+                    _ => Some(self.communications_panel_captain),
                 }
             } else {
                 // If FO is now controlling, ACP3 is chosen if AudioSwitching knob on FO
-                self.update_comms = match self.audio_switching_knob {
-                    AudioSwitchingKnobPosition::FO => ACPName::OVHD,
-                    _ => ACPName::FO,
+                self.communications_panel_elected = match self.audio_switching_knob {
+                    AudioSwitchingKnobPosition::FO => Some(self.communications_panel_ovhd),
+                    _ => Some(self.communications_panel_first_officer),
                 }
             }
+
+            self.previous_side_controlling = side_controlling;
 
             // Whenever the player switches the AudioSwitching knob
             // If knob position and EFB option are matching, OVHD ACP is preferred
         } else if self.audio_switching_knob != self.previous_audio_switching_knob {
-            self.update_comms = match self.audio_switching_knob {
+            self.communications_panel_elected = match self.audio_switching_knob {
                 AudioSwitchingKnobPosition::NORM => match side_controlling {
-                    SideControlling::BOTH | SideControlling::CAPTAIN => ACPName::CAPTAIN,
-                    SideControlling::FO => ACPName::FO,
+                    SideControlling::BOTH | SideControlling::CAPTAIN => {
+                        Some(self.communications_panel_captain)
+                    }
+                    SideControlling::FO => Some(self.communications_panel_first_officer),
                 },
                 AudioSwitchingKnobPosition::CAPTAIN => match side_controlling {
-                    SideControlling::BOTH | SideControlling::CAPTAIN => ACPName::OVHD,
-                    SideControlling::FO => ACPName::FO,
+                    SideControlling::BOTH | SideControlling::CAPTAIN => {
+                        Some(self.communications_panel_ovhd)
+                    }
+                    SideControlling::FO => Some(self.communications_panel_first_officer),
                 },
                 AudioSwitchingKnobPosition::FO => match side_controlling {
-                    SideControlling::BOTH | SideControlling::FO => ACPName::OVHD,
-                    SideControlling::CAPTAIN => ACPName::CAPTAIN,
+                    SideControlling::BOTH | SideControlling::FO => {
+                        Some(self.communications_panel_ovhd)
+                    }
+                    SideControlling::CAPTAIN => Some(self.communications_panel_captain),
                 },
+            };
+
+            self.previous_audio_switching_knob = self.audio_switching_knob;
+        } else if self.previous_ls_fcu1_pressed != self.ls_fcu1_pressed {
+            // FCU1 is connected to Captain only. Therefore, we only need to check AudioSwitching knob position
+            // and the next group of conditions will make the job with side_controlling
+            if self.audio_switching_knob == AudioSwitchingKnobPosition::NORM {
+                self.communications_panel_elected = Some(self.communications_panel_captain)
+            } else if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
+                self.communications_panel_elected = Some(self.communications_panel_ovhd)
+            }
+
+            self.previous_ls_fcu1_pressed = self.ls_fcu1_pressed;
+        } else if self.previous_ls_fcu2_pressed != self.ls_fcu2_pressed {
+            // FCU1 is connected to FO only. Therefore, we only need to check AudioSwitching knob position
+            // and the next group of conditions will make the job with side_controlling
+            if self.audio_switching_knob == AudioSwitchingKnobPosition::NORM {
+                self.communications_panel_elected = Some(self.communications_panel_first_officer)
+            } else if self.audio_switching_knob == AudioSwitchingKnobPosition::FO {
+                self.communications_panel_elected = Some(self.communications_panel_ovhd)
+            }
+
+            self.previous_ls_fcu2_pressed = self.ls_fcu2_pressed;
+        }
+
+        self.communications_panel_elected
+    }
+
+    /*
+     * guess_panel_acp_actions_based()
+     *
+     * This functions determine if the ACP (served as an ID in self.update_comms) is suitable for simvars update
+     * depending on the current configuration (AudioSwitching knob position and side played (EFB option).
+     *
+     * "The ACP" means the ACP on which an action was performed.
+     *
+     * @return None if the association ACP/Configuration was not suitable. The ACP otherwise.
+     *
+     */
+    fn guess_panel_acp_actions_based(
+        &mut self,
+        side_controlling: SideControlling,
+    ) -> Option<CommunicationsPanel> {
+        self.communications_panel_elected = None;
+
+        if self.update_comms != CommunicationPanelSideName::NONE {
+            // ACP1 disabled if ACP3 in Captain mode OR the FO is controlling (via the EFB)
+            if self.update_comms == CommunicationPanelSideName::CAPTAIN {
+                if self.audio_switching_knob != AudioSwitchingKnobPosition::CAPTAIN
+                    && side_controlling != SideControlling::FO
+                {
+                    self.communications_panel_elected = Some(self.communications_panel_captain);
+                }
+            // ACP2 disabled if ACP3 in FO mode OR the Captain is controlling (via the EFB)
+            } else if self.update_comms == CommunicationPanelSideName::FO {
+                if self.audio_switching_knob != AudioSwitchingKnobPosition::FO
+                    && side_controlling != SideControlling::CAPTAIN
+                {
+                    self.communications_panel_elected =
+                        Some(self.communications_panel_first_officer);
+                }
+            // ACP3 taken into account only if the audioswitching knob is in Captain or FO mode
+            } else if self.update_comms == CommunicationPanelSideName::OVHD
+                && self.audio_switching_knob != AudioSwitchingKnobPosition::NORM
+            {
+                self.communications_panel_elected = Some(self.communications_panel_ovhd);
             }
         }
 
-        /*
-         * Here, let's get ACP object according to previous detection and/or player actions on the ACPs
-         */
-
-        // ACP1 disabled if ACP3 in Captain mode OR the FO is controlling (via the EFB)
-        if self.update_comms == ACPName::CAPTAIN {
-            if self.audio_switching_knob != AudioSwitchingKnobPosition::CAPTAIN
-                && side_controlling != SideControlling::FO
-            {
-                chosen_panel = Some(self.communications_panel_captain);
-            }
-        // ACP2 disabled if ACP3 in FO mode OR the Captain is controlling (via the EFB)
-        } else if self.update_comms == ACPName::FO {
-            if self.audio_switching_knob != AudioSwitchingKnobPosition::FO
-                && side_controlling != SideControlling::CAPTAIN
-            {
-                chosen_panel = Some(self.communications_panel_first_officer);
-            }
-        // ACP3 taken into account only if the audioswitching knob is in Captain or FO mode
-        } else if self.update_comms == ACPName::OVHD
-            && self.audio_switching_knob != AudioSwitchingKnobPosition::NORM
-        {
-            chosen_panel = Some(self.communications_panel_ovhd);
-        }
-
-        chosen_panel
+        self.communications_panel_elected
     }
 }
 
@@ -448,13 +494,6 @@ impl SimulationElement for Communications {
         self.communications_panel_captain.accept(visitor);
         self.communications_panel_first_officer.accept(visitor);
         self.communications_panel_ovhd.accept(visitor);
-
-        self.morse_adf1.accept(visitor);
-        self.morse_adf2.accept(visitor);
-        self.morse_vor1.accept(visitor);
-        self.morse_vor2.accept(visitor);
-        self.morse_ils.accept(visitor);
-        self.morse_gls.accept(visitor);
 
         visitor.visit(self);
     }
@@ -467,16 +506,21 @@ impl SimulationElement for Communications {
         };
         self.sound_markers = reader.read(&self.sound_markers_id);
         self.update_comms = match reader.read(&self.update_comms_id) {
-            0 => ACPName::NONE,
-            1 => ACPName::CAPTAIN,
-            2 => ACPName::FO,
-            _ => ACPName::OVHD,
+            0 => CommunicationPanelSideName::NONE,
+            1 => CommunicationPanelSideName::CAPTAIN,
+            2 => CommunicationPanelSideName::FO,
+            _ => CommunicationPanelSideName::OVHD,
         };
+        self.ls_fcu1_pressed = reader.read(&self.ls_fcu1_pressed_id);
+        self.ls_fcu2_pressed = reader.read(&self.ls_fcu2_pressed_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        if self.update_comms != ACPName::NONE {
-            writer.write(&self.update_comms_id, 0);
+        if self.communications_panel_elected.is_some() {
+            // To avoid data race
+            if self.update_comms != CommunicationPanelSideName::NONE {
+                writer.write(&self.update_comms_id, 0);
+            }
 
             writer.write(&self.is_emitting_id, self.is_emitting);
 
@@ -500,8 +544,10 @@ impl SimulationElement for Communications {
             // writer.write(&self.receive_pa_id, self.receive_pa);
 
             // Special case for markers as there's no XXXX_SET function. Only Toggle
+            // Setting opposite value of sound_markers to trigger the event as it
+            // using VariableToEventWriteOn::Change
             if self.receive_markers {
-                writer.write(&self.receive_markers_id, self.receive_markers);
+                writer.write(&self.receive_markers_id, !self.sound_markers);
             }
 
             writer.write(&self.volume_com1_id, self.volume_com1);
@@ -521,212 +567,6 @@ impl SimulationElement for Communications {
             // writer.write(&self.volume_mech_id, self.volume_mech);
             // writer.write(&self.volume_pa_id, self.volume_pa);
         }
-    }
-}
-
-struct Morse {
-    ident_active_id: VariableIdentifier,
-    ident_id: VariableIdentifier,
-    short_beep_id: VariableIdentifier,
-    long_beep_id: VariableIdentifier,
-    ident_new: usize,
-    ident_current: usize,
-    morse: String,
-    is_ils: bool,
-    ident_active: bool,
-    short_beep: bool,
-    long_beep: bool,
-    duration_between_symbols: Duration,
-    duration_short_beep: Duration,
-    duration_long_beep: Duration,
-    duration_between_letters: Duration,
-    duration_end_of_ident: Duration,
-    duration_current: Duration,
-    duration_to_wait: Duration,
-}
-
-impl Morse {
-    pub fn new(context: &mut InitContext, name: &str, id: usize) -> Self {
-        Self {
-            ident_active_id: context.get_identifier(format!("{} SOUND:{}", name, id)),
-            ident_id: context.get_identifier(format!("{}{}_IDENT", name, id)),
-            short_beep_id: context.get_identifier(format!("ACP_MORSE_SHORT_BEEP_{}{}", name, id)),
-            long_beep_id: context.get_identifier(format!("ACP_MORSE_LONG_BEEP_{}{}", name, id)),
-            ident_new: 0,
-            ident_current: 0,
-            morse: "".to_owned(),
-            is_ils: if name == "NAV" && id == 3 {
-                true
-            } else {
-                false
-            },
-            ident_active: false,
-            short_beep: false,
-            long_beep: false,
-            duration_between_symbols: Duration::from_millis(0),
-            duration_short_beep: Duration::from_millis(0),
-            duration_long_beep: Duration::from_millis(0),
-            duration_between_letters: Duration::from_millis(0),
-            duration_end_of_ident: Duration::from_secs(0),
-            duration_current: Duration::from_millis(0),
-            duration_to_wait: Duration::from_millis(0),
-        }
-    }
-
-    // From unpack function in file simvar.ts
-    fn unpack(&self, value: usize) -> String {
-        let mut unpacked: String = "PARIS".to_owned();
-
-        // let mut i: usize = 0;
-        // while i < 8 {
-        //     // pow to returns 0 in the game if big number
-        //     let power = pow(2, (i % 8) * 6);
-        //     if power > 0 {
-        //         let code: usize = (value / power) & 0x3f;
-        //         if code > 0 {
-        //             unpacked.push(char::from_u32((code + 31) as u32).unwrap());
-        //         }
-        //     }
-
-        //     i += 1;
-        // }
-
-        unpacked
-    }
-
-    fn convert_ident_to_morse(&mut self) -> String {
-        let mut copy = "".to_owned();
-
-        let mut total_elements = 0;
-
-        for c in self.unpack(self.ident_current).chars() {
-            // elements counts for number of characters + space between them
-            let (code, elements) = match c.to_ascii_uppercase() {
-                'A' => ("._", 5),
-                'B' => ("_...", 9),
-                'C' => ("_._.", 11),
-                'D' => ("_..", 7),
-                'E' => (".", 1),
-                'F' => (".._.", 9),
-                'G' => ("__.", 9),
-                'H' => ("....", 7),
-                'I' => ("..", 3),
-                'J' => (".___", 13),
-                'K' => ("_._", 9),
-                'L' => ("._..", 9),
-                'M' => ("__", 7),
-                'N' => ("_.", 5),
-                'O' => ("___", 11),
-                'P' => (".__.", 11),
-                'Q' => ("__._", 13),
-                'R' => ("._.", 7),
-                'S' => ("...", 5),
-                'T' => ("_", 3),
-                'U' => (".._", 7),
-                'V' => ("..._", 9),
-                'W' => (".__", 9),
-                'X' => ("_.._", 11),
-                'Y' => ("_.__", 13),
-                'Z' => ("__..", 11),
-                _ => ("", 0),
-            };
-
-            copy.push_str(code);
-            copy.push_str(" ");
-
-            // +3 to take into account the space between letters
-            total_elements += elements + 3;
-        }
-
-        // End of the word. Should be +7 but as we added +3 at the last letter...
-        total_elements += 4;
-
-        println!("{}", total_elements);
-
-        // Calculating the length of a dot. Converted 60s into ms. *7 for 7 words a minute
-        let mut time_base = Duration::from_millis(60000 / (total_elements * 7)).as_millis();
-        // ILS DME is bounded between 110ms and 160ms according to ICAO specifications
-        if self.is_ils {
-            time_base = num_traits::clamp(time_base, 110, 160);
-        }
-
-        self.duration_between_symbols = Duration::from_millis((time_base + 1) as u64);
-        self.duration_short_beep = Duration::from_millis(time_base as u64);
-        self.duration_long_beep = Duration::from_millis((time_base * 3) as u64);
-        self.duration_between_letters = Duration::from_millis((time_base * 3) as u64);
-
-        // Compute to remaining time between end of ident and the next 10 seconds
-        self.duration_end_of_ident =
-            Duration::from_secs((10000 - (time_base as u64 * total_elements)) as u64);
-
-        copy.chars().rev().collect::<String>()
-    }
-
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.duration_current += context.delta();
-
-        // Manage new ident
-        if self.ident_new != self.ident_current {
-            self.ident_current = self.ident_new;
-            self.morse.clear();
-        }
-
-        // Manage case whenever the morse ident has to restart at the beginning
-        if self.ident_current > 0 && self.morse.is_empty() {
-            self.morse = self.convert_ident_to_morse();
-            self.duration_to_wait = self.duration_end_of_ident;
-            self.duration_current = Duration::from_millis(0);
-        }
-
-        if !self.morse.is_empty() {
-            // If timedout
-            if self.duration_current.as_millis() > self.duration_to_wait.as_millis() {
-                self.duration_current = Duration::from_millis(0);
-                self.short_beep = false;
-                self.long_beep = false;
-
-                // After a beep, we have to wait an amount of time
-                if self.duration_to_wait.as_millis() == self.duration_short_beep.as_millis()
-                    || self.duration_to_wait.as_millis() == self.duration_long_beep.as_millis()
-                {
-                    self.duration_to_wait = self.duration_between_symbols;
-                } else {
-                    let symbol = self.morse.pop().unwrap();
-
-                    if symbol == '.' {
-                        if self.ident_active {
-                            self.short_beep = true;
-                        }
-
-                        self.duration_to_wait = self.duration_short_beep;
-                    } else if symbol == '_' {
-                        if self.ident_active {
-                            self.long_beep = true;
-                        }
-
-                        self.duration_to_wait = self.duration_long_beep;
-                    } else {
-                        // space
-                        self.duration_to_wait = self.duration_between_letters;
-                    }
-                }
-            }
-        } else {
-            self.short_beep = false;
-            self.long_beep = false;
-        }
-    }
-}
-
-impl SimulationElement for Morse {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.ident_active = reader.read(&self.ident_active_id);
-        self.ident_new = reader.read(&self.ident_id);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.short_beep_id, self.short_beep);
-        writer.write(&self.long_beep_id, self.long_beep);
     }
 }
 
@@ -796,9 +636,12 @@ mod communications_tests {
     fn test_unpack() {
         let mut test_bed = test_bed();
         //13831281
+        //883636401
+        test_bed.write_by_name("ADF1_IDENT_PACKED", 883636401);
+        test_bed.write_by_name("ACP1_ADF1_KNOB_VOLUME_DOWN", 1);
         test_bed.write_by_name("ACP1_VHF1_VOLUME", 50);
         test_bed.write_by_name("AUDIOSWITCHING_KNOB", 1);
-        test_bed.write_by_name("SIDE_CONTROLLING", 1);
+        test_bed.write_by_name("SIDE_CONTROLLING", 2);
 
         test_bed.run();
 

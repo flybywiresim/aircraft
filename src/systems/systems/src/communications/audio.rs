@@ -144,31 +144,31 @@ impl AudioControlPanel {
     }
 
     pub fn get_receive_adf1(&self) -> bool {
-        self.adfs[0].get_receive() && !self.voice_button
+        self.adfs[0].get_receive()
     }
 
     pub fn get_receive_adf2(&self) -> bool {
-        self.adfs[1].get_receive() && !self.voice_button
+        self.adfs[1].get_receive()
     }
 
     pub fn get_receive_vor1(&self) -> bool {
-        self.vors[0].get_receive() && !self.voice_button
+        self.vors[0].get_receive()
     }
 
     pub fn get_receive_vor2(&self) -> bool {
-        self.vors[1].get_receive() && !self.voice_button
+        self.vors[1].get_receive()
     }
 
     pub fn get_receive_ils(&self) -> bool {
-        self.ils.get_receive() && !self.voice_button
+        self.ils.get_receive()
     }
 
     pub fn get_receive_gls(&self) -> bool {
-        self.gls.get_receive() && !self.voice_button
+        self.gls.get_receive()
     }
 
     pub fn get_receive_markers(&self) -> bool {
-        self.markers.get_receive() && !self.voice_button
+        self.markers.get_receive()
     }
 
     pub fn get_voice_button(&self) -> bool {

@@ -4364,30 +4364,6 @@
 
                 </UseTemplate>
             </Component>
-            <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED
-                ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
-            <Update Once="True">
-                1 (&gt;K:COM3_RECEIVE_SELECT)
-
-                (A:MARKER SOUND, Bool) 1 == {
-                    (&gt;K:MARKER_SOUND_TOGGLE)
-                }
-
-                113000000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_VOR)
-                117800000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_VOR)
-                113700000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_VOR)
-                115500000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_VOR)
-
-                108900000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ILS)
-                108900000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ILS)
-                110100000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ILS)
-                111100000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ILS)
-
-                433000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ADF)
-                433000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ADF)
-                433000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ADF)
-                433000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ADF)
-            </Update>
         </Component>
 
         <Component ID="Airbus_ATC">
