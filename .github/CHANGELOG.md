@@ -44,6 +44,9 @@
 1. [MCDU] Reset of flight plan and stored data on Database switch - @Maverickwoe (Garoomf#4683)
 1. [FLIGHTMODEL/FUEL] Increased rate of fuel transfer from outer to inner tanks - @donstim (donbikes#4084)
 1. [MISC] Flight deck brightness and lighting is set automatically at spawn - @tracernz (Mike)
+1. [FWC] Add FLAP LVR NOT ZERO warning above FL200 - @tracernz (Mike)
+1. [FWC] Improve takeoff config/range warnings - @tracernz (Mike)
+1. [FMGC/FWC] Add takeoff surveilance 1 functions - @tracernz (Mike)
 
 ## 0.9.0
 
