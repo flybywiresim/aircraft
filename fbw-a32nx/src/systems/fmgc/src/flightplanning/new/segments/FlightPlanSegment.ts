@@ -55,15 +55,32 @@ export abstract class FlightPlanSegment {
     abstract clone(forPlan: BaseFlightPlan): FlightPlanSegment
 
     /**
-     * Inserts an element at a specified index, not checking for duplicates
+     * Inserts an element at a specified index
      *
      * @param index   the index to insert the element at
+     * @param element the element to insert
+     */
+    insertBefore(index: number, element: FlightPlanElement) {
+        this.allLegs.splice(index, 0, element);
+
+        this.flightPlan.syncSegmentLegsChange(this);
+
+        // TODO whatever this is calling should take care of restringing, as this is a private API
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+    }
+
+    /**
+     * Inserts an element after a specified index
+     *
+     * @param index   the index to insert the element after
      * @param element the element to insert
      */
     insertAfter(index: number, element: FlightPlanElement) {
         this.allLegs.splice(index + 1, 0, element);
 
         this.flightPlan.syncSegmentLegsChange(this);
+
+        // TODO whatever this is calling should take care of restringing, as this is a private API
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
     }
 
