@@ -709,13 +709,22 @@ export abstract class BaseFlightPlan {
      * @param waypoint the waypoint to insert
      */
     async nextWaypoint(index: number, waypoint: Fix) {
-        this.redistributeLegsAt(index);
+        const truncateDirection = this.redistributeLegsAt(index + 1); // NEXT WPT revises the leg that comes after the target leg
 
         const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint, undefined, LegType.DF);
 
         const waypointExists = this.findDuplicate(waypoint, index);
 
-        await this.insertElementAfter(index, leg, !waypointExists);
+        const [newSegment] = this.segmentPositionForIndex(index + 1);
+
+        if (truncateDirection === 1 && newSegment instanceof EnrouteSegment) {
+            // redistributeLegsAt cause the leg at (index + 1) to now be in the enroute segment, and this change applied forwards.
+            // We need to do insertElementBefore on the next segment instead
+
+            await this.insertElementBefore(index + 1, leg, !waypointExists);
+        } else {
+            await this.insertElementAfter(index, leg, !waypointExists);
+        }
     }
 
     /**
@@ -768,10 +777,43 @@ export abstract class BaseFlightPlan {
         if (insertDiscontinuity) {
             this.incrementVersion();
 
-            const nextElement = this.elementAt(index + 2);
+            const elementAfterInserted = startSegment.allLegs[index + 2];
 
-            if (nextElement.isDiscontinuity === false) {
+            if (elementAfterInserted.isDiscontinuity === false) {
                 startSegment.insertAfter(indexInStartSegment + 1, { isDiscontinuity: true });
+                this.incrementVersion();
+            }
+        }
+
+        this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        await this.flushOperationQueue();
+        this.incrementVersion();
+    }
+
+    private async insertElementBefore(index: number, element: FlightPlanElement, insertDiscontinuity = false) {
+        if (index < 1 || index > this.allLegs.length) {
+            throw new Error(`[FMS/FPM] Tried to insert waypoint out of bounds (index=${index})`);
+        }
+
+        let startSegment: FlightPlanSegment;
+        let indexInStartSegment;
+
+        if (this.legCount > 0) {
+            [startSegment, indexInStartSegment] = this.segmentPositionForIndex(index);
+        } else {
+            startSegment = this.enrouteSegment;
+            indexInStartSegment = 0;
+        }
+
+        startSegment.insertBefore(indexInStartSegment, element);
+
+        if (insertDiscontinuity) {
+            this.incrementVersion();
+
+            const elementAfterInserted = startSegment.allLegs[indexInStartSegment + 1];
+
+            if (elementAfterInserted.isDiscontinuity === false) {
+                startSegment.insertBefore(indexInStartSegment + 1, { isDiscontinuity: true });
                 this.incrementVersion();
             }
         }
@@ -828,9 +870,9 @@ export abstract class BaseFlightPlan {
      *
      * @param index point at which to redistribute
      */
-    redistributeLegsAt(index: number) {
+    redistributeLegsAt(index: number): number {
         if (!this.hasElement(index)) {
-            return;
+            return 0;
         }
 
         const [segment, indexInSegment] = this.segmentPositionForIndex(index);
@@ -887,7 +929,11 @@ export abstract class BaseFlightPlan {
             }
 
             this.enrouteSegment.allLegs.unshift(...toInsertInEnroute);
-        } else if (segment.class === SegmentClass.Arrival) {
+
+            return 1;
+        }
+
+        if (segment.class === SegmentClass.Arrival) {
             const toInsertInEnroute: FlightPlanElement[] = [];
 
             let emptyAllNext = false;
@@ -948,9 +994,13 @@ export abstract class BaseFlightPlan {
             }
 
             this.enrouteSegment.allLegs.push(...toInsertInEnroute);
-        } else {
-            // Do nothing
+
+            return -1;
         }
+
+        // Do nothing
+
+        return 0;
     }
 
     private restring() {
@@ -987,7 +1037,7 @@ export abstract class BaseFlightPlan {
             lastLegInFirst = first.allLegs[first.allLegs.length - 2];
 
             if (!lastLegInFirst || lastLegInFirst?.isDiscontinuity === true) {
-                throw new Error('[FMS/FPM] Segment legs only contained a discontinuity');
+                return;
             }
         }
 
