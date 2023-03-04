@@ -85,6 +85,8 @@ class ClientDataAreaVariable : public SimObjectBase {
    *                               the definition given by the template parameter type
    * @param requestId Each request for sim object data requires a unique id so the sim can provide
    *                     the request ID in the response (message SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
+   * @param dataSize The size of the data struct in bytes. This is used to define the client data area
+   *                 in the sim. It defaults to the size of the template parameter type.
    * @param autoReading Used by external classes to determine if the variable should updated from
    *                    the sim when a sim update call occurs.
    * @param autoWriting Used by external classes to determine if the variable should written to the
@@ -99,6 +101,7 @@ class ClientDataAreaVariable : public SimObjectBase {
                             SIMCONNECT_CLIENT_DATA_ID clientDataId,
                             SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
                             SIMCONNECT_DATA_REQUEST_ID requestId,
+                            std::size_t dataSize = sizeof(T),
                             bool autoRead = false,
                             bool autoWrite = false,
                             FLOAT64 maxAgeTime = 0.0,
@@ -126,6 +129,13 @@ class ClientDataAreaVariable : public SimObjectBase {
           LOG_ERROR("ClientDataAreaVariable: Mapping client data area name to ID failed: " + name);
       }
     }
+
+    if (!SUCCEEDED(SimConnect_AddToClientDataDefinition(hSimConnect, this->dataDefId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, dataSize))) {
+      LOG_ERROR("ClientDataAreaVariable: Adding to client data definition failed: " + name);
+    }
+    LOG_DEBUG("ClientDataAreaVariable: Created client data area variable: " + name + ", clientDataId: " + std::to_string(clientDataId) +
+              ", clientDataDefinitionId: " + std::to_string(this->dataDefId) + ", requestId: " + std::to_string(this->requestId) +
+              ", dataSize: " + std::to_string(dataSize));
   }
 
  public:
@@ -144,19 +154,6 @@ class ClientDataAreaVariable : public SimObjectBase {
     LOG_INFO("ClientDataAreaVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
       LOG_ERROR("ClientDataAreaVariable: Clearing client data definition failed: " + name);
-    }
-  }
-
-  /**
-   * TODO
-   * @param hSimConnect
-   * @param clientDataDefinitionId
-   * @param size
-   */
-  void defineDataArea(std::size_t size) const {  // Add the data definition to the client data area
-    if (!SUCCEEDED(
-            SimConnect_AddToClientDataDefinition(hSimConnect, this->dataDefId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, size))) {
-      LOG_ERROR("ClientDataAreaVariable: Adding to client data definition failed: " + name);
     }
   }
 

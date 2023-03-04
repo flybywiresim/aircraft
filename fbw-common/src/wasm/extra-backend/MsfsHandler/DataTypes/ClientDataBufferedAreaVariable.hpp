@@ -51,6 +51,7 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
                                   clientDataId,
                                   clientDataDefinitionId,
                                   requestId,
+                                  ChunkSize,
                                   autoRead,
                                   autoWrite,
                                   maxAgeTime,
@@ -76,10 +77,7 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
     // memcpy into a vector ignores the vector's metadata and just copies the data
     // it is therefore faster than std::copy or std::back_inserter but
     // std::memcpy(&this->content.data()[this->receivedBytes], &pClientData->dwData, remainingBytes);
-    T* const pDataStart = (T*)&pClientData->dwData;
-    T* const pDataEnd = (T*)&pClientData->dwData + remainingBytes;
-    // std::copy(pDataStart, pDataEnd, std::back_inserter(this->content));
-    this->content.insert(this->content.end(), pDataStart, pDataEnd);
+    this->content.insert(this->content.end(), (T*)&pClientData->dwData, (T*)&pClientData->dwData + remainingBytes);
 
     this->receivedChunks++;
     // std::cout << "Chunk: " << this->receivedChunks << ": Begin: " << (void*) pDataStart << " End: " << (void*) pDataEnd << std::endl;
