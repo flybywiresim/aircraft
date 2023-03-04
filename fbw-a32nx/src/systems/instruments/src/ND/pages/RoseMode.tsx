@@ -689,7 +689,8 @@ const Plane: React.FC = () => (
     <g>
         <line id="lubber-shadow" x1={384} y1={116} x2={384} y2={152} className="shadow" strokeWidth={5.5} strokeLinejoin="round" strokeLinecap="round" />
         <line id="lubber" x1={384} y1={116} x2={384} y2={152} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
-        <image x={342} y={357} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
+        <path id="plane-shadow" d="M 384 358 l 0 75 m -37 -49 l 74 0 m -50 36 l 26 0" className="shadow" strokeWidth={5.5} strokeLinejoin="round" strokeLinecap="round" />
+        <path id="plane" d="M 384 358 l 0 75 m -37 -49 l 74 0 m -50 36 l 26 0" className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
     </g>
 );
 
