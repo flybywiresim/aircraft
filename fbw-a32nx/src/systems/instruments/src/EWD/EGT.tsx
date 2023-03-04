@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { GaugeComponent, GaugeMarkerComponent, GaugeMaxComponent } from '../MsfsAvionicsCommon/gauges';

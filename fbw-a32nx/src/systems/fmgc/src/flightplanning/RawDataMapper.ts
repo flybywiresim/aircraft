@@ -51,6 +51,8 @@ export class RawDataMapper {
 
             alt = 3.28084 * facility.runways.reduce((sum, r) => sum + r.elevation, 0) / facility.runways.length;
 
+            info.elevation = alt;
+
             info.approaches = facility.approaches;
             info.approaches.forEach((approach) => approach.name = normaliseApproachName(approach.name));
             info.approaches.forEach(
