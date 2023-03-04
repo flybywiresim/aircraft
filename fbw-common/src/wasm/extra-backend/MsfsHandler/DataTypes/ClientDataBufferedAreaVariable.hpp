@@ -76,8 +76,8 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
     // memcpy into a vector ignores the vector's metadata and just copies the data
     // it is therefore faster than std::copy or std::back_inserter but
     // std::memcpy(&this->content.data()[this->receivedBytes], &pClientData->dwData, remainingBytes);
-    BYTE* const pDataStart = (BYTE*)&pClientData->dwData;
-    BYTE* const pDataEnd = (BYTE*)&pClientData->dwData + remainingBytes;
+    T* const pDataStart = (T*)&pClientData->dwData;
+    T* const pDataEnd = (T*)&pClientData->dwData + remainingBytes;
     // std::copy(pDataStart, pDataEnd, std::back_inserter(this->content));
     this->content.insert(this->content.end(), pDataStart, pDataEnd);
 

@@ -113,7 +113,7 @@ bool ExampleModule::initialize() {
 
   // Client data area owned by this module
   exampleClientDataPtr = dataManager->make_clientdataarea_var<ExampleClientData>("EXAMPLE CLIENT DATA", false, true);
-  exampleClientDataPtr->allocateClientDataArea();
+  exampleClientDataPtr->allocateClientDataArea(sizeof(ExampleClientData));
 
   // Client data area owned by an external module
   exampleClientData2Ptr = dataManager->make_clientdataarea_var<ExampleClientData2>("EXAMPLE 2 CLIENT DATA");
@@ -125,19 +125,21 @@ bool ExampleModule::initialize() {
 
   // Big client data area owned by an external module
   bigClientDataPtr = dataManager->make_clientdataarea_var<BigClientData>("BIG CLIENT DATA");
-  //  bigClientDataPtr->setSkipChangeCheck(true);
-  //  bigClientDataPtr->addCallback([&]() {
-  //    // Big Client Data
-  //    std::cout << "--- CALLBACK: BIG CLIENT DATA (External - reading)" << std::endl;
-  //    std::cout << bigClientDataPtr->str() << std::endl;
-  //    std::cout << "Bid Client Data data: " << std::endl;
-  //    auto s = std::string_view((const char*) &bigClientDataPtr->data().dataChunk, 100);
-  //    std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s
-  //              << " ... " << std::endl;
-  //  });
-  //  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  bigClientDataPtr->setSkipChangeCheck(true);
+  bigClientDataPtr->addCallback([&]() {
+    // Big Client Data
+    std::cout << "--- CALLBACK: BIG CLIENT DATA (External - reading)" << std::endl;
+    std::cout << bigClientDataPtr->str() << std::endl;
+    std::cout << "Big Client Data data: " << std::endl;
+    auto s = std::string_view((const char*)&bigClientDataPtr->data().dataChunk, 100);
+    std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s << " ... " << std::endl;
+    std::cout << "Fingerprint: "
+              << fingerPrintFVN(std::vector(bigClientDataPtr->data().dataChunk.begin(), bigClientDataPtr->data().dataChunk.end()))
+              << std::endl;
+  });
+  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
 
   // Metadata for the ClientDataBufferedAreaVariable test
   metaDataPtr = dataManager->make_clientdataarea_var<BufferedAreaMetaData>("HUGE CLIENT DATA META DATA");
@@ -150,14 +152,13 @@ bool ExampleModule::initialize() {
     std::cout << metaDataPtr->str() << std::endl;
     std::cout << "HUGE CLIENT DATA META DATA size = " << metaDataPtr->data().size << " fingerprint = " << metaDataPtr->data().hash
               << std::endl;
-    std::cout << std::endl;
   });
   if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
     LOG_ERROR("Failed to request periodic data from sim");
   }
 
   // ClientDataBufferedAreaVariable test
-  hugeClientDataPtr = dataManager->make_clientdatabufferedarea_var<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
+  hugeClientDataPtr = dataManager->make_clientdatabufferedarea_var<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
   hugeClientDataPtr->setSkipChangeCheck(true);
   hugeClientDataPtr->addCallback([&]() {
     receiptTimerEnd = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - receiptTimerStart);
@@ -170,11 +171,7 @@ bool ExampleModule::initialize() {
               << " (match = " << std::boolalpha << (fingerPrintFvn == metaDataPtr->data().hash) << ")"
               << " time = " << std::setw(10) << receiptTimerEnd.count() << " ns" << std::endl;
     std::cout << "Content: "
-              << "["
-              << std::string(hugeClientDataPtr->getData().begin(),
-                             hugeClientDataPtr->getData().begin() + hugeClientDataPtr->getReceivedBytes())
-              << "]" << std::endl;
-    std::cout << std::endl;
+              << "[" << std::string(hugeClientDataPtr->getData().begin(), hugeClientDataPtr->getData().begin() + 100) << " ... ]" << std::endl;
   });
   if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
     LOG_ERROR("Failed to request periodic data from sim");

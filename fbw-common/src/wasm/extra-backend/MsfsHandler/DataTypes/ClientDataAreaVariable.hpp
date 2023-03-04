@@ -126,12 +126,6 @@ class ClientDataAreaVariable : public SimObjectBase {
           LOG_ERROR("ClientDataAreaVariable: Mapping client data area name to ID failed: " + name);
       }
     }
-
-    // Add the data definition to the client data area
-    if (!SUCCEEDED(
-            SimConnect_AddToClientDataDefinition(hSimConnect, clientDataDefinitionId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(T)))) {
-      LOG_ERROR("ClientDataAreaVariable: Adding to client data definition failed: " + name);
-    }
   }
 
  public:
@@ -154,6 +148,19 @@ class ClientDataAreaVariable : public SimObjectBase {
   }
 
   /**
+   * TODO
+   * @param hSimConnect
+   * @param clientDataDefinitionId
+   * @param size
+   */
+  void defineDataArea(std::size_t size) const {  // Add the data definition to the client data area
+    if (!SUCCEEDED(
+            SimConnect_AddToClientDataDefinition(hSimConnect, this->dataDefId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, size))) {
+      LOG_ERROR("ClientDataAreaVariable: Adding to client data definition failed: " + name);
+    }
+  }
+
+  /**
    * Allocates the client data area in the sim.<p/>
    * This must be done by the client owning the data. Clients only reading the data area do not
    * need to allocate it. In fact trying to allocated a data area with the same name twice throws
@@ -161,10 +168,10 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @param readOnlyForOthers
    * @return true if the allocation was successful, false otherwise
    */
-  bool allocateClientDataArea(bool readOnlyForOthers = false) {
+  bool allocateClientDataArea(std::size_t size, bool readOnlyForOthers = false) {
     const DWORD readOnlyFlag =
         readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
-    if (!SUCCEEDED(SimConnect_CreateClientData(hSimConnect, clientDataId, sizeof(T), readOnlyFlag))) {
+    if (!SUCCEEDED(SimConnect_CreateClientData(hSimConnect, clientDataId, size, readOnlyFlag))) {
       LOG_ERROR("ClientDataAreaVariable: Creating client data area failed: " + name);
       return false;
     }

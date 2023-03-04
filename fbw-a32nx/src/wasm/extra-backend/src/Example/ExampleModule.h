@@ -81,7 +81,7 @@ class ExampleModule : public Module {
 
   // ClientDataArea variable for testing
   struct BigClientData {
-    std::array<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE> dataChunk;
+    std::array<char, SIMCONNECT_CLIENTDATA_MAX_SIZE> dataChunk;
   } __attribute__((packed));
   std::shared_ptr<ClientDataAreaVariable<BigClientData>> bigClientDataPtr;
 
@@ -93,7 +93,7 @@ class ExampleModule : public Module {
   std::shared_ptr<ClientDataAreaVariable<BufferedAreaMetaData>> metaDataPtr;
 
   // ClientDataBufferedArea variable for testing
-  std::shared_ptr<ClientDataBufferedAreaVariable<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
+  std::shared_ptr<ClientDataBufferedAreaVariable<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
 
   // Events
   ClientEventPtr beaconLightSetEventPtr;
@@ -134,15 +134,25 @@ class ExampleModule : public Module {
   }
 
   // Fowler-Noll-Vo hash function
-  uint64_t fingerPrintFVN(std::vector<BYTE>& data) {
-    const uint64_t FNV_offset_basis = 14695981039346656037ULL;
-    const uint64_t FNV_prime = 1099511628211ULL;
-    uint64_t hash = FNV_offset_basis;
-    for (BYTE c : data) {
-      hash ^= static_cast<uint64_t>(c);
-      hash *= FNV_prime;
+  template<typename T>
+  uint64_t fingerPrintFVN(const std::vector<T>& vec) {
+    // Define some constants for FNV-1a hash
+    const uint64_t FNV_OFFSET_BASIS = 0xcbf29ce484222325;
+    const uint64_t FNV_PRIME = 0x100000001b3;
+    uint64_t fp = 0;
+    for (const auto& elem : vec) {
+      const T &value = elem;
+      uint64_t hash = FNV_OFFSET_BASIS;
+      const unsigned char* bytes = reinterpret_cast<const unsigned char*>(&value);
+      for (size_t i = 0; i < sizeof(T); i++) {
+        hash ^= static_cast<uint64_t>(bytes[i]);
+        hash *= FNV_PRIME;
+      }
+      uint64_t h = hash;
+      fp ^= h;
+      fp *= FNV_PRIME;
     }
-    return hash;
+    return fp;
   }
 
   std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long long int, std::nano>> receiptTimerStart;

@@ -280,6 +280,7 @@ class DataManager {
     CLIENT_AREA_PTR var = CLIENT_AREA_PTR(new ClientDataAreaVariable<T>(hSimConnect, std::move(clientDataName), clientDataIDGen.getNextId(),
                                                                         dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), autoReading,
                                                                         autoWriting, maxAgeTime, maxAgeTicks));
+    var->defineDataArea(sizeof(T));
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
     return var;
@@ -306,7 +307,7 @@ class DataManager {
     BUFFERED_AREA_PTR var = BUFFERED_AREA_PTR(new ClientDataBufferedAreaVariable<T, ChunkSize>(
         hSimConnect, std::move(clientDataName), clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(),
         autoReading, autoWriting, maxAgeTime, maxAgeTicks));
-
+    var->defineDataArea(ChunkSize);
     LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
     return var;
