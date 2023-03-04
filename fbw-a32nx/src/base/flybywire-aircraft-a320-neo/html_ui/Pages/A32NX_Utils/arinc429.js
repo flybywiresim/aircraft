@@ -42,6 +42,22 @@ class Arinc429Word {
         return this.isNormalOperation() ? this.value : defaultValue;
     }
 
+    getBitValue(bit) {
+        return ((this.value >> (bit - 1)) & 1) !== 0;
+    }
+
+    getBitValueOr(bit, defaultValue) {
+        return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+    }
+
+    setBitValue(bit, value) {
+        if (value) {
+            this.value |= 1 << (bit - 1);
+        } else {
+            this.value &= ~(1 << (bit - 1));
+        }
+    }
+
     equals(other) {
         return this === other
             || (typeof other !== "undefined" && other !== null && this.value === other.value && this.ssm === other.ssm);

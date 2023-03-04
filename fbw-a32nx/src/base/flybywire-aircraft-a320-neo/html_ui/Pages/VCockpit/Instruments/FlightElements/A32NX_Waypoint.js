@@ -273,6 +273,8 @@ class AirportInfo extends WayPointInfo {
         this.fuel = "";
         this.bestApproach = "";
         this.airspaceType = "";
+        /** average of all the runway elevations in feet MSL (ARP elevation not provided in data) */
+        this.elevation = undefined;
     }
     getWaypointType() {
         return "A";
@@ -422,6 +424,11 @@ class AirportInfo extends WayPointInfo {
     IsUpToDate() {
         return this.loaded;
     }
+    /**
+     * Load the {@link AirportInfo} from an MSFS facility
+     * @param {RawAirport} data MSFS airport facility
+     * @param {boolean} loadApproachesData whether to load full facility data for the waypoints
+     */
     SetFromIFacilityAirport(data, loadApproachesData = true) {
         super.SetFromIFacilityWaypoint(data);
         this.coordinates.alt = 3.28084 * data.runways.reduce((sum, r) => sum + r.elevation, 0) / data.runways.length;
@@ -464,6 +471,7 @@ class AirportInfo extends WayPointInfo {
                 this.runways.push(runway);
                 this.oneWayRunways.push(...runway.splitIfTwoWays());
             }
+            this.elevation = data.runways.reduce((sum, runway) => sum += runway.elevation) / data.runways.length / 0.3048;
         }
         if (this.oneWayRunways) {
             this.oneWayRunways = this.oneWayRunways.sort((r1, r2) => {

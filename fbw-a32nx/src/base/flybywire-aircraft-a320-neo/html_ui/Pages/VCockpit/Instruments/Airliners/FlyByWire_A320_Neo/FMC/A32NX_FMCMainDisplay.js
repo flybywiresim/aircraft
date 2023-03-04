@@ -41,9 +41,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.v1Speed = undefined;
         this.vRSpeed = undefined;
         this.v2Speed = undefined;
-        this._v1Checked = undefined;
-        this._vRChecked = undefined;
-        this._v2Checked = undefined;
+        this.unconfirmedV1Speed = undefined;
+        this.unconfirmedVRSpeed = undefined;
+        this.unconfirmedV2Speed = undefined;
         this._toFlexChecked = undefined;
         this.toRunway = undefined;
         this.vApp = undefined;
@@ -161,6 +161,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendMach = undefined;
         // this.managedSpeedDescendMachIsPilotEntered = undefined;
         this.cruiseFlightLevelTimeOut = undefined;
+        /** @type {0 | 1 | 2 | 3 | null} Takeoff config entered on PERF TO */
         this.flaps = undefined;
         this.ths = undefined;
         this.ilsAutoFrequency = undefined;
@@ -208,8 +209,29 @@ class FMCMainDisplay extends BaseAirliners {
         this.setHoldSpeedMessageActive = undefined;
         this.managedProfile = undefined;
         this.speedLimitExceeded = undefined;
+        this.toSpeedsNotInserted = false;
+        this.toSpeedsTooLow = false;
+        this.vSpeedDisagree = false;
 
         this.onAirport = undefined;
+
+        // arinc bus output words
+        this.arincDiscreteWord2 = FmArinc429OutputWord.empty("DISCRETE_WORD_2");
+        this.arincDiscreteWord3 = FmArinc429OutputWord.empty("DISCRETE_WORD_3");
+        this.arincTakeoffPitchTrim = FmArinc429OutputWord.empty("TO_PITCH_TRIM");
+        this.arincLandingElevation = FmArinc429OutputWord.empty("LANDING_ELEVATION");
+        this.arincDestinationLatitude = FmArinc429OutputWord.empty("DEST_LAT");
+        this.arincDestinationLongitude = FmArinc429OutputWord.empty("DEST_LONG");
+
+        /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
+        this.arincBusOutputs = [
+            this.arincDiscreteWord2,
+            this.arincDiscreteWord3,
+            this.arincTakeoffPitchTrim,
+            this.arincLandingElevation,
+            this.arincDestinationLatitude,
+            this.arincDestinationLongitude,
+        ];
     }
 
     Init() {
@@ -340,6 +362,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
+        this.v1Speed = undefined;
+        this.vRSpeed = undefined;
+        this.v2Speed = undefined;
+        this.unconfirmedV1Speed = undefined;
+        this.unconfirmedVRSpeed = undefined;
+        this.unconfirmedV2Speed = undefined;
+        this._toFlexChecked = true;
         this.toRunway = "";
         this.vApp = NaN;
         this.perfApprMDA = NaN;
@@ -519,6 +548,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.landingElevation = undefined;
         this.destinationLatitude = undefined;
         this.destinationLongitude = undefined;
+        this.toSpeedsNotInserted = false;
+        this.toSpeedsTooLow = false;
+        this.vSpeedDisagree = false;
 
         this.onAirport = () => {};
 
@@ -564,14 +596,14 @@ class FMCMainDisplay extends BaseAirliners {
             this.computedVfs = undefined;
             this.computedVss = undefined;
             this.perfTOTemp = NaN;
-            this.flaps = NaN;
-            this.ths = NaN;
+            this.setTakeoffFlaps(null);
+            this.setTakeoffTrim(null);
             this.v1Speed = undefined;
             this.vRSpeed = undefined;
             this.v2Speed = undefined;
-            this._v1Checked = true;
-            this._vRChecked = true;
-            this._v2Checked = true;
+            this.unconfirmedV1Speed = undefined;
+            this.unconfirmedVRSpeed = undefined;
+            this.unconfirmedV2Speed = undefined;
             this._toFlexChecked = true;
             this.thrustReductionAltitude = NaN;
             this.thrustReductionAltitudeIsPilotEntered = false;
@@ -596,6 +628,13 @@ class FMCMainDisplay extends BaseAirliners {
                 this.engineOutAccelerationAltitude
             );
         }
+
+        this.arincBusOutputs.forEach((word) => {
+            word.value = 0;
+            word.ssm = Arinc429Word.SignStatusMatrix.NoComputedData;
+        });
+
+        this.toSpeedsChecks(true);
     }
 
     onUpdate(_deltaTime) {
@@ -631,6 +670,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.navigation.update();
             this.getGW();
             this.checkGWParams();
+            this.toSpeedsChecks();
         }
 
         this.A32NXCore.update();
@@ -657,6 +697,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.efisSymbols) {
             this.efisSymbols.update(_deltaTime);
         }
+
+        this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
 
     /**
@@ -866,6 +908,26 @@ class FMCMainDisplay extends BaseAirliners {
             return ((216.65 + isaDev) / 288.15) ** 5.25588 * 1013.2;
         }
         return ((288.15 - 0.0019812 * alt + isaDev) / 288.15) ** 5.25588 * 1013.2;
+    }
+
+    getPressureAltAtElevation(elev, qnh = 1013.2) {
+        const p0 = qnh < 500 ? 29.92 : 1013.2;
+        return elev + 145442.15 * (1 - Math.pow((qnh / p0), 0.190263));
+    }
+
+    getPressureAlt() {
+        for (let n = 1; n <= 3; n++) {
+            const zp = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${n}_ALTITUDE`);
+            if (zp.isNormalOperation()) {
+                return zp.value;
+            }
+        }
+        return null;
+    }
+
+    getBaroCorrection1() {
+        // FIXME hook up to ADIRU or FCU
+        return Simplane.getPressureValue("millibar");
     }
 
     /**
@@ -1612,7 +1674,8 @@ class FMCMainDisplay extends BaseAirliners {
 
             const ssm = landingElevation !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
-            this.setBnrArincSimVar('LANDING_ELEVATION', landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+            this.arincLandingElevation.setBnrValue(landingElevation ? landingElevation : 0, ssm, 14, 16384, -2048);
+
             // FIXME CPCs should use the FM ARINC vars, and transmit their own vars as well
             SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", landingElevation ? landingElevation : 0);
         }
@@ -1622,7 +1685,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             const ssm = latitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
-            this.setBnrArincSimVar('DEST_LAT', latitude ? latitude : 0, ssm, 18, 180, -180);
+            this.arincDestinationLatitude.setBnrValue(latitude ? latitude : 0, ssm, 18, 180, -180);
         }
 
         if (this.destinationLongitude !== longitude) {
@@ -1630,21 +1693,8 @@ class FMCMainDisplay extends BaseAirliners {
 
             const ssm = longitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
-            this.setBnrArincSimVar('DEST_LONG', longitude ? longitude : 0, ssm, 18, 180, -180);
+            this.arincDestinationLongitude.setBnrValue(longitude ? longitude : 0, ssm, 18, 180, -180);
         }
-    }
-
-    async setBnrArincSimVar(name, value, ssm, bits, rangeMax, rangeMin = 0) {
-        const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
-        const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
-
-        // TODO change our ARINC429 format so JS can write it, then drop the SSM simvars
-        return Promise.all([
-            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}`, "number", data),
-            SimVar.SetSimVarValue(`L:A32NX_FM1_${name}_SSM`, "number", ssm),
-            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}`, "number", data),
-            SimVar.SetSimVarValue(`L:A32NX_FM2_${name}_SSM`, "number", ssm),
-        ]);
     }
 
     getClbManagedSpeedFromCostIndex() {
@@ -2926,15 +2976,60 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     vSpeedsValid() {
-        return this._v1Checked && this._vRChecked && this._v2Checked ? (
-            (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
+        return (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
             && (!!this.vRSpeed && !!this.v2Speed ? this.vRSpeed <= this.v2Speed : true)
-            && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true)
-        ) : true;
+            && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true);
     }
 
-    vSpeedDisagreeCheck() {
-        this.addMessageToQueue(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
+    getToSpeedsTooLow() {
+        let departureElevation = null;
+        if (this.flightPlanManager.getOriginRunway()) {
+            departureElevation = this.flightPlanManager.getOriginRunway().thresholdElevation / 0.3048;
+        } else if (this.flightPlanManager.getOrigin()) {
+            departureElevation = this.flightPlanManager.getOrigin().infos.elevation;
+        }
+        const zp = departureElevation !== null ? this.getPressureAltAtElevation(departureElevation, this.getBaroCorrection1()) : this.getPressureAlt();
+        if (zp === null) {
+            return false;
+        }
+
+        const conf = this.flaps ? this.flaps : 0;
+        const tow = this.zeroFuelWeight + this.blockFuel - this.taxiFuelWeight;
+
+        return departureElevation !== undefined && (
+            this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
+            || this.vRSpeed < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
+            || this.v2Speed < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
+            || (isFinite(tow) && this.v2Speed < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, conf, true)))
+        );
+    }
+
+    toSpeedsChecks(init = false) {
+        const toSpeedsNotInserted = !this.v1Speed || !this.vRSpeed || !this.v2Speed;
+        if (toSpeedsNotInserted !== this.toSpeedsNotInserted) {
+            this.toSpeedsNotInserted = toSpeedsNotInserted;
+        }
+
+        const toSpeedsTooLow = this.getToSpeedsTooLow();
+        if (toSpeedsTooLow !== this.toSpeedsTooLow) {
+            this.toSpeedsTooLow = toSpeedsTooLow;
+            if (toSpeedsTooLow) {
+                this.addMessageToQueue(NXSystemMessages.toSpeedTooLow, () => !this.getToSpeedsTooLow());
+            }
+        }
+
+        const vSpeedDisagree = !this.vSpeedsValid();
+        if (vSpeedDisagree !== this.vSpeedDisagree) {
+            this.vSpeedDisagree = vSpeedDisagree;
+            if (vSpeedDisagree) {
+                this.addMessageToQueue(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
+            }
+        }
+
+        this.arincDiscreteWord3.setBitValue(16, vSpeedDisagree);
+        this.arincDiscreteWord3.setBitValue(17, toSpeedsTooLow);
+        this.arincDiscreteWord3.setBitValue(18, toSpeedsNotInserted);
+        this.arincDiscreteWord3.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
     //Needs PR Merge #3082
@@ -2953,11 +3048,9 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
-        this._v1Checked = true;
+        this.unconfirmedV1Speed = undefined;
         this.v1Speed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed).then(() => {
-            this.vSpeedDisagreeCheck();
-        });
+        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
         return true;
     }
 
@@ -2977,11 +3070,9 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
-        this._vRChecked = true;
+        this.unconfirmedVRSpeed = undefined;
         this.vRSpeed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed).then(() => {
-            this.vSpeedDisagreeCheck();
-        });
+        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
         return true;
     }
 
@@ -3001,11 +3092,9 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         this.removeMessageFromQueue(NXSystemMessages.checkToData.text);
-        this._v2Checked = true;
+        this.unconfirmedV2Speed = undefined;
         this.v2Speed = v;
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed).then(() => {
-            this.vSpeedDisagreeCheck();
-        });
+        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
         return true;
     }
 
@@ -4287,14 +4376,44 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
     }
 
+    /**
+     * Set the takeoff flap config
+     * @param {0 | 1 | 2 | 3 | null} flaps
+     */
+    /* private */ setTakeoffFlaps(flaps) {
+        if (flaps !== this.flaps) {
+            this.flaps = flaps;
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", this.flaps !== null ? this.flaps : -1);
+
+            this.arincDiscreteWord2.setBitValue(13, this.flaps === 0);
+            this.arincDiscreteWord2.setBitValue(14, this.flaps === 1);
+            this.arincDiscreteWord2.setBitValue(15, this.flaps === 2);
+            this.arincDiscreteWord2.setBitValue(16, this.flaps === 3);
+            this.arincDiscreteWord2.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
+        }
+    }
+
+    /**
+     * Set the takeoff trim config
+     * @param {number | null} ths
+     */
+    /* private */ setTakeoffTrim(ths) {
+        if (ths !== this.ths) {
+            this.ths = ths;
+            // legacy vars
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", this.ths ? this.ths : 0);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", this.ths !== null);
+
+            const ssm = this.ths !== null ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+
+            this.arincTakeoffPitchTrim.setBnrValue(this.ths ? -this.ths : 0, ssm, 12, 180, -180);
+        }
+    }
+
     trySetFlapsTHS(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.flaps = NaN;
-            this.ths = NaN;
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", 0);
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", 0);
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", false);
+            this.setTakeoffFlaps(null);
+            this.setTakeoffTrim(null);
             this.tryCheckToData();
             return true;
         }
@@ -4352,20 +4471,16 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         if (newFlaps !== null) {
-            if (!isNaN(this.flaps)) {
+            if (this.flaps !== null) {
                 this.tryCheckToData();
             }
-            this.flaps = newFlaps;
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", newFlaps);
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", true);
+            this.setTakeoffFlaps(newFlaps);
         }
         if (newThs !== null) {
-            if (!isNaN(this.ths)) {
+            if (this.ths !== null) {
                 this.tryCheckToData();
             }
-            this.ths = newThs;
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", newThs);
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", true);
+            this.setTakeoffTrim(newThs);
         }
         return true;
     }
@@ -4404,15 +4519,15 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
     _getV1Speed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps, Simplane.getAltitude())).v1;
+        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).v1;
     }
 
     _getVRSpeed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps, Simplane.getAltitude())).vr;
+        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).vr;
     }
 
     _getV2Speed() {
-        return (new NXSpeedsTo(this.getGW(), this.flaps, Simplane.getAltitude())).v2;
+        return (new NXSpeedsTo(this.getGW(), this.flaps ? this.flaps : 1, Simplane.getAltitude())).v2;
     }
 
     /**
@@ -4441,14 +4556,17 @@ class FMCMainDisplay extends BaseAirliners {
             if (!!this.toRunway) {
                 this.toRunway = toRunway;
                 this._toFlexChecked = !isFinite(this.perfTOTemp);
-                this._v1Checked = !isFinite(this.v1Speed);
-                this._vRChecked = !isFinite(this.vRSpeed);
-                this._v2Checked = !isFinite(this.v2Speed);
+                this.unconfirmedV1Speed = this.v1Speed;
+                this.unconfirmedVRSpeed = this.vRSpeed;
+                this.unconfirmedV2Speed = this.v2Speed;
+                this.v1Speed = undefined;
+                this.vRSpeed = undefined;
+                this.v2Speed = undefined;
 
-                if (this._v1Checked && this._vRChecked && this._v2Checked && this._toFlexChecked) {
+                if (!this.unconfirmedV1Speed && !this.unconfirmedVRSpeed && !this.unconfirmedV2Speed) {
                     return;
                 }
-                this.addMessageToQueue(NXSystemMessages.checkToData, (mcdu) => mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked);
+                this.addMessageToQueue(NXSystemMessages.checkToData, (mcdu) => !this.unconfirmedV1Speed && !this.unconfirmedVRSpeed && !this.unconfirmedV2Speed && mcdu._toFlexChecked);
             }
             this.toRunway = toRunway;
         }
@@ -5118,3 +5236,59 @@ const FlightPlans = Object.freeze({
     Active: 0,
     Temporary: 1,
 });
+
+class FmArinc429OutputWord extends Arinc429Word {
+    constructor(name, value = 0) {
+        super(0);
+
+        this.name = name;
+        this.dirty = true;
+        this._value = value;
+        this._ssm = 0;
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(value) {
+        if (this._value !== value) {
+            this.dirty = true;
+        }
+        this._value = value;
+    }
+
+    get ssm() {
+        return this._ssm;
+    }
+
+    set ssm(ssm) {
+        if (this._ssm !== ssm) {
+            this.dirty = true;
+        }
+        this._ssm = ssm;
+    }
+
+    static empty(name) {
+        return new FmArinc429OutputWord(name, 0);
+    }
+
+    async writeToSimVarIfDirty() {
+        if (this.dirty) {
+            this.dirty = false;
+            return Promise.all([
+                Arinc429Word.toSimVarValue(`L:A32NX_FM1_${this.name}`, this.value, this.ssm),
+                Arinc429Word.toSimVarValue(`L:A32NX_FM2_${this.name}`, this.value, this.ssm),
+            ]);
+        }
+        return Promise.resolve();
+    }
+
+    setBnrValue(value, ssm, bits, rangeMax, rangeMin = 0) {
+        const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
+        const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
+
+        this.value = data;
+        this.ssm = ssm;
+    }
+}

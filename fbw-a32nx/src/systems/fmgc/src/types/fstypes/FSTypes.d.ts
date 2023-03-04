@@ -128,6 +128,8 @@ declare global {
 
         oneWayRunways: OneWayRunway[];
 
+        elevation: number | undefined;
+
         UpdateNamedFrequencies(icao?: string): Promise<void>
     }
 
