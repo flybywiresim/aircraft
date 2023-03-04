@@ -25,7 +25,6 @@ use uom::si::{
     length::foot,
     pressure::hectopascal,
     ratio::ratio,
-    thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
 };
 
@@ -750,14 +749,18 @@ struct AirDataReference {
     /// label 237
     baro_correction_2_inhg: AdirsData<Pressure>,
     corrected_average_static_pressure: AdirsData<Pressure>,
+    /// pressure altitude
     altitude: AdirsData<Length>,
+    /// baro corrected altitude for the captain's side
+    baro_corrected_altitude_1: AdirsData<Length>,
+    /// baro corrected altitude for the fo's side
+    baro_corrected_altitude_2: AdirsData<Length>,
     computed_airspeed: AdirsData<Velocity>,
     mach: AdirsData<MachNumber>,
     barometric_vertical_speed: AdirsData<f64>,
     true_airspeed: AdirsData<Velocity>,
     static_air_temperature: AdirsData<ThermodynamicTemperature>,
     total_air_temperature: AdirsData<ThermodynamicTemperature>,
-    international_standard_atmosphere_delta: AdirsData<ThermodynamicTemperature>,
     angle_of_attack: AdirsData<Angle>,
 
     remaining_initialisation_duration: Option<Duration>,
@@ -770,14 +773,14 @@ impl AirDataReference {
     const BARO_CORRECTION_2_INHG: &'static str = "BARO_CORRECTION_2_INHG";
     const CORRECTED_AVERAGE_STATIC_PRESSURE: &'static str = "CORRECTED_AVERAGE_STATIC_PRESSURE";
     const ALTITUDE: &'static str = "ALTITUDE";
+    const BARO_CORRECTED_ALTITUDE_1: &'static str = "BARO_CORRECTED_ALTITUDE_1";
+    const BARO_CORRECTED_ALTITUDE_2: &'static str = "BARO_CORRECTED_ALTITUDE_2";
     const COMPUTED_AIRSPEED: &'static str = "COMPUTED_AIRSPEED";
     const MACH: &'static str = "MACH";
     const BAROMETRIC_VERTICAL_SPEED: &'static str = "BAROMETRIC_VERTICAL_SPEED";
     const TRUE_AIRSPEED: &'static str = "TRUE_AIRSPEED";
     const STATIC_AIR_TEMPERATURE: &'static str = "STATIC_AIR_TEMPERATURE";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
-    const INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA: &'static str =
-        "INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA";
     const ANGLE_OF_ATTACK: &'static str = "ANGLE_OF_ATTACK";
     const MINIMUM_TAS: f64 = 60.;
     const MINIMUM_CAS: f64 = 30.;
@@ -807,6 +810,16 @@ impl AirDataReference {
                 Self::CORRECTED_AVERAGE_STATIC_PRESSURE,
             ),
             altitude: AdirsData::new_adr(context, number, Self::ALTITUDE),
+            baro_corrected_altitude_1: AdirsData::new_adr(
+                context,
+                number,
+                Self::BARO_CORRECTED_ALTITUDE_1,
+            ),
+            baro_corrected_altitude_2: AdirsData::new_adr(
+                context,
+                number,
+                Self::BARO_CORRECTED_ALTITUDE_2,
+            ),
             computed_airspeed: AdirsData::new_adr(context, number, Self::COMPUTED_AIRSPEED),
             mach: AdirsData::new_adr(context, number, Self::MACH),
             barometric_vertical_speed: AdirsData::new_adr(
@@ -821,11 +834,6 @@ impl AirDataReference {
                 Self::STATIC_AIR_TEMPERATURE,
             ),
             total_air_temperature: AdirsData::new_adr(context, number, Self::TOTAL_AIR_TEMPERATURE),
-            international_standard_atmosphere_delta: AdirsData::new_adr(
-                context,
-                number,
-                Self::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
-            ),
             angle_of_attack: AdirsData::new_adr(context, number, Self::ANGLE_OF_ATTACK),
 
             // Start fully initialised.
@@ -869,14 +877,14 @@ impl AirDataReference {
             self.baro_correction_2_inhg.set_failure_warning();
             self.corrected_average_static_pressure.set_failure_warning();
             self.altitude.set_failure_warning();
+            self.baro_corrected_altitude_1.set_failure_warning();
+            self.baro_corrected_altitude_2.set_failure_warning();
             self.barometric_vertical_speed.set_failure_warning();
             self.computed_airspeed.set_failure_warning();
             self.true_airspeed.set_failure_warning();
             self.mach.set_failure_warning();
             self.total_air_temperature.set_failure_warning();
             self.static_air_temperature.set_failure_warning();
-            self.international_standard_atmosphere_delta
-                .set_failure_warning();
             self.angle_of_attack.set_failure_warning();
         } else {
             // If it is on and initialized, output normal values.
@@ -889,10 +897,26 @@ impl AirDataReference {
                 .set_normal_operation_value(simulator_data.baro_correction_1);
             self.baro_correction_2_inhg
                 .set_normal_operation_value(simulator_data.baro_correction_1);
+
+            let pressure_alt = Length::new::<foot>(
+                ((context.pressure_altitude().get::<foot>() * 2.).round() / 2.)
+                    .clamp(-131072., 131072.),
+            );
+
+            // FIXME split sides and do the correction ourselves
+            // FIXME this currently returns pressure alt when STD mode is selected on the FCU
+            let baro_alt = Length::new::<foot>(
+                ((context.indicated_altitude().get::<foot>() * 2.).round() / 2.)
+                    .clamp(-131072., 131072.),
+            );
+
             self.corrected_average_static_pressure
                 .set_normal_operation_value(context.ambient_pressure());
-            self.altitude
-                .set_normal_operation_value(context.indicated_altitude());
+            self.altitude.set_normal_operation_value(pressure_alt);
+            self.baro_corrected_altitude_1
+                .set_normal_operation_value(baro_alt);
+            self.baro_corrected_altitude_2
+                .set_normal_operation_value(baro_alt);
             self.barometric_vertical_speed
                 .set_normal_operation_value(simulator_data.vertical_speed.get::<foot_per_minute>());
 
@@ -928,11 +952,6 @@ impl AirDataReference {
                 .set_normal_operation_value(simulator_data.total_air_temperature);
             self.static_air_temperature
                 .set_normal_operation_value(context.ambient_temperature());
-            self.international_standard_atmosphere_delta
-                .set_normal_operation_value(self.international_standard_atmosphere_delta(
-                    context.indicated_altitude(),
-                    context.ambient_temperature(),
-                ));
         }
     }
 
@@ -942,17 +961,6 @@ impl AirDataReference {
 
     fn is_valid(&self) -> bool {
         self.is_on && self.is_initialised()
-    }
-
-    fn international_standard_atmosphere_delta(
-        &self,
-        indicated_altitude: Length,
-        static_air_temperature: ThermodynamicTemperature,
-    ) -> ThermodynamicTemperature {
-        let isa = indicated_altitude.get::<foot>().min(36_089.) * -0.0019812 + 15.;
-        ThermodynamicTemperature::new::<degree_celsius>(
-            static_air_temperature.get::<degree_celsius>() - isa,
-        )
     }
 
     fn computed_airspeed_raw(&self) -> Velocity {
@@ -991,14 +999,14 @@ impl SimulationElement for AirDataReference {
         self.corrected_average_static_pressure
             .write_to_converted(writer, |value| value.get::<hectopascal>());
         self.altitude.write_to(writer);
+        self.baro_corrected_altitude_1.write_to(writer);
+        self.baro_corrected_altitude_2.write_to(writer);
         self.computed_airspeed.write_to(writer);
         self.mach.write_to(writer);
         self.barometric_vertical_speed.write_to(writer);
         self.true_airspeed.write_to(writer);
         self.static_air_temperature.write_to(writer);
         self.total_air_temperature.write_to(writer);
-        self.international_standard_atmosphere_delta
-            .write_to(writer);
         self.angle_of_attack.write_to(writer);
     }
 }
@@ -2083,11 +2091,30 @@ mod tests {
             ))
         }
 
+        /// pressure altitude
         fn altitude(&mut self, adiru_number: usize) -> Arinc429Word<Length> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::ALTITUDE,
+            ))
+        }
+
+        /// baro corrected altitude for captain's side
+        fn baro_corrected_altitude_1(&mut self, adiru_number: usize) -> Arinc429Word<Length> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::BARO_CORRECTED_ALTITUDE_1,
+            ))
+        }
+
+        /// baro corrected altitude for fo's side
+        fn baro_corrected_altitude_2(&mut self, adiru_number: usize) -> Arinc429Word<Length> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::BARO_CORRECTED_ALTITUDE_2,
             ))
         }
 
@@ -2146,17 +2173,6 @@ mod tests {
                 OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::TOTAL_AIR_TEMPERATURE,
-            ))
-        }
-
-        fn international_standard_atmosphere_delta(
-            &mut self,
-            adiru_number: usize,
-        ) -> Arinc429Word<ThermodynamicTemperature> {
-            self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::Adr,
-                adiru_number,
-                AirDataReference::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
             ))
         }
 
@@ -2393,6 +2409,18 @@ mod tests {
             );
             assert_eq!(!self.altitude(adiru_number).is_failure_warning(), valid);
             assert_eq!(
+                !self
+                    .baro_corrected_altitude_1(adiru_number)
+                    .is_failure_warning(),
+                valid
+            );
+            assert_eq!(
+                !self
+                    .baro_corrected_altitude_2(adiru_number)
+                    .is_failure_warning(),
+                valid
+            );
+            assert_eq!(
                 !self.computed_airspeed(adiru_number).is_failure_warning(),
                 valid
             );
@@ -2416,12 +2444,6 @@ mod tests {
             assert_eq!(
                 !self
                     .total_air_temperature(adiru_number)
-                    .is_failure_warning(),
-                valid
-            );
-            assert_eq!(
-                !self
-                    .international_standard_atmosphere_delta(adiru_number)
                     .is_failure_warning(),
                 valid
             );
@@ -3006,12 +3028,50 @@ mod tests {
         #[case(3)]
         fn altitude_is_supplied_by_adr(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
+            test_bed.set_pressure_altitude(Length::new::<foot>(38000.));
 
             test_bed.run();
 
             assert_eq!(
                 test_bed.altitude(adiru_number).normal_value().unwrap(),
+                Length::new::<foot>(38000.)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn baro_corrected_altitude_1_is_supplied_by_adr(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
+
+            test_bed.run();
+
+            assert_eq!(
+                test_bed
+                    .baro_corrected_altitude_1(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                Length::new::<foot>(10000.)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn baro_corrected_altitude_2_is_supplied_by_adr(#[case] adiru_number: usize) {
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
+
+            test_bed.run();
+
+            assert_eq!(
+                test_bed
+                    .baro_corrected_altitude_2(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 Length::new::<foot>(10000.)
             );
         }
@@ -3181,29 +3241,6 @@ mod tests {
                     .normal_value()
                     .unwrap(),
                 tat
-            );
-        }
-
-        #[rstest]
-        #[case(1)]
-        #[case(2)]
-        #[case(3)]
-        fn international_standard_atmosphere_delta_is_supplied_by_adr(#[case] adiru_number: usize) {
-            let sea_level_temperature = 15.;
-            let deviation = 5.;
-            let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_indicated_altitude(Length::new::<foot>(0.));
-            test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(
-                sea_level_temperature + deviation,
-            ));
-            test_bed.run();
-
-            assert_eq!(
-                test_bed
-                    .international_standard_atmosphere_delta(adiru_number)
-                    .normal_value()
-                    .unwrap(),
-                ThermodynamicTemperature::new::<degree_celsius>(deviation)
             );
         }
 
