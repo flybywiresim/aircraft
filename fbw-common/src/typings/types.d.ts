@@ -1,10 +1,10 @@
-import { FlightPlanService as Service, NavigationDatabaseService as NavigationDatabaseService_ } from "../src/fmgc/src";
-import { NavigationDatabase as Database, NavigationDatabaseBackend as DatabaseBackend } from '../src/fmgc/src/NavigationDatabase'
-import { FlightPlanIndex as Index } from '../src/fmgc/src';
-import { FlightPhaseManager as FlightPhaseManager_ } from "../src/fmgc/src";
-import { WaypointFactory as WaypointFactory_ } from "../src/fmgc/src";
-import { WaypointEntryUtils as WaypointEntryUtils_ } from "../src/fmgc/src";
-import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../src/fmgc/src";
+import { FlightPlanService as Service, NavigationDatabaseService as NavigationDatabaseService_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { NavigationDatabase as Database, NavigationDatabaseBackend as DatabaseBackend } from '../../../fbw-a32nx/src/systems/fmgc/src/NavigationDatabase'
+import { FlightPlanIndex as Index } from '../../../fbw-a32nx/src/systems/fmgc/src';
+import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { WaypointFactory as WaypointFactory_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { WaypointEntryUtils as WaypointEntryUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 
 declare global {
     type NauticalMiles = number;
