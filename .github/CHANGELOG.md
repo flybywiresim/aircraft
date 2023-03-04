@@ -47,6 +47,7 @@
 1. [FWC] Add FLAP LVR NOT ZERO warning above FL200 - @tracernz (Mike)
 1. [FWC] Improve takeoff config/range warnings - @tracernz (Mike)
 1. [FMGC/FWC] Add takeoff surveilance 1 functions - @tracernz (Mike)
+1. [ND] Improve accuracy of plane icon - @tracernz (Mike)
 
 ## 0.9.0
 
