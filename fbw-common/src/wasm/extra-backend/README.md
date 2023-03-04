@@ -269,7 +269,7 @@ See the documentation of CacheableVariable for more details.
 
 ##### DataDefinitionVariable (Custom SimObjects)
 The DataDefinitionVariable is a variable which is mapped to a custom data struct 
-and a SimObject which can be defined by adding separate data definition for single 
+and a SimObject which can be defined by adding separate data definitions for single 
 sim variables (objects) to a container of data definitions (custom SimObject).
 
 It requires a local data struct as a template type which is used to hold the data.
@@ -300,7 +300,7 @@ Also see:
 - [MSFS SDK Documentation: SimConnect Data Definition](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm)
 
 #### ClientDataAreaVariable (Custom Data Area)
-THe MSFS SDK also allows to define custom SimObjects using memory mapped data 
+The MSFS SDK also allows to define custom SimObjects using memory mapped data 
 between clients to send and receive arbitrary data to and from the sim.
 
 It requires a local data struct as a template type which is used to hold the data.

@@ -11,6 +11,7 @@
 #include "ExampleModule.h"
 #include "NamedVariable.h"
 #include "logging.h"
+#include "longtext.h"
 
 bool ExampleModule::initialize() {
   dataManager = &msfsHandler.getDataManager();
@@ -91,6 +92,7 @@ bool ExampleModule::initialize() {
   fuelPumpSwitch2Ptr =
       dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 2, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
 
+  // ========================================
   // Data definition variables
   std::vector<DataDefinition> exampleDataDef = {
       {"LIGHT STROBE", 0, UNITS.Bool},
@@ -111,6 +113,7 @@ bool ExampleModule::initialize() {
   //    LOG_ERROR("Failed to request periodic data from sim");
   //  }
 
+  // ========================================
   // Client data area owned by this module
   exampleClientDataPtr = dataManager->make_clientdataarea_var<ExampleClientData>("EXAMPLE CLIENT DATA", false, true);
   exampleClientDataPtr->allocateClientDataArea(sizeof(ExampleClientData));
@@ -123,6 +126,7 @@ bool ExampleModule::initialize() {
   //    LOG_ERROR("Failed to request periodic data from sim");
   //  }
 
+  // ========================================
   // Big client data area owned by an external module
   bigClientDataPtr = dataManager->make_clientdataarea_var<BigClientData>("BIG CLIENT DATA");
   bigClientDataPtr->setSkipChangeCheck(true);
@@ -137,10 +141,11 @@ bool ExampleModule::initialize() {
               << fingerPrintFVN(std::vector(bigClientDataPtr->data().dataChunk.begin(), bigClientDataPtr->data().dataChunk.end()))
               << std::endl;
   });
-  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
 
+  // ========================================
   // Metadata for the ClientDataBufferedAreaVariable test
   metaDataPtr = dataManager->make_clientdataarea_var<BufferedAreaMetaData>("HUGE CLIENT DATA META DATA");
   metaDataPtr->setSkipChangeCheck(true);
@@ -153,11 +158,12 @@ bool ExampleModule::initialize() {
     std::cout << "HUGE CLIENT DATA META DATA size = " << metaDataPtr->data().size << " fingerprint = " << metaDataPtr->data().hash
               << std::endl;
   });
-  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
 
-  // ClientDataBufferedAreaVariable test
+  // =========================================
+  // ClientDataBufferedAreaVariable receiving test
   hugeClientDataPtr = dataManager->make_clientdatabufferedarea_var<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
   hugeClientDataPtr->setSkipChangeCheck(true);
   hugeClientDataPtr->addCallback([&]() {
@@ -171,12 +177,23 @@ bool ExampleModule::initialize() {
               << " (match = " << std::boolalpha << (fingerPrintFvn == metaDataPtr->data().hash) << ")"
               << " time = " << std::setw(10) << receiptTimerEnd.count() << " ns" << std::endl;
     std::cout << "Content: "
-              << "[" << std::string(hugeClientDataPtr->getData().begin(), hugeClientDataPtr->getData().begin() + 100) << " ... ]" << std::endl;
+              << "[" << std::string(hugeClientDataPtr->getData().begin(), hugeClientDataPtr->getData().begin() + 100) << " ... ]"
+              << std::endl;
   });
-  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
-    LOG_ERROR("Failed to request periodic data from sim");
-  }
+  //  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
+  //    LOG_ERROR("Failed to request periodic data from sim");
+  //  }
 
+  // =========================================
+  // ClientDataBufferedAreaVariable sending test
+  hugeClientData2Ptr = dataManager->make_clientdatabufferedarea_var<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA 2");
+  hugeClientData2Ptr->allocateClientDataArea();
+  hugeClientData2Ptr->getData().assign(longText.begin(), longText.end());
+
+  metaData2Ptr = dataManager->make_clientdataarea_var<BufferedArea2MetaData>("HUGE CLIENT DATA 2 META DATA");
+  metaData2Ptr->allocateClientDataArea();
+
+  // ======================
   // Key event tests
   // Test callback a member method using this->
   [[maybe_unused]] auto keyEventId = dataManager->addKeyEventCallback(
@@ -210,6 +227,7 @@ bool ExampleModule::initialize() {
   clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_1);
   clientEventPtr->setInputGroupState(INPUT_GROUP_1, SIMCONNECT_STATE_ON);
 
+  // ======================
   // System Events
   // Create the client event with the registerToSim flag set to false, so we can add
   // client event to system event. When this is set to true (default) the client event
@@ -274,6 +292,15 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     [[maybe_unused]] const UINT64 tickCounter = msfsHandler.getTickCounter();
 
     std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
+
+    // ======================
+    // Sending large data to the sim
+    metaData2Ptr->data().size = hugeClientData2Ptr->getData().size();
+    metaData2Ptr->data().hash = fingerPrintFVN(hugeClientData2Ptr->getData());
+    metaData2Ptr->writeDataToSim();
+    LOG_DEBUG("--- HUGE CLIENT 2 META DATA - writing: " + std::to_string(metaData2Ptr->data().size) + " bytes + fingerprint: " +
+              std::to_string(metaData2Ptr->data().hash));
+    hugeClientData2Ptr->writeDataToSim();
 
     // ======================
     // Client Event Tests

@@ -165,10 +165,10 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @param readOnlyForOthers
    * @return true if the allocation was successful, false otherwise
    */
-  bool allocateClientDataArea(std::size_t size, bool readOnlyForOthers = false) {
+  virtual bool allocateClientDataArea(bool readOnlyForOthers = false) {
     const DWORD readOnlyFlag =
         readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
-    if (!SUCCEEDED(SimConnect_CreateClientData(hSimConnect, clientDataId, size, readOnlyFlag))) {
+    if (!SUCCEEDED(SimConnect_CreateClientData(hSimConnect, clientDataId, sizeof(T), readOnlyFlag))) {
       LOG_ERROR("ClientDataAreaVariable: Creating client data area failed: " + name);
       return false;
     }

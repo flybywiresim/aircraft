@@ -92,8 +92,16 @@ class ExampleModule : public Module {
   } __attribute__((packed));
   std::shared_ptr<ClientDataAreaVariable<BufferedAreaMetaData>> metaDataPtr;
 
-  // ClientDataBufferedArea variable for testing
+  // ClientDataBufferedArea variable for testing receiving
   std::shared_ptr<ClientDataBufferedAreaVariable<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
+
+  // ClientDataBufferedArea variable for testing sending
+  struct BufferedArea2MetaData {
+    UINT64 size;
+    UINT64 hash;
+  } __attribute__((packed));
+  std::shared_ptr<ClientDataAreaVariable<BufferedArea2MetaData>> metaData2Ptr;
+  std::shared_ptr<ClientDataBufferedAreaVariable<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientData2Ptr;
 
   // Events
   ClientEventPtr beaconLightSetEventPtr;

@@ -65,6 +65,24 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
   ClientDataBufferedAreaVariable<T, ChunkSize>& operator=(const ClientDataBufferedAreaVariable<T, ChunkSize>&) = delete;
   ~ClientDataBufferedAreaVariable() override = default;
 
+  /**
+   * Allocates the client data area in the sim.<p/>
+   * This must be done by the client owning the data. Clients only reading the data area do not
+   * need to allocate it. In fact trying to allocated a data area with the same name twice throws
+   * a Simconnect exception.
+   * @param readOnlyForOthers
+   * @return true if the allocation was successful, false otherwise
+   */
+  bool allocateClientDataArea(bool readOnlyForOthers = false) override {
+    const DWORD readOnlyFlag =
+        readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
+    if (!SUCCEEDED(SimConnect_CreateClientData(this->hSimConnect, this->clientDataId, ChunkSize, readOnlyFlag))) {
+      LOG_ERROR("ClientDataAreaVariable: Creating client data area failed: " + this->getName());
+      return false;
+    }
+    return true;
+  }
+
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     LOG_TRACE("ClientDataBufferedAreaVariable: Received client data: " + this->name);
     const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
@@ -75,41 +93,22 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
     }
 
     // memcpy into a vector ignores the vector's metadata and just copies the data
-    // it is therefore faster than std::copy or std::back_inserter but
+    // it is therefore faster than std::copy or std::back_inserter but also results in an invalid
+    // vector instance.
     // std::memcpy(&this->content.data()[this->receivedBytes], &pClientData->dwData, remainingBytes);
+    // insert the data into the vector - very fast as well but results in a valid vector instance
     this->content.insert(this->content.end(), (T*)&pClientData->dwData, (T*)&pClientData->dwData + remainingBytes);
 
     this->receivedChunks++;
-    // std::cout << "Chunk: " << this->receivedChunks << ": Begin: " << (void*) pDataStart << " End: " << (void*) pDataEnd << std::endl;
-
-    // DEBUG
-    //    std::cout << "ClientDataBufferedAreaVariable DATA START========================" << std::endl;
-    //    auto d = &this->content.data()[this->receivedBytes];
-    //    auto s = std::string_view((const char*) d, 100);
-    //    std::cout << s << std::endl;
-    //    std::cout << "ClientDataBufferedAreaVariable DATA END==========================" << std::endl;
-    // DEBUG
-
     this->receivedBytes += remainingBytes;
 
     const bool receivedAllData = this->receivedBytes >= this->expectedByteCount;
     if (receivedAllData) {
-      //      // DEBUG
-      //      std::cout << "ClientDataBufferedAreaVariable: Data fully received: " << this->name
-      //                << " (" << this->receivedBytes << "/" << this->expectedByteCount
-      //                << ") in " << duration.count() << " ns" << std::endl;
-      //      // DEBUG
       this->timeStampSimTime = simTime;
       this->tickStamp = tickCounter;
       this->setChanged(true);
       return;
     }
-
-    //    // DEBUG
-    //      std::cout << "ClientDataBufferedAreaVariable: Data chunk received: " << this->name
-    //                << " (" << this->receivedBytes << "/" << this->expectedByteCount
-    //                << ") in " << duration.count() << " ns" << std::endl;
-    //    // DEBUG
   }
 
   /**
@@ -125,6 +124,47 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
     this->receivedChunks = 0;
     this->expectedByteCount = expectedByteCnt;
     this->content.reserve(expectedByteCnt);
+  }
+
+  bool writeDataToSim() override {
+    LOG_DEBUG("Setting Client Data to Sim: size = " + std::to_string(this->content.size()));
+
+    int chunkCount = 0;
+    std::size_t sentBytes = 0;
+    std::size_t remainingBytes = this->content.size();
+
+    while (sentBytes < this->content.size()) {
+      if (remainingBytes >= ChunkSize) {  // bigger than one chunk
+        chunkCount++;
+        LOG_DEBUG("Sending chunk: " + std::to_string(chunkCount));
+
+        if (!SUCCEEDED(SimConnect_SetClientData(this->hSimConnect, this->clientDataId, this->dataDefId,
+                                                SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, ChunkSize, &this->content.data()[sentBytes]))) {
+          LOG_ERROR("Setting data to sim for " + this->getName() + " with dataDefId=" + std::to_string(this->dataDefId) + " failed!");
+          return false;
+        }
+        sentBytes += ChunkSize;
+      } else {  // last chunk
+        // use a tmp array buffer to send the remaining bytes
+        std::array<T, ChunkSize> buffer{};
+        std::memcpy(buffer.data(), &this->content.data()[sentBytes], remainingBytes);
+
+        chunkCount++;
+        LOG_DEBUG("Sending chunk: " + std::to_string(chunkCount) + " (last)");
+
+        if (!SUCCEEDED(SimConnect_SetClientData(this->hSimConnect, this->clientDataId, this->dataDefId,
+                                                SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, ChunkSize, buffer.data()))) {
+          LOG_ERROR("Setting data to sim for " + this->getName() + " with dataDefId=" + std::to_string(this->dataDefId) + " failed!");
+          return false;
+        }
+        sentBytes += remainingBytes;
+      }
+      remainingBytes = this->content.size() - sentBytes;
+      LOG_DEBUG("Sent bytes: " + std::to_string(sentBytes) + " Remaining bytes: " + std::to_string(remainingBytes));
+    }
+    LOG_DEBUG("Finished sending data in " + std::to_string(chunkCount) + " chunks" + " Sent bytes: " + std::to_string(sentBytes) +
+              " Remaining bytes: " + std::to_string(remainingBytes) + " DataSize: " + std::to_string(this->content.size()));
+    return true;
   }
 
   /**

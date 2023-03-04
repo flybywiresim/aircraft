@@ -166,7 +166,11 @@ class DataManager {
   // ===============================================================================================
 
   /**
-   * Creates a new named variable and adds it to the list of managed variables
+   * Creates a new named variable and adds it to the list of managed variables.<p/>
+   *
+   * The NamedVariable is a variable which is mapped to a LVAR. It is the simplest variable type and
+   * can be used to store and retrieve custom numeric data from the sim.
+   *
    * @param varName Name of the variable in the sim
    * @param optional unit Unit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
@@ -184,9 +188,14 @@ class DataManager {
                                   UINT64 maxAgeTicks = 0);
 
   /**
-   * Creates a new AircraftVariable and adds it to the list of managed variables.
+   * Creates a new AircraftVariable and adds it to the list of managed variables.<p/>
+   *
+   * The AircraftVariable is a variable which is mapped to an aircraft simvar. As simvars are
+   * read-only it is required to use an event to write the variable back to the sim.<p/>
+   *
    * To create a writable variable, use either the setterEventName or setterEvent parameter.
    * If both are set, the setterEvent will be used.
+   *
    * @param varName Name of the variable in the sim
    * @param index Index of the indexed variable in the sim (default=0)
    * @param setterEventName the name of the event to set the variable with an event or calculator code (default="")
@@ -213,6 +222,7 @@ class DataManager {
    * Creates a new readonly non-indexed AircraftVariable and adds it to the list of managed variables.
    * This is a convenience method for make_aircraft_var() to create a variable that is read-only and
    * does not have an index.
+   *
    * @param varName Name of the variable in the sim
    * @param unit Unit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
@@ -229,7 +239,13 @@ class DataManager {
 
   // @formatter:off - clion formatter is broken here
   /**
-   * Creates a new data definition variable and adds it to the list of managed variables.
+   * Creates a new data definition variable and adds it to the list of managed variables.<p/>
+   *
+   * The DataDefinitionVariable is a variable which is mapped to a custom data struct and a SimObject
+   * which can be defined by adding separate data definitions for single sim variables (objects) to
+   * a container of data definitions (custom SimObject).<br/>
+   * It requires a local data struct as a template type which is used to hold the data.
+   *
    * @typename T Type of the data structure to use to store the data
    * @param name An arbitrary name for the data definition variable for debugging purposes
    * @param dataDefinitions A vector of data definitions for the data definition variable
@@ -256,7 +272,12 @@ class DataManager {
   }
 
   /**
-   * Creates a new client data area variable and adds it to the list of managed variables.
+   * Creates a new client data area variable and adds it to the list of managed variables.<p/>
+   *
+   * A ClientDataArea allows to define a custom SimObjects using memory mapped data to send and
+   * receive arbitrary data to and from the sim and allows therefore also SimConnect clients to exchange
+   * data with each other.<br/>
+   *
    * @typename T Type of the data structure to use to store the data
    * @param clientDataName String containing the client data area name. This is the name that another
    *                       client will use to specify the data area. The name is not case-sensitive.
@@ -286,8 +307,20 @@ class DataManager {
   }
 
   /**
-   * FIXME: not working yet
-   * TODO: document
+   * Creates a new client data area variable and adds it to the list of managed variables.
+   *
+   * A ClientDataBufferedArea is similar to a ClientDataArea but allows to exchange data larger
+   * than the 8k limit of a ClientDataArea.
+   *
+   * This works by letting sender clients split up data into chunks of 8kB and to send these chunks
+   * serialized one after each other (streaming). These chunks are then read by the receiving client
+   * and stitched together again. For this the sender usually would use a second variable to announce
+   * the size of the data to be sent and the receiving client would use this size to know how many
+   * chunks to expect. For this the reserve(expectedBytes) method of the ClientDataBufferedArea must
+   * be used before data can be received.
+   *
+   * See examples for who this could look like in practice.
+   *
    * @tparam T
    * @tparam ChunkSize
    * @param clientDataName
