@@ -2059,7 +2059,7 @@ mod tests {
             ))
         }
 
-        fn baro_reference_1_hpa(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+        fn baro_correction_1_hpa(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
                 adiru_number,
@@ -2067,7 +2067,7 @@ mod tests {
             ))
         }
 
-        fn baro_reference_1_inhg(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+        fn baro_correction_1_inhg(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
                 adiru_number,
@@ -2075,7 +2075,7 @@ mod tests {
             ))
         }
 
-        fn baro_reference_2_hpa(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+        fn baro_correction_2_hpa(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
                 adiru_number,
@@ -2083,7 +2083,7 @@ mod tests {
             ))
         }
 
-        fn baro_reference_2_inhg(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+        fn baro_correction_2_inhg(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
                 adiru_number,
@@ -2989,14 +2989,14 @@ mod tests {
 
             assert_about_eq!(
                 test_bed
-                    .baro_reference_1_hpa(adiru_number)
+                    .baro_correction_1_hpa(adiru_number)
                     .normal_value()
                     .unwrap(),
                 1020.
             );
             assert_about_eq!(
                 test_bed
-                    .baro_reference_2_hpa(adiru_number)
+                    .baro_correction_2_hpa(adiru_number)
                     .normal_value()
                     .unwrap(),
                 1020.
@@ -3008,14 +3008,14 @@ mod tests {
 
             assert_about_eq!(
                 test_bed
-                    .baro_reference_1_inhg(adiru_number)
+                    .baro_correction_1_inhg(adiru_number)
                     .normal_value()
                     .unwrap(),
                 29.80
             );
             assert_about_eq!(
                 test_bed
-                    .baro_reference_2_inhg(adiru_number)
+                    .baro_correction_2_inhg(adiru_number)
                     .normal_value()
                     .unwrap(),
                 29.80
