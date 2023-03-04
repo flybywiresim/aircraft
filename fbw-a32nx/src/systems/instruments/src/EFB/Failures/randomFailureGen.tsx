@@ -3,12 +3,9 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
-import {
-    failureGeneratorButtonsPerHour, failureGeneratorPerHour,
-    failureGeneratorAddPerHour, failureGeneratorTimer,
-} from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
+import { failureGeneratorButtonsPerHour, failureGeneratorPerHour, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
-import { failureGeneratorAddTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
+import { failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
@@ -157,6 +154,33 @@ export const basicData = () => {
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
 
+export const failureGeneratorsSettings = () => {
+    const [settingTakeOff, setSettingTakeOff] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TAKEOFF');
+    const [settingPerHour, setSettingPerHour] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR');
+    const [settingTimer, setSettingTimer] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMER');
+    const [settingSpeedAccel, setSettingSpeedAccel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDACCEL');
+    const [settingSpeedDecel, setSettingSpeedDecel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL');
+    const [settingAltitudeClimb, setSettingAltitudeClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB');
+    const [settingAltitudeDescent, setSettingAltitudeDescent] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
+
+    return {
+        settingTakeOff,
+        setSettingTakeOff,
+        settingPerHour,
+        setSettingPerHour,
+        settingTimer,
+        setSettingTimer,
+        settingSpeedAccel,
+        setSettingSpeedAccel,
+        settingSpeedDecel,
+        setSettingSpeedDecel,
+        settingAltitudeClimb,
+        setSettingAltitudeClimb,
+        settingAltitudeDescent,
+        setSettingAltitudeDescent,
+    };
+};
+
 export const failureGeneratorNames: GeneratorOption[] = [
     { name: 'PerHour', alias: t('Failures.Generators.GenPerHour') },
     { name: 'TakeOff', alias: t('Failures.Generators.GenTakeOff') },
@@ -167,10 +191,16 @@ export const failureGeneratorNames: GeneratorOption[] = [
     { name: 'AltDescent', alias: t('Failures.Generators.GenAltDesc') },
 ];
 
-export const addGenerator = (chosenGen : string) => {
+export const failureGeneratorAdd = (failureGeneratorSetting : string, setFailureGeneratorSetting : (value: string) => void, additionalSetting : string) => {
+    const tempSettings : string = failureGeneratorSetting;
+    if (tempSettings.length > 0) setFailureGeneratorSetting(`${failureGeneratorSetting},${additionalSetting}`);
+    else setFailureGeneratorSetting(additionalSetting);
+};
+
+export const addGenerator = (chosenGen : string, settings : any) => {
     switch (chosenGen) {
-    case 'PerHour': return failureGeneratorAddPerHour;
-    case 'TakeOff': return failureGeneratorAddTakeOff;
+    case 'PerHour': return () => failureGeneratorAdd(settings.settingPerHour, settings.setSettingPerHour, '3,0.1');
+    case 'TakeOff': return () => failureGeneratorAdd(settings.settingTakeOff, settings.setSettingTakeOff, '2,1,0.33,0.33,30,95,140,40');
     default: return () => {};
     }
 };

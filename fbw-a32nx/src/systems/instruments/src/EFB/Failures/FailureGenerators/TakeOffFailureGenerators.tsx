@@ -7,14 +7,6 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
 const uniqueGenPrefix = 'G';
 
-export const failureGeneratorAddTakeOff = () => {
-    error here const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const tempSettings : string = failureGeneratorSetting;
-    const additionalSetting = '2,1,0.33,0.33,30,95,140,40';
-    if (tempSettings.length > 0) setFailureGeneratorSetting(`${failureGeneratorSetting},${additionalSetting}`);
-    else setFailureGeneratorSetting(additionalSetting);
-};
-
 export const failureGeneratorButtonsPerHour = () => {
     const [failureGeneratorSetting] = usePersistentProperty(settingName, '');
     const nbGeneratorPerHour = Math.floor(failureGeneratorSetting.split.length / numberOfSettingsPerGenerator);

@@ -6,14 +6,6 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'E';
 
-export const failureGeneratorAddPerHour = () => {
-    error here const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '');
-    const tempSettings : string = failureGeneratorSetting;
-    const additionalSetting = '3,0.1';
-    if (tempSettings.length > 0) setFailureGeneratorSetting(`${failureGeneratorSetting},${additionalSetting}`);
-    else setFailureGeneratorSetting(additionalSetting);
-};
-
 export const failureGeneratorButtonsPerHour = () => {
     const [failureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '');
     const nbGeneratorPerHour = Math.floor(failureGeneratorSetting.split.length / numberOfSettingsPerGenerator);

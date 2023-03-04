@@ -4,7 +4,7 @@ import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
-import { addGenerator, failureGeneratorNames, generatorsButtonList } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { addGenerator, failureGeneratorNames, failureGeneratorsSettings, generatorsButtonList } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -46,6 +46,7 @@ export const FailuresHome = () => {
 
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
+    const settings = failureGeneratorsSettings();
     return (
         <>
             <div className="flex justify-between py-2 space-x-4">
@@ -64,7 +65,7 @@ export const FailureGeneratorsUI = () => {
                     maxHeight={32}
                 />
                 <button
-                    onClick={addGenerator(chosenGen)}
+                    onClick={addGenerator(chosenGen, settings)}
                     type="button"
                     className="flex py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
                 >
