@@ -47,6 +47,7 @@ export const FailuresHome = () => {
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
     const settings = failureGeneratorsSettings();
+    console.info(`that many buttons must appear : ${generatorsButtonList(settings).length}`);
     return (
         <>
             <div className="flex justify-between py-2 space-x-4">
@@ -73,7 +74,7 @@ export const FailureGeneratorsUI = () => {
                 </button>
             </div>
             <ScrollableContainer height={48}>
-                {generatorsButtonList()}
+                {generatorsButtonList(settings)}
             </ScrollableContainer>
         </>
     );

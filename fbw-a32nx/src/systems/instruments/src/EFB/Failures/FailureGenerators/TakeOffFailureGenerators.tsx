@@ -7,22 +7,23 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
 const uniqueGenPrefix = 'G';
 
-export const failureGeneratorButtonsPerHour = () => {
-    const [failureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const nbGeneratorPerHour = Math.floor(failureGeneratorSetting.split.length / numberOfSettingsPerGenerator);
-    let htmlReturn = '';
-    for (let i = 0; i < nbGeneratorPerHour; i++) {
-        htmlReturn += (
-            <button
-                type="button"
-                className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-            >
-                {`${uniqueGenPrefix}${i.toString()}`}
-            </button>
-        );
+export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
+    const htmlReturn : JSX.Element[] = [];
+    const nbGenerator = Math.floor(generatorSettings.settingTakeOff.length / numberOfSettingsPerGenerator);
+    for (let i = 0; i < nbGenerator; i++) {
+        htmlReturn.push(failureGeneratorButtonTakeOff(i));
     }
     return htmlReturn;
 };
+
+const failureGeneratorButtonTakeOff : (genID : number) => JSX.Element = (genID : number) => (
+    <button
+        type="button"
+        className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+    >
+        {`${uniqueGenPrefix}${genID.toString()}`}
+    </button>
+);
 
 // keep this template for new failureGenerators
 export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {

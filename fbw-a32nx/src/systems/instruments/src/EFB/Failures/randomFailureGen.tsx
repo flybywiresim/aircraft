@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
-import { failureGeneratorButtonsPerHour, failureGeneratorPerHour, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimeBasedFailureGenerators';
+import { FailureGeneratorButtonsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
-import { failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
+import { FailureGeneratorButtonsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
+import { FailureGeneratorButtonsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -14,68 +14,6 @@ export const failureGeneratorCommonFunction = () => {
     const { changingFailures, activeFailures, allFailures, activate } = useFailuresOrchestrator();
     const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size, [changingFailures, activeFailures]);
     return { maxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
-};
-
-// keep this template for new failureGenerators
-export const failureGeneratorTEMPLATE = (generatorFailuresGetters : Map<number, string>) => {
-    // FAILURE GENERATOR DESCRIPTION
-    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
-    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
-    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TEMPLATE', '2,0,2,1');
-    const [failureGeneratorArmedTEMPLATE, setFailureGeneratorArmedTEMPLATE] = useState<boolean[]>([false, false]);
-    const settingsTEMPLATE : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
-    const numberOfSettingsPerGenerator = 1;
-    const { failureFlightPhase } = basicData();
-    const nbGeneratorTEMPLATE = useMemo(() => Math.floor(settingsTEMPLATE.length / numberOfSettingsPerGenerator), [settingsTEMPLATE]);
-    const uniqueGenPrefix = 'G';
-
-    useEffect(() => {
-        // FAILURETYPE failures
-        if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTEMPLATE);
-            const tempSettings : number[] = Array.from(settingsTEMPLATE);
-            let change = false;
-            for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
-                const failureConditionPLACEHOLDER = settingsTEMPLATE[i * numberOfSettingsPerGenerator + 1] >= 1; // CONDITIONS HERE
-                if (tempFailureGeneratorArmed[i] && failureConditionPLACEHOLDER) {
-                    activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                        activate, activeFailures, uniqueGenPrefix + i.toString());
-                    console.info('TEMPLATE failure triggered');
-                    tempFailureGeneratorArmed[i] = false;
-                    change = true;
-                    if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
-                }
-            }
-            if (change) {
-                setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
-                setFailureGeneratorSetting(flatten(tempSettings));
-            }
-        }
-    }, [absoluteTime5s]);
-
-    useEffect(() => {
-        // failureSettings once per start of takeoff
-        const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedTEMPLATE);
-        let changed = false;
-        for (let i = 0; i < nbGeneratorTEMPLATE; i++) {
-            if (!tempFailureGeneratorArmed[i]
-                && (settingsTEMPLATE[i * numberOfSettingsPerGenerator + 0] === 1
-                || (settingsTEMPLATE[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
-                || settingsTEMPLATE[i * numberOfSettingsPerGenerator + 0] === 3)) {
-                // SPECIFIC INIT HERE PER GENERATOR
-                console.info('new failure setting');
-                tempFailureGeneratorArmed[i] = true;
-                changed = true;
-            }
-        }
-        if (changed) setFailureGeneratorArmedTEMPLATE(tempFailureGeneratorArmed);
-    }, [absoluteTime500ms]); // specific update conditions
-
-    useEffect(() => {
-        // remove for release
-        setFailureGeneratorArmedTEMPLATE([false, false]);
-    }, []);
 };
 
 export const flatten = (settings : number[]) => {
@@ -210,18 +148,19 @@ interface GeneratorOption {
     alias: string;
 }
 
-export const failureGeneratorButtons: (()=>{})[] = [
-    failureGeneratorButtonsPerHour,
+export const failureGeneratorButtons: ((generatorSettings: any) => JSX.Element[])[] = [
+    FailureGeneratorButtonsPerHour,
+    FailureGeneratorButtonsTimer,
+    FailureGeneratorButtonsTakeOff,
 ];
 
-export const generatorsButtonList = () => {
-    let htmlReturn = '';
-
-    failureGeneratorButtons.forEach((element : () => string) => {
-        htmlReturn += element();
-    });
-
-    return htmlReturn;
+export const generatorsButtonList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
+    const temp : JSX.Element[] = [];
+    for (let i = 0; i < failureGeneratorButtons.length; i++) {
+        console.info(`concat : ${failureGeneratorButtons[i](generatorSettings).length}`);
+        temp.concat(failureGeneratorButtons[i](generatorSettings));
+    }
+    return temp;
 };
 
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
