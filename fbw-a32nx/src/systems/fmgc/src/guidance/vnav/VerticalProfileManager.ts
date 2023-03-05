@@ -236,25 +236,28 @@ export class VerticalProfileManager {
 
         const offset = this.computeTacticalToGuidanceProfileOffset();
         const [index, interceptDistance] = ProfileInterceptCalculator.calculateIntercept(ndProfile.checkpoints, this.descentProfile.checkpoints, offset);
-
-        if (index < 0) {
-            return;
-        }
+        const hasIntercept = index >= 0;
 
         const isDesActive = fcuVerticalMode === VerticalMode.DES;
-        const isDesArmed = isArmed(fcuArmedVerticalMode, ArmedVerticalMode.DES);
 
-        const interceptReason = isDesActive ? VerticalCheckpointReason.InterceptDescentProfileManaged : VerticalCheckpointReason.InterceptDescentProfileSelected;
-        // Insert intercept point
-        const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(interceptDistance, { reason: interceptReason });
+        // If we have an intercept, add the intercept checkpoint
+        if (hasIntercept) {
+            const interceptReason = isDesActive ? VerticalCheckpointReason.InterceptDescentProfileManaged : VerticalCheckpointReason.InterceptDescentProfileSelected;
+            const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(interceptDistance, { reason: interceptReason });
 
-        const isAircraftTooCloseToIntercept = Math.abs(presentPosition.alt - interceptCheckpoint.altitude) < 100;
-        if (isAircraftTooCloseToIntercept) {
-            // If we're close to the intercept, we don't want to draw the intercept point, so use a reason that does not create a PWP
-            interceptCheckpoint.reason = VerticalCheckpointReason.AtmosphericConditions;
+            const isAircraftTooCloseToIntercept = Math.abs(presentPosition.alt - interceptCheckpoint.altitude) < 100;
+            if (isAircraftTooCloseToIntercept) {
+                // If we're close to the intercept, we don't want to draw the intercept point, so use a reason that does not create a PWP
+                interceptCheckpoint.reason = VerticalCheckpointReason.AtmosphericConditions;
+            }
         }
 
-        if (isDesActive || isDesArmed) {
+        // In DES mode, we assume that we continue on the managed profile after the intercept, so we splice away the tactical profile and append the managed one after the intercept
+        // In a selected mode, we continue until level off and only then continue with the managed profile.
+        const isDesArmed = isArmed(fcuArmedVerticalMode, ArmedVerticalMode.DES);
+        const shouldContinueWithManagedProfileAfterIntercept = hasIntercept && (isDesActive || isDesArmed);
+
+        if (shouldContinueWithManagedProfileAfterIntercept) {
             ndProfile.checkpoints.splice(
                 index + 2, // Add two so we don't splice the intercept checkpoint away after adding it
                 Infinity,
@@ -263,8 +266,16 @@ export class VerticalProfileManager {
                 ).filter(({ distanceFromStart }) => distanceFromStart > interceptDistance),
             );
 
+            // If we appended the managed profile directly after the intercept, we will have spliced away the level off arrow, so we have to add it again
+            // At this point, we have to add the level off arrow again, because we spliced the previous one away as it lies after the intercept
             const levelOffDistance = ndProfile.interpolateDistanceAtAltitudeBackwards(fcuAltitude, true);
             ndProfile.addInterpolatedCheckpoint(levelOffDistance, { reason: VerticalCheckpointReason.CrossingFcuAltitudeDescent });
+        } else {
+            ndProfile.checkpoints.push(
+                ...this.descentProfile.checkpoints.map( // Use AtmosphericConditions as reason to make sure we don't get the DECEL point from the guidance profile to show up on the ND
+                    (checkpoint) => ({ ...checkpoint, reason: VerticalCheckpointReason.AtmosphericConditions, distanceFromStart: checkpoint.distanceFromStart + offset }),
+                ).filter(({ distanceFromStart }) => distanceFromStart > ndProfile.lastCheckpoint.distanceFromStart),
+            );
         }
     }
 
@@ -324,7 +335,7 @@ export class VerticalProfileManager {
             const previousCheckpoint = ndProfile.checkpoints[i - 1];
 
             if (checkpoint.reason === VerticalCheckpointReason.CrossingFcuAltitudeDescent) {
-                levelOffDistance = previousCheckpoint.distanceFromStart;
+                levelOffDistance = checkpoint.distanceFromStart;
             }
 
             if (checkpoint.reason === VerticalCheckpointReason.ContinueDescentArmed) {
