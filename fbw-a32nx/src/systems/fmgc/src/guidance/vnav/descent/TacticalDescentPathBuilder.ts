@@ -112,6 +112,14 @@ export class TacticalDescentPathBuilder {
             isPathValid = this.checkForViolations(phaseTable, profile, altConstraintsToUse, speedProfile, forcedDecelerations);
         }
 
+        // It's possible that the last phase (which is the one that the phase table is initialized with) is not executed because we've already got below
+        // the final altitude through a different segment. In this case, we need to make sure we still get the level off arrow.
+        // One scenario where this happens is if the final altitude is the speed limit alt (e.g 10000). In this case, we insert a deceleration segment, which might end just
+        // slightly below the speed limit alt (= final alt), and the phase table will not execute the last phase because we're already below the final alt.
+        if (sequence.lastCheckpoint.reason === VerticalCheckpointReason.AtmosphericConditions) {
+            sequence.lastCheckpoint.reason = VerticalCheckpointReason.CrossingFcuAltitudeDescent;
+        }
+
         if (sequence != null) {
             profile.checkpoints.push(...sequence.get());
         }
