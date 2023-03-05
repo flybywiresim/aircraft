@@ -9,20 +9,34 @@ const uniqueGenPrefix = 'G';
 
 export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const nbGenerator = Math.floor(generatorSettings.settingTakeOff.length / numberOfSettingsPerGenerator);
+    const setting = generatorSettings.settingTakeOff;
+    const nbGenerator = Math.floor(setting.split(',').length / numberOfSettingsPerGenerator);
     for (let i = 0; i < nbGenerator; i++) {
-        htmlReturn.push(failureGeneratorButtonTakeOff(i));
+        htmlReturn.push(failureGeneratorButtonTakeOff(i, generatorSettings));
     }
     return htmlReturn;
 };
 
-const failureGeneratorButtonTakeOff : (genID : number) => JSX.Element = (genID : number) => (
-    <button
-        type="button"
-        className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-    >
-        {`${uniqueGenPrefix}${genID.toString()}`}
-    </button>
+const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
+    const settings : number[] = generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+    generatorSettings.setSettingTakeOff(flatten(settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator)));
+    // arming
+    // specific tunings
+};
+
+const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => (
+    <div className="flex-1 py-2 px-2 my-2 text-center rounded-md mx-x bg-theme-accent blue">
+        <h2>
+            {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
+        </h2>
+        <button
+            type="button"
+            onClick={() => eraseGenerator(genID, generatorSettings)}
+            className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+        >
+            <h2>X</h2>
+        </button>
+    </div>
 );
 
 // keep this template for new failureGenerators

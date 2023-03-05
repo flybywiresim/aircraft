@@ -155,10 +155,9 @@ export const failureGeneratorButtons: ((generatorSettings: any) => JSX.Element[]
 ];
 
 export const generatorsButtonList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
-    const temp : JSX.Element[] = [];
+    let temp : JSX.Element[] = [];
     for (let i = 0; i < failureGeneratorButtons.length; i++) {
-        console.info(`concat : ${failureGeneratorButtons[i](generatorSettings).length}`);
-        temp.concat(failureGeneratorButtons[i](generatorSettings));
+        temp = temp.concat(failureGeneratorButtons[i](generatorSettings));
     }
     return temp;
 };

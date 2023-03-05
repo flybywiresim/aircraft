@@ -8,7 +8,7 @@ const uniqueGenPrefix = 'E';
 
 export const FailureGeneratorButtonsPerHour : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const nbGenerator = Math.floor(generatorSettings.settingPerHour.length / numberOfSettingsPerGenerator);
+    const nbGenerator = Math.floor(generatorSettings.settingPerHour.split(',').length / numberOfSettingsPerGenerator);
     for (let i = 0; i < nbGenerator; i++) {
         htmlReturn.push(failureGeneratorButtonPerHour(i));
     }
