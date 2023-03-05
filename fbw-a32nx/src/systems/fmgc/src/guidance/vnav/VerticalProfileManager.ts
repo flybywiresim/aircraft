@@ -215,9 +215,9 @@ export class VerticalProfileManager {
 
             this.tacticalDescentPathBuilder.buildTacticalDescentPathToAltitude(ndProfile, descentStrategy, speedProfile, descentWinds, fcuAltitude, forcedDecelerations);
 
-            this.interceptNdWithGuidanceProfile();
-            this.insertLevelSegmentPwp();
-            this.insertNextDescentPwp();
+            this.interceptNdWithGuidanceProfile(ndProfile);
+            this.insertLevelSegmentPwp(ndProfile);
+            this.insertNextDescentPwp(ndProfile);
         }
 
         ndProfile.finalizeProfile();
@@ -227,15 +227,15 @@ export class VerticalProfileManager {
     /**
      * Computes an intercept point between the profile that's predicted in the currently active modes and the precomputed descent profile.
      */
-    private interceptNdWithGuidanceProfile(): void {
+    private interceptNdWithGuidanceProfile(ndProfile: BaseGeometryProfile): void {
         const { flightPhase, fcuVerticalMode, fcuArmedVerticalMode, presentPosition, fcuAltitude } = this.observer.get();
-        if (!this.descentProfile || !this.ndProfile
+        if (!this.descentProfile || !ndProfile
             || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
             return;
         }
 
         const offset = this.computeTacticalToGuidanceProfileOffset();
-        const [index, interceptDistance] = ProfileInterceptCalculator.calculateIntercept(this.ndProfile.checkpoints, this.descentProfile.checkpoints, offset);
+        const [index, interceptDistance] = ProfileInterceptCalculator.calculateIntercept(ndProfile.checkpoints, this.descentProfile.checkpoints, offset);
 
         if (index < 0) {
             return;
@@ -246,7 +246,7 @@ export class VerticalProfileManager {
 
         const interceptReason = isDesActive ? VerticalCheckpointReason.InterceptDescentProfileManaged : VerticalCheckpointReason.InterceptDescentProfileSelected;
         // Insert intercept point
-        const interceptCheckpoint = this.ndProfile.addInterpolatedCheckpoint(interceptDistance, { reason: interceptReason });
+        const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(interceptDistance, { reason: interceptReason });
 
         const isAircraftTooCloseToIntercept = Math.abs(presentPosition.alt - interceptCheckpoint.altitude) < 100;
         if (isAircraftTooCloseToIntercept) {
@@ -255,25 +255,25 @@ export class VerticalProfileManager {
         }
 
         if (isDesActive || isDesArmed) {
-            this.ndProfile.checkpoints.splice(
-                index,
+            ndProfile.checkpoints.splice(
+                index + 2, // Add two so we don't splice the intercept checkpoint away after adding it
                 Infinity,
-                ...this.descentProfile.checkpoints.map(
+                ...this.descentProfile.checkpoints.map( // Use AtmosphericConditions as reason to make sure we don't get the DECEL point from the guidance profile to show up on the ND
                     (checkpoint) => ({ ...checkpoint, reason: VerticalCheckpointReason.AtmosphericConditions, distanceFromStart: checkpoint.distanceFromStart + offset }),
-                ),
+                ).filter(({ distanceFromStart }) => distanceFromStart > interceptDistance),
             );
 
-            const levelOffDistance = this.ndProfile.interpolateDistanceAtAltitudeBackwards(fcuAltitude, true);
-            this.ndProfile.addInterpolatedCheckpoint(levelOffDistance, { reason: VerticalCheckpointReason.CrossingFcuAltitudeDescent });
+            const levelOffDistance = ndProfile.interpolateDistanceAtAltitudeBackwards(fcuAltitude, true);
+            ndProfile.addInterpolatedCheckpoint(levelOffDistance, { reason: VerticalCheckpointReason.CrossingFcuAltitudeDescent });
         }
     }
 
     /**
      * Find level segments in ND profile and add magenta arrows to them.
      */
-    private insertLevelSegmentPwp(): void {
+    private insertLevelSegmentPwp(ndProfile: BaseGeometryProfile): void {
         const { flightPhase, fcuArmedVerticalMode, presentPosition } = this.observer.get();
-        if (!this.descentProfile || !this.ndProfile
+        if (!this.descentProfile || !ndProfile
             || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
             return;
         }
@@ -284,8 +284,8 @@ export class VerticalProfileManager {
 
         let constraintAlt: Feet = -Infinity;
         // Find next descent segment
-        for (let i = 1; i < this.ndProfile.checkpoints.length; i++) {
-            const checkpoint = this.ndProfile.checkpoints[i];
+        for (let i = 1; i < ndProfile.checkpoints.length; i++) {
+            const checkpoint = ndProfile.checkpoints[i];
             if (checkpoint.reason === VerticalCheckpointReason.LevelOffForDescentConstraint) {
                 // This removes the magenta arrow if we're closer than 100 ft. (I have a reference for that)
                 if (currentAlt - checkpoint.altitude < 100) {
@@ -295,10 +295,10 @@ export class VerticalProfileManager {
                 }
             }
 
-            const previousCheckpoint = this.ndProfile.checkpoints[i - 1];
+            const previousCheckpoint = ndProfile.checkpoints[i - 1];
             // Either in level flight and DES armed or in descent and checkpoint under cstr alt found
             if (isInLevelFlight && isDescentArmed && currentAlt - checkpoint.altitude > 100 || constraintAlt - checkpoint.altitude > 100) {
-                this.ndProfile.addInterpolatedCheckpoint(
+                ndProfile.addInterpolatedCheckpoint(
                     previousCheckpoint.distanceFromStart, { reason: VerticalCheckpointReason.ContinueDescentArmed },
                 );
 
@@ -310,18 +310,18 @@ export class VerticalProfileManager {
     /**
      * Insert a T/D checkpoint into the ND profile where we want to start the descent from FCU altitude
      */
-    private insertNextDescentPwp(): void {
+    private insertNextDescentPwp(ndProfile: BaseGeometryProfile): void {
         const { flightPhase, fcuAltitude } = this.observer.get();
-        if (!this.ndProfile || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
+        if (!ndProfile || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
             return;
         }
 
         let levelOffDistance = 0;
 
         // Find next descent segment
-        for (let i = 1; i < this.ndProfile.checkpoints.length; i++) {
-            const checkpoint = this.ndProfile.checkpoints[i];
-            const previousCheckpoint = this.ndProfile.checkpoints[i - 1];
+        for (let i = 1; i < ndProfile.checkpoints.length; i++) {
+            const checkpoint = ndProfile.checkpoints[i];
+            const previousCheckpoint = ndProfile.checkpoints[i - 1];
 
             if (checkpoint.reason === VerticalCheckpointReason.CrossingFcuAltitudeDescent) {
                 levelOffDistance = previousCheckpoint.distanceFromStart;
@@ -338,7 +338,7 @@ export class VerticalProfileManager {
                 continue;
             }
 
-            this.ndProfile.addInterpolatedCheckpoint(
+            ndProfile.addInterpolatedCheckpoint(
                 Math.max(levelOffDistance, previousCheckpoint.distanceFromStart), { reason: VerticalCheckpointReason.ContinueDescent },
             );
 
