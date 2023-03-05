@@ -44,7 +44,7 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
                 if (tempFailureGeneratorArmed[i] && tempSetting > 0) {
                     const chancePerSecond = tempSetting / 3600;
                     const rollDice = Math.random();
-                    console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
+                    // console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
                     if (rollDice < chancePerSecond * 5) {
                         console.info('PerHour Failure triggered');
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),

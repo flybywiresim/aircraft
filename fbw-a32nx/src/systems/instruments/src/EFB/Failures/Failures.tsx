@@ -54,9 +54,8 @@ export const FailureGeneratorsUI = () => {
                     {t('Failures.Generators.Select')}
                 </h2>
                 <SelectInput
-                    className="flex py-2 px-2 w-72"
+                    className="w-72 h-24"
                     value={chosenGen}
-                    defaultValue={t('Failures.Generators.DefaultSelect')}
                     onChange={(value) => setChosenGen(value as string)}
                     options={failureGeneratorNames.map((option) => ({
                         value: option.name,

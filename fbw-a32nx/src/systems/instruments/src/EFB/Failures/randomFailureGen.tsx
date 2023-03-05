@@ -130,7 +130,11 @@ export const failureGeneratorNames: GeneratorOption[] = [
 ];
 
 export const failureGeneratorAdd = (failureGeneratorSetting : string, setFailureGeneratorSetting : (value: string) => void, additionalSetting : string) => {
-    const tempSettings : string = failureGeneratorSetting;
+    let tempSettings : string = failureGeneratorSetting;
+    if (tempSettings === undefined) {
+        console.warn('Undefined generator setting, resetting');
+        tempSettings = '';
+    }
     if (tempSettings.length > 0) setFailureGeneratorSetting(`${failureGeneratorSetting},${additionalSetting}`);
     else setFailureGeneratorSetting(additionalSetting);
 };

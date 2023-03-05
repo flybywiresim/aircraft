@@ -10,29 +10,67 @@ const uniqueGenPrefix = 'G';
 export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
     const setting = generatorSettings.settingTakeOff;
-    const nbGenerator = Math.floor(setting.split(',').length / numberOfSettingsPerGenerator);
-    for (let i = 0; i < nbGenerator; i++) {
-        htmlReturn.push(failureGeneratorButtonTakeOff(i, generatorSettings));
+    if (setting) {
+        const nbGenerator = Math.floor(setting.split(',').length / numberOfSettingsPerGenerator);
+        for (let i = 0; i < nbGenerator; i++) {
+            htmlReturn.push(failureGeneratorButtonTakeOff(i, generatorSettings));
+        }
     }
     return htmlReturn;
 };
 
 const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
     const settings : number[] = generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
-    generatorSettings.setSettingTakeOff(flatten(settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator)));
+    settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+    generatorSettings.setSettingTakeOff(flatten(settings));
     // arming
     // specific tunings
 };
 
 const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => (
-    <div className="flex-1 py-2 px-2 my-2 text-center rounded-md mx-x bg-theme-accent blue">
-        <h2>
+    <div className="flex relative py-2 px-2 my-2 text-center rounded-md mx-x bg-theme-accent grey">
+        <h2 className="text-left">
             {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
         </h2>
+        <div className="text-left">
+            {`Chance per take-off: ${
+                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 1] * 100
+            }%`}
+        </div>
+        <div className="text-left">
+            {`Low Speed chance: ${
+                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 2] * 100
+            }%`}
+        </div>
+        <div className="text-left">
+            {`Medium Speed chance: ${
+                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 3] * 100
+            }%`}
+        </div>
+        <div className="text-left">
+            {`Minimum speed: ${
+                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 4]
+            } knots`}
+        </div>
+        <div className="text-left">
+            {`Transition low-medium: ${
+                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 5]
+            } knots`}
+        </div>
+        <div className="text-left">
+            {`Max speed: ${
+                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 6]
+            } knots`}
+        </div>
+        <div className="text-left">
+            {`Max altitude above runway: ${
+                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 7] * 100
+            } feet`}
+        </div>
         <button
             type="button"
             onClick={() => eraseGenerator(genID, generatorSettings)}
-            className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+            className="absolute right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
         >
             <h2>X</h2>
         </button>
