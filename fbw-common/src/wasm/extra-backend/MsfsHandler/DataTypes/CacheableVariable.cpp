@@ -6,7 +6,7 @@
 #include "CacheableVariable.h"
 #include "ManagedDataObjectBase.h"
 #include "logging.h"
-#include "math_utils.h"
+#include "math_utils.hpp"
 
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {

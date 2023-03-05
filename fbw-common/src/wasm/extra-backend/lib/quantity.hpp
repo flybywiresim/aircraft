@@ -6,7 +6,7 @@
 #include <cmath>
 #include <ratio>
 
-#include "math_utils.h"
+#include "math_utils.hpp"
 
 /**
  * @brief Defines SI unit based quantities to validate SI units during compile time

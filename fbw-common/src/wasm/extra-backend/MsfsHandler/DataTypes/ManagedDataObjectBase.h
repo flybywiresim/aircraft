@@ -9,8 +9,6 @@
 #include <sstream>
 #include <string>
 #include <utility>
-#include "logging.h"
-#include "math_utils.h"
 
 #include <MSFS/Legacy/gauges.h>
 
@@ -18,6 +16,8 @@
 #include "DataObjectBase.h"
 #include "IDGenerator.h"
 #include "Units.h"
+#include "logging.h"
+#include "math_utils.hpp"
 
 // Used for callback registration to allow removal of callbacks
 typedef uint64_t CallbackID;

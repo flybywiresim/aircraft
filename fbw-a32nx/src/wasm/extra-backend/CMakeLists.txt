@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
 # this is set in the compiler flags
-# set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 20)
 
 # Clean the compiler flags as they interfere with the current way of setting them
 # Needs some additional work to use the standard cmake way of setting them

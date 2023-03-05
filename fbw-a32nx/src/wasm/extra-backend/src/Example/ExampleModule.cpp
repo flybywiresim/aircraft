@@ -12,7 +12,7 @@
 #include "NamedVariable.h"
 #include "logging.h"
 #include "longtext.h"
-#include "math_utils.h"
+#include "math_utils.hpp"
 
 bool ExampleModule::initialize() {
   dataManager = &msfsHandler.getDataManager();
