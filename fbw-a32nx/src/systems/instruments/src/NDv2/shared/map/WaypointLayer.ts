@@ -1,0 +1,179 @@
+import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { MathUtils } from '@shared/MathUtils';
+import { MapLayer } from './MapLayer';
+import { MapParameters } from '../../../ND/utils/MapParameters';
+import { PaintUtils } from './PaintUtils';
+import { CanvasMap } from './CanvasMap';
+
+const VOR_DME_PATH = new Path2D('M -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0 M 0,-15 L 0,-7 M 0,15 L 0,7 M -15,0 L -7,0 M 15,0 L 7,0');
+const DME_PATH = new Path2D('M -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0');
+
+export class WaypointLayer implements MapLayer<NdSymbol> {
+    data: NdSymbol[] = [];
+
+    constructor(private readonly canvasMap: CanvasMap) {
+    }
+
+    paintShadowLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
+        for (const symbol of this.data) {
+            const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
+            const rx = x + mapWidth / 2;
+            const ry = y + mapHeight / 2;
+
+            if (symbol.type & NdSymbolTypeFlags.FlightPlan) {
+                this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
+            } else if (symbol.type & NdSymbolTypeFlags.Airport || symbol.type & NdSymbolTypeFlags.Runway) {
+                this.paintAirport(false, context, rx, ry, symbol);
+            } else if (symbol.type & (NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme)) {
+                this.paintNavaid(false, context, rx, ry, symbol);
+            } else {
+                this.paintWaypoint(false, context, rx, ry, symbol);
+            }
+        }
+    }
+
+    paintColorLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
+        for (const symbol of this.data) {
+            const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
+            const rx = x + mapWidth / 2;
+            const ry = y + mapHeight / 2;
+
+            if (symbol.type & NdSymbolTypeFlags.FlightPlan) {
+                this.paintFlightPlanWaypoint(true, context, rx, ry, symbol);
+            } else if (symbol.type & NdSymbolTypeFlags.Airport || symbol.type & NdSymbolTypeFlags.Runway) {
+                this.paintAirport(true, context, rx, ry, symbol);
+            } else if (symbol.type & (NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme)) {
+                this.paintNavaid(true, context, rx, ry, symbol);
+            } else {
+                this.paintWaypoint(true, context, rx, ry, symbol);
+            }
+        }
+    }
+
+    private paintAirport(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+        const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#fff' : '#ff94ff';
+
+        this.paintAirportShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
+
+        context.font = '21px Ecam';
+
+        PaintUtils.paintText(isColorLayer, context, x + 13, y + 18, symbol.ident, mainColor);
+    }
+
+    private paintNavaid(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+        let mainColor;
+        if (isColorLayer) {
+            if (symbol.type & NdSymbolTypeFlags.Tuned) {
+                mainColor = '#0ff';
+            } else {
+                mainColor = '#ff94ff';
+            }
+        } else {
+            mainColor = '#000';
+        }
+
+        if (symbol.type & NdSymbolTypeFlags.VorDme) {
+            this.paintVorDmeShape(context, x, y, mainColor, isColorLayer ? 1.75 : 3.25);
+        } else if (symbol.type & NdSymbolTypeFlags.Vor) {
+            this.paintVorShape(context, x, y, mainColor, isColorLayer ? 1.75 : 3.25);
+        } else if (symbol.type & NdSymbolTypeFlags.Dme) {
+            this.paintDmeShape(context, x, y, mainColor, isColorLayer ? 1.75 : 3.25);
+        }
+
+        context.font = '21px Ecam';
+
+        PaintUtils.paintText(isColorLayer, context, x + 13, y + 17, symbol.ident, mainColor);
+    }
+
+    private paintWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+        this.paintWaypointShape(context, x, y, isColorLayer ? '#ff94ff' : '#000', isColorLayer ? 1.75 : 3.25);
+
+        const px = this.canvasMap.pointerX;
+        const py = this.canvasMap.pointerY;
+
+        const TEXT_LENGTH = Math.max(110, symbol.ident.length * 13.5);
+        if (px > x - 7 && px < x + 13 + TEXT_LENGTH && py > y - 10 && py < y + 22) {
+            context.strokeStyle = '#0ff';
+            context.lineWidth = 1.75;
+            context.strokeRect(x - 7, y - 10, 10 + 13 + TEXT_LENGTH, 29);
+        }
+
+        context.font = '21px Ecam';
+
+        PaintUtils.paintText(isColorLayer, context, x + 13, y + 17, symbol.ident, '#ff94ff');
+    }
+
+    private paintFlightPlanWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+        const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
+
+        this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
+
+        context.font = '21px Ecam';
+
+        PaintUtils.paintText(isColorLayer, context, x + 13, y + 17, symbol.ident, mainColor);
+    }
+
+    private paintAirportShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {
+        context.strokeStyle = color;
+        context.lineWidth = lineWidth;
+
+        context.translate(x, y);
+        context.beginPath();
+        context.moveTo(-13, 0);
+        context.lineTo(13, 0);
+        context.moveTo(0, -13);
+        context.lineTo(0, 13);
+        context.rotate(45 * MathUtils.DEGREES_TO_RADIANS);
+        context.moveTo(0, -13);
+        context.lineTo(0, 13);
+        context.rotate(90 * MathUtils.DEGREES_TO_RADIANS);
+        context.moveTo(0, -13);
+        context.lineTo(0, 13);
+        context.closePath();
+        context.stroke();
+        context.resetTransform();
+    }
+
+    private paintVorDmeShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {
+        context.strokeStyle = color;
+        context.lineWidth = lineWidth;
+
+        context.translate(x, y);
+        context.stroke(VOR_DME_PATH);
+        context.resetTransform();
+    }
+
+    private paintVorShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {
+        context.strokeStyle = color;
+        context.lineWidth = lineWidth;
+
+        context.translate(x, y);
+        context.beginPath();
+        context.moveTo(0, -15);
+        context.lineTo(0, 15);
+        context.moveTo(-15, 0);
+        context.lineTo(0, 0);
+        context.closePath();
+        context.stroke();
+        context.resetTransform();
+    }
+
+    private paintDmeShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {
+        context.strokeStyle = color;
+        context.lineWidth = lineWidth;
+
+        context.translate(x, y);
+        context.stroke(DME_PATH);
+        context.resetTransform();
+    }
+
+    private paintWaypointShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {
+        context.strokeStyle = color;
+        context.lineWidth = lineWidth;
+
+        context.translate(x, y);
+        context.rotate(45 * MathUtils.DEGREES_TO_RADIANS);
+        context.strokeRect(-4.5, -4.5, 9, 9);
+        context.resetTransform();
+    }
+}
