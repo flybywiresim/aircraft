@@ -395,10 +395,10 @@ class CDUPerformancePage {
         let expeditePredToTimeCell = "----";
 
         if (vnavDriver) {
-            [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(vnavDriver.currentMcduGeometryProfile, altitudeToPredict, mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF);
+            [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(vnavDriver.mcduProfile, altitudeToPredict, mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF);
 
             if (isPhaseActive) {
-                const expediteProfile = vnavDriver.computeVerticalProfileForExpediteClimb();
+                const expediteProfile = vnavDriver.expediteProfile;
                 [expeditePredToDistanceCell, expeditePredToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(expediteProfile, altitudeToPredict, mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF, true);
             }
         }
@@ -526,7 +526,9 @@ class CDUPerformancePage {
         const [toUtcLabel, toDistLabel] = isFlying ? ["UTC", "DIST"] : ["", ""];
         const [toReasonCell, toDistCell, toTimeCell] = isFlying ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu) : ["", "", ""];
         const desCabinRateCell = "{small}-350{end}";
-        const shouldShowStepAltsOption = mcdu.flightPhaseManager.phase <= FmgcFlightPhases.CRUISE && mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile.isReadyToDisplay;
+        const shouldShowStepAltsOption = mcdu.flightPhaseManager.phase <= FmgcFlightPhases.CRUISE
+            && mcdu.guidanceController.vnavDriver.mcduProfile
+            && mcdu.guidanceController.vnavDriver.mcduProfile.isReadyToDisplay;
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];

@@ -8,11 +8,11 @@ import { CruiseToDescentCoordinator } from '@fmgc/guidance/vnav/CruiseToDescentC
 import { McduSpeedProfile, ExpediteSpeedProfile, NdSpeedProfile, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { SelectedGeometryProfile } from '@fmgc/guidance/vnav/profile/SelectedGeometryProfile';
 import { TakeoffPathBuilder } from '@fmgc/guidance/vnav/takeoff/TakeoffPathBuilder';
-import { ClimbThrustClimbStrategy, FlightPathAngleStrategy, VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
+import { ClimbStrategy, ClimbThrustClimbStrategy, FlightPathAngleStrategy, VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { ConstraintReader } from '@fmgc/guidance/vnav/ConstraintReader';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { TacticalDescentPathBuilder } from '@fmgc/guidance/vnav/descent/TacticalDescentPathBuilder';
-import { DesModeStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
+import { DescentStrategy, DesModeStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ApproachPathBuilder } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
 import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
@@ -20,7 +20,6 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { Geometry } from '../Geometry';
 import {
     NavGeometryProfile,
     VerticalCheckpointForDeceleration,
@@ -73,17 +72,6 @@ export class VerticalProfileManager {
         this.fcuModes = new FcuModeObserver(observer);
     }
 
-    acceptMultipleLegGeometry(geometry: Geometry): void {
-        if (geometry.legs.size <= 0 || !this.observer.canComputeProfile()) {
-            return;
-        }
-
-        this.computeDescentPath();
-        this.computeTacticalMcduPath();
-        this.computeTacticalNdProfile();
-        this.computeVerticalProfileForExpediteClimb();
-    }
-
     // PROFILE COMPUTATIONS
 
     computeTacticalMcduPath(): void {
@@ -96,7 +84,7 @@ export class VerticalProfileManager {
         const cruiseWinds = new HeadwindProfile(this.windProfileFactory.getCruiseWinds(), this.headingProfile);
         const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
 
-        this.mcduProfile = new NavGeometryProfile(
+        const mcduProfile = new NavGeometryProfile(
             this.guidanceController,
             this.constraintReader,
             this.atmosphericConditions,
@@ -108,25 +96,29 @@ export class VerticalProfileManager {
             this.constraintReader.descentSpeedConstraints);
 
         if (flightPhase < FmgcFlightPhase.Climb) {
-            this.takeoffPathBuilder.buildTakeoffPath(this.mcduProfile);
+            this.takeoffPathBuilder.buildTakeoffPath(mcduProfile);
         } else {
-            this.mcduProfile.addPresentPositionCheckpoint(presentPosition, fuelOnBoard, speedProfile.getManagedMachTarget(), this.getVman(approachSpeed));
+            mcduProfile.addPresentPositionCheckpoint(presentPosition, fuelOnBoard, this.getManagedMachTarget(), this.getVman(approachSpeed));
         }
 
         if (flightPhase < FmgcFlightPhase.Cruise) {
-            this.climbPathBuilder.computeClimbPath(this.mcduProfile, managedClimbStrategy, speedProfile, climbWinds, cruiseAltitude);
+            this.climbPathBuilder.computeClimbPath(mcduProfile, managedClimbStrategy, speedProfile, climbWinds, cruiseAltitude);
         }
 
         if (this.aircraftToDescentProfileRelation.isValid
             && (flightPhase >= FmgcFlightPhase.Descent && flightPhase <= FmgcFlightPhase.Approach || this.aircraftToDescentProfileRelation.isPastTopOfDescent())
         ) {
             const offset = this.computeTacticalToGuidanceProfileOffset();
-
             const forcedDecelerations = this.getForcedDecelerationsFromDescentPath(offset);
-            this.tacticalDescentPathBuilder.buildMcduPredictionPath(this.mcduProfile, this.getDesModeStrategy(), speedProfile, descentWinds, 0, forcedDecelerations);
-        } else if (this.cruiseToDescentCoordinator.canCompute(this.mcduProfile)) {
-            this.cruiseToDescentCoordinator.buildCruiseAndDescentPath(this.mcduProfile, speedProfile, cruiseWinds, descentWinds, managedClimbStrategy, stepDescentStrategy);
+            const finalDistance = this.constraintReader.totalFlightPlanDistance;
+
+            this.tacticalDescentPathBuilder.buildMcduPredictionPath(mcduProfile, this.getDesModeStrategy(), speedProfile, descentWinds, finalDistance, forcedDecelerations);
+        } else if (this.cruiseToDescentCoordinator.canCompute(mcduProfile)) {
+            this.cruiseToDescentCoordinator.buildCruiseAndDescentPath(mcduProfile, speedProfile, cruiseWinds, descentWinds, managedClimbStrategy, stepDescentStrategy);
         }
+
+        this.mcduProfile = mcduProfile;
+        this.mcduProfile.finalizeProfile();
     }
 
     computeDescentPath(): void {
@@ -150,6 +142,11 @@ export class VerticalProfileManager {
 
         const sequence = this.approachPathBuilder.computeApproachPath(descentProfile, speedProfile, descentWinds, fuelEstimation, 0);
         this.managedDescentPathBuilder.computeManagedDescentPath(sequence, descentProfile, speedProfile, descentWinds, finalCruiseAltitude);
+
+        descentProfile.checkpoints.push(...sequence.get(true).reverse());
+
+        this.descentProfile = descentProfile;
+        this.descentProfile.finalizeProfile();
     }
 
     private computeVerticalProfileForExpediteClimb(): void {
@@ -181,7 +178,7 @@ export class VerticalProfileManager {
      * Build a path from the present position to the FCU altitude
      */
     computeTacticalNdProfile(): void {
-        const { fcuAltitude, cleanSpeed } = this.observer.get();
+        const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
 
         const ndProfile = this.fcuModes.isLatAutoControlActive()
             ? new NavGeometryProfile(this.guidanceController, this.constraintReader, this.atmosphericConditions)
@@ -200,8 +197,12 @@ export class VerticalProfileManager {
             );
         }
 
+        // TODO: Handle Takeoff and Go arounds
+
+        ndProfile.addPresentPositionCheckpoint(presentPosition, fuelOnBoard, this.getManagedMachTarget(), this.getVman(approachSpeed));
+
         // Build path to FCU altitude
-        if (this.fcuModes.isInClimbingMode()) {
+        if (this.fcuModes.isInTakeoffMode() || this.fcuModes.isInClimbingMode()) {
             const climbStrategy = this.getClimbStrategyForVerticalMode();
             const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
@@ -340,12 +341,14 @@ export class VerticalProfileManager {
             this.ndProfile.addInterpolatedCheckpoint(
                 Math.max(levelOffDistance, previousCheckpoint.distanceFromStart), { reason: VerticalCheckpointReason.ContinueDescent },
             );
+
+            return;
         }
     }
 
     // INTERNAL HELPERS
 
-    private getClimbStrategyForVerticalMode() {
+    private getClimbStrategyForVerticalMode(): ClimbStrategy {
         const { fcuVerticalMode, fcuVerticalSpeed, fcuFlightPathAngle } = this.observer.get();
 
         if (fcuVerticalMode === VerticalMode.VS) {
@@ -357,7 +360,7 @@ export class VerticalProfileManager {
         return new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions);
     }
 
-    private getDescentStrategyForVerticalMode() {
+    private getDescentStrategyForVerticalMode(): DescentStrategy {
         const { fcuVerticalMode, fcuVerticalSpeed, fcuFlightPathAngle } = this.observer.get();
 
         if (fcuVerticalMode === VerticalMode.VS) {
@@ -369,10 +372,19 @@ export class VerticalProfileManager {
         }
 
         // DES
+        if (!this.aircraftToDescentProfileRelation.isValid) {
+            return new IdleDescentStrategy(this.observer, this.atmosphericConditions);
+        }
+
         return this.getDesModeStrategy();
     }
 
-    private getDesModeStrategy() {
+    /**
+     * Important: Make sure the descent profile is valid before calling this method.
+     * Figures out what descent strategy to use in DES mode based on whether we're above or below the descent profile.
+     * @returns The descent strategy to use
+     */
+    private getDesModeStrategy(): DescentStrategy {
         const linearDeviation = this.aircraftToDescentProfileRelation.computeLinearDeviation();
 
         if (linearDeviation > 0 && this.aircraftToDescentProfileRelation.isPastTopOfDescent()) {
@@ -420,6 +432,21 @@ export class VerticalProfileManager {
 
         return 0;
     }
+
+    private getManagedMachTarget() {
+        const { flightPhase, managedClimbSpeedMach, managedCruiseSpeedMach, managedDescentSpeedMach } = this.observer.get();
+
+        switch (flightPhase) {
+        case FmgcFlightPhase.Cruise:
+            return managedCruiseSpeedMach;
+        case FmgcFlightPhase.Descent:
+        case FmgcFlightPhase.Approach:
+        case FmgcFlightPhase.Done:
+            return managedDescentSpeedMach;
+        default:
+            return managedClimbSpeedMach;
+        }
+    }
 }
 
 class FcuModeObserver {
@@ -441,6 +468,12 @@ class FcuModeObserver {
 
     public isSpeedAutoControlActive(): boolean {
         return this.observer.get().fcuSpeedManaged;
+    }
+
+    public isInTakeoffMode(): boolean {
+        const { fcuVerticalMode } = this.observer.get();
+
+        return fcuVerticalMode === VerticalMode.SRS;
     }
 
     public isInClimbingMode(): boolean {
@@ -465,5 +498,11 @@ class FcuModeObserver {
 
     public isExpediteModeActive(): boolean {
         return this.observer.get().fcuExpediteModeActive;
+    }
+
+    public isInGoAroundMode(): boolean {
+        const { fcuVerticalMode } = this.observer.get();
+
+        return fcuVerticalMode === VerticalMode.SRS_GA;
     }
 }

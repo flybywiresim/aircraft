@@ -31,11 +31,7 @@ import {
 export class VnavDriver implements GuidanceComponent {
     version: number = 0;
 
-    currentMcduGeometryProfile: NavGeometryProfile;
-
-    currentNdGeometryProfile?: BaseGeometryProfile;
-
-    currentMcduSpeedProfile: McduSpeedProfile;
+    private currentMcduSpeedProfile: McduSpeedProfile;
 
     private constraintReader: ConstraintReader;
 
@@ -98,8 +94,6 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     acceptMultipleLegGeometry(geometry: Geometry) {
-        this.profileManager.acceptMultipleLegGeometry(geometry);
-
         this.recompute(geometry);
     }
 
@@ -120,6 +114,10 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     recompute(geometry: Geometry): void {
+        if (geometry.legs.size <= 0 || !this.computationParametersObserver.canComputeProfile()) {
+            return;
+        }
+
         const newParameters = this.computationParametersObserver.get();
 
         this.constraintReader.updateGeometry(geometry, newParameters.presentPosition);
@@ -138,6 +136,7 @@ export class VnavDriver implements GuidanceComponent {
 
             this.profileManager.computeDescentPath();
 
+            // TODO: This doesn't really do much, the profile is automatically updated by reference.
             this.descentGuidance.updateProfile(this.profileManager.descentProfile);
         }
 
@@ -169,7 +168,23 @@ export class VnavDriver implements GuidanceComponent {
             || fcuVerticalMode === VerticalMode.OP_DES;
     }
 
+    get mcduProfile(): NavGeometryProfile | undefined {
+        return this.profileManager.mcduProfile;
+    }
+
+    get ndProfile(): BaseGeometryProfile | undefined {
+        return this.profileManager.ndProfile;
+    }
+
+    get expediteProfile(): BaseGeometryProfile | undefined {
+        return this.profileManager.expediteProfile;
+    }
+
     private updateDescentSpeedGuidance() {
+        if (!this.ndProfile?.isReadyToDisplay) {
+            return;
+        }
+
         const { flightPhase, managedDescentSpeed, managedDescentSpeedMach, presentPosition, approachSpeed } = this.computationParametersObserver.get();
         const isExpediteModeActive = SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1;
         const isHoldActive = this.guidanceController.isManualHoldActive() || this.guidanceController.isManualHoldNext();
@@ -394,7 +409,12 @@ export class VnavDriver implements GuidanceComponent {
         return this.computationParametersObserver.get().flightPhase === FmgcFlightPhase.Preflight;
     }
 
-    private updateLegSpeedPredictions() {
+    private updateLegSpeedPredictions(): void {
+        // No VNAV predictions
+        if (!this.profileManager.mcduProfile?.isReadyToDisplay) {
+            return;
+        }
+
         const geometry = this.guidanceController.activeGeometry;
         const activeLegIndex = this.guidanceController.activeLegIndex;
         let distanceFromAircraft = this.guidanceController.activeLegCompleteLegPathDtg;

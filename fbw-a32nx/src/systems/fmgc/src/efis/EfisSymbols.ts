@@ -315,7 +315,7 @@ export class EfisSymbols {
             }
 
             const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
-            const waypointPredictions = this.guidanceController.vnavDriver.currentMcduGeometryProfile?.waypointPredictions;
+            const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
             const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
             const flightPhase = getFlightPhaseManager().phase;
 

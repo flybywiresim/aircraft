@@ -14,7 +14,7 @@ class CDUStepAltsPage {
         const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
         const isFlying = flightPhase >= 5 && flightPhase <= 7;
         const transitionAltitude = mcdu.flightPlanManager.originTransitionAltitude;
-        const predictions = mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile.waypointPredictions;
+        const predictions = mcdu.guidanceController.vnavDriver.mcduProfile.waypointPredictions;
 
         mcdu.setTemplate([
             ["STEP ALTS {small}FROM{end} {green}FL" + mcdu._cruiseFlightLevel + "{end}"],
@@ -27,7 +27,7 @@ class CDUStepAltsPage {
             [""],
             CDUStepAltsPage.formatStepClimbLine(mcdu, 3, predictions, isFlying, transitionAltitude),
             [""],
-            CDUStepAltsPage.formatOptStepLine(mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile.cruiseSteps),
+            CDUStepAltsPage.formatOptStepLine(mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps),
             [""],
             ["<RETURN"]
         ]);
@@ -67,7 +67,7 @@ class CDUStepAltsPage {
 
     static formatStepClimbLine(mcdu, index, predictions, isFlying, transitionAltitude) {
         const emptyField = "[\xa0".padEnd(4, "\xa0") + "]";
-        const enteredStepAlts = mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile.cruiseSteps;
+        const enteredStepAlts = mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps;
 
         if (index > enteredStepAlts.length) {
             return [""];
@@ -104,12 +104,12 @@ class CDUStepAltsPage {
     }
 
     static tryParseLeftInput(mcdu, index, input) {
-        if (index < mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile.cruiseSteps.length) {
+        if (index < mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps.length) {
             return this.onClickExistingStepClimb(mcdu, index, input);
         }
 
         // Create new step altitude
-        if (mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile.cruiseSteps.length >= 4) {
+        if (mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps.length >= 4) {
             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
@@ -161,7 +161,7 @@ class CDUStepAltsPage {
     }
 
     static onClickExistingStepClimb(mcdu, index, input) {
-        const existingStep = mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile.cruiseSteps[index];
+        const existingStep = mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps[index];
 
         if (input === FMCMainDisplay.clrValue) {
             mcdu.flightPlanManager.tryRemoveCruiseStep(existingStep.waypointIndex);

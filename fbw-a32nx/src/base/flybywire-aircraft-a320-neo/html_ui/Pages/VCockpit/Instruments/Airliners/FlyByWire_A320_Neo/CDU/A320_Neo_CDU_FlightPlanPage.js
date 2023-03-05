@@ -91,7 +91,7 @@ class CDUFlightPlanPage {
         const first = (mcdu.flightPhaseManager.phase <= FmgcFlightPhases.TAKEOFF) ? 0 : activeFirst;
 
         // VNAV
-        const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.currentMcduGeometryProfile;
+        const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.mcduProfile;
         const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
 
         let vnavPredictionsMapByWaypoint = null;
