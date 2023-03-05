@@ -85,15 +85,15 @@ class ExampleModule : public Module {
   } __attribute__((packed));
   std::shared_ptr<ClientDataAreaVariable<BigClientData>> bigClientDataPtr;
 
-  // ClientDataArea variable for meta data for ClientDataBufferedAreaVariable
-  struct BufferedAreaMetaData {
+  // ClientDataArea variable for meta data for StreamingClientDataAreaVariable
+  struct StreamingDataMetaData {
     UINT64 size;
     UINT64 hash;
   } __attribute__((packed));
-  std::shared_ptr<ClientDataAreaVariable<BufferedAreaMetaData>> metaDataPtr;
+  std::shared_ptr<ClientDataAreaVariable<StreamingDataMetaData>> streamReceiverMetaDataPtr;
 
   // ClientDataBufferedArea variable for testing
-  std::shared_ptr<ClientDataBufferedAreaVariable<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
+  std::shared_ptr<StreamingClientDataAreaVariable<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>> streamReveicerDataPtr;
 
   // Events
   ClientEventPtr beaconLightSetEventPtr;
@@ -139,8 +139,8 @@ class ExampleModule : public Module {
     return hash;
   }
 
-  std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long long int, std::nano>> receiptTimerStart;
-  std::chrono::duration<long long int, std::nano> receiptTimerEnd;
+  std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long long int, std::nano>> streamReceiverTimerStart;
+  std::chrono::duration<long long int, std::nano> streamReceiverTimerEnd;
 };
 
 #endif  // FLYBYWIRE_EXAMPLEMODULE_H

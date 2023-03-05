@@ -16,23 +16,20 @@ bool DataManager::initialize(HANDLE hdlSimConnect) {
 
 bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   LOG_TRACE("DataManager::preUpdate()");
+
   if (!isInitialized) {
     LOG_ERROR("DataManager::preUpdate() called but DataManager is not initialized");
     return false;
   }
 
   // get current time stamp and tick counter
-  FLOAT64 timeStamp = msfsHandler->getTimeStamp();
-  UINT64 tickCounter = msfsHandler->getTickCounter();
+  const FLOAT64 timeStamp = msfsHandler->getTimeStamp();
+  const UINT64 tickCounter = msfsHandler->getTickCounter();
 
   // get all variables set to automatically read
   for (auto& var : variables) {
     if (var.second->isAutoRead()) {
       var.second->updateFromSim(timeStamp, tickCounter);
-      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::preUpdate() - auto read named and aircraft: " << var.second->getName() << " = " << var.second->get()
-                  << std::endl;
-      })
     }
   }
 
@@ -42,9 +39,6 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
       if (!ddv.second->requestUpdateFromSim(timeStamp, tickCounter)) {
         LOG_ERROR("DataManager::preUpdate(): requestUpdateFromSim() failed for " + ddv.second->getName());
       }
-      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::preUpdate() - auto read simobjects: " << ddv.second->getName() << std::endl;
-      })
     }
   }
 
@@ -66,6 +60,7 @@ bool DataManager::update([[maybe_unused]] sGaugeDrawData* pData) const {
 
 bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   LOG_TRACE("DataManager::postUpdate()");
+
   if (!isInitialized) {
     LOG_ERROR("DataManager::postUpdate() called but DataManager is not initialized");
     return false;
@@ -75,10 +70,6 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   for (auto& var : variables) {
     if (var.second->isAutoWrite()) {
       var.second->updateToSim();
-      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::postUpdate() - auto write named and aircraft: " << var.second->getName() << " = " << var.second->get()
-                  << std::endl;
-      })
     }
   }
 
@@ -88,9 +79,6 @@ bool DataManager::postUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
       if (!ddv.second->writeDataToSim()) {
         LOG_ERROR("DataManager::postUpdate(): updateDataToSim() failed for " + ddv.second->getName());
       }
-      LOG_VERBOSE_BLOCK(if (tickCounter % 100 == 0) {
-        std::cout << "DataManager::postUpdate() - auto write simobjects" << ddv.second->getName() << std::endl;
-      })
     }
   }
 
@@ -153,7 +141,6 @@ NamedVariablePtr DataManager::make_named_var(const std::string varName,
   // Create new var and store it in the map
   NamedVariablePtr var =
       std::shared_ptr<NamedVariable>(new NamedVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
-
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_named_var(): created variable " + var->str());
@@ -239,7 +226,6 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string varN
   // Create new var and store it in the map
   AircraftVariablePtr var =
       std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks));
-
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_simple_aircraft_var(): created variable " + var->str());
@@ -305,7 +291,7 @@ bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallback
 bool DataManager::sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
   auto result = trigger_key_event_EX1(keyEventId, param0, param1, param2, param3, param4);
   if (result == 0) {
-    LOG_DEBUG("Sent key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", " + std::to_string(param1) +
+    LOG_VERBOSE("Sent key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", " + std::to_string(param1) +
               ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", " + std::to_string(param4));
     return true;
   }

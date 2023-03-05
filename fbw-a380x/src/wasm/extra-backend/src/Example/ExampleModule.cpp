@@ -139,44 +139,44 @@ bool ExampleModule::initialize() {
   //    LOG_ERROR("Failed to request periodic data from sim");
   //  }
 
-  // Metadata for the ClientDataBufferedAreaVariable test
-  metaDataPtr = dataManager->make_clientdataarea_var<BufferedAreaMetaData>("HUGE CLIENT DATA META DATA");
-  metaDataPtr->setSkipChangeCheck(true);
-  metaDataPtr->addCallback([&]() {
-    receiptTimerStart = std::chrono::high_resolution_clock::now();
-    hugeClientDataPtr->reserve(metaDataPtr->data().size);
-    // Huge Client Data Meta Data
+  // Metadata for the StreamingClientDataAreaVariable test
+  streamReceiverMetaDataPtr = dataManager->make_clientdataarea_var<StreamingDataMetaData>("STREAM RECEIVER DATA META DATA");
+  streamReceiverMetaDataPtr->setSkipChangeCheck(true);
+  streamReceiverMetaDataPtr->addCallback([&]() {
+    streamReceiverTimerStart = std::chrono::high_resolution_clock::now();
+    streamReveicerDataPtr->reserve(streamReceiverMetaDataPtr->data().size);
+    // STREAM RECEIVER DATA Meta Data
     std::cout << "--- CALLBACK: HUGE CLIENT META DATA (External - reading)" << std::endl;
-    std::cout << metaDataPtr->str() << std::endl;
-    std::cout << "HUGE CLIENT DATA META DATA size = " << metaDataPtr->data().size << " fingerprint = " << metaDataPtr->data().hash
+    std::cout << streamReceiverMetaDataPtr->str() << std::endl;
+    std::cout << "STREAM RECEIVER DATA META DATA size = " << streamReceiverMetaDataPtr->data().size << " fingerprint = " << streamReceiverMetaDataPtr->data().hash
               << std::endl;
     std::cout << std::endl;
   });
-  //  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+  //  if (!streamReceiverMetaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
   //    LOG_ERROR("Failed to request periodic data from sim");
   //  }
 
-  // ClientDataBufferedAreaVariable test
-  hugeClientDataPtr = dataManager->make_clientdatabufferedarea_var<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
-  hugeClientDataPtr->setSkipChangeCheck(true);
-  hugeClientDataPtr->addCallback([&]() {
-    receiptTimerEnd = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - receiptTimerStart);
-    std::cout << "--- CALLBACK: HUGE CLIENT DATA (External - reading)" << std::endl;
-    std::cout << hugeClientDataPtr->str() << std::endl;
-    const uint64_t fingerPrintFvn = fingerPrintFVN(hugeClientDataPtr->getData());
-    std::cout << "HUGE CLIENT DATA "
-              << " size = " << hugeClientDataPtr->getData().size() << " bytes = " << hugeClientDataPtr->getReceivedBytes()
-              << " chunks = " << hugeClientDataPtr->getReceivedChunks() << " fingerprint = " << std::setw(21) << fingerPrintFvn
-              << " (match = " << std::boolalpha << (fingerPrintFvn == metaDataPtr->data().hash) << ")"
-              << " time = " << std::setw(10) << receiptTimerEnd.count() << " ns" << std::endl;
+  // StreamingClientDataAreaVariable test
+  streamReveicerDataPtr = dataManager->make_clientdatabufferedarea_var<BYTE, SIMCONNECT_CLIENTDATA_MAX_SIZE>("STREAM RECEIVER DATA");
+  streamReveicerDataPtr->setSkipChangeCheck(true);
+  streamReveicerDataPtr->addCallback([&]() {
+    streamReceiverTimerEnd = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - streamReceiverTimerStart);
+    std::cout << "--- CALLBACK: STREAM RECEIVER DATA (External - reading)" << std::endl;
+    std::cout << streamReveicerDataPtr->str() << std::endl;
+    const uint64_t fingerPrintFvn = fingerPrintFVN(streamReveicerDataPtr->getData());
+    std::cout << "STREAM RECEIVER DATA "
+              << " size = " << streamReveicerDataPtr->getData().size() << " bytes = " << streamReveicerDataPtr->getReceivedBytes()
+              << " chunks = " << streamReveicerDataPtr->getReceivedChunks() << " fingerprint = " << std::setw(21) << fingerPrintFvn
+              << " (match = " << std::boolalpha << (fingerPrintFvn == streamReceiverMetaDataPtr->data().hash) << ")"
+              << " time = " << std::setw(10) << streamReceiverTimerEnd.count() << " ns" << std::endl;
     std::cout << "Content: "
               << "["
-              << std::string(hugeClientDataPtr->getData().begin(),
-                             hugeClientDataPtr->getData().begin() + hugeClientDataPtr->getReceivedBytes())
+              << std::string(streamReveicerDataPtr->getData().begin(),
+                             streamReveicerDataPtr->getData().begin() + streamReveicerDataPtr->getReceivedBytes())
               << "]" << std::endl;
     std::cout << std::endl;
   });
-  //  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
+  //  if (!SUCCEEDED(streamReveicerDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
   //    LOG_ERROR("Failed to request periodic data from sim");
   //  }
 
@@ -238,23 +238,23 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     return true;
 
   // Un-throttled tests
-  //  if (metaDataPtr->hasChanged()) {
-  //    // Huge Client Data Meta Data
+  //  if (streamReceiverMetaDataPtr->hasChanged()) {
+  //    // STREAM RECEIVER DATA Meta Data
   //    LOG_INFO("--- HUGE CLIENT META DATA (External - reading)");
-  //    hugeClientDataPtr->reserve(metaDataPtr->data().size);
-  //    std::cout << metaDataPtr->str() << std::endl;
-  //    std::cout << "Huge client data size: " << metaDataPtr->data().size << std::endl;
-  //    std::cout << "Huge client data hash: " << metaDataPtr->data().hash << std::endl;
+  //    streamReveicerDataPtr->reserve(streamReceiverMetaDataPtr->data().size);
+  //    std::cout << streamReceiverMetaDataPtr->str() << std::endl;
+  //    std::cout << "STREAM RECEIVER DATA size: " << streamReceiverMetaDataPtr->data().size << std::endl;
+  //    std::cout << "STREAM RECEIVER DATA hash: " << streamReceiverMetaDataPtr->data().hash << std::endl;
   //  }
 
-  //  if (hugeClientDataPtr->hasChanged()) {
-  //    LOG_INFO("--- HUGE CLIENT DATA (External - reading)");
-  //    std::cout << hugeClientDataPtr->str() << std::endl;
-  //    std::cout << "Huge client data size: " << hugeClientDataPtr->getData().size() << std::endl;
-  //    std::string s(hugeClientDataPtr->getData().data(), hugeClientDataPtr->getData().size());
+  //  if (streamReveicerDataPtr->hasChanged()) {
+  //    LOG_INFO("--- STREAM RECEIVER DATA (External - reading)");
+  //    std::cout << streamReveicerDataPtr->str() << std::endl;
+  //    std::cout << "STREAM RECEIVER DATA size: " << streamReveicerDataPtr->getData().size() << std::endl;
+  //    std::string s(streamReveicerDataPtr->getData().data(), streamReveicerDataPtr->getData().size());
   //    auto fingerprint = fingerPrintFVN(s);
   //    std::cout << "Fingerprint: " << fingerprint << std::endl;
-  //    std::cout << "Fingerprint is " << (fingerprint == metaDataPtr->data().hash ? "equal" : "not equal") << std::endl;
+  //    std::cout << "Fingerprint is " << (fingerprint == streamReceiverMetaDataPtr->data().hash ? "equal" : "not equal") << std::endl;
   //  }
 
   // Use this to throttle output frequency while you are debugging

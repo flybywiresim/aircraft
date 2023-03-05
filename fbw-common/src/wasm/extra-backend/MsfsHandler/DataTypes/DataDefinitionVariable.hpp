@@ -36,8 +36,8 @@ struct DataDefinition {
 };
 
 /**
- * A DataDefinitionVariable represents a sim variable usually defined by one ore more
- * SimConnect data definitions (SimConnect_AddToDataDefinition)<p/>
+ * A DataDefinitionVariable represents a sim variable defined by one ore more SimConnect
+ * data definitions (SimConnect_AddToDataDefinition)<p/>
  *
  * DataDefinitionVariables are used to define sim data objects that can be used to retrieve and
  * write simulation variables from and to the sim.<p/>
@@ -144,7 +144,7 @@ class DataDefinitionVariable : public SimObjectBase {
     }
   };
 
-  [[nodiscard]] bool requestDataFromSim() const override {
+  bool requestDataFromSim() const override {
     if (!SUCCEEDED(
             SimConnect_RequestDataOnSimObject(hSimConnect, requestId, dataDefId, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE))) {
       LOG_ERROR("DataDefinitionVariable: Failed to request data from sim: " + name);
@@ -176,7 +176,7 @@ class DataDefinitionVariable : public SimObjectBase {
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RequestDataOnSimObject.htm
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_PERIOD.htm
    */
-  [[nodiscard]] bool requestPeriodicDataFromSim(SIMCONNECT_PERIOD period,
+  bool requestPeriodicDataFromSim(SIMCONNECT_PERIOD period,
                                                 DWORD periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
                                                 DWORD origin = 0,
                                                 DWORD interval = 0,
@@ -193,7 +193,7 @@ class DataDefinitionVariable : public SimObjectBase {
     return true;
   };
 
-  [[nodiscard]] bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) override {
+  bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) override {
     if (!needsUpdateFromSim(timeStamp, tickCounter)) {
       LOG_TRACE(
           "DataDefinitionVariable::requestUpdateFromSim: Not requesting update from sim as "

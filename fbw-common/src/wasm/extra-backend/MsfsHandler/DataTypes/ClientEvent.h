@@ -105,6 +105,10 @@ class ClientEvent {
    */
   void mapToSimEvent();
 
+  // =================================================================================================
+  // Registration / Mapping of the Client Event to Sim System Events
+  // =================================================================================================
+
   /**
    * Maps the client event to a sim system event. The name of the client event must contain a period
    * otherwise there will be a SimConnect exception that the event is unknown. The event must not have
@@ -132,6 +136,47 @@ class ClientEvent {
    * @param state SIMCONNECT_STATE_ON or SIMCONNECT_STATE_OFF
    */
   void setSystemEventState(SIMCONNECT_STATE state);
+
+  // ===============================================================================================
+  // Notification Group
+  // ===============================================================================================
+
+  /**
+   * Adds the ClientEvent to the given notification group of the event.<br/>
+   * Prints an error message if the event is already subscribed to a notification group.
+   *
+   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
+   * @param maskEvent Flag to indicate if the event should be masked.
+   *                  From SDK doc: True indicates that the event will be masked by this client and will not be
+   *                  transmitted to any more clients, possibly including Microsoft Flight Simulator
+   *                  itself (if the priority of the client exceeds that of Flight Simulator).
+   *                  False is the default.
+   */
+  void addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0, bool maskEvent = false);
+
+  /**
+   * Removes the ClientEvent from the given notification group of the event.<br/>
+   *
+   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
+   */
+  void removeClientEventFromNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0);
+
+  /**
+   * Removes the notification group.<br/>
+   * This will remove all events from the notification group.
+   *
+   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
+   */
+  void clearNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0);
+
+  /**
+   * Sets the priority of the notification group.<br/>
+   *
+   * @param notificationGroupId The ID of the notification group to set the priority of.
+   * @param notificationGroupPriority The priority of the notification group.
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_API_Reference.htm#simconnect-priorities
+   */
+  void setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId, DWORD notificationGroupPriority) const;
 
   // ===============================================================================================
   // Triggering events
@@ -189,48 +234,6 @@ class ClientEvent {
    * @param data0-4 event data
    */
   void processEvent(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWORD data4);
-
-  // ===============================================================================================
-  // Notification Group
-  // ===============================================================================================
-
-  /**
-   * Adds the ClientEvent to the given notification group of the event.<br/>
-   * Prints an error message if the event is already subscribed to a notification group.
-   *
-   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
-   * @param maskEvent Flag to indicate if the event should be masked.
-   *                  From SDK doc: True indicates that the event will be masked by this client and will not be
-   *                  transmitted to any more clients, possibly including Microsoft Flight Simulator
-   *                  itself (if the priority of the client exceeds that of Flight Simulator).
-   *                  False is the default.
-   */
-  void addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0, bool maskEvent = false);
-
-  /**
-   * Removes the ClientEvent from the given notification group of the event.<br/>
-   *
-   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
-   */
-  void removeClientEventFromNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0);
-
-  /**
-   * Removes the notification group.<br/>
-   * This will remove all events from the notification group.
-   *
-   * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
-   */
-  void clearNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = 0);
-
-  /**
-   * Sets the priority of the notification group.<br/>
-   *
-   * @param notificationGroupId The ID of the notification group to set the priority of.
-   * @param notificationGroupPriority The priority of the notification group.
-   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_API_Reference.htm#simconnect-priorities
-   * TODO: could be static
-   */
-  void setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId, DWORD notificationGroupPriority) const;
 
   // ===============================================================================================
   // Input Events
@@ -378,11 +381,6 @@ class ClientEvent {
    * @return True if the client event has callbacks registered to it.
    */
   bool hasCallbacks() const { return !callbacks.empty(); }
-
- private:
-  // removes one input event from the client event without checking if it is actually
-  // mapped to the client event
-  bool removeInputEventRaw(const std::string& inputDefinition, SIMCONNECT_NOTIFICATION_GROUP_ID groupId) const;
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_CLIENTEVENT_H

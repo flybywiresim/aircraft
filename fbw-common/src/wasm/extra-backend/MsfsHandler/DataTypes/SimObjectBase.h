@@ -100,7 +100,7 @@ class SimObjectBase : public ManagedDataObjectBase {
   virtual void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) = 0;
 
   /**
-   * Writes the data object to the sim and sets the dataChanged flag to false.
+   * Writes the data object to the sim.
    * @return true if the write was successful, false otherwise
    */
   virtual bool writeDataToSim() = 0;

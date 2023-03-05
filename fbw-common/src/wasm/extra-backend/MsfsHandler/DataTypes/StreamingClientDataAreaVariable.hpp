@@ -1,22 +1,28 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#ifndef FLYBYWIRE_AIRCRAFT_CLIENTDATABUFFEREDAREAVARIABLE_HPP
-#define FLYBYWIRE_AIRCRAFT_CLIENTDATABUFFEREDAREAVARIABLE_HPP
+#ifndef FLYBYWIRE_AIRCRAFT_STREAMINGCLIENTDATAAREAVARIABLE_HPP
+#define FLYBYWIRE_AIRCRAFT_STREAMINGCLIENTDATAAREAVARIABLE_HPP
 
 #include "ClientDataAreaVariable.hpp"
 
 class DataManager;
 
 /**
- * FIXME: This class is not working yet
- * FIXME remove inheritance from ClientDataAreaVariable and change to
- *  inheritance from SimObjectBase
- * @tparam T
- * @tparam ChunkSize
+ * The StreamingClientDataAreaVariable class is a special variant of the ClientDataAreaVariable class which allows to
+ * send and receive data larger than the maximum size of a single SimConnect client data area chunk of 8192 bytes.<p/>
+ *
+ * The data is split into chunks of a fixed size (8192 bytes) and sent/received in chunks.<br/>
+ * The data is stored in a vector of T, which is resized to the number of bytes expected to be received.<p/>
+ *
+ * Before receiving data the reserve() method must be called to reset the data and set the number of bytes to be
+ * received.<br/>
+ *
+ * @tparam T the type of the data to be sent/received - e.g. char for string data
+ * @tparam ChunkSize the size of the chunks to be sent/received - must be <= 8192. Default is 8192.
  */
-template <typename T, std::size_t ChunkSize>
-class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
+template <typename T, std::size_t ChunkSize = SIMCONNECT_CLIENTDATA_MAX_SIZE>
+class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
  private:
   // The data manager is a friend, so it can access the private constructor.
   friend DataManager;
@@ -33,11 +39,30 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
   // the number of chunks received so far - re-set in reserve()
   std::size_t receivedChunks{};
 
-  // hide incompatible methods
-  // TODO: is this ok??
+  // hide incompatible methods - alternative would be to make this class independent of ClientDataAreaVariable
   using ClientDataAreaVariable<T>::data;
 
-  ClientDataBufferedAreaVariable<T, ChunkSize>(HANDLE hSimConnect,
+  /**
+   * Creates an instance of a streaming client data area variable.<p/>
+   *
+   * Use the DataManager's make_clientdatabufferedarea_var() to create instances of StreamingClientDataAreaVariable
+   * as it ensures unique clientDataId, clientDataDefinitionId and requestId within the SimConnect session.
+   *
+   * @param hSimConnect the SimConnect handle
+   * @param clientDataName the name of the client data area
+   * @param clientDataId the ID of the client data area
+   * @param clientDataDefinitionId  the definition ID of the client data area
+   * @param requestId the request ID of the client data area
+   * @param autoReading Used by the DataManager to determine if the variable should be updated from
+   *                    the sim when a sim update call occurs.
+   * @param autoWriting Used by the DataManager to determine if the variable should written to the
+   *                    sim when a sim update call occurs.
+   * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by
+   *                    the requestUpdateFromSim() method.
+   * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by
+   *                    the requestUpdateFromSim() method.
+   */
+  StreamingClientDataAreaVariable<T, ChunkSize>(HANDLE hSimConnect,
                                                const std::string clientDataName,
                                                SIMCONNECT_CLIENT_DATA_ID clientDataId,
                                                SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
@@ -59,20 +84,12 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
         content() {}
 
  public:
-  ClientDataBufferedAreaVariable<T, ChunkSize>() = delete;                                       // no default constructor
-  ClientDataBufferedAreaVariable<T, ChunkSize>(const ClientDataBufferedAreaVariable&) = delete;  // no copy constructor
+  StreamingClientDataAreaVariable<T, ChunkSize>() = delete;                                       // no default constructor
+  StreamingClientDataAreaVariable<T, ChunkSize>(const StreamingClientDataAreaVariable&) = delete;  // no copy constructor
   // no copy assignment
-  ClientDataBufferedAreaVariable<T, ChunkSize>& operator=(const ClientDataBufferedAreaVariable<T, ChunkSize>&) = delete;
-  ~ClientDataBufferedAreaVariable() override = default;
+  StreamingClientDataAreaVariable<T, ChunkSize>& operator=(const StreamingClientDataAreaVariable<T, ChunkSize>&) = delete;
+  ~StreamingClientDataAreaVariable() override = default;
 
-  /**
-   * Allocates the client data area in the sim.<p/>
-   * This must be done by the client owning the data. Clients only reading the data area do not
-   * need to allocate it. In fact trying to allocated a data area with the same name twice throws
-   * a Simconnect exception.
-   * @param readOnlyForOthers
-   * @return true if the allocation was successful, false otherwise
-   */
   bool allocateClientDataArea(bool readOnlyForOthers = false) override {
     const DWORD readOnlyFlag =
         readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
@@ -83,38 +100,11 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
     return true;
   }
 
-  void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
-    LOG_TRACE("ClientDataBufferedAreaVariable: Received client data: " + this->name);
-    const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
-
-    std::size_t remainingBytes = this->expectedByteCount - this->receivedBytes;
-    if (remainingBytes > ChunkSize) {
-      remainingBytes = ChunkSize;
-    }
-
-    // memcpy into a vector ignores the vector's metadata and just copies the data
-    // it is therefore faster than std::copy or std::back_inserter but also results in an invalid
-    // vector instance.
-    // std::memcpy(&this->content.data()[this->receivedBytes], &pClientData->dwData, remainingBytes);
-    // insert the data into the vector - very fast as well but results in a valid vector instance
-    this->content.insert(this->content.end(), (T*)&pClientData->dwData, (T*)&pClientData->dwData + remainingBytes);
-
-    this->receivedChunks++;
-    this->receivedBytes += remainingBytes;
-
-    const bool receivedAllData = this->receivedBytes >= this->expectedByteCount;
-    if (receivedAllData) {
-      this->timeStampSimTime = simTime;
-      this->tickStamp = tickCounter;
-      this->setChanged(true);
-      return;
-    }
-  }
-
   /**
-   * Reserves internal data to receive the data. This needs to be called before the first data chunk
-   * is received so that the internal buffer is large enough to hold the data and also it sets the
-   * expected byte count.
+   * This tells this instance the expected number of bytes to be received and prepares the internal
+   * data structure.<br/>
+   * It needs to be called before the first data chunk is received so that the internal data structure
+   * is reset and prepared to receive new data.
    * @param _expectedByteCount Number of expected bytes in streaming cases
    */
   void reserve(std::size_t expectedByteCnt) {
@@ -126,32 +116,53 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
     this->content.reserve(expectedByteCnt);
   }
 
-  bool writeDataToSim() override {
-    LOG_DEBUG("Setting Client Data to Sim: size = " + std::to_string(this->content.size()));
+  void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
+    const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
 
+    std::size_t remainingBytes = this->expectedByteCount - this->receivedBytes;
+    if (remainingBytes > ChunkSize) {
+      remainingBytes = ChunkSize;
+    }
+
+    // insert the data into the vector - very fast as well but results in a valid vector instance (memcpy doesn't)
+    this->content.insert(this->content.end(), (T*)&pClientData->dwData, (T*)&pClientData->dwData + remainingBytes);
+
+    this->receivedChunks++;
+    this->receivedBytes += remainingBytes;
+
+    // received all data?
+    if (this->receivedBytes >= this->expectedByteCount) {
+      this->timeStampSimTime = simTime;
+      this->tickStamp = tickCounter;
+      this->setChanged(true);
+      return;
+    }
+  }
+
+  /**
+   * Writes the data to the sim by splitting it into chunks of a fixed size (ChunkSize) and sending
+   * each chunk separately.<br/>
+   * @return true if successful, false otherwise
+   */
+  bool writeDataToSim() override {
     int chunkCount = 0;
     std::size_t sentBytes = 0;
     std::size_t remainingBytes = this->content.size();
 
     while (sentBytes < this->content.size()) {
-      if (remainingBytes >= ChunkSize) {  // bigger than one chunk
+      if (remainingBytes >= ChunkSize) {
         chunkCount++;
-        LOG_DEBUG("Sending chunk: " + std::to_string(chunkCount));
-
         if (!SUCCEEDED(SimConnect_SetClientData(this->hSimConnect, this->clientDataId, this->dataDefId,
                                                 SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, ChunkSize, &this->content.data()[sentBytes]))) {
           LOG_ERROR("Setting data to sim for " + this->getName() + " with dataDefId=" + std::to_string(this->dataDefId) + " failed!");
           return false;
         }
         sentBytes += ChunkSize;
-      } else {  // last chunk
+      } else { // last chunk
         // use a tmp array buffer to send the remaining bytes
         std::array<T, ChunkSize> buffer{};
         std::memcpy(buffer.data(), &this->content.data()[sentBytes], remainingBytes);
-
         chunkCount++;
-        LOG_DEBUG("Sending chunk: " + std::to_string(chunkCount) + " (last)");
-
         if (!SUCCEEDED(SimConnect_SetClientData(this->hSimConnect, this->clientDataId, this->dataDefId,
                                                 SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, ChunkSize, buffer.data()))) {
           LOG_ERROR("Setting data to sim for " + this->getName() + " with dataDefId=" + std::to_string(this->dataDefId) + " failed!");
@@ -160,8 +171,10 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
         sentBytes += remainingBytes;
       }
       remainingBytes = this->content.size() - sentBytes;
-      LOG_DEBUG("Sent bytes: " + std::to_string(sentBytes) + " Remaining bytes: " + std::to_string(remainingBytes));
+      LOG_VERBOSE("Sending chunk: " + std::to_string(chunkCount) + " Sent bytes: " + std::to_string(sentBytes) +
+                " Remaining bytes: " + std::to_string(remainingBytes));
     }
+
     LOG_DEBUG("Finished sending data in " + std::to_string(chunkCount) + " chunks" + " Sent bytes: " + std::to_string(sentBytes) +
               " Remaining bytes: " + std::to_string(remainingBytes) + " DataSize: " + std::to_string(this->content.size()));
     return true;
@@ -193,7 +206,7 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
 
   [[nodiscard]] std::string str() const override {
     std::stringstream ss;
-    ss << "ClientDataBufferedAreaVariable[ name=" << this->getName();
+    ss << "StreamingClientDataAreaVariable[ name=" << this->getName();
     ss << ", clientDataId=" << this->clientDataId;
     ss << ", dataDefId=" << this->dataDefId;
     ss << ", requestId=" << this->requestId;
@@ -214,18 +227,18 @@ class ClientDataBufferedAreaVariable : public ClientDataAreaVariable<T> {
     return ss.str();
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const ClientDataBufferedAreaVariable& ddv);
+  friend std::ostream& operator<<(std::ostream& os, const StreamingClientDataAreaVariable& ddv);
 };
 
 /**
- * Overload of the << operator for ClientDataAreaVariable
- * @return returns a string representation of the ClientDataAreaVariable as returned by
- *         ClientDataAreaVariable::str()
+ * Overload of the << operator for StreamingClientDataAreaVariable
+ * @return returns a string representation of the StreamingClientDataAreaVariable as returned by
+ *         StreamingClientDataAreaVariable::str()
  */
 template <typename T, std::size_t ChunkSize>
-std::ostream& operator<<(std::ostream& os, const ClientDataBufferedAreaVariable<T, ChunkSize>& ddv) {
+std::ostream& operator<<(std::ostream& os, const StreamingClientDataAreaVariable<T, ChunkSize>& ddv) {
   os << ddv.str();
   return os;
 }
 
-#endif  // FLYBYWIRE_AIRCRAFT_CLIENTDATABUFFEREDAREAVARIABLE_HPP
+#endif  // FLYBYWIRE_AIRCRAFT_STREAMINGCLIENTDATAAREAVARIABLE_HPP

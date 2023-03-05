@@ -326,6 +326,10 @@ unique IDs.
 
 Also see:
 - [MSFS SDK Documentation: SimConnect_MapClientDataNameToID](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientDataNameToID.htm)
+             
+#### StreamingClientDataAreaVariable
+
+TODO
 
 #### Event
 The Event class is a  wrapper around the SimConnect event API. It allows 

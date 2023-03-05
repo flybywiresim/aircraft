@@ -12,6 +12,20 @@
 #include "DataManager.h"
 #include "Module.h"
 
+// Uncomment the following to enable/disable the examples
+//
+// #define LVAR_EXAMPLES
+// #define AIRCRAFT_VAR_EXAMPLE
+// #define INDEXED_AIRCRAFT_VAR_EXAMPLE
+// #define DATA_DEFINITION_EXAMPLE
+// #define CLIENT_DATA_AREA_EXAMPLE
+// #define BIG_CLIENT_DATA_EXAMPLE
+// #define STREAM_RECEIVE_EXAMPLE
+// #define STREAM_SEND_EXAMPLE
+// #define KEY_EVENT_EXAMPLE
+// #define CUSTOM_EVENT_EXAMPLE
+// #define SYSTEM_EVENT_EXAMPLE
+
 class MsfsHandler;
 
 /**
@@ -19,29 +33,41 @@ class MsfsHandler;
  * and to debug the module and DataManager system.
  * It has no effect on the simulation - it should never write to the sim other than in DEBUG mode
  * Should be commented out from the Gauge - remove -DEXAMPLES compiler flag.
+ *
+ * TODO: Clean up and use methods and flags for each example case.
  */
 class ExampleModule : public Module {
  private:
+  // Notification group(s) for the module
   enum NotificationGroup { NOTIFICATION_GROUP_1 };
 
+  // Input group(s) for the module
   enum InputGroup { INPUT_GROUP_1 };
 
   // Convenience pointer to the data manager
   DataManager* dataManager{};
 
+#ifdef LVAR_EXAMPLES
   // LVARs
   NamedVariablePtr debugLVARPtr{};
   NamedVariablePtr debugLVAR2Ptr{};
   NamedVariablePtr debugLVAR3Ptr{};
   NamedVariablePtr debugLVAR4Ptr{};
+#endif
 
+#ifdef AIRCRAFT_VAR_EXAMPLE
   // Sim-vars
   AircraftVariablePtr beaconLightSwitchPtr;
   AircraftVariablePtr beaconLightSwitch2Ptr;
   AircraftVariablePtr beaconLightSwitch3Ptr;
+#endif
+
+#ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
   AircraftVariablePtr fuelPumpSwitch1Ptr;
   AircraftVariablePtr fuelPumpSwitch2Ptr;
+#endif
 
+#ifdef DATA_DEFINITION_EXAMPLE
   // DataDefinition variables
   struct ExampleData {
     [[maybe_unused]] FLOAT64 strobeLightSwitch;
@@ -56,7 +82,9 @@ class ExampleModule : public Module {
     [[maybe_unused]] char aircraftTTitle[256] = "";
   };
   std::shared_ptr<DataDefinitionVariable<ExampleData>> exampleDataPtr;
+#endif
 
+#ifdef CLIENT_DATA_AREA_EXAMPLE
   // ClientDataArea variables
   struct ExampleClientData {
     [[maybe_unused]] FLOAT64 aFloat64;
@@ -78,46 +106,58 @@ class ExampleModule : public Module {
     [[maybe_unused]] FLOAT64 aFloat64;
   } __attribute__((packed));
   std::shared_ptr<ClientDataAreaVariable<ExampleClientData2>> exampleClientData2Ptr;
+#endif
 
+#ifdef BIG_CLIENT_DATA_EXAMPLE
   // ClientDataArea variable for testing
   struct BigClientData {
     std::array<char, SIMCONNECT_CLIENTDATA_MAX_SIZE> dataChunk;
   } __attribute__((packed));
   std::shared_ptr<ClientDataAreaVariable<BigClientData>> bigClientDataPtr;
+#endif
 
-  // ClientDataArea variable for meta data for ClientDataBufferedAreaVariable
-  struct BufferedAreaMetaData {
+#if defined(STREAM_RECEIVE_EXAMPLE) || defined(STREAM_SEND_EXAMPLE)
+  // Meta data struct for StreamingClientDataAreaVariable
+  struct StreamingDataMetaData {
     UINT64 size;
     UINT64 hash;
   } __attribute__((packed));
-  std::shared_ptr<ClientDataAreaVariable<BufferedAreaMetaData>> metaDataPtr;
+#endif
 
+#ifdef STREAM_RECEIVE_EXAMPLE
   // ClientDataBufferedArea variable for testing receiving
-  std::shared_ptr<ClientDataBufferedAreaVariable<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientDataPtr;
+  std::shared_ptr<ClientDataAreaVariable<StreamingDataMetaData>> streamReceiverMetaDataPtr;
+  std::shared_ptr<StreamingClientDataAreaVariable<char>> streamReveicerDataPtr;
+#endif
 
+#ifdef STREAM_SEND_EXAMPLE
   // ClientDataBufferedArea variable for testing sending
-  struct BufferedArea2MetaData {
-    UINT64 size;
-    UINT64 hash;
-  } __attribute__((packed));
-  std::shared_ptr<ClientDataAreaVariable<BufferedArea2MetaData>> metaData2Ptr;
-  std::shared_ptr<ClientDataBufferedAreaVariable<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>> hugeClientData2Ptr;
+  std::shared_ptr<ClientDataAreaVariable<StreamingDataMetaData>> streamSenderMetaDataPtr;
+  std::shared_ptr<StreamingClientDataAreaVariable<char>> streamSenderDataPtr;
+#endif
 
+#if defined(SIM_EVENT_EXAMPLE) || defined(AIRCRAFT_VAR_EXAMPLE) || defined(INDEXED_AIRCRAFT_VAR_EXAMPLE)
   // Events
   ClientEventPtr beaconLightSetEventPtr;
   [[maybe_unused]] CallbackID beaconLightSetCallbackID{};
+  [[maybe_unused]] CallbackID beaconLightSetCallback2ID{};
   ClientEventPtr lightPotentiometerSetEventPtr;
   [[maybe_unused]] CallbackID lightPotentiometerSetCallbackID{};
   ClientEventPtr lightPotentiometerSetEvent2Ptr;
   [[maybe_unused]] CallbackID lightPotentiometerSetCallback2ID{};
+#endif
 
-  // Input Events
+#ifdef CUSTOM_EVENT_EXAMPLE
+  // Custom Event
   ClientEventPtr clientEventPtr;
   [[maybe_unused]] CallbackID clientEventCallbackId{};
+#endif
 
-  // System Events
+#ifdef SYSTEM_EVENT_EXAMPLE
+  // System Event
   ClientEventPtr systemEventPtr;
   [[maybe_unused]] CallbackID systemEventCallbackId{};
+#endif
 
  public:
   ExampleModule() = delete;
@@ -135,36 +175,18 @@ class ExampleModule : public Module {
   bool shutdown() override;
 
  private:
+#ifdef KEY_EVENT_EXAMPLE
   // key event test function
   void keyEventTest(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
     std::cout << "ExampleModule::keyEventTest() - param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
               << " param3 = " << param3 << " param4 = " << param4 << std::endl;
   }
+#endif
 
-  // Fowler-Noll-Vo hash function
-  template<typename T>
-  uint64_t fingerPrintFVN(const std::vector<T>& vec) {
-    // Define some constants for FNV-1a hash
-    const uint64_t FNV_OFFSET_BASIS = 0xcbf29ce484222325;
-    const uint64_t FNV_PRIME = 0x100000001b3;
-    uint64_t fp = 0;
-    for (const auto& elem : vec) {
-      const T &value = elem;
-      uint64_t hash = FNV_OFFSET_BASIS;
-      const unsigned char* bytes = reinterpret_cast<const unsigned char*>(&value);
-      for (size_t i = 0; i < sizeof(T); i++) {
-        hash ^= static_cast<uint64_t>(bytes[i]);
-        hash *= FNV_PRIME;
-      }
-      uint64_t h = hash;
-      fp ^= h;
-      fp *= FNV_PRIME;
-    }
-    return fp;
-  }
-
-  std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long long int, std::nano>> receiptTimerStart;
-  std::chrono::duration<long long int, std::nano> receiptTimerEnd;
+#ifdef STREAM_RECEIVE_EXAMPLE
+  std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long long int, std::nano>> streamReceiverTimerStart;
+  std::chrono::duration<long long int, std::nano> streamReceiverTimerEnd;
+#endif
 };
 
 #endif  // FLYBYWIRE_EXAMPLEMODULE_H

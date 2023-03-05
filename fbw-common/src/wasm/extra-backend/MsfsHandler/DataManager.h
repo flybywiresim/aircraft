@@ -17,8 +17,8 @@
 #include "logging.h"
 
 #include "ClientDataAreaVariable.hpp"
-#include "ClientDataBufferedAreaVariable.hpp"
 #include "DataDefinitionVariable.hpp"
+#include "StreamingClientDataAreaVariable.hpp"
 
 // Forward declarations
 class MsfsHandler;
@@ -35,10 +35,10 @@ typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
 typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
 typedef std::shared_ptr<ClientEvent> ClientEventPtr;
-// readability defines
-#define BUFFERED_AREA_PTR std::shared_ptr<ClientDataBufferedAreaVariable<T, ChunkSize>>
-#define CLIENT_AREA_PTR std::shared_ptr<ClientDataAreaVariable<T>>
+// convenience defines
 #define DATA_DEF_PTR std::shared_ptr<DataDefinitionVariable<T>>
+#define CLIENT_AREA_PTR std::shared_ptr<ClientDataAreaVariable<T>>
+#define STREAMING_AREA_PTR std::shared_ptr<StreamingClientDataAreaVariable<T, ChunkSize>>
 
 // Used to identify a key event
 typedef unsigned int KeyEventID;
@@ -56,18 +56,21 @@ typedef std::function<void(DWORD param0, DWORD param1, DWORD param2, DWORD param
 /**
  * DataManager is responsible for managing all variables and events.
  * It is used to register variables and events and to update them.
- * It de-duplicates variables and events and only creates one instance of each if multiple modules
- * use the same variable.
+ * If possible, it de-duplicates variables and events and only creates one instance of each if multiple
+ * modules use the same variable.
  *
  * It is still possible to use the SDK and Simconnect directly but it is recommended to use the
  * DataManager instead as the data manager is able to de-duplicate variables and events and automatically
  * update and write back variables from/to the sim.
- *
- * Currently variables do not use SIMCONNECT_PERIOD from the simconnect API but instead use a more
- * controlled on-demand update mechanism in this class' preUpdate method.
  */
 class DataManager {
  private:
+  // Backreference to the MsfsHandler instance.
+  MsfsHandler* msfsHandler;
+
+  // Handle to the simconnect instance.
+  HANDLE hSimConnect{};
+
   // A map of all registered variables.
   std::map<std::string, CacheableVariablePtr> variables{};
 
@@ -81,12 +84,6 @@ class DataManager {
 
   // Map of callback vectors to be called when a key event is triggered in the sim.
   std::map<KeyEventID, std::map<KeyEventCallbackID, KeyEventCallbackFunction>> keyEventCallbacks{};
-
-  // Backreference to the MsfsHandler instance.
-  MsfsHandler* msfsHandler;
-
-  // Handle to the simconnect instance.
-  HANDLE hSimConnect{};
 
   // Flag to indicate if the data manager is initialized.
   bool isInitialized = false;
@@ -114,7 +111,7 @@ class DataManager {
   // ===============================================================================================
 
   /**
-   * Initializes the data manager.
+   * Initializes the data manager.<br/>
    * This method must be called before any other method of the data manager.
    * Usually called in the MsfsHandler initialization.
    * @param hdl Handle to the simconnect instance
@@ -122,8 +119,8 @@ class DataManager {
   bool initialize(HANDLE hdlSimConnect);
 
   /**
-   * Called by the MsfsHandler update() method.
-   * Updates all variables marked for automatic reading.
+   * Called by the MsfsHandler update() method.<br/>
+   * Updates all variables marked for automatic reading.<br/>
    * Calls SimConnect_GetNextDispatch to retrieve all messages from the simconnect queue.
    * @param pData Pointer to the data structure of gauge pre-draw event
    * @return true if successful, false otherwise
@@ -138,7 +135,7 @@ class DataManager {
   bool update(sGaugeDrawData* pData) const;
 
   /**
-   * Called by the MsfsHandler update() method.
+   * Called by the MsfsHandler update() method.<br/>
    * Writes all variables marked for automatic writing back to the sim.
    * @param pData Pointer to the data structure of gauge pre-draw event
    * @return true if successful, false otherwise
@@ -146,7 +143,7 @@ class DataManager {
   bool postUpdate(sGaugeDrawData* pData) const;
 
   /**
-   * Called by the MsfsHandler shutdown() method.
+   * Called by the MsfsHandler shutdown() method.<br/>
    * Can be used for any extra cleanup.
    * @return true if successful, false otherwise
    */
@@ -166,7 +163,7 @@ class DataManager {
   // ===============================================================================================
 
   /**
-   * Creates a new named variable and adds it to the list of managed variables.<p/>
+   * Creates a new named variable (LVAR) and adds it to the list of managed variables.<p/>
    *
    * The NamedVariable is a variable which is mapped to a LVAR. It is the simplest variable type and
    * can be used to store and retrieve custom numeric data from the sim.
@@ -237,7 +234,6 @@ class DataManager {
                                                FLOAT64 maxAgeTime = 0.0,
                                                UINT64 maxAgeTicks = 0);
 
-  // @formatter:off - clion formatter is broken here
   /**
    * Creates a new data definition variable and adds it to the list of managed variables.<p/>
    *
@@ -265,17 +261,16 @@ class DataManager {
     DATA_DEF_PTR var =
         DATA_DEF_PTR(new DataDefinitionVariable<T>(hSimConnect, std::move(name), dataDefinitions, dataDefIDGen.getNextId(),
                                                    dataReqIDGen.getNextId(), autoReading, autoWriting, maxAgeTime, maxAgeTicks));
-
-    LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
     simObjects.insert({var->getRequestId(), var});
+    LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
     return var;
   }
 
   /**
    * Creates a new client data area variable and adds it to the list of managed variables.<p/>
    *
-   * A ClientDataArea allows to define a custom SimObjects using memory mapped data to send and
-   * receive arbitrary data to and from the sim and allows therefore also SimConnect clients to exchange
+   * A ClientDataArea allows to define custom SimObjects using memory mapped data to send and
+   * receive arbitrary data to and from the sim and allows therefore SimConnect clients to exchange
    * data with each other.<br/>
    *
    * @typename T Type of the data structure to use to store the data
@@ -285,7 +280,7 @@ class DataManager {
    *                       printed to the console.
    * @param readOnlyForOthers Specify if the data area can only be written to by this client (the
    *                          client creating the data area). By default other clients can write to
-   *                          this data area.
+   *                          this data area (default=false).
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
@@ -301,13 +296,13 @@ class DataManager {
     CLIENT_AREA_PTR var = CLIENT_AREA_PTR(new ClientDataAreaVariable<T>(hSimConnect, std::move(clientDataName), clientDataIDGen.getNextId(),
                                                                         dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), sizeof(T),
                                                                         autoReading, autoWriting, maxAgeTime, maxAgeTicks));
-    LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
+    LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
     return var;
   }
 
   /**
-   * Creates a new client data area variable and adds it to the list of managed variables.
+   * Creates a new streaming client data area variable and adds it to the list of managed variables.
    *
    * A ClientDataBufferedArea is similar to a ClientDataArea but allows to exchange data larger
    * than the 8k limit of a ClientDataArea.
@@ -319,48 +314,58 @@ class DataManager {
    * chunks to expect. For this the reserve(expectedBytes) method of the ClientDataBufferedArea must
    * be used before data can be received.
    *
+   * Note: SimConnect seems to support this use case by not overwriting the data area when writing
+   * multiple chunks quickly in succession. Otherwise this  would be a problem if the receiving
+   * client could not read all chunks in time.
+   *
    * See examples for who this could look like in practice.
    *
-   * @tparam T
-   * @tparam ChunkSize
-   * @param clientDataName
-   * @param autoReading
-   * @param autoWriting
-   * @param maxAgeTime
-   * @param maxAgeTicks
-   * @return
+   * @tparam T the type of the data to be sent/received - e.g. char for string data
+   * @tparam ChunkSize the size in bytes of the chunks to be sent/received (default = 8192 bytes)
+   * @param clientDataName String containing the client data area name. This is the name that another
+    *                      client will use to specify the data area. The name is not case-sensitive.
+    *                      If the name requested is already in use by another addon, a error will be
+    *                      printed to the console.
+   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
+   * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
+   * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
+   * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
+   * @return A shared pointer to the variable
    */
-  template <typename T, std::size_t ChunkSize>
-  BUFFERED_AREA_PTR make_clientdatabufferedarea_var(const std::string clientDataName,
-                                                    bool autoReading = false,
-                                                    bool autoWriting = false,
-                                                    FLOAT64 maxAgeTime = 0.0,
-                                                    UINT64 maxAgeTicks = 0) {
-    BUFFERED_AREA_PTR var = BUFFERED_AREA_PTR(new ClientDataBufferedAreaVariable<T, ChunkSize>(
+  template <typename T, std::size_t ChunkSize = SIMCONNECT_CLIENTDATA_MAX_SIZE>
+  STREAMING_AREA_PTR make_streamingclientdataarea_var(const std::string clientDataName,
+                                                      bool autoReading = false,
+                                                      bool autoWriting = false,
+                                                      FLOAT64 maxAgeTime = 0.0,
+                                                      UINT64 maxAgeTicks = 0) {
+    STREAMING_AREA_PTR var = STREAMING_AREA_PTR(new StreamingClientDataAreaVariable<T, ChunkSize>(
         hSimConnect, std::move(clientDataName), clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(),
         autoReading, autoWriting, maxAgeTime, maxAgeTicks));
-    LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     simObjects.insert({var->getRequestId(), var});
+    LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     return var;
   }
-  // @formatter:on
 
   /**
    * Creates a new client event and adds it to the list of managed events.<br/>
    * Immediately after creation the event is registered with the sim.<br/>
    * If a notification group is specified, the event will be added to the group immediately.<br/>
    *
-   * @param clientEventName Specifies the Microsoft Flight Simulator event name. Refer to the Event
-   *                        IDs document for a list of event names (listed under String Name). If
-   *                        the event name includes one or more periods (such as "Custom.Event" in
-   *                        the example below) then they are custom events specified by the client,
-   *                        and will only be recognized by another client (and not Microsoft Flight
-   *                        Simulator) that has been coded to receive such events. No Microsoft
-   *                        Flight Simulator events include periods. If no entry is made for this
-   *                        parameter, the event is private to the client.
-   * @param registerToSim  Flag to indicate if the event should be registered to the sim immediately.
+   * TODO: Consider splitting this up into 3 methods:
+   *  make_custom_event, make_sim_event, make_system_event
+   *
+   * @param clientEventName The name of the client event.<p/>
+   *                        If the intention is to map this client event it to a sim event the name
+   *                        needs to be the same as the sim event name.<p/>
+   *                        If it is a custom event, the name must includes one or more periods
+   *                        (e.g. "Custom.Event") so the sim can distinguish it from a sim event.
+   *                        Custom events will only be recognized by another client (and not Microsoft
+   *                        Flight Simulator) that has been coded to receive such events.<p/>
+   *                        If the intention is to map this client event to a system event, the name
+   *                        should also contain a period (e.g. "System.Event").
+   * @param registerToSim  Flag to indicate if the event should be registered to the sim immediately.<br/>
    *                       A custom event will be registered and a sim event will be mapped if a
-   *                       sim event with this name exists. Otherwise SimConnect will throw an error.
+   *                       sim event with this name exists. Otherwise SimConnect will throw an error.<br/>
    *                       This must be false when it is intended to map the client event
    *                       to a system event with ClientEvent::subscribeToSystemEvent() afterwards.
    * @param notificationGroupId Specifies the notification group to which the event is added. If no
@@ -409,7 +414,7 @@ class DataManager {
   bool sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4);
 
   /**
-   * Is called by the MsfsHandler when a key event is triggered in the sim.
+   * Is called by the MsfsHandler when a key event is received from the sim.
    * @param event
    * @param evdata0
    * @param evdata1
@@ -446,10 +451,9 @@ class DataManager {
   /**
    * Callback for SimConnect_GetNextDispatch events in the MsfsHandler used for data definition
    * variable batches.
-   * Must map data request IDs to know IDs of data definition variables and return true if the
+   * Must map data request IDs to known IDs of data definition variables and return true if the
    * requestId has been handled.
    * @param data Pointer to the data structure of gauge pre-draw event
-   * @return true if request ID has been processed, false otherwise
    */
   void processSimObjectData(SIMCONNECT_RECV* data) const;
 

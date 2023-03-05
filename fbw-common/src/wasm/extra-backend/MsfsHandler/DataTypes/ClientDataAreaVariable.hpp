@@ -17,7 +17,7 @@ class DataManager;
 
 /**
  * The ClientDataAreaVariable class is a template class that can be used to create a client data area
- * which uses a client data area (reserved memory) to exchange data with other SimConnect clients.<p/>
+ * which uses reserved memory to exchange data with other SimConnect clients.<p/>
  *
  * The difference between the ClientDataAreaVariable and the DataDefinitionVariable is that this
  * class does not use simulation variables as data but a raw data type from a data struct.<p/>
@@ -26,10 +26,6 @@ class DataManager;
  *
  * The owning client needs to allocate a client data area and register it with the sim by calling
  * allocateClientDataArea() (calls SimConnect_CreateClientData()).<p/>
- *
- * If this class is used to read data from the sim provided by an external SimConnect client, the
- * owning client needs to register the client data area with the sim by calling
- * SimConnect_CreateClientData().<p/>
  *
  * Usage: <br/>
  * - Create a data struct that will be used to store the data. <br/>
@@ -42,11 +38,10 @@ class DataManager;
  * the data to the sim. It also supports using the SimConnect SIMCONNECT_PERIOD flags to update the
  * data by using this method to request the data: requestPeriodicUpdateFromSim().
  *
- * It is recommended to use the DataManager's make_clientdataarea_var() to create instances of
- * ClientDataAreaVariable as it ensures unique clientDataId, clientDataDefinitionId and requestId
- * within the SimConnect session.
+ * Use the DataManager's make_clientdataarea_var() to create instances of ClientDataAreaVariable as
+ * it ensures unique clientDataId, clientDataDefinitionId and requestId within the SimConnect session.
  *
- * @tparam T The data struct that will be used to store  the data
+ * @tparam T The data struct that will be used to store the data
  * @see
  * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientDataNameToID.htm
  * @see
@@ -68,9 +63,8 @@ class ClientDataAreaVariable : public SimObjectBase {
   /**
    * Creates a new ClientDataAreaVariable object.<p/>
    *
-   * It is recommended to use the DataManager's make_clientdataarea_var() to create instances of
-   * ClientDataAreaVariable as it ensures unique clientDataId, clientDataDefinitionId and requestId
-   * within the SimConnect session.
+   * Use the DataManager's make_clientdataarea_var() to create instances of ClientDataAreaVariable
+   * as it ensures unique clientDataId, clientDataDefinitionId and requestId within the SimConnect session.
    *
    * @tparam T The data struct that will be used to store the data
    * @param hSimConnect The SimConnect handle
@@ -87,10 +81,10 @@ class ClientDataAreaVariable : public SimObjectBase {
    *                     the request ID in the response (message SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
    * @param dataSize The size of the data struct in bytes. This is used to define the client data area
    *                 in the sim. It defaults to the size of the template parameter type.
-   * @param autoReading Used by external classes to determine if the variable should updated from
+   * @param autoReading Used by the DataManager to determine if the variable should be updated from
    *                    the sim when a sim update call occurs.
-   * @param autoWriting Used by external classes to determine if the variable should written to the
-   *                      sim when a sim update call occurs.
+   * @param autoWriting Used by the DataManager to determine if the variable should written to the
+   *                    sim when a sim update call occurs.
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by
    *                   the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by
@@ -130,27 +124,26 @@ class ClientDataAreaVariable : public SimObjectBase {
       }
     }
 
+    // Add the data struct to the client data definition
     if (!SUCCEEDED(SimConnect_AddToClientDataDefinition(hSimConnect, this->dataDefId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, dataSize))) {
       LOG_ERROR("ClientDataAreaVariable: Adding to client data definition failed: " + name);
     }
+
     LOG_DEBUG("ClientDataAreaVariable: Created client data area variable: " + name + ", clientDataId: " + std::to_string(clientDataId) +
               ", clientDataDefinitionId: " + std::to_string(this->dataDefId) + ", requestId: " + std::to_string(this->requestId) +
               ", dataSize: " + std::to_string(dataSize));
   }
 
  public:
-  ClientDataAreaVariable<T>() = delete;                               // no default constructor
-  ClientDataAreaVariable<T>(const ClientDataAreaVariable&) = delete;  // no copy constructor
-  // no copy assignment
-  ClientDataAreaVariable<T>& operator=(const ClientDataAreaVariable<T>&) = delete;
+  ClientDataAreaVariable<T>() = delete;                                             // no default constructor
+  ClientDataAreaVariable<T>(const ClientDataAreaVariable&) = delete;                // no copy constructor
+  ClientDataAreaVariable<T>& operator=(const ClientDataAreaVariable<T>&) = delete;  // no copy assignment
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
    * is freed when the sim is closed.
    */
   ~ClientDataAreaVariable<T>() override {
-    // Clear the client data definition - the data area memory itself cannot be cleared or deleted.
-    // It is cleared when the sim is closed.
     LOG_INFO("ClientDataAreaVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
       LOG_ERROR("ClientDataAreaVariable: Clearing client data definition failed: " + name);
@@ -181,20 +174,22 @@ class ClientDataAreaVariable : public SimObjectBase {
       LOG_ERROR("ClientDataAreaVariable: Requesting client data failed: " + name);
       return false;
     }
-    LOG_INFO("ClientDataAreaVariable: Requesting client data: " + name + " ID: " + std::to_string(clientDataId) +
-             " DefID: " + std::to_string(dataDefId) + " ReqID: " + std::to_string(requestId));
     return true;
   }
 
   /**
    * Sends a data request to the sim to have the sim prepare the requested data.<p/>
-   * This is an alternative to autoRead which is used by the DataManager to request data from the
+   * This is an alternative to autoRead which is used by the DataManager to periodically request data from the
    * sim.<p/>
+   *
    * This method can be very efficient as the sim will only send the data when it is required and
    * the DataManager will not have to manage the updates.<p/>
+   *
    * If this is used make sure to have autoRead set to false otherwise this will throw an error.<p/>
+   *
    * OBS: If a repeating periodic update is requested the data will be updated and callbacks will
    * be called even if the sim if paused
+   *
    * @param period the SIMCONNECT_CLIENT_DATA_PERIOD with which the sim should send the data
    * @param periodFlags the SIMCONNECT_CLIENT_DATA_REQUEST_FLAG with which the sim should send the data
    * @param origin The number of Period events that should elapse before transmission of the data
@@ -207,7 +202,6 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RequestClientData.htm
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm
-   *
    */
   [[nodiscard]] bool requestPeriodicDataFromSim(
       SIMCONNECT_CLIENT_DATA_PERIOD period,
@@ -229,22 +223,15 @@ class ClientDataAreaVariable : public SimObjectBase {
 
   [[nodiscard]] bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) override {
     if (!needsUpdateFromSim(timeStamp, tickCounter)) {
-      LOG_TRACE(
-          "ClientDataAreaVariable::requestUpdateFromSim: Not requesting update from sim as "
-          "value is not older than max age.");
       return true;
     }
-    LOG_TRACE("ClientDataAreaVariable::requestUpdateFromSim: Requesting update from sim.");
     return requestDataFromSim();
   }
 
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
-    LOG_TRACE("ClientDataAreaVariable: Received client data: " + name);
     const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
-
     // if not required then skip the rather expensive check for change
     if (skipChangeCheck || std::memcmp(&pClientData->dwData, &this->dataStruct, sizeof(T)) != 0) {
-      LOG_TRACE("ClientDataAreaVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pClientData->dwData, sizeof(T));
       timeStampSimTime = simTime;
       tickStamp = tickCounter;
@@ -252,7 +239,6 @@ class ClientDataAreaVariable : public SimObjectBase {
       return;
     }
     setChanged(false);
-    LOG_TRACE("ClientDataAreaVariable: Data has not changed: " + name);
   }
 
   bool writeDataToSim() override {
@@ -261,7 +247,6 @@ class ClientDataAreaVariable : public SimObjectBase {
       LOG_ERROR("ClientDataAreaVariable: Setting data to sim for " + name + " with dataDefId=" + std::to_string(dataDefId) + " failed!");
       return false;
     }
-    LOG_TRACE("ClientDataAreaVariable: Setting data to sim for " + name + " with dataDefId=" + std::to_string(dataDefId) + " succeeded.");
     return true;
   }
 

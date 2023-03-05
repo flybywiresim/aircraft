@@ -12,6 +12,7 @@
 #include "NamedVariable.h"
 #include "logging.h"
 #include "longtext.h"
+#include "math_utils.h"
 
 bool ExampleModule::initialize() {
   dataManager = &msfsHandler.getDataManager();
@@ -27,7 +28,8 @@ bool ExampleModule::initialize() {
    * default is "false, false, 0, 0"
    */
 
-  // Events
+#if defined(SIM_EVENT_EXAMPLE) || defined(AIRCRAFT_VAR_EXAMPLE) || defined(INDEXED_AIRCRAFT_VAR_EXAMPLE)
+  // Sim Events
   beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", NOTIFICATION_GROUP_1);
   beaconLightSetCallbackID = beaconLightSetEventPtr->addCallback(
       [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
@@ -35,8 +37,7 @@ bool ExampleModule::initialize() {
                  " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
                  " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4) + " beaconLt: " + this->beaconLightSetEventPtr->str());
       });
-
-  beaconLightSetCallbackID = beaconLightSetEventPtr->addCallback(
+  beaconLightSetCallback2ID = beaconLightSetEventPtr->addCallback(
       [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         LOG_INFO("Callback 2: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
                  " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
@@ -64,9 +65,12 @@ bool ExampleModule::initialize() {
                   " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
                   " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4));
       });
+#endif
 
+#ifdef LVAR_EXAMPLES
   // LVARS
   // requested multiple times to demonstrate de-duplication - also shows optional parameters
+  // use this to familiarise yourself with the different parameters
   debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, true, false, 0, 0);
   debugLVARPtr->setEpsilon(1.0);  // only read when difference is >1.0
   debugLVARPtr->addCallback([&, this]() { LOG_INFO("Callback: DEBUG_LVAR value changed to " + std::to_string(debugLVARPtr->get())); });
@@ -77,21 +81,27 @@ bool ExampleModule::initialize() {
 
   // this is a duplicate of the first one, so should be the same pointer
   debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
+#endif
 
+#ifdef AIRCRAFT_VAR_EXAMPLE
   // Aircraft variables - requested multiple times to demonstrate de-duplication
   // to test change the units to either use the same units (will be deduplicated) or different units
   // in which case the variables will be unique.
-  beaconLightSwitchPtr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Percent, false, false, 0, 0);
-  beaconLightSwitch2Ptr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Bool, true, true, 0, 0);
+  beaconLightSwitchPtr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Percent, true, false, 0, 0);
+  beaconLightSwitch2Ptr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
   // using make_simple_aircraft_var() to demonstrate the same thing
   beaconLightSwitch3Ptr = dataManager->make_simple_aircraft_var("LIGHT BEACON", UNITS.PercentOver100);
+#endif
 
+#ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
   // A:FUELSYSTEM PUMP SWITCH:#ID#  - demonstrates variable with index
-  fuelPumpSwitch1Ptr =
-      dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 1, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
-  fuelPumpSwitch2Ptr =
-      dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 2, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
+  // clang-format off
+  fuelPumpSwitch1Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 1, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
+  fuelPumpSwitch2Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 2, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
+  // clang-format on
+#endif
 
+#ifdef DATA_DEFINITION_EXAMPLE
   // ========================================
   // Data definition variables
   std::vector<DataDefinition> exampleDataDef = {
@@ -109,10 +119,12 @@ bool ExampleModule::initialize() {
   // or if the sim should only send data when it has changed.
   // See
   // https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm?rhhlterm=SIMCONNECT_CLIENT_DATA_PERIOD&rhsearch=SIMCONNECT_CLIENT_DATA_PERIOD
-  //  if (!exampleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME)) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  if (!exampleDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
+#endif
 
+#ifdef CLIENT_DATA_AREA_EXAMPLE
   // ========================================
   // Client data area owned by this module
   exampleClientDataPtr = dataManager->make_clientdataarea_var<ExampleClientData>("EXAMPLE CLIENT DATA", false, true);
@@ -120,12 +132,14 @@ bool ExampleModule::initialize() {
 
   // Client data area owned by an external module
   exampleClientData2Ptr = dataManager->make_clientdataarea_var<ExampleClientData2>("EXAMPLE 2 CLIENT DATA");
-  // exampleClientData2Ptr->setSkipChangeCheck(true);
+  exampleClientData2Ptr->setSkipChangeCheck(true);
   // this is probably very efficient for client data areas if every change needs to be read
-  //  if (!exampleClientData2Ptr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  if (!exampleClientData2Ptr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
+#endif
 
+#ifdef BIG_CLIENT_DATA_EXAMPLE
   // ========================================
   // Big client data area owned by an external module
   bigClientDataPtr = dataManager->make_clientdataarea_var<BigClientData>("BIG CLIENT DATA");
@@ -138,61 +152,68 @@ bool ExampleModule::initialize() {
     auto s = std::string_view((const char*)&bigClientDataPtr->data().dataChunk, 100);
     std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s << " ... " << std::endl;
     std::cout << "Fingerprint: "
-              << fingerPrintFVN(std::vector(bigClientDataPtr->data().dataChunk.begin(), bigClientDataPtr->data().dataChunk.end()))
+              << helper::Math::fingerPrintFVN(
+                     std::vector(bigClientDataPtr->data().dataChunk.begin(), bigClientDataPtr->data().dataChunk.end()))
               << std::endl;
   });
-  //  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  if (!bigClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
+#endif
 
+#ifdef STREAM_RECEIVE_EXAMPLE
   // ========================================
-  // Metadata for the ClientDataBufferedAreaVariable test
-  metaDataPtr = dataManager->make_clientdataarea_var<BufferedAreaMetaData>("HUGE CLIENT DATA META DATA");
-  metaDataPtr->setSkipChangeCheck(true);
-  metaDataPtr->addCallback([&]() {
-    receiptTimerStart = std::chrono::high_resolution_clock::now();
-    hugeClientDataPtr->reserve(metaDataPtr->data().size);
-    // Huge Client Data Meta Data
-    std::cout << "--- CALLBACK: HUGE CLIENT META DATA (External - reading)" << std::endl;
-    std::cout << metaDataPtr->str() << std::endl;
-    std::cout << "HUGE CLIENT DATA META DATA size = " << metaDataPtr->data().size << " fingerprint = " << metaDataPtr->data().hash
-              << std::endl;
+  // Metadata for the StreamingClientDataAreaVariable test
+  streamReceiverMetaDataPtr = dataManager->make_clientdataarea_var<StreamingDataMetaData>("STREAM RECEIVER META DATA");
+  streamReceiverMetaDataPtr->setSkipChangeCheck(true);
+  streamReceiverMetaDataPtr->addCallback([&]() {
+    streamReceiverTimerStart = std::chrono::high_resolution_clock::now();
+    streamReveicerDataPtr->reserve(streamReceiverMetaDataPtr->data().size);
+    std::cout << "--- CALLBACK: STREAM RECEIVER META DATA (External - reading)" << std::endl;
+    std::cout << streamReceiverMetaDataPtr->str() << std::endl;
+    std::cout << "STREAM RECEIVER DATA META DATA size = " << streamReceiverMetaDataPtr->data().size
+              << " fingerprint = " << streamReceiverMetaDataPtr->data().hash << std::endl;
   });
-  //  if (!metaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  if (!streamReceiverMetaDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET)) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
 
-  // =========================================
-  // ClientDataBufferedAreaVariable receiving test
-  hugeClientDataPtr = dataManager->make_clientdatabufferedarea_var<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA");
-  hugeClientDataPtr->setSkipChangeCheck(true);
-  hugeClientDataPtr->addCallback([&]() {
-    receiptTimerEnd = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - receiptTimerStart);
-    std::cout << "--- CALLBACK: HUGE CLIENT DATA (External - reading)" << std::endl;
-    std::cout << hugeClientDataPtr->str() << std::endl;
-    const uint64_t fingerPrintFvn = fingerPrintFVN(hugeClientDataPtr->getData());
-    std::cout << "HUGE CLIENT DATA "
-              << " size = " << hugeClientDataPtr->getData().size() << " bytes = " << hugeClientDataPtr->getReceivedBytes()
-              << " chunks = " << hugeClientDataPtr->getReceivedChunks() << " fingerprint = " << std::setw(21) << fingerPrintFvn
-              << " (match = " << std::boolalpha << (fingerPrintFvn == metaDataPtr->data().hash) << ")"
-              << " time = " << std::setw(10) << receiptTimerEnd.count() << " ns" << std::endl;
+  // ==============================================
+  // StreamingClientDataAreaVariable receiving test
+  streamReveicerDataPtr = dataManager->make_streamingclientdataarea_var<char>("STREAM RECEIVER DATA");
+  streamReveicerDataPtr->setSkipChangeCheck(true);
+  streamReveicerDataPtr->addCallback([&]() {
+    streamReceiverTimerEnd =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - streamReceiverTimerStart);
+    std::cout << "--- CALLBACK: STREAM RECEIVER DATA (External - reading)" << std::endl;
+    std::cout << streamReveicerDataPtr->str() << std::endl;
+    const uint64_t fingerPrintFvn = helper::Math::fingerPrintFVN(streamReveicerDataPtr->getData());
+    std::cout << "STREAM RECEIVER DATA "
+              << " size = " << streamReveicerDataPtr->getData().size() << " bytes = " << streamReveicerDataPtr->getReceivedBytes()
+              << " chunks = " << streamReveicerDataPtr->getReceivedChunks() << " fingerprint = " << std::setw(21) << fingerPrintFvn
+              << " (match = " << std::boolalpha << (fingerPrintFvn == streamReceiverMetaDataPtr->data().hash) << ")"
+              << " time = " << std::setw(10) << streamReceiverTimerEnd.count() << " ns" << std::endl;
     std::cout << "Content: "
-              << "[" << std::string(hugeClientDataPtr->getData().begin(), hugeClientDataPtr->getData().begin() + 100) << " ... ]"
+              << "[" << std::string(streamReveicerDataPtr->getData().begin(), streamReveicerDataPtr->getData().begin() + 100) << " ... ]"
               << std::endl;
   });
-  //  if (!SUCCEEDED(hugeClientDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
-  //    LOG_ERROR("Failed to request periodic data from sim");
-  //  }
+  if (!SUCCEEDED(streamReveicerDataPtr->requestPeriodicDataFromSim(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET))) {
+    LOG_ERROR("Failed to request periodic data from sim");
+  }
+#endif
 
-  // =========================================
-  // ClientDataBufferedAreaVariable sending test
-  hugeClientData2Ptr = dataManager->make_clientdatabufferedarea_var<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>("HUGE CLIENT DATA 2");
-  hugeClientData2Ptr->allocateClientDataArea();
-  hugeClientData2Ptr->getData().assign(longText.begin(), longText.end());
+#ifdef STREAM_SEND_EXAMPLE
+  // ============================================
+  // StreamingClientDataAreaVariable sending test
+  streamSenderMetaDataPtr = dataManager->make_clientdataarea_var<StreamingDataMetaData>("STREAM SENDER META DATA");
+  streamSenderMetaDataPtr->allocateClientDataArea();
+  streamSenderDataPtr = dataManager->make_streamingclientdataarea_var<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>("STREAM SENDER DATA");
+  streamSenderDataPtr->allocateClientDataArea();
+  streamSenderDataPtr->getData().assign(longText.begin(), longText.end());
 
-  metaData2Ptr = dataManager->make_clientdataarea_var<BufferedArea2MetaData>("HUGE CLIENT DATA 2 META DATA");
-  metaData2Ptr->allocateClientDataArea();
+#endif
 
+#ifdef KEY_EVENT_EXAMPLE
   // ======================
   // Key event tests
   // Test callback a member method using this->
@@ -207,26 +228,16 @@ bool ExampleModule::initialize() {
                   << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2 << " param3 = " << param3
                   << " param4 = " << param4 << std::endl;
       });
+#endif
 
+#ifdef CUSTOM_EVENT_EXAMPLE
   // ======================
   // Client Event tests
-
   // Simple custom client event - no mappings
-  clientEventPtr = dataManager->make_client_event("A32NX.MY_CUSTOM_EVENT");
-  clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
-  clientEventCallbackId = clientEventPtr->addCallback(
-      [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
-        std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl;
-        std::cout << clientEventPtr->str() << std::endl;
-        std::cout << "CUSTOM_EVENT "
-                  << " number = " << number << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
-                  << " param3 = " << param3 << " param4 = " << param4 << std::endl;
-        std::cout << std::endl;
-      });
-  clientEventPtr->mapInputDownUpEvent("VK_COMMA", INPUT_GROUP_1);
-  clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_1);
-  clientEventPtr->setInputGroupState(INPUT_GROUP_1, SIMCONNECT_STATE_ON);
+  clientEventPtr = dataManager->make_client_event("A32NX.MY_CUSTOM_EVENT", false);
+#endif
 
+#ifdef SYSTEM_EVENT_EXAMPLE
   // ======================
   // System Events
   // Create the client event with the registerToSim flag set to false, so we can add
@@ -244,6 +255,7 @@ bool ExampleModule::initialize() {
         std::cout << std::endl;
       });
   systemEventPtr->subscribeToSimSystemEvent("View");
+#endif
 
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
@@ -266,25 +278,27 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!msfsHandler.getA32NxIsReady())
     return true;
 
-  // Un-throttled tests
-  //  if (metaDataPtr->hasChanged()) {
-  //    // Huge Client Data Meta Data
-  //    LOG_INFO("--- HUGE CLIENT META DATA (External - reading)");
-  //    hugeClientDataPtr->reserve(metaDataPtr->data().size);
-  //    std::cout << metaDataPtr->str() << std::endl;
-  //    std::cout << "Huge client data size: " << metaDataPtr->data().size << std::endl;
-  //    std::cout << "Huge client data hash: " << metaDataPtr->data().hash << std::endl;
-  //  }
+#ifdef STREAM_RECEIVE_EXAMPLE
+    // Un-throttled tests
+    //  if (streamReceiverMetaDataPtr->hasChanged()) {
+    //    // STREAM RECEIVER DATA Meta Data
+    //    LOG_INFO("--- HUGE CLIENT META DATA (External - reading)");
+    //    streamReveicerDataPtr->reserve(streamReceiverMetaDataPtr->data().size);
+    //    std::cout << streamReceiverMetaDataPtr->str() << std::endl;
+    //    std::cout << "STREAM RECEIVER DATA size: " << streamReceiverMetaDataPtr->data().size << std::endl;
+    //    std::cout << "STREAM RECEIVER DATA hash: " << streamReceiverMetaDataPtr->data().hash << std::endl;
+    //  }
 
-  //  if (hugeClientDataPtr->hasChanged()) {
-  //    LOG_INFO("--- HUGE CLIENT DATA (External - reading)");
-  //    std::cout << hugeClientDataPtr->str() << std::endl;
-  //    std::cout << "Huge client data size: " << hugeClientDataPtr->getData().size() << std::endl;
-  //    std::string s(hugeClientDataPtr->getData().data(), hugeClientDataPtr->getData().size());
-  //    auto fingerprint = fingerPrintFVN(s);
-  //    std::cout << "Fingerprint: " << fingerprint << std::endl;
-  //    std::cout << "Fingerprint is " << (fingerprint == metaDataPtr->data().hash ? "equal" : "not equal") << std::endl;
-  //  }
+    //  if (streamReveicerDataPtr->hasChanged()) {
+    //    LOG_INFO("--- STREAM RECEIVER DATA (External - reading)");
+    //    std::cout << streamReveicerDataPtr->str() << std::endl;
+    //    std::cout << "STREAM RECEIVER DATA size: " << streamReveicerDataPtr->getData().size() << std::endl;
+    //    std::string s(streamReveicerDataPtr->getData().data(), streamReveicerDataPtr->getData().size());
+    //    auto fingerprint = fingerPrintFVN(s);
+    //    std::cout << "Fingerprint: " << fingerprint << std::endl;
+    //    std::cout << "Fingerprint is " << (fingerprint == streamReceiverMetaDataPtr->data().hash ? "equal" : "not equal") << std::endl;
+    //  }
+#endif
 
   // Use this to throttle output frequency while you are debugging
   if (msfsHandler.getTickCounter() % 100 == 0) {
@@ -293,101 +307,116 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
 
-    // ======================
-    // Sending large data to the sim
-    metaData2Ptr->data().size = hugeClientData2Ptr->getData().size();
-    metaData2Ptr->data().hash = fingerPrintFVN(hugeClientData2Ptr->getData());
-    metaData2Ptr->writeDataToSim();
-    LOG_DEBUG("--- HUGE CLIENT 2 META DATA - writing: " + std::to_string(metaData2Ptr->data().size) + " bytes + fingerprint: " +
-              std::to_string(metaData2Ptr->data().hash));
-    hugeClientData2Ptr->writeDataToSim();
-
+#ifdef CUSTOM_EVENT_EXAMPLE
     // ======================
     // Client Event Tests
 
-    /*    if (tickCounter % 2000 == 1000) {
-          clientEventPtr->unmapInputEvent("VK_COMMA", INPUT_GROUP_1);
-          clientEventPtr->unmapInputEvent("joystick:1:button:7", INPUT_GROUP_1);
-          clientEventPtr->removeCallback(clientEventCallbackId);
-          clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_1);
-        }
-        if (tickCounter % 2000 == 0) {
-          clientEventPtr->mapToSimEvent();
-          clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
-          clientEventCallbackId = clientEventPtr->addCallback(
-              [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD
-       param4) { std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl; std::cout << clientEventPtr->str() << std::endl; std::cout
-       << "CUSTOM_EVENT "
-                          << " number = " << number << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
-                          << " param3 = " << param3 << " param4 = " << param4 << std::endl;
-                std::cout << std::endl;
-              });
-          clientEventPtr->mapInputDownUpEvent("VK_COMMA", INPUT_GROUP_1);
-          clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_1);
-          clientEventPtr->setInputGroupState(INPUT_GROUP_1, SIMCONNECT_STATE_ON);
-        }*/
+    if (tickCounter % 2000 == 1000) {
+      clientEventPtr->mapToSimEvent();
+      clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
+      clientEventCallbackId = clientEventPtr->addCallback(
+          [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
+            std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl;
+            std::cout << clientEventPtr->str() << std::endl;
+            std::cout << "CUSTOM_EVENT "
+                      << " number = " << number << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
+                      << " param3 = " << param3 << " param4 = " << param4 << std::endl;
+            std::cout << std::endl;
+          });
+      clientEventPtr->mapInputDownUpEvent("VK_COMMA", INPUT_GROUP_1);
+      clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_1);
+      clientEventPtr->setInputGroupState(INPUT_GROUP_1, SIMCONNECT_STATE_ON);
+    }
+    if (tickCounter % 2000 == 0) {
+      clientEventPtr->removeCallback(clientEventCallbackId);
+      clientEventPtr->unmapInputEvent("VK_COMMA", INPUT_GROUP_1);
+      // this will trigger a SimConnect exception UNRECOGNIZED_ID but actually will remove the mapping
+      // without this adding the mapping again will lead to two events being sent for the input
+      // likely a bug in SimConnect/MSFS
+      clientEventPtr->unmapInputEvent("joystick:1:button:7", INPUT_GROUP_1);
+      clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_1);
+    }
     // clientEventPtr->trigger(999);
+#endif
+
+#ifdef LVAR_EXAMPLES
+    // clang-format off
 
     // difference if using different units
-    /*
-      debugLVAR3Ptr->setAndWriteToSim(msfsHandler->getTickCounter());
-      LOG_INFO("--- DEBUG_LVAR");
-      LOG_INFO("timeStamp = " + std::to_string(timeStamp)
-               + "/ ticks = " + std::to_string(msfsHandler->getTickCounter()));
-      LOG_INFO("debugLVARPtr  DEBUG_LVAR "
-               + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
-               + std::to_string(debugLVARPtr->updateFromSim(timeStamp, tickCounter)));
-      LOG_INFO("debugLVAR2Ptr DEBUG_LVAR " + std::to_string(debugLVAR2Ptr->updateFromSim(msfsHandler->getTimeStamp(),
-      msfsHandler->getTickCounter()))); LOG_INFO("debugLVAR3Ptr DEBUG_LVAR " +
-      std::to_string(debugLVAR3Ptr->updateFromSim(msfsHandler->getTimeStamp(), msfsHandler->getTickCounter())));
-    */
+    LOG_INFO("--- LVAR EXAMPLE");
+    LOG_INFO("timeStamp = " + std::to_string(timeStamp) + "/ ticks = " + std::to_string(msfsHandler.getTickCounter()));
+    debugLVAR3Ptr->setAndWriteToSim(msfsHandler.getTickCounter());
+    LOG_INFO("Setting DEBUG_LVAR to tickCounter = " + std::to_string(tickCounter));
+    LOG_INFO("debugLVARPtr  DEBUG_LVAR (hours)   " + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " " + std::to_string(debugLVARPtr->updateFromSim(timeStamp, tickCounter)));
+    LOG_INFO("debugLVAR2Ptr DEBUG_LVAR (minutes) " + std::to_string(debugLVAR2Ptr->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter())));
+    LOG_INFO("debugLVAR3Ptr DEBUG_LVAR (seconds) " + std::to_string(debugLVAR3Ptr->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter())));
+
     // this second read of the duplicate should not trigger a read from the sim
-    /*
-      LOG_INFO("debugLVAR4Ptr DEBUG_LVAR "
-               + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " "
-               + std::to_string(debugLVAR4Ptr->updateFromSim(timeStamp, tickCounter)));
-
-      LOG_INFO("beaconLightSwitchPtr  DEBUG_BEACON " + std::to_string(beaconLightSwitchPtr->rawReadFromSim()));
-      LOG_INFO("beaconLightSwitch2Ptr DEBUG_BEACON " + std::to_string(beaconLightSwitch2Ptr->rawReadFromSim()));
-      LOG_INFO("beaconLightSwitch3Ptr DEBUG_BEACON " + std::to_string(beaconLightSwitch3Ptr->rawReadFromSim()));
-      LOG_INFO("--- DEBUG_BEACON");
-    */
-
-    // testing removing an event callback
-    /*
-      if (msfsHandler->getTimeStamp() >= 30 && msfsHandler->getTimeStamp() < 31) {
-        lightPotentiometerSetEvent2Ptr->removeKeyEventCallback(lightPotentiometerSetCallback2ID);
-      }
-    */
+    // enable LOG_TRACE to see the read in updateFromSim()
+    LOG_INFO("debugLVAR4Ptr DEBUG_LVAR (hours)   " + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " " + std::to_string(debugLVAR4Ptr->updateFromSim(timeStamp, tickCounter)));
 
     // testing doubled LVARs
-    /*
-      std::cout << *debugLVARPtr << std::endl;
-      std::cout << *debugLVAR2Ptr << std::endl;
-      std::cout << "TESTING 1212" << std::endl;
-     */
+    std::cout << "Pointer Address of duplicates:  debugLVARPtr=" << std::addressof(*debugLVARPtr) << " debugLVAR4Ptr=" << std::addressof(*debugLVAR4Ptr) << std::endl;
 
-    // testing aircraft variables
-    // std::cout << beaconLightSwitchPtr->str() << std::endl;
+    // manual changing in the sim's LocalVariables dialog - uncomment below and comment out above
+    //
+    // std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? " << (debugLVARPtr->hasChanged() ? "yes" : "no") << " debugLVARPtr  time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
+    // std::cout << "debugLVAR2Ptr = " << debugLVAR2Ptr->get() << " changed? " << (debugLVAR2Ptr->hasChanged() ? "yes" : "no") << " debugLVAR2Ptr time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
 
+    // Set a variable which does not auto write - uncomment below and comment out above
+    // debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
+
+    // clang-format on
+#endif
+
+#ifdef AIRCRAFT_VAR_EXAMPLE
+    // Read vars which auto update each tick
+    std::cout << "beaconLightSwitchPtr =  " << beaconLightSwitchPtr->get() << " changed? "
+              << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no") << " beaconLightSwitchPtr  time = " << msfsHandler.getTimeStamp()
+              << " tick = " << msfsHandler.getTickCounter() << std::endl;
+    std::cout << "beaconLightSwitch2Ptr = " << beaconLightSwitch2Ptr->get() << " changed? "
+              << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch2Ptr time = " << msfsHandler.getTimeStamp()
+              << " tick = " << msfsHandler.getTickCounter() << std::endl;
+
+    std::cout << "beaconLightSwitch3Ptr = " << beaconLightSwitch3Ptr->updateFromSim(timeStamp, tickCounter) << " changed? "
+              << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch3Ptr time = " << msfsHandler.getTimeStamp()
+              << " tick = " << msfsHandler.getTickCounter() << std::endl;
+
+    // Test writing an aircraft variable by toggling the beacon light switch
+    // Immediate write
+    // beaconLightSwitchPtr->setAndWriteToSim(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
+    // beaconLightSetKeyEventPtr->trigger_ex1(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
+    // // autoWrite in postUpdate
+    // beaconLightSwitch2Ptr->set(beaconLightSwitch2Ptr->get() == 0.0 ? 1.0 : 0.0);
+#endif
+
+#ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
+    std::cout << "fuelPumpSwitch1Ptr = " << fuelPumpSwitch1Ptr->get() << " changed? " << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
+              << " time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
+
+    std::cout << "fuelPumpSwitch2Ptr = " << fuelPumpSwitch2Ptr->get() << " changed? " << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
+              << " time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
+#endif
+
+#ifdef DATA_DEFINITION_EXAMPLE
     // testing data definition variables
-    /*
-      LOG_INFO("--- TEST SIMOBJECT DATA");
-      std::cout << exampleDataPtr->str() << std::endl;
-      exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
-      std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
-      std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
-      std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;
-      exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
-      std::cout << "LIGHT WING " << exampleDataPtr->data().wingLightSwitch << std::endl;
-      std::cout << "ZULU       " << exampleDataPtr->data().zuluTime << std::endl;
-      std::cout << "LOCAL      " << exampleDataPtr->data().localTime << std::endl;
-    */
+    LOG_INFO("--- TEST SIMOBJECT DATA");
+    std::cout << exampleDataPtr->str() << std::endl;
 
+    LOG_INFO("--- DataDefinition Example)");
+    exampleDataPtr->requestUpdateFromSim(timeStamp, tickCounter);
+    std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().strobeLightSwitch << std::endl;
+    std::cout << "wingLightSwitch =  " << exampleDataPtr->data().wingLightSwitch << std::endl;
+    std::cout << "zuluTime =  " << exampleDataPtr->data().zuluTime << std::endl;
+    std::cout << "localTime =  " << exampleDataPtr->data().localTime << std::endl;
+    std::cout << "absoluteTime =  " << INT64(exampleDataPtr->data().absoluteTime) << std::endl;
+    std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
+#endif
+
+#ifdef CLIENT_DATA_AREA_EXAMPLE
     // Testing client data variables
     // Can be tested together with https://github.com/frankkopp/fbw-cpp-framework-test
 
-    /*
     // This local data sent to other clients
     LOG_INFO("--- EXAMPLE CLIENT DATA (Owning - sending)");
     std::cout << exampleClientDataPtr->str() << std::endl;
@@ -404,9 +433,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     exampleClientDataPtr->data().anInt16++;
     exampleClientDataPtr->data().anInt8++;
     // exampleClientDataPtr->writeDataToSim();
-    */
 
-    /*
     // This is external data from an external client
     LOG_INFO("--- EXAMPLE 2 CLIENT DATA (External - reading)");
     std::cout << exampleClientData2Ptr->str() << std::endl;
@@ -419,86 +446,19 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     std::cout << "INT64      " << exampleClientData2Ptr->data().anInt64 << std::endl;
     std::cout << "FLOAT32    " << exampleClientData2Ptr->data().aFloat32 << std::endl;
     std::cout << "FLOAT64    " << exampleClientData2Ptr->data().aFloat64 << std::endl;
-    */
+#endif
 
-    /*
-    LOG_INFO("--- DataDefinition Example)");
-    std::cout << "strobeLightSwitch =  " << exampleDataPtr->data().strobeLightSwitch << std::endl;
-    std::cout << "wingLightSwitch =  " << exampleDataPtr->data().wingLightSwitch << std::endl;
-    std::cout << "zuluTime =  " << exampleDataPtr->data().zuluTime << std::endl;
-    std::cout << "localTime =  " << exampleDataPtr->data().localTime << std::endl;
-    std::cout << "absoluteTime =  " << INT64(exampleDataPtr->data().absoluteTime) << std::endl;
-    std::cout << "aircraftTTitle =  " << exampleDataPtr->data().aircraftTTitle << std::endl;
-    */
-
-    /*
-    LOG_INFO("--- LVAR Example)");
-    std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? "
-              << (debugLVARPtr->hasChanged() ? "yes" : "no")
-              << " debugLVARPtr  time = " << msfsHandler->getTimeStamp()
-              << " tick = " << msfsHandler->getTickCounter()
-              << std::endl;
-    // Set a variable which does not auto write
-    //    debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
-    */
-
-    // Read vars which auto update each tick
-    /*
-     std::cout << "debugLVAR2Ptr = " << debugLVAR2Ptr->get() << " changed? "
-               << (debugLVAR2Ptr->hasChanged() ? "yes" : "no")
-               << " debugLVAR2Ptr time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "beaconLightSwitchPtr =  " << beaconLightSwitchPtr->get() << " changed? "
-               << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no")
-               << " beaconLightSwitchPtr  time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "beaconLightSwitch2Ptr = " << beaconLightSwitch2Ptr->get() << " changed? "
-               << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no")
-               << " beaconLightSwitch2Ptr time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "beaconLightSwitch3Ptr = " << beaconLightSwitch3Ptr->get() << " changed? "
-               << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no")
-               << " beaconLightSwitch3Ptr time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "fuelPumpSwitch1Ptr = " << fuelPumpSwitch1Ptr->get() << " changed? "
-               << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-               << " time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "fuelPumpSwitch2Ptr = " << fuelPumpSwitch2Ptr->get() << " changed? "
-               << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-               << " time = " << msfsHandler->getPreviousSimulationTime()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-
-     std::cout << "zuluTimePtr = " << zuluTimePtr->get() << " changed? "
-               << (zuluTimePtr->hasChanged() ? "yes" : "no")
-               << " time = " << msfsHandler->getTimeStamp()
-               << " tick = " << msfsHandler->getTickCounter()
-               << std::endl;
-    */
-
-    // Test writing an aircraft variable by toggling the beacon light switch
-    // Immediate write
-    /*
-      beaconLightSwitchPtr->setAndWriteToSim(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
-      beaconLightSetKeyEventPtr->trigger_ex1(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
-    // autoWrite in postUpdate
-      beaconLightSwitch2Ptr->set(beaconLightSwitch2Ptr->get() == 0.0 ? 1.0 : 0.0);
-
-    // Test writing a data definition variable by toggling the strobe light switch
-      exampleDataStruct.strobeLightSwitch = exampleDataStruct.strobeLightSwitch == 0.0 ? 1.0 : 0.0;
-      exampleDataPtr->writeDataToSim();
-    */
+#ifdef STREAM_SEND_EXAMPLE
+    // clang-format off
+    // ======================
+    // Sending large data to the sim
+    streamSenderMetaDataPtr->data().size = streamSenderDataPtr->getData().size();
+    streamSenderMetaDataPtr->data().hash = helper::Math::fingerPrintFVN(streamSenderDataPtr->getData());
+    streamSenderMetaDataPtr->writeDataToSim();
+    LOG_DEBUG("--- STREAM SENDER DATA - writing: " + std::to_string(streamSenderMetaDataPtr->data().size) + " bytes + fingerprint: " + std::to_string(streamSenderMetaDataPtr->data().hash));
+    streamSenderDataPtr->writeDataToSim();
+    // clang-format on
+#endif
 
   }  // update throttle
 

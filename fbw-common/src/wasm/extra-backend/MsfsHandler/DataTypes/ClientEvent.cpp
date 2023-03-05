@@ -27,6 +27,10 @@ void ClientEvent::mapToSimEvent() {
   isRegisteredToSim = true;
 }
 
+// =================================================================================================
+// Registration / Mapping of the Client Event to Sim System Events
+// =================================================================================================
+
 void ClientEvent::subscribeToSimSystemEvent(const std::string& eventName) {
   if (!SUCCEEDED(SimConnect_SubscribeToSystemEvent(hSimConnect, getClientEventId(), eventName.c_str()))) {
     LOG_ERROR("Failed to map client event " + clientEventName + " with client ID " + std::to_string(clientEventId) +
@@ -57,6 +61,42 @@ void ClientEvent::setSystemEventState(SIMCONNECT_STATE state) {
   }
   LOG_DEBUG("Set system event state " + std::to_string(state) + " for client event " + clientEventName + " with client ID " +
             std::to_string(clientEventId));
+}
+
+// =================================================================================================
+// Notification group
+// =================================================================================================
+
+void ClientEvent::addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId, bool maskEvent) {
+  if (!SUCCEEDED(
+          SimConnect_AddClientEventToNotificationGroup(hSimConnect, notificationGroupId, getClientEventId(), maskEvent ? TRUE : FALSE))) {
+    LOG_ERROR("Failed to add event " + getClientEventName() + " to client notification group " + std::to_string(notificationGroupId));
+    return;
+  }
+  LOG_DEBUG("Subscribed to event " + getClientEventName() + " with client ID " + std::to_string(getClientEventId()));
+}
+
+void ClientEvent::removeClientEventFromNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
+  if (!SUCCEEDED(SimConnect_RemoveClientEvent(hSimConnect, notificationGroupId, getClientEventId()))) {
+    LOG_ERROR("Failed to remove event " + getClientEventName() + " from the sim");
+    return;
+  }
+  LOG_DEBUG("Unsubscribed from event " + getClientEventName() + " with client ID " + std::to_string(getClientEventId()));
+}
+
+void ClientEvent::clearNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
+  if (!SUCCEEDED(SimConnect_ClearNotificationGroup(hSimConnect, notificationGroupId))) {
+    LOG_ERROR("Failed to clear notification group " + std::to_string(notificationGroupId));
+  }
+  LOG_DEBUG("Cleared notification group " + std::to_string(notificationGroupId));
+}
+
+void ClientEvent::setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId,
+                                               DWORD notificationGroupPriority) const {
+  if (!SUCCEEDED(SimConnect_SetNotificationGroupPriority(hSimConnect, notificationGroupId, notificationGroupPriority))) {
+    LOG_ERROR("Failed to set notification group " + std::to_string(notificationGroupId) + " to highest priority");
+  }
+  LOG_DEBUG("Set notification group " + std::to_string(notificationGroupId) + " to priority " + std::to_string(notificationGroupPriority));
 }
 
 // =================================================================================================
@@ -128,42 +168,6 @@ void ClientEvent::processEvent(DWORD data0, DWORD data1, DWORD data2, DWORD data
   for (const auto& [id, callback] : callbacks) {
     callback(5, data0, data1, data2, data3, data4);
   }
-}
-
-// =================================================================================================
-// Notification group
-// =================================================================================================
-
-void ClientEvent::addClientEventToNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId, bool maskEvent) {
-  if (!SUCCEEDED(
-          SimConnect_AddClientEventToNotificationGroup(hSimConnect, notificationGroupId, getClientEventId(), maskEvent ? TRUE : FALSE))) {
-    LOG_ERROR("Failed to add event " + getClientEventName() + " to client notification group " + std::to_string(notificationGroupId));
-    return;
-  }
-  LOG_DEBUG("Subscribed to event " + getClientEventName() + " with client ID " + std::to_string(getClientEventId()));
-}
-
-void ClientEvent::removeClientEventFromNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
-  if (!SUCCEEDED(SimConnect_RemoveClientEvent(hSimConnect, notificationGroupId, getClientEventId()))) {
-    LOG_ERROR("Failed to remove event " + getClientEventName() + " from the sim");
-    return;
-  }
-  LOG_DEBUG("Unsubscribed from event " + getClientEventName() + " with client ID " + std::to_string(getClientEventId()));
-}
-
-void ClientEvent::clearNotificationGroup(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
-  if (!SUCCEEDED(SimConnect_ClearNotificationGroup(hSimConnect, notificationGroupId))) {
-    LOG_ERROR("Failed to clear notification group " + std::to_string(notificationGroupId));
-  }
-  LOG_DEBUG("Cleared notification group " + std::to_string(notificationGroupId));
-}
-
-void ClientEvent::setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId,
-                                               DWORD notificationGroupPriority) const {
-  if (!SUCCEEDED(SimConnect_SetNotificationGroupPriority(hSimConnect, notificationGroupId, notificationGroupPriority))) {
-    LOG_ERROR("Failed to set notification group " + std::to_string(notificationGroupId) + " to highest priority");
-  }
-  LOG_DEBUG("Set notification group " + std::to_string(notificationGroupId) + " to priority " + std::to_string(notificationGroupPriority));
 }
 
 // =================================================================================================
@@ -261,18 +265,4 @@ std::string ClientEvent::str() const {
 std::ostream& operator<<(std::ostream& os, const ClientEvent& clientEvent) {
   os << clientEvent.str();
   return os;
-}
-
-// =================================================================================================
-// PRIVATE METHODS
-// =================================================================================================
-
-bool ClientEvent::removeInputEventRaw(const std::string& inputDefinition, SIMCONNECT_NOTIFICATION_GROUP_ID groupId) const {
-  if (!SUCCEEDED(SimConnect_RemoveInputEvent(hSimConnect, groupId, inputDefinition.c_str()))) {
-    LOG_ERROR("Failed to remove input event " + inputDefinition + " from client event " + clientEventName);
-    return false;
-  }
-  LOG_DEBUG("Removed input event " + inputDefinition + " with group ID " + std::to_string(groupId) + " from client event " +
-            clientEventName);
-  return true;
 }
