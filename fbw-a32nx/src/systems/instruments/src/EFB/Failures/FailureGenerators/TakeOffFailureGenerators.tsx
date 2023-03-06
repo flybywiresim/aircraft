@@ -11,8 +11,8 @@ const failureGeneratorArmed :boolean[] = [];
 const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
 
-export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
-    const htmlReturn : JSX.Element[] = [];
+export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => Element[] = (generatorSettings : any) => {
+    const htmlReturn : Element[] = [];
     const setting = generatorSettings.settingsTakeOff;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
@@ -33,7 +33,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
     failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
-const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
+const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => Element = (genID : number, generatorSettings : any) => {
     const settings = generatorSettings.settingsTakeOff;
     return (
         <div className="relative flex-col py-2 px-2 my-2 text-center rounded-md border-white mx-x black border-1">
@@ -43,130 +43,166 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                 </h2>
                 <button
                     type="button"
+                    onClick={() => {
+                        setNewSetting(0, generatorSettings, genID, 0);
+                    }}
+                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 0}
+                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                >
+                    <h2>OFF</h2>
+                </button>
+                <button
+                    type="button"
                     onClick={() => eraseGenerator(genID, generatorSettings)}
-                    className="absolute right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 1}
+                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                >
+                    <h2>Once</h2>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => eraseGenerator(genID, generatorSettings)}
+                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 2}
+                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                >
+                    <h2>Take-Off</h2>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => eraseGenerator(genID, generatorSettings)}
+                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 3}
+                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                >
+                    <h2>Always</h2>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => eraseGenerator(genID, generatorSettings)}
+                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
                 >
                     <h2>X</h2>
                 </button>
             </div>
-            <div className="flex-row text-left">
-                Failure per take-off:
-                <SimpleInput
-                    className="my-2 w-full font-mono"
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={0}
-                    max={100}
-                    value={settings[genID * numberOfSettingsPerGenerator + 1] * 100}
-                    onBlur={(x) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 1);
-                        }
-                    }}
-                />
-                %
-            </div>
-            <div className="text-left">
-                Low Speed chance:
-                <SimpleInput
-                    className="my-2 w-full font-mono"
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={0}
-                    max={100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100}
-                    value={settings[genID * numberOfSettingsPerGenerator + 2] * 100}
-                    onBlur={(x) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 2);
-                        }
-                    }}
-                />
-                %
-            </div>
-            <div className="text-left">
-                Medium Speed chance:
-                <SimpleInput
-                    className="my-2 w-full font-mono"
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={0}
-                    max={100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100}
-                    value={settings[genID * numberOfSettingsPerGenerator + 3] * 100}
-                    onBlur={(x) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 3);
-                        }
-                    }}
-                />
-                %
-            </div>
-            <div className="text-left">
-                Minimum speed:
-                <SimpleInput
-                    className="my-2 w-full font-mono"
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={0}
-                    max={300}
-                    value={settings[genID * numberOfSettingsPerGenerator + 4]}
-                    onBlur={(x) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x), generatorSettings, genID, 4);
-                        }
-                    }}
-                />
-                knots
-            </div>
-            <div className="text-left">
-                Speed transition low-med:
-                <SimpleInput
-                    className="my-2 w-full font-mono"
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={0}
-                    max={300}
-                    value={settings[genID * numberOfSettingsPerGenerator + 5]}
-                    onBlur={(x) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x), generatorSettings, genID, 5);
-                        }
-                    }}
-                />
-                knots
-            </div>
-            <div className="text-left">
-                Max speed:
-                <SimpleInput
-                    className="my-2 w-full font-mono"
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={0}
-                    max={300}
-                    value={settings[genID * numberOfSettingsPerGenerator + 6]}
-                    onBlur={(x) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x), generatorSettings, genID, 6);
-                        }
-                    }}
-                />
-                knots
-            </div>
-            <div className="text-left">
-                Max altitude above runway:
-                <SimpleInput
-                    className="my-2 w-full font-mono"
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={0}
-                    max={10000}
-                    value={settings[genID * numberOfSettingsPerGenerator + 7] * 100}
-                    onBlur={(x) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 7);
-                        }
-                    }}
-                />
-                feet
+            <div className="flex-row">
+                <div className="flex-col text-left">
+                    <div>Failure per take-off:</div>
+                    <SimpleInput
+                        className="my-2 w-20 font-mono"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        max={100}
+                        value={settings[genID * numberOfSettingsPerGenerator + 1] * 100}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 1);
+                            }
+                        }}
+                    />
+                    %
+                </div>
+                <div className="flex-col text-left">
+                    <div>Low Speed chance:</div>
+                    <SimpleInput
+                        className="my-2 w-20 font-mono"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        max={100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100}
+                        value={settings[genID * numberOfSettingsPerGenerator + 2] * 100}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 2);
+                            }
+                        }}
+                    />
+                    %
+                </div>
+                <div className="flex-col text-left">
+                    <div>Medium Speed chance:</div>
+                    <SimpleInput
+                        className="my-2 w-20 font-mono"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        max={100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100}
+                        value={settings[genID * numberOfSettingsPerGenerator + 3] * 100}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 3);
+                            }
+                        }}
+                    />
+                    %
+                </div>
+                <div className="flex-col text-left">
+                    <div>Minimum speed:</div>
+                    <SimpleInput
+                        className="my-2 w-20 font-mono"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        max={300}
+                        value={settings[genID * numberOfSettingsPerGenerator + 4]}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(parseFloat(x), generatorSettings, genID, 4);
+                            }
+                        }}
+                    />
+                    knots
+                </div>
+                <div className="flex-col text-left">
+                    <div>Speed transition low-med:</div>
+                    <SimpleInput
+                        className="my-2 w-20 font-mono"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        max={300}
+                        value={settings[genID * numberOfSettingsPerGenerator + 5]}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(parseFloat(x), generatorSettings, genID, 5);
+                            }
+                        }}
+                    />
+                    knots
+                </div>
+                <div className="flex-col text-left">
+                    <div>Max speed:</div>
+                    <SimpleInput
+                        className="my-2 w-20 font-mono"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        max={300}
+                        value={settings[genID * numberOfSettingsPerGenerator + 6]}
+                        onBlur={(x : string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(parseFloat(x), generatorSettings, genID, 6);
+                            }
+                        }}
+                    />
+                    knots
+                </div>
+                <div className="flex-col text-left">
+                    <div>Max altitude above runway:</div>
+                    <SimpleInput
+                        className="my-2 font-mono w-25"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        max={10000}
+                        value={settings[genID * numberOfSettingsPerGenerator + 7] * 100}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 7);
+                            }
+                        }}
+                    />
+                    feet
+                </div>
             </div>
         </div>
     );

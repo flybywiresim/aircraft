@@ -6,16 +6,16 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'E';
 
-export const FailureGeneratorButtonsPerHour : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
-    const htmlReturn : JSX.Element[] = [];
-    const nbGenerator = Math.floor(generatorSettings.settingPerHour.split(',').length / numberOfSettingsPerGenerator);
+export const FailureGeneratorButtonsPerHour : (generatorSettings: any) => Element[] = (generatorSettings : any) => {
+    const htmlReturn : Element[] = [];
+    const nbGenerator = Math.floor(generatorSettings.settingsPerHour.length / numberOfSettingsPerGenerator);
     for (let i = 0; i < nbGenerator; i++) {
         htmlReturn.push(failureGeneratorButtonPerHour(i));
     }
     return htmlReturn;
 };
 
-const failureGeneratorButtonPerHour : (genID : number) => JSX.Element = (genID : number) => (
+const failureGeneratorButtonPerHour : (genID : number) => Element = (genID : number) => (
     <button
         type="button"
         className="flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
