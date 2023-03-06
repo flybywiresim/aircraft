@@ -66,7 +66,7 @@ export const FailureGeneratorsUI = () => {
                 <button
                     onClick={addGenerator(chosenGen, settings)}
                     type="button"
-                    className="flex py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                    className="flex py-2 px-2 mr-4 h-24 text-center rounded-md bg-theme-accent blue"
                 >
                     <h2>{t('Failures.Generators.Add')}</h2>
                 </button>
