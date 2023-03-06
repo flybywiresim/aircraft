@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
@@ -33,39 +34,123 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
             {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
         </h2>
         <div className="text-left">
-            {`Chance per take-off: ${
-                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 1] * 100
-            }%`}
+            Failure per take-off:
+            <SimpleInput
+                className="my-2 w-full font-mono"
+                fontSizeClassName="text-2xl"
+                number
+                min={0}
+                max={100}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 1] * 100}
+                onBlur={(x) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 1);
+                    }
+                }}
+            />
+            %
         </div>
         <div className="text-left">
-            {`Low Speed chance: ${
-                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 2] * 100
-            }%`}
+            Low Speed chance:
+            <SimpleInput
+                className="my-2 w-full font-mono"
+                fontSizeClassName="text-2xl"
+                number
+                min={0}
+                max={100}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 2] * 100}
+                onBlur={(x) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 2);
+                    }
+                }}
+            />
+            %
         </div>
         <div className="text-left">
-            {`Medium Speed chance: ${
-                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 3] * 100
-            }%`}
+            Medium Speed chance:
+            <SimpleInput
+                className="my-2 w-full font-mono"
+                fontSizeClassName="text-2xl"
+                number
+                min={0}
+                max={100}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 3] * 100}
+                onBlur={(x) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 3);
+                    }
+                }}
+            />
+            %
         </div>
         <div className="text-left">
-            {`Minimum speed: ${
-                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 4]
-            } knots`}
+            Minimum speed:
+            <SimpleInput
+                className="my-2 w-full font-mono"
+                fontSizeClassName="text-2xl"
+                number
+                min={0}
+                max={300}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 4]}
+                onBlur={(x) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x), generatorSettings, genID, 4);
+                    }
+                }}
+            />
+            knots
         </div>
         <div className="text-left">
-            {`Transition low-medium: ${
-                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 5]
-            } knots`}
+            Speed transition low-med:
+            <SimpleInput
+                className="my-2 w-full font-mono"
+                fontSizeClassName="text-2xl"
+                number
+                min={0}
+                max={300}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 5]}
+                onBlur={(x) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x), generatorSettings, genID, 5);
+                    }
+                }}
+            />
+            knots
         </div>
         <div className="text-left">
-            {`Max speed: ${
-                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 6]
-            } knots`}
+            Max speed:
+            <SimpleInput
+                className="my-2 w-full font-mono"
+                fontSizeClassName="text-2xl"
+                number
+                min={0}
+                max={300}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 6]}
+                onBlur={(x) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x), generatorSettings, genID, 6);
+                    }
+                }}
+            />
+            knots
         </div>
         <div className="text-left">
-            {`Max altitude above runway: ${
-                generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 7] * 100
-            } feet`}
+            Max altitude above runway:
+            <SimpleInput
+                className="my-2 w-full font-mono"
+                fontSizeClassName="text-2xl"
+                number
+                min={0}
+                max={300}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 5] * 100}
+                onBlur={(x) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 5);
+                    }
+                }}
+            />
+            feet
         </div>
         <button
             type="button"
@@ -175,3 +260,9 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
         setFailureGeneratorArmedTakeOff(tempArmed);
     }, []);
 };
+
+function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
+    const settings = generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+    settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
+    generatorSettings.setSettingTakeOff(flatten(settings));
+}
