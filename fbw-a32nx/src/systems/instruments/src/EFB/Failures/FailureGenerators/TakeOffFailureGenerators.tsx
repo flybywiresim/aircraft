@@ -148,10 +148,10 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                 number
                 min={0}
                 max={300}
-                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 5] * 100}
+                value={generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)))[genID * numberOfSettingsPerGenerator + 7] * 100}
                 onBlur={(x) => {
                     if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                        setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 5);
+                        setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 7);
                     }
                 }}
             />
