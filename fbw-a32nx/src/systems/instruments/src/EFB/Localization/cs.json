@@ -458,10 +458,10 @@
     "SimBridgeOff": "vypnutý",
     "SimBridgeOffline": "nedostupný",
     "TT": {
-      "AlignAdirs": "Okamžité zarovnání ADIRS",
+      "AlignAdirs": "Okamžitě zarovnat ADIRS",
       "AutoBrightness": "Zapnutí/vypnutí automatického jasu",
       "Brightness": "Nastavení jasu flyPad",
-      "FinishBoarding": "Okamžité dokončení nástupu (boardingu)",
+      "FinishBoarding": "Okamžitě dokončit nástup (boarding)",
       "OnScreenKeyboard": "Zapnutí/vypnutí klávesnice na obrazovce",
       "PowerButton": "Vypnout",
       "Settings": "Přejít na stránku Nastavení flyPad",
@@ -572,7 +572,7 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX synchronizace paliva",
       "GsxPayloadEnabled": "GSX synchronizace cestujících a nákladu",
-      "Title": "Nastavení třetích stran"
+      "Title": "Možnosti třetích stran"
     },
     "ThrottleConfig": {
       "Apply": "Použít",
