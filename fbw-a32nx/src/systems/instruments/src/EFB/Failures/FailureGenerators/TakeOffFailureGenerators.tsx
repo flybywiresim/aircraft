@@ -73,7 +73,7 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                     fontSizeClassName="text-2xl"
                     number
                     min={0}
-                    max={100}
+                    max={100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100}
                     value={settings[genID * numberOfSettingsPerGenerator + 2] * 100}
                     onBlur={(x) => {
                         if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
@@ -90,7 +90,7 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                     fontSizeClassName="text-2xl"
                     number
                     min={0}
-                    max={100}
+                    max={100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100}
                     value={settings[genID * numberOfSettingsPerGenerator + 3] * 100}
                     onBlur={(x) => {
                         if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
@@ -158,7 +158,7 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                     fontSizeClassName="text-2xl"
                     number
                     min={0}
-                    max={300}
+                    max={10000}
                     value={settings[genID * numberOfSettingsPerGenerator + 7] * 100}
                     onBlur={(x) => {
                         if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
