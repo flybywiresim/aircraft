@@ -118,7 +118,7 @@ bool LightingPresets::shutdown() {
 // PRIVATE METHODS
 // =================================================================================================
 
-void LightingPresets::loadLightingPreset(int64_t loadPresetRequest) {
+bool LightingPresets::loadLightingPreset(int64_t loadPresetRequest) {
   LOG_INFO("LightingPresets: Loading preset: " + std::to_string(loadPresetRequest));
   if (readFromStore(loadPresetRequest)) {
     applyToAircraft();
@@ -139,57 +139,57 @@ void LightingPresets::saveLightingPreset(int64_t savePresetRequest) {
 }
 
 void LightingPresets::readFromAircraft() {
-  localLightValues.efbBrightness = efbBrightness->readFromSim();
-  localLightValues.cabinLightLevel = lightCabinLevel->readFromSim();
-  localLightValues.ovhdIntegralLightLevel = ovhdIntegralLightLevel->readFromSim();
-  localLightValues.glareshieldIntegralLightLevel = glareshieldIntegralLightLevel->readFromSim();
-  localLightValues.glareshieldLcdLightLevel = glareshieldLcdLightLevel->readFromSim();
-  localLightValues.tableLightCptLevel = tableLightCptLevel->readFromSim();
-  localLightValues.tableLightFoLevel = tableLightFoLevel->readFromSim();
-  localLightValues.pfdBrtCptLevel = pfdBrtCptLevel->readFromSim();
-  localLightValues.ndBrtCptLevel = ndBrtCptLevel->readFromSim();
-  localLightValues.wxTerrainBrtCptLevel = wxTerrainBrtCptLevel->readFromSim();
-  localLightValues.consoleLightCptLevel = consoleLightCptLevel->readFromSim();
-  localLightValues.pfdBrtFoLevel = pfdBrtFoLevel->readFromSim();
-  localLightValues.ndBrtFoLevel = ndBrtFoLevel->readFromSim();
-  localLightValues.wxTerrainBrtFoLevel = wxTerrainBrtFoLevel->readFromSim();
-  localLightValues.consoleLightFoLevel = consoleLightFoLevel->readFromSim();
-  localLightValues.dcduLeftLightLevel = dcduLeftLightLevel->readFromSim();
-  localLightValues.dcduRightLightLevel = dcduLeftLightLevel->readFromSim();
-  localLightValues.mcduLeftLightLevel = mcduLeftLightLevel->readFromSim();
-  localLightValues.mcduRightLightLevel = mcduRightLightLevel->readFromSim();
-  localLightValues.ecamUpperLightLevel = ecamUpperLightLevel->readFromSim();
-  localLightValues.ecamLowerLightLevel = ecamLowerLightLevel->readFromSim();
-  localLightValues.floodPnlLightLevel = floodPnlLightLevel->readFromSim();
-  localLightValues.pedestalIntegralLightLevel = pedestalIntegralLightLevel->readFromSim();
-  localLightValues.floodPedLightLevel = floodPedLightLevel->readFromSim();
+  intermediateLightValues.efbBrightness = efbBrightness->readFromSim();
+  intermediateLightValues.cabinLightLevel = lightCabinLevel->readFromSim();
+  intermediateLightValues.ovhdIntegralLightLevel = ovhdIntegralLightLevel->readFromSim();
+  intermediateLightValues.glareshieldIntegralLightLevel = glareshieldIntegralLightLevel->readFromSim();
+  intermediateLightValues.glareshieldLcdLightLevel = glareshieldLcdLightLevel->readFromSim();
+  intermediateLightValues.tableLightCptLevel = tableLightCptLevel->readFromSim();
+  intermediateLightValues.tableLightFoLevel = tableLightFoLevel->readFromSim();
+  intermediateLightValues.pfdBrtCptLevel = pfdBrtCptLevel->readFromSim();
+  intermediateLightValues.ndBrtCptLevel = ndBrtCptLevel->readFromSim();
+  intermediateLightValues.wxTerrainBrtCptLevel = wxTerrainBrtCptLevel->readFromSim();
+  intermediateLightValues.consoleLightCptLevel = consoleLightCptLevel->readFromSim();
+  intermediateLightValues.pfdBrtFoLevel = pfdBrtFoLevel->readFromSim();
+  intermediateLightValues.ndBrtFoLevel = ndBrtFoLevel->readFromSim();
+  intermediateLightValues.wxTerrainBrtFoLevel = wxTerrainBrtFoLevel->readFromSim();
+  intermediateLightValues.consoleLightFoLevel = consoleLightFoLevel->readFromSim();
+  intermediateLightValues.dcduLeftLightLevel = dcduLeftLightLevel->readFromSim();
+  intermediateLightValues.dcduRightLightLevel = dcduLeftLightLevel->readFromSim();
+  intermediateLightValues.mcduLeftLightLevel = mcduLeftLightLevel->readFromSim();
+  intermediateLightValues.mcduRightLightLevel = mcduRightLightLevel->readFromSim();
+  intermediateLightValues.ecamUpperLightLevel = ecamUpperLightLevel->readFromSim();
+  intermediateLightValues.ecamLowerLightLevel = ecamLowerLightLevel->readFromSim();
+  intermediateLightValues.floodPnlLightLevel = floodPnlLightLevel->readFromSim();
+  intermediateLightValues.pedestalIntegralLightLevel = pedestalIntegralLightLevel->readFromSim();
+  intermediateLightValues.floodPedLightLevel = floodPedLightLevel->readFromSim();
 }
 
 void LightingPresets::applyToAircraft() {
-  efbBrightness->setAndWriteToSim(localLightValues.efbBrightness);
-  setValidCabinLightValue(localLightValues.cabinLightLevel);
-  ovhdIntegralLightLevel->setAndWriteToSim(localLightValues.ovhdIntegralLightLevel);
-  glareshieldIntegralLightLevel->setAndWriteToSim(localLightValues.glareshieldIntegralLightLevel);
-  glareshieldLcdLightLevel->setAndWriteToSim(localLightValues.glareshieldLcdLightLevel);
-  tableLightCptLevel->setAndWriteToSim(localLightValues.tableLightCptLevel);
-  tableLightFoLevel->setAndWriteToSim(localLightValues.tableLightFoLevel);
-  pfdBrtCptLevel->setAndWriteToSim(localLightValues.pfdBrtCptLevel);
-  ndBrtCptLevel->setAndWriteToSim(localLightValues.ndBrtCptLevel);
-  wxTerrainBrtCptLevel->setAndWriteToSim(localLightValues.wxTerrainBrtCptLevel);
-  consoleLightCptLevel->setAndWriteToSim(localLightValues.consoleLightCptLevel);
-  pfdBrtFoLevel->setAndWriteToSim(localLightValues.pfdBrtFoLevel);
-  ndBrtFoLevel->setAndWriteToSim(localLightValues.ndBrtFoLevel);
-  wxTerrainBrtFoLevel->setAndWriteToSim(localLightValues.wxTerrainBrtFoLevel);
-  consoleLightFoLevel->setAndWriteToSim(localLightValues.consoleLightFoLevel);
-  dcduLeftLightLevel->setAndWriteToSim(localLightValues.dcduLeftLightLevel);
-  dcduRightLightLevel->setAndWriteToSim(localLightValues.dcduRightLightLevel);
-  mcduLeftLightLevel->setAndWriteToSim(localLightValues.mcduLeftLightLevel);
-  mcduRightLightLevel->setAndWriteToSim(localLightValues.mcduRightLightLevel);
-  ecamUpperLightLevel->setAndWriteToSim(localLightValues.ecamUpperLightLevel);
-  ecamLowerLightLevel->setAndWriteToSim(localLightValues.ecamLowerLightLevel);
-  floodPnlLightLevel->setAndWriteToSim(localLightValues.floodPnlLightLevel);
-  pedestalIntegralLightLevel->setAndWriteToSim(localLightValues.pedestalIntegralLightLevel);
-  floodPedLightLevel->setAndWriteToSim(localLightValues.floodPedLightLevel);
+  efbBrightness->setAndWriteToSim(intermediateLightValues.efbBrightness);
+  setValidCabinLightValue(intermediateLightValues.cabinLightLevel);
+  ovhdIntegralLightLevel->setAndWriteToSim(intermediateLightValues.ovhdIntegralLightLevel);
+  glareshieldIntegralLightLevel->setAndWriteToSim(intermediateLightValues.glareshieldIntegralLightLevel);
+  glareshieldLcdLightLevel->setAndWriteToSim(intermediateLightValues.glareshieldLcdLightLevel);
+  tableLightCptLevel->setAndWriteToSim(intermediateLightValues.tableLightCptLevel);
+  tableLightFoLevel->setAndWriteToSim(intermediateLightValues.tableLightFoLevel);
+  pfdBrtCptLevel->setAndWriteToSim(intermediateLightValues.pfdBrtCptLevel);
+  ndBrtCptLevel->setAndWriteToSim(intermediateLightValues.ndBrtCptLevel);
+  wxTerrainBrtCptLevel->setAndWriteToSim(intermediateLightValues.wxTerrainBrtCptLevel);
+  consoleLightCptLevel->setAndWriteToSim(intermediateLightValues.consoleLightCptLevel);
+  pfdBrtFoLevel->setAndWriteToSim(intermediateLightValues.pfdBrtFoLevel);
+  ndBrtFoLevel->setAndWriteToSim(intermediateLightValues.ndBrtFoLevel);
+  wxTerrainBrtFoLevel->setAndWriteToSim(intermediateLightValues.wxTerrainBrtFoLevel);
+  consoleLightFoLevel->setAndWriteToSim(intermediateLightValues.consoleLightFoLevel);
+  dcduLeftLightLevel->setAndWriteToSim(intermediateLightValues.dcduLeftLightLevel);
+  dcduRightLightLevel->setAndWriteToSim(intermediateLightValues.dcduRightLightLevel);
+  mcduLeftLightLevel->setAndWriteToSim(intermediateLightValues.mcduLeftLightLevel);
+  mcduRightLightLevel->setAndWriteToSim(intermediateLightValues.mcduRightLightLevel);
+  ecamUpperLightLevel->setAndWriteToSim(intermediateLightValues.ecamUpperLightLevel);
+  ecamLowerLightLevel->setAndWriteToSim(intermediateLightValues.ecamLowerLightLevel);
+  floodPnlLightLevel->setAndWriteToSim(intermediateLightValues.floodPnlLightLevel);
+  pedestalIntegralLightLevel->setAndWriteToSim(intermediateLightValues.pedestalIntegralLightLevel);
+  floodPedLightLevel->setAndWriteToSim(intermediateLightValues.floodPedLightLevel);
 }
 
 bool LightingPresets::readFromStore(int64_t presetNr) {
@@ -210,30 +210,30 @@ bool LightingPresets::readFromStore(int64_t presetNr) {
   }
 
   // reading data structure from ini
-  localLightValues.efbBrightness = iniGetOrDefault(ini, preset, "efb_brightness", 80.0);
-  localLightValues.cabinLightLevel = iniGetOrDefault(ini, preset, "cabin_light", 50.0);
-  localLightValues.ovhdIntegralLightLevel = iniGetOrDefault(ini, preset, "ovhd_int_lt", 50.0);
-  localLightValues.glareshieldIntegralLightLevel = iniGetOrDefault(ini, preset, "glareshield_int_lt", 50.0);
-  localLightValues.glareshieldLcdLightLevel = iniGetOrDefault(ini, preset, "glareshield_lcd_lt", 50.0);
-  localLightValues.tableLightCptLevel = iniGetOrDefault(ini, preset, "table_cpt_lt", 50.0);
-  localLightValues.tableLightFoLevel = iniGetOrDefault(ini, preset, "table_fo_lt", 50.0);
-  localLightValues.pfdBrtCptLevel = iniGetOrDefault(ini, preset, "pfd_cpt_lvl", 50.0);
-  localLightValues.ndBrtCptLevel = iniGetOrDefault(ini, preset, "nd_cpt_lvl", 50.0);
-  localLightValues.wxTerrainBrtCptLevel = iniGetOrDefault(ini, preset, "wx_cpt_lvl", 50.0);
-  localLightValues.consoleLightCptLevel = iniGetOrDefault(ini, preset, "console_cpt_lt", 50.0);
-  localLightValues.pfdBrtFoLevel = iniGetOrDefault(ini, preset, "pfd_fo_lvl", 50.0);
-  localLightValues.ndBrtFoLevel = iniGetOrDefault(ini, preset, "nd_fo_lvl", 50.0);
-  localLightValues.wxTerrainBrtFoLevel = iniGetOrDefault(ini, preset, "wx_fo_lvl", 50.0);
-  localLightValues.consoleLightFoLevel = iniGetOrDefault(ini, preset, "console_fo_lt", 50.0);
-  localLightValues.dcduLeftLightLevel = iniGetOrDefault(ini, preset, "dcdu_left_lvl", 50.0) / 100;
-  localLightValues.dcduRightLightLevel = iniGetOrDefault(ini, preset, "dcdu_right_lvl", 50.0) / 100;
-  localLightValues.mcduLeftLightLevel = iniGetOrDefault(ini, preset, "mcdu_left_lvl", 50.0) / 100;
-  localLightValues.mcduRightLightLevel = iniGetOrDefault(ini, preset, "mcdu_right_lvl", 50.0) / 100;
-  localLightValues.ecamUpperLightLevel = iniGetOrDefault(ini, preset, "ecam_upper_lvl", 50.0);
-  localLightValues.ecamLowerLightLevel = iniGetOrDefault(ini, preset, "ecam_lower_lvl", 50.0);
-  localLightValues.floodPnlLightLevel = iniGetOrDefault(ini, preset, "flood_pnl_lt", 50.0);
-  localLightValues.pedestalIntegralLightLevel = iniGetOrDefault(ini, preset, "pedestal_int_lt", 50.0);
-  localLightValues.floodPedLightLevel = iniGetOrDefault(ini, preset, "flood_ped_lvl", 50.0);
+  intermediateLightValues.efbBrightness = iniGetOrDefault(ini, preset, "efb_brightness", 80.0);
+  intermediateLightValues.cabinLightLevel = iniGetOrDefault(ini, preset, "cabin_light", 50.0);
+  intermediateLightValues.ovhdIntegralLightLevel = iniGetOrDefault(ini, preset, "ovhd_int_lt", 50.0);
+  intermediateLightValues.glareshieldIntegralLightLevel = iniGetOrDefault(ini, preset, "glareshield_int_lt", 50.0);
+  intermediateLightValues.glareshieldLcdLightLevel = iniGetOrDefault(ini, preset, "glareshield_lcd_lt", 50.0);
+  intermediateLightValues.tableLightCptLevel = iniGetOrDefault(ini, preset, "table_cpt_lt", 50.0);
+  intermediateLightValues.tableLightFoLevel = iniGetOrDefault(ini, preset, "table_fo_lt", 50.0);
+  intermediateLightValues.pfdBrtCptLevel = iniGetOrDefault(ini, preset, "pfd_cpt_lvl", 50.0);
+  intermediateLightValues.ndBrtCptLevel = iniGetOrDefault(ini, preset, "nd_cpt_lvl", 50.0);
+  intermediateLightValues.wxTerrainBrtCptLevel = iniGetOrDefault(ini, preset, "wx_cpt_lvl", 50.0);
+  intermediateLightValues.consoleLightCptLevel = iniGetOrDefault(ini, preset, "console_cpt_lt", 50.0);
+  intermediateLightValues.pfdBrtFoLevel = iniGetOrDefault(ini, preset, "pfd_fo_lvl", 50.0);
+  intermediateLightValues.ndBrtFoLevel = iniGetOrDefault(ini, preset, "nd_fo_lvl", 50.0);
+  intermediateLightValues.wxTerrainBrtFoLevel = iniGetOrDefault(ini, preset, "wx_fo_lvl", 50.0);
+  intermediateLightValues.consoleLightFoLevel = iniGetOrDefault(ini, preset, "console_fo_lt", 50.0);
+  intermediateLightValues.dcduLeftLightLevel = iniGetOrDefault(ini, preset, "dcdu_left_lvl", 50.0) / 100;
+  intermediateLightValues.dcduRightLightLevel = iniGetOrDefault(ini, preset, "dcdu_right_lvl", 50.0) / 100;
+  intermediateLightValues.mcduLeftLightLevel = iniGetOrDefault(ini, preset, "mcdu_left_lvl", 50.0) / 100;
+  intermediateLightValues.mcduRightLightLevel = iniGetOrDefault(ini, preset, "mcdu_right_lvl", 50.0) / 100;
+  intermediateLightValues.ecamUpperLightLevel = iniGetOrDefault(ini, preset, "ecam_upper_lvl", 50.0);
+  intermediateLightValues.ecamLowerLightLevel = iniGetOrDefault(ini, preset, "ecam_lower_lvl", 50.0);
+  intermediateLightValues.floodPnlLightLevel = iniGetOrDefault(ini, preset, "flood_pnl_lt", 50.0);
+  intermediateLightValues.pedestalIntegralLightLevel = iniGetOrDefault(ini, preset, "pedestal_int_lt", 50.0);
+  intermediateLightValues.floodPedLightLevel = iniGetOrDefault(ini, preset, "flood_ped_lvl", 50.0);
 
   return result;
 }
@@ -248,30 +248,30 @@ bool LightingPresets::saveToStore(int64_t presetNr) {
 
   // add/update preset
   const std::string preset = "preset " + std::to_string(presetNr);
-  ini[preset]["efb_brightness"] = std::to_string(localLightValues.efbBrightness);
-  ini[preset]["cabin_light"] = std::to_string(localLightValues.cabinLightLevel);
-  ini[preset]["ovhd_int_lt"] = std::to_string(localLightValues.ovhdIntegralLightLevel);
-  ini[preset]["glareshield_int_lt"] = std::to_string(localLightValues.glareshieldIntegralLightLevel);
-  ini[preset]["glareshield_lcd_lt"] = std::to_string(localLightValues.glareshieldLcdLightLevel);
-  ini[preset]["table_cpt_lt"] = std::to_string(localLightValues.tableLightCptLevel);
-  ini[preset]["table_fo_lt"] = std::to_string(localLightValues.tableLightFoLevel);
-  ini[preset]["pfd_cpt_lvl"] = std::to_string(localLightValues.pfdBrtCptLevel);
-  ini[preset]["nd_cpt_lvl"] = std::to_string(localLightValues.ndBrtCptLevel);
-  ini[preset]["wx_cpt_lvl"] = std::to_string(localLightValues.wxTerrainBrtCptLevel);
-  ini[preset]["console_cpt_lt"] = std::to_string(localLightValues.consoleLightCptLevel);
-  ini[preset]["pfd_fo_lvl"] = std::to_string(localLightValues.pfdBrtFoLevel);
-  ini[preset]["nd_fo_lvl"] = std::to_string(localLightValues.ndBrtFoLevel);
-  ini[preset]["wx_fo_lvl"] = std::to_string(localLightValues.wxTerrainBrtFoLevel);
-  ini[preset]["console_fo_lt"] = std::to_string(localLightValues.consoleLightFoLevel);
-  ini[preset]["dcdu_left_lvl"] = std::to_string(localLightValues.dcduLeftLightLevel * 100);
-  ini[preset]["dcdu_right_lvl"] = std::to_string(localLightValues.dcduRightLightLevel * 100);
-  ini[preset]["mcdu_left_lvl"] = std::to_string(localLightValues.mcduLeftLightLevel * 100);
-  ini[preset]["mcdu_right_lvl"] = std::to_string(localLightValues.mcduRightLightLevel * 100);
-  ini[preset]["ecam_upper_lvl"] = std::to_string(localLightValues.ecamUpperLightLevel);
-  ini[preset]["ecam_lower_lvl"] = std::to_string(localLightValues.ecamLowerLightLevel);
-  ini[preset]["flood_pnl_lt"] = std::to_string(localLightValues.floodPnlLightLevel);
-  ini[preset]["pedestal_int_lt"] = std::to_string(localLightValues.pedestalIntegralLightLevel);
-  ini[preset]["flood_ped_lvl"] = std::to_string(localLightValues.floodPedLightLevel);
+  ini[preset]["efb_brightness"] = std::to_string(intermediateLightValues.efbBrightness);
+  ini[preset]["cabin_light"] = std::to_string(intermediateLightValues.cabinLightLevel);
+  ini[preset]["ovhd_int_lt"] = std::to_string(intermediateLightValues.ovhdIntegralLightLevel);
+  ini[preset]["glareshield_int_lt"] = std::to_string(intermediateLightValues.glareshieldIntegralLightLevel);
+  ini[preset]["glareshield_lcd_lt"] = std::to_string(intermediateLightValues.glareshieldLcdLightLevel);
+  ini[preset]["table_cpt_lt"] = std::to_string(intermediateLightValues.tableLightCptLevel);
+  ini[preset]["table_fo_lt"] = std::to_string(intermediateLightValues.tableLightFoLevel);
+  ini[preset]["pfd_cpt_lvl"] = std::to_string(intermediateLightValues.pfdBrtCptLevel);
+  ini[preset]["nd_cpt_lvl"] = std::to_string(intermediateLightValues.ndBrtCptLevel);
+  ini[preset]["wx_cpt_lvl"] = std::to_string(intermediateLightValues.wxTerrainBrtCptLevel);
+  ini[preset]["console_cpt_lt"] = std::to_string(intermediateLightValues.consoleLightCptLevel);
+  ini[preset]["pfd_fo_lvl"] = std::to_string(intermediateLightValues.pfdBrtFoLevel);
+  ini[preset]["nd_fo_lvl"] = std::to_string(intermediateLightValues.ndBrtFoLevel);
+  ini[preset]["wx_fo_lvl"] = std::to_string(intermediateLightValues.wxTerrainBrtFoLevel);
+  ini[preset]["console_fo_lt"] = std::to_string(intermediateLightValues.consoleLightFoLevel);
+  ini[preset]["dcdu_left_lvl"] = std::to_string(intermediateLightValues.dcduLeftLightLevel * 100);
+  ini[preset]["dcdu_right_lvl"] = std::to_string(intermediateLightValues.dcduRightLightLevel * 100);
+  ini[preset]["mcdu_left_lvl"] = std::to_string(intermediateLightValues.mcduLeftLightLevel * 100);
+  ini[preset]["mcdu_right_lvl"] = std::to_string(intermediateLightValues.mcduRightLightLevel * 100);
+  ini[preset]["ecam_upper_lvl"] = std::to_string(intermediateLightValues.ecamUpperLightLevel);
+  ini[preset]["ecam_lower_lvl"] = std::to_string(intermediateLightValues.ecamLowerLightLevel);
+  ini[preset]["flood_pnl_lt"] = std::to_string(intermediateLightValues.floodPnlLightLevel);
+  ini[preset]["pedestal_int_lt"] = std::to_string(intermediateLightValues.pedestalIntegralLightLevel);
+  ini[preset]["flood_ped_lvl"] = std::to_string(intermediateLightValues.floodPedLightLevel);
 
   result &= iniFile.write(ini, true);
 
@@ -279,35 +279,35 @@ bool LightingPresets::saveToStore(int64_t presetNr) {
 }
 
 void LightingPresets::loadFromData(LightingValues lv) {
-  localLightValues = lv;
+  intermediateLightValues = lv;
 }
 
 [[maybe_unused]] std::string LightingPresets::sprint() const {
   std::ostringstream os;
-  os << "EFB Brightness: " << localLightValues.efbBrightness << std::endl;
-  os << "Cabin Light: " << localLightValues.cabinLightLevel << std::endl;
-  os << "Ovhd Int Lt: " << localLightValues.ovhdIntegralLightLevel << std::endl;
-  os << "Glareshield Int Lt: " << localLightValues.glareshieldIntegralLightLevel << std::endl;
-  os << "Glareshield Lcd Lt: " << localLightValues.glareshieldLcdLightLevel << std::endl;
-  os << "Table Cpt Lt: " << localLightValues.tableLightCptLevel << std::endl;
-  os << "Table FO Lt: " << localLightValues.tableLightFoLevel << std::endl;
-  os << "PFD Cpt Lvl: " << localLightValues.pfdBrtCptLevel << std::endl;
-  os << "ND Cpt Lvl: " << localLightValues.ndBrtCptLevel << std::endl;
-  os << "WX Cpt Lvl: " << localLightValues.wxTerrainBrtCptLevel << std::endl;
-  os << "Console Cpt Lt: " << localLightValues.consoleLightCptLevel << std::endl;
-  os << "PFD FO Lvl: " << localLightValues.pfdBrtFoLevel << std::endl;
-  os << "ND FO Lvl: " << localLightValues.ndBrtFoLevel << std::endl;
-  os << "WX FO Lvl: " << localLightValues.wxTerrainBrtFoLevel << std::endl;
-  os << "Console Fo Lt: " << localLightValues.consoleLightFoLevel << std::endl;
-  os << "DCDU Left Lvl: " << localLightValues.dcduLeftLightLevel << std::endl;
-  os << "DCDU Right Lvl: " << localLightValues.dcduRightLightLevel << std::endl;
-  os << "MCDU Left Lvl: " << localLightValues.mcduLeftLightLevel << std::endl;
-  os << "MCDU Right Lvl: " << localLightValues.mcduRightLightLevel << std::endl;
-  os << "ECAM Upper Lvl: " << localLightValues.ecamUpperLightLevel << std::endl;
-  os << "ECAM Lower Lvl: " << localLightValues.ecamLowerLightLevel << std::endl;
-  os << "Floor Cpt Lt: " << localLightValues.floodPnlLightLevel << std::endl;
-  os << "Pedestal Int Lt: " << localLightValues.pedestalIntegralLightLevel << std::endl;
-  os << "Floor FO Lvl: " << localLightValues.floodPedLightLevel << std::endl;
+  os << "EFB Brightness: " << intermediateLightValues.efbBrightness << std::endl;
+  os << "Cabin Light: " << intermediateLightValues.cabinLightLevel << std::endl;
+  os << "Ovhd Int Lt: " << intermediateLightValues.ovhdIntegralLightLevel << std::endl;
+  os << "Glareshield Int Lt: " << intermediateLightValues.glareshieldIntegralLightLevel << std::endl;
+  os << "Glareshield Lcd Lt: " << intermediateLightValues.glareshieldLcdLightLevel << std::endl;
+  os << "Table Cpt Lt: " << intermediateLightValues.tableLightCptLevel << std::endl;
+  os << "Table FO Lt: " << intermediateLightValues.tableLightFoLevel << std::endl;
+  os << "PFD Cpt Lvl: " << intermediateLightValues.pfdBrtCptLevel << std::endl;
+  os << "ND Cpt Lvl: " << intermediateLightValues.ndBrtCptLevel << std::endl;
+  os << "WX Cpt Lvl: " << intermediateLightValues.wxTerrainBrtCptLevel << std::endl;
+  os << "Console Cpt Lt: " << intermediateLightValues.consoleLightCptLevel << std::endl;
+  os << "PFD FO Lvl: " << intermediateLightValues.pfdBrtFoLevel << std::endl;
+  os << "ND FO Lvl: " << intermediateLightValues.ndBrtFoLevel << std::endl;
+  os << "WX FO Lvl: " << intermediateLightValues.wxTerrainBrtFoLevel << std::endl;
+  os << "Console Fo Lt: " << intermediateLightValues.consoleLightFoLevel << std::endl;
+  os << "DCDU Left Lvl: " << intermediateLightValues.dcduLeftLightLevel << std::endl;
+  os << "DCDU Right Lvl: " << intermediateLightValues.dcduRightLightLevel << std::endl;
+  os << "MCDU Left Lvl: " << intermediateLightValues.mcduLeftLightLevel << std::endl;
+  os << "MCDU Right Lvl: " << intermediateLightValues.mcduRightLightLevel << std::endl;
+  os << "ECAM Upper Lvl: " << intermediateLightValues.ecamUpperLightLevel << std::endl;
+  os << "ECAM Lower Lvl: " << intermediateLightValues.ecamLowerLightLevel << std::endl;
+  os << "Floor Cpt Lt: " << intermediateLightValues.floodPnlLightLevel << std::endl;
+  os << "Pedestal Int Lt: " << intermediateLightValues.pedestalIntegralLightLevel << std::endl;
+  os << "Floor FO Lvl: " << intermediateLightValues.floodPedLightLevel << std::endl;
   return os.str();
 }
 

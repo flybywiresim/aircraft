@@ -113,7 +113,7 @@ void ClientEvent::trigger(DWORD data0) const {
     LOG_ERROR("Failed to trigger event " + clientEventName + " with client event " + std::to_string(clientEventId));
     return;
   }
-  LOG_DEBUG("Triggered event " + clientEventName + " with client event " + std::to_string(clientEventId) + " with data " +
+  LOG_VERBOSE("Triggered event " + clientEventName + " with client event " + std::to_string(clientEventId) + " with data " +
             std::to_string(data0));
 }
 
@@ -128,7 +128,7 @@ void ClientEvent::trigger_ex1(DWORD data0, DWORD data1, DWORD data2, DWORD data3
     LOG_ERROR("Failed to trigger_ex1 event " + clientEventName + " with client ID " + std::to_string(clientEventId));
     return;
   }
-  LOG_DEBUG("Triggered_ex1 event " + clientEventName + " with client ID " + std::to_string(clientEventId) + " with data " +
+  LOG_VERBOSE("Triggered_ex1 event " + clientEventName + " with client ID " + std::to_string(clientEventId) + " with data " +
             std::to_string(data0) + ", " + std::to_string(data1) + ", " + std::to_string(data2) + ", " + std::to_string(data3) + ", " +
             std::to_string(data4));
 }

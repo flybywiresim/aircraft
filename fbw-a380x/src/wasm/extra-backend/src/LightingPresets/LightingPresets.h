@@ -103,7 +103,7 @@ class LightingPresets : public Module {
   ClientEventPtr cabinLightSetEvent;
 
   // Lighting values
-  LightingValues localLightValues{};
+  LightingValues intermediateLightValues{};
 
  public:
   LightingPresets() = delete;
@@ -131,7 +131,7 @@ class LightingPresets : public Module {
    * Loads a specified preset
    * @param loadPresetRequest the number of the preset to be loaded
    */
-  void loadLightingPreset(int64_t loadPresetRequest);
+  bool loadLightingPreset(int64_t loadPresetRequest);
 
   /**
    * Save a specified preset
