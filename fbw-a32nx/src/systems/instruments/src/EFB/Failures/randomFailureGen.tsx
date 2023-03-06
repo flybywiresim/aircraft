@@ -4,7 +4,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
 import { FailureGeneratorButtonsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
-import { FailureGeneratorButtonsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
+import { failureGeneratorAddTakeOff, FailureGeneratorButtonsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorButtonsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
@@ -129,20 +129,10 @@ export const failureGeneratorNames: GeneratorOption[] = [
     { name: 'AltDescent', alias: t('Failures.Generators.GenAltDesc') },
 ];
 
-export const failureGeneratorAdd = (failureGeneratorSetting : string, setFailureGeneratorSetting : (value: string) => void, additionalSetting : string) => {
-    let tempSettings : string = failureGeneratorSetting;
-    if (tempSettings === undefined) {
-        console.warn('Undefined generator setting, resetting');
-        tempSettings = '';
-    }
-    if (tempSettings.length > 0) setFailureGeneratorSetting(`${failureGeneratorSetting},${additionalSetting}`);
-    else setFailureGeneratorSetting(additionalSetting);
-};
-
 export const addGenerator = (chosenGen : string, settings : any) => {
     switch (chosenGen) {
-    case 'PerHour': return () => failureGeneratorAdd(settings.settingPerHour, settings.setSettingPerHour, '3,0.1');
-    case 'TakeOff': return () => failureGeneratorAdd(settings.settingTakeOff, settings.setSettingTakeOff, '2,1,0.33,0.33,30,95,140,40');
+    // case 'PerHour': return () => failureGeneratorAdd(settings.settingPerHour, settings.setSettingPerHour, '3,0.1');
+    case 'TakeOff': return () => failureGeneratorAddTakeOff(settings);
     default: return () => {};
     }
 };
