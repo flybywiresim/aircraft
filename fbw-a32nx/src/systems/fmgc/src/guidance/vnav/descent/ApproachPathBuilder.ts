@@ -75,17 +75,13 @@ export class ApproachPathBuilder {
     computeApproachPath(
         profile: NavGeometryProfile, speedProfile: SpeedProfile, windProfile: HeadwindProfile, estimatedFuelOnBoardAtDestination: number, estimatedSecondsFromPresentAtDestination: number,
     ): TemporaryCheckpointSequence {
-        const { approachSpeed, managedDescentSpeedMach, destinationAirfieldElevation, cleanSpeed } = this.observer.get();
+        const { approachSpeed, managedDescentSpeedMach, cleanSpeed } = this.observer.get();
 
         const approachConstraints = profile.descentAltitudeConstraints.slice().reverse();
 
-        if (!this.canCompute(profile)) {
-            throw new Error('[FMS/VNAV] Cannot compute approach path, make sure to check `canCompute` before calling `computeApproachPath`!');
-        }
-
-        // Find starting point for computation
-        // Use either last constraint with its alt or just place a point wherever the end of the track is
-        const finalAltitude = this.canUseLastAltConstraintAsStartingPoint(profile) ? approachConstraints[0].constraint.altitude1 : (destinationAirfieldElevation + 50);
+        // If we have a procedure loaded, we use the MAP altitude.
+        // If not, fall back to runway or airfield
+        const finalAltitude = profile.finalAltitude;
 
         const sequence = new TemporaryCheckpointSequence({
             reason: VerticalCheckpointReason.Landing,
@@ -229,21 +225,6 @@ export class ApproachPathBuilder {
             sequence.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint);
             sequence.push(...secondDecelerationSequence.get());
         }
-    }
-
-    canCompute(profile: NavGeometryProfile): boolean {
-        return this.canUseLastAltConstraintAsStartingPoint(profile)
-            || Number.isFinite(this.observer.get().destinationAirfieldElevation);
-    }
-
-    private canUseLastAltConstraintAsStartingPoint(profile: NavGeometryProfile): boolean {
-        if (profile.descentAltitudeConstraints.length < 1) {
-            return false;
-        }
-
-        const lastAltConstraint = profile.descentAltitudeConstraints[profile.descentAltitudeConstraints.length - 1];
-
-        return lastAltConstraint.constraint.type === AltitudeConstraintType.at && Math.abs(lastAltConstraint.distanceFromStart - profile.totalFlightPlanDistance) < 1;
     }
 
     private scaleStepBasedOnLastCheckpoint(lastCheckpoint: VerticalCheckpoint, step: StepResults, scaling: number) {

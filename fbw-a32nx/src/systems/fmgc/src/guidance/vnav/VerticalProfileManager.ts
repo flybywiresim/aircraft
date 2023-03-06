@@ -113,7 +113,7 @@ export class VerticalProfileManager {
             const finalDistance = this.constraintReader.totalFlightPlanDistance;
 
             this.tacticalDescentPathBuilder.buildMcduPredictionPath(mcduProfile, this.getDesModeStrategy(), speedProfile, descentWinds, finalDistance, forcedDecelerations);
-        } else if (this.cruiseToDescentCoordinator.canCompute(mcduProfile)) {
+        } else {
             this.cruiseToDescentCoordinator.buildCruiseAndDescentPath(mcduProfile, speedProfile, cruiseWinds, descentWinds, managedClimbStrategy, stepDescentStrategy);
         }
 

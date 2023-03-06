@@ -33,8 +33,8 @@ export interface VerticalProfileComputationParameters {
     v2Speed: Knots,
     tropoPause: Feet,
     perfFactor: number,
-    originAirfieldElevation: Feet,
-    destinationAirfieldElevation: Feet,
+    departureElevation: Feet,
+    destinationElevation: Feet,
     accelerationAltitude: Feet,
     thrustReductionAltitude: Feet,
     originTransitionAltitude?: Feet,
@@ -91,8 +91,12 @@ export class VerticalProfileComputationParametersObserver {
             v2Speed: this.fmgc.getV2Speed(),
             tropoPause: this.fmgc.getTropoPause(),
             perfFactor: 0, // FIXME: Use actual value,
-            originAirfieldElevation: SimVar.GetSimVarValue('L:A32NX_DEPARTURE_ELEVATION', 'feet'),
-            destinationAirfieldElevation: SimVar.GetSimVarValue('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet'),
+            departureElevation: this.fmgc.getDepartureElevation() ?? 0,
+            /**
+             * This differes from the altitude I use to start building the descent profile.
+             * This one one is the altitude of the destination airport, the other one is the final procedure altitude.
+             */
+            destinationElevation: this.fmgc.getDestinationElevation(),
             accelerationAltitude: this.fmgc.getAccelerationAltitude(),
             thrustReductionAltitude: this.fmgc.getThrustReductionAltitude(),
             originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),

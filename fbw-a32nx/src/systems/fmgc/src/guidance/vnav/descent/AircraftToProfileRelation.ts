@@ -109,9 +109,9 @@ export class AircraftToDescentProfileRelation {
     }
 
     isCloseToAirfieldElevation(): boolean {
-        const { destinationAirfieldElevation, presentPosition } = this.observer.get();
+        const { destinationElevation, presentPosition } = this.observer.get();
 
-        return presentPosition.alt < destinationAirfieldElevation + 5000;
+        return presentPosition.alt < destinationElevation + 5000;
     }
 
     get currentDistanceToEnd(): NauticalMiles {

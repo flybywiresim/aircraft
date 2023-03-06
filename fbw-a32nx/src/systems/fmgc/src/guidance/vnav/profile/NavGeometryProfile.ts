@@ -178,6 +178,10 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         return this.constraintReader.fafDistanceToEnd;
     }
 
+    get finalAltitude(): Feet {
+        return this.constraintReader.finalAltitude;
+    }
+
     addCheckpointFromLast(checkpointBuilder: (lastCheckpoint: VerticalCheckpoint) => Partial<VerticalCheckpoint>) {
         this.checkpoints.push({ ...this.lastCheckpoint, ...checkpointBuilder(this.lastCheckpoint) });
     }

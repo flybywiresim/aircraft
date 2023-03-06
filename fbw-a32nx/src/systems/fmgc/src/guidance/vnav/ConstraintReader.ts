@@ -36,6 +36,8 @@ export class ConstraintReader {
         return this.totalFlightPlanDistance - this.distanceToEnd;
     }
 
+    public finalAltitude: Feet = 50;
+
     constructor(private guidanceController: GuidanceController) {
         this.reset();
     }
@@ -112,6 +114,7 @@ export class ConstraintReader {
             }
         }
 
+        this.updateFinalAltitude();
         this.updateDistanceToEnd(ppos);
     }
 
@@ -169,6 +172,45 @@ export class ConstraintReader {
         }
     }
 
+    private updateFinalAltitude(): void {
+        const metersToFeet = 3.2808399;
+
+        const fpm = this.guidanceController.flightPlanManager;
+        const approach = fpm.getApproach();
+
+        // Check if we have a procedure loaded from which we can extract the final altitude
+        if (approach && approach.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN) {
+            for (const leg of approach.finalLegs) {
+                if (leg.fixTypeFlags & FixTypeFlags.MAP && Number.isFinite(leg.altitude1)) {
+                    this.finalAltitude = leg.altitude1 * metersToFeet;
+
+                    return;
+                }
+            }
+        }
+
+        // Check if we only have a runway loaded. In this case, take the threshold elevation.
+        const runway = fpm.getDestinationRunway();
+        if (runway && Number.isFinite(runway.thresholdElevation)) {
+            this.finalAltitude = runway.thresholdElevation * metersToFeet + 50;
+
+            return;
+        }
+
+        // Check if we only have a destination airport loaded. In this case, take the airport elevation.
+        const destinationAirport = fpm.getDestination();
+        // TODO: I think selecting an approach and then deleting it will cause destinationAirport.infos.coordinates.alt to be zero.
+        if (destinationAirport && Number.isFinite(destinationAirport.infos.coordinates.alt)) {
+            this.finalAltitude = destinationAirport.infos.coordinates.alt + 50;
+
+            return;
+        }
+
+        // Last resort. Not sure how we'd get here.
+        // If I do change this, I should probably change it in the reset() function.
+        this.finalAltitude = 50;
+    }
+
     reset() {
         this.climbAlitudeConstraints = [];
         this.descentAltitudeConstraints = [];
@@ -180,6 +222,7 @@ export class ConstraintReader {
         this.distanceToEnd = 0;
         this.finalDescentAngle = -3;
         this.fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / 6076.12;
+        this.finalAltitude = 50;
     }
 
     private updateDistancesToEnd(geometry: Geometry) {

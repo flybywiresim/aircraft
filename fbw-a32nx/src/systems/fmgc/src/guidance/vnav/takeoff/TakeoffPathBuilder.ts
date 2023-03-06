@@ -16,13 +16,13 @@ export class TakeoffPathBuilder {
     }
 
     private addTakeoffRollCheckpoint(profile: BaseGeometryProfile) {
-        const { originAirfieldElevation, v2Speed, fuelOnBoard, managedClimbSpeedMach } = this.observer.get();
+        const { departureElevation, v2Speed, fuelOnBoard, managedClimbSpeedMach } = this.observer.get();
 
         profile.checkpoints.push({
             reason: VerticalCheckpointReason.Liftoff,
             distanceFromStart: 0.6,
             secondsFromPresent: 20,
-            altitude: originAirfieldElevation,
+            altitude: departureElevation,
             remainingFuelOnBoard: fuelOnBoard,
             speed: v2Speed + 10,
             mach: managedClimbSpeedMach,

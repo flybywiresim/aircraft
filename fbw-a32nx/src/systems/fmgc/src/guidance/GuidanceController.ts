@@ -60,7 +60,9 @@ export interface Fmgc {
     getApproachWind(): FmcWindVector,
     getApproachQnh(): number,
     getApproachTemperature(): number,
-    getDestEFOB(useFob: boolean): number // Metric tons
+    getDestEFOB(useFob: boolean): number, // Metric tons
+    getDepartureElevation(): Feet | null,
+    getDestinationElevation(): Feet,
 }
 
 export class GuidanceController {

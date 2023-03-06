@@ -154,8 +154,4 @@ export class CruiseToDescentCoordinator {
 
         profile.addInterpolatedCheckpoint(distance, { reason: VerticalCheckpointReason.CrossingDescentSpeedLimit });
     }
-
-    canCompute(profile: NavGeometryProfile) {
-        return this.approachPathBuilder?.canCompute(profile);
-    }
 }

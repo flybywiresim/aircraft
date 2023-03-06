@@ -2763,13 +2763,22 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.flaps === null || this.zeroFuelWeight === undefined || this.blockFuel === undefined) {
             return false;
         }
+    }
 
+    getDepartureElevation() {
         let departureElevation = null;
         if (this.flightPlanManager.getOriginRunway()) {
             departureElevation = this.flightPlanManager.getOriginRunway().thresholdElevation / 0.3048;
         } else if (this.flightPlanManager.getOrigin()) {
             departureElevation = this.flightPlanManager.getOrigin().infos.elevation;
         }
+
+        return departureElevation;
+    }
+
+    getToSpeedsTooLow() {
+        const departureElevation = this.getDepartureElevation();
+
         const zp = departureElevation !== null ? this.getPressureAltAtElevation(departureElevation, this.getBaroCorrection1()) : this.getPressureAlt();
         if (zp === null) {
             return false;
@@ -4971,7 +4980,9 @@ class FMCMainDisplay extends BaseAirliners {
     getApproachTemperature() {
         return this.perfApprTemp;
     }
-
+    getDestinationElevation() {
+        return Number.isFinite(this.landingElevation) ? this.landingElevation : 0;
+    }
 }
 
 FMCMainDisplay.clrValue = "\xa0\xa0\xa0\xa0\xa0CLR";
