@@ -41,40 +41,43 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                 <h2 className="text-left">
                     {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
                 </h2>
-                <button
-                    type="button"
-                    onClick={() => {
-                        setNewSetting(0, generatorSettings, genID, 0);
-                    }}
-                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 0}
-                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-                >
-                    <h2>OFF</h2>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => eraseGenerator(genID, generatorSettings)}
-                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 1}
-                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-                >
-                    <h2>Once</h2>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => eraseGenerator(genID, generatorSettings)}
-                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 2}
-                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-                >
-                    <h2>Take-Off</h2>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => eraseGenerator(genID, generatorSettings)}
-                    active={settings[genID * numberOfSettingsPerGenerator + 0] === 3}
-                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-                >
-                    <h2>Always</h2>
-                </button>
+                <div className="flex-col text-center">
+                    <h2>Rearming</h2>
+                    <div className="flex-row">
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
+                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 0}
+                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
+                        >
+                            <h2>OFF</h2>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
+                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 1}
+                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
+                        >
+                            <h2>Once</h2>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
+                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 2}
+                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
+                        >
+                            <h2>Take-Off</h2>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
+                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 3}
+                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
+                        >
+                            <h2>Always</h2>
+                        </button>
+                    </div>
+                </div>
                 <button
                     type="button"
                     onClick={() => eraseGenerator(genID, generatorSettings)}

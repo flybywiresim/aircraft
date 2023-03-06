@@ -10,10 +10,10 @@ import { FailureGeneratorButtonsTimer, failureGeneratorTimer } from 'instruments
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
-    const [maxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
+    const [maxFailuresAtOnce, setMaxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
     const { changingFailures, activeFailures, allFailures, activate } = useFailuresOrchestrator();
     const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size, [changingFailures, activeFailures]);
-    return { maxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
+    return { maxFailuresAtOnce, setMaxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
 };
 
 export const flatten = (settings : number[]) => {
@@ -107,8 +107,11 @@ export const failureGeneratorsSettings = () => {
     const settingsSpeedDecel = useMemo(() => settingSpeedDecel.split(',').map(((it : string) => parseFloat(it))), [settingSpeedDecel]);
     const settingsAltitudeClimb = useMemo(() => settingTakeOff.split(',').map(((it : string) => parseFloat(it))), [settingAltitudeClimb]);
     const settingsAltitudeDescent = useMemo(() => settingAltitudeDescent.split(',').map(((it : string) => parseFloat(it))), [settingAltitudeDescent]);
+    const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
 
     return {
+        maxFailuresAtOnce,
+        setMaxFailuresAtOnce,
         settingsTakeOff,
         setSettingTakeOff,
         settingsPerHour,
@@ -149,14 +152,14 @@ interface GeneratorOption {
     alias: string;
 }
 
-export const failureGeneratorButtons: ((generatorSettings: any) => JSX.Element[])[] = [
+export const failureGeneratorButtons: ((generatorSettings: any) => Element[])[] = [
     FailureGeneratorButtonsPerHour,
     FailureGeneratorButtonsTimer,
     FailureGeneratorButtonsTakeOff,
 ];
 
-export const generatorsButtonList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
-    let temp : JSX.Element[] = [];
+export const generatorsButtonList : (generatorSettings : any) => Element[] = (generatorSettings : any) => {
+    let temp : Element[] = [];
     for (let i = 0; i < failureGeneratorButtons.length; i++) {
         temp = temp.concat(failureGeneratorButtons[i](generatorSettings));
     }

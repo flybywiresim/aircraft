@@ -49,31 +49,49 @@ export const FailureGeneratorsUI = () => {
     const settings = failureGeneratorsSettings();
     return (
         <>
-            <div className="flex justify-between py-2 space-x-4">
-                <h2>
-                    {t('Failures.Generators.Select')}
-                </h2>
-                <SelectInput
-                    className="w-72 h-24"
-                    value={chosenGen}
-                    onChange={(value) => setChosenGen(value as string)}
-                    options={failureGeneratorNames.map((option) => ({
-                        value: option.name,
-                        displayValue: `${option.alias}`,
-                    }))}
-                    maxHeight={32}
-                />
-                <button
-                    onClick={addGenerator(chosenGen, settings)}
-                    type="button"
-                    className="flex py-2 px-2 mr-4 h-24 text-center rounded-md bg-theme-accent blue"
-                >
-                    <h2>{t('Failures.Generators.Add')}</h2>
-                </button>
+            <div className="flex-column">
+                <div className="flex-row justify-between py-2 space-x-4">
+                    <h2>
+                        {t('Failures.Generators.Select')}
+                    </h2>
+                    <SelectInput
+                        className="w-72 h-10"
+                        value={chosenGen}
+                        onChange={(value) => setChosenGen(value as string)}
+                        options={failureGeneratorNames.map((option) => ({
+                            value: option.name,
+                            displayValue: `${option.alias}`,
+                        }))}
+                        maxHeight={32}
+                    />
+                    <button
+                        onClick={addGenerator(chosenGen, settings)}
+                        type="button"
+                        className="flex py-2 px-2 mr-4 h-10 text-center rounded-md bg-theme-accent blue"
+                    >
+                        <h2>{t('Failures.Generators.Add')}</h2>
+                    </button>
+                </div>
+                <ScrollableContainer height={48}>
+                    {generatorsButtonList(settings)}
+                </ScrollableContainer>
+                <div className="flex-row text-left">
+                    <div>Max number of simultaneous failures:</div>
+                    <SimpleInput
+                        className="my-2 w-10 font-mono"
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={0}
+                        value={settings.maxFailuresAtOnce}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseInt(x) || parseInt(x) >= 0)) {
+                                settings.setMaxFailuresAtOnce(parseInt(x));
+                            }
+                        }}
+                    />
+                    %
+                </div>
             </div>
-            <ScrollableContainer height={48}>
-                {generatorsButtonList(settings)}
-            </ScrollableContainer>
         </>
     );
 };
