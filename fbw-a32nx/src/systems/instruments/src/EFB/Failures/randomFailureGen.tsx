@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
-import { FailureGeneratorButtonsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
+import { failureGeneratorAddPerHour, FailureGeneratorButtonsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
 import { failureGeneratorAddTakeOff, FailureGeneratorButtonsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
@@ -141,7 +141,7 @@ export const failureGeneratorNames: GeneratorOption[] = [
 
 export const addGenerator = (chosenGen : string, settings : any) => {
     switch (chosenGen) {
-    // case 'PerHour': return () => failureGeneratorAdd(settings.settingPerHour, settings.setSettingPerHour, '3,0.1');
+    case 'PerHour': return () => failureGeneratorAddPerHour(settings);
     case 'TakeOff': return () => failureGeneratorAddTakeOff(settings);
     default: return () => {};
     }

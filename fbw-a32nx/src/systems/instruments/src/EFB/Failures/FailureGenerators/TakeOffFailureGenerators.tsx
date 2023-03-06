@@ -84,7 +84,7 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                 <button
                     type="button"
                     onClick={() => eraseGenerator(genID, generatorSettings)}
-                    className="flex-none mr-4 w-10 h-10 rounded-md bg-theme-accent hover:bg-utility-red"
+                    className="flex-none mr-4 w-10 h-10 rounded-md bg-theme-accent item-center hover:bg-utility-red"
                 >
                     <Trash size={26} />
                 </button>
