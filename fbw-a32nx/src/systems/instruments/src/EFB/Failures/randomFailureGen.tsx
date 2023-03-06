@@ -152,14 +152,14 @@ interface GeneratorOption {
     alias: string;
 }
 
-export const failureGeneratorButtons: ((generatorSettings: any) => Element[])[] = [
+export const failureGeneratorButtons: ((generatorSettings: any) => JSX.Element[])[] = [
     FailureGeneratorButtonsPerHour,
     FailureGeneratorButtonsTimer,
     FailureGeneratorButtonsTakeOff,
 ];
 
-export const generatorsButtonList : (generatorSettings : any) => Element[] = (generatorSettings : any) => {
-    let temp : Element[] = [];
+export const generatorsButtonList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
+    let temp : JSX.Element[] = [];
     for (let i = 0; i < failureGeneratorButtons.length; i++) {
         temp = temp.concat(failureGeneratorButtons[i](generatorSettings));
     }

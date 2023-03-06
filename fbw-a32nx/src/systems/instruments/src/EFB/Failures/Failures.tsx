@@ -51,8 +51,7 @@ export const FailureGeneratorsUI = () => {
     return (
         <>
             <div className="flex flex-col">
-                <div className="flex flex-row flex-1 justify-between py-2 space-x-4">
-                    <div className="flex1" />
+                <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
                     <h2 className="flex-none">
                         {t('Failures.Generators.Select')}
                     </h2>
@@ -74,8 +73,8 @@ export const FailureGeneratorsUI = () => {
                         <h2>{t('Failures.Generators.Add')}</h2>
                     </button>
                 </div>
-                <div className="flex flex-row text-left align-middle">
-                    <div>Max number of simultaneous failures:</div>
+                <div className="flex items-center">
+                    <div className="mr-2">Max number of simultaneous failures:</div>
                     <SimpleInput
                         className="my-2 w-10 font-mono"
                         fontSizeClassName="text-2xl"

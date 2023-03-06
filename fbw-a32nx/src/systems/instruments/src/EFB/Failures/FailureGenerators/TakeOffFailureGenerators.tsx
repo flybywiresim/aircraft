@@ -12,8 +12,8 @@ const failureGeneratorArmed :boolean[] = [];
 const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
 
-export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => Element[] = (generatorSettings : any) => {
-    const htmlReturn : Element[] = [];
+export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
+    const htmlReturn : JSX.Element[] = [];
     const setting = generatorSettings.settingsTakeOff;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
@@ -34,7 +34,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
     failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
-const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => Element = (genID : number, generatorSettings : any) => {
+const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
     const settings = generatorSettings.settingsTakeOff;
     const colorArmMode :string[] = [];
     for (let i = 0; i < 4; i++) {
@@ -42,63 +42,57 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
     }
     return (
         <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
-            <div className="flex relative flex-row place-content-evenly">
-                <div className="mr-5 align-left">
+            <div className="flex flex-row justify-between item-center">
+                <div className="mr-4 align-left">
                     <h2>
                         {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
                     </h2>
                 </div>
                 <div className="flex flex-col text-center">
-                    <div className="flex flex-col text-center">
-                        <h2>Rearming</h2>
-                        <div className="flex flex-row">
-                            <button
-                                type="button"
-                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 0}
-                                onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
-                                className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight rounded-l-md hover:bg-theme-highlight ${colorArmMode[0]}`}
-                            >
-                                <h2>OFF</h2>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
-                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 1}
-                                className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[1]}`}
-                            >
-                                <h2>Once</h2>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
-                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 2}
-                                className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[2]}`}
-                            >
-                                <h2>Take-Off</h2>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
-                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 3}
-                                className={`py-2 px-2 mx-0 text-center rounded-r-md hover:bg-theme-highlight ${colorArmMode[3]}`}
-                            >
-                                <h2>Always</h2>
-                            </button>
-                        </div>
+                    <h2>Rearming</h2>
+                    <div className="flex flex-row">
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
+                            className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight rounded-l-md hover:bg-theme-highlight ${colorArmMode[0]}`}
+                        >
+                            <h2>OFF</h2>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
+                            className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[1]}`}
+                        >
+                            <h2>Once</h2>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
+                            className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[2]}`}
+                        >
+                            <h2>Take-Off</h2>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
+                            className={`py-2 px-2 mx-0 text-center rounded-r-md hover:bg-theme-highlight ${colorArmMode[3]}`}
+                        >
+                            <h2>Always</h2>
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => eraseGenerator(genID, generatorSettings)}
-                        className="absolute top-2 right-2 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue hover:text-theme-body hover:bg-utility-red"
-                    >
-                        <Trash size={26} />
-                    </button>
                 </div>
+                <button
+                    type="button"
+                    onClick={() => eraseGenerator(genID, generatorSettings)}
+                    className="flex-none mr-4 w-10 h-10 rounded-md bg-theme-accent hover:bg-utility-red"
+                >
+                    <Trash size={26} />
+                </button>
             </div>
-            <div className="flex flex-row align-bottom">
-                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
-                    <div>Failure per take-off:</div>
-                    <div className="flex flex-row flex-none align-middle">
+            <div className="flex flex-row justify-between">
+                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
+                    <div className="break-keep">Failure per take-off:</div>
+                    <div className="flex flex-row items-center">
                         <SimpleInput
                             className="my-2 w-20 font-mono"
                             fontSizeClassName="text-2xl"
@@ -112,14 +106,14 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                                 }
                             }}
                         />
-                        %
+                        <div className="ml-2">%</div>
                     </div>
                 </div>
-                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
-                    <div>Low Speed chance:</div>
-                    <div className="flex flex-row align-middle">
+                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
+                    <div className="break-keep">Low Speed chance:</div>
+                    <div className="flex flex-row items-center">
                         <SimpleInput
-                            className="flex-none my-2 w-20 font-mono"
+                            className="my-2 w-20 font-mono"
                             fontSizeClassName="text-2xl"
                             number
                             min={0}
@@ -131,14 +125,14 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                                 }
                             }}
                         />
-                        %
+                        <div className="ml-2">%</div>
                     </div>
                 </div>
-                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
-                    <div>Medium Speed chance:</div>
-                    <div className="flex flex-row align-middle">
+                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
+                    <div className="break-keep">Medium Speed chance:</div>
+                    <div className="flex flex-row items-center">
                         <SimpleInput
-                            className="flex-none my-2 w-20 font-mono"
+                            className="my-2 w-20 font-mono"
                             fontSizeClassName="text-2xl"
                             number
                             min={0}
@@ -150,14 +144,14 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                                 }
                             }}
                         />
-                        %
+                        <div className="ml-2">%</div>
                     </div>
                 </div>
-                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
-                    <div>Minimum speed:</div>
-                    <div className="flex flex-row align-middle">
+                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
+                    <div className="break-keep">Minimum speed:</div>
+                    <div className="flex flex-row items-center">
                         <SimpleInput
-                            className="flex-none my-2 w-20 font-mono"
+                            className="my-2 w-20 font-mono"
                             fontSizeClassName="text-2xl"
                             number
                             min={0}
@@ -169,14 +163,14 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                                 }
                             }}
                         />
-                        knots
+                        <div className="ml-2">knots</div>
                     </div>
                 </div>
-                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
-                    <div>Speed transition low-med:</div>
-                    <div className="flex flex-row align-middle">
+                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
+                    <div className="break-keep">Speed transition low-med:</div>
+                    <div className="flex flex-row items-center">
                         <SimpleInput
-                            className="flex-none my-2 w-20 font-mono"
+                            className="my-2 w-20 font-mono"
                             fontSizeClassName="text-2xl"
                             number
                             min={0}
@@ -188,14 +182,14 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                                 }
                             }}
                         />
-                        knots
+                        <div className="ml-2">knots</div>
                     </div>
                 </div>
-                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
-                    <div>Max speed:</div>
-                    <div className="flex flex-row align-middle">
+                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
+                    <div className="break-keep">Max speed:</div>
+                    <div className="flex flex-row items-center">
                         <SimpleInput
-                            className="flex-none my-2 w-20 font-mono"
+                            className="my-2 w-20 font-mono"
                             fontSizeClassName="text-2xl"
                             number
                             min={0}
@@ -207,14 +201,14 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                                 }
                             }}
                         />
-                        knots
+                        <div className="ml-2">knots</div>
                     </div>
                 </div>
-                <div className="flex flex-col p-2 text-left align-bottom">
-                    <div>Max altitude above runway:</div>
-                    <div className="flex flex-row align-middle">
+                <div className="flex flex-col justify-between p-2 text-left">
+                    <div className="break-keep">Max altitude above runway:</div>
+                    <div className="flex flex-row items-center">
                         <SimpleInput
-                            className="flex-none my-2 font-mono w-25"
+                            className="my-2 w-24 font-mono"
                             fontSizeClassName="text-2xl"
                             number
                             min={0}
@@ -226,7 +220,7 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                                 }
                             }}
                         />
-                        feet
+                        <div className="ml-2">feet</div>
                     </div>
                 </div>
             </div>
@@ -321,12 +315,11 @@ function setNewSetting(newSetting: number, generatorSettings : any, genID : numb
 }
 
 export const failureGeneratorAddTakeOff = (generatorsSettings : any) => {
-    let tempSettings : string = generatorsSettings.settingTakeOff;
-    const additionalSetting = '0,1,0.33,0.33,30,95,140,40';
-    if (tempSettings === undefined) {
+    const additionalSetting = [0, 1, 0.33, 0.33, 30, 95, 140, 40];
+    if (generatorsSettings.settingsTakeOff === undefined) {
         console.warn('Undefined generator setting, resetting');
-        tempSettings = '';
+        generatorsSettings.settingsTakeOff = [];
     }
-    if (tempSettings.length > 0) generatorsSettings.setSettingTakeOff(`${tempSettings},${additionalSetting}`);
+    if (generatorsSettings.settingsTakeOff.length > 0) generatorsSettings.setSettingTakeOff(`${flatten(generatorsSettings.settingsTakeOff)},${additionalSetting}`);
     else generatorsSettings.setSettingTakeOff(additionalSetting);
 };
