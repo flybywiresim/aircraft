@@ -225,6 +225,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PLANE HEADING DEGREES TRUE", "Degrees", 0)?
     .provides_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?
     .provides_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?
+    .provides_aircraft_variable("PRESSURE ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("PUSHBACK STATE", "Enum", 0)?
     .provides_aircraft_variable("PUSHBACK ANGLE", "Radians", 0)?
     .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?

@@ -12,15 +12,21 @@ if [ "${GITHUB_ACTIONS}" == "true" ]; then
 fi
 
 # Loop through the arguments
+args=()
 for arg in "$@"; do
-  if [ "$arg" == "--no-cache" ]; then
-    echo "Removing out directory /external/fbw-a32nx/out"
+  # If the argument is "-clean", perform some action
+  if [ "$arg" = "-clean" ]; then
+    echo "Removing out directories..."
     rm -rf /external/fbw-a32nx/out
+    rm -rf /external/fbw-a32nx/bundles
+  else
+    # Otherwise, add the arg it to the new array
+    args+=("$arg")
   fi
 done
 
 # run build
-time npx igniter -r a32nx "$@"
+time npx igniter -r a32nx "${args[@]}"
 
 # restore ownership (when run as github action)
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
