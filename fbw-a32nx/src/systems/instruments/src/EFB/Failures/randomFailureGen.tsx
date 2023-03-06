@@ -100,21 +100,28 @@ export const failureGeneratorsSettings = () => {
     const [settingSpeedDecel, setSettingSpeedDecel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL');
     const [settingAltitudeClimb, setSettingAltitudeClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB');
     const [settingAltitudeDescent, setSettingAltitudeDescent] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
+    const settingsTakeOff = useMemo(() => settingTakeOff.split(',').map(((it : string) => parseFloat(it))), [settingTakeOff]);
+    const settingsPerHour = useMemo(() => settingPerHour.split(',').map(((it : string) => parseFloat(it))), [settingPerHour]);
+    const settingsTimer = useMemo(() => settingTimer.split(',').map(((it : string) => parseFloat(it))), [settingTimer]);
+    const settingsSpeedAccel = useMemo(() => settingSpeedAccel.split(',').map(((it : string) => parseFloat(it))), [settingSpeedAccel]);
+    const settingsSpeedDecel = useMemo(() => settingSpeedDecel.split(',').map(((it : string) => parseFloat(it))), [settingSpeedDecel]);
+    const settingsAltitudeClimb = useMemo(() => settingTakeOff.split(',').map(((it : string) => parseFloat(it))), [settingAltitudeClimb]);
+    const settingsAltitudeDescent = useMemo(() => settingAltitudeDescent.split(',').map(((it : string) => parseFloat(it))), [settingAltitudeDescent]);
 
     return {
-        settingTakeOff,
+        settingsTakeOff,
         setSettingTakeOff,
-        settingPerHour,
+        settingsPerHour,
         setSettingPerHour,
-        settingTimer,
+        settingsTimer,
         setSettingTimer,
-        settingSpeedAccel,
+        settingsSpeedAccel,
         setSettingSpeedAccel,
-        settingSpeedDecel,
+        settingsSpeedDecel,
         setSettingSpeedDecel,
-        settingAltitudeClimb,
+        settingsAltitudeClimb,
         setSettingAltitudeClimb,
-        settingAltitudeDescent,
+        settingsAltitudeDescent,
         setSettingAltitudeDescent,
     };
 };

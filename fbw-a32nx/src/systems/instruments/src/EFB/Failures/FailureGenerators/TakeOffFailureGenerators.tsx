@@ -34,14 +34,22 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 };
 
 const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    // FIX ME : Once per change ?
-    const settings = generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+    const settings = generatorSettings.settingsTakeOff;
     return (
-        <div className="flex relative py-2 px-2 my-2 text-center rounded-md border-white mx-x black border-1">
-            <h2 className="text-left">
-                {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
-            </h2>
-            <div className="text-left">
+        <div className="relative flex-col py-2 px-2 my-2 text-center rounded-md border-white mx-x black border-1">
+            <div className="flex-row">
+                <h2 className="text-left">
+                    {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
+                </h2>
+                <button
+                    type="button"
+                    onClick={() => eraseGenerator(genID, generatorSettings)}
+                    className="absolute right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
+                >
+                    <h2>X</h2>
+                </button>
+            </div>
+            <div className="flex-row text-left">
                 Failure per take-off:
                 <SimpleInput
                     className="my-2 w-full font-mono"
@@ -160,13 +168,6 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                 />
                 feet
             </div>
-            <button
-                type="button"
-                onClick={() => eraseGenerator(genID, generatorSettings)}
-                className="absolute right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-            >
-                <h2>X</h2>
-            </button>
         </div>
     );
 };
