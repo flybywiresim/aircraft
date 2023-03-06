@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { AtaChaptersTitle } from '@shared/ata';
+import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import { addGenerator, failureGeneratorNames, failureGeneratorsSettings, generatorsButtonList } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { Failure } from 'failures/src/failures-orchestrator';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -49,13 +50,14 @@ export const FailureGeneratorsUI = () => {
     const settings = failureGeneratorsSettings();
     return (
         <>
-            <div className="flex-column">
-                <div className="flex-row justify-between py-2 space-x-4">
-                    <h2>
+            <div className="flex flex-col">
+                <div className="flex flex-row flex-1 justify-between py-2 space-x-4">
+                    <div className="flex1" />
+                    <h2 className="flex-none">
                         {t('Failures.Generators.Select')}
                     </h2>
                     <SelectInput
-                        className="w-72 h-10"
+                        className="flex-none w-72 h-10"
                         value={chosenGen}
                         onChange={(value) => setChosenGen(value as string)}
                         options={failureGeneratorNames.map((option) => ({
@@ -67,15 +69,12 @@ export const FailureGeneratorsUI = () => {
                     <button
                         onClick={addGenerator(chosenGen, settings)}
                         type="button"
-                        className="flex py-2 px-2 mr-4 h-10 text-center rounded-md bg-theme-accent blue"
+                        className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:bg-theme-highlight"
                     >
                         <h2>{t('Failures.Generators.Add')}</h2>
                     </button>
                 </div>
-                <ScrollableContainer height={48}>
-                    {generatorsButtonList(settings)}
-                </ScrollableContainer>
-                <div className="flex-row text-left">
+                <div className="flex flex-row text-left align-middle">
                     <div>Max number of simultaneous failures:</div>
                     <SimpleInput
                         className="my-2 w-10 font-mono"
@@ -89,8 +88,10 @@ export const FailureGeneratorsUI = () => {
                             }
                         }}
                     />
-                    %
                 </div>
+                <ScrollableContainer height={48}>
+                    {generatorsButtonList(settings)}
+                </ScrollableContainer>
             </div>
         </>
     );
@@ -98,12 +99,12 @@ export const FailureGeneratorsUI = () => {
 
 export const Failures = () => {
     const { allFailures } = useFailuresOrchestrator();
-    const chapters = Array.from(new Set(allFailures.map((it) => it.ata))).sort((a, b) => a - b);
+    const chapters = Array.from(new Set<AtaChapterNumber>(allFailures.map((it : Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b);
 
     const dispatch = useAppDispatch();
-    const { searchQuery } = useAppSelector((state) => state.failuresPage);
+    const { searchQuery } = useAppSelector((state : any) => state.failuresPage);
 
-    const filteredFailures = allFailures.filter((failure) => {
+    const filteredFailures = allFailures.filter((failure : Failure) => {
         if (searchQuery === '') {
             return true;
         }
@@ -115,7 +116,7 @@ export const Failures = () => {
         || AtaChaptersTitle[failure.ata].toUpperCase().includes(searchQuery);
     });
 
-    const filteredChapters = chapters.filter((chapter) => filteredFailures.map((failure) => failure.ata).includes(chapter));
+    const filteredChapters = chapters.filter((chapter) => filteredFailures.map((failure : Failure) => failure.ata).includes(chapter));
 
     const tabs: PageLink[] = [
         { name: 'Comfort', alias: t('Failures.Comfort.Title'), component: <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} /> },

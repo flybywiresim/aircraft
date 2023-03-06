@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
+import { Trash } from 'react-bootstrap-icons/dist';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
@@ -35,176 +36,198 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 
 const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => Element = (genID : number, generatorSettings : any) => {
     const settings = generatorSettings.settingsTakeOff;
+    const colorArmMode :string[] = [];
+    for (let i = 0; i < 4; i++) {
+        colorArmMode.push(settings[genID * numberOfSettingsPerGenerator + 0] === i ? 'bg-theme-highlight' : 'bg-theme-accent');
+    }
     return (
-        <div className="relative flex-col py-2 px-2 my-2 text-center rounded-md border-white mx-x black border-1">
-            <div className="flex-row">
-                <h2 className="text-left">
-                    {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
-                </h2>
-                <div className="flex-col text-center">
-                    <h2>Rearming</h2>
-                    <div className="flex-row">
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
-                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 0}
-                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
-                        >
-                            <h2>OFF</h2>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
-                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 1}
-                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
-                        >
-                            <h2>Once</h2>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
-                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 2}
-                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
-                        >
-                            <h2>Take-Off</h2>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
-                            active={settings[genID * numberOfSettingsPerGenerator + 0] === 3}
-                            className="flex-1 py-2 px-2 mx-0 text-center rounded-md bg-theme-accent blue"
-                        >
-                            <h2>Always</h2>
-                        </button>
+        <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
+            <div className="flex relative flex-row place-content-evenly">
+                <div className="mr-5 align-left">
+                    <h2>
+                        {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
+                    </h2>
+                </div>
+                <div className="flex flex-col text-center">
+                    <div className="flex flex-col text-center">
+                        <h2>Rearming</h2>
+                        <div className="flex flex-row">
+                            <button
+                                type="button"
+                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 0}
+                                onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
+                                className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight rounded-l-md hover:bg-theme-highlight ${colorArmMode[0]}`}
+                            >
+                                <h2>OFF</h2>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
+                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 1}
+                                className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[1]}`}
+                            >
+                                <h2>Once</h2>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
+                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 2}
+                                className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[2]}`}
+                            >
+                                <h2>Take-Off</h2>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
+                                active={settings[genID * numberOfSettingsPerGenerator + 0] === 3}
+                                className={`py-2 px-2 mx-0 text-center rounded-r-md hover:bg-theme-highlight ${colorArmMode[3]}`}
+                            >
+                                <h2>Always</h2>
+                            </button>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => eraseGenerator(genID, generatorSettings)}
+                        className="absolute top-2 right-2 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue hover:text-theme-body hover:bg-utility-red"
+                    >
+                        <Trash size={26} />
+                    </button>
+                </div>
+            </div>
+            <div className="flex flex-row align-bottom">
+                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
+                    <div>Failure per take-off:</div>
+                    <div className="flex flex-row flex-none align-middle">
+                        <SimpleInput
+                            className="my-2 w-20 font-mono"
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            max={100}
+                            value={settings[genID * numberOfSettingsPerGenerator + 1] * 100}
+                            onBlur={(x: string) => {
+                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                    setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 1);
+                                }
+                            }}
+                        />
+                        %
                     </div>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => eraseGenerator(genID, generatorSettings)}
-                    className="absolute top-2 right-2 flex-1 py-2 px-2 mr-4 text-center rounded-md bg-theme-accent blue"
-                >
-                    <h2>X</h2>
-                </button>
-            </div>
-            <div className="flex-row">
-                <div className="flex-col text-left">
-                    <div>Failure per take-off:</div>
-                    <SimpleInput
-                        className="my-2 w-20 font-mono"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        max={100}
-                        value={settings[genID * numberOfSettingsPerGenerator + 1] * 100}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 1);
-                            }
-                        }}
-                    />
-                    %
-                </div>
-                <div className="flex-col text-left">
+                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
                     <div>Low Speed chance:</div>
-                    <SimpleInput
-                        className="my-2 w-20 font-mono"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        max={100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100}
-                        value={settings[genID * numberOfSettingsPerGenerator + 2] * 100}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 2);
-                            }
-                        }}
-                    />
-                    %
+                    <div className="flex flex-row align-middle">
+                        <SimpleInput
+                            className="flex-none my-2 w-20 font-mono"
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            max={100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100}
+                            value={settings[genID * numberOfSettingsPerGenerator + 2] * 100}
+                            onBlur={(x: string) => {
+                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                    setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 2);
+                                }
+                            }}
+                        />
+                        %
+                    </div>
                 </div>
-                <div className="flex-col text-left">
+                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
                     <div>Medium Speed chance:</div>
-                    <SimpleInput
-                        className="my-2 w-20 font-mono"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        max={100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100}
-                        value={settings[genID * numberOfSettingsPerGenerator + 3] * 100}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 3);
-                            }
-                        }}
-                    />
-                    %
+                    <div className="flex flex-row align-middle">
+                        <SimpleInput
+                            className="flex-none my-2 w-20 font-mono"
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            max={100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100}
+                            value={settings[genID * numberOfSettingsPerGenerator + 3] * 100}
+                            onBlur={(x: string) => {
+                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                    setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 3);
+                                }
+                            }}
+                        />
+                        %
+                    </div>
                 </div>
-                <div className="flex-col text-left">
+                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
                     <div>Minimum speed:</div>
-                    <SimpleInput
-                        className="my-2 w-20 font-mono"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        max={300}
-                        value={settings[genID * numberOfSettingsPerGenerator + 4]}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                setNewSetting(parseFloat(x), generatorSettings, genID, 4);
-                            }
-                        }}
-                    />
-                    knots
+                    <div className="flex flex-row align-middle">
+                        <SimpleInput
+                            className="flex-none my-2 w-20 font-mono"
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            max={300}
+                            value={settings[genID * numberOfSettingsPerGenerator + 4]}
+                            onBlur={(x: string) => {
+                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                    setNewSetting(parseFloat(x), generatorSettings, genID, 4);
+                                }
+                            }}
+                        />
+                        knots
+                    </div>
                 </div>
-                <div className="flex-col text-left">
+                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
                     <div>Speed transition low-med:</div>
-                    <SimpleInput
-                        className="my-2 w-20 font-mono"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        max={300}
-                        value={settings[genID * numberOfSettingsPerGenerator + 5]}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                setNewSetting(parseFloat(x), generatorSettings, genID, 5);
-                            }
-                        }}
-                    />
-                    knots
+                    <div className="flex flex-row align-middle">
+                        <SimpleInput
+                            className="flex-none my-2 w-20 font-mono"
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            max={300}
+                            value={settings[genID * numberOfSettingsPerGenerator + 5]}
+                            onBlur={(x: string) => {
+                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                    setNewSetting(parseFloat(x), generatorSettings, genID, 5);
+                                }
+                            }}
+                        />
+                        knots
+                    </div>
                 </div>
-                <div className="flex-col text-left">
+                <div className="flex flex-col p-2 text-left align-bottom border-r-2 border-r-theme-accent">
                     <div>Max speed:</div>
-                    <SimpleInput
-                        className="my-2 w-20 font-mono"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        max={300}
-                        value={settings[genID * numberOfSettingsPerGenerator + 6]}
-                        onBlur={(x : string) => {
-                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                setNewSetting(parseFloat(x), generatorSettings, genID, 6);
-                            }
-                        }}
-                    />
-                    knots
+                    <div className="flex flex-row align-middle">
+                        <SimpleInput
+                            className="flex-none my-2 w-20 font-mono"
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            max={300}
+                            value={settings[genID * numberOfSettingsPerGenerator + 6]}
+                            onBlur={(x : string) => {
+                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                    setNewSetting(parseFloat(x), generatorSettings, genID, 6);
+                                }
+                            }}
+                        />
+                        knots
+                    </div>
                 </div>
-                <div className="flex-col text-left">
+                <div className="flex flex-col p-2 text-left align-bottom">
                     <div>Max altitude above runway:</div>
-                    <SimpleInput
-                        className="my-2 font-mono w-25"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        max={10000}
-                        value={settings[genID * numberOfSettingsPerGenerator + 7] * 100}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 7);
-                            }
-                        }}
-                    />
-                    feet
+                    <div className="flex flex-row align-middle">
+                        <SimpleInput
+                            className="flex-none my-2 font-mono w-25"
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            max={10000}
+                            value={settings[genID * numberOfSettingsPerGenerator + 7] * 100}
+                            onBlur={(x: string) => {
+                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                    setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 7);
+                                }
+                            }}
+                        />
+                        feet
+                    </div>
                 </div>
             </div>
         </div>
@@ -214,7 +237,7 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
 export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '2,1,0.33,0.40,30,100,140,5000,2,1,0.33,0.40,30,100,140,5000');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
 
     const settingsTakeOff : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
 
@@ -299,7 +322,7 @@ function setNewSetting(newSetting: number, generatorSettings : any, genID : numb
 
 export const failureGeneratorAddTakeOff = (generatorsSettings : any) => {
     let tempSettings : string = generatorsSettings.settingTakeOff;
-    const additionalSetting = '2,1,0.33,0.33,30,95,140,40';
+    const additionalSetting = '0,1,0.33,0.33,30,95,140,40';
     if (tempSettings === undefined) {
         console.warn('Undefined generator setting, resetting');
         tempSettings = '';

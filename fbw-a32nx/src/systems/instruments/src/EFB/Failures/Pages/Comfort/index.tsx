@@ -19,8 +19,8 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
     const { activeFailures, allFailures } = useFailuresOrchestrator();
 
     const hasActiveFailure = allFailures
-        .filter((it) => it.ata === ataNumber)
-        .some((it) => activeFailures.has(it.identifier));
+        .filter((it : Failure) => it.ata === ataNumber)
+        .some((it : Failure) => activeFailures.has(it.identifier));
 
     return (
         <Link
@@ -65,7 +65,6 @@ export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUI
             <ScrollableContainer height={48}>
                 {filteredChapters.map((chapter) => (
                     <ATAChapterCard
-                        key={chapter}
                         ataNumber={chapter}
                         title={AtaChaptersTitle[chapter]}
                         description={AtaChaptersDescription[chapter]}
