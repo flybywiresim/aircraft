@@ -1644,10 +1644,9 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     shouldTransmitMinimums() {
-        //Only transmit when in Cruise or later phase and within 200NM of destination
-        return (this.flightPhaseManager.phase != FmgcFlightPhases.PREFLIGHT
-            && this.flightPhaseManager.phase != FmgcFlightPhases.TAKEOFF
-            && this.flightPlanManager.getDistanceToDestination() <= 200);
+        const phase = getFlightPhaseManager().phase;
+        //Only transmit when in Cruise or later phase and within 2250NM of destination
+        return (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250));
     }
 
     async setBnrArincSimVar(name, value, ssm, bits, rangeMax, rangeMin = 0) {
