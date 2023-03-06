@@ -48,7 +48,7 @@
 1. [FWC] Improve takeoff config/range warnings - @tracernz (Mike)
 1. [FMGC/FWC] Add takeoff surveilance 1 functions - @tracernz (Mike)
 1. [ND] Improve accuracy of plane icon - @tracernz (Mike)
-1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084) & @tracernz (Mike)
+1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084), @tracernz (Mike), @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.9.0
 
