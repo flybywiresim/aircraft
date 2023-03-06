@@ -13,9 +13,9 @@ const failureTakeOffAltitudeThreshold :number[] = [];
 
 export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settingTakeOff;
+    const setting = generatorSettings.settingsTakeOff;
     if (setting) {
-        const nbGenerator = Math.floor(setting.split(',').length / numberOfSettingsPerGenerator);
+        const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
             htmlReturn.push(failureGeneratorButtonTakeOff(i, generatorSettings));
         }
@@ -24,7 +24,7 @@ export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.El
 };
 
 const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
-    const settings : number[] = generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+    const settings : number[] = generatorSettings.settingsTakeOff;
     settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
     generatorSettings.setSettingTakeOff(flatten(settings));
     // arming
@@ -253,7 +253,7 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
 };
 
 function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
-    const settings = generatorSettings.settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+    const settings = generatorSettings.settingsTakeOff;
     settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
     generatorSettings.setSettingTakeOff(flatten(settings));
 }
