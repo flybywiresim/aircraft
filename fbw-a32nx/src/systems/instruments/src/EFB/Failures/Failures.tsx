@@ -4,7 +4,7 @@ import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
-import { addGenerator, failureGeneratorNames, failureGeneratorsSettings, generatorsButtonList } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import { addGenerator, failureGeneratorNames, failureGeneratorsSettings, generatorsCardList } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { Failure } from 'failures/src/failures-orchestrator';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
@@ -89,7 +89,7 @@ export const FailureGeneratorsUI = () => {
                     />
                 </div>
                 <ScrollableContainer height={48}>
-                    {generatorsButtonList(settings)}
+                    {generatorsCardList(settings)}
                 </ScrollableContainer>
             </div>
         </>

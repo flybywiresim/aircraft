@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, failureGeneratorCommonFunction,
-    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten, RearmSettings,
+    activateRandomFailure, basicData, FailureGeneratorCardTemplate, failureGeneratorCommonFunction,
+    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { Trash } from 'react-bootstrap-icons/dist';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
@@ -14,13 +13,13 @@ const failureGeneratorArmed :boolean[] = [];
 const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
 
-export const FailureGeneratorButtonsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
+export const FailureGeneratorCardsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
     const setting = generatorSettings.settingsTakeOff;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorButtonTakeOff(i, generatorSettings));
+            htmlReturn.push(failureGeneratorCardTakeOff(i, generatorSettings));
         }
     }
     return htmlReturn;
@@ -36,58 +35,38 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
     failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
-const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
+const failureGeneratorCardTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
     const settings = generatorSettings.settingsTakeOff;
-    return (
-        <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
-            <div className="flex flex-row justify-between item-center">
-                <div className="mr-4 align-left">
-                    <h2>
-                        {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
-                    </h2>
-                </div>
-                {RearmSettings(generatorSettings, genID, settings, numberOfSettingsPerGenerator, setNewSetting)}
-                <button
-                    type="button"
-                    onClick={() => eraseGenerator(genID, generatorSettings)}
-                    className="flex-none mr-4 w-10 h-10 rounded-md bg-theme-accent item-center hover:bg-utility-red"
-                >
-                    <Trash size={26} />
-                </button>
-            </div>
-            <div className="flex flex-row justify-between">
-                {
-                    [FailureGeneratorFailureSetting('Failure per take-off:', 20, '%', 0, 100,
-                        settings[genID * numberOfSettingsPerGenerator + 1], 100, false,
-                        setNewSetting, generatorSettings, genID, 1),
-                    FailureGeneratorFailureSetting('Low Speed chance:', 20, '%', 0,
-                        100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100,
-                        settings[genID * numberOfSettingsPerGenerator + 2], 100, false,
-                        setNewSetting, generatorSettings, genID, 2),
-                    FailureGeneratorFailureSetting('Medium Speed chance:', 20, '%', 0,
-                        100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100,
-                        settings[genID * numberOfSettingsPerGenerator + 3], 100, false,
-                        setNewSetting, generatorSettings, genID, 3),
-                    FailureGeneratorFailureSetting('Minimum speed:', 20, 'knots',
-                        0, settings[genID * numberOfSettingsPerGenerator + 5],
-                        settings[genID * numberOfSettingsPerGenerator + 4], 1, false,
-                        setNewSetting, generatorSettings, genID, 4),
-                    FailureGeneratorFailureSetting('Speed transition low-med:', 20, 'knots',
-                        settings[genID * numberOfSettingsPerGenerator + 4],
-                        settings[genID * numberOfSettingsPerGenerator + 6],
-                        settings[genID * numberOfSettingsPerGenerator + 5], 1, false,
-                        setNewSetting, generatorSettings, genID, 5),
-                    FailureGeneratorFailureSetting('Max speed:', 20, 'knots',
-                        settings[genID * numberOfSettingsPerGenerator + 4], 300,
-                        settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
-                        setNewSetting, generatorSettings, genID, 6),
-                    FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
-                        settings[genID * numberOfSettingsPerGenerator + 7], 100, false,
-                        setNewSetting, generatorSettings, genID, 7)]
-                }
-            </div>
-        </div>
-    );
+    const settingTable = [FailureGeneratorFailureSetting('Failure per take-off:', 20, '%', 0, 100,
+        settings[genID * numberOfSettingsPerGenerator + 1], 100, false,
+        setNewSetting, generatorSettings, genID, 1),
+    FailureGeneratorFailureSetting('Low Speed chance:', 20, '%', 0,
+        100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100,
+        settings[genID * numberOfSettingsPerGenerator + 2], 100, false,
+        setNewSetting, generatorSettings, genID, 2),
+    FailureGeneratorFailureSetting('Medium Speed chance:', 20, '%', 0,
+        100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100,
+        settings[genID * numberOfSettingsPerGenerator + 3], 100, false,
+        setNewSetting, generatorSettings, genID, 3),
+    FailureGeneratorFailureSetting('Minimum speed:', 20, 'knots',
+        0, settings[genID * numberOfSettingsPerGenerator + 5],
+        settings[genID * numberOfSettingsPerGenerator + 4], 1, false,
+        setNewSetting, generatorSettings, genID, 4),
+    FailureGeneratorFailureSetting('Speed transition low-med:', 20, 'knots',
+        settings[genID * numberOfSettingsPerGenerator + 4],
+        settings[genID * numberOfSettingsPerGenerator + 6],
+        settings[genID * numberOfSettingsPerGenerator + 5], 1, false,
+        setNewSetting, generatorSettings, genID, 5),
+    FailureGeneratorFailureSetting('Max speed:', 20, 'knots',
+        settings[genID * numberOfSettingsPerGenerator + 4], 300,
+        settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
+        setNewSetting, generatorSettings, genID, 6),
+    FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
+        settings[genID * numberOfSettingsPerGenerator + 7], 100, false,
+        setNewSetting, generatorSettings, genID, 7)];
+    return FailureGeneratorCardTemplate(genID, generatorSettings, 'Take-Off',
+        uniqueGenPrefix, numberOfSettingsPerGenerator,
+        setNewSetting, eraseGenerator, settingTable);
 };
 
 export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {

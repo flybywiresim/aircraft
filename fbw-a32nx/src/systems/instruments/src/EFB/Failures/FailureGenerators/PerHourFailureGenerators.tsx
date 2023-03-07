@@ -9,13 +9,13 @@ const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'E';
 const failureGeneratorArmed :boolean[] = [];
 
-export const FailureGeneratorButtonsPerHour : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
+export const FailureGeneratorCardsPerHour : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
     const setting = generatorSettings.settingsPerHour;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorButtonPerHour(i, generatorSettings));
+            htmlReturn.push(failureGeneratorCardPerHour(i, generatorSettings));
         }
     }
     return htmlReturn;
@@ -29,7 +29,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
     failureGeneratorArmed.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
 };
 
-const failureGeneratorButtonPerHour : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
+const failureGeneratorCardPerHour : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
     const settings = generatorSettings.settingsPerHour;
     const colorArmMode :string[] = [];
     for (let i = 0; i < 4; i++) {

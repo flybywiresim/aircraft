@@ -2,12 +2,13 @@ import React, { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
-import { failureGeneratorAddPerHour, FailureGeneratorButtonsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
+import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
-import { failureGeneratorAddTakeOff, FailureGeneratorButtonsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
+import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
-import { FailureGeneratorButtonsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
+import { FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
+import { Trash } from 'react-bootstrap-icons';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -122,6 +123,35 @@ export function FailureGeneratorFailureSetting(title:string, width : number,
     );
 }
 
+function RearmButton(setNewSetting: (newSetting: number, generatorSettings: any, genID: number, settingIndex: number) => void,
+    text:string, buttonID: number, generatorSettings: any, genID: number, settings: number[],
+    numberOfSettingsPerGenerator: number, position : ButtonPosition) {
+    let format : string;
+    switch (position) {
+    case ButtonPosition.Left: format = 'border-r-2 border-solid rounded-l-md';
+        break;
+    case ButtonPosition.Middle: format = 'border-r-2 border-solid';
+        break;
+    case ButtonPosition.Right: format = 'rounded-r-md';
+        break;
+    default: format = '';
+    }
+    return (
+        <button
+            type="button"
+            onClick={() => setNewSetting(buttonID, generatorSettings, genID, 0)}
+            className={`py-2 px-2 mx-0 text-center border-theme-highlight hover:bg-theme-highlight ${format}
+            ${
+        settings[genID * numberOfSettingsPerGenerator + 0] === 0 ? 'bg-theme-highlight' : 'bg-theme-accent'
+        }`}
+        >
+            <h2>{text}</h2>
+        </button>
+    );
+}
+
+export enum ButtonPosition {Left, Middle, Right}
+
 export function RearmSettings(generatorSettings: any, genID: number, settings : number[],
     numberOfSettingsPerGenerator : number,
     setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number) => void) {
@@ -130,38 +160,11 @@ export function RearmSettings(generatorSettings: any, genID: number, settings : 
         <div className="flex flex-col text-center">
             <h2>Rearming</h2>
             <div className="flex flex-row">
-                <button
-                    type="button"
-                    onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
-                    className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight rounded-l-md hover:bg-theme-highlight ${
-                        settings[genID * numberOfSettingsPerGenerator + 0] === 0 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
-                >
-                    <h2>OFF</h2>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
-                    className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${
-                        settings[genID * numberOfSettingsPerGenerator + 0] === 1 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
-                >
-                    <h2>Once</h2>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
-                    className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${
-                        settings[genID * numberOfSettingsPerGenerator + 0] === 2 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
-                >
-                    <h2>Take-Off</h2>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
-                    className={`py-2 px-2 mx-0 text-center rounded-r-md hover:bg-theme-highlight ${
-                        settings[genID * numberOfSettingsPerGenerator + 0] === 3 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
-                >
-                    <h2>Always</h2>
-                </button>
+                {[RearmButton(setNewSetting, 'OFF', 0, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Left),
+                    RearmButton(setNewSetting, 'Once', 1, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Middle),
+                    RearmButton(setNewSetting, 'Take-Off', 2, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Middle),
+                    RearmButton(setNewSetting, 'Always', 3, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Right),
+                ]}
             </div>
         </div>
     );
@@ -262,16 +265,16 @@ interface GeneratorOption {
     alias: string;
 }
 
-export const failureGeneratorButtons: ((generatorSettings: any) => JSX.Element[])[] = [
-    FailureGeneratorButtonsPerHour,
-    FailureGeneratorButtonsTimer,
-    FailureGeneratorButtonsTakeOff,
+export const failureGeneratorCards: ((generatorSettings: any) => JSX.Element[])[] = [
+    FailureGeneratorCardsPerHour,
+    FailureGeneratorCardsTimer,
+    FailureGeneratorCardsTakeOff,
 ];
 
-export const generatorsButtonList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
+export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
     let temp : JSX.Element[] = [];
-    for (let i = 0; i < failureGeneratorButtons.length; i++) {
-        temp = temp.concat(failureGeneratorButtons[i](generatorSettings));
+    for (let i = 0; i < failureGeneratorCards.length; i++) {
+        temp = temp.concat(failureGeneratorCards[i](generatorSettings));
     }
     return temp;
 };
@@ -285,6 +288,41 @@ const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => v
     failureGeneratorSpeedAccel,
     failureGeneratorSpeedDecel,
 ];
+
+export function FailureGeneratorCardTemplate(
+    genID : number,
+    generatorSettings : any,
+    genName : string,
+    uniqueGenPrefix : string,
+    numberOfSettingsPerGenerator : number,
+    setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number)=>void,
+    eraseGenerator : (genID : number, generatorSettings : any)=>void,
+    settingTable : JSX.Element[],
+) {
+    const settings = generatorSettings.settingsTakeOff;
+    return (
+        <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
+            <div className="flex flex-row justify-between item-center">
+                <div className="mr-4 align-left">
+                    <h2>
+                        {`${uniqueGenPrefix}${genID.toString()} : ${genName.toString()}`}
+                    </h2>
+                </div>
+                {RearmSettings(generatorSettings, genID, settings, numberOfSettingsPerGenerator, setNewSetting)}
+                <button
+                    type="button"
+                    onClick={() => eraseGenerator(genID, generatorSettings)}
+                    className="flex-none mr-4 w-10 h-10 rounded-md bg-theme-accent item-center hover:bg-utility-red"
+                >
+                    <Trash size={26} />
+                </button>
+            </div>
+            <div className="flex flex-row justify-between">
+                { settingTable }
+            </div>
+        </div>
+    );
+}
 
 export const randomFailureGenerator = () => {
     const { failureFlightPhase } = basicData();
