@@ -180,6 +180,6 @@ export const failureGeneratorAddTakeOff = (generatorsSettings : any) => {
     const additionalSetting = [0, 1, 0.33, 0.33, 30, 95, 140, 40];
     if (generatorsSettings.settingsTakeOff === undefined || generatorsSettings.settingsTakeOff.length % numberOfSettingsPerGenerator !== 0 || generatorsSettings.settingsTakeOff.length === 0) {
         // console.warn('Undefined generator setting, resetting');
-        generatorsSettings.setSettingTakeOff(additionalSetting);
-    } else generatorsSettings.setSettingTakeOff(`${flatten(generatorsSettings.settingsTakeOff)},${additionalSetting}`);
+        generatorsSettings.setSettingTakeOff(flatten(additionalSetting));
+    } else generatorsSettings.setSettingTakeOff(flatten(generatorsSettings.settingsTakeOff.concat(additionalSetting)));
 };

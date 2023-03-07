@@ -176,44 +176,44 @@ export const failureGeneratorsSettings = () => {
     const [settingAltitudeClimb, setSettingAltitudeClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB');
     const [settingAltitudeDescent, setSettingAltitudeDescent] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
     const settingsTakeOff = useMemo(() => {
-        console.info('ping1');
-        const splitString = settingTakeOff.split(',');
+        console.info(settingTakeOff);
+        const splitString = settingTakeOff?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingTakeOff]);
     const settingsPerHour = useMemo(() => {
-        console.info('ping2');
-        const splitString = settingPerHour.split(',');
+        console.info(settingPerHour);
+        const splitString = settingPerHour?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingPerHour]);
     const settingsTimer = useMemo(() => {
-        console.info('ping3');
-        const splitString = settingTimer.split(',');
+        console.info(settingTimer);
+        const splitString = settingTimer?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingTimer]);
     const settingsSpeedAccel = useMemo(() => {
-        console.info('ping4');
-        const splitString = settingSpeedAccel.split(',');
+        console.info(settingSpeedAccel);
+        const splitString = settingSpeedAccel?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingSpeedAccel]);
     const settingsSpeedDecel = useMemo(() => {
-        console.info('ping5');
-        const splitString = settingSpeedDecel.split(',');
+        console.info(settingSpeedDecel);
+        const splitString = settingSpeedDecel?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingSpeedDecel]);
     const settingsAltitudeClimb = useMemo(() => {
-        console.info('ping6');
-        const splitString = settingAltitudeClimb.split(',');
+        console.info(settingAltitudeClimb);
+        const splitString = settingAltitudeClimb?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingAltitudeClimb]);
     const settingsAltitudeDescent = useMemo(() => {
-        console.info('ping7');
-        const splitString = settingAltitudeDescent.split(',');
+        console.info(settingAltitudeDescent);
+        const splitString = settingAltitudeDescent?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingAltitudeDescent]);
