@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import {
+    activateRandomFailure, basicData, failureGeneratorCommonFunction,
+    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten, RearmSettings,
+} from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { Trash } from 'react-bootstrap-icons/dist';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
@@ -36,10 +38,6 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 
 const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
     const settings = generatorSettings.settingsTakeOff;
-    const colorArmMode :string[] = [];
-    for (let i = 0; i < 4; i++) {
-        colorArmMode.push(settings[genID * numberOfSettingsPerGenerator + 0] === i ? 'bg-theme-highlight' : 'bg-theme-accent');
-    }
     return (
         <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
             <div className="flex flex-row justify-between item-center">
@@ -48,39 +46,7 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                         {`${uniqueGenPrefix}${genID.toString()} : Take-Off`}
                     </h2>
                 </div>
-                <div className="flex flex-col text-center">
-                    <h2>Rearming</h2>
-                    <div className="flex flex-row">
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
-                            className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight rounded-l-md hover:bg-theme-highlight ${colorArmMode[0]}`}
-                        >
-                            <h2>OFF</h2>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
-                            className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[1]}`}
-                        >
-                            <h2>Once</h2>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
-                            className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${colorArmMode[2]}`}
-                        >
-                            <h2>Take-Off</h2>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
-                            className={`py-2 px-2 mx-0 text-center rounded-r-md hover:bg-theme-highlight ${colorArmMode[3]}`}
-                        >
-                            <h2>Always</h2>
-                        </button>
-                    </div>
-                </div>
+                {RearmSettings(generatorSettings, genID, settings, numberOfSettingsPerGenerator, setNewSetting)}
                 <button
                     type="button"
                     onClick={() => eraseGenerator(genID, generatorSettings)}
@@ -90,139 +56,33 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                 </button>
             </div>
             <div className="flex flex-row justify-between">
-                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
-                    <div className="break-keep">Failure per take-off:</div>
-                    <div className="flex flex-row items-center">
-                        <SimpleInput
-                            className="my-2 w-20 font-mono"
-                            fontSizeClassName="text-2xl"
-                            number
-                            min={0}
-                            max={100}
-                            value={settings[genID * numberOfSettingsPerGenerator + 1] * 100}
-                            onBlur={(x: string) => {
-                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                    setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 1);
-                                }
-                            }}
-                        />
-                        <div className="ml-2">%</div>
-                    </div>
-                </div>
-                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
-                    <div className="break-keep">Low Speed chance:</div>
-                    <div className="flex flex-row items-center">
-                        <SimpleInput
-                            className="my-2 w-20 font-mono"
-                            fontSizeClassName="text-2xl"
-                            number
-                            min={0}
-                            max={100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100}
-                            value={settings[genID * numberOfSettingsPerGenerator + 2] * 100}
-                            onBlur={(x: string) => {
-                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                    setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 2);
-                                }
-                            }}
-                        />
-                        <div className="ml-2">%</div>
-                    </div>
-                </div>
-                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
-                    <div className="break-keep">Medium Speed chance:</div>
-                    <div className="flex flex-row items-center">
-                        <SimpleInput
-                            className="my-2 w-20 font-mono"
-                            fontSizeClassName="text-2xl"
-                            number
-                            min={0}
-                            max={100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100}
-                            value={settings[genID * numberOfSettingsPerGenerator + 3] * 100}
-                            onBlur={(x: string) => {
-                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                    setNewSetting(parseFloat(x) / 100, generatorSettings, genID, 3);
-                                }
-                            }}
-                        />
-                        <div className="ml-2">%</div>
-                    </div>
-                </div>
-                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
-                    <div className="break-keep">Minimum speed:</div>
-                    <div className="flex flex-row items-center">
-                        <SimpleInput
-                            className="my-2 w-20 font-mono"
-                            fontSizeClassName="text-2xl"
-                            number
-                            min={0}
-                            max={300}
-                            value={settings[genID * numberOfSettingsPerGenerator + 4]}
-                            onBlur={(x: string) => {
-                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                    setNewSetting(parseFloat(x), generatorSettings, genID, 4);
-                                }
-                            }}
-                        />
-                        <div className="ml-2">knots</div>
-                    </div>
-                </div>
-                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
-                    <div className="break-keep">Speed transition low-med:</div>
-                    <div className="flex flex-row items-center">
-                        <SimpleInput
-                            className="my-2 w-20 font-mono"
-                            fontSizeClassName="text-2xl"
-                            number
-                            min={0}
-                            max={300}
-                            value={settings[genID * numberOfSettingsPerGenerator + 5]}
-                            onBlur={(x: string) => {
-                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                    setNewSetting(parseFloat(x), generatorSettings, genID, 5);
-                                }
-                            }}
-                        />
-                        <div className="ml-2">knots</div>
-                    </div>
-                </div>
-                <div className="flex flex-col justify-between p-2 text-left border-r-2 border-r-theme-accent">
-                    <div className="break-keep">Max speed:</div>
-                    <div className="flex flex-row items-center">
-                        <SimpleInput
-                            className="my-2 w-20 font-mono"
-                            fontSizeClassName="text-2xl"
-                            number
-                            min={0}
-                            max={300}
-                            value={settings[genID * numberOfSettingsPerGenerator + 6]}
-                            onBlur={(x : string) => {
-                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                    setNewSetting(parseFloat(x), generatorSettings, genID, 6);
-                                }
-                            }}
-                        />
-                        <div className="ml-2">knots</div>
-                    </div>
-                </div>
-                <div className="flex flex-col justify-between p-2 text-left">
-                    <div className="break-keep">Max altitude above runway:</div>
-                    <div className="flex flex-row items-center">
-                        <SimpleInput
-                            className="my-2 w-24 font-mono"
-                            fontSizeClassName="text-2xl"
-                            number
-                            min={0}
-                            max={10000}
-                            value={settings[genID * numberOfSettingsPerGenerator + 7] * 100}
-                            onBlur={(x: string) => {
-                                if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                                    setNewSetting(Math.round(parseFloat(x) / 100), generatorSettings, genID, 7);
-                                }
-                            }}
-                        />
-                        <div className="ml-2">feet</div>
-                    </div>
-                </div>
+                {
+                    [FailureGeneratorFailureSetting('Failure per take-off:', 20, '%', 0, 100,
+                        settings[genID * numberOfSettingsPerGenerator + 1], 100, false,
+                        setNewSetting, generatorSettings, genID, 1),
+                    FailureGeneratorFailureSetting('Low Speed chance:', 20, '%', 0,
+                        100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100,
+                        settings[genID * numberOfSettingsPerGenerator + 2], 100, false,
+                        setNewSetting, generatorSettings, genID, 2),
+                    FailureGeneratorFailureSetting('Medium Speed chance:', 20, '%', 0,
+                        100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100,
+                        settings[genID * numberOfSettingsPerGenerator + 3], 100, false,
+                        setNewSetting, generatorSettings, genID, 3),
+                    FailureGeneratorFailureSetting('Minimum speed:', 20, 'knots',
+                        0, settings[genID * numberOfSettingsPerGenerator + 5],
+                        settings[genID * numberOfSettingsPerGenerator + 4], 1, false,
+                        setNewSetting, generatorSettings, genID, 4),
+                    FailureGeneratorFailureSetting('Speed transition low-med:', 20, 'knots',
+                        settings[genID * numberOfSettingsPerGenerator + 4], settings[genID * numberOfSettingsPerGenerator + 6],
+                        settings[genID * numberOfSettingsPerGenerator + 5], 1, false,
+                        setNewSetting, generatorSettings, genID, 5),
+                    FailureGeneratorFailureSetting('Max speed:', 20, 'knots', settings[genID * numberOfSettingsPerGenerator + 4], 300,
+                        settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
+                        setNewSetting, generatorSettings, genID, 6),
+                    FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
+                        settings[genID * numberOfSettingsPerGenerator + 7], 100, false,
+                        setNewSetting, generatorSettings, genID, 7)]
+                }
             </div>
         </div>
     );

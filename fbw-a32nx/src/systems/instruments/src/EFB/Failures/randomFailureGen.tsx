@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGeneratorAltClimb, failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerators';
@@ -7,6 +7,7 @@ import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instrume
 import { failureGeneratorAddTakeOff, FailureGeneratorButtonsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorButtonsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
+import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -92,6 +93,80 @@ export const basicData = () => {
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
 
+export function FailureGeneratorFailureSetting(title:string, width : number,
+    unit : string, min:number, max:number,
+    value: number, mult : number,
+    last : boolean, setNewSetting : (newSetting: number, generatorSettings: any, genID: number, settingIndex: number) => void,
+    generatorSettings : any, genIndex, settingIndex : number) {
+    const multCheck = mult === 0 ? 1 : mult;
+    return (
+        <div className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}>
+            <div className="break-keep">{title}</div>
+            <div className="flex flex-row items-center">
+                <SimpleInput
+                    className={`my-2 w-${width} font-mono`}
+                    fontSizeClassName="text-2xl"
+                    number
+                    min={min}
+                    max={max}
+                    value={value * multCheck}
+                    onBlur={(x: string) => {
+                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                            setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
+                        }
+                    }}
+                />
+                <div className="ml-2">{unit}</div>
+            </div>
+        </div>
+    );
+}
+
+export function RearmSettings(generatorSettings: any, genID: number, settings : number[],
+    numberOfSettingsPerGenerator : number,
+    setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number) => void) {
+    console.info('ping');
+    return (
+        <div className="flex flex-col text-center">
+            <h2>Rearming</h2>
+            <div className="flex flex-row">
+                <button
+                    type="button"
+                    onClick={() => setNewSetting(0, generatorSettings, genID, 0)}
+                    className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight rounded-l-md hover:bg-theme-highlight ${
+                        settings[genID * numberOfSettingsPerGenerator + 0] === 0 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
+                >
+                    <h2>OFF</h2>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setNewSetting(1, generatorSettings, genID, 0)}
+                    className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${
+                        settings[genID * numberOfSettingsPerGenerator + 0] === 1 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
+                >
+                    <h2>Once</h2>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setNewSetting(2, generatorSettings, genID, 0)}
+                    className={`py-2 px-2 mx-0 text-center border-r-2 border-solid border-theme-highlight hover:bg-theme-highlight ${
+                        settings[genID * numberOfSettingsPerGenerator + 0] === 2 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
+                >
+                    <h2>Take-Off</h2>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setNewSetting(3, generatorSettings, genID, 0)}
+                    className={`py-2 px-2 mx-0 text-center rounded-r-md hover:bg-theme-highlight ${
+                        settings[genID * numberOfSettingsPerGenerator + 0] === 3 ? 'bg-theme-highlight' : 'bg-theme-accent'}`}
+                >
+                    <h2>Always</h2>
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export const failureGeneratorsSettings = () => {
     const [settingTakeOff, setSettingTakeOff] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TAKEOFF');
     const [settingPerHour, setSettingPerHour] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR');
@@ -100,13 +175,34 @@ export const failureGeneratorsSettings = () => {
     const [settingSpeedDecel, setSettingSpeedDecel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL');
     const [settingAltitudeClimb, setSettingAltitudeClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB');
     const [settingAltitudeDescent, setSettingAltitudeDescent] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
-    const settingsTakeOff = useMemo(() => settingTakeOff.split(',').map(((it : string) => parseFloat(it))), [settingTakeOff]);
-    const settingsPerHour = useMemo(() => settingPerHour.split(',').map(((it : string) => parseFloat(it))), [settingPerHour]);
-    const settingsTimer = useMemo(() => settingTimer.split(',').map(((it : string) => parseFloat(it))), [settingTimer]);
-    const settingsSpeedAccel = useMemo(() => settingSpeedAccel.split(',').map(((it : string) => parseFloat(it))), [settingSpeedAccel]);
-    const settingsSpeedDecel = useMemo(() => settingSpeedDecel.split(',').map(((it : string) => parseFloat(it))), [settingSpeedDecel]);
-    const settingsAltitudeClimb = useMemo(() => settingTakeOff.split(',').map(((it : string) => parseFloat(it))), [settingAltitudeClimb]);
-    const settingsAltitudeDescent = useMemo(() => settingAltitudeDescent.split(',').map(((it : string) => parseFloat(it))), [settingAltitudeDescent]);
+    const settingsTakeOff = useMemo(() => {
+        console.info('ping1');
+        return settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+    }, [settingTakeOff]);
+    const settingsPerHour = useMemo(() => {
+        console.info('ping2');
+        return settingPerHour.split(',').map(((it : string) => parseFloat(it)));
+    }, [settingPerHour]);
+    const settingsTimer = useMemo(() => {
+        console.info('ping3');
+        return settingTimer.split(',').map(((it : string) => parseFloat(it)));
+    }, [settingTimer]);
+    const settingsSpeedAccel = useMemo(() => {
+        console.info('ping4');
+        return settingSpeedAccel.split(',').map(((it : string) => parseFloat(it)));
+    }, [settingSpeedAccel]);
+    const settingsSpeedDecel = useMemo(() => {
+        console.info('ping5');
+        return settingSpeedDecel.split(',').map(((it : string) => parseFloat(it)));
+    }, [settingSpeedDecel]);
+    const settingsAltitudeClimb = useMemo(() => {
+        console.info('ping6');
+        return settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+    }, [settingAltitudeClimb]);
+    const settingsAltitudeDescent = useMemo(() => {
+        console.info('ping7');
+        return settingAltitudeDescent.split(',').map(((it : string) => parseFloat(it)));
+    }, [settingAltitudeDescent]);
     const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
 
     return {
