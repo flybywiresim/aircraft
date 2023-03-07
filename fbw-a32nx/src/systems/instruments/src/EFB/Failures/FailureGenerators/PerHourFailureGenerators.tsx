@@ -170,10 +170,8 @@ function setNewSetting(newSetting: number, generatorSettings : any, genID : numb
 
 export const failureGeneratorAddPerHour = (generatorsSettings : any) => {
     const additionalSetting = [0, 0.1];
-    if (generatorsSettings.settingsPerHour === undefined) {
-        console.warn('Undefined generator setting, resetting');
-        generatorsSettings.settingsPerHour = [];
-    }
-    if (generatorsSettings.settingsPerHour.length > 0) generatorsSettings.setSettingPerHour(`${flatten(generatorsSettings.settingsPerHour)},${additionalSetting}`);
-    else generatorsSettings.setSettingPerHour(additionalSetting);
+    if (generatorsSettings.settingsPerHour === undefined || generatorsSettings.settingsPerHour.length % numberOfSettingsPerGenerator !== 0 || generatorsSettings.settingsPerHour.length === 0) {
+        // console.warn('Undefined generator setting, resetting');
+        generatorsSettings.setSettingPerHour(flatten(additionalSetting));
+    } else generatorsSettings.setSettingPerHour(flatten(generatorsSettings.settingsPerHour.concat(additionalSetting)));
 };
