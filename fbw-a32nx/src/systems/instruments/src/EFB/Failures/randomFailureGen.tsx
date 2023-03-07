@@ -142,7 +142,7 @@ function RearmButton(setNewSetting: (newSetting: number, generatorSettings: any,
             onClick={() => setNewSetting(buttonID, generatorSettings, genID, 0)}
             className={`py-2 px-2 mx-0 text-center border-theme-highlight hover:bg-theme-highlight ${format}
             ${
-        settings[genID * numberOfSettingsPerGenerator + 0] === 0 ? 'bg-theme-highlight' : 'bg-theme-accent'
+        settings[genID * numberOfSettingsPerGenerator + 0] === buttonID ? 'bg-theme-highlight' : 'bg-theme-accent'
         }`}
         >
             <h2>{text}</h2>
