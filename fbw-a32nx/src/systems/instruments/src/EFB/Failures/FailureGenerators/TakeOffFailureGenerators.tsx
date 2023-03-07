@@ -73,10 +73,12 @@ const failureGeneratorButtonTakeOff : (genID : number, generatorSettings : any) 
                         settings[genID * numberOfSettingsPerGenerator + 4], 1, false,
                         setNewSetting, generatorSettings, genID, 4),
                     FailureGeneratorFailureSetting('Speed transition low-med:', 20, 'knots',
-                        settings[genID * numberOfSettingsPerGenerator + 4], settings[genID * numberOfSettingsPerGenerator + 6],
+                        settings[genID * numberOfSettingsPerGenerator + 4],
+                        settings[genID * numberOfSettingsPerGenerator + 6],
                         settings[genID * numberOfSettingsPerGenerator + 5], 1, false,
                         setNewSetting, generatorSettings, genID, 5),
-                    FailureGeneratorFailureSetting('Max speed:', 20, 'knots', settings[genID * numberOfSettingsPerGenerator + 4], 300,
+                    FailureGeneratorFailureSetting('Max speed:', 20, 'knots',
+                        settings[genID * numberOfSettingsPerGenerator + 4], 300,
                         settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
                         setNewSetting, generatorSettings, genID, 6),
                     FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
@@ -176,10 +178,8 @@ function setNewSetting(newSetting: number, generatorSettings : any, genID : numb
 
 export const failureGeneratorAddTakeOff = (generatorsSettings : any) => {
     const additionalSetting = [0, 1, 0.33, 0.33, 30, 95, 140, 40];
-    if (generatorsSettings.settingsTakeOff === undefined) {
-        console.warn('Undefined generator setting, resetting');
-        generatorsSettings.settingsTakeOff = [];
-    }
-    if (generatorsSettings.settingsTakeOff.length > 0) generatorsSettings.setSettingTakeOff(`${flatten(generatorsSettings.settingsTakeOff)},${additionalSetting}`);
-    else generatorsSettings.setSettingTakeOff(additionalSetting);
+    if (generatorsSettings.settingsTakeOff === undefined || generatorsSettings.settingsTakeOff.length % numberOfSettingsPerGenerator !== 0 || generatorsSettings.settingsTakeOff.length === 0) {
+        // console.warn('Undefined generator setting, resetting');
+        generatorsSettings.setSettingTakeOff(additionalSetting);
+    } else generatorsSettings.setSettingTakeOff(`${flatten(generatorsSettings.settingsTakeOff)},${additionalSetting}`);
 };
