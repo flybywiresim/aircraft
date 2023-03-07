@@ -177,31 +177,38 @@ export const failureGeneratorsSettings = () => {
     const [settingAltitudeDescent, setSettingAltitudeDescent] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
     const settingsTakeOff = useMemo(() => {
         console.info('ping1');
-        return settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+        if (settingTakeOff) return settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+        return [];
     }, [settingTakeOff]);
     const settingsPerHour = useMemo(() => {
         console.info('ping2');
-        return settingPerHour.split(',').map(((it : string) => parseFloat(it)));
+        if (settingPerHour) return settingPerHour.split(',').map(((it : string) => parseFloat(it)));
+        return [];
     }, [settingPerHour]);
     const settingsTimer = useMemo(() => {
         console.info('ping3');
-        return settingTimer.split(',').map(((it : string) => parseFloat(it)));
+        if (settingTimer) return settingTimer.split(',').map(((it : string) => parseFloat(it)));
+        return [];
     }, [settingTimer]);
     const settingsSpeedAccel = useMemo(() => {
         console.info('ping4');
-        return settingSpeedAccel.split(',').map(((it : string) => parseFloat(it)));
+        if (settingSpeedAccel) return settingSpeedAccel.split(',').map(((it : string) => parseFloat(it)));
+        return [];
     }, [settingSpeedAccel]);
     const settingsSpeedDecel = useMemo(() => {
         console.info('ping5');
-        return settingSpeedDecel.split(',').map(((it : string) => parseFloat(it)));
+        if (settingSpeedDecel) return settingSpeedDecel.split(',').map(((it : string) => parseFloat(it)));
+        return [];
     }, [settingSpeedDecel]);
     const settingsAltitudeClimb = useMemo(() => {
         console.info('ping6');
-        return settingTakeOff.split(',').map(((it : string) => parseFloat(it)));
+        if (settingAltitudeClimb) return settingAltitudeClimb.split(',').map(((it : string) => parseFloat(it)));
+        return [];
     }, [settingAltitudeClimb]);
     const settingsAltitudeDescent = useMemo(() => {
         console.info('ping7');
-        return settingAltitudeDescent.split(',').map(((it : string) => parseFloat(it)));
+        if (settingAltitudeDescent) return settingAltitudeDescent.split(',').map(((it : string) => parseFloat(it)));
+        return [];
     }, [settingAltitudeDescent]);
     const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
 
