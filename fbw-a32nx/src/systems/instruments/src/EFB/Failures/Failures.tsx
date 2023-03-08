@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
-import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
-import { addGenerator, failureGeneratorNames, failureGeneratorsSettings, generatorsCardList } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { Failure } from 'failures/src/failures-orchestrator';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
@@ -15,6 +13,7 @@ import { PageLink, PageRedirect } from '../Utils/routing';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { setSearchQuery } from '../Store/features/failuresPage';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
+import { FailureGeneratorsUI } from './FailureGenerators/FailureGeneratorsUI';
 
 export const FailuresHome = () => {
     const tabs: PageLink[] = [
@@ -41,57 +40,6 @@ export const FailuresHome = () => {
                 <FailureGeneratorsUI />
             </Route>
             <PageRedirect basePath="/failures" tabs={tabs} />
-        </>
-    );
-};
-
-export const FailureGeneratorsUI = () => {
-    const [chosenGen, setChosenGen] = useState<string>();
-    const settings = failureGeneratorsSettings();
-    return (
-        <>
-            <div className="flex flex-col">
-                <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
-                    <h2 className="flex-none">
-                        {t('Failures.Generators.Select')}
-                    </h2>
-                    <SelectInput
-                        className="flex-none w-72 h-10"
-                        value={chosenGen}
-                        onChange={(value) => setChosenGen(value as string)}
-                        options={failureGeneratorNames.map((option) => ({
-                            value: option.name,
-                            displayValue: `${option.alias}`,
-                        }))}
-                        maxHeight={32}
-                    />
-                    <button
-                        onClick={addGenerator(chosenGen, settings)}
-                        type="button"
-                        className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:bg-theme-highlight"
-                    >
-                        <h2>{t('Failures.Generators.Add')}</h2>
-                    </button>
-                </div>
-                <div className="flex items-center">
-                    <div className="mr-2">Max number of simultaneous failures:</div>
-                    <SimpleInput
-                        className="my-2 w-10 font-mono"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        value={settings.maxFailuresAtOnce}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseInt(x) || parseInt(x) >= 0)) {
-                                settings.setMaxFailuresAtOnce(parseInt(x));
-                            }
-                        }}
-                    />
-                </div>
-                <ScrollableContainer height={48}>
-                    {generatorsCardList(settings)}
-                </ScrollableContainer>
-            </div>
         </>
     );
 };

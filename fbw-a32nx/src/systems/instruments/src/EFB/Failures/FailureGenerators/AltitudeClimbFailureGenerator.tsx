@@ -1,10 +1,11 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, FailureGeneratorCardTemplate, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
+    activateRandomFailure, basicData, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
     FailurePhases, findGeneratorFailures, flatten,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'A';
@@ -36,7 +37,7 @@ const failureGeneratorCardAltClimb : (genID : number, generatorSettings : any) =
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),
     ];
-    return FailureGeneratorCardTemplate(genID, generatorSettings, 'Altitude (climb)',
+    return FailureGeneratorCardTemplateUI(genID, generatorSettings, 'Altitude (climb)',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
         setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsAltClimb);
 };

@@ -1,10 +1,11 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, FailureGeneratorCardTemplate, failureGeneratorCommonFunction,
+    activateRandomFailure, basicData, failureGeneratorCommonFunction,
     FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
@@ -64,7 +65,7 @@ const failureGeneratorCardTakeOff : (genID : number, generatorSettings : any) =>
     FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
         settings[genID * numberOfSettingsPerGenerator + 7], 100, true,
         setNewSetting, generatorSettings, genID, 7)];
-    return FailureGeneratorCardTemplate(genID, generatorSettings, 'Take-Off',
+    return FailureGeneratorCardTemplateUI(genID, generatorSettings, 'Take-Off',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
         setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsTakeOff);
 };
