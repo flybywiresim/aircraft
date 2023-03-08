@@ -38,7 +38,7 @@ const failureGeneratorCardAltDesc : (genID : number, generatorSettings : any) =>
     ];
     return FailureGeneratorCardTemplate(genID, generatorSettings, 'Altitude (descent)',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable);
+        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsAltDesc);
 };
 
 export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, string>) => {
