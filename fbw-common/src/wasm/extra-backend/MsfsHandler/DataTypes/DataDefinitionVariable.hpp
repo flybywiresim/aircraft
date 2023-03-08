@@ -164,13 +164,13 @@ class DataDefinitionVariable : public SimObjectBase {
    * be called even if the sim if paused
    *
    * @param period the SIMCONNECT_PERIOD with which the sim should send the data
-   * @param periodFlags the SIMCONNECT_DATA_REQUEST_FLAG with which the sim should send the data
+   * @param periodFlags the SIMCONNECT_DATA_REQUEST_FLAG with which the sim should send the data (default SIMCONNECT_DATA_REQUEST_FLAG_CHANGED)
    * @param origin The number of Period events that should elapse before transmission of the data
-   *               begins. The default is zero, which means transmissions will start immediately.
+   *               begins. The default is zero, which means transmissions will start immediately. (default 0)
    * @param interval The number of Period events that should elapse between transmissions of the
-   *                 data. The default is zero, which means the data is transmitted every Period.
+   *                 data. The default is zero, which means the data is transmitted every Period. (default 0)
    * @param limit The number of times the data should be transmitted before this communication is
-   *              ended. The default is zero, which means the data should be transmitted endlessly.
+   *              ended. The default is zero, which means the data should be transmitted endlessly. (default 0)
    * @return true if the request was successful, false otherwise
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RequestDataOnSimObject.htm

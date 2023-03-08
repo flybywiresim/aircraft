@@ -3,13 +3,14 @@
 A lightweight framework to abstract the most common aspects when developing
 C++ WASM modules using the MSFS SDK and SimConnect.
 
-See [GUIDELINES.md](https://github.com/flybywiresim/a32nx/blob/cpp-wasm-framework/fbw-common/src/wasm/extra-backend/GUIDELINES.md) for more information on how to write good 
-C++ code for FlyByWire Simulations.
+See [GUIDELINES.md](https://github.com/flybywiresim/a32nx/blob/cpp-wasm-framework/fbw-common/src/wasm/extra-backend/GUIDELINES.md) 
+for more information on how to write good C++ code for FlyByWire Simulations.
 
 ## Purpose
 
 The purpose of this framework is to provide a lightweight abstraction layer
-to the MSFS SDK and SimConnect for FlyByWire. This allows developers to focus 
+to the MSFS SDK and SimConnect for FlyByWire which encapsulates the most common 
+aspects of the SDK and SimConnect in C++ objects. This allows developers to focus 
 on the implementation of the actual module without having to worry about the
 boilerplate code required to get the module up and running.
 
@@ -19,7 +20,7 @@ the same data from the simulator.
 On of the main purposes of this framework is to avoid multiple WASM files which 
 have to be compiled by MSFS at the start of the flight when files have been 
 updated. Every file adds a significant overhead to the startup time of a flight
-in MSFS. Having fewer files is more efficient and allows for faster startup 
+in MSFS. Having fewer wasm files is more efficient and allows for faster startup 
 times.     
 
 ## Goals
@@ -34,8 +35,8 @@ aircraft or its systems. This will be done in the actual modules.
 It helps new developers to get started with C++ WASM development in the FlyByWire
 Code base without an overwhelming incomprehensible framework.
 
-Continuously improve the framework to make it easier to use and more powerful
-for additional use cases without making it overly complex.
+The framework should be continuously improved to make it easier to use and more 
+powerful for additional use cases without making it overly complex.
 
 ## Overview and Features
 
@@ -136,28 +137,29 @@ It currently provides the following data types:
 
 - AircraftVariable: a variable which is directly mapped to a simvar
 - NamedVariable: a variable which is mapped to a LVAR
-- DataDefinitionVariable: Custom defined SimObjects base on custom C++ structs
-  between clients
-- ClientDataAreaVariable: Custom defined SimObjects base on memory mapped data 
+- DataDefinitionVariable: Custom defined SimObjects base on simvars and custom 
+  C++ structs (with SU12 also LVARs can be part of the data definition - this is 
+  not tested yet).
+- ClientDataAreaVariable: Custom defined SimObjects base on memory mapped data to 
+  exchange arbitrary data between SimConnect clients.  
 - ClientDataAreaBuffered Variable: Custom defined SimObjects base on memory mapped
   which can be larger than the limit of 8k bytes per ClientDataArea by using a 
-  streaming buffer approach to send and retrieve data (partially implemented but
-  not working yet).
-- Event: a SimConnect event
+  streaming buffer approach to send and retrieve data.
+- ClientEvent: These events are used to either create a custom event or to be mapped
+  to a sim event or sim system event. The main feature of a ClientEvent is that it
+  has a unique ID which can be used to map and recognize the event. Callbacks can
+  then be registered to be called when the event is triggered.
                            
-It implements a simple callback observer pattern to allow modules to register for updates
-of a variable.
-
 Also, it allows to register callback functions for KeyEvents.  
 
 The below described variables can be used without the DataManager, however the 
 DataManager provides not only automatic updates and writing of the variables, 
-but also convenience functions to create and register variables and events in 
-the DataManager itself and also de-duplicating variables. 
+but also functions to create and register variables and events in the 
+DataManager itself and also will de-duplicate variables where useful. 
                           
 #### DataObjectBase (abstract base class)
 
-The base class for all data objects.
+The base class for all data objects providing the variable's name.
 
 #### ManagedDataObjectBase (abstract base class)
 MSFS SDK and SimConnect provide different kinds of variable each with different
@@ -168,8 +170,7 @@ interface to the data from the sim.
 
 Each variable has various ways to be updated and written back to the sim:
 
-- Manual read/write: The developer can manually read and write the variable from and to 
-  the sim at any time
+- Manual read/write: The developer can manually read and write the variable from and to the sim at any time
 - Auto read: The variable can be configured to be automatically read from the sim (preUpdate) via the DataManager
 - Auto write: The variable can be configured to be automatically written to the sim (postUpdate) via the DataManager
 - Max Age in Ticks: The variable can be configured to be automatically read from the sim 
@@ -177,8 +178,8 @@ Each variable has various ways to be updated and written back to the sim:
 - Max Age in Seconds: The variable can be configured to be automatically read from the sim if 
   it is older than a certain number of seconds (preUpdate)
 
-This base class provides the means to register and remove callbacks for updates 
-to the variable.
+This base class also provides the means to register and remove callbacks for updates 
+to the variable. Any time the variable is read and has changed the callbacks will be fired.
 
 See the documentation of ManagedDataObjectBase for more details.
 
@@ -194,9 +195,9 @@ sim if required.
 | method           | description                                                                                              |
 |:-----------------|:---------------------------------------------------------------------------------------------------------|
 | get()            | Returns cached value - never reads directly from sim                                                     |
-| updateFromSim()  | Returns updated cached value - reads from sim if update criteria are met (maxAge)                        |
+| updateFromSim()  | Returns updated cached value - reads once per tick from sim if update criteria are met (maxAge)          |
 | readFromSim()    | Reads the value from the sim, updates cache, clears dirty flag - does not check update criteria (maxAge) |
-| rawReadFromSim() | The raw MSFS SDK call to read from the sim. **Must be implemented by specialized classes**               | 
+| rawReadFromSim() | The raw MSFS SDK call to read the different variable types from the sim.                                 | 
 
 See the documentation of CacheableVariable for more details.
 
@@ -208,7 +209,7 @@ See the documentation of CacheableVariable for more details.
 | updateToSim()      | Updates a value to the sim if it is dirty.                                                                           |
 | writeToSim()       | Writes the current cached value to the sim. Clears the dirty flag.                                                   |
 | setAndWriteToSim() | Sets the current value and writes it to the sim. Clears the dirty flag.                                              |
-| rawWriteToSim()    | The raw MSFS SDK call to write the sim. **Must be implemented by specialized classes**                               |
+| rawWriteToSim()    | The raw MSFS SDK call to write the sim.                                                                              |
                 
 See the documentation of CacheableVariable for more details.
 
@@ -239,7 +240,7 @@ clang++ \
 The AircraftVariable is a variable which is mapped to an aircraft simvar. As simvars 
 are read-only it is required to use an event to write the variable back to the sim.
 
-It allows to specify either an event-name or an instance of an Event object to
+It allows to specify either an event-name or an instance of an ClientEvent object to
 write data back to the sim.
 
 It is based on the CacheableVariable - see above.
@@ -254,7 +255,6 @@ The SimObjectBase is the base class for all custom SimObjects.
 
 | method                 | description                                                                                                      |
 |:-----------------------|:-----------------------------------------------------------------------------------------------------------------|
-| data()                 | Returns a reference to the actual data struct holding the current data. Use this to read and write to the data.  |
 | requestDataFromSim()   | Sends a data request to the sim                                                                                  |
 | requestUpdateFromSim() | Sends a data request to the sim if update criteria are met (maxAge)                                              |
 | processSimData()       | The callback the DataManager uses when the requested data has been received from the sim                         | 
@@ -270,9 +270,9 @@ See the documentation of CacheableVariable for more details.
 ##### DataDefinitionVariable (Custom SimObjects)
 The DataDefinitionVariable is a variable which is mapped to a custom data struct 
 and a SimObject which can be defined by adding separate data definitions for single 
-sim variables (objects) to a container of data definitions (custom SimObject).
+sim variables to a container of data definitions.
 
-It requires a local data struct as a template type which is used to hold the data.
+It requires a local data struct as a template type which is then used to hold the data.
 
 The class is based on ManagedDataObjectBase and therefore supports auto reading and writing of
 the data to the sim. It also supports using the SIMCONNECT_PERIOD flags to update the
@@ -284,23 +284,21 @@ very efficient but a bit harder to set up and use.
 A data definition variable consisting of only writable simvars can be used to
 write data back to the sim without the need to define an event.
 
-Writing back a read only simvar will produce an error (visible in the console). 
+Writing back a read only simvar will produce a SimConnect exception (visible in the console). 
 
 See the DataDefinitionVariable class documentation for more details.
 
 A DataDefinitionVariable requires unique IDs for the data definition and the
 request. These IDs are used to identify the data definition and the data received 
-from the sim. Make sure these IDs are unique within the gauge.
-
-Use the DataManager to create these variables, and it will automatically assign
-unique IDs.
+from the sim. The DataManager will create these variables, and it will automatically 
+assign unique IDs.
 
 Also see:
 - Example and Pushback modules for examples of custom writable sim objects
 - [MSFS SDK Documentation: SimConnect Data Definition](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm)
 
 #### ClientDataAreaVariable (Custom Data Area)
-The MSFS SDK also allows to define custom SimObjects using memory mapped data 
+SImConnect also allows to define custom SimObjects using memory mapped data 
 between clients to send and receive arbitrary data to and from the sim.
 
 It requires a local data struct as a template type which is used to hold the data.
@@ -311,36 +309,48 @@ data area whereas the other clients can only read and write to the data area.
 As client data areas use memory mapped data between clients they are
 very efficient but a bit harder to set up and use.
 
-The class is based on ManagedDataObjectBase and therefore supports auto reading and writing of
-the data to the sim. It also supports using the SIMCONNECT_PERIOD flags to update the
-data by using this method to request the data: requestPeriodicUpdateFromSim().<p/>
-
 See the ClientDataAreaVariable class documentation for more details.
 
 A ClientDataAreaVariable requires unique IDs for the data area, the data definition 
 and the request. These IDs are used to identify the data definition and the data 
-received from the sim. Make sure these IDs are unique within the gauge.
-
-Use the DataManager to create these variables, and it will automatically assign
-unique IDs.
+received from the sim. The DataManager will create these variables, and it will automatically 
+assign unique IDs.
 
 Also see:
 - [MSFS SDK Documentation: SimConnect_MapClientDataNameToID](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientDataNameToID.htm)
              
 #### StreamingClientDataAreaVariable
 
-TODO
+The StreamingClientDataAreaVariable class is a special variant of the ClientDataAreaVariable 
+class which allows to send and receive data larger than the maximum size of a single 
+SimConnect client data area chunk of 8192 bytes.
 
-#### Event
-The Event class is a  wrapper around the SimConnect event API. It allows 
-to map client events to sim events via registering the clients event id with
-the sim.
+The data is split into chunks of a fixed size (default 8192 bytes) and sent and received in chunks.
 
-An event can be triggered (send to the sim) or registered with the sim to receive
-events from the sim. Callbacks can be added to the Event object to handle the
-events.
+The data is stored in a vector of T, which is resized to the number of bytes expected to be received.
 
-For details see the Event class documentation.
+Before receiving data the reserve() method must be called to reset the data and set the number of bytes to be
+received.
+
+#### ClientEvent
+The ClientEvent class represents a client event which can be used to:<br/>
+- create a custom event (between simconnect clients)
+- be mapped to a sim event
+- be mapped to a system event
+
+ A ClientEvent has a unique id and a name. The name can be used to map the event to a sim event or
+ to create a custom event.
+
+ Custom events must have a name that contains a period (e.g. "Custom.Event") to the sim recognizes
+ it as a custom event.
+
+ To map to sim events the name must be identical to the name of the sim event otherwise there will be
+ a SimConnect exception that the event is unknown.
+
+ If the ClientEvent is intended to be used as a system event then it must be constructed with the
+ registerToSim parameter set to false. This will prevent the event from being registered to the sim.
+
+ See constructor documentation for more details.
 
 #### Input Event
 Input events can be added and mapped to an Event instance to be triggered by the 
@@ -352,6 +362,9 @@ for how to define input events.
 These input events can be clustered in groups to be able to enable and disable a set of multiple 
 input events at once. Use Event::setInputGroupState() to enable or disable a group of input events.
 
+OBS: There are still some inconsistencies in the MSFS SDK regarding input events, esp. when removing 
+and re-adding input events. It is recommended to only add input events once and not remove them. 
+
 For details see the Event class documentation.  
 
 #### Key Event
@@ -360,17 +373,27 @@ to handle key events. The callback will be called with the key event data.
 
 For details see the DataManager class documentation.
 
+#### Mouse Events
+Not yet supported. 
+
 ## Example Code
 Good examples of how to use the framework can be found in the modules:
 
+- ExampleModule
+  - Is used to demonstrate various features of the framework and also to debug 
+    and test it. It is not meant to be used as a real module but rather as a 
+    playground to test and learn how to use the framework.
+ 
 - LightingPresets
   - Uses NamedVariable and writeable AircraftVariables
   - Uses the one update tick set read a request as set the light levels accordingly.
+
 - Pushback
   - Uses NamedVariable, writeable AircraftVariables and DataDefinitionVariable
   - The NamesVariables and AircraftVariables are used to control the pushback process. 
   - Events and DataDefinitionVariables are used to actually control the pushback
     movement
+
 - AircraftPresets
   - Uses NamedVariable and writeable AircraftVariables to control the loading of 
     aircraft presets
@@ -378,11 +401,6 @@ Good examples of how to use the framework can be found in the modules:
     accordingly
   - Uses the MSFS SDK API call to execute calculator code directly for reading 
     and setting the state of aircraft systems. 
-
-- ExampleModule
-  - Is used to demonstrate various features of the framework and also to debug 
-    and test it. It is not meant to be used as a real module but rather as a 
-    playground to test and learn how to use the framework.
   
 ## Building
 Assuming you are able to build the aircraft as a whole this describes how to add
@@ -393,7 +411,7 @@ The framework code is split into two parts:
 - the aircraft specific gauge and modules which live in <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320</span> 
   and <span style="color:cyan">/fbw-a380x/src/wasm/extra-backend-a380</span>
 
-When adding new modules please place the in a new folder in the aircraft's extra-backend folder:<br/>
+When adding new modules please place them in a new folder in the aircraft's extra-backend folder:<br/>
 E.g. <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320</span>
 
 Add it to the following files:

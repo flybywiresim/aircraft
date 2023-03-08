@@ -37,7 +37,7 @@ typedef std::function<void(int number, DWORD param0, DWORD param1, DWORD param2,
  * to create a custom event.<br/>
  * Custom events must have a name that contains a period (e.g. "Custom.Event") to the sim recognizes
  * it as a custom event.<br/>
- * Top map to sim events the name must be identical to the name of the sim event otherwise there will be
+ * To map to sim events the name must be identical to the name of the sim event otherwise there will be
  * a SimConnect exception that the event is unknown.<br/>
  * If the ClientEvent is intended to be used as a system event then it must be constructed with the
  * registerToSim parameter set to false. This will prevent the event from being registered to the sim.

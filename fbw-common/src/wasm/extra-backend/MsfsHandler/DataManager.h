@@ -347,9 +347,22 @@ class DataManager {
   }
 
   /**
-   * Creates a new client event and adds it to the list of managed events.<br/>
-   * Immediately after creation the event is registered with the sim.<br/>
-   * If a notification group is specified, the event will be added to the group immediately.<br/>
+   * Creates a new client event with a unique ID and adds it to the list of managed events.<br/>
+   *
+   * The ClientEvent class represents a client event which can be used to:<br/>
+   * - create a custom event
+   * - be mapped to a sim event
+   * - be mapped to a system event
+   * <p/>
+   *
+   * The name is used to map the event to a sim event or to create a custom event.<br/>
+   * Custom events must have a name that contains a period (e.g. "Custom.Event") to the sim recognizes
+   * it as a custom event.<br/>
+   * To map to sim events the name must be identical to the name of the sim event otherwise there will be
+   * a SimConnect exception that the event is unknown.<br/>
+   * If the ClientEvent is intended to be used as a system event then it must be constructed with the
+   * registerToSim parameter set to false. This will prevent the event from being registered to the sim.
+   * The subscribeToSimSystemEvent() method must then be used to subscribe to the system event.
    *
    * TODO: Consider splitting this up into 3 methods:
    *  make_custom_event, make_sim_event, make_system_event
