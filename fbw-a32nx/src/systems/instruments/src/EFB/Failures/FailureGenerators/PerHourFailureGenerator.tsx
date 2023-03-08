@@ -38,7 +38,7 @@ const failureGeneratorCardPerHour : (genID : number, generatorSettings : any) =>
     ];
     return FailureGeneratorCardTemplate(genID, generatorSettings, 'Chance per hour',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable);
+        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsPerHour);
 };
 
 export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, string>) => {

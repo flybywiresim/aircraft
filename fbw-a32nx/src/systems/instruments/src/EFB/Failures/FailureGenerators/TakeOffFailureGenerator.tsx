@@ -66,7 +66,7 @@ const failureGeneratorCardTakeOff : (genID : number, generatorSettings : any) =>
         setNewSetting, generatorSettings, genID, 7)];
     return FailureGeneratorCardTemplate(genID, generatorSettings, 'Take-Off',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable);
+        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsTakeOff);
 };
 
 export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {

@@ -4,8 +4,8 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { failureGeneratorAddAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
 import { failureGeneratorAddAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
 import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
-import { failureGeneratorAddSpeedAccel, failureGeneratorSpeedAccel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
-import { failureGeneratorAddSpeedDecel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
+import { failureGeneratorAddSpeedAccel, FailureGeneratorCardsSpeedAccel, failureGeneratorSpeedAccel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
+import { failureGeneratorAddSpeedDecel, FailureGeneratorCardsSpeedDecel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
 import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { t } from 'instruments/src/EFB/translation';
 import { failureGeneratorAddTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
@@ -311,6 +311,8 @@ export const failureGeneratorCards: ((generatorSettings: any) => JSX.Element[])[
     FailureGeneratorCardsTakeOff,
     FailureGeneratorCardsAltClimb,
     FailureGeneratorCardsAltDesc,
+    FailureGeneratorCardsSpeedAccel,
+    FailureGeneratorCardsSpeedDecel,
 ];
 
 export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
@@ -340,8 +342,8 @@ export function FailureGeneratorCardTemplate(
     setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number)=>void,
     eraseGenerator : (genID : number, generatorSettings : any)=>void,
     settingTable : JSX.Element[],
+    settings : number[],
 ) {
-    const settings = generatorSettings.settingsTakeOff;
     return (
         <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
             <div className="flex flex-row justify-between item-center">

@@ -38,7 +38,7 @@ const failureGeneratorCardAltClimb : (genID : number, generatorSettings : any) =
     ];
     return FailureGeneratorCardTemplate(genID, generatorSettings, 'Altitude (climb)',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable);
+        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsAltClimb);
 };
 
 export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, string>) => {

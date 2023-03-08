@@ -39,7 +39,7 @@ const failureGeneratorCardTimer : (genID : number, generatorSettings : any) => J
     ];
     return FailureGeneratorCardTemplate(genID, generatorSettings, 'Timer',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable);
+        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsTimer);
 };
 
 export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, string>) => {
