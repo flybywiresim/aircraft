@@ -38,7 +38,7 @@ const failureGeneratorCardSpeedAccel : (genID : number, generatorSettings : any)
     ];
     return FailureGeneratorCardTemplate(genID, generatorSettings, 'Speed (accel)',
         uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable);
+        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsSpeedAccel);
 };
 
 export const failureGeneratorSpeedAccel = (generatorFailuresGetters : Map<number, string>) => {
