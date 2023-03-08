@@ -62,7 +62,7 @@ const failureGeneratorCardTakeOff : (genID : number, generatorSettings : any) =>
         settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
         setNewSetting, generatorSettings, genID, 6),
     FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
-        settings[genID * numberOfSettingsPerGenerator + 7], 100, false,
+        settings[genID * numberOfSettingsPerGenerator + 7], 100, true,
         setNewSetting, generatorSettings, genID, 7)];
     return FailureGeneratorCardTemplate(genID, generatorSettings, 'Take-Off',
         uniqueGenPrefix, numberOfSettingsPerGenerator,

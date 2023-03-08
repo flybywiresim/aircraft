@@ -211,8 +211,8 @@ export const failureGeneratorsSettings = () => {
     const [settingTimer, setSettingTimer] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMER');
     const [settingSpeedAccel, setSettingSpeedAccel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDACCEL');
     const [settingSpeedDecel, setSettingSpeedDecel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL');
-    const [settingAltitudeClimb, setSettingAltitudeClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB');
-    const [settingAltitudeDescent, setSettingAltitudeDescent] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
+    const [settingAltClimb, setSettingAltClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB');
+    const [settingAltDesc, setSettingAltDesc] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
     const settingsTakeOff = useMemo(() => {
         console.info(settingTakeOff);
         const splitString = settingTakeOff?.split(',');
@@ -243,18 +243,18 @@ export const failureGeneratorsSettings = () => {
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [settingSpeedDecel]);
-    const settingsAltitudeClimb = useMemo(() => {
-        console.info(settingAltitudeClimb);
-        const splitString = settingAltitudeClimb?.split(',');
+    const settingsAltClimb = useMemo(() => {
+        console.info(settingAltClimb);
+        const splitString = settingAltClimb?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
-    }, [settingAltitudeClimb]);
-    const settingsAltitudeDescent = useMemo(() => {
-        console.info(settingAltitudeDescent);
-        const splitString = settingAltitudeDescent?.split(',');
+    }, [settingAltClimb]);
+    const settingsAltDesc = useMemo(() => {
+        console.info(settingAltDesc);
+        const splitString = settingAltDesc?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
-    }, [settingAltitudeDescent]);
+    }, [settingAltDesc]);
     const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
 
     return {
@@ -270,10 +270,10 @@ export const failureGeneratorsSettings = () => {
         setSettingSpeedAccel,
         settingsSpeedDecel,
         setSettingSpeedDecel,
-        settingsAltitudeClimb,
-        setSettingAltitudeClimb,
-        settingsAltitudeDescent,
-        setSettingAltitudeDescent,
+        settingsAltClimb,
+        setSettingAltClimb,
+        settingsAltDesc,
+        setSettingAltDesc,
     };
 };
 
