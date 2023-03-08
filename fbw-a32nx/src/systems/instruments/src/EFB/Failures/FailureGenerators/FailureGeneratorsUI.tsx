@@ -70,8 +70,8 @@ export function FailureGeneratorCardTemplateUI(
 ) {
     return (
         <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
-            <div className="flex flex-row justify-between items-center">
-                <div className="mr-4 w-1/3 align-left">
+            <div className="flex flex-row justify-between">
+                <div className="mr-4 w-1/3 text-left align-left">
                     <h2>
                         {`${uniqueGenPrefix}${genID.toString()} : ${genName.toString()}`}
                     </h2>
@@ -80,7 +80,7 @@ export function FailureGeneratorCardTemplateUI(
                 <button
                     type="button"
                     onClick={() => eraseGenerator(genID, generatorSettings)}
-                    className="flex-none items-center mr-4 w-10 h-10 text-center rounded-md bg-theme-accent hover:bg-utility-red"
+                    className="flex-none mr-4 w-10 h-10 rounded-md bg-theme-accent hover:bg-utility-red"
                 >
                     <Trash size={26} />
                 </button>
@@ -116,9 +116,9 @@ function RearmButtonUI(setNewSetting: (newSetting: number, generatorSettings: an
     numberOfSettingsPerGenerator: number, position : ButtonPosition) {
     let format : string;
     switch (position) {
-    case ButtonPosition.Left: format = 'border-r-2 border-solid rounded-l-md';
+    case ButtonPosition.Left: format = 'rounded-l-md';
         break;
-    case ButtonPosition.Middle: format = 'border-r-2 border-solid';
+    case ButtonPosition.Middle: format = '';
         break;
     case ButtonPosition.Right: format = 'rounded-r-md';
         break;
@@ -128,9 +128,9 @@ function RearmButtonUI(setNewSetting: (newSetting: number, generatorSettings: an
         <button
             type="button"
             onClick={() => setNewSetting(buttonID, generatorSettings, genID, 0)}
-            className={`py-2 px-2 mx-0 text-center border-theme-highlight hover:bg-theme-highlight ${format}
+            className={`py-2 px-2 mx-0 text-center border-2 border-solid border-theme-accent hover:bg-theme-highlight ${format}
             ${
-        settings[genID * numberOfSettingsPerGenerator + 0] === buttonID ? 'bg-theme-highlight' : 'bg-theme-accent'
+        settings[genID * numberOfSettingsPerGenerator + 0] === buttonID ? 'bg-theme-accent bg-opacity-100' : 'bg-opacity-0'
         }`}
         >
             <h2>{text}</h2>

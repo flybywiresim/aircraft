@@ -259,10 +259,10 @@ interface GeneratorOption {
 }
 
 export const failureGeneratorCards: ((generatorSettings: any) => JSX.Element[])[] = [
-    FailureGeneratorCardsSpeedAccel,
-    FailureGeneratorCardsSpeedDecel,
     FailureGeneratorCardsAltClimb,
     FailureGeneratorCardsAltDesc,
+    FailureGeneratorCardsSpeedAccel,
+    FailureGeneratorCardsSpeedDecel,
     FailureGeneratorCardsPerHour,
     FailureGeneratorCardsTimer,
     FailureGeneratorCardsTakeOff,
@@ -277,10 +277,10 @@ export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (
 };
 
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
-    failureGeneratorSpeedAccel,
-    failureGeneratorSpeedDecel,
     failureGeneratorAltClimb,
     failureGeneratorAltDesc,
+    failureGeneratorSpeedAccel,
+    failureGeneratorSpeedDecel,
     failureGeneratorPerHour,
     failureGeneratorTimer,
     failureGeneratorTakeOff,
