@@ -17,7 +17,7 @@ export const FailureGeneratorsUI = () => {
                         {t('Failures.Generators.Select')}
                     </h2>
                     <SelectInput
-                        className="flex-none w-72 h-10"
+                        className="flex-none w-96 h-10"
                         value={chosenGen}
                         onChange={(value) => setChosenGen(value as string)}
                         options={failureGeneratorNames.map((option) => ({
@@ -70,8 +70,8 @@ export function FailureGeneratorCardTemplateUI(
 ) {
     return (
         <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
-            <div className="flex flex-row justify-between item-center">
-                <div className="mr-4 align-left">
+            <div className="flex flex-row justify-between items-center">
+                <div className="mr-4 w-1/3 align-left">
                     <h2>
                         {`${uniqueGenPrefix}${genID.toString()} : ${genName.toString()}`}
                     </h2>
@@ -80,7 +80,7 @@ export function FailureGeneratorCardTemplateUI(
                 <button
                     type="button"
                     onClick={() => eraseGenerator(genID, generatorSettings)}
-                    className="flex-none mr-4 w-10 h-10 text-center rounded-md bg-theme-accent item-center hover:bg-utility-red"
+                    className="flex-none items-center mr-4 w-10 h-10 text-center rounded-md bg-theme-accent hover:bg-utility-red"
                 >
                     <Trash size={26} />
                 </button>
