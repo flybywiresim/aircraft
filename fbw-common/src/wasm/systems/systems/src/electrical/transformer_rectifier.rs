@@ -1,6 +1,6 @@
 use std::cell::Ref;
 
-use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
+use uom::si::{electric_current::ampere, electric_potential::volt, f64::*, power::watt};
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
@@ -25,6 +25,11 @@ pub struct TransformerRectifier {
     output_current: ElectricCurrent,
 }
 impl TransformerRectifier {
+    // Value determined by output voltage at specific loads
+    const INTERNAL_RESISTANCE_OHM: f64 = 0.0135;
+    // Potential output without any load
+    const IDLE_OUTPUT_VOLTAGE: f64 = 30.2;
+
     pub fn new(context: &mut InitContext, number: usize) -> TransformerRectifier {
         TransformerRectifier {
             writer: ElectricalStateWriter::new(context, &format!("TR_{}", number)),
@@ -39,6 +44,14 @@ impl TransformerRectifier {
 
     pub fn has_failed(&self) -> bool {
         self.failure.is_active()
+    }
+
+    fn calc_potential_for_power(power: Power) -> [ElectricPotential; 2] {
+        let discriminant = (Self::IDLE_OUTPUT_VOLTAGE * Self::IDLE_OUTPUT_VOLTAGE / 4.
+            - Self::INTERNAL_RESISTANCE_OHM * power.get::<watt>())
+        .sqrt();
+        [discriminant, -discriminant]
+            .map(|d| -ElectricPotential::new::<volt>(-Self::IDLE_OUTPUT_VOLTAGE / 2. + d))
     }
 }
 impl ProvideCurrent for TransformerRectifier {
@@ -95,11 +108,13 @@ impl SimulationElement for TransformerRectifier {
         let dc_power =
             consumption.total_consumption_of(PotentialOrigin::TransformerRectifier(self.number));
 
+        let [resistor_potential, dc_potential] = Self::calc_potential_for_power(dc_power);
+        let dc_current = dc_power / dc_potential;
+        let resistor_power = resistor_potential * dc_current;
+        let ac_power = dc_power + resistor_power;
+
         // Add the DC consumption to the TRs input (AC) consumption.
-        // Currently transformer rectifier inefficiency isn't modelled.
-        // It is to be expected that AC consumption should actually be somewhat
-        // higher than DC consumption.
-        consumption.consume_from_input(self, dc_power);
+        consumption.consume_from_input(self, ac_power);
     }
 
     fn process_power_consumption_report<T: PowerConsumptionReport>(
@@ -107,14 +122,14 @@ impl SimulationElement for TransformerRectifier {
         _: &UpdateContext,
         report: &T,
     ) {
+        let consumption =
+            report.total_consumption_of(PotentialOrigin::TransformerRectifier(self.number));
         self.output_potential = if report.is_powered(self) {
-            ElectricPotential::new::<volt>(28.)
+            Self::calc_potential_for_power(consumption)[1]
         } else {
             ElectricPotential::new::<volt>(0.)
         };
 
-        let consumption =
-            report.total_consumption_of(PotentialOrigin::TransformerRectifier(self.number));
         self.output_current = consumption / self.output_potential;
     }
 }
