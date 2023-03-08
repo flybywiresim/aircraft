@@ -36,6 +36,7 @@ If you write comments think of the following questions:
 - What? Why? How to use? 
 - What does the code do?
   - Give a short general description of what the code does
+- What implications / side effects does this code have?
 - Why does the code do it?
   - Explain the purpose of the code 
   - e.g. why is this method/function needed and where is it used?
