@@ -6,15 +6,17 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
     constructor(
         private readonly bus: EventBus,
         private readonly varProvider: SimVarPublisher<T>,
-        private readonly displayIndex: EfisSide,
+        private readonly displaySide: EfisSide,
     ) {
     }
 
     public start() {
         const sub = this.bus.getSubscriber<SwitchingPanelVSimVars>();
 
+        const displayIndex = this.displaySide === 'R' ? 2 : 1;
+
         sub.on('attHdgKnob').whenChanged().handle((knobPosition) => {
-            const inertialSource = getSupplier(this.displayIndex, knobPosition);
+            const inertialSource = getSupplier(this.displaySide, knobPosition);
             this.varProvider.updateSimVarSource('vsInert', { name: `L:A32NX_ADIRS_IR_${inertialSource}_VERTICAL_SPEED`, type: SimVarValueType.Number });
             this.varProvider.updateSimVarSource('pitch', { name: `L:A32NX_ADIRS_IR_${inertialSource}_PITCH`, type: SimVarValueType.Number });
             this.varProvider.updateSimVarSource('roll', { name: `L:A32NX_ADIRS_IR_${inertialSource}_ROLL`, type: SimVarValueType.Number });
@@ -29,10 +31,10 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
         });
 
         sub.on('airKnob').whenChanged().handle((knobPosition) => {
-            const airSource = getSupplier(this.displayIndex, knobPosition);
+            const airSource = getSupplier(this.displaySide, knobPosition);
             this.varProvider.updateSimVarSource('speed', { name: `L:A32NX_ADIRS_ADR_${airSource}_COMPUTED_AIRSPEED`, type: SimVarValueType.Number });
             this.varProvider.updateSimVarSource('vsBaro', { name: `L:A32NX_ADIRS_ADR_${airSource}_BAROMETRIC_VERTICAL_SPEED`, type: SimVarValueType.Number });
-            this.varProvider.updateSimVarSource('altitude', { name: `L:A32NX_ADIRS_ADR_${airSource}_ALTITUDE`, type: SimVarValueType.Number });
+            this.varProvider.updateSimVarSource('baroCorrectedAltitude', { name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_${displayIndex}`, type: SimVarValueType.Number });
             this.varProvider.updateSimVarSource('mach', { name: `L:A32NX_ADIRS_ADR_${airSource}_MACH`, type: SimVarValueType.Number });
         });
     }

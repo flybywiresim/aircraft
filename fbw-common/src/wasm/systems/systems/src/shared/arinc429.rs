@@ -53,11 +53,9 @@ impl Arinc429Word<u32> {
     }
 }
 impl From<f64> for Arinc429Word<u32> {
-    fn from(value: f64) -> Arinc429Word<u32> {
-        let bits = value.to_bits();
-
-        let value = (bits >> 32) as u32;
-        let status = bits as u32;
+    fn from(simvar: f64) -> Arinc429Word<u32> {
+        let value = ((simvar as u64) & 0xffffffff) as u32;
+        let status = ((simvar as u64) >> 32) as u32;
 
         Arinc429Word::new(f32::from_bits(value) as u32, status.into())
     }
@@ -65,18 +63,15 @@ impl From<f64> for Arinc429Word<u32> {
 impl From<Arinc429Word<u32>> for f64 {
     fn from(value: Arinc429Word<u32>) -> f64 {
         let status: u64 = value.ssm.into();
+        let int_value: u64 = ((value.value as f32).to_bits() as u64) | status << 32;
 
-        let bits = ((value.value as f32).to_bits() as u64) << 32 | status;
-
-        f64::from_bits(bits)
+        int_value as f64
     }
 }
 impl From<f64> for Arinc429Word<f64> {
-    fn from(value: f64) -> Arinc429Word<f64> {
-        let bits = value.to_bits();
-
-        let value = (bits >> 32) as u32;
-        let status = bits as u32;
+    fn from(simvar: f64) -> Arinc429Word<f64> {
+        let value = ((simvar as u64) & 0xffffffff) as u32;
+        let status = ((simvar as u64) >> 32) as u32;
 
         Arinc429Word::new(f32::from_bits(value) as f64, status.into())
     }
@@ -84,10 +79,9 @@ impl From<f64> for Arinc429Word<f64> {
 impl From<Arinc429Word<f64>> for f64 {
     fn from(value: Arinc429Word<f64>) -> f64 {
         let status: u64 = value.ssm.into();
+        let int_value: u64 = ((value.value as f32).to_bits() as u64) | status << 32;
 
-        let bits = ((value.value as f32).to_bits() as u64) << 32 | status;
-
-        f64::from_bits(bits)
+        int_value as f64
     }
 }
 
@@ -122,22 +116,18 @@ impl From<u32> for SignStatus {
     }
 }
 
-pub(crate) fn from_arinc429(value: f64) -> (f64, SignStatus) {
-    let bits = value.to_bits();
-
-    let value = (bits >> 32) as u32;
-    let status = bits as u32;
+pub(crate) fn from_arinc429(simvar: f64) -> (f64, SignStatus) {
+    let value = ((simvar as u64) & 0xffffffff) as u32;
+    let status = ((simvar as u64) >> 32) as u32;
 
     (f32::from_bits(value) as f64, status.into())
 }
 
 pub(crate) fn to_arinc429(value: f64, ssm: SignStatus) -> f64 {
-    let value = value as f32;
     let status: u64 = ssm.into();
+    let int_value: u64 = ((value as f32).to_bits() as u64) | status << 32;
 
-    let bits = (value.to_bits() as u64) << 32 | status;
-
-    f64::from_bits(bits)
+    int_value as f64
 }
 
 #[cfg(test)]

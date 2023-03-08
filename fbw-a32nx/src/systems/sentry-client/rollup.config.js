@@ -50,7 +50,7 @@ module.exports = {
         }),
     ],
     output: {
-        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/sentry-client.js'),
+        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client/sentry-client.js'),
         format: 'umd',
         name: 'SentryClient',
     },
