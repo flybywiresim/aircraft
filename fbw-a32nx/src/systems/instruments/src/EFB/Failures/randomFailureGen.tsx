@@ -4,8 +4,8 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { failureGeneratorAddAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
 import { failureGeneratorAddAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
 import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
-import { failureGeneratorSpeedAccel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
-import { failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
+import { failureGeneratorAddSpeedAccel, failureGeneratorSpeedAccel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
+import { failureGeneratorAddSpeedDecel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
 import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { t } from 'instruments/src/EFB/translation';
 import { failureGeneratorAddTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
@@ -247,11 +247,11 @@ export const failureGeneratorsSettings = () => {
 export const failureGeneratorNames: GeneratorOption[] = [
     { name: 'PerHour', alias: t('Failures.Generators.GenPerHour') },
     { name: 'TakeOff', alias: t('Failures.Generators.GenTakeOff') },
-    { name: 'SpeedAccel', alias: t('Failures.Generators.GenSpeedAccel') },
-    { name: 'SpeedDecel', alias: t('Failures.Generators.GenSpeedDecel') },
     { name: 'Timer', alias: t('Failures.Generators.GenTimer') },
     { name: 'AltClimb', alias: t('Failures.Generators.GenAltClimb') },
     { name: 'AltDescent', alias: t('Failures.Generators.GenAltDesc') },
+    { name: 'SpeedAccel', alias: t('Failures.Generators.GenSpeedAccel') },
+    { name: 'SpeedDecel', alias: t('Failures.Generators.GenSpeedDecel') },
 ];
 
 export const addGenerator = (chosenGen : string, settings : any) => {
@@ -261,6 +261,8 @@ export const addGenerator = (chosenGen : string, settings : any) => {
     case 'Timer': return () => failureGeneratorAddTimer(settings);
     case 'AltClimb': return () => failureGeneratorAddAltClimb(settings);
     case 'AltDescent': return () => failureGeneratorAddAltDesc(settings);
+    case 'SpeedAccel': return () => failureGeneratorAddSpeedAccel(settings);
+    case 'SpeedDecel': return () => failureGeneratorAddSpeedDecel(settings);
     default: return () => {};
     }
 };

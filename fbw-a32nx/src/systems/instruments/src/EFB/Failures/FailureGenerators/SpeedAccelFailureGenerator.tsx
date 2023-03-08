@@ -1,11 +1,45 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import {
+    activateRandomFailure, basicData, FailureGeneratorCardTemplate, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
+    FailurePhases, findGeneratorFailures, flatten,
+} from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'C';
 const failureGeneratorArmed :boolean[] = [];
+
+export const FailureGeneratorCardsSpeedAccel : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
+    const htmlReturn : JSX.Element[] = [];
+    const setting = generatorSettings.settingsSpeedAccel;
+    if (setting) {
+        const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
+        for (let i = 0; i < nbGenerator; i++) {
+            htmlReturn.push(failureGeneratorCardSpeedAccel(i, generatorSettings));
+        }
+    }
+    return htmlReturn;
+};
+
+const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
+    const settings : number[] = generatorSettings.settingsSpeedAccel;
+    settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+    generatorSettings.setSettingSpeedAccel(flatten(settings));
+    // arming
+    failureGeneratorArmed.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+};
+
+const failureGeneratorCardSpeedAccel : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
+    const settings = generatorSettings.settingsTakeOff;
+    const settingTable = [FailureGeneratorFailureSetting('Speed:', 32, 'knots', 0, 400,
+        settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
+        setNewSetting, generatorSettings, genID, 1),
+    ];
+    return FailureGeneratorCardTemplate(genID, generatorSettings, 'Speed (accel)',
+        uniqueGenPrefix, numberOfSettingsPerGenerator,
+        setNewSetting, eraseGenerator, settingTable);
+};
 
 export const failureGeneratorSpeedAccel = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
@@ -55,4 +89,19 @@ export const failureGeneratorSpeedAccel = (generatorFailuresGetters : Map<number
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
     }, []);
+};
+
+function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
+    const settings = generatorSettings.settingsSpeedAccel;
+    settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
+    generatorSettings.setSettingSpeedAccel(flatten(settings));
+}
+
+export const failureGeneratorAddSpeedAccel = (generatorsSettings : any) => {
+    const additionalSetting = [0, 200];
+    if (generatorsSettings.settingsSpeedAccel === undefined || generatorsSettings.settingsSpeedAccel.length % numberOfSettingsPerGenerator !== 0
+        || generatorsSettings.settingsSpeedAccel.length === 0) {
+        // console.warn('Undefined generator setting, resetting');
+        generatorsSettings.setSettingSpeedAccel(flatten(additionalSetting));
+    } else generatorsSettings.setSettingSpeedAccel(flatten(generatorsSettings.settingsSpeedAccel.concat(additionalSetting)));
 };
