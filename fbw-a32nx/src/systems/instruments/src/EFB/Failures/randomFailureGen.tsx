@@ -4,7 +4,8 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { failureGeneratorAddAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
 import { failureGeneratorAddAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
 import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
-import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
+import { failureGeneratorSpeedAccel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
+import { failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
 import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { t } from 'instruments/src/EFB/translation';
 import { failureGeneratorAddTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
