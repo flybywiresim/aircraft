@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { failureGeneratorAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerators';
-import { failureGeneratorAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerators';
+import { failureGeneratorAddAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerators';
+import { failureGeneratorAddAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerators';
 import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
 import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
 import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
 import { t } from 'instruments/src/EFB/translation';
-import { FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
+import { failureGeneratorAddTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { Trash } from 'react-bootstrap-icons';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
@@ -257,6 +257,9 @@ export const addGenerator = (chosenGen : string, settings : any) => {
     switch (chosenGen) {
     case 'PerHour': return () => failureGeneratorAddPerHour(settings);
     case 'TakeOff': return () => failureGeneratorAddTakeOff(settings);
+    case 'Timer': return () => failureGeneratorAddTimer(settings);
+    case 'AltClimb': return () => failureGeneratorAddAltClimb(settings);
+    case 'AltDescent': return () => failureGeneratorAddAltDesc(settings);
     default: return () => {};
     }
 };
@@ -270,6 +273,8 @@ export const failureGeneratorCards: ((generatorSettings: any) => JSX.Element[])[
     FailureGeneratorCardsPerHour,
     FailureGeneratorCardsTimer,
     FailureGeneratorCardsTakeOff,
+    FailureGeneratorCardsAltClimb,
+    FailureGeneratorCardsAltDesc,
 ];
 
 export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {

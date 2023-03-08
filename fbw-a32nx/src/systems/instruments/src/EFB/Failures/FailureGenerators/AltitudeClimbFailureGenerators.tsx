@@ -1,11 +1,45 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import {
+    activateRandomFailure, basicData, FailureGeneratorCardTemplate, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
+    FailurePhases, findGeneratorFailures, flatten,
+} from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 const numberOfSettingsPerGenerator = 1;
 const uniqueGenPrefix = 'A';
 const failureGeneratorArmed :boolean[] = [];
+
+export const FailureGeneratorCardsAltClimb : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
+    const htmlReturn : JSX.Element[] = [];
+    const setting = generatorSettings.settingsAltClimb;
+    if (setting) {
+        const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
+        for (let i = 0; i < nbGenerator; i++) {
+            htmlReturn.push(failureGeneratorCardAltClimb(i, generatorSettings));
+        }
+    }
+    return htmlReturn;
+};
+
+const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
+    const settings : number[] = generatorSettings.settingsAltClimb;
+    settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+    generatorSettings.setSettingAltClimb(flatten(settings));
+    // arming
+    failureGeneratorArmed.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+};
+
+const failureGeneratorCardAltClimb : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
+    const settings = generatorSettings.settingsTakeOff;
+    const settingTable = [FailureGeneratorFailureSetting('Altitude above sea:', 40, 'feet', 0, 40000,
+        settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
+        setNewSetting, generatorSettings, genID, 1),
+    ];
+    return FailureGeneratorCardTemplate(genID, generatorSettings, 'Altitude (climb)',
+        uniqueGenPrefix, numberOfSettingsPerGenerator,
+        setNewSetting, eraseGenerator, settingTable);
+};
 
 export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
@@ -55,4 +89,19 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
     }, []);
+};
+
+function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
+    const settings = generatorSettings.settingsAltClimb;
+    settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
+    generatorSettings.setSettingAltClimb(flatten(settings));
+}
+
+export const failureGeneratorAddAltClimb = (generatorsSettings : any) => {
+    const additionalSetting = [0, 15000];
+    if (generatorsSettings.settingsAltClimb === undefined || generatorsSettings.settingsAltClimb.length % numberOfSettingsPerGenerator !== 0
+        || generatorsSettings.settingsAltClimb.length === 0) {
+        // console.warn('Undefined generator setting, resetting');
+        generatorsSettings.setSettingAltClimb(flatten(additionalSetting));
+    } else generatorsSettings.setSettingAltClimb(flatten(generatorsSettings.settingsAltClimb.concat(additionalSetting)));
 };
