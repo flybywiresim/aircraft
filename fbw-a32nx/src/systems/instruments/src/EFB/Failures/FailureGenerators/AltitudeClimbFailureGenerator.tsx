@@ -6,7 +6,7 @@ import {
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
-const numberOfSettingsPerGenerator = 1;
+const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'A';
 const failureGeneratorArmed :boolean[] = [];
 
