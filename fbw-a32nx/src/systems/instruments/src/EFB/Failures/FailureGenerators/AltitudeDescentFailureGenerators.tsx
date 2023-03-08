@@ -1,17 +1,17 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { activateRandomFailure, basicData, failureGeneratorCommonFunction, FailurePhases, findGeneratorFailures, flatten } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'B';
+const failureGeneratorArmed :boolean[] = [];
 
 export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC', '2,3000,2,6000');
-    const [failureGeneratorArmedAltDesc, setFailureGeneratorArmedAltDesc] = useState<boolean[]>([false, false]);
     const settingsAltDesc : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
     const nbGeneratorAltDesc = useMemo(() => Math.floor(settingsAltDesc.length / numberOfSettingsPerGenerator), [settingsAltDesc]);
@@ -20,45 +20,39 @@ export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, s
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltDesc);
             const tempSettings : number[] = Array.from(settingsAltDesc);
             let change = false;
             for (let i = 0; i < nbGeneratorAltDesc; i++) {
-                if (tempFailureGeneratorArmed[i] && altitude < settingsAltDesc[i * numberOfSettingsPerGenerator + 1]) {
+                if (failureGeneratorArmed[i] && altitude < settingsAltDesc[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Descent altitude failure triggered');
-                    tempFailureGeneratorArmed[i] = false;
+                    failureGeneratorArmed[i] = false;
                     change = true;
                     if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
                 }
             }
             if (change) {
-                setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
                 setFailureGeneratorSetting(flatten(tempSettings));
             }
         }
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        const tempFailureGeneratorArmed : boolean[] = Array.from(failureGeneratorArmedAltDesc);
         for (let i = 0; i < nbGeneratorAltDesc; i++) {
-            if (!tempFailureGeneratorArmed[i]
+            if (!failureGeneratorArmed[i]
                 && altitude > settingsAltDesc[i * numberOfSettingsPerGenerator + 1] + 100
                 && (settingsAltDesc[i * numberOfSettingsPerGenerator + 0] === 1
                     || (settingsAltDesc[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
                     || settingsAltDesc[i * numberOfSettingsPerGenerator + 0] === 3)) {
-                tempFailureGeneratorArmed[i] = true;
+                failureGeneratorArmed[i] = true;
                 console.info('Descent altitude failure armed at %d m', settingsAltDesc[i * numberOfSettingsPerGenerator + 1]);
             }
         }
-        setFailureGeneratorArmedAltDesc(tempFailureGeneratorArmed);
     }, [absoluteTime500ms]);
 
     useEffect(() => {
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
-        const tempArmed : boolean[] = [];
-        for (let i = 0; i < generatorNumber; i++) tempArmed.push(false);
-        setFailureGeneratorArmedAltDesc(tempArmed);
+        for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
     }, []);
 };
