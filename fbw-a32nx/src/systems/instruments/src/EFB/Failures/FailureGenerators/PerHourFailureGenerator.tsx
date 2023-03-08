@@ -31,7 +31,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 };
 
 const failureGeneratorCardPerHour : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsTakeOff;
+    const settings = generatorSettings.settingsPerHour;
     const settingTable = [FailureGeneratorFailureSetting('Failure per hour:', 40, '/hour', 0, 60,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),

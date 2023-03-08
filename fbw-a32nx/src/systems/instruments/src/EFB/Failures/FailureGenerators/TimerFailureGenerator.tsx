@@ -32,7 +32,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 };
 
 const failureGeneratorCardTimer : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsTakeOff;
+    const settings = generatorSettings.settingsTimer;
     const settingTable = [FailureGeneratorFailureSetting('Delay after arming:', 40, 'second', 0, 60,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),
@@ -73,7 +73,6 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        // failureSettings once per start of takeoff
         for (let i = 0; i < nbGeneratorTimer; i++) {
             if (!failureGeneratorArmed[i] && (settingsTimer[i * numberOfSettingsPerGenerator + 0] === 1
                     || (failureFlightPhase === FailurePhases.TAKEOFF && settingsTimer[i * numberOfSettingsPerGenerator + 0] === 2)

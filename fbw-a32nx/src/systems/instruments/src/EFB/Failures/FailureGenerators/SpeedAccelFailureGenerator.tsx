@@ -31,7 +31,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 };
 
 const failureGeneratorCardSpeedAccel : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsTakeOff;
+    const settings = generatorSettings.settingsSpeedAccel;
     const settingTable = [FailureGeneratorFailureSetting('Speed:', 32, 'knots', 0, 400,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),

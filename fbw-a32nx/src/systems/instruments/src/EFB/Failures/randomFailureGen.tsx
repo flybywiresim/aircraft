@@ -152,12 +152,11 @@ function RearmButton(setNewSetting: (newSetting: number, generatorSettings: any,
     );
 }
 
-export enum ButtonPosition {Left, Middle, Right}
+export enum ButtonPosition {Left =0, Middle=1, Right=2}
 
 export function RearmSettings(generatorSettings: any, genID: number, settings : number[],
     numberOfSettingsPerGenerator : number,
     setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number) => void) {
-    console.info('ping');
     return (
         <div className="flex flex-col text-center">
             <h2>Rearming</h2>

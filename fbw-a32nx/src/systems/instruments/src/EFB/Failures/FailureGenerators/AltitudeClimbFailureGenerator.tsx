@@ -31,7 +31,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 };
 
 const failureGeneratorCardAltClimb : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsTakeOff;
+    const settings = generatorSettings.settingsAltClimb;
     const settingTable = [FailureGeneratorFailureSetting('Altitude above sea:', 40, 'feet', 0, 40000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),
