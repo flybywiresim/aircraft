@@ -49,6 +49,40 @@ export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[])
     return { generatorFailuresGetters, generatorFailuresSetters };
 };
 
+export const deleteGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>,
+    generatorFailuresSetters : Map<number, (value: string) => void>, generatorUniqueIDRemoved: string) => {
+    // console.info('Looking for failures on generator %s', generatorUniqueID);
+    const removedLetter = generatorUniqueIDRemoved.match(/\D{1-2}/)[0];
+    const removedNumber = parseInt(generatorUniqueIDRemoved.match(/\D{1-2}/)[0]);
+    if (allFailures.length > 0) {
+        allFailures.forEach((failure) => {
+            let first = true;
+            const generatorSetting = generatorFailuresGetters.get(failure.identifier);
+            console.info(generatorSetting);
+            let newString = '';
+            if (generatorSetting) {
+                const failureGeneratorsTable = generatorSetting.split(',');
+                if (failureGeneratorsTable.length > 0) {
+                    failureGeneratorsTable.forEach((generator) => {
+                        const generatorNumber = parseInt(generator.match(/\d{1-2}/)[0]);
+                        const generatorLetter = generator.match(/\D{1-2}/)[0];
+                        if (generatorLetter !== removedLetter || generatorNumber < removedNumber) {
+                            newString = newString.concat(first ? `${generator}` : generator);
+                            first = false;
+                        } else if (generatorNumber > removedNumber) {
+                            const offset = `${generatorLetter}${(generatorNumber - 1).toString()}`;
+                            newString = newString.concat(first ? `${offset}` : offset);
+                            first = false;
+                        }
+                    });
+                    console.info(newString);
+                    generatorFailuresSetters.get(failure.identifier)(newString);
+                }
+            }
+        });
+    }
+};
+
 export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>, generatorUniqueID: string) => {
     // console.info('Looking for failures on generator %s', generatorUniqueID);
     const failureIDs : Failure[] = [];
