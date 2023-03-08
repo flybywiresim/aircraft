@@ -27,7 +27,7 @@ bool ExampleModule::initialize() {
    */
 
   // Events
-  beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", NOTIFICATION_GROUP_1);
+  beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", NOTIFICATION_GROUP_0);
   beaconLightSetCallbackID = beaconLightSetEventPtr->addCallback(
       [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         LOG_INFO("Callback: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
@@ -43,7 +43,7 @@ bool ExampleModule::initialize() {
       });
 
   // Event with callback example
-  lightPotentiometerSetEventPtr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
+  lightPotentiometerSetEventPtr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
   lightPotentiometerSetCallbackID =
       lightPotentiometerSetEventPtr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
         if (param0 == 99)
@@ -54,7 +54,7 @@ bool ExampleModule::initialize() {
       });
 
   // Second event with the same name - this should be de-duplicated
-  lightPotentiometerSetEvent2Ptr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
+  lightPotentiometerSetEvent2Ptr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
   lightPotentiometerSetCallback2ID =
       lightPotentiometerSetEvent2Ptr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
         if (param0 == 99)
@@ -199,7 +199,7 @@ bool ExampleModule::initialize() {
 
   // Simple client event - no mappings
   clientEventPtr = dataManager->make_client_event("A32NX.MY_CUSTOM_EVENT");
-  clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
+  clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0);
 
   clientEventCallbackId = clientEventPtr->addCallback(
       [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
@@ -210,10 +210,10 @@ bool ExampleModule::initialize() {
                   << " param3 = " << param3 << " param4 = " << param4 << std::endl;
         std::cout << std::endl;
       });
-  clientEventPtr->mapInputDownEvent("VK_COMMA", INPUT_GROUP_1);
-  clientEventPtr->mapInputUpEvent("VK_COMMA", INPUT_GROUP_1);
-  clientEventPtr->mapInputDownEvent("joystick:1:button:7", INPUT_GROUP_1);
-  clientEventPtr->mapInputUpEvent("joystick:1:button:7", INPUT_GROUP_1);
+  clientEventPtr->mapInputDownEvent("VK_COMMA", INPUT_GROUP_0);
+  clientEventPtr->mapInputUpEvent("VK_COMMA", INPUT_GROUP_0);
+  clientEventPtr->mapInputDownEvent("joystick:1:button:7", INPUT_GROUP_0);
+  clientEventPtr->mapInputUpEvent("joystick:1:button:7", INPUT_GROUP_0);
   clientEventPtr->setInputGroupState(0, SIMCONNECT_STATE_ON);
 
   isInitialized = true;
@@ -269,11 +269,11 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     if (tickCounter % 2000 == 1000) {
       clientEventPtr->removeCallback(clientEventCallbackId);
-      clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_1);
+      clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_0);
     }
     if (tickCounter % 2000 == 0) {
       clientEventPtr->mapToSimEvent();
-      clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
+      clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0);
       clientEventCallbackId = clientEventPtr->addCallback(
           [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
             std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl;

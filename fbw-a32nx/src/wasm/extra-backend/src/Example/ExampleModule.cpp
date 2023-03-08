@@ -30,7 +30,7 @@ bool ExampleModule::initialize() {
 
 #if defined(SIM_EVENT_EXAMPLE) || defined(AIRCRAFT_VAR_EXAMPLE) || defined(INDEXED_AIRCRAFT_VAR_EXAMPLE)
   // Sim Events
-  beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", NOTIFICATION_GROUP_1);
+  beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", NOTIFICATION_GROUP_0);
   beaconLightSetCallbackID = beaconLightSetEventPtr->addCallback(
       [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         LOG_INFO("Callback: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
@@ -45,7 +45,7 @@ bool ExampleModule::initialize() {
       });
 
   // Event with callback example
-  lightPotentiometerSetEventPtr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
+  lightPotentiometerSetEventPtr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
   lightPotentiometerSetCallbackID =
       lightPotentiometerSetEventPtr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
         if (param0 == 99)
@@ -56,7 +56,7 @@ bool ExampleModule::initialize() {
       });
 
   // Second event with the same name - this should be de-duplicated
-  lightPotentiometerSetEvent2Ptr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
+  lightPotentiometerSetEvent2Ptr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
   lightPotentiometerSetCallback2ID =
       lightPotentiometerSetEvent2Ptr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
         if (param0 == 99)
@@ -257,6 +257,23 @@ bool ExampleModule::initialize() {
   systemEventPtr->subscribeToSimSystemEvent("View");
 #endif
 
+#ifdef MASK_KEYBOARD_EXAMPLE
+  inputEventPtr = dataManager->make_client_event("A32NX.MASK_KEYBOARD", true, NOTIFICATION_GROUP_0);
+  inputEventCallbackId = inputEventPtr->addCallback(
+      [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
+        std::cout << "--- CALLBACK: A32NX.MASK_KEYBOARD" << std::endl;
+        std::cout << inputEventPtr->str() << std::endl;
+        std::cout << "A32NX.MASK_KEYBOARD"
+                  << " number = " << number << " param0 = " << param0 << " param1 = " << param1 << " param2 = " << param2
+                  << " param3 = " << param3 << " param4 = " << param4 << std::endl;
+        std::cout << std::endl;
+      });
+  // Masking seems not to work - the sim still receives the key events
+  inputEventPtr->mapInputDownEvent("VK_LCONTROL+e", INPUT_GROUP_0, true);
+  inputEventPtr->mapInputDownEvent("VK_RCONTROL+e", INPUT_GROUP_0, true);
+  inputEventPtr->setInputGroupPriority(INPUT_GROUP_0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+#endif
+
   isInitialized = true;
   LOG_INFO("ExampleModule initialized");
   return true;
@@ -313,7 +330,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     if (tickCounter % 2000 == 1000) {
       clientEventPtr->mapToSimEvent();
-      clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_1);
+      clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0);
       clientEventCallbackId = clientEventPtr->addCallback(
           [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
             std::cout << "--- CALLBACK: A32NX.MY_CUSTOM_EVENT" << std::endl;
@@ -323,18 +340,18 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
                       << " param3 = " << param3 << " param4 = " << param4 << std::endl;
             std::cout << std::endl;
           });
-      clientEventPtr->mapInputDownUpEvent("VK_COMMA", INPUT_GROUP_1);
-      clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_1);
-      clientEventPtr->setInputGroupState(INPUT_GROUP_1, SIMCONNECT_STATE_ON);
+      clientEventPtr->mapInputDownUpEvent("VK_COMMA", INPUT_GROUP_0);
+      clientEventPtr->mapInputDownUpEvent("joystick:1:button:7", INPUT_GROUP_0);
+      clientEventPtr->setInputGroupState(INPUT_GROUP_0, SIMCONNECT_STATE_ON);
     }
     if (tickCounter % 2000 == 0) {
       clientEventPtr->removeCallback(clientEventCallbackId);
-      clientEventPtr->unmapInputEvent("VK_COMMA", INPUT_GROUP_1);
+      clientEventPtr->unmapInputEvent("VK_COMMA", INPUT_GROUP_0);
       // this will trigger a SimConnect exception UNRECOGNIZED_ID but actually will remove the mapping
       // without this adding the mapping again will lead to two events being sent for the input
       // likely a bug in SimConnect/MSFS
-      clientEventPtr->unmapInputEvent("joystick:1:button:7", INPUT_GROUP_1);
-      clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_1);
+      clientEventPtr->unmapInputEvent("joystick:1:button:7", INPUT_GROUP_0);
+      clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_0);
     }
     // clientEventPtr->trigger(999);
 #endif

@@ -22,9 +22,9 @@ class MsfsHandler;
  */
 class ExampleModule : public Module {
  private:
-  enum NotificationGroup { NOTIFICATION_GROUP_1 };
+  enum NotificationGroup { NOTIFICATION_GROUP_0 };
 
-  enum InputGroup { INPUT_GROUP_1 };
+  enum InputGroup { INPUT_GROUP_0 };
 
   // Convenience pointer to the data manager
   DataManager* dataManager{};

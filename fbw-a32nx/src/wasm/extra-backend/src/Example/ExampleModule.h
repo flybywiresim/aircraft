@@ -11,6 +11,7 @@
 
 #include "DataManager.h"
 #include "Module.h"
+#include "ClientEvent.h"
 
 // Uncomment the following to enable/disable the examples
 //
@@ -25,6 +26,7 @@
 // #define KEY_EVENT_EXAMPLE
 // #define CUSTOM_EVENT_EXAMPLE
 // #define SYSTEM_EVENT_EXAMPLE
+//#define MASK_KEYBOARD_EXAMPLE
 
 class MsfsHandler;
 
@@ -33,16 +35,14 @@ class MsfsHandler;
  * and to debug the module and DataManager system.
  * It should have no effect on the simulation - it should not write to the sim other than while testing
  * Should be commented out from the Gauge - remove -DEXAMPLES compiler flag.
- *
- * TODO: Clean up and use methods and flags for each example case.
  */
 class ExampleModule : public Module {
  private:
   // Notification group(s) for the module
-  enum NotificationGroup { NOTIFICATION_GROUP_1 };
+  enum NotificationGroup { NOTIFICATION_GROUP_0 };
 
   // Input group(s) for the module
-  enum InputGroup { INPUT_GROUP_1 };
+  enum InputGroup { INPUT_GROUP_0 };
 
   // Convenience pointer to the data manager
   DataManager* dataManager{};
@@ -157,6 +157,11 @@ class ExampleModule : public Module {
   // System Event
   ClientEventPtr systemEventPtr;
   [[maybe_unused]] CallbackID systemEventCallbackId{};
+#endif
+
+#ifdef MASK_KEYBOARD_EXAMPLE
+  ClientEventPtr inputEventPtr;
+  [[maybe_unused]] CallbackID inputEventCallbackId{};
 #endif
 
  public:
