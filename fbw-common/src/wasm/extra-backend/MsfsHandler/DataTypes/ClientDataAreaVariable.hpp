@@ -168,7 +168,7 @@ class ClientDataAreaVariable : public SimObjectBase {
     return true;
   }
 
-  [[nodiscard]] bool requestDataFromSim() const override {
+  bool requestDataFromSim() const override {
     if (!SUCCEEDED(SimConnect_RequestClientData(hSimConnect, clientDataId, requestId, dataDefId, SIMCONNECT_CLIENT_DATA_PERIOD_ONCE,
                                                 SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT))) {
       LOG_ERROR("ClientDataAreaVariable: Requesting client data failed: " + name);
@@ -203,7 +203,7 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_CLIENT_DATA_PERIOD.htm
    */
-  [[nodiscard]] bool requestPeriodicDataFromSim(
+  bool requestPeriodicDataFromSim(
       SIMCONNECT_CLIENT_DATA_PERIOD period,
       SIMCONNECT_CLIENT_DATA_REQUEST_FLAG periodFlags = SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_DEFAULT,
       DWORD origin = 0,
@@ -221,7 +221,7 @@ class ClientDataAreaVariable : public SimObjectBase {
     return true;
   }
 
-  [[nodiscard]] bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) override {
+  bool requestUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) override {
     if (!needsUpdateFromSim(timeStamp, tickCounter)) {
       return true;
     }

@@ -108,7 +108,7 @@ class SimObjectBase : public ManagedDataObjectBase {
   /**
    * @return the data definition id
    */
-  [[maybe_unused]] [[nodiscard]] DWORD getDataDefID() const { return dataDefId; }
+  [[nodiscard]] DWORD getDataDefID() const { return dataDefId; }
 
   /**
    * @return the request id

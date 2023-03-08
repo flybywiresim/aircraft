@@ -134,23 +134,23 @@ class MsfsHandler {
   /**
    * @return value of LVAR A32NX_IS_READY
    */
-  [[maybe_unused]] [[nodiscard]] bool getA32NxIsReady() const;
+  [[nodiscard]] bool getA32NxIsReady() const;
 
   /**
    *
    * @return value of LVAR A32NX_DEVELOPMENT_STATE
    */
-  [[maybe_unused]] [[nodiscard]] FLOAT64 getA32NxIsDevelopmentState() const;
+  [[nodiscard]] FLOAT64 getA32NxIsDevelopmentState() const;
 
   /**
    * @return the current simulation time
    */
-  [[maybe_unused]] [[nodiscard]] FLOAT64 getTimeStamp() const { return timeStamp; }
+  [[nodiscard]] FLOAT64 getTimeStamp() const { return timeStamp; }
 
   /**
    * @return the current tick counter
    */
-  [[maybe_unused]] [[nodiscard]] UINT64 getTickCounter() const { return tickCounter; }
+  [[nodiscard]] UINT64 getTickCounter() const { return tickCounter; }
 };
 
 #endif  // FLYBYWIRE_MSFSHANDLER_H

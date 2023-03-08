@@ -184,13 +184,13 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    * Returns a modifiable reference to the data container
    * @return T& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]] std::vector<T>& getData() { return content; }
+  [[nodiscard]] std::vector<T>& getData() { return content; }
 
   /**
    * Returns a constant reference to the data container
    * @return std::vector<T>& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]] const std::vector<T>& getData() const { return content; }
+  [[nodiscard]] const std::vector<T>& getData() const { return content; }
 
   /**
    * Returns the number of bytes received so far

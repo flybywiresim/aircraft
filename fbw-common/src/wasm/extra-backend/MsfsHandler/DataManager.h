@@ -177,12 +177,12 @@ class DataManager {
    * @return A shared pointer to the variable
    * @see Units.h for available units
    */
-  NamedVariablePtr make_named_var(const std::string varName,
-                                  Unit unit = UNITS.Number,
-                                  bool autoReading = false,
-                                  bool autoWriting = false,
-                                  FLOAT64 maxAgeTime = 0.0,
-                                  UINT64 maxAgeTicks = 0);
+  [[nodiscard]] NamedVariablePtr make_named_var(const std::string varName,
+                                                Unit unit = UNITS.Number,
+                                                bool autoReading = false,
+                                                bool autoWriting = false,
+                                                FLOAT64 maxAgeTime = 0.0,
+                                                UINT64 maxAgeTicks = 0);
 
   /**
    * Creates a new AircraftVariable and adds it to the list of managed variables.<p/>
@@ -205,15 +205,15 @@ class DataManager {
    * @return A shared pointer to the variable
    * @see Units.h for available units
    */
-  AircraftVariablePtr make_aircraft_var(const std::string varName,
-                                        int index = 0,
-                                        const std::string setterEventName = "",
-                                        ClientEventPtr setterEvent = nullptr,
-                                        Unit unit = UNITS.Number,
-                                        bool autoReading = false,
-                                        bool autoWriting = false,
-                                        FLOAT64 maxAgeTime = 0.0,
-                                        UINT64 maxAgeTicks = 0);
+  [[nodiscard]] AircraftVariablePtr make_aircraft_var(const std::string varName,
+                                                      int index = 0,
+                                                      const std::string setterEventName = "",
+                                                      ClientEventPtr setterEvent = nullptr,
+                                                      Unit unit = UNITS.Number,
+                                                      bool autoReading = false,
+                                                      bool autoWriting = false,
+                                                      FLOAT64 maxAgeTime = 0.0,
+                                                      UINT64 maxAgeTicks = 0);
 
   /**
    * Creates a new readonly non-indexed AircraftVariable and adds it to the list of managed variables.
@@ -228,11 +228,11 @@ class DataManager {
    * @return A shared pointer to the variable
    * @see Units.h for available units
    */
-  AircraftVariablePtr make_simple_aircraft_var(const std::string varName,
-                                               Unit unit = UNITS.Number,
-                                               bool autoReading = false,
-                                               FLOAT64 maxAgeTime = 0.0,
-                                               UINT64 maxAgeTicks = 0);
+  [[nodiscard]] AircraftVariablePtr make_simple_aircraft_var(const std::string varName,
+                                                             Unit unit = UNITS.Number,
+                                                             bool autoReading = false,
+                                                             FLOAT64 maxAgeTime = 0.0,
+                                                             UINT64 maxAgeTicks = 0);
 
   /**
    * Creates a new data definition variable and adds it to the list of managed variables.<p/>
@@ -252,12 +252,12 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T>
-  DATA_DEF_PTR make_datadefinition_var(const std::string name,
-                                       std::vector<DataDefinition>& dataDefinitions,
-                                       bool autoReading = false,
-                                       bool autoWriting = false,
-                                       FLOAT64 maxAgeTime = 0.0,
-                                       UINT64 maxAgeTicks = 0) {
+  [[nodiscard]] DATA_DEF_PTR make_datadefinition_var(const std::string name,
+                                                     std::vector<DataDefinition>& dataDefinitions,
+                                                     bool autoReading = false,
+                                                     bool autoWriting = false,
+                                                     FLOAT64 maxAgeTime = 0.0,
+                                                     UINT64 maxAgeTicks = 0) {
     DATA_DEF_PTR var =
         DATA_DEF_PTR(new DataDefinitionVariable<T>(hSimConnect, std::move(name), dataDefinitions, dataDefIDGen.getNextId(),
                                                    dataReqIDGen.getNextId(), autoReading, autoWriting, maxAgeTime, maxAgeTicks));
@@ -288,11 +288,11 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T>
-  CLIENT_AREA_PTR make_clientdataarea_var(const std::string clientDataName,
-                                          bool autoReading = false,
-                                          bool autoWriting = false,
-                                          FLOAT64 maxAgeTime = 0.0,
-                                          UINT64 maxAgeTicks = 0) {
+  [[nodiscard]] CLIENT_AREA_PTR make_clientdataarea_var(const std::string clientDataName,
+                                                        bool autoReading = false,
+                                                        bool autoWriting = false,
+                                                        FLOAT64 maxAgeTime = 0.0,
+                                                        UINT64 maxAgeTicks = 0) {
     CLIENT_AREA_PTR var = CLIENT_AREA_PTR(new ClientDataAreaVariable<T>(hSimConnect, std::move(clientDataName), clientDataIDGen.getNextId(),
                                                                         dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), sizeof(T),
                                                                         autoReading, autoWriting, maxAgeTime, maxAgeTicks));
@@ -323,9 +323,9 @@ class DataManager {
    * @tparam T the type of the data to be sent/received - e.g. char for string data
    * @tparam ChunkSize the size in bytes of the chunks to be sent/received (default = 8192 bytes)
    * @param clientDataName String containing the client data area name. This is the name that another
-    *                      client will use to specify the data area. The name is not case-sensitive.
-    *                      If the name requested is already in use by another addon, a error will be
-    *                      printed to the console.
+   *                      client will use to specify the data area. The name is not case-sensitive.
+   *                      If the name requested is already in use by another addon, a error will be
+   *                      printed to the console.
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
@@ -333,7 +333,7 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T, std::size_t ChunkSize = SIMCONNECT_CLIENTDATA_MAX_SIZE>
-  STREAMING_AREA_PTR make_streamingclientdataarea_var(const std::string clientDataName,
+  [[nodiscard]] STREAMING_AREA_PTR make_streamingclientdataarea_var(const std::string clientDataName,
                                                       bool autoReading = false,
                                                       bool autoWriting = false,
                                                       FLOAT64 maxAgeTime = 0.0,
@@ -386,9 +386,9 @@ class DataManager {
    *                           notification group.
    * @return A shared pointer to the ClientEvent
    */
-  ClientEventPtr make_client_event(const std::string& clientEventName,
-                                   bool registerToSim = true,
-                                   SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED);
+  [[nodiscard]] ClientEventPtr make_client_event(const std::string& clientEventName,
+                                                 bool registerToSim = true,
+                                                 SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED);
 
   // ===============================================================================================
   // Key Event Handling
@@ -403,7 +403,7 @@ class DataManager {
    * @see https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
    * @see #define KEY_events in gauges.h.
    */
-  [[nodiscard]] KeyEventCallbackID addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction& callback);
+  KeyEventCallbackID addKeyEventCallback(KeyEventID keyEventId, const KeyEventCallbackFunction& callback);
 
   /**
    * Removes a callback from a key event.
@@ -445,7 +445,7 @@ class DataManager {
   /**
    * @returns the current SimConnect handle
    */
-  HANDLE getSimConnectHandle() const { return hSimConnect; };
+  [[nodiscard]] HANDLE getSimConnectHandle() const { return hSimConnect; };
 
  private:
   // =================================================================================================

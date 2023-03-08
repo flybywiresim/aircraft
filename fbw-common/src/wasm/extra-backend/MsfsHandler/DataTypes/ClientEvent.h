@@ -211,7 +211,7 @@ class ClientEvent {
    * @param callback
    * @return The ID of the callback required for removing a callback.
    */
-  [[nodiscard]] CallbackID addCallback(const EventCallbackFunction& callback);
+  CallbackID addCallback(const EventCallbackFunction& callback);
 
   /**
    * Removes a callback from the event.
@@ -359,28 +359,28 @@ class ClientEvent {
   /**
    * @return The SimConnect handle of the instance.
    */
-  HANDLE getHSimConnect() const { return hSimConnect; }
+  [[nodiscard]] HANDLE getHSimConnect() const { return hSimConnect; }
 
   /**
    * @return The ID of the client event.
    */
-  SIMCONNECT_CLIENT_EVENT_ID getClientEventId() const { return clientEventId; }
+  [[nodiscard]] SIMCONNECT_CLIENT_EVENT_ID getClientEventId() const { return clientEventId; }
 
   /**
    * @return The name of the client event.
    */
-  const std::string& getClientEventName() const { return clientEventName; }
+  [[nodiscard]] const std::string& getClientEventName() const { return clientEventName; }
 
   /**
    * @return True if the client event is registered to the sim either as a custom event, or
    * mapped to a sim event or mapped to a system event.
    */
-  bool isRegisteredToSim1() const { return isRegisteredToSim; }
+  [[nodiscard]] bool isRegisteredToSim1() const { return isRegisteredToSim; }
 
   /**
    * @return True if the client event has callbacks registered to it.
    */
-  bool hasCallbacks() const { return !callbacks.empty(); }
+  [[nodiscard]] bool hasCallbacks() const { return !callbacks.empty(); }
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_CLIENTEVENT_H

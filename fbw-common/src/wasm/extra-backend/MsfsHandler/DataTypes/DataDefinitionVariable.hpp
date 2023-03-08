@@ -234,19 +234,19 @@ class DataDefinitionVariable : public SimObjectBase {
   /**
    * @return a constant reference to the data definition vector
    */
-  [[maybe_unused]] [[nodiscard]] const std::vector<DataDefinition>& getDataDefinitions() const { return dataDefinitions; }
+  [[nodiscard]] const std::vector<DataDefinition>& getDataDefinitions() const { return dataDefinitions; }
 
   /**
    * Returns a modifiable reference to the data container
    * @return T& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]] T& data() { return dataStruct; }
+  [[nodiscard]] T& data() { return dataStruct; }
 
   /**
    * Returns a constant reference to the data container
    * @return std::vector<T>& Reference to the data container
    */
-  [[maybe_unused]] [[nodiscard]] const T& data() const { return dataStruct; }
+  [[nodiscard]] const T& data() const { return dataStruct; }
 
   [[nodiscard]] std::string str() const override {
     std::stringstream ss;

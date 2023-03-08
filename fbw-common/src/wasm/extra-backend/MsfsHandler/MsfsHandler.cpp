@@ -8,8 +8,6 @@
 #include "Module.h"
 #include "MsfsHandler.h"
 #include "NamedVariable.h"
-#include "Units.h"
-#include "logging.h"
 
 // =================================================================================================
 // PUBLIC METHODS
