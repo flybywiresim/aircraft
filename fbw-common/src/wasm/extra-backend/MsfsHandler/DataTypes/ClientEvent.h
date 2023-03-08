@@ -345,6 +345,16 @@ class ClientEvent {
    */
   bool setInputGroupState(SIMCONNECT_INPUT_GROUP_ID inputGroupId, SIMCONNECT_STATE state) const;
 
+  /**
+   * Sets the priority of the input group.<br/>
+   *
+   * @param inputGroupId The ID of the input group to set the priority of.
+   * @param inputGroupPriority The priority of the notification group.
+   * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_API_Reference.htm#simconnect-priorities
+   *
+   */
+  void setInputGroupPriority(SIMCONNECT_INPUT_GROUP_ID inputGroupId, DWORD inputGroupPriority) const;
+
   // ===============================================================================================
   // Misc
   // ===============================================================================================

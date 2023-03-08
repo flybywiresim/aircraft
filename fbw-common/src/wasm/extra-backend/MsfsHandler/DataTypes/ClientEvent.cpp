@@ -244,6 +244,14 @@ bool ClientEvent::setInputGroupState(SIMCONNECT_INPUT_GROUP_ID inputGroupId, SIM
   return true;
 }
 
+void ClientEvent::setInputGroupPriority(SIMCONNECT_INPUT_GROUP_ID inputGroupId, DWORD inputGroupPriority) const {
+  if (!SUCCEEDED(SimConnect_SetInputGroupPriority(hSimConnect, inputGroupId, inputGroupPriority))) {
+    LOG_ERROR("Failed to set input group priority " + std::to_string(inputGroupPriority) + " for group " + std::to_string(inputGroupId));
+    return;
+  }
+  LOG_DEBUG("Set input group priority " + std::to_string(inputGroupPriority) + " for group " + std::to_string(inputGroupId));
+}
+
 // =================================================================================================
 // MISC
 // =================================================================================================
