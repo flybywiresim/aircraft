@@ -33,7 +33,7 @@ const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID
 
 const failureGeneratorCardTimer : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
     const settings = generatorSettings.settingsTimer;
-    const settingTable = [FailureGeneratorFailureSetting('Delay after arming:', 40, 'second', 0, 60,
+    const settingTable = [FailureGeneratorFailureSetting('Delay after arming:', 40, 'second', 0, 10000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),
     ];
