@@ -94,7 +94,11 @@ const Efb = () => {
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
-    const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
+    const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({
+        level: 100,
+        lastChangeTimestamp: absoluteTime,
+        isCharging: dc2BusIsPowered,
+    });
 
     const [ac1BusIsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 1000);
     const [, setLoadLightingPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
@@ -290,6 +294,27 @@ const Efb = () => {
     // </Pushback>
     // =========================================================================
 
+    // =========================================================================
+    // Key intercept
+    RegisterViewListener('JS_LISTENER_KEYEVENT');
+    Coherent.call('INTERCEPT_KEY_EVENT', 'ENGINE_AUTO_START', 1);
+    Coherent.call('INTERCEPT_KEY_EVENT', 'ENGINE_AUTO_SHUTDOWN', 1);
+    useEffect(() => {
+        Coherent.on('keyIntercepted', (event) => {
+            switch (event) {
+            case 'ENGINE_AUTO_START':
+                console.debug('ENGINE_AUTO_START intercepted');
+                break;
+            case 'ENGINE_AUTO_SHUTDOWN':
+                console.debug('ENGINE_AUTO_SHUTDOWN intercepted');
+                break;
+            default:
+                break;
+            }
+        });
+    }, []);
+    // =========================================================================
+
     const { offsetY } = useAppSelector((state) => state.keyboard);
 
     switch (powerState) {
@@ -307,7 +332,9 @@ const Efb = () => {
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
+                {' '}
                 <ModalContainer />
+                {' '}
                 <PowerContext.Provider value={{ powerState, setPowerState }}>
                     <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
                         <Tooltip posX={posX} posY={posY} shown={shown} text={text} />
@@ -317,6 +344,7 @@ const Efb = () => {
                             draggableDirection="y"
                             limit={2}
                         />
+                        {' '}
                         <StatusBar
                             batteryLevel={batteryLevel.level}
                             isCharging={dc2BusIsPowered === 1}
@@ -325,25 +353,60 @@ const Efb = () => {
                             <ToolBar />
                             <div className="pt-14 pr-6 w-screen min-w-0 h-screen">
                                 <Switch>
+                                    {' '}
                                     <Route exact path="/">
+                                        {' '}
                                         <Redirect to="/dashboard" />
+                                        {' '}
                                     </Route>
-                                    <Route path="/dashboard" component={Dashboard} />
-                                    <Route path="/dispatch" component={Dispatch} />
+                                    {' '}
+                                    <Route
+                                        path="/dashboard"
+                                        component={Dashboard}
+                                    />
+                                    {' '}
+                                    <Route
+                                        path="/dispatch"
+                                        component={Dispatch}
+                                    />
+                                    {' '}
                                     <Route path="/ground" component={Ground} />
-                                    <Route path="/performance" component={Performance} />
+                                    {' '}
+                                    <Route
+                                        path="/performance"
+                                        component={Performance}
+                                    />
+                                    {' '}
                                     <Route path="/navigation" component={Navigation} />
-                                    <Route path="/atc" component={ATC} />
+                                    {' '}
+                                    <Route
+                                        path="/atc"
+                                        component={ATC}
+                                    />
+                                    {' '}
                                     <Route path="/failures" component={Failures} />
-                                    <Route path="/checklists" component={Checklists} />
+                                    {' '}
+                                    <Route
+                                        path="/checklists"
+                                        component={Checklists}
+                                    />
                                     <Route path="/presets" component={Presets} />
+                                    {' '}
                                     <Route path="/settings" component={Settings} />
-                                    <Route path="/settings/flypad" component={FlyPadPage} />
+                                    {' '}
+                                    <Route
+                                        path="/settings/flypad"
+                                        component={FlyPadPage}
+                                    />
+                                    {' '}
+
                                 </Switch>
                             </div>
                         </div>
                     </div>
                 </PowerContext.Provider>
+                {' '}
+
             </NavigraphContext.Provider>
         );
     default:
