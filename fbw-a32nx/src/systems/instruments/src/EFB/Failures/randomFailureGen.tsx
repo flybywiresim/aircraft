@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { failureGeneratorAddAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerators';
-import { failureGeneratorAddAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerators';
-import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerators';
-import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerators';
-import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerators';
+import { failureGeneratorAddAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
+import { failureGeneratorAddAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
+import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
+import { failureGeneratorSpeedAccel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
+import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { t } from 'instruments/src/EFB/translation';
 import { failureGeneratorAddTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
