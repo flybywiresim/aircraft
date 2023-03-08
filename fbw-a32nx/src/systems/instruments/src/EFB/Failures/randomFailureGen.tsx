@@ -324,13 +324,14 @@ export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (
 };
 
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
-    failureGeneratorTimer,
-    failureGeneratorTakeOff,
+    failureGeneratorSpeedAccel,
+    failureGeneratorSpeedDecel,
     failureGeneratorAltClimb,
     failureGeneratorAltDesc,
     failureGeneratorPerHour,
-    failureGeneratorSpeedAccel,
-    failureGeneratorSpeedDecel,
+    failureGeneratorTimer,
+    failureGeneratorTakeOff,
+
 ];
 
 export function FailureGeneratorCardTemplate(
