@@ -49,7 +49,6 @@ class ExtrasHost extends BaseInstrument {
 
     public connectedCallback(): void {
         super.connectedCallback();
-        console.log('A32NX_EXTRASHOST: connectedCallback');
 
         this.versionCheck.connectedCallback();
         this.keyInterceptor.connectedCallback();

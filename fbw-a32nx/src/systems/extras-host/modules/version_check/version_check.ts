@@ -6,11 +6,11 @@ import { AircraftVersionChecker } from '@shared/AircraftVersionChecker';
 
 export class VersionCheck {
     constructor(private readonly bus: EventBus) {
-        console.log('VersionCheck: constructor()');
+        console.log('VersionCheck: Created');
     }
 
     public connectedCallback(): void {
-        console.debug('VersionCheck: connectedCallback()');
+        // empty
     }
 
     public startPublish(): void {

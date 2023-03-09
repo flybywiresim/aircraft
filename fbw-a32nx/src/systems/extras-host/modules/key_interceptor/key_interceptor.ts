@@ -13,18 +13,17 @@ export class KeyInterceptor {
 
     constructor(private readonly bus: EventBus) {
         this.eventBus = bus;
-        console.log('KeyInterceptor: constructor()');
         KeyInterceptManager.getManager(this.eventBus).then((manager) => {
             this.keyInterceptManager = manager;
             this.registerIntercepts();
         });
         this.notification = new NotificationManager();
+        console.log('KeyInterceptor: Created');
     }
 
     registerIntercepts() {
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
-        this.keyInterceptManager.interceptKey('TOGGLE_BEACON_LIGHTS', true);
 
         const subscriber = this.eventBus.getSubscriber<KeyEvents>();
         subscriber.on('key_intercept').handle((keyData) => {
@@ -39,7 +38,6 @@ export class KeyInterceptor {
                 });
                 break;
             case 'ENGINE_AUTO_SHUTDOWN':
-
                 this.notification.showNotification({
                     title: 'A32NX: Shift+Ctrl+E Not supported',
                     type: 'MESSAGE',
@@ -48,9 +46,6 @@ export class KeyInterceptor {
                     timeout: 5000,
                 });
                 break;
-            case 'TOGGLE_BEACON_LIGHTS':
-                console.debug('TOGGLE_BEACON_LIGHTS intercepted');
-                break;
             default:
                 break;
             }
@@ -58,7 +53,7 @@ export class KeyInterceptor {
     }
 
     public connectedCallback(): void {
-        console.debug('KeyInterceptor: connectedCallback()');
+        // empty
     }
 
     public startPublish(): void {

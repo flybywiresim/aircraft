@@ -4,7 +4,7 @@
 /* eslint-disable no-console */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { PopUp } from '@shared/popup';
+import { NotificationManager } from '@shared/notification';
 import { t } from '../../instruments/src/EFB/translation';
 
 /**
@@ -43,6 +43,8 @@ export enum KnowBranchNames {
  *  published GitHub version
  */
 export class AircraftVersionChecker {
+    private static notification: NotificationManager;
+
     private static versionChecked = false;
 
     private static releaseInfo: ReleaseInfo[];
@@ -60,6 +62,8 @@ export class AircraftVersionChecker {
      */
     public static async checkVersion(): Promise<boolean> {
         console.log('Checking aircraft version');
+
+        this.notification = new NotificationManager();
 
         // reset previous check data
         this.versionChecked = false;
@@ -234,6 +238,22 @@ export class AircraftVersionChecker {
      */
     private static showVersionPopup(branchName, currentVersion, releaseVersion) {
         console.log(`showVersionPopup ${branchName} ${currentVersion} ${releaseVersion}`);
+        this.notification.showNotification({
+            title: 'New Version Available',
+            type: 'MESSAGE',
+            theme: 'SYSTEM',
+            message: `<div style="font-size: 100%; text-align: left;">
+                        You are using the ${branchName} edition with version: <br>
+                        <strong>${currentVersion}</strong><br><br>
+
+                        Latest ${branchName} version is <br>
+                        <strong>${releaseVersion}</strong><br/><br/>
+
+                        Please update your aircraft using the FlyByWire Installer.
+                    </div>`,
+            timeout: 15000,
+        });
+
         // const dialog = new PopUp();
         // dialog.showInformation(
         //     t('VersionCheck.Title'),
