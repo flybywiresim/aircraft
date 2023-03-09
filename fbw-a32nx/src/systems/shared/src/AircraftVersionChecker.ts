@@ -5,7 +5,7 @@
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { NotificationManager } from '@shared/notification';
-import { t } from '../../instruments/src/EFB/translation';
+import { PopUpDialog } from '@shared/popup';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.
@@ -237,12 +237,11 @@ export class AircraftVersionChecker {
      * @private
      */
     private static showVersionPopup(branchName, currentVersion, releaseVersion) {
-        console.log(`showVersionPopup ${branchName} ${currentVersion} ${releaseVersion}`);
-        this.notification.showNotification({
-            title: 'New Version Available',
-            type: 'MESSAGE',
-            theme: 'SYSTEM',
-            message: `<div style="font-size: 100%; text-align: left;">
+        // TODO: Make translation work - move translation from EFB to shared
+        const dialog = new PopUpDialog();
+        dialog.showInformation(
+            'New Version Available',
+            `<div style="font-size: 120%; text-align: left;">
                         You are using the ${branchName} edition with version: <br>
                         <strong>${currentVersion}</strong><br><br>
 
@@ -251,24 +250,10 @@ export class AircraftVersionChecker {
 
                         Please update your aircraft using the FlyByWire Installer.
                     </div>`,
-            timeout: 15000,
-        });
-
-        // const dialog = new PopUp();
-        // dialog.showInformation(
-        //     t('VersionCheck.Title'),
-        //     `<div style="font-size: 100%; text-align: left;">
-        //                 ${t('VersionCheck.CurrentVersionText', [{ edition: branchName }])}<br>
-        //                 <strong>${currentVersion}</strong><br><br>
-        //
-        //                 ${t('VersionCheck.LatestVersionText', [{ edition: branchName }])}<br>
-        //                 <strong>${releaseVersion}</strong><br/><br/>
-        //
-        //                 ${t('VersionCheck.RecommendationText')}
-        //             </div>`,
-        //     'normal',
-        //     () => {},
-        // );
+            'normal',
+            () => {
+            },
+        );
     }
 
     /**

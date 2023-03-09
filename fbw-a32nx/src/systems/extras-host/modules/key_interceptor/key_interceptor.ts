@@ -3,6 +3,7 @@
 
 import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
 import { NotificationManager } from '@shared/notification';
+import { PopUpDialog } from '@shared/popup';
 
 export class KeyInterceptor {
     private eventBus: EventBus;
@@ -29,27 +30,62 @@ export class KeyInterceptor {
         subscriber.on('key_intercept').handle((keyData) => {
             switch (keyData.key) {
             case 'ENGINE_AUTO_START':
-                this.notification.showNotification({
-                    title: 'A32NX: Ctrl+E Not supported',
-                    type: 'MESSAGE',
-                    theme: 'SYSTEM',
-                    message: 'Engine Auto Start is not supported.\nPlease use the flyPad\'s Aircraft Presets.',
-                    timeout: 5000,
-                });
+                this.engineAutoStartAction();
                 break;
             case 'ENGINE_AUTO_SHUTDOWN':
-                this.notification.showNotification({
-                    title: 'A32NX: Shift+Ctrl+E Not supported',
-                    type: 'MESSAGE',
-                    theme: 'SYSTEM',
-                    message: 'Engine Auto Shutdown is not supported.\nPlease use the flyPad\'s Aircraft Presets.',
-                    timeout: 5000,
-                });
+                this.engineAutoStopAction();
                 break;
             default:
                 break;
             }
         });
+    }
+
+    private engineAutoStartAction() {
+        const dialog = new PopUpDialog();
+        // TODO: Make translation work - move translation from EFB to shared
+        dialog.showPopUp(
+            'A32NX: Ctrl+E Not supported',
+            `<div style="font-size: 120%; text-align: left;">
+                        Engine Auto Start is not supported.<br/>
+                        <br/>                        
+                        Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
+                        <strong>"Ready for Taxi"</strong>?
+                    </div>`,
+            'small',
+            () => {
+                console.log('Setting aircraft preset to "Ready for Taxi"');
+                // stop any running preset loads
+                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
+                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 4);
+            },
+            () => {
+                console.log('User clicked Cancel');
+            },
+        );
+    }
+
+    private engineAutoStopAction() {
+        const dialog = new PopUpDialog();
+        dialog.showPopUp(
+            'A32NX: Shift+Ctrl+E Not supported',
+            `<div style="font-size: 120%; text-align: left;">
+                        Engine Auto Shutdown is not supported.<br/>
+                        <br/>
+                        Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
+                        <strong>"Powered"</strong>?
+                    </div>`,
+            'small',
+            () => {
+                console.log('Setting aircraft preset to "Powered"');
+                // stop any running preset loads
+                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
+                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 2);
+            },
+            () => {
+                console.log('User clicked Cancel');
+            },
+        );
     }
 
     public connectedCallback(): void {
