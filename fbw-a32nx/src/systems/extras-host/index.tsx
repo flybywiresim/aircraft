@@ -6,6 +6,23 @@ import { VersionCheck } from './modules/version_check/version_check';
 import './style.scss';
 import { KeyInterceptor } from './modules/key_interceptor/key_interceptor';
 
+/**
+ * This is the main class for the extras-host instrument.
+ *
+ * It provides an environment for non-aircraft non-wasm systems/modules to run in.
+ *
+ * Usage:
+ *  - Add new modules as private readonly members of this class.
+ *  - Add the modules to the constructor.
+ *  - Add the modules to the connectedCallback() method.
+ *  - Add the modules to the Update() method.
+ *
+ * Each module must implement the following methods:
+ * - `constructor` to get access to the system-wide EventBus
+ * - `connectedCallback` which is called after the simulator set up everything. These functions will also add the subscribtion to special events.
+ * - `startPublish` which is called as soon as the simulator starts running. It will also start publishing the simulator variables onto the EventBus
+ * - `update` is called in every update call of the simulator, but only after `startPublish` is called
+ */
 class ExtrasHost extends BaseInstrument {
     private readonly bus: EventBus;
 
