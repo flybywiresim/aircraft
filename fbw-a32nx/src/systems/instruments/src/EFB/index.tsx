@@ -20,21 +20,13 @@ import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { migrateSettings } from './Settings/Migration';
 import { store } from './Store/store';
 import { Error } from './Assets/Error';
-import { AircraftVersionChecker } from './Utils/AircraftVersionChecker';
 
 const EFBLoad = () => {
-    const [isReady] = useSimVar('L:A32NX_IS_READY', 'Bool', 1000);
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
     useEffect(
         () => () => setSessionId(''), [],
     );
-
-    useEffect(() => {
-        if (isReady) {
-            AircraftVersionChecker.checkVersion();
-        }
-    }, [isReady]);
 
     const [err, setErr] = useState(false);
 

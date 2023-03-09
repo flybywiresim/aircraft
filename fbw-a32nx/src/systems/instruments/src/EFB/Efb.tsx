@@ -294,27 +294,6 @@ const Efb = () => {
     // </Pushback>
     // =========================================================================
 
-    // =========================================================================
-    // Key intercept
-    RegisterViewListener('JS_LISTENER_KEYEVENT');
-    Coherent.call('INTERCEPT_KEY_EVENT', 'ENGINE_AUTO_START', 1);
-    Coherent.call('INTERCEPT_KEY_EVENT', 'ENGINE_AUTO_SHUTDOWN', 1);
-    useEffect(() => {
-        Coherent.on('keyIntercepted', (event) => {
-            switch (event) {
-            case 'ENGINE_AUTO_START':
-                console.debug('ENGINE_AUTO_START intercepted');
-                break;
-            case 'ENGINE_AUTO_SHUTDOWN':
-                console.debug('ENGINE_AUTO_SHUTDOWN intercepted');
-                break;
-            default:
-                break;
-            }
-        });
-    }, []);
-    // =========================================================================
-
     const { offsetY } = useAppSelector((state) => state.keyboard);
 
     switch (powerState) {

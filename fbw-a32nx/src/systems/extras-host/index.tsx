@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher } from 'msfssdk';
-import { VersionCheck } from './modules/version_check';
+import { VersionCheck } from './modules/version_check/version_check';
 import './style.scss';
+import { KeyInterceptor } from './modules/key_interceptor/key_interceptor';
 
 class ExtrasHost extends BaseInstrument {
     private readonly bus: EventBus;
@@ -11,6 +12,8 @@ class ExtrasHost extends BaseInstrument {
     private readonly hEventPublisher: HEventPublisher;
 
     private readonly versionCheck: VersionCheck;
+
+    private readonly keyInterceptor: KeyInterceptor;
 
     /**
      * "mainmenu" = 0
@@ -27,6 +30,7 @@ class ExtrasHost extends BaseInstrument {
         this.hEventPublisher = new HEventPublisher(this.bus);
 
         this.versionCheck = new VersionCheck(this.bus);
+        this.keyInterceptor = new KeyInterceptor(this.bus);
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -40,7 +44,6 @@ class ExtrasHost extends BaseInstrument {
     }
 
     public onInteractionEvent(args: string[]): void {
-        console.log('A32NX_EXTRASHOST: onInteractionEvent', args);
         this.hEventPublisher.dispatchHEvent(args[0]);
     }
 
@@ -49,21 +52,24 @@ class ExtrasHost extends BaseInstrument {
         console.log('A32NX_EXTRASHOST: connectedCallback');
 
         this.versionCheck.connectedCallback();
+        this.keyInterceptor.connectedCallback();
     }
 
     public Update(): void {
         super.Update();
 
         if (this.gameState !== 3) {
-            const gamestate = this.getGameState();
-            if (gamestate === 3) {
+            const gs = this.getGameState();
+            if (gs === 3) {
                 this.hEventPublisher.startPublish();
                 this.versionCheck.startPublish();
+                this.keyInterceptor.startPublish();
             }
-            this.gameState = gamestate;
+            this.gameState = gs;
         }
 
         this.versionCheck.update();
+        this.keyInterceptor.update();
     }
 }
 

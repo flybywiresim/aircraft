@@ -5,7 +5,7 @@
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
 import { PopUp } from '@shared/popup';
-import { t } from '../translation';
+import { t } from '../../instruments/src/EFB/translation';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.
@@ -233,21 +233,22 @@ export class AircraftVersionChecker {
      * @private
      */
     private static showVersionPopup(branchName, currentVersion, releaseVersion) {
-        const popup = new PopUp();
-        popup.showInformation(
-            t('VersionCheck.Title'),
-            `<div style="font-size: 100%; text-align: left;">
-                        ${t('VersionCheck.CurrentVersionText', [{ edition: branchName }])}<br>
-                        <strong>${currentVersion}</strong><br><br>
-                                        
-                        ${t('VersionCheck.LatestVersionText', [{ edition: branchName }])}<br>
-                        <strong>${releaseVersion}</strong><br/><br/>
-                        
-                        ${t('VersionCheck.RecommendationText')}
-                    </div>`,
-            'normal',
-            () => {},
-        );
+        console.log(`showVersionPopup ${branchName} ${currentVersion} ${releaseVersion}`);
+        // const dialog = new PopUp();
+        // dialog.showInformation(
+        //     t('VersionCheck.Title'),
+        //     `<div style="font-size: 100%; text-align: left;">
+        //                 ${t('VersionCheck.CurrentVersionText', [{ edition: branchName }])}<br>
+        //                 <strong>${currentVersion}</strong><br><br>
+        //
+        //                 ${t('VersionCheck.LatestVersionText', [{ edition: branchName }])}<br>
+        //                 <strong>${releaseVersion}</strong><br/><br/>
+        //
+        //                 ${t('VersionCheck.RecommendationText')}
+        //             </div>`,
+        //     'normal',
+        //     () => {},
+        // );
     }
 
     /**

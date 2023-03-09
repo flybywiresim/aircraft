@@ -1,4 +1,4 @@
-/// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
+/// <reference path="../../../../../fbw-common/src/typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
 /**
  * NotificationParams container for popups to package popup metadata

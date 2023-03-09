@@ -4,12 +4,12 @@
 import React, { useEffect, useState } from 'react';
 import { usePersistentProperty, useSessionStorage } from '@instruments/common/persistence';
 import { SentryConsentState, SENTRY_CONSENT_KEY } from '@sentry/FbwAircraftSentryClient';
+import { AircraftVersionChecker, BuildInfo } from '@shared/AircraftVersionChecker';
 import { SettingsPage } from '../Settings';
 
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
 import { t } from '../../translation';
-import { AircraftVersionChecker, BuildInfo } from '../../Utils/AircraftVersionChecker';
 
 interface BuildInfoEntryProps {
     title: string;

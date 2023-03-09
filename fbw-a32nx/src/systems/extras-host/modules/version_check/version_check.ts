@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus } from 'msfssdk';
+import { AircraftVersionChecker } from '@shared/AircraftVersionChecker';
 
 export class VersionCheck {
     constructor(private readonly bus: EventBus) {
-        console.debug('VersionCheck: constructor()');
+        console.log('VersionCheck: constructor()');
     }
 
     public connectedCallback(): void {
@@ -13,9 +14,11 @@ export class VersionCheck {
     }
 
     public startPublish(): void {
-        console.debug('VersionCheck: startPublish()');
+        console.log('VersionCheck: startPublish()');
+        AircraftVersionChecker.checkVersion();
     }
 
     public update(): void {
+        // empty
     }
 }
