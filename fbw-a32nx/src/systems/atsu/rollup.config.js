@@ -46,7 +46,7 @@ module.exports = {
         }),
     ],
     output: {
-        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/atsu.js'),
+        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/atsu.js'),
         format: 'umd',
         name: 'Atsu',
     },
