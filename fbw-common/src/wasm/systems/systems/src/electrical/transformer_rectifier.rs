@@ -184,6 +184,10 @@ mod transformer_rectifier_tests {
             self.read_by_name("ELEC_TR_1_CURRENT")
         }
 
+        fn potential(&mut self) -> ElectricPotential {
+            self.read_by_name("ELEC_TR_1_POTENTIAL")
+        }
+
         fn transformer_rectifier_is_powered(&self) -> bool {
             self.query_elec(|a, elec| a.transformer_rectifier_is_powered(elec))
         }
@@ -314,7 +318,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_too_little_demand_current_is_not_normal() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.command(|a| a.power_demand(Power::new::<watt>(5. * 28.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>(5. * 30.)));
         test_bed.run();
 
         assert!(!test_bed.current_is_normal());
@@ -324,7 +328,7 @@ mod transformer_rectifier_tests {
     fn when_powered_with_enough_demand_current_is_normal() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.command(|a| a.power_demand(Power::new::<watt>((5. * 28.) + 1.)));
+        test_bed.command(|a| a.power_demand(Power::new::<watt>((5. * 30.) + 1.)));
         test_bed.run();
 
         assert!(test_bed.current_is_normal());
@@ -390,13 +394,11 @@ mod transformer_rectifier_tests {
     fn when_powered_with_demand_current_is_based_on_demand() {
         let mut test_bed = TransformerRectifierTestBed::with_powered_transformer_rectifier();
 
-        test_bed.command(|a| a.power_demand(Power::new::<watt>(200.)));
+        let demand = Power::new::<watt>(200.);
+        test_bed.command(|a| a.power_demand(demand));
         test_bed.run();
 
-        assert_eq!(
-            test_bed.current(),
-            ElectricCurrent::new::<ampere>(200. / 28.)
-        );
+        assert_eq!(test_bed.current(), demand / test_bed.potential());
     }
 
     #[test]
