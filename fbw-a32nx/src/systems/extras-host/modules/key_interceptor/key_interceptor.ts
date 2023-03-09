@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
+import { NotificationManager } from '@shared/notification';
 
 export class KeyInterceptor {
     private eventBus: EventBus;
 
     private keyInterceptManager: KeyInterceptManager;
+
+    private notification: NotificationManager;
 
     constructor(private readonly bus: EventBus) {
         this.eventBus = bus;
@@ -15,6 +18,7 @@ export class KeyInterceptor {
             this.keyInterceptManager = manager;
             this.registerIntercepts();
         });
+        this.notification = new NotificationManager();
     }
 
     registerIntercepts() {
@@ -26,10 +30,23 @@ export class KeyInterceptor {
         subscriber.on('key_intercept').handle((keyData) => {
             switch (keyData.key) {
             case 'ENGINE_AUTO_START':
-                console.debug('ENGINE_AUTO_START intercepted');
+                this.notification.showNotification({
+                    title: 'A32NX: Ctrl+E Not supported',
+                    type: 'MESSAGE',
+                    theme: 'SYSTEM',
+                    message: 'Engine Auto Start is not supported.\nPlease use the flyPad\'s Aircraft Presets.',
+                    timeout: 5000,
+                });
                 break;
             case 'ENGINE_AUTO_SHUTDOWN':
-                console.debug('ENGINE_AUTO_SHUTDOWN intercepted');
+
+                this.notification.showNotification({
+                    title: 'A32NX: Shift+Ctrl+E Not supported',
+                    type: 'MESSAGE',
+                    theme: 'SYSTEM',
+                    message: 'Engine Auto Shutdown is not supported.\nPlease use the flyPad\'s Aircraft Presets.',
+                    timeout: 5000,
+                });
                 break;
             case 'TOGGLE_BEACON_LIGHTS':
                 console.debug('TOGGLE_BEACON_LIGHTS intercepted');
