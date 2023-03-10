@@ -12,6 +12,8 @@ export class KeyInterceptor {
 
     private notification: NotificationManager;
 
+    private dialogVisible = false;
+
     constructor(private readonly bus: EventBus) {
         this.eventBus = bus;
         KeyInterceptManager.getManager(this.eventBus).then((manager) => {
@@ -42,50 +44,58 @@ export class KeyInterceptor {
     }
 
     private engineAutoStartAction() {
-        const dialog = new PopUpDialog();
-        // TODO: Make translation work - move translation from EFB to shared
-        dialog.showPopUp(
-            'A32NX: Ctrl+E Not supported',
-            `<div style="font-size: 120%; text-align: left;">
+        if (!this.dialogVisible) {
+            this.dialogVisible = true;
+            const dialog = new PopUpDialog();
+            // TODO: Make translation work - move translation from EFB to shared
+            dialog.showPopUp(
+                'A32NX: Ctrl+E Not supported',
+                `<div style="font-size: 120%; text-align: left;">
                         Engine Auto Start is not supported.<br/>
                         <br/>                        
                         Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
                         <strong>"Ready for Taxi"</strong>?
                     </div>`,
-            'small',
-            () => {
-                console.log('Setting aircraft preset to "Ready for Taxi"');
-                // stop any running preset loads
-                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
-                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 4);
-            },
-            () => {
-                console.log('User clicked Cancel');
-            },
-        );
+                'small',
+                () => {
+                    console.log('Setting aircraft preset to "Ready for Taxi"');
+                    // stop any running preset loads
+                    SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
+                    SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 4);
+                    this.dialogVisible = false;
+                },
+                () => {
+                    this.dialogVisible = false;
+                },
+            );
+        }
     }
 
     private engineAutoStopAction() {
-        const dialog = new PopUpDialog();
-        dialog.showPopUp(
-            'A32NX: Shift+Ctrl+E Not supported',
-            `<div style="font-size: 120%; text-align: left;">
+        if (!this.dialogVisible) {
+            this.dialogVisible = true;
+            const dialog = new PopUpDialog();
+            dialog.showPopUp(
+                'A32NX: Shift+Ctrl+E Not supported',
+                `<div style="font-size: 120%; text-align: left;">
                         Engine Auto Shutdown is not supported.<br/>
                         <br/>
                         Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
                         <strong>"Powered"</strong>?
                     </div>`,
-            'small',
-            () => {
-                console.log('Setting aircraft preset to "Powered"');
-                // stop any running preset loads
-                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
-                SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 2);
-            },
-            () => {
-                console.log('User clicked Cancel');
-            },
-        );
+                'small',
+                () => {
+                    console.log('Setting aircraft preset to "Powered"');
+                    // stop any running preset loads
+                    SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
+                    SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 2);
+                    this.dialogVisible = false;
+                },
+                () => {
+                    this.dialogVisible = false;
+                },
+            );
+        }
     }
 
     public connectedCallback(): void {
