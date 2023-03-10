@@ -32,7 +32,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
-    const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
+    const [lsDisplayed] = useSimVar(`L:A32NX_BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
     const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
@@ -778,7 +778,7 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
     const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [vorCourse] = useSimVar(`NAV OBS:${index}`, 'degrees');
-    const [tuningMode] = useSimVar(`L:A32NX_FMGC_RADIONAV_${index}_TUNING_MODE`, 'enum');
+    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
     const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
 
     const [freqInt, freqDecimal] = vorFrequency.toFixed(2).split('.', 2);
@@ -808,7 +808,7 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
                 {vorCourse >= 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            { vorFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text> }
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
             <text x={0} y={60} fontSize={25} className="White" textAnchor="end">{vorIdent}</text>
         </Layer>
     );
@@ -818,7 +818,7 @@ const IlsInfo: FC = memo(() => {
     const [ilsIdent] = useSimVar('NAV IDENT:3', 'string');
     const [ilsFrequency] = useSimVar('NAV ACTIVE FREQUENCY:3', 'megahertz');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
-    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'enum');
+    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
     const [locAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
 
     const [freqInt, freqDecimal] = ilsFrequency.toFixed(2).split('.', 2);
@@ -845,7 +845,7 @@ const IlsInfo: FC = memo(() => {
                 {locAvailable ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            { ilsFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text> }
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
             <text x={0} y={60} fontSize={25} className="Magenta" textAnchor="end">{ilsIdent}</text>
         </Layer>
     );

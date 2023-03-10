@@ -68,6 +68,7 @@ export interface PFDSimvars {
     groundTrackTrue: number;
     selectedFpa: number;
     ilsCourse: number;
+    ilsRMPTuned: boolean;
     metricAltToggle: boolean;
     tla1: number;
     tla2: number;
@@ -214,6 +215,7 @@ export enum PFDVars {
     groundTrackTrue = 'GPS GROUND TRUE TRACK',
     selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
+    ilsRMPTuned = 'L:A32NX_RMP_ILS_TUNED',
     metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
     tla1='L:A32NX_AUTOTHRUST_TLA:1',
     tla2='L:A32NX_AUTOTHRUST_TLA:2',
@@ -242,8 +244,8 @@ export enum PFDVars {
     fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
     latAccRaw = 'L:A32NX_ADIRS_IR_1_BODY_LATERAL_ACC',
-    ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
-    ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
+    ls1Button = 'L:A32NX_BTN_LS_1_FILTER_ACTIVE',
+    ls2Button = 'L:A32NX_BTN_LS_2_FILTER_ACTIVE',
     fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
     fcdc2DiscreteWord1Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
     fcdc1DiscreteWord2Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
@@ -361,6 +363,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['groundTrackTrue', { name: PFDVars.groundTrackTrue, type: SimVarValueType.Degree }],
         ['selectedFpa', { name: PFDVars.selectedFpa, type: SimVarValueType.Degree }],
         ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
+        ['ilsRMPTuned', { name: PFDVars.ilsRMPTuned, type: SimVarValueType.Bool }],
         ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
         ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
         ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],

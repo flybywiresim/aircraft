@@ -34,6 +34,7 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
+    communications::Communications,
     pressurization::{Pressurization, PressurizationOverheadPanel},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -65,6 +66,7 @@ pub struct A320 {
     pressurization_overhead: PressurizationOverheadPanel,
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
+    communications: Communications,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
@@ -104,6 +106,7 @@ impl A320 {
             pressurization_overhead: PressurizationOverheadPanel::new(context),
             pneumatic: A320Pneumatic::new(context),
             radio_altimeters: A320RadioAltimeters::new(context),
+            communications: Communications::new(context),
         }
     }
 }
@@ -215,6 +218,8 @@ impl Aircraft for A320 {
             &self.pressurization_overhead,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
+
+        self.communications.update(context);
     }
 }
 impl SimulationElement for A320 {
@@ -244,6 +249,7 @@ impl SimulationElement for A320 {
         self.pressurization.accept(visitor);
         self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
+        self.communications.accept(visitor);
 
         visitor.visit(self);
     }

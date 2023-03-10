@@ -160,9 +160,9 @@
       "Passengers": "Passengers",
       "Planned": "Planned",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "DeboardConfirmationBody":"Please confirm deboarding all passengers",
+      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
       "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationCancel":"Cancel",
+      "DeboardConfirmationCancel": "Cancel",
       "LoadingTime": "Loading Time",
       "TT": {
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
@@ -544,7 +544,11 @@
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
       "WheelChocksEnabled": "Wheel Chocks",
-      "inHg": "inHg"
+      "inHg": "inHg",
+      "CockpitSeatUsedToControl": "Cockpit seat used to control",
+      "Both": "Both",
+      "Captain": "Captain",
+      "Copilot": "Copilot"
     },
     "ThrottleConfig": {
       "Apply": "Apply",

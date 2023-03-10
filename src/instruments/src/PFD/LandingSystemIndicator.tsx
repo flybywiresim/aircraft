@@ -40,7 +40,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
         sub.on('hEvent').handle((eventName) => {
             if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
                 this.lsButtonPressedVisibility = !this.lsButtonPressedVisibility;
-                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
+                SimVar.SetSimVarValue(`L:A32NX_BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
 
                 this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
                 this.handleGsReferenceLine();
@@ -118,6 +118,8 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
     private dme = 0;
 
+    private rmpTuned = false;
+
     private dmeVisibilitySub = Subject.create('hidden');
 
     private destRef = FSComponent.createRef<SVGTextElement>();
@@ -157,6 +159,11 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
             this.dme = dme;
             this.updateContents();
         });
+
+        sub.on('ilsRMPTuned').whenChanged().handle((rmpTuned) => {
+            this.rmpTuned = rmpTuned;
+            this.updateContents();
+        });
     }
 
     private updateContents() {
@@ -170,7 +177,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
         let distLeading = '';
         let distTrailing = '';
-        if (this.hasDme) {
+        if (this.hasDme && !this.rmpTuned) {
             this.dmeVisibilitySub.set('display: inline');
             const dist = Math.round(this.dme * 10) / 10;
 

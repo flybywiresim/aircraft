@@ -9,13 +9,26 @@ interface Props {
 }
 
 const TEXT_DATA_MODE_VHF3 = 'DATA';
+const TEXT_DATA_MODE_VHF3_UNPOWERED = '------';
 
 /**
  * Format the given frequency to be displayed.
  * @param frequency The given frequency number in Hz.
  * @returns The formated frequency string in 123.456
  */
-const formatFrequency = (frequency: number): string => (frequency / 1000000).toFixed(3).padEnd(7, '0');
+const formatFrequency = (frequency: number): string => {
+    // VHF, HF , VOR, ILS
+    if (frequency >= 108000000) {
+        return (frequency / 1000000).toFixed(3).padEnd(7, '0');
+    }
+
+    if (frequency >= 2000000) {
+        return (frequency / 1000000).toFixed(3).padEnd(5, '0');
+    }
+
+    // ADF
+    return (frequency / 1000).toFixed(1);
+};
 
 /**
  * Radio management panel seven-segment frequency/course display.
@@ -24,6 +37,7 @@ const formatFrequency = (frequency: number): string => (frequency / 1000000).toF
  */
 export function RadioPanelDisplay(props: Props) {
     const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Boolean', 1000);
+    const [DCBus1] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'boolean');
 
     let content: JSX.Element;
 
@@ -33,24 +47,28 @@ export function RadioPanelDisplay(props: Props) {
                 8.8.8.8.8.8
             </text>
         );
-    } else if (props.value > 0) {
-        let value = '';
-        // If the passed value prop is a number, we'll use formatFrequency to get string format.
-        if (typeof props.value === 'number') {
-            value = formatFrequency(props.value);
-        } else {
-            value = props.value;
-        }
-
+    } else if ((typeof props.value === 'string')) {
         content = (
             <text x="100%" y="52%">
-                {value}
+                {props.value}
+            </text>
+        );
+    } else if (props.value > 0) {
+        content = (
+            <text x="100%" y="52%">
+                {formatFrequency(props.value)}
+            </text>
+        );
+    } else if (DCBus1) {
+        content = (
+            <text x="85%" y="52%">
+                {TEXT_DATA_MODE_VHF3}
             </text>
         );
     } else {
         content = (
-            <text x="85%" y="52%">
-                {TEXT_DATA_MODE_VHF3}
+            <text x="100%" y="52%">
+                {TEXT_DATA_MODE_VHF3_UNPOWERED}
             </text>
         );
     }

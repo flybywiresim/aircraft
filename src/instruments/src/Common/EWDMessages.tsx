@@ -89,6 +89,7 @@ const EWDMessages = {
     '000026001': '\x1b<3mENG A. ICE',
     '000027001': '\x1b<3mWING A. ICE',
     '000027501': '\x1b<3mICE NOT DET',
+    '000028001': '\x1b<3mAUDIO 3 XFRD',
     '000029001': '\x1b<3mSWITCHG PNL',
     '000030001': '\x1b<3mGPWS FLAP 3',
     '000032001': '\x1b<3mTCAS STBY',
