@@ -27,11 +27,11 @@ export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
 
 export const FailureGeneratorCardsAltDesc : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settingsAltDesc;
+    const setting = generatorSettings.failureGenConfigAltDesc.settings;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorCardAltDesc(i, generatorSettings));
+            htmlReturn.push(failureGeneratorCardAltDesc(i, generatorSettings.failureGenConfigAltDesc));
         }
     }
     return htmlReturn;
@@ -40,8 +40,8 @@ export const FailureGeneratorCardsAltDesc : (generatorSettings: any) => JSX.Elem
 const onErase = (_genID : number) => {
 };
 
-const failureGeneratorCardAltDesc : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsAltDesc;
+const failureGeneratorCardAltDesc : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+    const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Altitude above sea:', 40, 'feet', 0, 40000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),

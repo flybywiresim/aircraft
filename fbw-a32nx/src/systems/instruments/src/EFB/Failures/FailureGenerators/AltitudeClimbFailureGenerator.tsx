@@ -27,11 +27,11 @@ export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
 
 export const FailureGeneratorCardsAltClimb : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settingsAltClimb;
+    const setting = generatorSettings.failureGenConfigAltClimb.settings;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorCardAltClimb(i, generatorSettings));
+            htmlReturn.push(failureGeneratorCardAltClimb(i, generatorSettings.failureGenConfigAltClimb));
         }
     }
     return htmlReturn;
@@ -40,8 +40,8 @@ export const FailureGeneratorCardsAltClimb : (generatorSettings: any) => JSX.Ele
 const onErase = (_genID : number) => {
 };
 
-const failureGeneratorCardAltClimb : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsAltClimb;
+const failureGeneratorCardAltClimb : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : any) => {
+    const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Altitude above sea:', 40, 'feet', 0, 40000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),

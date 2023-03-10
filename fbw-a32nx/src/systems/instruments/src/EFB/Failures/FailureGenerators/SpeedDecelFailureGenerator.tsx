@@ -27,11 +27,11 @@ export const failureGenConfigSpeedDecel : ()=>FailureGenData = () => {
 
 export const FailureGeneratorCardsSpeedDecel : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settingsSpeedDecel;
+    const setting = generatorSettings.failureGenConfigSpeedDecel.settings;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorCardSpeedDecel(i, generatorSettings));
+            htmlReturn.push(failureGeneratorCardSpeedDecel(i, generatorSettings.failureGenConfigSpeedDecel));
         }
     }
     return htmlReturn;
@@ -40,8 +40,8 @@ export const FailureGeneratorCardsSpeedDecel : (generatorSettings: any) => JSX.E
 const onErase = (_genID : number) => {
 };
 
-const failureGeneratorCardSpeedDecel : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsSpeedDecel;
+const failureGeneratorCardSpeedDecel : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+    const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Speed:', 32, 'knots', 0, 400,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),

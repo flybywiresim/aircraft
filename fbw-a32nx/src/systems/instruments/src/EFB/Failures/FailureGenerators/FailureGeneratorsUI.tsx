@@ -3,7 +3,8 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import {
     addGenerator, eraseGenerator, FailureGenData,
-    failureGeneratorsSettings, generatorsCardList, setNewSetting,
+    failureGeneratorCards,
+    failureGeneratorsSettings, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
@@ -75,6 +76,14 @@ export const FailureGeneratorsUI = () => {
             </div>
         </>
     );
+};
+
+export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
+    let temp : JSX.Element[] = [];
+    for (let i = 0; i < failureGeneratorCards.length; i++) {
+        temp = temp.concat(failureGeneratorCards[i](generatorSettings));
+    }
+    return temp;
 };
 
 export function FailureGeneratorCardTemplateUI(

@@ -206,14 +206,6 @@ export const failureGeneratorCards: ((generatorSettings: any) => JSX.Element[])[
     FailureGeneratorCardsTakeOff,
 ];
 
-export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
-    let temp : JSX.Element[] = [];
-    for (let i = 0; i < failureGeneratorCards.length; i++) {
-        temp = temp.concat(failureGeneratorCards[i](generatorSettings));
-    }
-    return temp;
-};
-
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
     failureGeneratorAltClimb,
     failureGeneratorAltDesc,
@@ -311,9 +303,8 @@ export function setNewSetting(newSetting: number, generatorSettings : FailureGen
 }
 
 export const eraseGenerator :(genID : number, generatorSettings : FailureGenData) => void = (genID : number, generatorSettings : FailureGenData) => {
-    const settings : number[] = generatorSettings.settings;
-    settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
-    generatorSettings.setSetting(flatten(settings));
+    generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
+    generatorSettings.setSetting(flatten(generatorSettings.settings));
     // arming
     generatorSettings.failureGeneratorArmed.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
     generatorSettings.onErase(genID);

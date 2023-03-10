@@ -27,11 +27,11 @@ export const failureGenConfigPerHour : ()=>FailureGenData = () => {
 
 export const FailureGeneratorCardsPerHour : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settingsPerHour;
+    const setting = generatorSettings.failureGenConfigPerHour.settings;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorCardPerHour(i, generatorSettings));
+            htmlReturn.push(failureGeneratorCardPerHour(i, generatorSettings.failureGenConfigPerHour));
         }
     }
     return htmlReturn;
@@ -40,8 +40,8 @@ export const FailureGeneratorCardsPerHour : (generatorSettings: any) => JSX.Elem
 const onErase = (_genID : number) => {
 };
 
-const failureGeneratorCardPerHour : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsPerHour;
+const failureGeneratorCardPerHour : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+    const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Failure per hour:', 40, '/hour', 0, 60,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),

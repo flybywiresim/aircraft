@@ -27,13 +27,13 @@ export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
     return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName };
 };
 
-export const FailureGeneratorCardsTakeOff : (generatorSettings: FailureGenData) => JSX.Element[] = (generatorSettings : FailureGenData) => {
+export const FailureGeneratorCardsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settings;
+    const setting = generatorSettings.failureGenConfigTakeOff.settings;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorCardTakeOff(i, generatorSettings));
+            htmlReturn.push(failureGeneratorCardTakeOff(i, generatorSettings.failureGenConfigTakeOff));
         }
     }
     return htmlReturn;
