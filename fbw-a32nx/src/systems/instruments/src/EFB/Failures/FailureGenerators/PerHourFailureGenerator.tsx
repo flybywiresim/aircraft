@@ -2,10 +2,10 @@ import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
     activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction,
-    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten, setNewSetting,
+    FailurePhases, findGeneratorFailures, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 const additionalSetting = [0, 0.1];

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGenConfigAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb }
@@ -14,7 +14,6 @@ import { failureGenConfigSpeedDecel, FailureGeneratorCardsSpeedDecel, failureGen
 import { failureGenConfigTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff }
     from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { failureGenConfigTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
-import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -137,35 +136,6 @@ export const basicData = () => {
     }, [throttleTakeOff, isOnGround]);
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
-
-export function FailureGeneratorFailureSetting(title:string, width : number,
-    unit : string, min:number, max:number,
-    value: number, mult : number,
-    last : boolean, setNewSetting : (newSetting: number, generatorSettings: any, genID: number, settingIndex: number) => void,
-    generatorSettings : any, genIndex, settingIndex : number) {
-    const multCheck = mult === 0 ? 1 : mult;
-    return (
-        <div className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}>
-            <div className="break-keep">{title}</div>
-            <div className="flex flex-row items-center">
-                <SimpleInput
-                    className={`my-2 w-${width} font-mono`}
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={min}
-                    max={max}
-                    value={value * multCheck}
-                    onBlur={(x: string) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                        }
-                    }}
-                />
-                <div className="ml-2">{unit}</div>
-            </div>
-        </div>
-    );
-}
 
 export const failureGeneratorsSettings = () => {
     const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();

@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
+    activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction,
     FailurePhases, findGeneratorFailures, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL';
 const additionalSetting = [0, 200];
