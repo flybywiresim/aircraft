@@ -221,11 +221,14 @@
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
-                1 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                    1 (&gt;L:A32NX_BTN_#BASE_NAME#)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                </LEFT_LEAVE_CODE>
             </UseTemplate>
         </Component>
 
@@ -266,11 +269,14 @@
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
-                1 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                    1 (&gt;L:A32NX_BTN_#BASE_NAME#)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                </LEFT_LEAVE_CODE>
             </UseTemplate>
         </Component>
 

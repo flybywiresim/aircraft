@@ -992,7 +992,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param message {TypeIMessage}
      */
     setScratchpadMessage(message) {
-        this.scratchpad.setMessage(message);
+        if (this.scratchpad) {
+            this.scratchpad.setMessage(message);
+        }
     }
 
     removeScratchpadMessage(value) {
