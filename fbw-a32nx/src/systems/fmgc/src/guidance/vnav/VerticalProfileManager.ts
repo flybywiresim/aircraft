@@ -110,9 +110,9 @@ export class VerticalProfileManager {
         ) {
             const offset = this.computeTacticalToGuidanceProfileOffset();
             const forcedDecelerations = this.getForcedDecelerationsFromDescentPath(offset);
-            const finalDistance = this.constraintReader.totalFlightPlanDistance;
 
-            this.tacticalDescentPathBuilder.buildMcduPredictionPath(mcduProfile, this.getDesModeStrategy(), speedProfile, descentWinds, finalDistance, forcedDecelerations);
+            this.tacticalDescentPathBuilder.buildMcduPredictionPath(mcduProfile, this.getDesModeStrategy(), speedProfile, descentWinds, forcedDecelerations);
+            this.mergeMcduWithGuidanceProfile(mcduProfile, offset);
         } else {
             this.cruiseToDescentCoordinator.buildCruiseAndDescentPath(mcduProfile, speedProfile, cruiseWinds, descentWinds, managedClimbStrategy, stepDescentStrategy);
         }
@@ -136,7 +136,7 @@ export class VerticalProfileManager {
         const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
 
         const { estimatedDestinationFuel } = this.observer.get();
-        // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid unrealistic entries from erroneous pilot input.
+        // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid potentially crashing predictions entirely from erroneous pilot input.
         const fuelEstimation = Number.isFinite(estimatedDestinationFuel) ? Math.min(Math.max(estimatedDestinationFuel, 0), 40000) : 4000;
         const finalCruiseAltitude = this.cruisePathBuilder.getFinalCruiseAltitude(descentProfile.cruiseSteps);
 
@@ -357,6 +357,42 @@ export class VerticalProfileManager {
         }
     }
 
+    private mergeMcduWithGuidanceProfile(mcduProfile: NavGeometryProfile, offset: NauticalMiles) {
+        const { flightPhase } = this.observer.get();
+        if (!this.descentProfile || !mcduProfile
+            || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
+            return;
+        }
+
+        const [index, interceptDistance] = ProfileInterceptCalculator.calculateIntercept(mcduProfile.checkpoints, this.descentProfile.checkpoints, offset);
+        if (index >= 0) {
+            mcduProfile.checkpoints.splice(
+                index + 1,
+                Infinity,
+                ...this.descentProfile.checkpoints
+                    .map((checkpoint) => ({ ...checkpoint, distanceFromStart: checkpoint.distanceFromStart + offset }))
+                    .filter(({ distanceFromStart }) => distanceFromStart > interceptDistance),
+            );
+        }
+
+        const decelPointInMcdu = mcduProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
+        if (!decelPointInMcdu) {
+            const decelPointInGuidanceProfile = this.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
+
+            mcduProfile.addInterpolatedCheckpoint(decelPointInGuidanceProfile.distanceFromStart + offset, { reason: VerticalCheckpointReason.Decel });
+        }
+
+        const spdLimCrossingInMcdu = mcduProfile.findVerticalCheckpoint(VerticalCheckpointReason.CrossingDescentSpeedLimit);
+        if (!spdLimCrossingInMcdu) {
+            const spdLimCrossingInGuidanceProfile = this.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.CrossingDescentSpeedLimit);
+            if (spdLimCrossingInGuidanceProfile) {
+                const spdLimCrossingDistance = mcduProfile.interpolateDistanceAtAltitude(spdLimCrossingInGuidanceProfile.altitude);
+
+                mcduProfile.addInterpolatedCheckpoint(spdLimCrossingDistance, { reason: VerticalCheckpointReason.CrossingDescentSpeedLimit });
+            }
+        }
+    }
+
     // INTERNAL HELPERS
 
     private getClimbStrategyForVerticalMode(): ClimbStrategy {
@@ -436,12 +472,11 @@ export class VerticalProfileManager {
     }
 
     private computeTacticalToGuidanceProfileOffset(): NauticalMiles {
-        // TODO
-        if (!this.descentProfile) {
+        if (!this.descentProfile || !this.aircraftToDescentProfileRelation?.isValid) {
             return 0;
         }
 
-        return 0;
+        return this.constraintReader.distanceToPresentPosition - this.aircraftToDescentProfileRelation.distanceFromStart;
     }
 
     private getManagedMachTarget() {

@@ -138,6 +138,7 @@ export class VnavDriver implements GuidanceComponent {
 
             // TODO: This doesn't really do much, the profile is automatically updated by reference.
             this.descentGuidance.updateProfile(this.profileManager.descentProfile);
+            this.decelPoint = this.profileManager.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
         }
 
         this.updateLegSpeedPredictions();

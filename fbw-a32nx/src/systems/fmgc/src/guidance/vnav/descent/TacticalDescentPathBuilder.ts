@@ -5,7 +5,7 @@ import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
-import { MaxSpeedConstraint, VerticalCheckpoint, VerticalCheckpointForDeceleration, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { MaxSpeedConstraint, NavGeometryProfile, VerticalCheckpoint, VerticalCheckpointForDeceleration, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
@@ -34,11 +34,10 @@ export class TacticalDescentPathBuilder {
      * @param forcedDecelerations Points at which the plane must decelerate
      */
     buildMcduPredictionPath(
-        profile: BaseGeometryProfile,
+        profile: NavGeometryProfile,
         descentStrategy: DescentStrategy,
         speedProfile: SpeedProfile,
         windProfile: HeadwindProfile,
-        finalDistance: NauticalMiles,
         forcedDecelerations: VerticalCheckpointForDeceleration[],
     ) {
         const start = profile.lastCheckpoint;
@@ -55,7 +54,7 @@ export class TacticalDescentPathBuilder {
         const phaseTable = new PhaseTable(windProfile);
         phaseTable.start = start;
         phaseTable.phases = [
-            new DescendToDistance(finalDistance).withReasonAfter(VerticalCheckpointReason.CrossingFcuAltitudeDescent),
+            new DescendToAltitude(profile.finalAltitude).withReasonAfter(VerticalCheckpointReason.Landing),
         ];
 
         let isPathValid = false;

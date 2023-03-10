@@ -250,6 +250,11 @@ export abstract class BaseGeometryProfile {
         return 0;
     }
 
+    /**
+     * Find first checkpoint with a reason
+     * @param reasons The reasons to look for
+     * @returns The first checkpoint with a reason
+     */
     findVerticalCheckpoint(...reasons: VerticalCheckpointReason[]): VerticalCheckpoint | undefined {
         return this.checkpoints.find((checkpoint) => reasons.includes(checkpoint.reason));
     }

@@ -127,7 +127,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
     public waypointPredictions: Map<number, VerticalWaypointPrediction> = new Map();
 
     constructor(
-        public guidanceControler: GuidanceController,
+        private guidanceController: GuidanceController,
         private constraintReader: ConstraintReader,
         private atmosphericConditions: AtmosphericConditions,
     ) {
@@ -191,7 +191,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
      */
     private computePredictionsAtWaypoints(): Map<number, VerticalWaypointPrediction> {
         const predictions = new Map<number, VerticalWaypointPrediction>();
-        const fpm = this.guidanceControler.flightPlanManager;
+        const fpm = this.guidanceController.flightPlanManager;
 
         if (!this.isReadyToDisplay) {
             return predictions;
@@ -199,7 +199,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
 
         const topOfDescent = this.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
 
-        for (let i = this.guidanceControler.activeLegIndex - 1; i < fpm.getWaypointsCount(FlightPlans.Active); i++) {
+        for (let i = this.guidanceController.activeLegIndex - 1; i < fpm.getWaypointsCount(FlightPlans.Active); i++) {
             const waypoint = fpm.getWaypoint(i, FlightPlans.Active);
             if (!waypoint) {
                 continue;
