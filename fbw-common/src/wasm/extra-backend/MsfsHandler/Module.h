@@ -9,12 +9,15 @@
 #include "MsfsHandler.h"
 
 /**
- * Base class and interface for all modules to ensure that they are compatible with the MsfsHandler.
- * <p/>
+ * @brief The Module class is the base class and interface for all modules to
+ * ensure that they are compatible with the MsfsHandler.
+ *
  * Make sure to add an error (std::cerr) message if anything goes wrong and especially if
- * initialize(), preUpdate(), update() or postUpdate() return false.
+ * initialize(), preUpdate(), update() or postUpdate() return false.<p/>
+ *
  * MSFS does not support Exception so good logging and error messages is the only way to inform the
- * user/developer if somethings went wrong and where and what happened.
+ * user/developer if somethings went wrong and where and what happened.<p/>
+ *
  * Non-excessive positive logging about what is happening is also a good idea and helps
  * tremendously with finding any issues as it will be easier to locate the cause of the issue.
  */

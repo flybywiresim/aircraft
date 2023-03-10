@@ -14,7 +14,8 @@
 class DataManager;
 
 /**
- * DataDefinition to be used to register a data definition with the sim.<p/>
+ * @brief The DataDefinition struct is used to register a data definition with the sim.<p/>
+ *
  * @field name: the name of the variable
  * @field index: the index of the variable (default: 0)
  * @field unit: the unit of the variable (default: Number).
@@ -36,8 +37,8 @@ struct DataDefinition {
 };
 
 /**
- * A DataDefinitionVariable represents a sim variable defined by one ore more SimConnect
- * data definitions (SimConnect_AddToDataDefinition)<p/>
+ * @brief A DataDefinitionVariable represents a sim variable defined by one ore more SimConnect
+ * data definitions of SimVars (SimConnect_AddToDataDefinition).
  *
  * DataDefinitionVariables are used to define sim data objects that can be used to retrieve and
  * write simulation variables from and to the sim.<p/>

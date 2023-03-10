@@ -54,14 +54,15 @@ typedef uint64_t KeyEventCallbackID;
 typedef std::function<void(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> KeyEventCallbackFunction;
 
 /**
- * DataManager is responsible for managing all variables and events.
+ * @brief The DataManager class is responsible for managing all variables and events.
+ *
  * It is used to register variables and events and to update them.
  * If possible, it de-duplicates variables and events and only creates one instance of each if multiple
- * modules use the same variable.
+ * modules use the same variable.<p/>
  *
  * It is still possible to use the SDK and Simconnect directly but it is recommended to use the
  * DataManager instead as the data manager is able to de-duplicate variables and events and automatically
- * update and write back variables from/to the sim.
+ * update and write back variables from and to the sim.
  */
 class DataManager {
  private:

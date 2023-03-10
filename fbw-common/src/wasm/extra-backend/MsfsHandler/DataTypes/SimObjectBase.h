@@ -15,7 +15,7 @@
 #include "simple_assert.h"
 
 /**
- * Base class for all sim objects.
+ * @brief The SimObjectBase class is the base class for all sim objects.
  */
 class SimObjectBase : public ManagedDataObjectBase {
  protected:

@@ -28,11 +28,9 @@ typedef uint64_t CallbackID;
 typedef std::function<void(int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> EventCallbackFunction;
 
 /**
- * The ClientEvent class represents a client event which can be used to:<br/>
- * - create a custom event
- * - be mapped to a sim event
- * - be mapped to a system event
- * <p/>
+ * @brief The ClientEvent class represents a client event which can be used to create a custom event,
+ * or be mapped to a sim event, or be mapped to a system event.<p/>
+ *
  * A ClientEvent has a unique id and a name. The name can be used to map the event to a sim event or
  * to create a custom event.<br/>
  * Custom events must have a name that contains a period (e.g. "Custom.Event") to the sim recognizes

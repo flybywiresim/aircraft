@@ -16,8 +16,8 @@
 class DataManager;
 
 /**
- * The ClientDataAreaVariable class is a template class that can be used to create a client data area
- * which uses reserved memory to exchange data with other SimConnect clients.<p/>
+ * @brief The ClientDataAreaVariable class is a template class that can be used to create a memory
+ * area to exchange data with other SimConnect clients.<p/>
  *
  * The difference between the ClientDataAreaVariable and the DataDefinitionVariable is that this
  * class does not use simulation variables as data but a raw data type from a data struct.<p/>

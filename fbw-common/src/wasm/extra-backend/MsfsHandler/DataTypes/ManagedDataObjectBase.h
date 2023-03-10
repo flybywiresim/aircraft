@@ -30,7 +30,9 @@ typedef uint64_t CallbackID;
 typedef std::function<void()> CallbackFunction;
 
 /**
- * Base class for all managed data objects.
+ * @brief The ManagedDataObjectBase class is the base class for all data objects and provides auto
+ * read and write functionality.
+ *
  * Adds the ability to autoRead, autoWrite variables considering max age based on
  * time- and tick-stamps.
  * Also adds a hasChanged flag and the ability to register callbacks for when

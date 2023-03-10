@@ -14,7 +14,7 @@
 class DataManager;
 
 /**
- * Specialized class for aircraft cacheable variables (aka simvars or A:VARS).<p/>
+ * @brief The AircraftVariable class is a specialized class for aircraft cacheable variables (aka simvars or A:VARS).
  *
  * This class uses events or calculator code to write to a variable as
  * AircraftVariables are read-only.<p/>

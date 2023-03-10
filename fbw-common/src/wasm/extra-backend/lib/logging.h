@@ -85,6 +85,8 @@
 #endif
 
 /**
+ * @brief The Logger class is a very simple logging facility.
+ *
  * Singleton class for Logger
  * Very simple implementation for now.
  */

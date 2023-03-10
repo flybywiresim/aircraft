@@ -9,7 +9,7 @@
 class DataManager;
 
 /**
- * The StreamingClientDataAreaVariable class is a special variant of the ClientDataAreaVariable class which allows to
+ * @brief The StreamingClientDataAreaVariable class is a special variant of the ClientDataAreaVariable class which allows to
  * send and receive data larger than the maximum size of a single SimConnect client data area chunk of 8192 bytes.<p/>
  *
  * The data is split into chunks of a fixed size (8192 bytes) and sent/received in chunks.<br/>

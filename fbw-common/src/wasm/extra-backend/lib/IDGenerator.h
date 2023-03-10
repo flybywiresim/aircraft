@@ -5,7 +5,8 @@
 #define FLYBYWIRE_IDGENERATOR_H
 
 /**
- * This class is used to generate unique IDs for the modules.
+ * @brief The IDGenerator class is used to generate unique IDs for the modules.
+ *
  * Uniqueness is only guaranteed within the same instance of this class.
  * It is used to identify the modules in the MSFS gauges system.
  *

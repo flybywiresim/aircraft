@@ -15,7 +15,8 @@
 #include "Units.h"
 
 /**
- * Virtual base class for sim variable like named variables, aircraft variables.
+ * @brief Virtual base class for sim variables like named variables, aircraft variables that support value caching.
+ *
  * Specialized classes must implement the rawReadFromSim and rawWriteToSim methods and can
  * overwrite any other method if the default implementation is not sufficient.
  */

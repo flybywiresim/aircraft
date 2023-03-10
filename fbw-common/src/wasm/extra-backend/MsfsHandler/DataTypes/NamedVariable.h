@@ -13,7 +13,7 @@
 class DataManager;
 
 /**
- * Specialized class for named cacheable variables (LVARS).<p/>
+ * @brief The NamedVariable class is a specialization of CacheableVariable for named variables (LVARS).
  *
  * It is recommended to use the DataManager's make_named_var() to create instances of NamedVariable
  * as it de-duplicates variables and only creates one instance of each name-unit combination.<p/>

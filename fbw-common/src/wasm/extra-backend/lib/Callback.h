@@ -6,12 +6,17 @@
 
 #include <functional>
 
+/**
+ * @brief Callback container to define callbacks with use of template arguments.
+ * @tparam T The callback's signature
+ */
 template <typename T>
 struct Callback;
 
 /**
- * Callback container to define callbacks with use of template arguments - this allows for
- * static callbacks to be used with member functions.
+ * @brief Callback container to define callbacks with use of template arguments.
+ *
+ * This allows for static callbacks to be used with member functions.
  *
  * @tparam Ret The callback's return type
  * @tparam Params The callback's parameters as a variadic list

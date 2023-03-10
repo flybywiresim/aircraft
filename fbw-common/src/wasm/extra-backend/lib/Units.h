@@ -13,7 +13,7 @@
 #include "logging.h"
 
 /**
- * Helper struct representing one unit
+ * @brief The Unit struct is a helper struct representing one unit
  */
 struct Unit {
  public:
@@ -25,8 +25,7 @@ struct Unit {
 };
 
 /**
- * The Units class is a helper class to make handling of MSFS SDK units easier.
- * Add any additional required units here as the MSFS SDK has many more.
+ * @brief The Units class is a helper class to make handling of MSFS SDK units easier.
  */
 class Units {
  public:

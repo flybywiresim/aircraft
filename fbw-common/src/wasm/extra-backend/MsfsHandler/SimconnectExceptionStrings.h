@@ -7,6 +7,9 @@
 #include <SimConnect.h>
 #include <string>
 
+/**
+ * @brief This class is used to get a string representation of a SimConnect exception.
+ */
 class SimconnectExceptionStrings {
  public:
   static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception) {

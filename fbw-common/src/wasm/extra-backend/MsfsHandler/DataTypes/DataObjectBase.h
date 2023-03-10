@@ -14,7 +14,7 @@
 #include "Units.h"
 
 /**
- * Base class for all data objects
+ * @brief The DataObjectBase class is the base class for all data objects.
  */
 class DataObjectBase {
  protected:
