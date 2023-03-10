@@ -82,6 +82,8 @@ Valve.5=False
 Valve.6=False
 Valve.7=False
 Valve.8=False
+Valve.9=True
+Valve.10=True
 Valve.11=True
 Valve.12=True
 Pump.1=True
@@ -93,6 +95,8 @@ Pump.6=True
 Pump.7=True
 Pump.8=True
 Pump.9=True
+Junction.4=1
+Junction.5=1
 
 [Systems.0]
 BatterySwitch=True
