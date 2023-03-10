@@ -16,7 +16,7 @@ enum SimVarSources {
     loadCurrentId = 'L:A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID',
 }
 
-export class AircraftPresetsLoadProgressSimVarPublisher extends SimVarPublisher<SimVars> {
+class AircraftPresetsLoadProgressSimVarPublisher extends SimVarPublisher<SimVars> {
     private static simvars = new Map<keyof SimVars, SimVarDefinition>([
         ['load', { name: SimVarSources.load, type: SimVarValueType.Number }],
         ['loadProgress', { name: SimVarSources.loadProgress, type: SimVarValueType.Number }],
@@ -28,9 +28,14 @@ export class AircraftPresetsLoadProgressSimVarPublisher extends SimVarPublisher<
     }
 }
 
+/**
+ * This class monitors the load progress of the aircraft presets and displays notifications
+ * when a preset is being loaded and when the loading process is complete.
+ *
+ * Potential improvements/extensions:
+ * - Display procedure steps in a subtle way - not a notification or popup
+ */
 export class AircraftPresetsLoadProgress {
-    private tickCounter = 0;
-
     private readonly eventBus: EventBus;
 
     private subscriber: EventSubscriber<SimVars> = null;
@@ -48,16 +53,11 @@ export class AircraftPresetsLoadProgress {
     // These need to align with the IDs in the Presets C++ WASM and the AircraftPresets.tsx in the EFB.
     // WASM: src/presets/src/Aircraft/AircraftProcedures.h
     private static AircraftPresetsList: { index: number, name: string }[] = [
-        { index: 1, name: 'Cold & Dark' }, // 'Cold & Dark' },
+        { index: 1, name: 'Cold & Dark' },
         { index: 2, name: 'Powered' },
         { index: 3, name: 'Ready for Pushback' },
         { index: 4, name: 'Ready for Taxi' },
         { index: 5, name: 'Ready for Takeoff' },
-        // { index: 1, name: `${t('Presets.AircraftStates.ColdDark')}` }, // 'Cold & Dark' },
-        // { index: 2, name: `${t('Presets.AircraftStates.Powered')}` },
-        // { index: 3, name: `${t('Presets.AircraftStates.ReadyPushback')}` },
-        // { index: 4, name: `${t('Presets.AircraftStates.ReadyTaxi')}` },
-        // { index: 5, name: `${t('Presets.AircraftStates.ReadyTakeoff')}` },
     ];
 
     constructor(private readonly bus: EventBus) {
@@ -71,21 +71,7 @@ export class AircraftPresetsLoadProgress {
         this.subscriber = this.eventBus.getSubscriber<SimVars>();
 
         this.subscriber.on('load').whenChanged().handle((presetID: number) => {
-            if (this.previousValues.load === 0 && presetID > 0) {
-                this.notification.showNotification({
-                    title: 'Aircraft Presets',
-                    message: `Loading Preset "${(this.getPresetName(presetID))}"`,
-                    type: 'MESSAGE',
-                    duration: 1500,
-                });
-            } else if (this.previousValues.load > 0 && presetID === 0) {
-                this.notification.showNotification({
-                    title: 'Aircraft Presets',
-                    message: `Finished loading "${(this.getPresetName(this.previousValues.load))}" (or aborted)`,
-                    type: 'MESSAGE',
-                    duration: 1500,
-                });
-            }
+            this.onLoadIndicationChange(presetID);
             this.previousValues.load = presetID;
         });
         this.subscriber.on('loadProgress').whenChanged().handle((progress: number) => {
@@ -106,8 +92,25 @@ export class AircraftPresetsLoadProgress {
     }
 
     public update(): void {
-        this.tickCounter++;
         this.simVarPublisher.onUpdate();
+    }
+
+    private onLoadIndicationChange(presetID: number) {
+        if (this.previousValues.load === 0 && presetID > 0) {
+            this.notification.showNotification({
+                title: 'Aircraft Presets',
+                message: `Loading Preset "${(this.getPresetName(presetID))}"`,
+                type: 'MESSAGE',
+                duration: 1500,
+            });
+        } else if (this.previousValues.load > 0 && presetID === 0) {
+            this.notification.showNotification({
+                title: 'Aircraft Presets',
+                message: `Finished loading "${(this.getPresetName(this.previousValues.load))}" (or aborted)`,
+                type: 'MESSAGE',
+                duration: 1500,
+            });
+        }
     }
 
     private getPresetName(presetID: number): string {

@@ -24,7 +24,19 @@ export class KeyInterceptor {
         console.log('KeyInterceptor: Created');
     }
 
-    registerIntercepts() {
+    public connectedCallback(): void {
+        // empty
+    }
+
+    public startPublish(): void {
+        console.log('KeyInterceptor: startPublish()');
+    }
+
+    public update(): void {
+        // empty
+    }
+
+    private registerIntercepts() {
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
 
@@ -47,7 +59,6 @@ export class KeyInterceptor {
         if (!this.dialogVisible) {
             this.dialogVisible = true;
             const dialog = new PopUpDialog();
-            // TODO: Make translation work - move translation from EFB to shared
             dialog.showPopUp(
                 'Ctrl+E Not supported',
                 `<div style="font-size: 120%; text-align: left;">
@@ -107,17 +118,5 @@ export class KeyInterceptor {
                 );
             }
         }
-    }
-
-    public connectedCallback(): void {
-        // empty
-    }
-
-    public startPublish(): void {
-        console.log('KeyInterceptor: startPublish()');
-    }
-
-    public update(): void {
-        // empty
     }
 }
