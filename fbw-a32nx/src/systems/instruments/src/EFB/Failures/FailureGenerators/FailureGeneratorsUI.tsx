@@ -3,6 +3,8 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import { addGenerator, failureGeneratorNames, failureGeneratorsSettings, generatorsCardList } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { Trash } from 'react-bootstrap-icons';
+import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
+import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
@@ -92,6 +94,17 @@ export function FailureGeneratorCardTemplateUI(
     );
 }
 
+type SettingVar = {
+    settingVar: number,
+}
+
+const rearmButtons: (ButtonType & SettingVar)[] = [
+    { name: 'OFF', setting: 'OFF', settingVar: 0 },
+    { name: 'Once', setting: 'Once', settingVar: 1 },
+    { name: 'Take-Off', setting: 'Take-Off', settingVar: 2 },
+    { name: 'Always', setting: 'Always', settingVar: 3 },
+];
+
 export enum ButtonPosition {Left =0, Middle=1, Right=2}
 
 export function RearmSettingsUI(generatorSettings: any, genID: number, settings : number[],
@@ -101,39 +114,20 @@ export function RearmSettingsUI(generatorSettings: any, genID: number, settings 
         <div className="flex flex-col text-center">
             <h2>Rearming</h2>
             <div className="flex flex-row">
-                {[RearmButtonUI(setNewSetting, 'OFF', 0, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Left),
-                    RearmButtonUI(setNewSetting, 'Once', 1, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Middle),
-                    RearmButtonUI(setNewSetting, 'Take-Off', 2, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Middle),
-                    RearmButtonUI(setNewSetting, 'Always', 3, generatorSettings, genID, settings, numberOfSettingsPerGenerator, ButtonPosition.Right),
-                ]}
+                <SelectGroup>
+                    {rearmButtons.map((button) => (
+                        <SelectItem
+                            key={button.name}
+                            onSelect={() => {
+                                setNewSetting(button.settingVar, generatorSettings, genID, 0);
+                            }}
+                            selected={settings[genID * numberOfSettingsPerGenerator + 0] === button.settingVar}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
             </div>
         </div>
-    );
-}
-
-function RearmButtonUI(setNewSetting: (newSetting: number, generatorSettings: any, genID: number, settingIndex: number) => void,
-    text:string, buttonID: number, generatorSettings: any, genID: number, settings: number[],
-    numberOfSettingsPerGenerator: number, position : ButtonPosition) {
-    let format : string;
-    switch (position) {
-    case ButtonPosition.Left: format = 'rounded-l-md';
-        break;
-    case ButtonPosition.Middle: format = '';
-        break;
-    case ButtonPosition.Right: format = 'rounded-r-md';
-        break;
-    default: format = '';
-    }
-    return (
-        <button
-            type="button"
-            onClick={() => setNewSetting(buttonID, generatorSettings, genID, 0)}
-            className={`py-2 px-2 mx-0 text-center border-2 border-solid border-theme-accent hover:bg-theme-highlight ${format}
-            ${
-        settings[genID * numberOfSettingsPerGenerator + 0] === buttonID ? 'bg-theme-accent bg-opacity-100' : 'bg-opacity-0'
-        }`}
-        >
-            <h2>{text}</h2>
-        </button>
     );
 }
