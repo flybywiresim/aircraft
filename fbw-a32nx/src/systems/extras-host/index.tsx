@@ -5,6 +5,7 @@ import { EventBus, HEventPublisher } from 'msfssdk';
 import { VersionCheck } from './modules/version_check/version_check';
 import './style.scss';
 import { KeyInterceptor } from './modules/key_interceptor/key_interceptor';
+import { AircraftPresetsLoadProgress } from './modules/presets_progress/AircraftPresetsLoadProgress';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -32,6 +33,8 @@ class ExtrasHost extends BaseInstrument {
 
     private readonly keyInterceptor: KeyInterceptor;
 
+    private readonly aircraftPresetsLoadProgress: AircraftPresetsLoadProgress;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -48,6 +51,7 @@ class ExtrasHost extends BaseInstrument {
 
         this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus);
+        this.aircraftPresetsLoadProgress = new AircraftPresetsLoadProgress(this.bus);
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -69,6 +73,7 @@ class ExtrasHost extends BaseInstrument {
 
         this.versionCheck.connectedCallback();
         this.keyInterceptor.connectedCallback();
+        this.aircraftPresetsLoadProgress.connectedCallback();
     }
 
     public Update(): void {
@@ -80,12 +85,14 @@ class ExtrasHost extends BaseInstrument {
                 this.hEventPublisher.startPublish();
                 this.versionCheck.startPublish();
                 this.keyInterceptor.startPublish();
+                this.aircraftPresetsLoadProgress.startPublish();
             }
             this.gameState = gs;
         }
 
         this.versionCheck.update();
         this.keyInterceptor.update();
+        this.aircraftPresetsLoadProgress.update();
     }
 }
 

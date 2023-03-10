@@ -1,0 +1,120 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { EventBus, EventSubscriber, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { NotificationManager } from '@shared/notification';
+
+interface SimVars {
+    load: number;
+    loadProgress: number;
+    loadCurrentId: number;
+}
+
+enum SimVarSources {
+    load = 'L:A32NX_AIRCRAFT_PRESET_LOAD',
+    loadProgress = 'L:A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS',
+    loadCurrentId = 'L:A32NX_AIRCRAFT_PRESET_LOAD_CURRENT_ID',
+}
+
+export class AircraftPresetsLoadProgressSimVarPublisher extends SimVarPublisher<SimVars> {
+    private static simvars = new Map<keyof SimVars, SimVarDefinition>([
+        ['load', { name: SimVarSources.load, type: SimVarValueType.Number }],
+        ['loadProgress', { name: SimVarSources.loadProgress, type: SimVarValueType.Number }],
+        ['loadCurrentId', { name: SimVarSources.loadCurrentId, type: SimVarValueType.Number }],
+    ]);
+
+    public constructor(bus: EventBus) {
+        super(AircraftPresetsLoadProgressSimVarPublisher.simvars, bus);
+    }
+}
+
+export class AircraftPresetsLoadProgress {
+    private tickCounter = 0;
+
+    private readonly eventBus: EventBus;
+
+    private subscriber: EventSubscriber<SimVars> = null;
+
+    private notification: NotificationManager;
+
+    private simVarPublisher: AircraftPresetsLoadProgressSimVarPublisher;
+
+    private previousValues: SimVars = {
+        load: 0,
+        loadProgress: 0,
+        loadCurrentId: 0,
+    }
+
+    // These need to align with the IDs in the Presets C++ WASM and the AircraftPresets.tsx in the EFB.
+    // WASM: src/presets/src/Aircraft/AircraftProcedures.h
+    private static AircraftPresetsList: { index: number, name: string }[] = [
+        { index: 1, name: 'Cold & Dark' }, // 'Cold & Dark' },
+        { index: 2, name: 'Powered' },
+        { index: 3, name: 'Ready for Pushback' },
+        { index: 4, name: 'Ready for Taxi' },
+        { index: 5, name: 'Ready for Takeoff' },
+        // { index: 1, name: `${t('Presets.AircraftStates.ColdDark')}` }, // 'Cold & Dark' },
+        // { index: 2, name: `${t('Presets.AircraftStates.Powered')}` },
+        // { index: 3, name: `${t('Presets.AircraftStates.ReadyPushback')}` },
+        // { index: 4, name: `${t('Presets.AircraftStates.ReadyTaxi')}` },
+        // { index: 5, name: `${t('Presets.AircraftStates.ReadyTakeoff')}` },
+    ];
+
+    constructor(private readonly bus: EventBus) {
+        console.log('AircraftPresetsLoadProgress: Created');
+        this.eventBus = bus;
+        this.notification = new NotificationManager();
+        this.simVarPublisher = new AircraftPresetsLoadProgressSimVarPublisher(this.eventBus);
+    }
+
+    public connectedCallback(): void {
+        this.subscriber = this.eventBus.getSubscriber<SimVars>();
+
+        this.subscriber.on('load').whenChanged().handle((presetID: number) => {
+            if (this.previousValues.load === 0 && presetID > 0) {
+                this.notification.showNotification({
+                    title: 'Aircraft Presets',
+                    message: `Loading Preset "${(this.getPresetName(presetID))}"`,
+                    type: 'MESSAGE',
+                    duration: 1500,
+                });
+            } else if (this.previousValues.load > 0 && presetID === 0) {
+                this.notification.showNotification({
+                    title: 'Aircraft Presets',
+                    message: `Finished loading "${(this.getPresetName(this.previousValues.load))}" (or aborted)`,
+                    type: 'MESSAGE',
+                    duration: 1500,
+                });
+            }
+            this.previousValues.load = presetID;
+        });
+        this.subscriber.on('loadProgress').whenChanged().handle((progress: number) => {
+            this.previousValues.loadProgress = progress;
+        });
+        this.subscriber.on('loadCurrentId').whenChanged().handle((stepId: number) => {
+            this.previousValues.loadCurrentId = stepId;
+        });
+
+        this.simVarPublisher.subscribe('load');
+        this.simVarPublisher.subscribe('loadProgress');
+        this.simVarPublisher.subscribe('loadCurrentId');
+    }
+
+    public startPublish(): void {
+        console.log('AircraftPresetsLoadProgress: startPublish()');
+        this.simVarPublisher.startPublish();
+    }
+
+    public update(): void {
+        this.tickCounter++;
+        this.simVarPublisher.onUpdate();
+    }
+
+    private getPresetName(presetID: number): string {
+        const index = presetID - 1;
+        if (index < 0 || index > AircraftPresetsLoadProgress.AircraftPresetsList.length) {
+            return '';
+        }
+        return AircraftPresetsLoadProgress.AircraftPresetsList[index].name;
+    }
+}
