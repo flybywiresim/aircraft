@@ -1,12 +1,30 @@
 import React, { useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
-import { addGenerator, failureGeneratorNames, failureGeneratorsSettings, generatorsCardList } from 'instruments/src/EFB/Failures/RandomFailureGen';
+import {
+    addGenerator, eraseGenerator, FailureGenData,
+    failureGeneratorsSettings, generatorsCardList, setNewSetting,
+} from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+
+interface GeneratorOption {
+    name: string;
+    alias: string;
+}
+
+export const failureGeneratorNames: GeneratorOption[] = [
+    { name: 'PerHour', alias: t('Failures.Generators.GenPerHour') },
+    { name: 'TakeOff', alias: t('Failures.Generators.GenTakeOff') },
+    { name: 'Timer', alias: t('Failures.Generators.GenTimer') },
+    { name: 'AltClimb', alias: t('Failures.Generators.GenAltClimb') },
+    { name: 'AltDescent', alias: t('Failures.Generators.GenAltDesc') },
+    { name: 'SpeedAccel', alias: t('Failures.Generators.GenSpeedAccel') },
+    { name: 'SpeedDecel', alias: t('Failures.Generators.GenSpeedDecel') },
+];
 
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
@@ -61,24 +79,18 @@ export const FailureGeneratorsUI = () => {
 
 export function FailureGeneratorCardTemplateUI(
     genID : number,
-    generatorSettings : any,
-    genName : string,
-    uniqueGenPrefix : string,
-    numberOfSettingsPerGenerator : number,
-    setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number)=>void,
-    eraseGenerator : (genID : number, generatorSettings : any)=>void,
+    generatorSettings : FailureGenData,
     settingTable : JSX.Element[],
-    settings : number[],
 ) {
     return (
         <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
             <div className="flex flex-row justify-between">
                 <div className="mr-4 w-1/3 text-left align-left">
                     <h2>
-                        {`${uniqueGenPrefix}${genID.toString()} : ${genName.toString()}`}
+                        {`${generatorSettings.uniqueGenPrefix}${genID.toString()} : ${generatorSettings.genName.toString()}`}
                     </h2>
                 </div>
-                {RearmSettingsUI(generatorSettings, genID, settings, numberOfSettingsPerGenerator, setNewSetting)}
+                {RearmSettingsUI(generatorSettings, genID, setNewSetting)}
                 <button
                     type="button"
                     onClick={() => eraseGenerator(genID, generatorSettings)}
@@ -105,10 +117,7 @@ const rearmButtons: (ButtonType & SettingVar)[] = [
     { name: 'Always', setting: 'Always', settingVar: 3 },
 ];
 
-export enum ButtonPosition {Left =0, Middle=1, Right=2}
-
-export function RearmSettingsUI(generatorSettings: any, genID: number, settings : number[],
-    numberOfSettingsPerGenerator : number,
+export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number,
     setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number) => void) {
     return (
         <div className="flex flex-col text-center">
@@ -121,7 +130,7 @@ export function RearmSettingsUI(generatorSettings: any, genID: number, settings 
                             onSelect={() => {
                                 setNewSetting(button.settingVar, generatorSettings, genID, 0);
                             }}
-                            selected={settings[genID * numberOfSettingsPerGenerator + 0] === button.settingVar}
+                            selected={generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + 0] === button.settingVar}
                         >
                             {button.name}
                         </SelectItem>

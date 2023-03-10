@@ -1,14 +1,19 @@
 import React, { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { failureGeneratorAddAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
-import { failureGeneratorAddAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
-import { failureGeneratorAddPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
-import { failureGeneratorAddSpeedAccel, FailureGeneratorCardsSpeedAccel, failureGeneratorSpeedAccel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
-import { failureGeneratorAddSpeedDecel, FailureGeneratorCardsSpeedDecel, failureGeneratorSpeedDecel } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
-import { failureGeneratorAddTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
-import { t } from 'instruments/src/EFB/translation';
-import { failureGeneratorAddTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
+import { failureGenConfigAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb }
+    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
+import { failureGenConfigAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc }
+    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
+import { failureGenConfigPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour }
+    from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
+import { failureGenConfigSpeedAccel, FailureGeneratorCardsSpeedAccel, failureGeneratorSpeedAccel }
+    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
+import { failureGenConfigSpeedDecel, FailureGeneratorCardsSpeedDecel, failureGeneratorSpeedDecel }
+    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
+import { failureGenConfigTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff }
+    from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
+import { failureGenConfigTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
@@ -18,6 +23,10 @@ export const failureGeneratorCommonFunction = () => {
     const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size, [changingFailures, activeFailures]);
     return { maxFailuresAtOnce, setMaxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
 };
+
+export type FailureGenData = {setting: string, setSetting : (value: string) => void, settings : number[],
+    numberOfSettingsPerGenerator : number, uniqueGenPrefix : string, additionalSetting : number[], onErase : (genID : number) => void,
+    failureGeneratorArmed:boolean[], genName : string}
 
 export const flatten = (settings : number[]) => {
     let settingString = '';
@@ -159,104 +168,33 @@ export function FailureGeneratorFailureSetting(title:string, width : number,
 }
 
 export const failureGeneratorsSettings = () => {
-    const [settingTakeOff, setSettingTakeOff] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TAKEOFF');
-    const [settingPerHour, setSettingPerHour] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR');
-    const [settingTimer, setSettingTimer] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_TIMER');
-    const [settingSpeedAccel, setSettingSpeedAccel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDACCEL');
-    const [settingSpeedDecel, setSettingSpeedDecel] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL');
-    const [settingAltClimb, setSettingAltClimb] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB');
-    const [settingAltDesc, setSettingAltDesc] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC');
-    const settingsTakeOff = useMemo(() => {
-        console.info(settingTakeOff);
-        const splitString = settingTakeOff?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [settingTakeOff]);
-    const settingsPerHour = useMemo(() => {
-        console.info(settingPerHour);
-        const splitString = settingPerHour?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [settingPerHour]);
-    const settingsTimer = useMemo(() => {
-        console.info(settingTimer);
-        const splitString = settingTimer?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [settingTimer]);
-    const settingsSpeedAccel = useMemo(() => {
-        console.info(settingSpeedAccel);
-        const splitString = settingSpeedAccel?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [settingSpeedAccel]);
-    const settingsSpeedDecel = useMemo(() => {
-        console.info(settingSpeedDecel);
-        const splitString = settingSpeedDecel?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [settingSpeedDecel]);
-    const settingsAltClimb = useMemo(() => {
-        console.info(settingAltClimb);
-        const splitString = settingAltClimb?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [settingAltClimb]);
-    const settingsAltDesc = useMemo(() => {
-        console.info(settingAltDesc);
-        const splitString = settingAltDesc?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [settingAltDesc]);
     const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
 
     return {
         maxFailuresAtOnce,
         setMaxFailuresAtOnce,
-        settingsTakeOff,
-        setSettingTakeOff,
-        settingsPerHour,
-        setSettingPerHour,
-        settingsTimer,
-        setSettingTimer,
-        settingsSpeedAccel,
-        setSettingSpeedAccel,
-        settingsSpeedDecel,
-        setSettingSpeedDecel,
-        settingsAltClimb,
-        setSettingAltClimb,
-        settingsAltDesc,
-        setSettingAltDesc,
+        failureGenConfigTakeOff,
+        failureGenConfigPerHour,
+        failureGenConfigTimer,
+        failureGenConfigSpeedAccel,
+        failureGenConfigSpeedDecel,
+        failureGenConfigAltClimb,
+        failureGenConfigAltDesc,
     };
 };
 
-export const failureGeneratorNames: GeneratorOption[] = [
-    { name: 'PerHour', alias: t('Failures.Generators.GenPerHour') },
-    { name: 'TakeOff', alias: t('Failures.Generators.GenTakeOff') },
-    { name: 'Timer', alias: t('Failures.Generators.GenTimer') },
-    { name: 'AltClimb', alias: t('Failures.Generators.GenAltClimb') },
-    { name: 'AltDescent', alias: t('Failures.Generators.GenAltDesc') },
-    { name: 'SpeedAccel', alias: t('Failures.Generators.GenSpeedAccel') },
-    { name: 'SpeedDecel', alias: t('Failures.Generators.GenSpeedDecel') },
-];
-
 export const addGenerator = (chosenGen : string, settings : any) => {
     switch (chosenGen) {
-    case 'PerHour': return () => failureGeneratorAddPerHour(settings);
-    case 'TakeOff': return () => failureGeneratorAddTakeOff(settings);
-    case 'Timer': return () => failureGeneratorAddTimer(settings);
-    case 'AltClimb': return () => failureGeneratorAddAltClimb(settings);
-    case 'AltDescent': return () => failureGeneratorAddAltDesc(settings);
-    case 'SpeedAccel': return () => failureGeneratorAddSpeedAccel(settings);
-    case 'SpeedDecel': return () => failureGeneratorAddSpeedDecel(settings);
+    case 'PerHour': return () => failureGeneratorAdd(settings.failureGenConfigPerHour);
+    case 'TakeOff': return () => failureGeneratorAdd(settings.failureGenConfigTakeOff);
+    case 'Timer': return () => failureGeneratorAdd(settings.failureGenConfigTimer);
+    case 'AltClimb': return () => failureGeneratorAdd(settings.failureGenConfigAltClimb);
+    case 'AltDescent': return () => failureGeneratorAdd(settings.failureGenConfigAltDesc);
+    case 'SpeedAccel': return () => failureGeneratorAdd(settings.failureGenConfigSpeedAccel);
+    case 'SpeedDecel': return () => failureGeneratorAdd(settings.failureGenConfigSpeedDecel);
     default: return () => {};
     }
 };
-
-interface GeneratorOption {
-    name: string;
-    alias: string;
-}
 
 export const failureGeneratorCards: ((generatorSettings: any) => JSX.Element[])[] = [
     FailureGeneratorCardsAltClimb,
@@ -284,7 +222,6 @@ const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => v
     failureGeneratorPerHour,
     failureGeneratorTimer,
     failureGeneratorTakeOff,
-
 ];
 
 export const randomFailureGenerator = () => {
@@ -358,4 +295,26 @@ export const randomFailureGenerator = () => {
         generatorFailuresSetters.get(34000)('');
         generatorFailuresSetters.get(34001)('');
     }, []);
+};
+
+export const failureGeneratorAdd = (generatorsSettings : FailureGenData) => {
+    if (generatorsSettings.settings === undefined || generatorsSettings.settings.length % generatorsSettings.numberOfSettingsPerGenerator !== 0 || generatorsSettings.settings.length === 0) {
+        // console.warn('Undefined generator setting, resetting');
+        generatorsSettings.setSetting(flatten(generatorsSettings.additionalSetting));
+    } else generatorsSettings.setSetting(flatten(generatorsSettings.settings.concat(generatorsSettings.additionalSetting)));
+};
+
+export function setNewSetting(newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) {
+    const settings = generatorSettings.settings;
+    settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
+    generatorSettings.setSetting(flatten(settings));
+}
+
+export const eraseGenerator :(genID : number, generatorSettings : FailureGenData) => void = (genID : number, generatorSettings : FailureGenData) => {
+    const settings : number[] = generatorSettings.settings;
+    settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
+    generatorSettings.setSetting(flatten(settings));
+    // arming
+    generatorSettings.failureGeneratorArmed.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
+    generatorSettings.onErase(genID);
 };

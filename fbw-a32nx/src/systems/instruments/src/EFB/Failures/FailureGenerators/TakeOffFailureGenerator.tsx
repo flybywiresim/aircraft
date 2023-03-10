@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, failureGeneratorCommonFunction,
-    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten,
+    activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction,
+    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
@@ -10,13 +10,26 @@ import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/Fai
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
 const uniqueGenPrefix = 'G';
+const additionalSetting = [0, 1, 0.33, 0.33, 30, 95, 140, 40];
 const failureGeneratorArmed :boolean[] = [];
 const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
+const genName = 'Take-Off';
 
-export const FailureGeneratorCardsTakeOff : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
+export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
+    const [setting, setSetting] = usePersistentProperty(settingName);
+    const settings = useMemo(() => {
+        console.info(setting);
+        const splitString = setting?.split(',');
+        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        return [];
+    }, [setting]);
+    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName };
+};
+
+export const FailureGeneratorCardsTakeOff : (generatorSettings: FailureGenData) => JSX.Element[] = (generatorSettings : FailureGenData) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settingsTakeOff;
+    const setting = generatorSettings.settings;
     if (setting) {
         const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
@@ -26,18 +39,13 @@ export const FailureGeneratorCardsTakeOff : (generatorSettings: any) => JSX.Elem
     return htmlReturn;
 };
 
-const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
-    const settings : number[] = generatorSettings.settingsTakeOff;
-    settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
-    generatorSettings.setSettingTakeOff(flatten(settings));
-    // arming
-    failureGeneratorArmed.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+const onErase = (genID : number) => {
     failureTakeOffSpeedThreshold.splice(genID, 1);
     failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
-const failureGeneratorCardTakeOff : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
-    const settings = generatorSettings.settingsTakeOff;
+const failureGeneratorCardTakeOff : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+    const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Failure per take-off:', 20, '%', 0, 100,
         settings[genID * numberOfSettingsPerGenerator + 1], 100, false,
         setNewSetting, generatorSettings, genID, 1),
@@ -65,9 +73,7 @@ const failureGeneratorCardTakeOff : (genID : number, generatorSettings : any) =>
     FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
         settings[genID * numberOfSettingsPerGenerator + 7], 100, true,
         setNewSetting, generatorSettings, genID, 7)];
-    return FailureGeneratorCardTemplateUI(genID, generatorSettings, 'Take-Off',
-        uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsTakeOff);
+    return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable);
 };
 
 export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {
@@ -148,18 +154,4 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed.push(false);
     }, []);
-};
-
-function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
-    const settings = generatorSettings.settingsTakeOff;
-    settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    generatorSettings.setSettingTakeOff(flatten(settings));
-}
-
-export const failureGeneratorAddTakeOff = (generatorsSettings : any) => {
-    const additionalSetting = [0, 1, 0.33, 0.33, 30, 95, 140, 40];
-    if (generatorsSettings.settingsTakeOff === undefined || generatorsSettings.settingsTakeOff.length % numberOfSettingsPerGenerator !== 0 || generatorsSettings.settingsTakeOff.length === 0) {
-        // console.warn('Undefined generator setting, resetting');
-        generatorsSettings.setSettingTakeOff(flatten(additionalSetting));
-    } else generatorsSettings.setSettingTakeOff(flatten(generatorsSettings.settingsTakeOff.concat(additionalSetting)));
 };

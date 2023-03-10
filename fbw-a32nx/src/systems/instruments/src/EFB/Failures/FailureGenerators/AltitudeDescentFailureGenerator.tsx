@@ -1,15 +1,29 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
-    FailurePhases, findGeneratorFailures, flatten,
+    activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
+    FailurePhases, findGeneratorFailures, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
+const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTDESC';
+const additionalSetting = [0, 8000];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'B';
 const failureGeneratorArmed :boolean[] = [];
+const genName = 'Altitude (descent)';
+
+export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
+    const [setting, setSetting] = usePersistentProperty(settingName);
+    const settings = useMemo(() => {
+        console.info(setting);
+        const splitString = setting?.split(',');
+        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        return [];
+    }, [setting]);
+    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName };
+};
 
 export const FailureGeneratorCardsAltDesc : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
@@ -23,12 +37,7 @@ export const FailureGeneratorCardsAltDesc : (generatorSettings: any) => JSX.Elem
     return htmlReturn;
 };
 
-const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
-    const settings : number[] = generatorSettings.settingsAltDesc;
-    settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
-    generatorSettings.setSettingAltDesc(flatten(settings));
-    // arming
-    failureGeneratorArmed.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+const onErase = (_genID : number) => {
 };
 
 const failureGeneratorCardAltDesc : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
@@ -37,16 +46,14 @@ const failureGeneratorCardAltDesc : (genID : number, generatorSettings : any) =>
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),
     ];
-    return FailureGeneratorCardTemplateUI(genID, generatorSettings, 'Altitude (descent)',
-        uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsAltDesc);
+    return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable);
 };
 
 export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_ALTDESC', '2,3000,2,6000');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
     const settingsAltDesc : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
     const nbGeneratorAltDesc = useMemo(() => Math.floor(settingsAltDesc.length / numberOfSettingsPerGenerator), [settingsAltDesc]);
@@ -90,19 +97,4 @@ export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, s
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
     }, []);
-};
-
-function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
-    const settings = generatorSettings.settingsAltDesc;
-    settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    generatorSettings.setSettingAltDesc(flatten(settings));
-}
-
-export const failureGeneratorAddAltDesc = (generatorsSettings : any) => {
-    const additionalSetting = [0, 8000];
-    if (generatorsSettings.settingsAltDesc === undefined || generatorsSettings.settingsAltDesc.length % numberOfSettingsPerGenerator !== 0
-        || generatorsSettings.settingsAltDesc.length === 0) {
-        // console.warn('Undefined generator setting, resetting');
-        generatorsSettings.setSettingAltDesc(flatten(additionalSetting));
-    } else generatorsSettings.setSettingAltDesc(flatten(generatorsSettings.settingsAltDesc.concat(additionalSetting)));
 };

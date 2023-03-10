@@ -1,15 +1,29 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
-    FailurePhases, findGeneratorFailures, flatten,
+    activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction, FailureGeneratorFailureSetting,
+    FailurePhases, findGeneratorFailures, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
+const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL';
+const additionalSetting = [0, 200];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'D';
 const failureGeneratorArmed :boolean[] = [];
+const genName = 'Speed (decel)';
+
+export const failureGenConfigSpeedDecel : ()=>FailureGenData = () => {
+    const [setting, setSetting] = usePersistentProperty(settingName);
+    const settings = useMemo(() => {
+        console.info(setting);
+        const splitString = setting?.split(',');
+        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        return [];
+    }, [setting]);
+    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName };
+};
 
 export const FailureGeneratorCardsSpeedDecel : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
@@ -23,12 +37,7 @@ export const FailureGeneratorCardsSpeedDecel : (generatorSettings: any) => JSX.E
     return htmlReturn;
 };
 
-const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
-    const settings : number[] = generatorSettings.settingsSpeedDecel;
-    settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
-    generatorSettings.setSettingSpeedDecel(flatten(settings));
-    // arming
-    failureGeneratorArmed.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+const onErase = (_genID : number) => {
 };
 
 const failureGeneratorCardSpeedDecel : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
@@ -37,16 +46,14 @@ const failureGeneratorCardSpeedDecel : (genID : number, generatorSettings : any)
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),
     ];
-    return FailureGeneratorCardTemplateUI(genID, generatorSettings, 'Speed (decel)',
-        uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsSpeedDecel);
+    return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable);
 };
 
 export const failureGeneratorSpeedDecel = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL', '2,200,2,250');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
     const settingsSpeedDecel : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
     const nbGeneratorSpeedDecel = useMemo(() => Math.floor(settingsSpeedDecel.length / numberOfSettingsPerGenerator), [settingsSpeedDecel]);
@@ -90,19 +97,4 @@ export const failureGeneratorSpeedDecel = (generatorFailuresGetters : Map<number
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
     }, []);
-};
-
-function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
-    const settings = generatorSettings.settingsSpeedDecel;
-    settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    generatorSettings.setSettingSpeedDecel(flatten(settings));
-}
-
-export const failureGeneratorAddSpeedDecel = (generatorsSettings : any) => {
-    const additionalSetting = [0, 200];
-    if (generatorsSettings.settingsSpeedDecel === undefined || generatorsSettings.settingsSpeedDecel.length % numberOfSettingsPerGenerator !== 0
-        || generatorsSettings.settingsSpeedDecel.length === 0) {
-        // console.warn('Undefined generator setting, resetting');
-        generatorsSettings.setSettingSpeedDecel(flatten(additionalSetting));
-    } else generatorsSettings.setSettingSpeedDecel(flatten(generatorsSettings.settingsSpeedDecel.concat(additionalSetting)));
 };

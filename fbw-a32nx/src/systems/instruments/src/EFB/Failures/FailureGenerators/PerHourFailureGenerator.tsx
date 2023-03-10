@@ -1,15 +1,29 @@
 import { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    activateRandomFailure, basicData, failureGeneratorCommonFunction,
-    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten,
+    activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction,
+    FailureGeneratorFailureSetting, FailurePhases, findGeneratorFailures, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
+const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
+const additionalSetting = [0, 0.1];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'E';
 const failureGeneratorArmed :boolean[] = [];
+const genName = 'Chance per hour';
+
+export const failureGenConfigPerHour : ()=>FailureGenData = () => {
+    const [setting, setSetting] = usePersistentProperty(settingName);
+    const settings = useMemo(() => {
+        console.info(setting);
+        const splitString = setting?.split(',');
+        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        return [];
+    }, [setting]);
+    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName };
+};
 
 export const FailureGeneratorCardsPerHour : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
     const htmlReturn : JSX.Element[] = [];
@@ -23,12 +37,7 @@ export const FailureGeneratorCardsPerHour : (generatorSettings: any) => JSX.Elem
     return htmlReturn;
 };
 
-const eraseGenerator :(genID : number, generatorSettings : any) => void = (genID : number, generatorSettings : any) => {
-    const settings : number[] = generatorSettings.settingsPerHour;
-    settings.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
-    generatorSettings.setSettingPerHour(flatten(settings));
-    // arming
-    failureGeneratorArmed.splice(genID * numberOfSettingsPerGenerator, numberOfSettingsPerGenerator);
+const onErase = (_genID : number) => {
 };
 
 const failureGeneratorCardPerHour : (genID : number, generatorSettings : any) => JSX.Element = (genID : number, generatorSettings : any) => {
@@ -37,16 +46,14 @@ const failureGeneratorCardPerHour : (genID : number, generatorSettings : any) =>
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1),
     ];
-    return FailureGeneratorCardTemplateUI(genID, generatorSettings, 'Chance per hour',
-        uniqueGenPrefix, numberOfSettingsPerGenerator,
-        setNewSetting, eraseGenerator, settingTable, generatorSettings.settingsPerHour);
+    return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable);
 };
 
 export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty('EFB_FAILURE_GENERATOR_SETTING_PERHOUR', '');
+    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
     const settingsPerHour : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
     const nbGeneratorPerHour = useMemo(() => Math.floor(settingsPerHour.length / numberOfSettingsPerGenerator), [settingsPerHour]);
@@ -93,18 +100,4 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
     }, []);
-};
-
-function setNewSetting(newSetting: number, generatorSettings : any, genID : number, settingIndex : number) {
-    const settings = generatorSettings.settingsPerHour;
-    settings[genID * numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    generatorSettings.setSettingPerHour(flatten(settings));
-}
-
-export const failureGeneratorAddPerHour = (generatorsSettings : any) => {
-    const additionalSetting = [0, 0.1];
-    if (generatorsSettings.settingsPerHour === undefined || generatorsSettings.settingsPerHour.length % numberOfSettingsPerGenerator !== 0 || generatorsSettings.settingsPerHour.length === 0) {
-        // console.warn('Undefined generator setting, resetting');
-        generatorsSettings.setSettingPerHour(flatten(additionalSetting));
-    } else generatorsSettings.setSettingPerHour(flatten(generatorsSettings.settingsPerHour.concat(additionalSetting)));
 };
