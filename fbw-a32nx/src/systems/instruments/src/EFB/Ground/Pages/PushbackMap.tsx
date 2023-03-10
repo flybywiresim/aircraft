@@ -226,7 +226,7 @@ export const PushbackMap = () => {
                 {/* Map */}
                 {!process.env.VITE_BUILD && (
                     <BingMap
-                        configFolder="/Pages/VCockpit/Instruments/MAP/"
+                        configFolder="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EFB/"
                         centerLla={actualMapLatLon}
                         mapId="PUSHBACK_MAP"
                         range={mapRange}

@@ -1,0 +1,28 @@
+@font-face {
+  font-family: "ecam";
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  background-color: rgba(255, 255, 255, 1);
+  opacity: 100;
+}
+
+#lines {
+  padding: 30px;
+}
+
+.line {
+  color: black;
+  font-family: ecam;
+}
+
+.large {
+  font-size: 37px;
+}
+
+.small {
+  font-size: 23px;
+}

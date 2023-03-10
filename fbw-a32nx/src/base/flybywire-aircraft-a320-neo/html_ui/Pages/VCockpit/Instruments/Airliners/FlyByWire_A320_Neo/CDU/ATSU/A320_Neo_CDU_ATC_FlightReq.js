@@ -7,7 +7,7 @@ class CDUAtcFlightReq {
         let freeText = "";
         let contact = "";
         let clearance = "";
-        if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+        if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
             procedure = "<PROCEDURE";
             freeText = "<FREE TEXT";
             contact = "CONTACT>";
@@ -34,7 +34,7 @@ class CDUAtcFlightReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 CDUAtcLatRequestFansA.ShowPage1(mcdu);
             } else {
                 CDUAtcLatRequestFansB.ShowPage(mcdu);
@@ -52,7 +52,7 @@ class CDUAtcFlightReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 CDUAtcProcedureRequest.ShowPage(mcdu);
             }
         };
@@ -61,7 +61,7 @@ class CDUAtcFlightReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 CDUAtcTextFansA.ShowPage1(mcdu);
             }
         };
@@ -77,7 +77,7 @@ class CDUAtcFlightReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 CDUAtcVertRequestFansA.ShowPage1(mcdu);
             } else {
                 CDUAtcVertRequestFansB.ShowPage(mcdu);
@@ -88,7 +88,7 @@ class CDUAtcFlightReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 CDUAtcContactRequest.ShowPage(mcdu);
             }
         };
@@ -104,7 +104,7 @@ class CDUAtcFlightReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 CDUAtcClearanceReq.ShowPage(mcdu, "CLEARANCE");
             }
         };

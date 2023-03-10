@@ -56,16 +56,17 @@ class CDUPerformancePage {
         let v2Check = "{small}\xa0\xa0\xa0{end}";
         if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
             v1 = "{amber}___{end}";
-            if (mcdu.v1Speed) {
-                if (mcdu._v1Checked) {
-                    v1 = `{cyan}${("" + mcdu.v1Speed).padEnd(3)}{end}`;
-                } else {
-                    v1Check = `{small}{cyan}${("" + mcdu.v1Speed).padEnd(3)}{end}{end}`;
-                }
+            if (mcdu.unconfirmedV1Speed) {
+                v1Check = `{small}{cyan}${("" + mcdu.unconfirmedV1Speed).padEnd(3)}{end}{end}`;
+            } else if (mcdu.v1Speed) {
+                v1 = `{cyan}${("" + mcdu.v1Speed).padEnd(3)}{end}`;
             }
             mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
                 if (value === "") {
-                    if (mcdu._v1Checked) {
+                    if (mcdu.unconfirmedV1Speed) {
+                        mcdu.v1Speed = mcdu.unconfirmedV1Speed;
+                        mcdu.unconfirmedV1Speed = undefined;
+                    } else {
                         // not real: v-speed helper
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
@@ -75,10 +76,6 @@ class CDUPerformancePage {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                             scratchpadCallback();
                         }
-                    } else {
-                        mcdu._v1Checked = true;
-                        mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
-                        mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
@@ -90,16 +87,17 @@ class CDUPerformancePage {
                 }
             };
             vR = "{amber}___{end}";
-            if (mcdu.vRSpeed) {
-                if (mcdu._vRChecked) {
-                    vR = `{cyan}${("" + mcdu.vRSpeed).padEnd(3)}{end}`;
-                } else {
-                    vRCheck = `{small}{cyan}${("" + mcdu.vRSpeed).padEnd(3)}{end}{end}`;
-                }
+            if (mcdu.unconfirmedVRSpeed) {
+                vRCheck = `{small}{cyan}${("" + mcdu.unconfirmedVRSpeed).padEnd(3)}{end}{end}`;
+            } else if (mcdu.vRSpeed) {
+                vR = `{cyan}${("" + mcdu.vRSpeed).padEnd(3)}{end}`;
             }
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (value === "") {
-                    if (mcdu._vRChecked) {
+                    if (mcdu.unconfirmedVRSpeed) {
+                        mcdu.vRSpeed = mcdu.unconfirmedVRSpeed;
+                        mcdu.unconfirmedVRSpeed = undefined;
+                    } else {
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
@@ -108,10 +106,6 @@ class CDUPerformancePage {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                             scratchpadCallback();
                         }
-                    } else {
-                        mcdu._vRChecked = true;
-                        mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
-                        mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
@@ -123,16 +117,17 @@ class CDUPerformancePage {
                 }
             };
             v2 = "{amber}___{end}";
-            if (mcdu.v2Speed) {
-                if (mcdu._v2Checked) {
-                    v2 = `{cyan}${("" + mcdu.v2Speed).padEnd(3)}{end}`;
-                } else {
-                    v2Check = `{small}{cyan}${("" + mcdu.v2Speed).padEnd(3)}{end}{end}`;
-                }
+            if (mcdu.unconfirmedV2Speed) {
+                v2Check = `{small}{cyan}${("" + mcdu.unconfirmedV2Speed).padEnd(3)}{end}{end}`;
+            } else if (mcdu.v2Speed) {
+                v2 = `{cyan}${("" + mcdu.v2Speed).padEnd(3)}{end}`;
             }
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
                 if (value === "") {
-                    if (mcdu._v2Checked) {
+                    if (mcdu.unconfirmedV2Speed) {
+                        mcdu.v2Speed = mcdu.unconfirmedV2Speed;
+                        mcdu.unconfirmedV2Speed = undefined;
+                    } else {
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
@@ -141,10 +136,6 @@ class CDUPerformancePage {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                             scratchpadCallback();
                         }
-                    } else {
-                        mcdu._v2Checked = true;
-                        mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
-                        mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
@@ -291,11 +282,11 @@ class CDUPerformancePage {
         // Object.is(+0, -0) returns false. Alternatively we could use a helper
         // variable (yuck) or encode it using a very small, but negative value
         // such as -0.001.
-        const formattedThs = !isNaN(mcdu.ths)
+        const formattedThs = mcdu.ths !== null
             ? (mcdu.ths >= 0 && !Object.is(mcdu.ths, -0) ? `UP${Math.abs(mcdu.ths).toFixed(1)}` : `DN${Math.abs(mcdu.ths).toFixed(1)}`)
             : '';
         if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
-            const flaps = !isNaN(mcdu.flaps) ? mcdu.flaps : "[]";
+            const flaps = mcdu.flaps !== null ? mcdu.flaps : "[]";
             const ths = formattedThs ? formattedThs : "[\xa0\xa0\xa0]";
             flapsThs = `${flaps}/${ths}[color]cyan`;
             mcdu.onRightInput[2] = (value, scratchpadCallback) => {
@@ -306,7 +297,7 @@ class CDUPerformancePage {
                 }
             };
         } else {
-            const flaps = !isNaN(mcdu.flaps) ? mcdu.flaps : "";
+            const flaps = mcdu.flaps !== null ? mcdu.flaps : "";
             const ths = formattedThs ? formattedThs : "\xa0\xa0\xa0\xa0\xa0";
             flapsThs = `${flaps}/${ths}[color]green`;
         }
@@ -379,15 +370,17 @@ class CDUPerformancePage {
 
         let next = "NEXT\xa0";
         let nextPhase = "PHASE>";
-        if (!(mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked) && mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
+        if ((mcdu.unconfirmedV1Speed || mcdu.unconfirmedVRSpeed || mcdu.unconfirmedV2Speed || !mcdu._toFlexChecked) && mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
             next = "CONFIRM\xa0";
             nextPhase = "TO DATA*";
             mcdu.onRightInput[5] = (value) => {
-                mcdu._v1Checked = true;
-                mcdu._vRChecked = true;
-                mcdu._v2Checked = true;
+                mcdu.v1Speed = mcdu.unconfirmedV1Speed ? mcdu.unconfirmedV1Speed : mcdu.v1Speed;
+                mcdu.vRSpeed = mcdu.unconfirmedVRSpeed ? mcdu.unconfirmedVRSpeed : mcdu.vRSpeed;
+                mcdu.v2Speed = mcdu.unconfirmedV2Speed ? mcdu.unconfirmedV2Speed : mcdu.v2Speed;
+                mcdu.unconfirmedV1Speed = undefined;
+                mcdu.unconfirmedVRSpeed = undefined;
+                mcdu.unconfirmedV2Speed = undefined;
                 mcdu._toFlexChecked = true;
-                mcdu.vSpeedDisagreeCheck();
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             };
         } else {
