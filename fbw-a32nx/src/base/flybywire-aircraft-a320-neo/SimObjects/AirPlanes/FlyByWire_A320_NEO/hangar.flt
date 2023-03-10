@@ -77,25 +77,29 @@ Afterburner=0
 FuelValveOpen=False
 
 [FuelSystem.0]
-Valve.1=False
-Valve.2=False
+Valve.1=True
+Valve.2=True
 Valve.3=False
 Valve.4=False
 Valve.5=False
 Valve.6=False
 Valve.7=False
 Valve.8=False
+Valve.9=True
+Valve.10=True
 Valve.11=True
 Valve.12=True
-Pump.1=False
-Pump.2=False
-Pump.3=False
-Pump.4=False
-Pump.5=False
-Pump.6=False
+Pump.1=True
+Pump.2=True
+Pump.3=True
+Pump.4=True
+Pump.5=True
+Pump.6=True
 Pump.7=True
 Pump.8=True
 Pump.9=True
+Junction.4=1
+Junction.5=1
 
 [Systems.0]
 BatterySwitch=False
