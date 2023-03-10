@@ -1,12 +1,12 @@
 # FBW Extras Host
 
-The ExtrasHost instrument is used to provide non-aircraft and non-wasm related functionality  an 
+The ExtrasHost instrument is used to provide non-aircraft and non-wasm related functionality an 
 environment to run as single instrument without rendering or connection to the MCDU, or the EFB, 
 where some of these functionalities have been hosted in the past.
 
 The ExtrasHost inherits from the BaseInstruments class that is managed by the simulator.
 
-It uses the msfssdk library for using the EventBus and HEventPublisher and pot. other  classes.
+It uses the msfssdk library for using the EventBus and HEventPublisher and pot. other classes.
 
 ## System interfaces
 
