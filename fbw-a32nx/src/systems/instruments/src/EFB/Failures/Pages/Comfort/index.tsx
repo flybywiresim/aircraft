@@ -24,7 +24,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
 
     return (
         <Link
-            to={`/failures/comfort/${pathify(ataNumber.toString())}`}
+            to={`/failures/failureslist/comfort/${pathify(ataNumber.toString())}`}
             className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight"
         >
             <div
