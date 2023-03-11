@@ -187,7 +187,7 @@ class CDUFlightPlanPage {
                     waypointsAndMarkers.push({ marker: Markers.END_OF_ALTN_FPLN, fpIndex: i, inAlternate: true });
                 }
             }
-        } else {
+        } else if (targetPlan.legCount > 0) {
             waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, fpIndex: targetPlan.legCount + 1, inAlternate: true });
         }
 
