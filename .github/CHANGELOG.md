@@ -53,6 +53,7 @@
 1. [SYSTEM] Introduce Typescript based systems in VCockpit17 - @svengcz (Sven)
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
+1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
 
 ## 0.9.0
 
