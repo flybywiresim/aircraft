@@ -5,7 +5,7 @@ const path = require('path');
 const { copy } = require('esbuild-plugin-copy');
 
 const rootDir = path.join(__dirname, '..', '..', '..');
-const outFile = 'out/flybywire-aircraft-a320-neo/html_ui/JS/fmgc/fmgc.js';
+const outFile = 'out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/fmgc/fmgc.js';
 
 const isProductionBuild = process.env.A32NX_PRODUCTION_BUILD === '1';
 
