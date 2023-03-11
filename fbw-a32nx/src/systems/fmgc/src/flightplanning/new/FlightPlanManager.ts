@@ -101,7 +101,6 @@ export class FlightPlanManager {
 
     deleteAll(notify = true) {
         this.plans.length = 0;
-        this.plans.push(FlightPlan.empty(FlightPlanIndex.Active, this.bus));
 
         if (notify) {
             this.sendEvent('flightPlanManager.deleteAll', undefined);
