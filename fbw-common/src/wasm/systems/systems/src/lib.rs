@@ -13,6 +13,7 @@ pub mod electrical;
 pub mod engine;
 pub mod enhanced_gpwc;
 pub mod failures;
+pub mod flight_warning;
 pub mod hydraulic;
 pub mod indicating_recording;
 pub mod integrated_modular_avionics;

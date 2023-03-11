@@ -253,6 +253,51 @@
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_ECAM_HELD_BUTTON_SubTemplate">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
+            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
+            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    1 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                </LEFT_LEAVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="POTENTIOMETER">
+            <True>
+                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+    </Template>
+
+    <Template Name="FBW_ECAM_HELD_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <BASE_NAME>UNKNOWN</BASE_NAME>
+            <GROUP_INDEX>-1</GROUP_INDEX>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_ECAM_HELD_BUTTON_SubTemplate">
+        </UseTemplate>
+    </Template>
+
     <Template Name="A32NX_ECAM_CLR_BUTTON_Template">
         <DefaultTemplateParameters>
             <BASE_NAME>UNKNOWN</BASE_NAME>
@@ -347,11 +392,14 @@
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                 1 (&gt;L:A32NX_BTN_#BASE_NAME#)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                0 (&gt;L:A32NX_BTN_#BASE_NAME#)
+                </LEFT_LEAVE_CODE>
             </UseTemplate>
         </Component>
 
@@ -511,7 +559,7 @@
         <!-- ECAM T.O CONFIG -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>FBW_ECAM_HELD_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>TOCONFIG</BASE_NAME>
             <PART_ID>ECAM_TOCFG</PART_ID>
             <TOOLTIPID>Test T.O CONFIG</TOOLTIPID>

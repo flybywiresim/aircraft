@@ -396,6 +396,10 @@ export class PseudoFWC {
 
     private readonly toInhibitTimer = new NXLogicConfirmNode(3);
 
+    private readonly fwc1Normal = Subject.create(false);
+
+    private readonly fwc2Normal = Subject.create(false);
+
     /** TO CONFIG TEST raw button input */
     private toConfigTestRaw = false;
 
@@ -532,6 +536,10 @@ export class PseudoFWC {
     private readonly toMemo = Subject.create(0);
 
     private readonly ldgMemo = Subject.create(0);
+
+    private readonly toInhibit = Subject.create(false);
+
+    private readonly ldgInhibit = Subject.create(false);
 
     private readonly autoBrake = Subject.create(0);
 
@@ -795,9 +803,30 @@ export class PseudoFWC {
      * @param deltaTime Time since the last update in ms
      */
     onUpdate(deltaTime: number) {
-        // Inputs update
-
         this.flightPhaseEndedPulseNode.write(false, deltaTime);
+        this.fwc1Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_1_NORMAL', 'bool'));
+        this.fwc2Normal.set(SimVar.GetSimVarValue('L:A32NX_FWS_FWC_2_NORMAL', 'bool'));
+
+        if (!this.fwc1Normal.get() && !this.fwc2Normal.get()) {
+            this.memoMessageLeft.set([
+                '0',
+                '310000701',
+                '310000702',
+                '310000703',
+            ]);
+            this.memoMessageRight.set([
+                '310000704',
+                '310000705',
+                '310000706',
+                '310000707',
+                '310000708',
+                '310000709',
+            ]);
+            this.recallFailures = [];
+            return;
+        }
+
+        // Inputs update
 
         this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
         this.flightPhase3PulseNode.write(this.fwcFlightPhase.get() === 3, deltaTime);
@@ -812,12 +841,6 @@ export class PseudoFWC {
         // TO CONFIG button
         this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
         this.toConfigPulseNode.write(this.toConfigTestRaw, deltaTime);
-        const toConfigTest = this.toConfigTriggerNode.write(this.toConfigPulseNode.read(), deltaTime);
-        if (toConfigTest !== this.toConfigTest) {
-            // temporary var for the old FWC stuff
-            SimVar.SetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean', toConfigTest);
-            this.toConfigTest = toConfigTest;
-        }
         this.toConfigTestHeldMin1s5Pulse.set(this.toConfigTestHeldMin1s5PulseNode.write(this.toConfigTestRaw, deltaTime) || this.toConfigTestRaw);
 
         // CLR buttons
@@ -841,7 +864,6 @@ export class PseudoFWC {
 
         this.showTakeoffInhibit.set(this.toInhibitTimer.write(this.flightPhase345.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime));
         this.showLandingInhibit.set(this.ldgInhibitTimer.write(this.flightPhase78.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime));
-
         this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
         this.computedAirSpeed.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
@@ -872,11 +894,15 @@ export class PseudoFWC {
 
         this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
-        this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
+        this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWS_TOMEMO', 'bool'));
 
         this.autoBrake.set(SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum'));
 
-        this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool'));
+        this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWS_LDGMEMO', 'bool'));
+
+        this.toInhibit.set(SimVar.GetSimVarValue('L:A32NX_FWS_TOINHIBIT', 'bool'));
+
+        this.ldgInhibit.set(SimVar.GetSimVarValue('L:A32NX_FWS_LDGINHIBIT', 'bool'));
 
         this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
         this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
@@ -2493,6 +2519,26 @@ export class PseudoFWC {
             sysPage: 5,
             side: 'LEFT',
         },
+        3100010: { // FWC 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([fwc1Normal, acESSBusPowered]) => !fwc1Normal && acESSBusPowered, this.fwc1Normal, this.acESSBusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['310001001'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3100011: { // FWC 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([fwc2Normal, ac2BusPowered]) => !fwc2Normal && ac2BusPowered, this.fwc2Normal, this.ac2BusPowered),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['310001101'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
     }
 
     ewdMessageMemos: EWDMessageDict = {
@@ -2661,7 +2707,7 @@ export class PseudoFWC {
         },
         '0000140': { // T.O. INHIBIT
             flightPhaseInhib: [],
-            simVarIsActive: this.showTakeoffInhibit,
+            simVarIsActive: this.toInhibit,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000014001'],
             memoInhibit: () => false,
@@ -2671,7 +2717,7 @@ export class PseudoFWC {
         },
         '0000150': { // LDG INHIBIT
             flightPhaseInhib: [],
-            simVarIsActive: this.showLandingInhibit,
+            simVarIsActive: this.ldgInhibit,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000015001'],
             memoInhibit: () => false,

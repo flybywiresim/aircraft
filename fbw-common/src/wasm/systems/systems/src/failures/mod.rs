@@ -19,6 +19,7 @@ pub enum FailureType {
     BrakeHydraulicLeak(HydraulicColor),
     BrakeAccumulatorGasLeak,
     RadioAltimeter(usize),
+    FlightWarningComputer(usize),
 }
 
 pub struct Failure {

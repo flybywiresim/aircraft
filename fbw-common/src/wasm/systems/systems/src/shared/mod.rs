@@ -90,6 +90,12 @@ pub trait FeedbackPositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
+pub trait HydraulicSysLowPressure {
+    fn is_blue_sys_lo_pr(&self) -> bool;
+    fn is_yellow_sys_lo_pr(&self) -> bool;
+    fn is_green_sys_lo_pr(&self) -> bool;
+}
+
 pub trait LgciuWeightOnWheels {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
     fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
@@ -104,6 +110,10 @@ pub trait LgciuWeightOnWheels {
     fn nose_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
 }
 pub trait LgciuGearExtension {
+    fn left_gear_down_and_locked(&self) -> bool;
+    fn right_gear_down_and_locked(&self) -> bool;
+    fn nose_gear_down_and_locked(&self) -> bool;
+
     fn all_down_and_locked(&self) -> bool;
     fn all_up_and_locked(&self) -> bool;
     fn main_down_and_locked(&self) -> bool;
