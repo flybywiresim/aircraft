@@ -75,7 +75,8 @@ bool MsfsHandler::initialize() {
   // #define PAUSE_STATE_FLAG_PAUSE_WITH_SOUND 2 // FSX Legacy Pause (not used anymore)
   // #define PAUSE_STATE_FLAG_ACTIVE_PAUSE 4 // Pause was activated using the "Active Pause" Button
   // #define PAUSE_STATE_FLAG_SIM_PAUSE 8 // Pause the player sim but traffic, multi, etc... will still run
-  /*  a32nxPauseDetected = dataManager.make_named_var("A32NX_PAUSE_DETECTED", UNITS.Number, true, true);
+  /*
+    a32nxPauseDetected = dataManager.make_named_var("A32NX_PAUSE_DETECTED", UNITS.Number, true, true);
     pauseDetectedEvent = dataManager.make_client_event("A32NX.PAUSE_DETECTED_EVENT", false);
     pauseDetectedEventCallbackId = pauseDetectedEvent->addCallback(
         [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
@@ -93,7 +94,8 @@ bool MsfsHandler::initialize() {
       LOG_ERROR(simConnectName + ": Failed to subscribe to PAUSE_EX1 event");
       return false;
     }
-    LOG_INFO(simConnectName + ": Subscribed to PAUSE_EX1 event");*/
+    LOG_INFO(simConnectName + ": Subscribed to PAUSE_EX1 event");
+  */
 
   // Initialize modules
   result = true;
@@ -161,6 +163,7 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
 
 bool MsfsHandler::shutdown() {
   bool result = true;
+
   result &= std::all_of(modules.begin(), modules.end(), [](Module* pModule) { return pModule->shutdown(); });
   modules.clear();
   result &= dataManager.shutdown();
@@ -176,7 +179,3 @@ bool MsfsHandler::getA32NxIsReady() const {
 FLOAT64 MsfsHandler::getA32NxIsDevelopmentState() const {
   return a32nxIsDevelopmentState->get();
 }
-
-// =================================================================================================
-// PRIVATE METHODS
-// =================================================================================================
