@@ -252,7 +252,8 @@ export class TacticalDescentPathBuilder {
                 }
 
                 if (previousPhase instanceof DescendToAltitude) {
-                    phaseTable.phases.splice(violatingPhaseIndex, 1, new DescendToDistance(previousPhase.lastResult.distanceFromStart - overshoot));
+                    // If we need to decelerate earlier, then replace the altitude segment with a distance segment
+                    phaseTable.phases.splice(i, 1, new DescendToDistance(previousPhase.lastResult.distanceFromStart - overshoot));
 
                     return;
                 } if (previousPhase instanceof DescendToDistance) {
