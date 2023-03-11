@@ -117,7 +117,7 @@ class CacheableVariable : public ManagedDataObjectBase {
    * updateFromSim() method instead as this guarantees that a variable is only read once per tick
    * no matter in which module the variable is used.<p/>
    *
-   * Ir updates the cache (clears dirty flag) and manages the changed flag and sets it to true
+   * It updates the cache (clears dirty flag) and manages the changed flag and sets it to true
    * if the value has changed since last read or sets it to false if the value has not changed.<p/>
    *
    * This does not update the timeStampSimTime or tickStamp.

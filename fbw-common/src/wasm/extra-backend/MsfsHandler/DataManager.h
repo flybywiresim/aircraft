@@ -167,7 +167,10 @@ class DataManager {
    * Creates a new named variable (LVAR) and adds it to the list of managed variables.<p/>
    *
    * The NamedVariable is a variable which is mapped to a LVAR. It is the simplest variable type and
-   * can be used to store and retrieve custom numeric data from the sim.
+   * can be used to store and retrieve custom numeric data from the sim.<p/>
+   *
+   * OBS: A prefix will be added to the variable name depending on aircraft type.
+   * E.g. "A32NX_" for the A32NX. Do not add this prefix yourself.
    *
    * @param varName Name of the variable in the sim
    * @param optional unit Unit of the variable (default=Number)

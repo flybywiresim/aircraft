@@ -10,8 +10,8 @@
 #include "Units.h"
 #include "logging.h"
 
-static constexpr double SPEED_RATIO = 18.0;
-static constexpr double TURN_SPEED_RATIO = 0.16;
+static constexpr double SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
+static constexpr double TURN_SPEED_FACTOR = 0.16;  // ft/sec for "ROTATION VELOCITY BODY Y"
 
 ///
 // DataManager Howto Note:
@@ -27,8 +27,10 @@ static constexpr double TURN_SPEED_RATIO = 0.16;
 // - SIM ON GROUND
 //
 // The rest are read on demand after the state of the above variables have been checked.
-//
 // No variable is written automatically.
+//
+// This makes sure variables are only read or written to when really needed. And as pushback will
+// be dormant most of the time, this is saving a lot of unnecessary reads/writes.
 ///
 
 bool Pushback::initialize() {
@@ -100,16 +102,17 @@ bool Pushback::update(sGaugeDrawData* pData) {
   tugCommandedHeadingFactor->updateFromSim(timeStamp, tickCounter);
   windVelBodyZ->updateFromSim(timeStamp, tickCounter);
 
-  const double parkBrakeSpdFactor = parkingBrakeEngaged->getAsBool() ? (SPEED_RATIO / 10) : SPEED_RATIO;
-  const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * parkBrakeSpdFactor;
+  const double speedFactor = parkingBrakeEngaged->getAsBool() ? (SPEED_FACTOR / 10) : SPEED_FACTOR;
+  const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * speedFactor;
 
   const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
 
-  const double parkingBrakeHdgFactor = parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_RATIO / 10) : TURN_SPEED_RATIO;
-  const FLOAT64 computedRotationVelocity = sgn<FLOAT64>(tugCmdSpd) * tugCommandedHeadingFactor->get() * parkingBrakeHdgFactor;
+  const double turnSpeedHdgFactor = parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_FACTOR / 10) : TURN_SPEED_FACTOR;
+  const FLOAT64 computedRotationVelocity = sgn<FLOAT64>(tugCmdSpd) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
 
   // As we might use the elevator for taxiing we compensate for wind to avoid
-  // the aircraft lifting any gears.
+  // the aircraft lifting any gears. The hard coded values are based on testing
+  // in the sim.
   const FLOAT64 windCounterRotAccel = windVelBodyZ->get() / 2000.0;
   FLOAT64 movementCounterRotAccel = windCounterRotAccel;
   if (inertiaSpeed > 0) {
@@ -120,12 +123,10 @@ bool Pushback::update(sGaugeDrawData* pData) {
     movementCounterRotAccel = 0.0;
   }
 
-  // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   FLOAT64 aircraftHeadingDeg = aircraftHeading->get() * (180.0 / PI);
   const FLOAT64 computedHdg = angleAdd(aircraftHeadingDeg, -90 * tugCommandedHeadingFactor->get());
 
-  // TUG_HEADING units are a 32-bit integer (0 to 4294967295) which represent 0 to 360 degrees.
-  // To set a 45-degree angle, for example, set the value to 4294967295 / 8.
+  // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   // https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Aircraft_Misc_Events.htm#TUG_HEADING
   constexpr DWORD headingToInt32 = 0xffffffff / 360;
   const DWORD convertedComputedHeading = static_cast<DWORD>(computedHdg) * headingToInt32;

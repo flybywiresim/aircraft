@@ -4,7 +4,6 @@
 #include <MSFS/Legacy/gauges.h>
 #include <iostream>
 
-
 #include "AircraftVariable.h"
 #include "LightingPresets.h"
 #include "MsfsHandler.h"
@@ -28,6 +27,10 @@
 // - A32NX_LIGHTING_PRESET_SAVE
 //
 // The rest are read on demand after the state of the above variables have been checked.
+//
+// This makes sure variables are only read or written to when really needed. And as
+// LightingPresets will be dormant most of the time, this is saving a lot of
+// unnecessary reads/writes.
 ///
 
 bool LightingPresets::initialize() {
@@ -210,40 +213,40 @@ bool LightingPresets::readFromStore(int64_t presetNr) {
   // load file
   bool result = iniFile.read(ini);
 
-  const std::string preset = "preset " + std::to_string(presetNr);
+  const std::string iniSectionName = "iniSectionName " + std::to_string(presetNr);
 
-  // check if preset is available
-  // if not use a 50% default preset
-  if (!ini.has(preset)) {
+  // check if iniSectionName is available
+  // if not use a 50% default iniSectionName
+  if (!ini.has(iniSectionName)) {
     loadFromData(DEFAULT_50);
     return true;
   }
 
   // reading data structure from ini
-  loadedLightValues.efbBrightness = iniGetOrDefault(ini, preset, "efb_brightness", 80.0);
-  loadedLightValues.cabinLightLevel = iniGetOrDefault(ini, preset, "cabin_light", 50.0);
-  loadedLightValues.ovhdIntegralLightLevel = iniGetOrDefault(ini, preset, "ovhd_int_lt", 50.0);
-  loadedLightValues.glareshieldIntegralLightLevel = iniGetOrDefault(ini, preset, "glareshield_int_lt", 50.0);
-  loadedLightValues.glareshieldLcdLightLevel = iniGetOrDefault(ini, preset, "glareshield_lcd_lt", 50.0);
-  loadedLightValues.tableLightCptLevel = iniGetOrDefault(ini, preset, "table_cpt_lt", 50.0);
-  loadedLightValues.tableLightFoLevel = iniGetOrDefault(ini, preset, "table_fo_lt", 50.0);
-  loadedLightValues.pfdBrtCptLevel = iniGetOrDefault(ini, preset, "pfd_cpt_lvl", 50.0);
-  loadedLightValues.ndBrtCptLevel = iniGetOrDefault(ini, preset, "nd_cpt_lvl", 50.0);
-  loadedLightValues.wxTerrainBrtCptLevel = iniGetOrDefault(ini, preset, "wx_cpt_lvl", 50.0);
-  loadedLightValues.consoleLightCptLevel = iniGetOrDefault(ini, preset, "console_cpt_lt", 50.0);
-  loadedLightValues.pfdBrtFoLevel = iniGetOrDefault(ini, preset, "pfd_fo_lvl", 50.0);
-  loadedLightValues.ndBrtFoLevel = iniGetOrDefault(ini, preset, "nd_fo_lvl", 50.0);
-  loadedLightValues.wxTerrainBrtFoLevel = iniGetOrDefault(ini, preset, "wx_fo_lvl", 50.0);
-  loadedLightValues.consoleLightFoLevel = iniGetOrDefault(ini, preset, "console_fo_lt", 50.0);
-  loadedLightValues.dcduLeftLightLevel = iniGetOrDefault(ini, preset, "dcdu_left_lvl", 50.0) / 100;
-  loadedLightValues.dcduRightLightLevel = iniGetOrDefault(ini, preset, "dcdu_right_lvl", 50.0) / 100;
-  loadedLightValues.mcduLeftLightLevel = iniGetOrDefault(ini, preset, "mcdu_left_lvl", 50.0) / 100;
-  loadedLightValues.mcduRightLightLevel = iniGetOrDefault(ini, preset, "mcdu_right_lvl", 50.0) / 100;
-  loadedLightValues.ecamUpperLightLevel = iniGetOrDefault(ini, preset, "ecam_upper_lvl", 50.0);
-  loadedLightValues.ecamLowerLightLevel = iniGetOrDefault(ini, preset, "ecam_lower_lvl", 50.0);
-  loadedLightValues.floodPnlLightLevel = iniGetOrDefault(ini, preset, "flood_pnl_lt", 50.0);
-  loadedLightValues.pedestalIntegralLightLevel = iniGetOrDefault(ini, preset, "pedestal_int_lt", 50.0);
-  loadedLightValues.floodPedLightLevel = iniGetOrDefault(ini, preset, "flood_ped_lvl", 50.0);
+  loadedLightValues.efbBrightness = iniGetOrDefault(ini, iniSectionName, "efb_brightness", 80.0);
+  loadedLightValues.cabinLightLevel = iniGetOrDefault(ini, iniSectionName, "cabin_light", 50.0);
+  loadedLightValues.ovhdIntegralLightLevel = iniGetOrDefault(ini, iniSectionName, "ovhd_int_lt", 50.0);
+  loadedLightValues.glareshieldIntegralLightLevel = iniGetOrDefault(ini, iniSectionName, "glareshield_int_lt", 50.0);
+  loadedLightValues.glareshieldLcdLightLevel = iniGetOrDefault(ini, iniSectionName, "glareshield_lcd_lt", 50.0);
+  loadedLightValues.tableLightCptLevel = iniGetOrDefault(ini, iniSectionName, "table_cpt_lt", 50.0);
+  loadedLightValues.tableLightFoLevel = iniGetOrDefault(ini, iniSectionName, "table_fo_lt", 50.0);
+  loadedLightValues.pfdBrtCptLevel = iniGetOrDefault(ini, iniSectionName, "pfd_cpt_lvl", 50.0);
+  loadedLightValues.ndBrtCptLevel = iniGetOrDefault(ini, iniSectionName, "nd_cpt_lvl", 50.0);
+  loadedLightValues.wxTerrainBrtCptLevel = iniGetOrDefault(ini, iniSectionName, "wx_cpt_lvl", 50.0);
+  loadedLightValues.consoleLightCptLevel = iniGetOrDefault(ini, iniSectionName, "console_cpt_lt", 50.0);
+  loadedLightValues.pfdBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "pfd_fo_lvl", 50.0);
+  loadedLightValues.ndBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "nd_fo_lvl", 50.0);
+  loadedLightValues.wxTerrainBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "wx_fo_lvl", 50.0);
+  loadedLightValues.consoleLightFoLevel = iniGetOrDefault(ini, iniSectionName, "console_fo_lt", 50.0);
+  loadedLightValues.dcduLeftLightLevel = iniGetOrDefault(ini, iniSectionName, "dcdu_left_lvl", 50.0) / 100;
+  loadedLightValues.dcduRightLightLevel = iniGetOrDefault(ini, iniSectionName, "dcdu_right_lvl", 50.0) / 100;
+  loadedLightValues.mcduLeftLightLevel = iniGetOrDefault(ini, iniSectionName, "mcdu_left_lvl", 50.0) / 100;
+  loadedLightValues.mcduRightLightLevel = iniGetOrDefault(ini, iniSectionName, "mcdu_right_lvl", 50.0) / 100;
+  loadedLightValues.ecamUpperLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_upper_lvl", 50.0);
+  loadedLightValues.ecamLowerLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_lower_lvl", 50.0);
+  loadedLightValues.floodPnlLightLevel = iniGetOrDefault(ini, iniSectionName, "flood_pnl_lt", 50.0);
+  loadedLightValues.pedestalIntegralLightLevel = iniGetOrDefault(ini, iniSectionName, "pedestal_int_lt", 50.0);
+  loadedLightValues.floodPedLightLevel = iniGetOrDefault(ini, iniSectionName, "flood_ped_lvl", 50.0);
 
   return result;
 }
@@ -256,32 +259,32 @@ bool LightingPresets::saveToStore(int64_t presetNr) {
   // load file
   bool result = iniFile.read(ini);
 
-  // add/update preset
-  const std::string preset = "preset " + std::to_string(presetNr);
-  ini[preset]["efb_brightness"] = std::to_string(currentLightValues.efbBrightness);
-  ini[preset]["cabin_light"] = std::to_string(currentLightValues.cabinLightLevel);
-  ini[preset]["ovhd_int_lt"] = std::to_string(currentLightValues.ovhdIntegralLightLevel);
-  ini[preset]["glareshield_int_lt"] = std::to_string(currentLightValues.glareshieldIntegralLightLevel);
-  ini[preset]["glareshield_lcd_lt"] = std::to_string(currentLightValues.glareshieldLcdLightLevel);
-  ini[preset]["table_cpt_lt"] = std::to_string(currentLightValues.tableLightCptLevel);
-  ini[preset]["table_fo_lt"] = std::to_string(currentLightValues.tableLightFoLevel);
-  ini[preset]["pfd_cpt_lvl"] = std::to_string(currentLightValues.pfdBrtCptLevel);
-  ini[preset]["nd_cpt_lvl"] = std::to_string(currentLightValues.ndBrtCptLevel);
-  ini[preset]["wx_cpt_lvl"] = std::to_string(currentLightValues.wxTerrainBrtCptLevel);
-  ini[preset]["console_cpt_lt"] = std::to_string(currentLightValues.consoleLightCptLevel);
-  ini[preset]["pfd_fo_lvl"] = std::to_string(currentLightValues.pfdBrtFoLevel);
-  ini[preset]["nd_fo_lvl"] = std::to_string(currentLightValues.ndBrtFoLevel);
-  ini[preset]["wx_fo_lvl"] = std::to_string(currentLightValues.wxTerrainBrtFoLevel);
-  ini[preset]["console_fo_lt"] = std::to_string(currentLightValues.consoleLightFoLevel);
-  ini[preset]["dcdu_left_lvl"] = std::to_string(currentLightValues.dcduLeftLightLevel * 100);
-  ini[preset]["dcdu_right_lvl"] = std::to_string(currentLightValues.dcduRightLightLevel * 100);
-  ini[preset]["mcdu_left_lvl"] = std::to_string(currentLightValues.mcduLeftLightLevel * 100);
-  ini[preset]["mcdu_right_lvl"] = std::to_string(currentLightValues.mcduRightLightLevel * 100);
-  ini[preset]["ecam_upper_lvl"] = std::to_string(currentLightValues.ecamUpperLightLevel);
-  ini[preset]["ecam_lower_lvl"] = std::to_string(currentLightValues.ecamLowerLightLevel);
-  ini[preset]["flood_pnl_lt"] = std::to_string(currentLightValues.floodPnlLightLevel);
-  ini[preset]["pedestal_int_lt"] = std::to_string(currentLightValues.pedestalIntegralLightLevel);
-  ini[preset]["flood_ped_lvl"] = std::to_string(currentLightValues.floodPedLightLevel);
+  // add/update iniSectionName
+  const std::string iniSectionName = "iniSectionName " + std::to_string(presetNr);
+  ini[iniSectionName]["efb_brightness"] = std::to_string(currentLightValues.efbBrightness);
+  ini[iniSectionName]["cabin_light"] = std::to_string(currentLightValues.cabinLightLevel);
+  ini[iniSectionName]["ovhd_int_lt"] = std::to_string(currentLightValues.ovhdIntegralLightLevel);
+  ini[iniSectionName]["glareshield_int_lt"] = std::to_string(currentLightValues.glareshieldIntegralLightLevel);
+  ini[iniSectionName]["glareshield_lcd_lt"] = std::to_string(currentLightValues.glareshieldLcdLightLevel);
+  ini[iniSectionName]["table_cpt_lt"] = std::to_string(currentLightValues.tableLightCptLevel);
+  ini[iniSectionName]["table_fo_lt"] = std::to_string(currentLightValues.tableLightFoLevel);
+  ini[iniSectionName]["pfd_cpt_lvl"] = std::to_string(currentLightValues.pfdBrtCptLevel);
+  ini[iniSectionName]["nd_cpt_lvl"] = std::to_string(currentLightValues.ndBrtCptLevel);
+  ini[iniSectionName]["wx_cpt_lvl"] = std::to_string(currentLightValues.wxTerrainBrtCptLevel);
+  ini[iniSectionName]["console_cpt_lt"] = std::to_string(currentLightValues.consoleLightCptLevel);
+  ini[iniSectionName]["pfd_fo_lvl"] = std::to_string(currentLightValues.pfdBrtFoLevel);
+  ini[iniSectionName]["nd_fo_lvl"] = std::to_string(currentLightValues.ndBrtFoLevel);
+  ini[iniSectionName]["wx_fo_lvl"] = std::to_string(currentLightValues.wxTerrainBrtFoLevel);
+  ini[iniSectionName]["console_fo_lt"] = std::to_string(currentLightValues.consoleLightFoLevel);
+  ini[iniSectionName]["dcdu_left_lvl"] = std::to_string(currentLightValues.dcduLeftLightLevel * 100);
+  ini[iniSectionName]["dcdu_right_lvl"] = std::to_string(currentLightValues.dcduRightLightLevel * 100);
+  ini[iniSectionName]["mcdu_left_lvl"] = std::to_string(currentLightValues.mcduLeftLightLevel * 100);
+  ini[iniSectionName]["mcdu_right_lvl"] = std::to_string(currentLightValues.mcduRightLightLevel * 100);
+  ini[iniSectionName]["ecam_upper_lvl"] = std::to_string(currentLightValues.ecamUpperLightLevel);
+  ini[iniSectionName]["ecam_lower_lvl"] = std::to_string(currentLightValues.ecamLowerLightLevel);
+  ini[iniSectionName]["flood_pnl_lt"] = std::to_string(currentLightValues.floodPnlLightLevel);
+  ini[iniSectionName]["pedestal_int_lt"] = std::to_string(currentLightValues.pedestalIntegralLightLevel);
+  ini[iniSectionName]["flood_ped_lvl"] = std::to_string(currentLightValues.floodPedLightLevel);
 
   result &= iniFile.write(ini, true);
 
