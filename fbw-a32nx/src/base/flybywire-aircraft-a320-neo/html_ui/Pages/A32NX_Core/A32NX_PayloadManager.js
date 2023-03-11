@@ -8,9 +8,7 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(3024)),
                 stationIndex: 0 + 1,
                 position: 20.0,
-                simVar: "A32NX_PAX_A",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_A', 'Number'), 36),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_A_DESIRED', 'Number'), 36),
+                simVar: "A32NX_PAX_A"
 
             },
             rows7_13: {
@@ -19,9 +17,7 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(3530)),
                 stationIndex: 1 + 1,
                 position: 0.9,
-                simVar: "A32NX_PAX_B",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_B', 'Number'), 42),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_B_DESIRED', 'Number'), 42),
+                simVar: "A32NX_PAX_B"
             },
             rows14_21: {
                 name: 'ROWS [14-21]',
@@ -29,9 +25,7 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(4032)),
                 stationIndex: 2 + 1,
                 position: -17.3,
-                simVar: "A32NX_PAX_C",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_C', 'Number'), 48),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_C_DESIRED', 'Number'), 48),
+                simVar: "A32NX_PAX_C"
             },
             rows22_29: {
                 name: 'ROWS [22-29]',
@@ -39,9 +33,7 @@ class A32NX_PayloadConstructor {
                 weight: Math.round(NXUnits.kgToUser(4032)),
                 stationIndex: 3 + 1,
                 position: -36.3,
-                simVar: "A32NX_PAX_D",
-                activeFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_D', 'Number'), 48),
-                desiredFlags: new SeatFlags(SimVar.GetSimVarValue('L:A32NX_PAX_D_DESIRED', 'Number'), 48),
+                simVar: "A32NX_PAX_D"
             },
         };
 
@@ -104,8 +96,8 @@ function getZfwcg() {
     const emptyMoment = emptyPosition * emptyWeight;
     const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
 
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT)).reduce((acc, cur) => acc + cur, 0);
-    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT) * station.position).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMass = Object.values(paxStations).map((station) => new BitFlags(SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).getTotalBits() * PAX_WEIGHT).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMoment = Object.values(paxStations).map((station) => new BitFlags(SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).getTotalBits() * PAX_WEIGHT * station.position).reduce((acc, cur) => acc + cur, 0);
 
     const cargoTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, getUserUnit())).reduce((acc, cur) => acc + cur, 0);
     const cargoTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, getUserUnit()) * station.position)).reduce((acc, cur) => acc + cur, 0);
