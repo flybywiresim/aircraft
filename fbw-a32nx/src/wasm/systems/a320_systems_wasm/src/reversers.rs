@@ -45,16 +45,22 @@ impl VariablesToObject for ReverserThrust {
                 0,
             ),
             Variable::named("REVERSER_ANGULAR_ACCELERATION"),
+            Variable::aspect("BRAKE LEFT FORCE FACTOR"),
+            Variable::aspect("BRAKE RIGHT FORCE FACTOR"),
         ]
     }
 
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        self.velocity_z =
-            if values[0] < 0. && values[0] > LOW_SPEED_MODE_SPEED_THRESHOLD_FOOT_PER_SEC {
-                values[0] + LOW_SPEED_MODE_SPEED_FORCE_MULTIPLIER * values[1]
-            } else {
-                values[0] + values[1]
-            };
+        let brakes_in_use = values[4] + values[5] > 0.05;
+
+        self.velocity_z = if values[0] < 0.
+            && values[0] > LOW_SPEED_MODE_SPEED_THRESHOLD_FOOT_PER_SEC
+            && !brakes_in_use
+        {
+            values[0] + LOW_SPEED_MODE_SPEED_FORCE_MULTIPLIER * values[1]
+        } else {
+            values[0] + values[1]
+        };
 
         self.angular_acc_y = values[2] + ASYMETRY_EFFECT_MAGIC_MULTIPLIER * values[3];
 

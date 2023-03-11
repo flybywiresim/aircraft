@@ -1,6 +1,4 @@
-use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, mass::pound, pressure::psi, ratio::percent,
-};
+use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ratio::percent};
 
 use crate::{
     shared::{EngineCorrectedN1, EngineCorrectedN2, EngineUncorrectedN2},

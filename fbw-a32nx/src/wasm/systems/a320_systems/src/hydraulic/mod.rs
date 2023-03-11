@@ -6241,7 +6241,7 @@ impl A320Reversers {
             self.reversers_deployed[idx] = reverser.proximity_sensor_all_deployed();
 
             self.reversers_in_transition[idx] = !reverser.proximity_sensor_all_deployed()
-                || !reverser.proximity_sensor_all_stowed();
+                && !reverser.proximity_sensor_all_stowed();
         }
     }
 
