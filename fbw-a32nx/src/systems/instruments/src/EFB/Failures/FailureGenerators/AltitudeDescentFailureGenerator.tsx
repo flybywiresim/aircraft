@@ -6,13 +6,15 @@ import {
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { t } from 'instruments/src/EFB/translation';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTDESC';
 const additionalSetting = [0, 8000];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'B';
 const failureGeneratorArmed :boolean[] = [];
-const genName = 'Altitude (descent)';
+const genName = 'AltDesc';
+const alias = t('Failures.Generators.GenAltDesc');
 
 export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -22,7 +24,19 @@ export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [setting]);
-    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName, FailureGeneratorCard };
+    return {
+        setting,
+        setSetting,
+        settings,
+        numberOfSettingsPerGenerator,
+        uniqueGenPrefix,
+        additionalSetting,
+        onErase,
+        failureGeneratorArmed,
+        genName,
+        FailureGeneratorCard,
+        alias,
+    };
 };
 
 const onErase = (_genID : number) => {

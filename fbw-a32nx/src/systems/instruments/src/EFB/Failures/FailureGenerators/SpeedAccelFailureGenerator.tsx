@@ -6,13 +6,15 @@ import {
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { t } from 'instruments/src/EFB/translation';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEEDACCEL';
 const additionalSetting = [0, 200];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'C';
 const failureGeneratorArmed :boolean[] = [];
-const genName = 'Speed (accel)';
+const genName = 'SpeedAccel';
+const alias = t('Failures.Generators.GenSpeedAccel');
 
 export const failureGenConfigSpeedAccel : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -22,7 +24,19 @@ export const failureGenConfigSpeedAccel : ()=>FailureGenData = () => {
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [setting]);
-    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName, FailureGeneratorCard };
+    return {
+        setting,
+        setSetting,
+        settings,
+        numberOfSettingsPerGenerator,
+        uniqueGenPrefix,
+        additionalSetting,
+        onErase,
+        failureGeneratorArmed,
+        genName,
+        FailureGeneratorCard,
+        alias,
+    };
 };
 
 const onErase = (_genID : number) => {

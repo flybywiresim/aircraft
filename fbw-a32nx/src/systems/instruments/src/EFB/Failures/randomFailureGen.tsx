@@ -25,7 +25,7 @@ export const failureGeneratorCommonFunction = () => {
 
 export type FailureGenData = {setting: string, setSetting : (value: string) => void, settings : number[],
     numberOfSettingsPerGenerator : number, uniqueGenPrefix : string, additionalSetting : number[], onErase : (genID : number) => void,
-    failureGeneratorArmed:boolean[], genName : string, FailureGeneratorCard : (genID: number, generatorSettings: FailureGenData) => JSX.Element}
+    failureGeneratorArmed:boolean[], genName : string, FailureGeneratorCard : (genID: number, generatorSettings: FailureGenData) => JSX.Element, alias : string}
 
 export const flatten = (settings : number[]) => {
     let settingString = '';
@@ -140,13 +140,13 @@ export const basicData = () => {
 export const failureGeneratorsSettings = () => {
     const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
     const allGenSettings : Map<string, FailureGenData> = new Map();
-    allGenSettings.set(failureGenConfigTakeOff().genName, failureGenConfigTakeOff());
-    allGenSettings.set(failureGenConfigPerHour().genName, failureGenConfigPerHour());
-    allGenSettings.set(failureGenConfigTimer().genName, failureGenConfigTimer());
-    allGenSettings.set(failureGenConfigSpeedAccel().genName, failureGenConfigSpeedAccel());
-    allGenSettings.set(failureGenConfigSpeedDecel().genName, failureGenConfigSpeedDecel());
     allGenSettings.set(failureGenConfigAltClimb().genName, failureGenConfigAltClimb());
     allGenSettings.set(failureGenConfigAltDesc().genName, failureGenConfigAltDesc());
+    allGenSettings.set(failureGenConfigSpeedAccel().genName, failureGenConfigSpeedAccel());
+    allGenSettings.set(failureGenConfigSpeedDecel().genName, failureGenConfigSpeedDecel());
+    allGenSettings.set(failureGenConfigPerHour().genName, failureGenConfigPerHour());
+    allGenSettings.set(failureGenConfigTimer().genName, failureGenConfigTimer());
+    allGenSettings.set(failureGenConfigTakeOff().genName, failureGenConfigTakeOff());
     return {
         maxFailuresAtOnce,
         setMaxFailuresAtOnce,

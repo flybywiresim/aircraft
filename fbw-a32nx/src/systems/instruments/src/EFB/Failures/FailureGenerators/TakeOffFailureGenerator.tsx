@@ -6,6 +6,7 @@ import {
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { t } from 'instruments/src/EFB/translation';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
@@ -14,7 +15,8 @@ const additionalSetting = [0, 1, 0.33, 0.33, 30, 95, 140, 40];
 const failureGeneratorArmed :boolean[] = [];
 const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
-const genName = 'Take-Off';
+const genName = 'TakeOff';
+const alias = t('Failures.Generators.GenTakeOff');
 
 export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -24,7 +26,19 @@ export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [setting]);
-    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName, FailureGeneratorCard };
+    return {
+        setting,
+        setSetting,
+        settings,
+        numberOfSettingsPerGenerator,
+        uniqueGenPrefix,
+        additionalSetting,
+        onErase,
+        failureGeneratorArmed,
+        genName,
+        FailureGeneratorCard,
+        alias,
+    };
 };
 
 const onErase = (genID : number) => {

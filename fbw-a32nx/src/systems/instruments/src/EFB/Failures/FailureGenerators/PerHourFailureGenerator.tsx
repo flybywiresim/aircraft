@@ -6,13 +6,15 @@ import {
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { t } from 'instruments/src/EFB/translation';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 const additionalSetting = [0, 0.1];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'E';
 const failureGeneratorArmed :boolean[] = [];
-const genName = 'Chance per hour';
+const genName = 'PerHour';
+const alias = t('Failures.Generators.GenPerHour');
 
 export const failureGenConfigPerHour : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -22,7 +24,19 @@ export const failureGenConfigPerHour : ()=>FailureGenData = () => {
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [setting]);
-    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName, FailureGeneratorCard };
+    return {
+        setting,
+        setSetting,
+        settings,
+        numberOfSettingsPerGenerator,
+        uniqueGenPrefix,
+        additionalSetting,
+        onErase,
+        failureGeneratorArmed,
+        genName,
+        FailureGeneratorCard,
+        alias,
+    };
 };
 
 const onErase = (_genID : number) => {

@@ -11,21 +11,6 @@ import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
-interface GeneratorOption {
-    name: string;
-    alias: string;
-}
-
-export const failureGeneratorNames: GeneratorOption[] = [
-    { name: 'PerHour', alias: t('Failures.Generators.GenPerHour') },
-    { name: 'TakeOff', alias: t('Failures.Generators.GenTakeOff') },
-    { name: 'Timer', alias: t('Failures.Generators.GenTimer') },
-    { name: 'AltClimb', alias: t('Failures.Generators.GenAltClimb') },
-    { name: 'AltDescent', alias: t('Failures.Generators.GenAltDesc') },
-    { name: 'SpeedAccel', alias: t('Failures.Generators.GenSpeedAccel') },
-    { name: 'SpeedDecel', alias: t('Failures.Generators.GenSpeedDecel') },
-];
-
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
     const settings = failureGeneratorsSettings();
@@ -40,9 +25,9 @@ export const FailureGeneratorsUI = () => {
                         className="flex-none w-96 h-10"
                         value={chosenGen}
                         onChange={(value) => setChosenGen(value as string)}
-                        options={failureGeneratorNames.map((option) => ({
-                            value: option.name,
-                            displayValue: `${option.alias}`,
+                        options={Array.from(settings.allGenSettings.values()).map((genSetting : FailureGenData) => ({
+                            value: genSetting.genName,
+                            displayValue: `${genSetting.alias}`,
                         }))}
                         maxHeight={32}
                     />
@@ -79,17 +64,16 @@ export const FailureGeneratorsUI = () => {
 
 export const generatorsCardList : (generatorSettings : Map<string, FailureGenData>) => JSX.Element[] = (generatorSettings : Map<string, FailureGenData>) => {
     let temp : JSX.Element[] = [];
-    for (let i = 0; i < generatorSettings.size; i++) {
-        temp = temp.concat(FailureGeneratorCards(generatorSettings[i]));
-    }
+    generatorSettings.forEach((generatorSetting) => {
+        temp = temp.concat(FailureGeneratorCards(generatorSetting));
+    });
     return temp;
 };
 
 const FailureGeneratorCards : (generatorSettings: FailureGenData) => JSX.Element[] = (generatorSettings : FailureGenData) => {
     const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.settings;
-    if (setting) {
-        const nbGenerator = Math.floor(setting.length / generatorSettings.numberOfSettingsPerGenerator);
+    if (generatorSettings.settings) {
+        const nbGenerator = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
             htmlReturn.push(generatorSettings.FailureGeneratorCard(i, generatorSettings));
         }
@@ -107,7 +91,7 @@ export function FailureGeneratorCardTemplateUI(
             <div className="flex flex-row justify-between">
                 <div className="mr-4 w-1/3 text-left align-left">
                     <h2>
-                        {`${generatorSettings.uniqueGenPrefix}${genID.toString()} : ${generatorSettings.genName.toString()}`}
+                        {`${generatorSettings.uniqueGenPrefix}${genID.toString()} : ${generatorSettings.alias}`}
                     </h2>
                 </div>
                 {RearmSettingsUI(generatorSettings, genID, setNewSetting)}
@@ -138,7 +122,7 @@ const rearmButtons: (ButtonType & SettingVar)[] = [
 ];
 
 export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number,
-    setNewSetting : (newSetting: number, generatorSettings : any, genID : number, settingIndex : number) => void) {
+    setNewSetting : (newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) => void) {
     return (
         <div className="flex flex-col text-center">
             <h2>Rearming</h2>
