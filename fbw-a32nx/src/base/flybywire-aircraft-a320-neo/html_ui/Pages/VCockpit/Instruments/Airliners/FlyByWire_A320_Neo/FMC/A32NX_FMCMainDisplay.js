@@ -536,9 +536,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfTOTemp = NaN;
             this.setTakeoffFlaps(null);
             this.setTakeoffTrim(null);
-            this.v1Speed = undefined;
-            this.vRSpeed = undefined;
-            this.v2Speed = undefined;
             this.unconfirmedV1Speed = undefined;
             this.unconfirmedVRSpeed = undefined;
             this.unconfirmedV2Speed = undefined;
@@ -2826,11 +2823,13 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
      * @returns departure runway elevation in feet, or null if not available.
      */
     getDepartureElevation() {
+        const activePlan = this.flightPlanService.active;
+
         let departureElevation = null;
-        if (this.flightPlanManager.getOriginRunway()) {
-            departureElevation = this.flightPlanManager.getOriginRunway().thresholdElevation / 0.3048;
-        } else if (this.flightPlanManager.getOrigin()) {
-            departureElevation = this.flightPlanManager.getOrigin().infos.elevation;
+        if (activePlan.originRunway) {
+            departureElevation = activePlan.originRunway.thresholdLocation.alt;
+        } else if (activePlan.originAirport) {
+            departureElevation = activePlan.originAirport.location.alt;
         }
 
         return departureElevation;
