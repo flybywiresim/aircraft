@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
-import { useNavigraph, emptyNavigraphCharts, NavigraphAirportCharts } from '../../../ChartsApi/Navigraph';
+import { useNavigraph, emptyNavigraphCharts, NavigraphAirportCharts } from '../../../Apis/Navigraph/Navigraph';
 import { ChartViewer } from '../../Navigation';
 
 export const NavigraphChartUI = () => {
@@ -68,8 +68,8 @@ export const NavigraphChartUI = () => {
     useEffect(() => {
         if (chartName && (chartName.light !== '' || chartName.dark !== '')) {
             const fetchCharts = async () => {
-                const light = await navigraph.chartCall(searchQuery, chartName.light);
-                const dark = await navigraph.chartCall(searchQuery, chartName.dark);
+                const light = await navigraph.getChartImage(chartName.light);
+                const dark = await navigraph.getChartImage(chartName.dark);
                 dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
             };
             fetchCharts();
@@ -108,7 +108,7 @@ export const NavigraphChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
+        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-content-section-reduced">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>

@@ -13,7 +13,7 @@ import {
     addPinnedChart,
 } from '../../../Store/features/navigationPage';
 import { navigationTabs } from '../../Navigation';
-import { NavigraphChart } from '../../../ChartsApi/Navigraph';
+import { NavigraphChart } from '../../../Apis/Navigraph/Navigraph';
 
 interface NavigraphChartSelectorProps {
     selectedTab: OrganizedChart;
@@ -46,8 +46,8 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
             const runwayNumbers: string[] = [];
 
             selectedTab.charts.forEach((chart) => {
-                if (chart.runway.length !== 0) {
-                    chart.runway.forEach((runway) => {
+                if (chart.runways.length !== 0) {
+                    chart.runways.forEach((runway) => {
                         runwayNumbers.push(runway);
                     });
                 } else {
@@ -69,8 +69,8 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                 organizedRunwayCharts.push({
                     name: runway,
                     charts: selectedTab.charts.filter(
-                        (chart) => chart.runway.includes(runway)
-                            || (chart.runway.length === 0 && runway === NO_RUNWAY_NAME),
+                        (chart) => chart.runways.includes(runway)
+                            || (chart.runways.length === 0 && runway === NO_RUNWAY_NAME),
                     ),
                 });
             });
@@ -89,7 +89,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartId: chart.id }));
 
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartDimensions: { width: undefined, height: undefined } }));
-        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartName: { light: chart.fileDay, dark: chart.fileNight } }));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartName: { light: chart.fileUrlDay, dark: chart.fileUrlNight } }));
 
         dispatch(setBoundingBox(chart.boundingBox));
 
@@ -125,7 +125,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                     <>
                         {organizedCharts.map((item) => (
                             <div className="flex overflow-hidden flex-col w-full rounded-md divide-y-2 divide-gray-700" key={item.name}>
-                                <span className="p-1 text-center bg-theme-secondary rounded-t-lg">{item.name}</span>
+                                <span className="p-1 text-center rounded-t-lg bg-theme-secondary">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
                                         className="flex flex-row bg-theme-accent"
@@ -138,7 +138,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                                 : 'bg-theme-secondary'}`}
                                             />
                                             <div
-                                                className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                                                className="flex items-center px-2 h-full transition duration-100 hover:text-theme-body hover:bg-theme-highlight"
                                                 onClick={(event) => {
                                                     event.stopPropagation();
 
@@ -147,9 +147,9 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                                     } else {
                                                         dispatch(addPinnedChart({
                                                             chartId: chart.id,
-                                                            chartName: { light: chart.fileDay, dark: chart.fileNight },
+                                                            chartName: { light: chart.fileUrlDay, dark: chart.fileUrlNight },
                                                             title: searchQuery,
-                                                            subTitle: chart.procedureIdentifier,
+                                                            subTitle: chart.name,
                                                             tabIndex: selectedTabIndex,
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
@@ -169,8 +169,8 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                             </div>
                                         </div>
                                         <div className="flex flex-col m-2">
-                                            <span>{chart.procedureIdentifier}</span>
-                                            <span className="px-2 mt-0.5 mr-auto text-sm text-theme-text bg-theme-secondary rounded-md">
+                                            <span>{chart.name}</span>
+                                            <span className="px-2 mt-0.5 mr-auto text-sm rounded-md text-theme-text bg-theme-secondary">
                                                 {chart.indexNumber}
                                             </span>
                                         </div>
@@ -184,7 +184,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                     <>
                         {selectedTab.charts.map((chart) => (
                             <div
-                                className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
+                                className="flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
                                 onClick={() => handleChartClick(chart)}
                                 key={chart.id}
                             >
@@ -194,7 +194,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                         : 'bg-theme-secondary'}`}
                                     />
                                     <div
-                                        className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                                        className="flex items-center px-2 h-full transition duration-100 hover:text-theme-body hover:bg-theme-highlight"
                                         onClick={(event) => {
                                             event.stopPropagation();
 
@@ -203,9 +203,9 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                             } else {
                                                 dispatch(addPinnedChart({
                                                     chartId: chart.id,
-                                                    chartName: { light: chart.fileDay, dark: chart.fileNight },
+                                                    chartName: { light: chart.fileUrlDay, dark: chart.fileUrlNight },
                                                     title: searchQuery,
-                                                    subTitle: chart.procedureIdentifier,
+                                                    subTitle: chart.name,
                                                     tabIndex: selectedTabIndex,
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
@@ -225,9 +225,9 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                     </div>
                                 </div>
                                 <div className="flex flex-col m-2">
-                                    <span>{chart.procedureIdentifier}</span>
+                                    <span>{chart.name}</span>
                                     <span
-                                        className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
+                                        className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
                                     >
                                         {chart.indexNumber}
                                     </span>
