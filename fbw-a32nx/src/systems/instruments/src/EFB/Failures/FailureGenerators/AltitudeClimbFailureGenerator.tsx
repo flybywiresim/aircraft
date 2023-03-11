@@ -53,7 +53,7 @@ const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData
 
 export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
-    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
+    const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
     const settingsAltClimb : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
@@ -93,7 +93,7 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
                 console.info('Climb altitude failure armed at %d m', settingsAltClimb[i * numberOfSettingsPerGenerator + 1]);
             }
         }
-    }, [absoluteTime500ms]);
+    }, [absoluteTime1s]);
 
     useEffect(() => {
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);

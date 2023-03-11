@@ -83,7 +83,10 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
 
-    const settingsTakeOff : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
+    const settingsTakeOff : number[] = useMemo<number[]>(() => {
+        console.info('ici');
+        return failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+    }, [failureGeneratorSetting]);
 
     const nbGeneratorTakeOff = useMemo(() => Math.floor(settingsTakeOff.length / numberOfSettingsPerGenerator), [settingsTakeOff]);
     const { failureFlightPhase } = basicData();

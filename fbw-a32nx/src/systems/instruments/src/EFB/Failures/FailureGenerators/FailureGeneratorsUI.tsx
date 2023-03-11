@@ -148,8 +148,8 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
 export function FailureGeneratorFailureSetting(title:string, width : number,
     unit : string, min:number, max:number,
     value: number, mult : number,
-    last : boolean, setNewSetting : (newSetting: number, generatorSettings: any, genID: number, settingIndex: number) => void,
-    generatorSettings : any, genIndex, settingIndex : number) {
+    last : boolean, setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    generatorSettings : FailureGenData, genIndex : number, settingIndex : number) {
     const multCheck = mult === 0 ? 1 : mult;
     return (
         <div className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}>
