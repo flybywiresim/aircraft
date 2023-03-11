@@ -16,6 +16,8 @@
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "指定トラックを右に調整する (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU利用可能",
       "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "禁煙サインをオートにする",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NXは数百名の個人の協力者によって作られました。",
       "A32NX.LOADING.TIPS.A320NEO_002": "ご存じですか？A320は横風38ノットまで、追い風15ノットまで着陸可能です。",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWireはAirbus A320で初めて導入されたフライ・バイ・ワイヤにちなんで名付けられました。",

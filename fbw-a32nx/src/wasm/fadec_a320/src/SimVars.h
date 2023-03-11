@@ -102,6 +102,7 @@ class SimVars {
   ENUM FuelPump = get_aircraft_var_enum("FUELSYSTEM PUMP ACTIVE");
   ENUM FuelValve = get_aircraft_var_enum("FUELSYSTEM VALVE OPEN");
   ENUM FuelLineFlow = get_aircraft_var_enum("FUELSYSTEM LINE FUEL FLOW");
+  ENUM FuelJunctionSetting = get_aircraft_var_enum("FUELSYSTEM JUNCTION SETTING");
 
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
 
@@ -420,4 +421,5 @@ class SimVars {
   FLOAT64 getPump(int index) { return aircraft_varget(FuelPump, m_Units->Number, index); }
   FLOAT64 getValve(int index) { return aircraft_varget(FuelValve, m_Units->Number, index); }
   FLOAT64 getLineFlow(int index) { return aircraft_varget(FuelLineFlow, m_Units->Gph, index); }
+  FLOAT64 getJunctionSetting(int index) { return aircraft_varget(FuelJunctionSetting, m_Units->Number, index); }
 };

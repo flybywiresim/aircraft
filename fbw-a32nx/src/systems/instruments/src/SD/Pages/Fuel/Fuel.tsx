@@ -19,6 +19,8 @@ export const FuelPage = () => {
     const [tankRightOuter] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'gallons', 500);
     const [leftOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
     const [rightOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
+    const [modelSelectManual] = useSimVar('L:A32NX_OVHD_FUEL_MODESEL_MANUAL', 'bool', 500);
+    const [autoShutoffRequired] = useSimVar('FUELSYSTEM TRIGGER STATUS:9', 'bool', 500);
 
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
@@ -100,24 +102,23 @@ export const FuelPage = () => {
                 )}
 
                 {/* Centre Tank Transfer Valves */}
-                {/* FIXME MODE SEL not implemented */}
                 <CentreToInnerTransfer
                     x={267}
                     y={223}
                     side="L"
                     centreTankLevel={tankCenter}
-                    modeSelectManual={false}
-                    onGround={onGround}
-                    innerTankLevel={tankLeftInner}
+                    modeSelectManual={!!modelSelectManual}
+                    autoShutoffRequired={!!autoShutoffRequired}
+                    onGround={!!onGround}
                 />
                 <CentreToInnerTransfer
                     x={302}
                     y={223}
                     side="R"
                     centreTankLevel={tankCenter}
-                    modeSelectManual={false}
-                    onGround={onGround}
-                    innerTankLevel={tankRightInner}
+                    modeSelectManual={!!modelSelectManual}
+                    autoShutoffRequired={!!autoShutoffRequired}
+                    onGround={!!onGround}
                 />
 
                 {/* Quantities */}
@@ -378,21 +379,21 @@ interface CentreToInnerTransferProps {
     x: number,
     y: number,
     side: 'L' | 'R',
+    /** centre tank level in gallons */
     centreTankLevel: number,
-    innerTankLevel: number,
     modeSelectManual: boolean,
+    autoShutoffRequired: boolean,
     onGround: boolean,
 }
 
-const CentreToInnerTransfer: FC<CentreToInnerTransferProps> = ({ side, centreTankLevel, innerTankLevel, x, y, modeSelectManual, onGround }) => {
+const CentreToInnerTransfer: FC<CentreToInnerTransferProps> = ({ side, centreTankLevel, x, y, modeSelectManual, autoShutoffRequired, onGround }) => {
     // the valve is actually implemented as a pair of valves in series due to the way the MSFS fuel system triggers work
-    const [transferValveAuto] = useSimVar(`A:FUELSYSTEM VALVE OPEN:${side === 'R' ? 10 : 9}`, 'percent over 100', 1000);
-    const [transferValveInhibit] = useSimVar(`A:FUELSYSTEM VALVE OPEN:${side === 'R' ? 12 : 11}`, 'percent over 100', 1000);
-    const [transferValveSwitch] = useSimVar(`A:FUELSYSTEM VALVE SWITCH:${side === 'R' ? 12 : 11}`, 'boolean', 1000);
+    const [transferValveAuto] = useSimVar(`A:FUELSYSTEM VALVE OPEN:${side === 'R' ? 12 : 11}`, 'percent over 100', 1000);
+    const [transferValveInhibit] = useSimVar(`A:FUELSYSTEM VALVE OPEN:${side === 'R' ? 10 : 9}`, 'percent over 100', 1000);
+    const [transferValveSwitch] = useSimVar(`A:FUELSYSTEM VALVE SWITCH:${side === 'R' ? 10 : 9}`, 'boolean', 1000);
+    const [transferJunction] = useSimVar(`A:FUELSYSTEM JUNCTION SETTING:${side === 'R' ? 5 : 4}`, 'number', 1000);
     const [transferValveFullyOpen, setTransferValveFullyOpen] = useState(false);
     const [transferValveFullyClosed, setTransferValveFullyClosed] = useState(false);
-    const [autoShutoffRequired, setAutoShutoffRequired] = useState(false);
-    const [innerTankHighLevel, setInnerTankHighLevel] = useState(false);
     const [centreTankLowLevel, setCentreTankLowLevel] = useState(false);
 
     const [pumpClass, setPumpClass] = useState('GreenLine');
@@ -401,21 +402,28 @@ const CentreToInnerTransfer: FC<CentreToInnerTransferProps> = ({ side, centreTan
     const [faultClass, setFaultClass] = useState('Hide');
     const [transferClass, setTransferClass] = useState('Hide');
 
-    useEffect(() => setInnerTankHighLevel(innerTankLevel >= 468), [innerTankLevel]);
-    useEffect(() => setCentreTankLowLevel(centreTankLevel >= 468), [centreTankLevel]);
-    useEffect(() => setAutoShutoffRequired(innerTankHighLevel && transferValveAuto > 0.01), [innerTankHighLevel, transferValveAuto]);
+    useEffect(() => setCentreTankLowLevel(centreTankLevel <= 42.8), [centreTankLevel]);
 
     useEffect(() => {
-        const valvePosition = Math.min(transferValveAuto, transferValveInhibit);
+        const manualTransfer = transferJunction > 1.5;
+        const autoTransfer = transferValveAuto > 0.0 && !manualTransfer;
+        const valvePosition = (autoTransfer || manualTransfer) ? transferValveInhibit : 0;
         setTransferValveFullyOpen(valvePosition > 0.99);
         setTransferValveFullyClosed(valvePosition < 0.01);
-    }, [transferValveAuto, transferValveInhibit]);
+    }, [transferValveAuto, transferValveInhibit, transferJunction]);
 
     // "pump" state
     useEffect(() => {
+        // FIXME autoShutoffRequired is useless at the moment as FUELSYSTEM version 4 does not reflect the trigger delay in this simvar state
+        // https://devsupport.flightsimulator.com/questions/15441/fuel-fuelsystem-trigger-status-simvar-unaffected-b.html
+        const autoShutoffRequired = !modeSelectManual && !transferValveFullyOpen;
+
         const fault = transferValveFullyOpen && transferValveFullyClosed; // FIXME also data valid, or neither state for >= 6 seconds
-        const amber = !fault && ((transferValveFullyClosed && !(!modeSelectManual && (onGround || !centreTankLowLevel) && transferValveSwitch > 0 && autoShutoffRequired))
-            || !transferValveSwitch || (autoShutoffRequired && !modeSelectManual));
+
+        const amber = !fault && (
+            (transferValveFullyClosed && !(!modeSelectManual && (!centreTankLowLevel || onGround) && transferValveSwitch > 0 && autoShutoffRequired))
+            || (!transferValveFullyClosed && (transferValveSwitch === 0 || (!modeSelectManual && autoShutoffRequired)))
+        );
 
         const colourClass = amber ? 'AmberLine' : 'GreenLine';
         setPumpClass(colourClass);
@@ -426,6 +434,10 @@ const CentreToInnerTransfer: FC<CentreToInnerTransferProps> = ({ side, centreTan
 
     // transfer state
     useEffect(() => {
+        // FIXME autoShutoffRequired is useless at the moment as FUELSYSTEM version 4 does not reflect the trigger delay in this simvar state
+        // https://devsupport.flightsimulator.com/questions/15441/fuel-fuelsystem-trigger-status-simvar-unaffected-b.html
+        const autoShutoffRequired = !modeSelectManual && !transferValveFullyOpen;
+
         if (transferValveFullyClosed) {
             setTransferClass('Hide'); // FIXME also data invalid
         } else if (!transferValveSwitch || (autoShutoffRequired && !modeSelectManual)) {
@@ -433,7 +445,7 @@ const CentreToInnerTransfer: FC<CentreToInnerTransferProps> = ({ side, centreTan
         } else {
             setTransferClass('GreenLine');
         }
-    }, [transferValveFullyClosed, transferValveSwitch, autoShutoffRequired, modeSelectManual]);
+    }, [transferValveFullyClosed, transferValveSwitch, autoShutoffRequired, modeSelectManual, transferValveFullyOpen]);
 
     return (
         <g id={`CentreToInnerTransferValve${side}`} className="ThickShape">

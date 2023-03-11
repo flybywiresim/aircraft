@@ -16,6 +16,8 @@
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "De geselecteerde track naar rechts aanpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Waarschuwingslicht \"niet roken\" naar AUTO",
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU beschikbaar",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "De FlyByWire A32NX is een samenwerking tussen honderden individuele bijdragers.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Wist je dit? De A320 kan landen met zijwinden tot wel 38 knopen en staart winden tot wel 15 knopen!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire is vernoemd naar de fly-by-wire besturing welke als eerst is geïntroduceerd in de Airbus A320.",

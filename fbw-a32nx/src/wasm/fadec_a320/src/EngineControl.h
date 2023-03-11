@@ -726,16 +726,18 @@ class EngineControl {
     bool uiFuelTamper = false;
     double pumpStateLeft = simVars->getPumpStateLeft();
     double pumpStateRight = simVars->getPumpStateRight();
-    double xfrValveCenterLeft = simVars->getValve(9);
-    double xfrValveCenterRight = simVars->getValve(10);
-    double xfrDisableValveCenterLeft = simVars->getValve(11);
-    double xfrDisableValveCenterRight = simVars->getValve(12);
+    bool xfrCenterLeftManual = simVars->getJunctionSetting(4) > 1.5;
+    bool xfrCenterRightManual = simVars->getJunctionSetting(5) > 1.5;
+    bool xfrCenterLeftAuto = simVars->getValve(11) > 0.0 && !xfrCenterLeftManual;
+    bool xfrCenterRightAuto = simVars->getValve(12) > 0.0 && !xfrCenterRightManual;
+    bool xfrValveCenterLeftOpen = simVars->getValve(9) > 0.0 && (xfrCenterLeftAuto || xfrCenterLeftManual);
+    bool xfrValveCenterRightOpen = simVars->getValve(10) > 0.0 && (xfrCenterRightAuto || xfrCenterRightManual);
     double xfrValveOuterLeft1 = simVars->getValve(6);
     double xfrValveOuterLeft2 = simVars->getValve(4);
     double xfrValveOuterRight1 = simVars->getValve(7);
     double xfrValveOuterRight2 = simVars->getValve(5);
-    double lineLeftToCenterFlow = simVars->getLineFlow(23);
-    double lineRightToCenterFlow = simVars->getLineFlow(24);
+    double lineLeftToCenterFlow = simVars->getLineFlow(27);
+    double lineRightToCenterFlow = simVars->getLineFlow(28);
     double lineFlowRatio = 0;
 
     double engine1PreFF = simVars->getEngine1PreFF();  // KG/H
@@ -940,17 +942,17 @@ class EngineControl {
 
       //--------------------------------------------
       // Center Tank transfer routine
-      if (xfrValveCenterLeft > 0.0 && xfrValveCenterRight > 0.0 && xfrDisableValveCenterLeft > 0.0 && xfrDisableValveCenterRight > 0.0) {
+      if (xfrValveCenterLeftOpen && xfrValveCenterRightOpen) {
         if (lineLeftToCenterFlow < 0.1 && lineRightToCenterFlow < 0.1)
           lineFlowRatio = 0.5;
         else
           lineFlowRatio = lineLeftToCenterFlow / (lineLeftToCenterFlow + lineRightToCenterFlow);
-        
+
         xfrCenterToLeft = (fuelCenterPre - centerQuantity) * lineFlowRatio;
         xfrCenterToRight = (fuelCenterPre - centerQuantity) * (1 - lineFlowRatio);
-      } else if (xfrValveCenterLeft > 0.0 && xfrDisableValveCenterLeft > 0.0)
+      } else if (xfrValveCenterLeftOpen)
         xfrCenterToLeft = fuelCenterPre - centerQuantity;
-      else if (xfrValveCenterRight > 0.0 && xfrDisableValveCenterRight > 0.0)
+      else if (xfrValveCenterRightOpen)
         xfrCenterToRight = fuelCenterPre - centerQuantity;
 
       //--------------------------------------------
