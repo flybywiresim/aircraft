@@ -6,24 +6,23 @@ import Valve from './Valve';
 import '../../Common/CommonStyles.scss';
 
 export const CondPage = () => {
-    // Disaply trim valve position for each zone
+    // Display trim valve position for each zone
     const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
 
-    const [cockpitSelectedTemp] = useSimVar('L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB', 'number', 1000);
+    const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
     const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
     const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
 
-    const [fwdSelectedTemp] = useSimVar('L:A32NX_OVHD_COND_FWD_SELECTOR_KNOB', 'number', 1000);
+    const [fwdTrimAirValve] = useSimVar('L:A32NX_COND_FWD_TRIM_AIR_VALVE_POSITION', 'number', 1000);
     const [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 1000);
     const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
 
-    const [aftSelectedTemp] = useSimVar('L:A32NX_OVHD_COND_AFT_SELECTOR_KNOB', 'number', 1000);
+    const [aftTrimAirValve] = useSimVar('L:A32NX_COND_AFT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
     const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 1000);
     const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
-    // Note: There is a state where the hot air valve can be closed and classed as normal
-    // This is not modelled at present. Re-check when packs are done.
-    const [hotAir] = useSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'bool', 1000);
+    const [hotAirOpen] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_OPEN', 'bool', 1000);
+    const [hotAirEnabled] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_ENABLED', 'bool', 1000);
 
     return (
         <svg id="cond-page" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
@@ -46,13 +45,13 @@ export const CondPage = () => {
             <path id="PlaneSeperators" className="LightGreyLine" d="m 278,94 v96 m 179,0 v-54" />
 
             {/* Cockpit */}
-            <CondUnit title="CKPT" selectedTemp={cockpitSelectedTemp} cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x={153} y={105} offset={gaugeOffset} hotAir={hotAir} />
+            <CondUnit title="CKPT" trimAirValve={cockpitTrimAirValve} cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x={153} y={105} offset={gaugeOffset} hotAir={hotAirEnabled} />
 
             {/* Fwd */}
-            <CondUnit title="FWD" selectedTemp={fwdSelectedTemp} cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x={324} y={105} offset={gaugeOffset} hotAir={hotAir} />
+            <CondUnit title="FWD" trimAirValve={fwdTrimAirValve} cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x={324} y={105} offset={gaugeOffset} hotAir={hotAirEnabled} />
 
             {/*  Aft */}
-            <CondUnit title="AFT" selectedTemp={aftSelectedTemp} cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x={494} y={105} offset={gaugeOffset} hotAir={hotAir} />
+            <CondUnit title="AFT" trimAirValve={aftTrimAirValve} cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x={494} y={105} offset={gaugeOffset} hotAir={hotAirEnabled} />
 
             {/* Valve and tubes */}
             <g id="ValveAndTubes">
@@ -60,9 +59,9 @@ export const CondPage = () => {
                     <tspan x="706" y="306" style={{ letterSpacing: '1px' }}>HOT</tspan>
                     <tspan x="706" y="336" style={{ letterSpacing: '2px' }}>AIR</tspan>
                 </text>
-                <Valve x={650} y={312} radius={21} position={hotAir ? 'H' : 'V'} css={hotAir ? 'GreenLine' : 'AmberLine'} sdacDatum />
-                <line className={hotAir ? 'GreenLine' : 'AmberLine'} x1="195" y1="312" x2="627" y2="312" />
-                <line className={hotAir ? 'GreenLine' : 'AmberLine'} x1="672" y1="312" x2="696" y2="312" />
+                <Valve x={650} y={312} radius={21} position={hotAirOpen ? 'H' : 'V'} css={hotAirEnabled ? 'GreenLine' : 'AmberLine'} sdacDatum />
+                <line className={hotAirEnabled ? 'GreenLine' : 'AmberLine'} x1="195" y1="312" x2="627" y2="312" />
+                <line className={hotAirEnabled ? 'GreenLine' : 'AmberLine'} x1="672" y1="312" x2="696" y2="312" />
             </g>
         </svg>
     );
@@ -70,7 +69,7 @@ export const CondPage = () => {
 
 type CondUnitProps = {
     title: string,
-    selectedTemp: number,
+    trimAirValve: number,
     cabinTemp: number,
     trimTemp: number,
     x: number,
@@ -79,8 +78,8 @@ type CondUnitProps = {
     hotAir: number
 }
 
-const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, y, offset, hotAir } : CondUnitProps) => {
-    const rotateTemp = offset + (selectedTemp * 86 / 300);
+const CondUnit = ({ title, trimAirValve, cabinTemp, trimTemp, x, y, offset, hotAir } : CondUnitProps) => {
+    const rotateTemp = offset + (trimAirValve * 86 / 100);
 
     return (
         <SvgGroup x={x} y={y}>

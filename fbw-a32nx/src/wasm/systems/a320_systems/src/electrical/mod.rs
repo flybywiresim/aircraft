@@ -9,7 +9,7 @@ use self::{
 };
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 
-use uom::si::f64::*;
+use uom::si::{angular_velocity::revolution_per_minute, f64::*};
 
 #[cfg(test)]
 use systems::electrical::Battery;
@@ -28,8 +28,8 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorPower, EngineCorrectedN2,
-        EngineFirePushButtons, HydraulicGeneratorControlUnit, LgciuWeightOnWheels,
+        EmergencyElectricalState, EmergencyGeneratorControlUnit, EmergencyGeneratorPower,
+        EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -48,6 +48,7 @@ pub(super) struct A320Electrical {
     emergency_gen: EmergencyGenerator,
 }
 impl A320Electrical {
+    const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 10000.;
     pub fn new(context: &mut InitContext) -> A320Electrical {
         A320Electrical {
             galley_is_shed_id: context.get_identifier("ELEC_GALLEY_IS_SHED".to_owned()),
@@ -56,7 +57,12 @@ impl A320Electrical {
             main_galley: MainGalley::new(),
             secondary_galley: SecondaryGalley::new(),
             emergency_elec: EmergencyElectrical::new(),
-            emergency_gen: EmergencyGenerator::new(context),
+            emergency_gen: EmergencyGenerator::new(
+                context,
+                AngularVelocity::new::<revolution_per_minute>(
+                    Self::MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY,
+                ),
+            ),
         }
     }
 
@@ -71,7 +77,7 @@ impl A320Electrical {
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
-        gcu: &impl HydraulicGeneratorControlUnit,
+        gcu: &impl EmergencyGeneratorControlUnit,
         lgciu1: &impl LgciuWeightOnWheels,
     ) {
         self.alternating_current.update_main_power_sources(
@@ -2229,7 +2235,7 @@ mod a320_electrical_circuit_tests {
             }
         }
     }
-    impl HydraulicGeneratorControlUnit for TestHydraulicSystem {
+    impl EmergencyGeneratorControlUnit for TestHydraulicSystem {
         fn max_allowed_power(&self) -> Power {
             if self.emergency_motor_speed.get::<revolution_per_minute>() > 10000. {
                 Power::new::<watt>(5000.)

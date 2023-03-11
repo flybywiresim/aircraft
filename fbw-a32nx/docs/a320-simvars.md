@@ -88,14 +88,6 @@
     - Position (0-2)
     - 0 is LO, 1 is NORM, 2 is HI
 
-- A32NX_AIRCOND_HOTAIR_FAULT
-    - Bool
-    - True if fault in hot air system
-
-- A32NX_AIRCOND_HOTAIR_TOGGLE
-    - Bool
-    - True if hot air system is on
-
 - A32NX_AIRCOND_RAMAIR_TOGGLE
     - Bool
     - True if ram air is on
@@ -171,10 +163,6 @@
 - A32NX_VENTILATION_EXTRACT_TOGGLE
     - Bool
     - True if ventilation extractor on
-
-- A32NX_VENTILATION_CABFANS_TOGGLE
-    - Bool
-    - True if cabin fans on/auto
 
 - A32NX_PITOT_HEAT_AUTO
     - Bool
@@ -423,7 +411,7 @@
 - A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
     - Hz
     - The ADF active frequency that is saved for display for the left/right RMP.
-   
+
 - A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
     - Hz
     - The VOR standby frequency that is saved for display for the left/right RMP.
@@ -448,19 +436,17 @@
     - Bool
     - If the ILS is tuned via the RMP
 
-- A32NX_TO_CONFIG_FLAPS_ENTERED
-    - Bool
-    - True if the pilot has entered a FLAPS value in the PERF TAKE OFF takeoff
-
 - A32NX_TO_CONFIG_FLAPS
     - Enum
-    - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry.
+    - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry, -1 if not entered
 
 - A32NX_TO_CONFIG_THS_ENTERED
+    - ** Deprecated, see `A32NX_FM{number}_TO_PITCH_TRIM`
     - Bool
     - True if the pilot has entered a THS value in the PERF TAKEO FF takeoff
 
 - A32NX_TO_CONFIG_THS
+    - ** Deprecated, see `A32NX_FM{number}_TO_PITCH_TRIM`
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
 
@@ -978,13 +964,21 @@
     - Bool
     - Deploys the RAT manually
 
-- A32NX_HYD_RAT_STOW_POSITION
+- A32NX_RAT_STOW_POSITION
     - Percent over 100
     - RAT position, from fully stowed (0) to fully deployed (1)
 
-- A32NX_HYD_RAT_RPM
+- A32NX_RAT_RPM
     - Rpm
     - RAT propeller current RPM
+
+- A32NX_RAT_ANGULAR_POSITION
+    - Degrees
+    - RAT propeller angular position
+
+- A32NX_RAT_PROPELLER_ANGLE
+    - Percent over 100
+    - RAT propeller pitch angle (0 to 1 normalized)
 
 - A32NX_HYD_BRAKE_NORM_{brake_side}_PRESS
     - Psi
@@ -1516,7 +1510,15 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
-    - The altitude.
+    - The pressure altitude in feet.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTED_ALTITUDE_{side}
+    - Arinc429Word<Feet>
+    - The baro corrected altitude in feet.
+    - TODO currently returns pressure altitude when STD mode is selected
+    - {side}
+        - 1: Captain
+        - 2: First Officer
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
     - Arinc429Word<Knots>
@@ -1541,10 +1543,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
     - Arinc429Word<Celsius>
     - The total air temperature (TAT).
-
-- A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
-    - Arinc429Word<Celsius>
-    - The delta (deviation) from international standard atmosphere temperature.
 
 - A32NX_ADIRS_ADR_{number}_ANGLE_OF_ATTACK
     - Arinc429Word<Degrees>
@@ -1742,10 +1740,53 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
+- A32NX_FM{number}_DEST_LAT
+    - Destination latitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_DEST_LONG
+    - Destination longitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 13  | Takeoff flap conf 0               |
+      | 14  | Takeoff flap conf 1               |
+      | 15  | Takeoff flap conf 2               |
+      | 16  | Takeoff flap conf 3               |
+
+- A32NX_FM{number}_DISCRETE_WORD_3
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 16  | V1/Vr/V2 disagree                 |
+      | 17  | Takeoff speeds too low            |
+      | 18  | Takeoff speeds not inserted       |
+
 - L:A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
-    - **Temporary:** there are also simvars with _SSM suffix to carry the SSM until JS is able to write ARINC simvars
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_TO_PITCH_TRIM
+    - Takeoff pitch trim set by the pilot on the PERF TO MCDU page
+    - Arinc429<Angle>
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -2422,6 +2463,22 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Percentage flow coming out of each pack {1 or 2} into the cabin (LO: 80%, NORM: 100%, HI: 120%)
 
+- A32NX_COND_{id}_TRIM_AIR_VALVE_POSITION
+    - Percentage
+    - Percentage opening of each trim air valve (hot air)
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_HOT_AIR_VALVE_IS_ENABLED
+    - Bool
+    - True if the trim air system is enabled (pushbutton in auto and power supplied to system)
+
+- A32NX_HOT_AIR_VALVE_IS_OPEN
+    - Bool
+    - True if the trim air system is enabled and the hot air valve is open
+
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage
     - Percent rotation of the overhead temperature selectors for each of the cabin zones
@@ -2438,6 +2495,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_COND_PACK_{index}_PB_HAS_FAULT
     - Bool
     - True if pack {1 or 2} has a fault
+
+- A32NX_OVHD_COND_HOT_AIR_PB_IS_ON
+    - Bool
+    - True if the hot air pushbutton is pressed in the on position (no white light)
+
+- A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT
+    - Bool
+    - True if the hot air trim system has a fault
 
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet
@@ -2465,7 +2530,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent open of the cabin pressure safety valves
 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
-    - **Deprecated**
+    - **Deprecated**, - ** Deprecated, see `A32NX_FM{number}_LANDING_ELEVATION`
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
 
@@ -2500,6 +2565,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PRESS_DITCHING_PB_IS_ON
     - Bool
     - True if DITCHING pushbutton is pressed
+
+- A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON
+    - Bool
+    - True if CAB FANS pushbutton is in the on position (no white light)
 
 - A32NX_PACKS_{number}_IS_SUPPLYING
     - Bool
@@ -2551,6 +2620,25 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE:
+    - Pressure measured at the intermediate pressure transducer, -1 if no output
+    - psi
+
+- A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
+    - Pressure measured at the transfer pressure transducer, -1 if no output
+    - psi
+    - Only on the A380X
+
+- A32NX_PNEU_ENG_{number}_REGULATED_TRANSDUCER_PRESSURE
+    - Pressure measured at the regulated pressure transducer, -1 if no output
+    - psi
+    - Only on the A380X
+
+- A32NX_PNEU_ENG_{number}_DIFFERENTIAL_TRANSDUCER_PRESSURE
+    - Pressure measured at the differential pressure transducer, -1 if no output
+    - psi
+    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
     - Temperature in intermediate pressure compression chamber
@@ -3426,7 +3514,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
-
 ## Radio Altimeter (ATA 34)
 
 - A32NX_RA_{number}_RADIO_ALTITUDE
@@ -3442,13 +3529,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Boolean
     - Read/Write
     - Whether the pushback system is enabled
-    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system 
+    - Further conditions are "Pushback Tug Attached" and "Aircraft On Ground" otherwise the system
       has no impact on the aircraft
 
 - A32NX_PUSHBACK_SPD_FACTOR
     - Number
     - Read/Write
-    - Determines the speed of the pushback tug from -100% to 100% 
+    - Determines the speed of the pushback tug from -100% to 100%
     - {number}
         - -1.0
         - 1.0
@@ -3456,7 +3543,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PUSHBACK_HDG_FACTOR
     - Number
     - Read/Write
-    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0) 
+    - Determines the heading of the pushback tug from max left (-1.0) to right (1.0)
     - {number}
         - -1.0
         - 1.0

@@ -68,8 +68,8 @@ struct base_prim_discrete_inputs
   boolean_T is_unit_3;
   boolean_T capt_priority_takeover_pressed;
   boolean_T fo_priority_takeover_pressed;
-  boolean_T ap_1_puhsbutton_pressed;
-  boolean_T ap_2_puhsbutton_pressed;
+  boolean_T ap_1_pushbutton_pressed;
+  boolean_T ap_2_pushbutton_pressed;
   boolean_T fcu_healthy;
   boolean_T athr_pushbutton;
   boolean_T ir_3_on_capt;
@@ -280,6 +280,40 @@ struct base_prim_out_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+
+struct base_sec_out_bus
+{
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 rudder_pedal_position_deg;
+  base_arinc_429 aileron_status_word;
+  base_arinc_429 left_aileron_1_position_deg;
+  base_arinc_429 left_aileron_2_position_deg;
+  base_arinc_429 right_aileron_1_position_deg;
+  base_arinc_429 right_aileron_2_position_deg;
+  base_arinc_429 spoiler_status_word;
+  base_arinc_429 left_spoiler_1_position_deg;
+  base_arinc_429 right_spoiler_1_position_deg;
+  base_arinc_429 left_spoiler_2_position_deg;
+  base_arinc_429 right_spoiler_2_position_deg;
+  base_arinc_429 elevator_status_word;
+  base_arinc_429 elevator_1_position_deg;
+  base_arinc_429 elevator_2_position_deg;
+  base_arinc_429 elevator_3_position_deg;
+  base_arinc_429 ths_position_deg;
+  base_arinc_429 rudder_status_word;
+  base_arinc_429 rudder_1_position_deg;
+  base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 fctl_law_status_word;
+  base_arinc_429 misc_data_status_word;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_bus_inputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_bus_inputs_
 
@@ -312,9 +346,9 @@ struct base_prim_bus_inputs
   real_T fcu_opp_bus;
   base_prim_out_bus prim_x_bus;
   base_prim_out_bus prim_y_bus;
-  real_T sec_1_bus;
-  real_T sec_2_bus;
-  real_T sec_3_bus;
+  base_sec_out_bus sec_1_bus;
+  base_sec_out_bus sec_2_bus;
+  base_sec_out_bus sec_3_bus;
 };
 
 #endif

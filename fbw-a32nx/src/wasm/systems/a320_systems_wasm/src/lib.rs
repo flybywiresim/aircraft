@@ -173,6 +173,15 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             32_025,
             FailureType::GearActuatorJammed(GearActuatorId::GearDoorRight),
         ),
+        (
+            32_100,
+            FailureType::BrakeHydraulicLeak(HydraulicColor::Green),
+        ),
+        (
+            32_101,
+            FailureType::BrakeHydraulicLeak(HydraulicColor::Yellow),
+        ),
+        (32_150, FailureType::BrakeAccumulatorGasLeak),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
     ])
@@ -216,6 +225,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PLANE HEADING DEGREES TRUE", "Degrees", 0)?
     .provides_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?
     .provides_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?
+    .provides_aircraft_variable("PRESSURE ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("PUSHBACK STATE", "Enum", 0)?
     .provides_aircraft_variable("PUSHBACK ANGLE", "Radians", 0)?
     .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?

@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
-import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
+import { EfisNdRangeValue, EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { TopMessages } from '../elements/TopMessages';
@@ -18,7 +18,7 @@ import { TerrainMap } from '../elements/TerrainMap';
 export interface ArcModeProps {
     symbols: NdSymbol[],
     adirsAlign: boolean,
-    rangeSetting: RangeSetting,
+    rangeSetting: EfisNdRangeValue,
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
@@ -43,13 +43,13 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting, 492, trueHeading.value);
+        params.compute(ppos, 0, rangeSetting, 492, trueHeading.value);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting, 492, trueHeading.value);
+        mapParams.compute(ppos, 0, rangeSetting, 492, trueHeading.value);
     }, [ppos.lat, ppos.long, trueHeading.value, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
@@ -81,8 +81,8 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             <TrackLine x={384} y={620} heading={heading} track={track} />
                         )}
                     </g>
-                    <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} trueRef={trueRef} />
-                    <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} trueRef={trueRef} />
+                    <RadioNeedle index={1} side={side} displayMode={EfisNdMode.ARC} centreHeight={620} trueRef={trueRef} />
+                    <RadioNeedle index={2} side={side} displayMode={EfisNdMode.ARC} centreHeight={620} trueRef={trueRef} />
                 </g>
 
                 <ToWaypointIndicator side={side} trueRef={trueRef} />
@@ -94,7 +94,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                 <Plane />
                 <CrossTrack x={390} y={646} side={side} />
                 <g clipPath="url(#arc-mode-tcas-clip)">
-                    <Traffic mode={Mode.ARC} mapParams={mapParams} />
+                    <Traffic mode={EfisNdMode.ARC} mapParams={mapParams} />
                 </g>
             </>
         );
@@ -506,7 +506,7 @@ const ArcModeOverlayHeadingRing = memo(() => (
 ));
 
 type MapFailOverlayProps = {
-    rangeSetting: RangeSetting,
+    rangeSetting: EfisNdRangeValue,
 }
 
 const MapFailOverlay: React.FC<MapFailOverlayProps> = memo(({ rangeSetting }) => (
@@ -590,7 +590,8 @@ const Plane: React.FC = memo(() => (
     <g>
         <line id="lubber-shadow" x1={384} y1={108} x2={384} y2={148} className="shadow" strokeWidth={5.5} strokeLinejoin="round" strokeLinecap="round" />
         <line id="lubber" x1={384} y1={108} x2={384} y2={148} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
-        <image x={342} y={596} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
+        <path id="plane-shadow" d="M 384 594 l 0 75 m -37 -49 l 74 0 m -50 36 l 26 0" className="shadow" strokeWidth={5.5} strokeLinejoin="round" strokeLinecap="round" />
+        <path id="plane" d="M 384 594 l 0 75 m -37 -49 l 74 0 m -50 36 l 26 0" className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
     </g>
 ));
 

@@ -1,9 +1,9 @@
 import { DisplayManagementComputer } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
-import { PFDComponent } from './PFD';
-import { AdirsValueProvider } from './shared/AdirsValueProvider';
+import { getDisplayIndex, PFDComponent } from './PFD';
+import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
-import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
+import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
@@ -21,7 +21,7 @@ class A32NX_PFD extends BaseInstrument {
 
     private readonly clock: Clock;
 
-    private readonly adirsValueProvider: AdirsValueProvider;
+    private adirsValueProvider: AdirsValueProvider<PFDSimvars>;
 
     private readonly displayManagementComputer: DisplayManagementComputer;
 
@@ -41,7 +41,6 @@ class A32NX_PFD extends BaseInstrument {
         this.arincProvider = new ArincValueProvider(this.bus);
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
-        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
         this.displayManagementComputer = new DisplayManagementComputer(this.bus);
     }
 
@@ -60,6 +59,8 @@ class A32NX_PFD extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
+        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, getDisplayIndex() === 1 ? 'L' : 'R');
+
         this.arincProvider.init();
         this.clock.init();
         this.displayManagementComputer.init();
@@ -73,7 +74,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('pitch');
         this.simVarPublisher.subscribe('roll');
         this.simVarPublisher.subscribe('magHeadingRaw');
-        this.simVarPublisher.subscribe('altitude');
+        this.simVarPublisher.subscribe('baroCorrectedAltitude');
         this.simVarPublisher.subscribe('speed');
         this.simVarPublisher.subscribe('noseGearCompressed');
         this.simVarPublisher.subscribe('leftMainGearCompressed');
@@ -174,10 +175,8 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('xtk');
         this.simVarPublisher.subscribe('ldevRequestLeft');
         this.simVarPublisher.subscribe('ldevRequestRight');
-        this.simVarPublisher.subscribe('landingElevation1');
-        this.simVarPublisher.subscribe('landingElevation1Ssm');
-        this.simVarPublisher.subscribe('landingElevation2');
-        this.simVarPublisher.subscribe('landingElevation2Ssm');
+        this.simVarPublisher.subscribe('landingElevation1Raw');
+        this.simVarPublisher.subscribe('landingElevation2Raw');
 
         this.simVarPublisher.subscribe('fcdc1DiscreteWord1Raw');
         this.simVarPublisher.subscribe('fcdc2DiscreteWord1Raw');
@@ -226,6 +225,9 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('slatPosLeft');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+
+        // Remove "instrument didn't load" text
+        document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();
     }
 
     /**

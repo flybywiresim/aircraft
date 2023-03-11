@@ -13,9 +13,9 @@ class CDUAtcTextFansB {
     static CreateMessages(messages, data) {
         let extension = null;
         if (data.performance) {
-            extension = Atsu.CpdlcMessagesDownlink["DM66"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM66"][1].deepCopy();
         } else if (data.weather) {
-            extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         }
 
         let updated = false;
@@ -113,11 +113,11 @@ class CDUAtcTextFansB {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansB.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     if (CDUAtcTextFansB.CreateMessages(mcdu, messages, data)) {
-                        mcdu.atsu.atc.updateMessage(messages[0]);
+                        mcdu.atsu.updateMessage(messages[0]);
                     } else {
                         mcdu.atsu.registerMessages(messages);
                     }

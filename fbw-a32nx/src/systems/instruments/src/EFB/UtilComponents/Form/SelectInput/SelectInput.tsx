@@ -82,7 +82,10 @@ export const SelectInput = (props: SelectInputProps) => {
                             {props.options.map((option) => (
                                 (value !== option.displayValue || props.forceShowAll) && (
                                     option.tooltip ? (
-                                        <TooltipWrapper text={option.tooltip}>
+                                        <TooltipWrapper
+                                            key={option.value}
+                                            text={option.tooltip}
+                                        >
                                             <div
                                                 className="py-1.5 px-3 hover:text-theme-body hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
                                                 onClick={() => onOptionClicked(option)}
@@ -92,6 +95,7 @@ export const SelectInput = (props: SelectInputProps) => {
                                         </TooltipWrapper>
                                     ) : (
                                         <div
+                                            key={option.value}
                                             className="py-1.5 px-3 hover:text-theme-body hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
                                             onClick={() => onOptionClicked(option)}
                                         >

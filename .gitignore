@@ -38,6 +38,8 @@
 
 /fbw-a32nx/*
 !/fbw-a32nx/README.md
+!/fbw-a32nx/mach.config.js
+!/fbw-a32nx/.env
 !/fbw-a32nx/docs/
 !/fbw-a32nx/docs/**
 !/fbw-a32nx/src/
@@ -64,6 +66,14 @@
 !/fbw-common/**
 /fbw-common/msfs-avionics-mirror/src/sdk/build
 /fbw-common/msfs-avionics-mirror/src/sdk/build/**
+
+/fbw-ingamepanels-checklist-fix/*
+!/fbw-ingamepanels-checklist-fix/README.md
+!/fbw-ingamepanels-checklist-fix/docs/
+!/fbw-ingamepanels-checklist-fix/docs/**
+!/fbw-ingamepanels-checklist-fix/src/
+!/fbw-ingamepanels-checklist-fix/src/**
+/fbw-ingamepanels-checklist-fix/out
 
 !/scripts/**
 
@@ -106,17 +116,17 @@ target/
 #/flybywire-aircraft-a320-neo/layout.json
 #/flybywire-aircraft-a320-neo/manifest.json
 #/flybywire-aircraft-a320-neo/a32nx_build_info.json
-#/flybywire-aircraft-a320-neo/html_ui/JS/atsu/
-#/flybywire-aircraft-a320-neo/html_ui/JS/fmgc/
-#/flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/
-#/flybywire-aircraft-a320-neo/html_ui/JS/simbridge-client/
-#/flybywire-aircraft-a320-neo/html_ui/JS/tcas/
+#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/
+#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/fmgc/
+#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client/
+#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/simbridge-client/
+#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/tcas/
 #/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/*
 #!/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD
 #/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.js
 #/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.css
 #/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.html
-#/flybywire-aircraft-a320-neo/html_ui/JS/generated/**
+#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/generated/**
 #/flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated
 #!/docs/**
 #!/src/**

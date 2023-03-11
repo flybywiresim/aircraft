@@ -1,12 +1,16 @@
 use crate::{
     overhead::PressSingleSignalButton,
     shared::low_pass_filter::LowPassFilter,
-    shared::pid::PidController,
+    shared::{
+        pid::PidController, random_from_normal_distribution, random_from_range, HydraulicColor,
+    },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, StartState, UpdateContext,
+        Write,
     },
 };
 
+use std::fmt::Debug;
 use std::time::Duration;
 
 use uom::si::{
@@ -16,6 +20,7 @@ use uom::si::{
 use super::linear_actuator::Actuator;
 use super::Accumulator;
 use super::SectionPressure;
+use crate::failures::{Failure, FailureType};
 use crate::simulation::{InitContext, VariableIdentifier};
 
 struct BrakeActuator {
@@ -34,11 +39,20 @@ impl BrakeActuator {
     const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 50.;
     const PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI: f64 = 3100.;
 
-    fn new(total_displacement: Volume) -> Self {
+    fn new(context: &mut InitContext, total_displacement: Volume) -> Self {
         Self {
             total_displacement,
             base_speed: BrakeActuator::ACTUATOR_BASE_SPEED,
-            current_position: 0.,
+            // Here we consider brakes are applied on spawn where park brake should be applied
+            // This avoids actuator movement on spawn that would mess hydraulic quantities on init
+            current_position: if context.start_state() == StartState::Hangar
+                || context.start_state() == StartState::Apron
+                || context.start_state() == StartState::Runway
+            {
+                1.
+            } else {
+                0.
+            },
             required_position: 0.,
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
@@ -134,9 +148,7 @@ pub struct BrakeCircuit {
 
     pressure_limitation: Pressure,
 
-    /// Brake accumulator variables. Accumulator can have 0 volume if no accumulator
-    has_accumulator: bool,
-    accumulator: Accumulator,
+    accumulator: Option<Accumulator>,
 
     /// Common vars to all actuators: will be used by the calling loop to know what is used
     /// and what comes back to  reservoir at each iteration
@@ -145,26 +157,29 @@ pub struct BrakeCircuit {
 
     /// Fluid pressure in brake circuit filtered for cockpit gauges
     accumulator_fluid_pressure_sensor_filter: LowPassFilter<Pressure>,
+
+    leak_failure: Failure,
+    accu_gas_precharge_failure: Option<Failure>,
+    accu_gas_precharge_failure_active_previous_state: bool,
 }
 impl BrakeCircuit {
-    const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
-
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
     // Time constant of the filter used to measure brake circuit pressure
     const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: Duration = Duration::from_millis(100);
 
+    const ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S: f64 = 50.;
+
+    const BRAKE_LEAK_FAILURE_LEAKING_FLOW_GAL_PER_S: f64 = 0.1;
+    const ACCUMULATOR_GAS_FAILURE_MIN_ALLOWED_PRESSURE_PSI: f64 = 50.;
+
     pub fn new(
         context: &mut InitContext,
         id: &str,
-        accumulator_volume: Volume,
-        accumulator_fluid_volume_at_init: Volume,
+        hyd_loop_id: HydraulicColor,
+        accumulator: Option<Accumulator>,
         total_displacement: Volume,
-        circuit_target_pressure: Pressure,
     ) -> BrakeCircuit {
-        let mut has_accu = true;
-        if accumulator_volume <= Volume::new::<gallon>(0.) {
-            has_accu = false;
-        }
+        let has_accumulator = accumulator.is_some();
 
         BrakeCircuit {
             left_press_id: context.get_identifier(format!("HYD_BRAKE_{}_LEFT_PRESS", id)),
@@ -172,22 +187,15 @@ impl BrakeCircuit {
             acc_press_id: context.get_identifier(format!("HYD_BRAKE_{}_ACC_PRESS", id)),
 
             // We assume displacement is just split on left and right
-            left_brake_actuator: BrakeActuator::new(total_displacement / 2.),
-            right_brake_actuator: BrakeActuator::new(total_displacement / 2.),
+            left_brake_actuator: BrakeActuator::new(context, total_displacement / 2.),
+            right_brake_actuator: BrakeActuator::new(context, total_displacement / 2.),
 
             demanded_brake_position_left: Ratio::new::<ratio>(0.0),
             pressure_applied_left: Pressure::new::<psi>(0.0),
             demanded_brake_position_right: Ratio::new::<ratio>(0.0),
             pressure_applied_right: Pressure::new::<psi>(0.0),
             pressure_limitation: Pressure::new::<psi>(5000.0),
-            has_accumulator: has_accu,
-            accumulator: Accumulator::new(
-                Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
-                accumulator_volume,
-                accumulator_fluid_volume_at_init,
-                true,
-                circuit_target_pressure,
-            ),
+            accumulator,
             total_volume_to_actuator: Volume::new::<gallon>(0.),
             total_volume_to_reservoir: Volume::new::<gallon>(0.),
 
@@ -195,6 +203,13 @@ impl BrakeCircuit {
             accumulator_fluid_pressure_sensor_filter: LowPassFilter::<Pressure>::new(
                 Self::ACC_PRESSURE_SENSOR_FILTER_TIMECONST,
             ),
+            leak_failure: Failure::new(FailureType::BrakeHydraulicLeak(hyd_loop_id)),
+            accu_gas_precharge_failure: if has_accumulator {
+                Some(Failure::new(FailureType::BrakeAccumulatorGasLeak))
+            } else {
+                None
+            },
+            accu_gas_precharge_failure_active_previous_state: false,
         }
     }
 
@@ -207,21 +222,24 @@ impl BrakeCircuit {
         self.update_demands(brake_circuit_controller);
 
         // The pressure available in brakes is the one of accumulator only if accumulator has fluid
-        let actual_pressure_available =
-            if self.accumulator.fluid_volume() > Volume::new::<gallon>(0.) {
-                self.accumulator.raw_gas_press()
+        let actual_pressure_available = if let Some(accumulator) = &self.accumulator {
+            if accumulator.fluid_volume() > Volume::default() {
+                accumulator.raw_gas_press()
             } else {
                 section.pressure()
-            };
+            }
+        } else {
+            section.pressure()
+        };
 
         self.update_brake_actuators(context, actual_pressure_available);
 
         let delta_vol =
             self.left_brake_actuator.used_volume() + self.right_brake_actuator.used_volume();
 
-        if self.has_accumulator {
-            let mut volume_into_accumulator = Volume::new::<gallon>(0.);
-            self.accumulator.update(
+        if let Some(accumulator) = &mut self.accumulator {
+            let mut volume_into_accumulator = Volume::default();
+            accumulator.update(
                 context,
                 &mut volume_into_accumulator,
                 section.pressure(),
@@ -231,8 +249,8 @@ impl BrakeCircuit {
             // Volume that just came into accumulator is taken from hydraulic loop through volume_to_actuator interface
             self.total_volume_to_actuator += volume_into_accumulator.abs();
 
-            if delta_vol > Volume::new::<gallon>(0.) {
-                let volume_from_acc = self.accumulator.get_delta_vol(delta_vol);
+            if delta_vol > Volume::default() {
+                let volume_from_acc = accumulator.get_delta_vol(delta_vol);
                 let remaining_vol_after_accumulator_empty = delta_vol - volume_from_acc;
                 self.total_volume_to_actuator += remaining_vol_after_accumulator_empty;
             }
@@ -252,6 +270,52 @@ impl BrakeCircuit {
 
         self.accumulator_fluid_pressure_sensor_filter
             .update(context.delta(), actual_pressure_available);
+
+        self.update_failures(context, section);
+    }
+
+    fn update_failures(&mut self, context: &UpdateContext, section: &impl SectionPressure) {
+        if let Some((precharge_failure, accumulator)) = self
+            .accu_gas_precharge_failure
+            .as_ref()
+            .zip(self.accumulator.as_mut())
+        {
+            if precharge_failure.is_active() {
+                let current_pre_charge_pressure_in_accumulator =
+                    accumulator.gas_precharge_pressure();
+
+                let new_pressure_after_leak = (current_pre_charge_pressure_in_accumulator
+                    - Pressure::new::<psi>(
+                        context.delta_as_secs_f64()
+                            * Self::ACCUMULATOR_GAS_FAILURE_LEAKING_GRADIENT_PSI_PER_S,
+                    ))
+                .max(Pressure::new::<psi>(
+                    Self::ACCUMULATOR_GAS_FAILURE_MIN_ALLOWED_PRESSURE_PSI,
+                ));
+
+                accumulator.set_gas_precharge_pressure(new_pressure_after_leak);
+            } else if self.accu_gas_precharge_failure_active_previous_state {
+                // If failure was active and is now inactive we trigger this "maintenance" action once
+                // This is more a maintenance action than stoping the leak failure here as we refil gas pressure if failure is off.
+                accumulator.reset_gas_precharge_pressure_to_nominal();
+            }
+
+            self.accu_gas_precharge_failure_active_previous_state = precharge_failure.is_active();
+        }
+
+        if self.leak_failure.is_active() {
+            let leak_volume = if section.pressure_downstream_leak_valve()
+                > Pressure::new::<psi>(200.)
+            {
+                Volume::new::<gallon>(
+                    Self::BRAKE_LEAK_FAILURE_LEAKING_FLOW_GAL_PER_S * context.delta_as_secs_f64(),
+                )
+            } else {
+                Volume::default()
+            };
+
+            self.total_volume_to_actuator += leak_volume;
+        }
     }
 
     pub fn left_brake_pressure(&self) -> Pressure {
@@ -263,7 +327,9 @@ impl BrakeCircuit {
     }
 
     pub fn accumulator_fluid_volume(&self) -> Volume {
-        self.accumulator.fluid_volume()
+        self.accumulator
+            .as_ref()
+            .map_or(Volume::default(), Accumulator::fluid_volume)
     }
 
     fn update_demands(&mut self, brake_circuit_controller: &impl BrakeCircuitController) {
@@ -305,6 +371,20 @@ impl BrakeCircuit {
     fn accumulator_pressure(&self) -> Pressure {
         self.accumulator_fluid_pressure_sensor_filter.output()
     }
+
+    #[cfg(test)]
+    fn accumulator_total_volume(&self) -> Volume {
+        self.accumulator
+            .as_ref()
+            .map_or(Volume::default(), Accumulator::total_volume)
+    }
+
+    #[cfg(test)]
+    fn accumulator_gas_volume(&self) -> Volume {
+        self.accumulator
+            .as_ref()
+            .map_or(Volume::default(), Accumulator::gas_volume)
+    }
 }
 impl Actuator for BrakeCircuit {
     fn used_volume(&self) -> Volume {
@@ -321,10 +401,20 @@ impl Actuator for BrakeCircuit {
     }
 }
 impl SimulationElement for BrakeCircuit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.leak_failure.accept(visitor);
+
+        if let Some(accu_failure) = &mut self.accu_gas_precharge_failure {
+            accu_failure.accept(visitor);
+        }
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.left_press_id, self.left_brake_pressure());
         writer.write(&self.right_press_id, self.right_brake_pressure());
-        if self.has_accumulator {
+        if self.accumulator.is_some() {
             writer.write(&self.acc_press_id, self.accumulator_pressure());
         }
     }
@@ -496,6 +586,86 @@ impl Default for AutobrakeDecelerationGovernor {
     }
 }
 
+pub struct BrakeAccumulatorCharacteristics {
+    total_volume: Volume,
+    gas_precharge: Pressure,
+    target_pressure: Pressure,
+    volume_at_init: Volume,
+}
+impl BrakeAccumulatorCharacteristics {
+    // 1/20 would mean standard deviation is "full accumulator volume / 20"
+    const STANDARD_DEVIATION_RATIO_FROM_FULL_INIT_VOLUME: f64 = 1. / 20.;
+
+    // Real accumulator is considered ok if +/- 50psi from charts
+    // 16 psi std dev would give 99.7% of values inside those 50 expected psi according to normal distribution
+    const STANDARD_DEVIATION_FOR_GAS_PRE_CHARGE_DISTRIBUTION_PSI: f64 = 16.;
+
+    pub fn new(
+        total_volume: Volume,
+        gas_precharge: Pressure,
+        target_pressure: Pressure,
+        empty_after_maintenance_probability: Ratio,
+    ) -> Self {
+        let is_empty =
+            random_from_range(0., 1.) < empty_after_maintenance_probability.get::<ratio>();
+
+        let actual_gas_precharge_randomized =
+            Pressure::new::<psi>(random_from_normal_distribution(
+                gas_precharge.get::<psi>(),
+                Self::STANDARD_DEVIATION_FOR_GAS_PRE_CHARGE_DISTRIBUTION_PSI,
+            ));
+
+        let init_volume_for_target_pressure =
+            total_volume - (actual_gas_precharge_randomized / target_pressure) * total_volume;
+
+        // We take a normal distribution with mean as the full volume, and standard deviation a fraction of full volume
+        let volume_at_init_randomized = if !is_empty {
+            Volume::new::<gallon>(random_from_normal_distribution(
+                init_volume_for_target_pressure.get::<gallon>(),
+                init_volume_for_target_pressure.get::<gallon>()
+                    * Self::STANDARD_DEVIATION_RATIO_FROM_FULL_INIT_VOLUME,
+            ))
+            .min(init_volume_for_target_pressure)
+        } else {
+            Volume::default()
+        };
+
+        Self {
+            total_volume,
+            gas_precharge: actual_gas_precharge_randomized,
+            target_pressure,
+            volume_at_init: volume_at_init_randomized,
+        }
+    }
+
+    pub fn total_volume(&self) -> Volume {
+        self.total_volume
+    }
+
+    pub fn volume_at_init(&self) -> Volume {
+        self.volume_at_init
+    }
+
+    pub fn gas_precharge(&self) -> Pressure {
+        self.gas_precharge
+    }
+
+    pub fn target_pressure(&self) -> Pressure {
+        self.target_pressure
+    }
+}
+impl Debug for BrakeAccumulatorCharacteristics {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\ntotal vol: {:.2}\ninit vol {:.2}\ngas_precharge{:.2}]",
+            self.total_volume().get::<gallon>(),
+            self.volume_at_init().get::<gallon>(),
+            self.gas_precharge().get::<psi>(),
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -520,6 +690,10 @@ mod tests {
         }
 
         fn pressure_downstream_leak_valve(&self) -> Pressure {
+            self.pressure
+        }
+
+        fn pressure_downstream_priority_valve(&self) -> Pressure {
             self.pressure
         }
 
@@ -627,7 +801,7 @@ mod tests {
 
     #[test]
     fn brake_actuator_moves_with_pressure() {
-        let mut test_bed = SimulationTestBed::from(brake_actuator());
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(brake_actuator));
 
         assert!(test_bed.query_element(|e| e.current_position) == 0.);
         assert!(test_bed.query_element(|e| e.required_position) == 0.);
@@ -672,7 +846,7 @@ mod tests {
 
     #[test]
     fn brake_actuator_not_moving_without_pressure() {
-        let mut test_bed = SimulationTestBed::from(brake_actuator());
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(brake_actuator));
 
         test_bed.command_element(|e| e.set_position_demand(1.2));
 
@@ -687,7 +861,7 @@ mod tests {
 
     #[test]
     fn brake_actuator_movement_medium_pressure() {
-        let mut test_bed = SimulationTestBed::from(brake_actuator());
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(brake_actuator));
 
         test_bed.command_element(|e| e.set_position_demand(1.2));
 
@@ -725,10 +899,15 @@ mod tests {
             BrakeCircuit::new(
                 context,
                 "altn",
-                init_max_vol,
-                Volume::new::<gallon>(0.0),
+                HydraulicColor::Yellow,
+                Some(Accumulator::new(
+                    Pressure::new::<psi>(1000.),
+                    init_max_vol,
+                    Volume::default(),
+                    true,
+                    Pressure::new::<psi>(3000.),
+                )),
                 Volume::new::<gallon>(0.1),
-                Pressure::new::<psi>(3000.),
             )
         }));
 
@@ -736,11 +915,9 @@ mod tests {
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
 
-        assert!(test_bed.query_element(|e| e.accumulator.total_volume == init_max_vol));
-        assert!(
-            test_bed.query_element(|e| e.accumulator.fluid_volume() == Volume::new::<gallon>(0.0))
-        );
-        assert!(test_bed.query_element(|e| e.accumulator.gas_volume == init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_total_volume() == init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_fluid_volume() == Volume::default()));
+        assert!(test_bed.query_element(|e| e.accumulator_gas_volume() == init_max_vol));
     }
 
     #[test]
@@ -750,19 +927,24 @@ mod tests {
             BrakeCircuit::new(
                 context,
                 "altn",
-                init_max_vol,
-                init_max_vol / 2.0,
+                HydraulicColor::Yellow,
+                Some(Accumulator::new(
+                    Pressure::new::<psi>(1000.),
+                    init_max_vol,
+                    init_max_vol / 2.,
+                    true,
+                    Pressure::new::<psi>(3000.),
+                )),
                 Volume::new::<gallon>(0.1),
-                Pressure::new::<psi>(3000.),
             )
         }));
 
         assert!(test_bed.query_element(
             |e| e.left_brake_pressure() + e.right_brake_pressure() < Pressure::new::<psi>(10.0)
         ));
-        assert!(test_bed.query_element(|e| e.accumulator.total_volume == init_max_vol));
-        assert!(test_bed.query_element(|e| e.accumulator.fluid_volume() == init_max_vol / 2.0));
-        assert!(test_bed.query_element(|e| e.accumulator.gas_volume < init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_total_volume() == init_max_vol));
+        assert!(test_bed.query_element(|e| e.accumulator_fluid_volume() == init_max_vol / 2.0));
+        assert!(test_bed.query_element(|e| e.accumulator_gas_volume() < init_max_vol));
     }
 
     #[test]
@@ -863,14 +1045,19 @@ mod tests {
         BrakeCircuit::new(
             context,
             "TestBrakes",
-            init_max_vol,
-            init_max_vol / 2.0,
+            HydraulicColor::Yellow,
+            Some(Accumulator::new(
+                Pressure::new::<psi>(1000.),
+                init_max_vol,
+                init_max_vol / 2.,
+                true,
+                Pressure::new::<psi>(3000.),
+            )),
             Volume::new::<gallon>(0.1),
-            Pressure::new::<psi>(3000.),
         )
     }
 
-    fn brake_actuator() -> BrakeActuator {
-        BrakeActuator::new(Volume::new::<gallon>(0.04))
+    fn brake_actuator(context: &mut InitContext) -> BrakeActuator {
+        BrakeActuator::new(context, Volume::new::<gallon>(0.04))
     }
 }

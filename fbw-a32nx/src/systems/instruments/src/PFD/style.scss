@@ -1,10 +1,10 @@
-@import "shared/definitions";
+@import "../MsfsAvionicsCommon/definitions";
 @import "animations";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }

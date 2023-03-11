@@ -10,6 +10,7 @@ const FULL_DISPLAY_REFRESH_INTERVAL_MS = BASE_DELAY_MS + 2 * DIGIT_REFRESH_INTER
 
 const BatDisplay = ({ batteryNumber, x, y }) => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 100);
+    const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 100);
     const [voltage] = useSimVar(`L:A32NX_ELEC_BAT_${batteryNumber}_POTENTIAL`, 'Volts', 100);
     const [digits, setDigits] = useState('   ');
 
@@ -26,7 +27,7 @@ const BatDisplay = ({ batteryNumber, x, y }) => {
 
     const voltageValue = voltage.toFixed(1); // prevent unnecessary rebuilds of getDisplayValue
     const getDisplayValue: () => string = useCallback(() => {
-        if (ltsTest === 0) {
+        if (ltsTest === 0 && dc2IsPowered) {
             return '888';
         }
 

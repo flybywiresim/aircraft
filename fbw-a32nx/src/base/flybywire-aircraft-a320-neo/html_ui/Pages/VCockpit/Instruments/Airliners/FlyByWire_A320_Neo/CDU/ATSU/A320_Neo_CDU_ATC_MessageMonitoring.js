@@ -32,7 +32,7 @@ class CDUAtcMessageMonitoring {
         mcdu.page.Current = mcdu.page.ATCMessageMonitoring;
 
         if (!messages) {
-            messages = mcdu.atsu.atc.monitoredMessages();
+            messages = mcdu.atsu.monitoredMessages();
         }
 
         // regular update due to showing dynamic data on this page
@@ -62,15 +62,15 @@ class CDUAtcMessageMonitoring {
             let headerLeft = "", headerRight = "", contentStart = "";
 
             if (messages.length > (offset + i) && messages[offset + i]) {
-                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
+                headerLeft = `${messages[offset + i].Timestamp.mailboxTimestamp()} ${messages[offset + i].Direction === AtsuCommon.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessageMonitoring.TranslateCpdlcResponse(messages[offset + i].Response);
 
                 // ignore the headline with the station and the timestamp
-                const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.MCDUMonitored).split("\n");
+                const lines = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplayMonitored).split("\n");
                 let firstLine = "CPDLC";
                 if (lines.length >= 2) {
-                    firstLine = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.MCDUMonitored).split("\n")[1];
+                    firstLine = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplayMonitored).split("\n")[1];
                 }
                 if (firstLine.length <= 19) {
                     contentStart = firstLine;
@@ -153,8 +153,8 @@ class CDUAtcMessageMonitoring {
         };
         mcdu.onRightInput[5] = () => {
             if (cancelIndex > -1) {
-                Atsu.UplinkMessageStateMachine.update(mcdu.atsu, messages[cancelIndex], false);
-                mcdu.atsu.atc.updateMessage(messages[cancelIndex]);
+                AtsuCommon.UplinkMessageStateMachine.update(mcdu.atsu, messages[cancelIndex], false);
+                mcdu.atsu.updateMessage(messages[cancelIndex]);
                 CDUAtcMessageMonitoring.ShowPage(mcdu);
             }
         };

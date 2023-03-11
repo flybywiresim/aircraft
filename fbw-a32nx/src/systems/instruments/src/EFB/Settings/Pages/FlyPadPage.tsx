@@ -69,7 +69,11 @@ export const FlyPadPage = () => {
                     className="w-72"
                     value={language}
                     onChange={(value) => setLanguage(value as string)}
-                    options={languageOptions.map((option) => ({ value: option.langCode, displayValue: `${option.alias}`, tooltip: `${option.langName}` }))}
+                    options={languageOptions.map((option) => ({
+                        value: option.langCode,
+                        displayValue: `${option.alias}`,
+                        tooltip: `${option.langName}`,
+                    }))}
                     maxHeight={32}
                 />
             </SettingItem>
@@ -79,7 +83,10 @@ export const FlyPadPage = () => {
                     className="w-64"
                     value={keyboardLayout}
                     onChange={(value) => setKeyboardLayout(value as string)}
-                    options={keyboardLayoutOptions.map((option) => ({ value: option.name, displayValue: option.alias }))}
+                    options={keyboardLayoutOptions.map((option) => ({
+                        value: option.name,
+                        displayValue: option.alias,
+                    }))}
                     maxHeight={32}
                 />
             </SettingItem>
@@ -135,6 +142,7 @@ export const FlyPadPage = () => {
                     <SelectGroup>
                         {timeDisplayButtons.map((button) => (
                             <SelectItem
+                                key={button.setting}
                                 onSelect={() => setTimeDisplayed(button.setting)}
                                 selected={timeDisplayed === button.setting}
                             >
@@ -148,6 +156,7 @@ export const FlyPadPage = () => {
                         <SelectGroup>
                             {timeFormatButtons.map((button) => (
                                 <SelectItem
+                                    key={button.setting}
                                     onSelect={() => setTimeFormat(button.setting)}
                                     selected={timeFormat === button.setting}
                                 >
@@ -163,6 +172,7 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {themeButtons.map((button) => (
                         <SelectItem
+                            key={button.setting}
                             onSelect={() => handleThemeSelect(button.setting)}
                             selected={theme === button.setting}
                         >

@@ -21,6 +21,9 @@ pub mod update_iterator;
 mod random;
 pub use random::*;
 pub mod arinc429;
+pub mod arinc825;
+pub mod can_bus;
+pub mod power_supply_relay;
 
 pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;
@@ -58,7 +61,7 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait HydraulicGeneratorControlUnit {
+pub trait EmergencyGeneratorControlUnit {
     fn max_allowed_power(&self) -> Power;
     fn motor_speed(&self) -> AngularVelocity;
 }
@@ -69,6 +72,14 @@ pub trait ControlValveCommand {
 
 pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
+}
+
+pub trait RamAirTurbineController {
+    fn should_deploy(&self) -> bool;
+}
+
+pub trait AngularSpeedSensor {
+    fn speed(&self) -> AngularVelocity;
 }
 
 pub trait FeedbackPositionPickoffUnit {
@@ -176,9 +187,13 @@ pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
 }
 
-pub trait Cabin {
+pub trait CabinAir {
     fn altitude(&self) -> Length;
     fn pressure(&self) -> Pressure;
+}
+
+pub trait CabinTemperature {
+    fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature>;
 }
 
 pub trait PneumaticBleed {
@@ -192,13 +207,13 @@ pub trait EngineStartState {
     fn engine_mode_selector(&self) -> EngineModeSelector;
 }
 
-pub trait EngineBleedPushbutton {
-    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2];
+pub trait EngineBleedPushbutton<const N: usize> {
+    fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; N];
 }
 
 pub trait PackFlowValveState {
     // Pack id is 1 or 2
-    fn pack_flow_valve_open_amount(&self, pack_id: usize) -> Ratio;
+    fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool;
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
 }
 
@@ -222,6 +237,7 @@ pub enum GearWheel {
 pub trait SectionPressure {
     fn pressure(&self) -> Pressure;
     fn pressure_downstream_leak_valve(&self) -> Pressure;
+    fn pressure_downstream_priority_valve(&self) -> Pressure;
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
@@ -727,10 +743,40 @@ impl Average for Pressure {
     }
 }
 
+impl Average for ThermodynamicTemperature {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = ThermodynamicTemperature>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<kelvin>();
+            count += 1;
+        }
+
+        if count > 0 {
+            ThermodynamicTemperature::new::<kelvin>(sum / (count as f64))
+        } else {
+            ThermodynamicTemperature::new::<kelvin>(0.)
+        }
+    }
+}
+
 impl<'a> Average<&'a Pressure> for Pressure {
     fn average<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Pressure>,
+    {
+        iter.copied().average()
+    }
+}
+
+impl<'a> Average<&'a ThermodynamicTemperature> for ThermodynamicTemperature {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a ThermodynamicTemperature>,
     {
         iter.copied().average()
     }

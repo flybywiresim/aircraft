@@ -114,11 +114,11 @@ class CDUAocFreeText {
             }
 
             // create the message
-            const message = new Atsu.FreetextMessage();
+            const message = new AtsuCommon.FreetextMessage();
             if (store["reqID"] === 0) {
-                message.Network = Atsu.AtsuMessageNetwork.Hoppie;
+                message.Network = AtsuCommon.AtsuMessageNetwork.Hoppie;
             } else {
-                message.Network = Atsu.AtsuMessageNetwork.FBW;
+                message.Network = AtsuCommon.AtsuMessageNetwork.FBW;
             }
             message.Station = store["msg_to"];
             if (store["msg_line1"] !== "") {
@@ -137,7 +137,7 @@ class CDUAocFreeText {
 
             // send the message
             mcdu.atsu.sendMessage(message).then((code) => {
-                if (code === Atsu.AtsuStatusCodes.Ok) {
+                if (code === AtsuCommon.AtsuStatusCodes.Ok) {
                     store["sendStatus"] = "SENT";
                     store["msg_line1"] = "";
                     store["msg_line2"] = "";

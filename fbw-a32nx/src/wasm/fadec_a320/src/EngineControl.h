@@ -780,7 +780,7 @@ class EngineControl {
       }
     } else if (pumpStateLeft == 1 && timerLeft.elapsed() >= 2100) {
       simVars->setPumpStateLeft(0);
-      fuelLeftPre = 0;
+      //fuelLeftPre = 0;
       timerLeft.reset();
     } else if (pumpStateLeft == 2 && timerLeft.elapsed() >= 2700) {
       simVars->setPumpStateLeft(0);
@@ -800,7 +800,7 @@ class EngineControl {
       }
     } else if (pumpStateRight == 1 && timerRight.elapsed() >= 2100) {
       simVars->setPumpStateRight(0);
-      fuelRightPre = 0;
+      //fuelRightPre = 0;
       timerRight.reset();
     } else if (pumpStateRight == 2 && timerRight.elapsed() >= 2700) {
       simVars->setPumpStateRight(0);

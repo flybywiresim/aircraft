@@ -5,7 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
-import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
+import { HoppieConnector } from '@datalink/router';
 import { SENTRY_CONSENT_KEY, SentryConsentState } from '@sentry/FbwAircraftSentryClient';
 import { t } from '../../translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
@@ -204,6 +204,7 @@ export const AtsuAocPage = () => {
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
+                            key={button.setting}
                             onSelect={() => handleWeatherSource(button.setting, 'ATIS')}
                             selected={atisSource === button.setting}
                         >
@@ -217,6 +218,7 @@ export const AtsuAocPage = () => {
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
+                            key={button.setting}
                             onSelect={() => handleWeatherSource(button.setting, 'METAR')}
                             selected={metarSource === button.setting}
                         >
@@ -230,6 +232,7 @@ export const AtsuAocPage = () => {
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
+                            key={button.setting}
                             onSelect={() => handleWeatherSource(button.setting, 'TAF')}
                             selected={tafSource === button.setting}
                         >
