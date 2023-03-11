@@ -559,7 +559,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         // ATSU data
-        this.atsu = new Atsu.Atsu(this);
+        this.atsu = new AtsuFmsClient.FmsClient(this, this.flightPlanManager, this.flightPhaseManager);
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
@@ -2103,7 +2103,7 @@ class FMCMainDisplay extends BaseAirliners {
             throw NXSystemMessages.notInDatabase;
         }
 
-        this.atsu.atc.resetAtisAutoUpdate();
+        this.atsu.resetAtisAutoUpdate();
 
         return new Promise((resolve, reject) => {
             this.eraseTemporaryFlightPlan(() => {
@@ -2188,14 +2188,14 @@ class FMCMainDisplay extends BaseAirliners {
 
     async tryUpdateAltDestination(altDestIdent) {
         if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
-            this.atsu.atc.resetAtisAutoUpdate();
+            this.atsu.resetAtisAutoUpdate();
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
             return true;
         }
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
-            this.atsu.atc.resetAtisAutoUpdate();
+            this.atsu.resetAtisAutoUpdate();
             this.altDestination = airportAltDest;
             this.tryUpdateDistanceToAlt();
             return true;
@@ -2592,7 +2592,7 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
             this.atsu.connectToNetworks(flightNo)
                 .then((code) => {
-                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                         SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
                         this.addNewAtsuMessage(code);
                         this.flightNo = "";

@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "noEmit": true,
+    "typeRoots": ["../../../../fbw-common/src/typings"]
+  },
+  "include": [
+    "src/**/*",
+    "../../../../../fbw-common/src/typings/**/*.d.ts"
+  ]
+}

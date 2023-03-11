@@ -1,5 +1,5 @@
 import React from 'react';
-import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage } from '@datalink/common';
 import { Button } from './Button';
 
 type CloseButtonsProps = {

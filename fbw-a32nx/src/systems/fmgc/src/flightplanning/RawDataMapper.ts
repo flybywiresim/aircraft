@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { normaliseApproachName } from '@shared/flightplan';
+import { ApproachUtils } from '@shared/ApproachUtils';
 
 /**
  * A class for mapping raw facility data to WayPoints.
@@ -54,7 +54,13 @@ export class RawDataMapper {
             info.elevation = alt;
 
             info.approaches = facility.approaches;
-            info.approaches.forEach((approach) => approach.name = normaliseApproachName(approach.name));
+
+            info.approaches.forEach((approach) => {
+                const apprName = ApproachUtils.parseApproachName(approach.name);
+                approach.name = ApproachUtils.shortApproachName(apprName);
+                approach.longName = ApproachUtils.longApproachName(apprName)
+            });
+
             info.approaches.forEach(
                 (approach) => approach.transitions.forEach(
                     (trans) => trans.name.trim().length === 0 && (trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao)),
