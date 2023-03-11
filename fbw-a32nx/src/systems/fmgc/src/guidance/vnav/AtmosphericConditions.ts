@@ -1,15 +1,13 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { Common } from './common';
 
 export class AtmosphericConditions {
     private ambientTemperatureFromSim: Celsius;
 
     private altitudeFromSim: Feet;
-
-    // TODO use tropo from mcdu
-    private tropo = 36090;
 
     private casFromSim: Knots;
 
@@ -21,7 +19,9 @@ export class AtmosphericConditions {
 
     private computedIsaDeviation: Celsius;
 
-    constructor() {
+    private pressureAltFromSim: Feet;
+
+    constructor(private observer: VerticalProfileComputationParametersObserver) {
         this.update();
     }
 
@@ -29,10 +29,11 @@ export class AtmosphericConditions {
         this.ambientTemperatureFromSim = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
         this.altitudeFromSim = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
         this.tasFromSim = SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots');
-        this.casFromSim = this.computeCasFromTas(this.altitudeFromSim, this.tasFromSim);
+        this.casFromSim = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
         // TODO filter?
         this.windSpeedFromSim = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots');
         this.windDirectionFromSim = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'Degrees');
+        this.pressureAltFromSim = SimVar.GetSimVarValue('PRESSURE ALTITUDE', 'feet');
 
         this.computedIsaDeviation = this.ambientTemperatureFromSim - Common.getIsaTemp(this.altitudeFromSim);
     }
@@ -61,6 +62,10 @@ export class AtmosphericConditions {
         return this.windDirectionFromSim;
     }
 
+    get currentPressureAltitude(): Feet {
+        return this.pressureAltFromSim;
+    }
+
     getCurrentWindVelocityComponent(direction: DegreesTrue): Knots {
         return Math.cos(Avionics.Utils.diffAngle(direction, this.currentWindDirection)) * this.currentWindSpeed;
     }
@@ -69,8 +74,12 @@ export class AtmosphericConditions {
         return this.computedIsaDeviation;
     }
 
+    private get tropoPause(): Feet {
+        return this.observer.get().tropoPause;
+    }
+
     predictStaticAirTemperatureAtAltitude(altitude: Feet): number {
-        return Common.getIsaTemp(altitude, altitude > this.tropo) + this.isaDeviation;
+        return Common.getIsaTemp(altitude, altitude > this.tropoPause) + this.isaDeviation;
     }
 
     totalAirTemperatureFromMach(altitude: Feet, mach: number) {
@@ -79,28 +88,45 @@ export class AtmosphericConditions {
     }
 
     computeMachFromCas(altitude: Feet, speed: Knots): number {
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropo);
+        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
 
         return Common.CAStoMach(speed, deltaSrs);
     }
 
     computeCasFromMach(altitude: Feet, mach: Mach): number {
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropo);
+        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
 
         return Common.machToCas(mach, deltaSrs);
     }
 
     computeCasFromTas(altitude: Feet, speed: Knots): Knots {
-        const thetaSrs = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropo);
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropo);
+        const thetaSrs = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropoPause);
+        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
 
         return Common.TAStoCAS(speed, thetaSrs, deltaSrs);
     }
 
     computeTasFromCas(altitude: Feet, speed: Knots): Knots {
-        const thetaSrs = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropo);
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropo);
+        const thetaSrs = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropoPause);
+        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
 
         return Common.CAStoTAS(speed, thetaSrs, deltaSrs);
+    }
+
+    /**
+     * Returns a Mach number if the CAS is taken above crossover altitude.
+     * @param cas The corrected airspeed
+     * @param mach The Mach number which will be used if it is lower than the Mach number corresponding ot `cas`.
+     * @param altitude The altitude at which to perform the conversion
+     * @returns
+     */
+    casOrMach(cas: Knots, mach: Mach, altitude: Feet): Knots | Mach {
+        const machAsIas = this.computeCasFromMach(altitude, mach);
+
+        if (cas > machAsIas) {
+            return mach;
+        }
+
+        return cas;
     }
 }
