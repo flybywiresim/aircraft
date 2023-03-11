@@ -127,9 +127,6 @@ const insertUplink = (mcdu) => {
      */
     mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-
             if (originTransAlt > 0) {
                 mcdu.flightPlanManager.setOriginTransitionAltitude(originTransAlt, true);
             }
@@ -241,9 +238,6 @@ const insertCoRoute = async (mcdu) => {
 
     mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-
             if (alternateIcao) {
                 await mcdu.tryUpdateAltDestination(alternateIcao);
             }
