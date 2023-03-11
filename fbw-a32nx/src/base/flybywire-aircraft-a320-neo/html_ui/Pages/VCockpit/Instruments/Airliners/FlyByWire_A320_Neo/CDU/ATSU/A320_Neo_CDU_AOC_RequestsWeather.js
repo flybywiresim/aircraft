@@ -115,8 +115,8 @@ class CDUAocRequestsWeather {
                 }
             };
 
-            mcdu.atsu.aoc.receiveWeather(data.requestId === 0, icaos, sentRequest).then((retval) => {
-                if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
+            mcdu.atsu.receiveWeather(data.requestId === 0, icaos, sentRequest).then((retval) => {
+                if (retval[0] === AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.atsu.registerMessages([retval[1]]);
                     data.sendStatus = "";
 

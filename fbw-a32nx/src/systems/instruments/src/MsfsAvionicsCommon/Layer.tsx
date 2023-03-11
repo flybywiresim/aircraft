@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FSComponent, DisplayComponent, VNode, Subscribable, MappedSubject, ComponentProps } from 'msfssdk';
 
 export interface LayerProps extends ComponentProps {

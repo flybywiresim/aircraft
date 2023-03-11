@@ -93,9 +93,9 @@ module.exports = {
         'import/no-unresolved': 'off',
         '@typescript-eslint/no-unused-vars': ['error', {
             vars: 'all',
-            varsIgnorePattern: '^_',
+            varsIgnorePattern: '^_|^FSComponent$',
             args: 'after-used',
-            argsIgnorePattern: '^_',
+            argsIgnorePattern: '^_|^node$',
         }],
 
         'no-use-before-define': 'off',

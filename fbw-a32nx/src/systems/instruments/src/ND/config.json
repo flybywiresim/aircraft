@@ -1,5 +1,7 @@
 {
   "index": "./index.tsx",
   "isInteractive": false,
-  "additionalImports": ["/JS/fmgc/LzUtf8.js"]
+  "additionalImports": [
+    "/JS/fbw-a32nx/fmgc/LzUtf8.js"
+  ]
 }

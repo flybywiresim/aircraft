@@ -22,6 +22,7 @@
 1. [FMGC] Improved importing flight plans from MSFS World Map - @frankkopp (Frank Kopp)
 1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp (Frank Kopp)
 1. [EFB] Show correct runway numbers in landing calculator's runway widget when heading is between 0-5 degrees - @2hwk (2Cas#1022)
+1. [EFB] Added boarding time indication to Payload page - @ChristianLutzCL (Christian Lutz) @frankkopp(Frank Kopp)
 1. [ADIRU/ND/PFD] Initial support for polar navigation - @tracernz (Mike)
 1. [FLIGHTMODEL] Update gear drag - @donstim (donbikes#4084)
 1. [FLIGHTMODEL/EFB] Modified empty weight cg and loading station/fuel tank locations - @donstim (donbikes#4084)
@@ -44,6 +45,14 @@
 1. [MCDU] Reset of flight plan and stored data on Database switch - @Maverickwoe (Garoomf#4683)
 1. [FLIGHTMODEL/FUEL] Increased rate of fuel transfer from outer to inner tanks - @donstim (donbikes#4084)
 1. [MISC] Flight deck brightness and lighting is set automatically at spawn - @tracernz (Mike)
+1. [FMGC] Send full approach name to EIS - @tracernz (Mike)
+1. [FWC] Add FLAP LVR NOT ZERO warning above FL200 - @tracernz (Mike)
+1. [FWC] Improve takeoff config/range warnings - @tracernz (Mike)
+1. [FMGC/FWC] Add takeoff surveilance 1 functions - @tracernz (Mike)
+1. [ND] Improve accuracy of plane icon - @tracernz (Mike)
+1. [SYSTEM] Introduce Typescript based systems in VCockpit17 - @svengcz (Sven)
+1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
+1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
 
 ## 0.9.0
 

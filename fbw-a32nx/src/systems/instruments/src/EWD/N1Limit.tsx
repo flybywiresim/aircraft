@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';

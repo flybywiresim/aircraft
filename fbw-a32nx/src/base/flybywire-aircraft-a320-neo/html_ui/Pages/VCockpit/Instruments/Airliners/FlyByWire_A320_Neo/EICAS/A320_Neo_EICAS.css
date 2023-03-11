@@ -251,6 +251,6 @@ a320-neo-eicas-element[index="2"] #Mainframe #BottomScreen {
   height: 82%;
   z-index: 100;
   visibility: hidden;
-  background-image: url(DoorVideoResources/empty.png);
+  background-image: url(/Images/fbw-a32nx/SD/door_camera.png);
   background-size: cover;
 }

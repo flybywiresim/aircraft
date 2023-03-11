@@ -20,7 +20,7 @@ export class CompanyRoute {
      * @returns Returns the CoRoute DTO
      */
     public static async getCoRoute(route: String): Promise<coRouteCall> {
-        if (!ClientState.getInstance().isAvailable()) {
+        if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
         if (route) {
@@ -47,7 +47,7 @@ export class CompanyRoute {
      * @returns Returns a list of CoRoute DTOs
      */
     public static async getRouteList(origin: String, dest: String): Promise<coRouteCall> {
-        if (!ClientState.getInstance().isAvailable()) {
+        if (!ClientState.getInstance().isConnected()) {
             throw new Error('SimBridge is not connected.');
         }
         if (origin && dest) {

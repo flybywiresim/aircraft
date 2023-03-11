@@ -20,9 +20,9 @@ class CDUAtcLatRequestFansA {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -38,14 +38,14 @@ class CDUAtcLatRequestFansA {
             retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM22", [data.directTo]));
         }
         if (data.weatherDeviation) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.weatherDeviation).split(" ");
+            const elements = AtsuCommon.InputValidation.expandLateralOffset(data.weatherDeviation).split(" ");
             retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM27", [elements[0], elements[1]]));
         }
         if (data.offset) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.offset).split(" ");
+            const elements = AtsuCommon.InputValidation.expandLateralOffset(data.offset).split(" ");
 
             if (!data.offsetStart || /$[0-9]{4}Z^/.test(data.offsetStart)) {
-                retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM17", [!data.offsetStart ? (new Atsu.AtsuTimestamp()).dcduTimestamp() : data.offsetStart, elements[0], elements[1]]));
+                retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM17", [!data.offsetStart ? (new AtsuCommon.AtsuTimestamp()).mailboxTimestamp() : data.offsetStart, elements[0], elements[1]]));
             } else {
                 retval.push(CDUAtcLatRequestFansA.CreateRequest(mcdu, "DM16", [data.offsetStart, elements[0], elements[1]]));
             }
@@ -155,8 +155,8 @@ class CDUAtcLatRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.heading = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadDegree(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadDegree(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.heading = parseInt(value) % 360;
@@ -173,8 +173,8 @@ class CDUAtcLatRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.track = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadDegree(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadDegree(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.track = parseInt(value) % 360;
@@ -205,9 +205,9 @@ class CDUAtcLatRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.offset = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.offset = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.offset = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                     data.offsetStart = null;
                 } else {
                     mcdu.addNewAtsuMessage(error);
@@ -223,9 +223,9 @@ class CDUAtcLatRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.weatherDeviation = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.weatherDeviation = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.weatherDeviation = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -262,7 +262,7 @@ class CDUAtcLatRequestFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcLatRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcLatRequestFansA.CreateRequests(mcdu, data);
@@ -365,55 +365,54 @@ class CDUAtcLatRequestFansA {
                 let offsetStart = null;
                 let offset = null;
 
-                const error = Atsu.InputValidation.validateScratchpadOffset(entries[0]);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(entries[0]);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                     updatedOffset = true;
-                    offset = Atsu.InputValidation.formatScratchpadOffset(entries[0]);
+                    offset = AtsuCommon.InputValidation.formatScratchpadOffset(entries[0]);
                     entries.shift();
                 }
 
                 if (entries.length !== 0) {
                     const startingPoint = entries.join("/");
 
-                    Atsu.InputValidation.classifyScratchpadWaypointType(mcdu, startingPoint, true).then((type) => {
-                        if (offset || data.offset) {
-                            switch (type[0]) {
-                                case Atsu.InputWaypointType.GeoCoordinate:
-                                case Atsu.InputWaypointType.Place:
+                    const type = AtsuCommon.InputValidation.classifyScratchpadWaypointType(startingPoint, true);
+                    if (offset || data.offset) {
+                        switch (type[0]) {
+                            case AtsuCommon.InputWaypointType.GeoCoordinate:
+                            case AtsuCommon.InputWaypointType.Place:
+                                offsetStart = startingPoint;
+                                break;
+                            case AtsuCommon.InputWaypointType.Timepoint:
+                                if (startingPoint.endsWith("Z")) {
                                     offsetStart = startingPoint;
-                                    break;
-                                case Atsu.InputWaypointType.Timepoint:
-                                    if (startingPoint.endsWith("Z")) {
-                                        offsetStart = startingPoint;
-                                    } else {
-                                        offsetStart = `${startingPoint}Z`;
-                                    }
-                                    break;
-                                default:
-                                    mcdu.addNewAtsuMessage(type[1]);
-                                    offsetStart = null;
-                                    if (updatedOffset) {
-                                        offset = null;
-                                    }
-                                    break;
-                            }
+                                } else {
+                                    offsetStart = `${startingPoint}Z`;
+                                }
+                                break;
+                            default:
+                                mcdu.addNewAtsuMessage(type[1]);
+                                offsetStart = null;
+                                if (updatedOffset) {
+                                    offset = null;
+                                }
+                                break;
                         }
+                    }
 
-                        if (offset || offsetStart) {
-                            const oldOffsetStart = data.offsetStart;
-                            const oldOffset = data.offset;
+                    if (offset || offsetStart) {
+                        const oldOffsetStart = data.offsetStart;
+                        const oldOffset = data.offset;
 
-                            data.offset = offset ? offset : oldOffset;
-                            data.offsetStart = offsetStart ? offsetStart : oldOffsetStart;
-                        }
+                        data.offset = offset ? offset : oldOffset;
+                        data.offsetStart = offsetStart ? offsetStart : oldOffsetStart;
+                    }
 
-                        CDUAtcLatRequestFansA.ShowPage2(mcdu, data);
-                    });
+                    CDUAtcLatRequestFansA.ShowPage2(mcdu, data);
                 } else if (updatedOffset) {
                     if (data.offsetStart) {
                         data.offset = offset;
                     } else {
-                        mcdu.addNewAtsuMessage(Atsu.AtsuStatusCodes.FormatError);
+                        mcdu.addNewAtsuMessage(AtsuCommon.AtsuStatusCodes.FormatError);
                     }
                 } else if (error) {
                     mcdu.addNewAtsuMessage(error);
@@ -440,7 +439,7 @@ class CDUAtcLatRequestFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcLatRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcLatRequestFansA.CreateRequests(mcdu, data);
