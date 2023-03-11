@@ -141,7 +141,7 @@ export class FlightPlanManager {
 
     private sendEvent<K extends keyof FlightPlanSyncEvents>(topic: K, data: FlightPlanSyncEvents[K]): void {
         this.ignoreSync = true;
-        this.syncPub.pub(topic, data, true);
+        this.syncPub.pub(topic, data, true, false);
         this.ignoreSync = false;
     }
 
