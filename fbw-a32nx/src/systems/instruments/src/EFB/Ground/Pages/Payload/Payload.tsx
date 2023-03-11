@@ -69,7 +69,7 @@ export const Payload = () => {
     const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Kilograms', 200);
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Kilograms', 200);
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'Kilograms', 2_000);
-    const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
+    // const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Kilograms', 2_000);
 
@@ -100,11 +100,11 @@ export const Payload = () => {
     const totalCargo = useMemo(() => ((cargo && cargo.length > 0) ? cargo.reduce((a, b) => a + b) : -1), [...cargo]);
     const maxCargo = useMemo(() => ((cargoStationWeights && cargoStationWeights.length > 0) ? cargoStationWeights.reduce((a, b) => a + b) : -1), [cargoStationWeights]);
 
-    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 2_000);
-    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 2_000);
-    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 2_000);
-    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 2_000);
-    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 2_000);
+    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 7_000);
+    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 7_000);
+    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 7_000);
+    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 7_000);
+    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 7_000);
 
     const fuel = [centerCurrent, LInnCurrent, LOutCurrent, RInnCurrent, ROutCurrent];
 
@@ -522,50 +522,15 @@ export const Payload = () => {
         setCg(newCg);
         setTotalDesiredWeight(newTotalWeightDesired);
         setDesiredCg(newDesiredCg);
-
-        // TODO: Better fuel burn algorithm for estimation - consider this placeholder logic
-        // Adjust MLW CG values based on estimated fuel burn
-        if (destEfob > 0) {
-            const OUTER_CELL_KG = 228 * galToKg;
-            const INNER_CELL_KG = 1816 * galToKg;
-            let centerTank = 0;
-            let outerTanks = 0;
-            let innerTanks = 0;
-            let f = destEfob;
-
-            f -= (OUTER_CELL_KG) * 2;
-            outerTanks = ((OUTER_CELL_KG) * 2) + Math.min(f, 0);
-            if (f > 0) {
-                f -= (INNER_CELL_KG) * 2;
-                innerTanks = ((INNER_CELL_KG) * 2) + Math.min(f, 0);
-                if (f > 0) {
-                    centerTank = f;
-                }
-            }
-
-            const newMlw = newZfw + destEfob;
-            const destFuelMoment = centerTank * centerTankMoment + outerTanks * outerTankMoment + innerTanks * innerTankMoment;
-            const newMlwMoment = newZfwMoment + destFuelMoment;
-            const newMlwDesired = newZfwDesired + destEfob;
-            const newMlwDesiredMoment = newZfwDesiredMoment + destFuelMoment;
-
-            const newMlwCg = calculateCg(newMlw, newMlwMoment);
-            const newMlwDesiredCg = calculateCg(newMlwDesired, newMlwDesiredMoment);
-
-            setMlw(newMlw);
-            setMlwCg(newMlwCg);
-            setMlwDesired(newMlwDesired);
-            setMlwDesiredCg(newMlwDesiredCg);
-        } else {
-            setMlw(newGw);
-            setMlwCg(newCg);
-            setMlwDesired(newTotalWeightDesired);
-            setMlwDesiredCg(newDesiredCg);
-        }
+        // TODO: Predicted MLDW
+        setMlw(newGw);
+        setMlwCg(newCg);
+        setMlwDesired(newTotalWeightDesired);
+        setMlwDesiredCg(newDesiredCg);
     }, [
         ...desiredFlags, ...activeFlags,
         ...cargo, ...cargoDesired,
-        ...fuel, destEfob,
+        ...fuel,
         paxWeight, paxBagWeight,
         emptyWeight,
     ]);
