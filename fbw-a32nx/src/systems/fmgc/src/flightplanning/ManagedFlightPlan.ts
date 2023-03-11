@@ -143,6 +143,7 @@ export class ManagedFlightPlan {
                 ident: waypoint.ident,
                 bearingInFp: waypoint.bearingInFP,
                 distanceInFP: waypoint.distanceInFP,
+                magneticVariation: waypoint.infos.magneticVariation,
                 distanceFromPpos: distPpos,
                 timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
                 etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
@@ -1570,7 +1571,7 @@ export class ManagedFlightPlan {
     public getOriginRunway(): OneWayRunway | null {
         if (this.originAirfield) {
             if (this.procedureDetails.originRunwayIndex >= 0) {
-                return this.originAirfield.infos.oneWayRunways[this.procedureDetails.originRunwayIndex];
+                return (this.originAirfield.infos as AirportInfo).oneWayRunways[this.procedureDetails.originRunwayIndex];
             }
         }
         return null;
@@ -1579,7 +1580,7 @@ export class ManagedFlightPlan {
     public getDestinationRunway(): OneWayRunway | null {
         if (this.destinationAirfield) {
             if (this.procedureDetails.destinationRunwayIndex >= 0) {
-                return this.destinationAirfield.infos.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
+                return (this.destinationAirfield.infos as AirportInfo).oneWayRunways[this.procedureDetails.destinationRunwayIndex];
             }
         }
         return null;
