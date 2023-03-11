@@ -27,10 +27,9 @@ export class FlightPlanService {
     static version = 0;
 
     static createFlightPlans() {
-        this.flightPlanManager.create(0);
-        this.flightPlanManager.create(1);
-        this.flightPlanManager.create(2);
-        this.flightPlanManager.create(3);
+        this.flightPlanManager.create(FlightPlanIndex.Active);
+        this.flightPlanManager.create(FlightPlanIndex.Uplink);
+        this.flightPlanManager.create(FlightPlanIndex.FirstSecondary);
     }
 
     static get(index: number) {
