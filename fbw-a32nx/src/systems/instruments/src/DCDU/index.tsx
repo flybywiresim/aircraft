@@ -1,12 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { EventBus, Publisher, EventSubscriber } from 'msfssdk';
 import { useSimVar } from '@instruments/common/simVars';
-import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
-import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
-import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
-import { DclMessage } from '@atsu/messages/DclMessage';
-import { OclMessage } from '@atsu/messages/OclMessage';
-import { DcduStatusMessage } from '@atsu/components/DcduLink';
+import { useInteractionEvents } from '@instruments/common/hooks';
+import {
+    AtsuMessageComStatus,
+    AtsuMessageDirection,
+    DclMessage,
+    OclMessage,
+    CpdlcMessage,
+    CpdlcMessageMonitoringState,
+    CpdlcMessageExpectedResponseType,
+    Conversion,
+    AtsuMailboxMessages,
+    MailboxStatusMessage,
+} from '@datalink/common';
 import { SemanticResponseButtons } from './elements/SemanticResponseButtons';
 import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
@@ -40,7 +47,7 @@ export class DcduMessageBlock {
 
     public response: number = -1;
 
-    public statusMessage: DcduStatusMessage = DcduStatusMessage.NoMessage;
+    public statusMessage: MailboxStatusMessage = MailboxStatusMessage.NoMessage;
 
     public messageVisible: boolean = false;
 
@@ -60,20 +67,23 @@ const sortedMessageArray = (messages: Map<number, DcduMessageBlock>): DcduMessag
 const DcduSystemStatusDuration = 5000;
 
 const DCDU: React.FC = () => {
+    const [publisher, setPublisher] = useState<Publisher<AtsuMailboxMessages> | null>(null);
+    const [_subscriber, setSubscriber] = useState<EventSubscriber<AtsuMailboxMessages> | null>(null);
     const [electricityState] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'bool', 200);
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState((isColdAndDark) ? DcduState.Off : DcduState.On);
-    const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
-    const [systemStatusMessage, setSystemStatusMessage] = useState(DcduStatusMessage.NoMessage);
+    const [systemStatusMessage, setSystemStatusMessage] = useState(MailboxStatusMessage.NoMessage);
     const [systemStatusTimer, setSystemStatusTimer] = useState<number | null>(null);
     const [screenTimeout, setScreenTimeout] = useState<NodeJS.Timeout | null>(null);
     const [messages, setMessages] = useState(new Map<number, DcduMessageBlock>());
+    const publisherRef = useRef<Publisher<AtsuMailboxMessages> | null>();
     const messagesRef = useRef<Map<number, DcduMessageBlock>>();
     const [atcMessage, setAtcMessage] = useState('');
 
     messagesRef.current = messages;
+    publisherRef.current = publisher;
 
-    const updateSystemStatusMessage = (status: DcduStatusMessage) => {
+    const updateSystemStatusMessage = (status: MailboxStatusMessage) => {
         setSystemStatusMessage(status);
         setSystemStatusTimer(5000);
     };
@@ -102,20 +112,20 @@ const DCDU: React.FC = () => {
 
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
-            events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
+            publisherRef.current?.pub('readMessage', uid, true, false);
             entry.response = response;
         }
 
         setMessages(updateMap);
     };
 
-    const deleteMessage = (uid: number) => events.triggerToAllSubscribers('A32NX_ATSU_DELETE_MESSAGE', uid);
-    const sendMessage = (uid: number) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_MESSAGE', uid);
-    const sendResponse = (uid: number, response: number) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_RESPONSE', uid, response);
+    const deleteMessage = (uid: number) => publisherRef.current?.pub('deleteMessage', uid, true, false);
+    const sendMessage = (uid: number) => publisherRef.current?.pub('downlinkTransmit', uid, true, false);
+    const sendResponse = (uid: number, responseId: number) => publisherRef.current?.pub('uplinkResponse', { uid, responseId }, true, false);
 
     // functions to handle the internal queue
     const invertResponse = (uid: number) => {
-        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_INVERT_SEMANTIC_RESPONSE', uid);
+        publisherRef.current?.pub('invertSemanticResponse', uid, true, false);
     };
     const modifyResponse = (uid: number) => {
         if (!messagesRef.current) {
@@ -124,15 +134,15 @@ const DCDU: React.FC = () => {
 
         const message = messagesRef.current.get(uid);
         if (message) {
-            message.statusMessage = DcduStatusMessage.McduForModification;
-            events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
-            events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_MODIFY_RESPONSE', uid);
+            message.statusMessage = MailboxStatusMessage.FmsDisplayForModification;
+            publisherRef.current?.pub('readMessage', uid, true, false);
+            publisherRef.current?.pub('modifyMessage', uid, true, false);
         }
 
         setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
     };
     const recallMessage = () => {
-        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_RECALL');
+        publisherRef.current?.pub('recallMessage', true, true, false);
     };
     const closeMessage = (uid: number) => {
         if (!messagesRef.current) {
@@ -142,10 +152,10 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messages[0].UniqueMessageID === uid);
 
-        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_CLOSED', uid);
+        publisherRef.current?.pub('closeMessage', uid, true, false);
 
         if (index !== -1) {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
             // update the map
@@ -168,12 +178,8 @@ const DCDU: React.FC = () => {
             setMessages(updatedMap);
         }
     };
-    const monitorMessage = (uid: number) => {
-        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_MONITORING', uid);
-    };
-    const stopMessageMonitoring = (uid: number) => {
-        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_STOP_MONITORING', uid);
-    };
+    const monitorMessage = (uid: number) => publisherRef.current?.pub('updateMessageMonitoring', uid, true, false);
+    const stopMessageMonitoring = (uid: number) => publisherRef.current?.pub('stopMessageMonitoring', uid, true, false);
 
     // the message scroll button handling
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0MINUS', 'A32NX_DCDU_BTN_MPR_MS0MINUS'], () => {
@@ -185,10 +191,10 @@ const DCDU: React.FC = () => {
         const index = sortedMessages.findIndex((element) => element.messageVisible);
 
         if (index <= 0) {
-            setSystemStatusMessage(DcduStatusMessage.NoMoreMessages);
+            setSystemStatusMessage(MailboxStatusMessage.NoMoreMessages);
             setSystemStatusTimer(DcduSystemStatusDuration);
         } else {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
             const oldMessage = messagesRef.current.get(sortedMessages[index].messages[0].UniqueMessageID);
@@ -209,10 +215,10 @@ const DCDU: React.FC = () => {
         const index = sortedMessages.findIndex((element) => element.messageVisible);
 
         if (index + 1 >= sortedMessages.length) {
-            setSystemStatusMessage(DcduStatusMessage.NoMoreMessages);
+            setSystemStatusMessage(MailboxStatusMessage.NoMoreMessages);
             setSystemStatusTimer(DcduSystemStatusDuration);
         } else {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
             const oldMessage = messagesRef.current.get(sortedMessages[index].messages[0].UniqueMessageID);
@@ -232,140 +238,143 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messageVisible);
         if (index !== -1) {
-            events.triggerToAllSubscribers('A32NX_ATSU_PRINT_MESSAGE', sortedMessages[index].messages[0].UniqueMessageID);
+            publisherRef.current?.pub('printMessage', sortedMessages[index].messages[0].UniqueMessageID, true, false);
         }
     });
 
-    useCoherentEvent('A32NX_DCDU_RESET', () => {
-        setMessages(new Map<number, DcduMessageBlock>());
-        setAtcMessage('');
-        setSystemStatusMessage(DcduStatusMessage.NoMessage);
-        setSystemStatusTimer(null);
-    });
+    // initialize the event bus
+    useEffect(() => {
+        const eventBus = new EventBus();
+        setPublisher(eventBus.getPublisher<AtsuMailboxMessages>());
 
-    // resynchronization with ATSU
-    useCoherentEvent('A32NX_DCDU_MSG', (serializedMessages: any) => {
-        if (!messagesRef.current) {
-            return;
-        }
+        const newSubscriber = eventBus.getSubscriber<AtsuMailboxMessages>();
 
-        const cpdlcMessages: CpdlcMessage[] = [];
-
-        serializedMessages.forEach((serialized) => {
-            if (serialized.UniqueMessageID !== -1) {
-                let cpdlcMessage : CpdlcMessage | undefined = undefined;
-                if (serialized.Type === AtsuMessageType.CPDLC) {
-                    cpdlcMessage = new CpdlcMessage();
-                } else if (serialized.Type === AtsuMessageType.DCL) {
-                    cpdlcMessage = new DclMessage();
-                } else if (serialized.Type === AtsuMessageType.OCL) {
-                    cpdlcMessage = new OclMessage();
-                }
-
-                if (cpdlcMessage !== undefined) {
-                    cpdlcMessage.deserialize(serialized);
-                    cpdlcMessages.push(cpdlcMessage);
-                }
+        newSubscriber.on('resetSystem').handle(() => {
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
+            setSystemStatusTimer(null);
+            if (screenTimeout) {
+                clearTimeout(screenTimeout);
+                setScreenTimeout(null);
             }
+
+            setMessages(new Map<number, DcduMessageBlock>());
+            setAtcMessage('');
         });
 
-        if (cpdlcMessages.length !== 0) {
-            const newMessageMap = new Map<number, DcduMessageBlock>(messagesRef.current);
-            const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
-
-            if (dcduBlock !== undefined) {
-                // update the communication states and response
-                dcduBlock.messages = cpdlcMessages;
-
-                if (dcduBlock.statusMessage === DcduStatusMessage.NoMessage) {
-                    if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
-                        dcduBlock.statusMessage = DcduStatusMessage.Monitoring;
-                    } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                        dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
-                    }
-                } else if (dcduBlock.statusMessage === DcduStatusMessage.Monitoring) {
-                    if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                        dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
-                    } else if (cpdlcMessages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Monitoring) {
-                        dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
-                    }
-                } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
-                    dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
-                }
-
-                // response sent
-                if (cpdlcMessages[0].Response?.ComStatus === AtsuMessageComStatus.Sent) {
-                    dcduBlock.response = -1;
-                }
-            } else {
-                const message = new DcduMessageBlock();
-                message.messages = cpdlcMessages;
-                message.timestamp = new Date().getTime();
-                if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
-                    message.statusMessage = DcduStatusMessage.Monitoring;
-                } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                    message.statusMessage = DcduStatusMessage.MonitoringCancelled;
-                }
-                newMessageMap.set(cpdlcMessages[0].UniqueMessageID, message);
+        const handleIncomingMessages = (cpdlcMessages: CpdlcMessage[]): void => {
+            if (!messagesRef.current) {
+                return;
             }
 
-            // check if we have a semantic response and all data is available
-            if (cpdlcMessages[0].SemanticResponseRequired && cpdlcMessages[0].Response && cpdlcMessages[0].Response.Content) {
-                const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
-                if (dcduBlock) {
-                    dcduBlock.semanticResponseIncomplete = false;
-                    if (dcduBlock.statusMessage === DcduStatusMessage.NoFmData || dcduBlock.statusMessage === DcduStatusMessage.McduForModification) {
-                        dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
+            const enhancedMessages: CpdlcMessage[] = [];
+            cpdlcMessages.forEach((message) => enhancedMessages.push(Conversion.messageDataToMessage(message) as CpdlcMessage));
+
+            if (enhancedMessages.length !== 0) {
+                const newMessageMap = new Map<number, DcduMessageBlock>(messagesRef.current);
+                const dcduBlock = newMessageMap.get(enhancedMessages[0].UniqueMessageID);
+
+                if (dcduBlock !== undefined) {
+                    // update the communication states and response
+                    dcduBlock.messages = enhancedMessages;
+
+                    if (dcduBlock.statusMessage === MailboxStatusMessage.NoMessage) {
+                        if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                            dcduBlock.statusMessage = MailboxStatusMessage.Monitoring;
+                        } else if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                            dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
+                        }
+                    } else if (dcduBlock.statusMessage === MailboxStatusMessage.Monitoring) {
+                        if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                            dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
+                        } else if (enhancedMessages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Monitoring) {
+                            dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
+                        }
+                    } else if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
+                        dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
                     }
 
-                    for (const entry of cpdlcMessages[0].Response.Content[0].Content) {
-                        if (entry.Value === '') {
-                            dcduBlock.semanticResponseIncomplete = true;
-                            dcduBlock.statusMessage = DcduStatusMessage.NoFmData;
-                            break;
+                    // response sent
+                    if (enhancedMessages[0].Response?.ComStatus === AtsuMessageComStatus.Sent) {
+                        dcduBlock.response = -1;
+                    }
+                } else {
+                    const message = new DcduMessageBlock();
+                    message.messages = enhancedMessages;
+                    message.timestamp = new Date().getTime();
+                    if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                        message.statusMessage = MailboxStatusMessage.Monitoring;
+                    } else if (enhancedMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                        message.statusMessage = MailboxStatusMessage.MonitoringCancelled;
+                    }
+                    newMessageMap.set(enhancedMessages[0].UniqueMessageID, message);
+                }
+
+                // check if we have a semantic response and all data is available
+                if (enhancedMessages[0].SemanticResponseRequired && enhancedMessages[0].Response && enhancedMessages[0].Response.Content) {
+                    const dcduBlock = newMessageMap.get(enhancedMessages[0].UniqueMessageID);
+                    if (dcduBlock) {
+                        dcduBlock.semanticResponseIncomplete = false;
+                        if (dcduBlock.statusMessage === MailboxStatusMessage.NoFmData || dcduBlock.statusMessage === MailboxStatusMessage.FmsDisplayForModification) {
+                            dcduBlock.statusMessage = MailboxStatusMessage.NoMessage;
+                        }
+
+                        for (const entry of enhancedMessages[0].Response.Content[0].Content) {
+                            if (entry.Value === '') {
+                                dcduBlock.semanticResponseIncomplete = true;
+                                dcduBlock.statusMessage = MailboxStatusMessage.NoFmData;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (newMessageMap.size === 1) {
-                const message = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
-                if (message) {
-                    message.messageVisible = true;
+                if (newMessageMap.size === 1) {
+                    const message = newMessageMap.get(enhancedMessages[0].UniqueMessageID);
+                    if (message) {
+                        message.messageVisible = true;
+                    }
                 }
+
+                setMessages(newMessageMap);
+            }
+        };
+
+        newSubscriber.on('cpdlcMessages').handle((messages: CpdlcMessage[]) => handleIncomingMessages(messages));
+        newSubscriber.on('dclMessages').handle((messages: DclMessage[]) => handleIncomingMessages(messages));
+        newSubscriber.on('oclMessages').handle((messages: OclMessage[]) => handleIncomingMessages(messages));
+        newSubscriber.on('deleteMessage').handle((uid: number) => closeMessage(uid));
+        newSubscriber.on('logonMessage').handle((message: string) => setAtcMessage(message));
+        newSubscriber.on('systemStatus').handle((status: MailboxStatusMessage) => {
+            setSystemStatusMessage(status);
+            setSystemStatusTimer(5000);
+        });
+        newSubscriber.on('messageStatus').handle((data: { uid: number; status: MailboxStatusMessage }) => {
+            if (!messagesRef.current) {
+                return;
             }
 
-            setMessages(newMessageMap);
-        }
-    });
-    useCoherentEvent('A32NX_DCDU_MSG_DELETE_UID', (uid: number) => {
-        closeMessage(uid);
-    });
-    useCoherentEvent('A32NX_DCDU_ATC_LOGON_MSG', (message: string) => {
-        setAtcMessage(message);
-    });
-    useCoherentEvent('A32NX_DCDU_SYSTEM_ATSU_STATUS', (status: DcduStatusMessage) => {
-        setSystemStatusMessage(status);
-        setSystemStatusTimer(5000);
-    });
-    useCoherentEvent('A32NX_DCDU_MSG_ATSU_STATUS', (uid: number, status: DcduStatusMessage) => {
-        if (!messagesRef.current) {
-            return;
-        }
-
-        const dcduBlock = messagesRef.current.get(uid);
-        if (dcduBlock !== undefined) {
-            dcduBlock.statusMessage = status;
-            if (status === DcduStatusMessage.NoMessage) {
-                if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
-                    dcduBlock.statusMessage = DcduStatusMessage.Monitoring;
-                } else if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
-                    dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
+            const dcduBlock = messagesRef.current.get(data.uid);
+            if (dcduBlock !== undefined) {
+                dcduBlock.statusMessage = data.status;
+                if (data.status === MailboxStatusMessage.NoMessage) {
+                    if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                        dcduBlock.statusMessage = MailboxStatusMessage.Monitoring;
+                    } else if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                        dcduBlock.statusMessage = MailboxStatusMessage.MonitoringCancelled;
+                    }
                 }
+                setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
             }
-            setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
-        }
-    });
+        });
+
+        setSubscriber(newSubscriber);
+
+        // remove the subscriber to avoid memory leaks
+        return () => {
+            // TODO reset also all internal subscriber references as soon as the new MSFS SDK is in place
+            setSubscriber(null);
+        };
+    }, []);
 
     useUpdate((deltaTime) => {
         if (messagesRef.current === undefined) {
@@ -401,7 +410,7 @@ const DCDU: React.FC = () => {
             if (systemStatusTimer > 0) {
                 setSystemStatusTimer(systemStatusTimer - deltaTime);
             } else {
-                setSystemStatusMessage(DcduStatusMessage.NoMessage);
+                setSystemStatusMessage(MailboxStatusMessage.NoMessage);
                 setSystemStatusTimer(null);
             }
         }
@@ -437,7 +446,7 @@ const DCDU: React.FC = () => {
     let messageReadComplete: boolean = true;
     let visibleMessagesSemanticResponseIncomplete: boolean = false;
     let visibleMessages: CpdlcMessage[] | undefined = undefined;
-    let visibleMessageStatus: DcduStatusMessage = DcduStatusMessage.NoMessage;
+    let visibleMessageStatus: MailboxStatusMessage = MailboxStatusMessage.NoMessage;
     let response: number = -1;
     if (state === DcduState.On && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messagesRef.current);
@@ -455,16 +464,16 @@ const DCDU: React.FC = () => {
         let noUrgentMessage = true;
         arrMessages.forEach((message) => {
             if (message.messages[0].Content[0]?.Urgent && !message.messageVisible) {
-                if (systemStatusMessage !== DcduStatusMessage.PriorityMessage) {
-                    setSystemStatusMessage(DcduStatusMessage.PriorityMessage);
+                if (systemStatusMessage !== MailboxStatusMessage.PriorityMessage) {
+                    setSystemStatusMessage(MailboxStatusMessage.PriorityMessage);
                     setSystemStatusTimer(-1);
                 }
                 noUrgentMessage = false;
             }
         });
 
-        if (noUrgentMessage && systemStatusMessage === DcduStatusMessage.PriorityMessage) {
-            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+        if (noUrgentMessage && systemStatusMessage === MailboxStatusMessage.PriorityMessage) {
+            setSystemStatusMessage(MailboxStatusMessage.NoMessage);
         }
     }
 
@@ -569,7 +578,9 @@ const DCDU: React.FC = () => {
                         <SemanticResponseButtons
                             message={visibleMessages[0]}
                             reachedEndOfMessage={messageReadComplete}
-                            messageUnderModification={visibleMessageStatus === DcduStatusMessage.McduForModification || visibleMessageStatus === DcduStatusMessage.McduForText}
+                            messageUnderModification={
+                                visibleMessageStatus === MailboxStatusMessage.FmsDisplayForModification || visibleMessageStatus === MailboxStatusMessage.FmsDisplayForText
+                            }
                             dataIncomplete={visibleMessagesSemanticResponseIncomplete}
                             invertResponse={invertResponse}
                             modifyResponse={modifyResponse}

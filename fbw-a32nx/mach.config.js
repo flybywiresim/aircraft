@@ -24,7 +24,7 @@ module.exports = {
         msfsAvionicsInstrument('EWD'),
         msfsAvionicsInstrument('Clock'),
 
-        reactInstrument('ND', ['/JS/A32NX_Util.js']),
+        reactInstrument('ND', ['/JS/fbw-a32nx/A32NX_Util.js']),
         reactInstrument('SD'),
         reactInstrument('DCDU'),
         reactInstrument('RTPI'),
@@ -45,7 +45,7 @@ function msfsAvionicsInstrument(name) {
             templateId: `A32NX_${name}`,
             mountElementId: `${name}_CONTENT`,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js','/JS/A32NX_Simvars.js'],
+            imports: ['/JS/dataStorage.js','/JS/fbw-a32nx/A32NX_Simvars.js'],
         },
     };
 }
@@ -58,7 +58,7 @@ function reactInstrument(name, additionalImports) {
             type: 'react',
             isInteractive: false,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js','/JS/A32NX_Simvars.js', ...(additionalImports ?? [])],
+            imports: ['/JS/dataStorage.js','/JS/fbw-a32nx/A32NX_Simvars.js', ...(additionalImports ?? [])],
         },
     };
 }

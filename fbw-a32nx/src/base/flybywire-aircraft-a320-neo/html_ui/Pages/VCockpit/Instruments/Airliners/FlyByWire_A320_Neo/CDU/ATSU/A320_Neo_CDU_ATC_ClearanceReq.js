@@ -10,9 +10,9 @@ class CDUAtcClearanceReq {
     }
 
     static CreateRequest(mcdu) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink["DM25"][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink["DM25"][1].deepCopy());
         retval.Content[0].Content[0].Value = "DEPARTURE";
         return retval;
     }
@@ -25,7 +25,7 @@ class CDUAtcClearanceReq {
         let clearance = "{cyan}{{end}CLEARANCE";
         let transfer = ["{cyan}XFR TO\xa0{end}", "{cyan}DCDU\xa0{end}"];
         let erase = ["\xa0ALL FIELDS", "\xa0ERASE"];
-        if (mcdu.atsu.atc.fansMode() !== Atsu.FansMode.FansA) {
+        if (mcdu.atsu.fansMode() !== AtsuCommon.FansMode.FansA) {
             clearance = "<DEPARTURE";
             transfer = ["", ""];
             erase = ["", ""];
@@ -57,7 +57,7 @@ class CDUAtcClearanceReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = (value) => {
-            if (mcdu.atsu.atc.fansMode() !== Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() !== AtsuCommon.FansMode.FansA) {
                 CDUAtcDepartReq.ShowPage1(mcdu);
                 return;
             } else if (value === FMCMainDisplay.clrValue) {
@@ -87,7 +87,7 @@ class CDUAtcClearanceReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA && CDUAtcClearanceReq.CanSendData(data)) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA && CDUAtcClearanceReq.CanSendData(data)) {
                 const message = CDUAtcClearanceReq.CreateRequest(mcdu);
                 CDUAtcTextFansA.ShowPage1(mcdu, [message]);
             }
@@ -97,7 +97,7 @@ class CDUAtcClearanceReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA && CDUAtcClearanceReq.CanSendData(data)) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA && CDUAtcClearanceReq.CanSendData(data)) {
                 const message = CDUAtcClearanceReq.CreateRequest(mcdu);
                 mcdu.atsu.registerMessages([message]);
                 CDUAtcClearanceReq.ShowPage(mcdu, title);
