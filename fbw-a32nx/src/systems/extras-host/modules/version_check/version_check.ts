@@ -4,6 +4,9 @@
 import { EventBus } from 'msfssdk';
 import { AircraftVersionChecker } from '@shared/AircraftVersionChecker';
 
+/**
+ * This class is used to check the version of the aircraft and display a warning if it is too old.
+ */
 export class VersionCheck {
     constructor(private readonly bus: EventBus) {
         console.log('VersionCheck: Created');

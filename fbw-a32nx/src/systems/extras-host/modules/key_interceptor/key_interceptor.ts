@@ -5,6 +5,11 @@ import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
 import { NotificationManager } from '@shared/notification';
 import { PopUpDialog } from '@shared/popup';
 
+/**
+ * This class is used to intercept the key events for the engine auto start and engine auto shutdown.
+ *
+ * Additional key events can be added in the registerIntercepts() method.
+ */
 export class KeyInterceptor {
     private eventBus: EventBus;
 
