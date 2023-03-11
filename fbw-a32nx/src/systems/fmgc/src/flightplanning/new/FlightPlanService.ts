@@ -123,6 +123,8 @@ export class FlightPlanService {
 
     static reset() {
         this.flightPlanManager.deleteAll();
+
+        this.createFlightPlans();
     }
 
     private static prepareDestructiveModification(planIndex: FlightPlanIndex) {
