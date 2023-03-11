@@ -146,7 +146,7 @@ export class GuidanceController {
         if (appr && appr.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN) {
             const phase = getFlightPhaseManager().phase;
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250)) {
-                apprMsg = appr.name;
+                apprMsg = appr.longName;
             }
         }
 

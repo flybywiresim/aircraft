@@ -18,14 +18,14 @@ class CDUAtcOceanicReq {
         if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
             return false;
         }
-        if (mcdu.atsu.atc.currentStation() === "") {
+        if (mcdu.atsu.currentStation() === "") {
             return false;
         }
         return data.entryPoint && data.entryTime && data.requestedMach && data.requestedFlightlevel;
     }
 
     static CreateMessage(mcdu, data) {
-        const retval = new Atsu.OclMessage();
+        const retval = new AtsuCommon.OclMessage();
 
         retval.Callsign = data.callsign;
         retval.Destination = mcdu.flightPlanManager.getDestination().ident;
@@ -34,7 +34,7 @@ class CDUAtcOceanicReq {
         retval.RequestedMach = data.requestedMach;
         retval.RequestedFlightlevel = data.requestedFlightlevel;
         retval.Freetext = data.freetext.filter((n) => n);
-        retval.Station = mcdu.atsu.atc.currentStation();
+        retval.Station = mcdu.atsu.currentStation();
 
         return retval;
     }
@@ -243,8 +243,8 @@ class CDUAtcOceanicReq {
         if (store.callsign) {
             flightNo = `{green}${store.callsign}{end}`;
         }
-        if (mcdu.atsu.atc.currentStation() !== "") {
-            atcStation = `{cyan}${mcdu.atsu.atc.currentStation()}{end}`;
+        if (mcdu.atsu.currentStation() !== "") {
+            atcStation = `{cyan}${mcdu.atsu.currentStation()}{end}`;
         }
 
         // check if all required information are available to prepare the PDC message

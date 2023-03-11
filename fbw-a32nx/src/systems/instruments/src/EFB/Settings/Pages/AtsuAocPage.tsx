@@ -5,7 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
-import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
+import { HoppieConnector } from '@datalink/router';
 import { SENTRY_CONSENT_KEY, SentryConsentState } from '@sentry/FbwAircraftSentryClient';
 import { t } from '../../translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
