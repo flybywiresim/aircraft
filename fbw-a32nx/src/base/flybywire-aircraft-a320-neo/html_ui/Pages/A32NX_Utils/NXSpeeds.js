@@ -289,6 +289,32 @@ const s = [
     () => 214
 ];
 
+const vmca = [
+    [-2000, 115],
+    [0, 114],
+    [2000, 114],
+    [4000, 113],
+    [6000, 112],
+    [8000, 109],
+    [10000, 106],
+    [12000, 103],
+    [14100, 99],
+    [15100, 97],
+];
+
+const vmcg = [ // 1+F, 2, 3 all the same
+    [-2000, 117],
+    [0, 116],
+    [2000, 116],
+    [4000, 115],
+    [6000, 114],
+    [8000, 112],
+    [10000, 109],
+    [12000, 106],
+    [14100, 102],
+    [15100, 101],
+];
+
 /**
  * Vfe for Flaps/Slats
  * @type {number[]}
@@ -559,5 +585,50 @@ class NXSpeedsUtils {
         p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar")
     ) {
         return _convertKTASToMach(_convertKCasToKTAS(Vc, T, p), T);
+    }
+
+    /** @private */
+    static interpolateTable(table, alt) {
+        if (alt <= table[0][0]) {
+            return vmca[0][1];
+        }
+        if (alt >= table[table.length - 1][0]) {
+            table[table.length - 1][1];
+        }
+        for (let i = 0; i < table.length - 1; i++) {
+            if (alt >= table[i][0] && alt <= table[i + 1][0]) {
+                const d = (alt - table[i][0]) / (table[i + 1][0] - table[i][0]);
+                return Avionics.Utils.lerpAngle(table[i][1], table[i + 1][1], d);
+            }
+        }
+    }
+
+    /**
+     * Get VMCA (minimum airborne control speed) for a given altitude
+     * @param {number} altitude Altitude in feet
+     * @returns VMCA in knots
+     */
+    static getVmca(altitude) {
+        return this.interpolateTable(vmca, altitude);
+    }
+
+    /**
+     * Get VMCG (minimum ground control speed) for a given altitude
+     * @param {number} altitude Altitude in feet
+     * @returns VMCG in knots
+     */
+    static getVmcg(altitude) {
+        return this.interpolateTable(vmcg, altitude);
+    }
+
+    /**
+     * Get Vs1g for the given config
+     *
+     * @param {number} mass mass of the aircraft in tons
+     * @param {number} conf 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
+     * @param {boolean} gearDown true if the gear is down
+     */
+    static getVs1g(mass, conf, gearDown) {
+        return vs[conf][_correctMass(mass)](mass, gearDown ? 1 : 0);
     }
 }

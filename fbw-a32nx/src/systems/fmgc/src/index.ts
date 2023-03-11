@@ -1,4 +1,4 @@
-import { normaliseApproachName } from '@shared/flightplan';
+import { ApproachUtils } from '@shared/ApproachUtils';
 import { FlightPlanManager } from './flightplanning/FlightPlanManager';
 import { getFlightPhaseManager } from './flightphase';
 import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';
@@ -38,6 +38,6 @@ export {
     DecelPathBuilder,
     VerticalFlightPlanBuilder,
     WaypointBuilder,
-    normaliseApproachName,
+    ApproachUtils,
     Navigation,
 };

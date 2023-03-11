@@ -78,6 +78,14 @@ export class Arinc429Word implements Arinc429WordData {
     getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
         return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
     }
+
+    setBitValue(bit: number, value: boolean): void {
+        if (value) {
+            this.value |= 1 << (bit - 1);
+        } else {
+            this.value &= ~(1 << (bit - 1));
+        }
+    }
 }
 
 export class Arinc429Register implements Arinc429WordData {

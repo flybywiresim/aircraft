@@ -8,7 +8,7 @@ void Arinc429Word<T>::setFromSimVar(double simVar) {
   const auto u64Val = static_cast<uint64_t>(simVar);
   const uint32_t u32Val = u64Val & 0xffffffff;
   rawSsm = u64Val >> 32;
-  rawData = *reinterpret_cast<const float*>(&u32Val);
+  rawData = *reinterpret_cast<const T*>(&u32Val);
 }
 template void Arinc429Word<uint32_t>::setFromSimVar(double simVar);
 template void Arinc429Word<float>::setFromSimVar(double simVar);
