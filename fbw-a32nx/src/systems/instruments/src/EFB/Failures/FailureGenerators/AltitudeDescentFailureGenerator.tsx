@@ -22,25 +22,13 @@ export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
     }, [setting]);
-    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName };
-};
-
-export const FailureGeneratorCardsAltDesc : (generatorSettings: any) => JSX.Element[] = (generatorSettings : any) => {
-    const htmlReturn : JSX.Element[] = [];
-    const setting = generatorSettings.failureGenConfigAltDesc.settings;
-    if (setting) {
-        const nbGenerator = Math.floor(setting.length / numberOfSettingsPerGenerator);
-        for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(failureGeneratorCardAltDesc(i, generatorSettings.failureGenConfigAltDesc));
-        }
-    }
-    return htmlReturn;
+    return { setting, setSetting, settings, numberOfSettingsPerGenerator, uniqueGenPrefix, additionalSetting, onErase, failureGeneratorArmed, genName, FailureGeneratorCard };
 };
 
 const onErase = (_genID : number) => {
 };
 
-const failureGeneratorCardAltDesc : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Altitude above sea:', 40, 'feet', 0, 40000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,

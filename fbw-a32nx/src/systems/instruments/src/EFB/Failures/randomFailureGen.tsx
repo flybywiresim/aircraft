@@ -1,19 +1,19 @@
 import { useEffect, useMemo } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { failureGenConfigAltClimb, failureGeneratorAltClimb, FailureGeneratorCardsAltClimb }
+import { failureGenConfigAltClimb, failureGeneratorAltClimb }
     from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
-import { failureGenConfigAltDesc, failureGeneratorAltDesc, FailureGeneratorCardsAltDesc }
+import { failureGenConfigAltDesc, failureGeneratorAltDesc }
     from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
-import { failureGenConfigPerHour, FailureGeneratorCardsPerHour, failureGeneratorPerHour }
+import { failureGenConfigPerHour, failureGeneratorPerHour }
     from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
-import { failureGenConfigSpeedAccel, FailureGeneratorCardsSpeedAccel, failureGeneratorSpeedAccel }
+import { failureGenConfigSpeedAccel, failureGeneratorSpeedAccel }
     from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
-import { failureGenConfigSpeedDecel, FailureGeneratorCardsSpeedDecel, failureGeneratorSpeedDecel }
+import { failureGenConfigSpeedDecel, failureGeneratorSpeedDecel }
     from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
-import { failureGenConfigTakeOff, FailureGeneratorCardsTakeOff, failureGeneratorTakeOff }
+import { failureGenConfigTakeOff, failureGeneratorTakeOff }
     from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
-import { failureGenConfigTimer, FailureGeneratorCardsTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
+import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -25,7 +25,7 @@ export const failureGeneratorCommonFunction = () => {
 
 export type FailureGenData = {setting: string, setSetting : (value: string) => void, settings : number[],
     numberOfSettingsPerGenerator : number, uniqueGenPrefix : string, additionalSetting : number[], onErase : (genID : number) => void,
-    failureGeneratorArmed:boolean[], genName : string}
+    failureGeneratorArmed:boolean[], genName : string, FailureGeneratorCard : (genID: number, generatorSettings: FailureGenData) => JSX.Element}
 
 export const flatten = (settings : number[]) => {
     let settingString = '';
@@ -139,42 +139,20 @@ export const basicData = () => {
 
 export const failureGeneratorsSettings = () => {
     const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
-
+    const allGenSettings : Map<string, FailureGenData> = new Map();
+    allGenSettings.set(failureGenConfigTakeOff().genName, failureGenConfigTakeOff());
+    allGenSettings.set(failureGenConfigPerHour().genName, failureGenConfigPerHour());
+    allGenSettings.set(failureGenConfigTimer().genName, failureGenConfigTimer());
+    allGenSettings.set(failureGenConfigSpeedAccel().genName, failureGenConfigSpeedAccel());
+    allGenSettings.set(failureGenConfigSpeedDecel().genName, failureGenConfigSpeedDecel());
+    allGenSettings.set(failureGenConfigAltClimb().genName, failureGenConfigAltClimb());
+    allGenSettings.set(failureGenConfigAltDesc().genName, failureGenConfigAltDesc());
     return {
         maxFailuresAtOnce,
         setMaxFailuresAtOnce,
-        failureGenConfigTakeOff,
-        failureGenConfigPerHour,
-        failureGenConfigTimer,
-        failureGenConfigSpeedAccel,
-        failureGenConfigSpeedDecel,
-        failureGenConfigAltClimb,
-        failureGenConfigAltDesc,
+        allGenSettings,
     };
 };
-
-export const addGenerator = (chosenGen : string, settings : any) => {
-    switch (chosenGen) {
-    case 'PerHour': return () => failureGeneratorAdd(settings.failureGenConfigPerHour);
-    case 'TakeOff': return () => failureGeneratorAdd(settings.failureGenConfigTakeOff);
-    case 'Timer': return () => failureGeneratorAdd(settings.failureGenConfigTimer);
-    case 'AltClimb': return () => failureGeneratorAdd(settings.failureGenConfigAltClimb);
-    case 'AltDescent': return () => failureGeneratorAdd(settings.failureGenConfigAltDesc);
-    case 'SpeedAccel': return () => failureGeneratorAdd(settings.failureGenConfigSpeedAccel);
-    case 'SpeedDecel': return () => failureGeneratorAdd(settings.failureGenConfigSpeedDecel);
-    default: return () => {};
-    }
-};
-
-export const failureGeneratorCards: ((generatorSettings: any) => JSX.Element[])[] = [
-    FailureGeneratorCardsAltClimb,
-    FailureGeneratorCardsAltDesc,
-    FailureGeneratorCardsSpeedAccel,
-    FailureGeneratorCardsSpeedDecel,
-    FailureGeneratorCardsPerHour,
-    FailureGeneratorCardsTimer,
-    FailureGeneratorCardsTakeOff,
-];
 
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
     failureGeneratorAltClimb,

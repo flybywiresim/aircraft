@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
-    addGenerator, eraseGenerator, FailureGenData,
-    failureGeneratorCards,
-    failureGeneratorsSettings, setNewSetting,
+    eraseGenerator, FailureGenData,
+    failureGeneratorAdd, failureGeneratorsSettings, setNewSetting,
 } from 'instruments/src/EFB/Failures/RandomFailureGen';
 import { Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
@@ -48,7 +47,7 @@ export const FailureGeneratorsUI = () => {
                         maxHeight={32}
                     />
                     <button
-                        onClick={addGenerator(chosenGen, settings)}
+                        onClick={() => failureGeneratorAdd(settings.allGenSettings.get(chosenGen))}
                         type="button"
                         className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:bg-theme-highlight"
                     >
@@ -71,19 +70,31 @@ export const FailureGeneratorsUI = () => {
                     />
                 </div>
                 <ScrollableContainer height={48}>
-                    {generatorsCardList(settings)}
+                    {generatorsCardList(settings.allGenSettings)}
                 </ScrollableContainer>
             </div>
         </>
     );
 };
 
-export const generatorsCardList : (generatorSettings : any) => JSX.Element[] = (generatorSettings : any) => {
+export const generatorsCardList : (generatorSettings : Map<string, FailureGenData>) => JSX.Element[] = (generatorSettings : Map<string, FailureGenData>) => {
     let temp : JSX.Element[] = [];
-    for (let i = 0; i < failureGeneratorCards.length; i++) {
-        temp = temp.concat(failureGeneratorCards[i](generatorSettings));
+    for (let i = 0; i < generatorSettings.size; i++) {
+        temp = temp.concat(FailureGeneratorCards(generatorSettings[i]));
     }
     return temp;
+};
+
+const FailureGeneratorCards : (generatorSettings: FailureGenData) => JSX.Element[] = (generatorSettings : FailureGenData) => {
+    const htmlReturn : JSX.Element[] = [];
+    const setting = generatorSettings.settings;
+    if (setting) {
+        const nbGenerator = Math.floor(setting.length / generatorSettings.numberOfSettingsPerGenerator);
+        for (let i = 0; i < nbGenerator; i++) {
+            htmlReturn.push(generatorSettings.FailureGeneratorCard(i, generatorSettings));
+        }
+    }
+    return htmlReturn;
 };
 
 export function FailureGeneratorCardTemplateUI(
