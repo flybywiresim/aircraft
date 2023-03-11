@@ -63,22 +63,15 @@ export const FailureGeneratorsUI = () => {
 };
 
 export const generatorsCardList : (generatorSettings : Map<string, FailureGenData>) => JSX.Element[] = (generatorSettings : Map<string, FailureGenData>) => {
-    let temp : JSX.Element[] = [];
+    const temp : JSX.Element[] = [];
     generatorSettings.forEach((generatorSetting) => {
-        temp = temp.concat(FailureGeneratorCards(generatorSetting));
+        console.info('printing card');
+        const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
+        for (let i = 0; i < nbGenerator; i++) {
+            temp.push(generatorSetting.FailureGeneratorCard(i, generatorSetting));
+        }
     });
     return temp;
-};
-
-const FailureGeneratorCards : (generatorSettings: FailureGenData) => JSX.Element[] = (generatorSettings : FailureGenData) => {
-    const htmlReturn : JSX.Element[] = [];
-    if (generatorSettings.settings) {
-        const nbGenerator = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
-        for (let i = 0; i < nbGenerator; i++) {
-            htmlReturn.push(generatorSettings.FailureGeneratorCard(i, generatorSettings));
-        }
-    }
-    return htmlReturn;
 };
 
 export function FailureGeneratorCardTemplateUI(
