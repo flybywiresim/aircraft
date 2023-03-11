@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher } from 'msfssdk';
-import { VersionCheck } from './modules/version_check/version_check';
+import { VersionCheck } from './modules/version_check/VersionCheck';
 import './style.scss';
-import { KeyInterceptor } from './modules/key_interceptor/key_interceptor';
+import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { AircraftPresetsLoadProgress } from './modules/presets_progress/AircraftPresetsLoadProgress';
 
 /**
