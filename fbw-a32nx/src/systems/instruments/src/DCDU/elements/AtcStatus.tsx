@@ -1,4 +1,4 @@
-import { DcduStatusMessage } from '@atsu/components/DcduLink';
+import { MailboxStatusMessage } from '@datalink/common';
 import React from 'react';
 import { MessageVisualization } from './MessageVisualization';
 
@@ -15,7 +15,7 @@ export const AtcStatus: React.FC<AtcStatusProps> = ({ message }) => {
     }
 
     const reachedEndOfMessageSink = (_uid: number, _reachedEnd: boolean): void => {};
-    const systemStatusSink = (_status: DcduStatusMessage): void => {};
+    const systemStatusSink = (_status: MailboxStatusMessage): void => {};
 
     return (
         <>

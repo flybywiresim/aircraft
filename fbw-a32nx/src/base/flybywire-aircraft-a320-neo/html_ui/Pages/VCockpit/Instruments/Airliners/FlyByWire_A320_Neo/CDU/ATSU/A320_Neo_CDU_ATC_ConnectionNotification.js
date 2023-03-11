@@ -56,20 +56,20 @@ class CDUAtcConnectionNotification {
         }
 
         let notificationMessage = "";
-        if (mcdu.atsu.atc.logonInProgress()) {
-            const seconds = Math.floor(mcdu.atsu.atc.nextStationNotificationTime());
+        if (mcdu.atsu.logonInProgress()) {
+            const seconds = Math.floor(mcdu.atsu.nextStationNotificationTime());
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds - hours * 3600) / 60);
             const zeroPad = (num, places) => String(num).padStart(places, 0);
 
             // check if the page is loaded again
-            if (store["atcCenter"] !== mcdu.atsu.atc.nextStation()) {
-                store["atcCenter"] = mcdu.atsu.atc.nextStation();
+            if (store["atcCenter"] !== mcdu.atsu.nextStation()) {
+                store["atcCenter"] = mcdu.atsu.nextStation();
             }
 
             notificationMessage = `${store["atcCenter"]} NOTIFIED ${`${zeroPad(hours, 2)}${zeroPad(minutes, 2)}Z`}[color]green`;
-        } else if (mcdu.atsu.atc.currentStation() !== '') {
-            notificationMessage = `${mcdu.atsu.atc.currentStation()}[color]green`;
+        } else if (mcdu.atsu.currentStation() !== '') {
+            notificationMessage = `${mcdu.atsu.currentStation()}[color]green`;
         }
 
         mcdu.setTemplate([
@@ -92,7 +92,7 @@ class CDUAtcConnectionNotification {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (store["loginState"] === 1 && mcdu.atsu.atc.nextStation() !== store["atcCenter"]) {
+            if (store["loginState"] === 1 && mcdu.atsu.nextStation() !== store["atcCenter"]) {
                 mcdu.setScratchpadMessage(NXSystemMessages.systemBusy);
                 return;
             }
@@ -106,7 +106,7 @@ class CDUAtcConnectionNotification {
                 store["atcCenter"] = "";
 
                 mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
-                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                         store["atcCenter"] = "";
                     } else {
@@ -136,12 +136,12 @@ class CDUAtcConnectionNotification {
             if (store["logonAllowed"] === true) {
                 store["loginState"] = 1;
 
-                mcdu.atsu.atc.logon(store["atcCenter"]).then((code) => {
-                    if (code === Atsu.AtsuStatusCodes.Ok) {
+                mcdu.atsu.logon(store["atcCenter"]).then((code) => {
+                    if (code === AtsuCommon.AtsuStatusCodes.Ok) {
                         // check if the login was successful
                         const interval = setInterval(() => {
-                            if (!mcdu.atsu.atc.logonInProgress()) {
-                                if (mcdu.atsu.atc.currentStation() === store["atcCenter"]) {
+                            if (!mcdu.atsu.logonInProgress()) {
+                                if (mcdu.atsu.currentStation() === store["atcCenter"]) {
                                     store["loginState"] = 0;
                                 } else {
                                     store["loginState"] = 2;

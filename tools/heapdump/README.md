@@ -7,7 +7,7 @@ This is a tool that allows us to either count the number of javascript objects o
 1. Enable dumping by including `A32NX_ObjectDumper.js` anywhere into your HTML:
 
 ```
-<script type="text/javascript" src="/JS/A32NX_ObjectDumper.js"></script>
+<script type="text/javascript" src="/JS/fbw-a32nx/A32NX_ObjectDumper.js"></script>
 ```
 
 Tip: Add it to `VCockpit.html` to be included in all instruments.

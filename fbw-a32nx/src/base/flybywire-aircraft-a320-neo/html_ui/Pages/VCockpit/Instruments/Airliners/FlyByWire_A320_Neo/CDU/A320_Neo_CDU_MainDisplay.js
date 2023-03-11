@@ -1020,49 +1020,49 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      */
     addNewAtsuMessage(code) {
         switch (code) {
-            case Atsu.AtsuStatusCodes.CallsignInUse:
+            case AtsuCommon.AtsuStatusCodes.CallsignInUse:
                 this.setScratchpadMessage(NXFictionalMessages.fltNbrInUse);
                 break;
-            case Atsu.AtsuStatusCodes.NoHoppieConnection:
+            case AtsuCommon.AtsuStatusCodes.NoHoppieConnection:
                 this.setScratchpadMessage(NXFictionalMessages.noHoppieConnection);
                 break;
-            case Atsu.AtsuStatusCodes.ComFailed:
+            case AtsuCommon.AtsuStatusCodes.ComFailed:
                 this.setScratchpadMessage(NXSystemMessages.comUnavailable);
                 break;
-            case Atsu.AtsuStatusCodes.NoAtc:
+            case AtsuCommon.AtsuStatusCodes.NoAtc:
                 this.setScratchpadMessage(NXSystemMessages.noAtc);
                 break;
-            case Atsu.AtsuStatusCodes.DcduFull:
+            case AtsuCommon.AtsuStatusCodes.MailboxFull:
                 this.setScratchpadMessage(NXSystemMessages.dcduFileFull);
                 break;
-            case Atsu.AtsuStatusCodes.UnknownMessage:
+            case AtsuCommon.AtsuStatusCodes.UnknownMessage:
                 this.setScratchpadMessage(NXFictionalMessages.unknownAtsuMessage);
                 break;
-            case Atsu.AtsuStatusCodes.ProxyError:
+            case AtsuCommon.AtsuStatusCodes.ProxyError:
                 this.setScratchpadMessage(NXFictionalMessages.reverseProxy);
                 break;
-            case Atsu.AtsuStatusCodes.NoTelexConnection:
+            case AtsuCommon.AtsuStatusCodes.NoTelexConnection:
                 this.setScratchpadMessage(NXFictionalMessages.telexNotEnabled);
                 break;
-            case Atsu.AtsuStatusCodes.OwnCallsign:
+            case AtsuCommon.AtsuStatusCodes.OwnCallsign:
                 this.setScratchpadMessage(NXSystemMessages.noAtc);
                 break;
-            case Atsu.AtsuStatusCodes.SystemBusy:
+            case AtsuCommon.AtsuStatusCodes.SystemBusy:
                 this.setScratchpadMessage(NXSystemMessages.systemBusy);
                 break;
-            case Atsu.AtsuStatusCodes.NewAtisReceived:
+            case AtsuCommon.AtsuStatusCodes.NewAtisReceived:
                 this.setScratchpadMessage(NXSystemMessages.newAtisReceived);
                 break;
-            case Atsu.AtsuStatusCodes.NoAtisReceived:
+            case AtsuCommon.AtsuStatusCodes.NoAtisReceived:
                 this.setScratchpadMessage(NXSystemMessages.noAtisReceived);
                 break;
-            case Atsu.AtsuStatusCodes.EntryOutOfRange:
+            case AtsuCommon.AtsuStatusCodes.EntryOutOfRange:
                 this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                 break;
-            case Atsu.AtsuStatusCodes.FormatError:
+            case AtsuCommon.AtsuStatusCodes.FormatError:
                 this.setScratchpadMessage(NXSystemMessages.formatError);
                 break;
-            case Atsu.AtsuStatusCodes.NotInDatabase:
+            case AtsuCommon.AtsuStatusCodes.NotInDatabase:
                 this.setScratchpadMessage(NXSystemMessages.notInDatabase);
             default:
                 break;

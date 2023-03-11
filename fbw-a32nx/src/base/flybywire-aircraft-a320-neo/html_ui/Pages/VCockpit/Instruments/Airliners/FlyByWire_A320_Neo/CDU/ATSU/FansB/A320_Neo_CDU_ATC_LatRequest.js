@@ -15,9 +15,9 @@ class CDUAtcLatRequestFansB {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -33,7 +33,7 @@ class CDUAtcLatRequestFansB {
             retval.push(CDUAtcLatRequestFansB.CreateRequest(mcdu, "DM22", [data.directTo]));
         }
         if (data.weatherDeviation) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.weatherDeviation).split(" ");
+            const elements = AtsuCommon.InputValidation.expandLateralOffset(data.weatherDeviation).split(" ");
             retval.push(CDUAtcLatRequestFansB.CreateRequest(mcdu, "DM27", [elements[0], elements[1]]));
         }
 
@@ -120,8 +120,8 @@ class CDUAtcLatRequestFansB {
             if (value === FMCMainDisplay.clrValue) {
                 data.heading = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadDegree(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadDegree(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.heading = parseInt(value) % 360;
@@ -138,8 +138,8 @@ class CDUAtcLatRequestFansB {
             if (value === FMCMainDisplay.clrValue) {
                 data.track = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadDegree(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadDegree(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.track = parseInt(value) % 360;
@@ -170,9 +170,9 @@ class CDUAtcLatRequestFansB {
             if (value === FMCMainDisplay.clrValue) {
                 data.offset = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.offset = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.offset = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                     data.offsetStart = null;
                 } else {
                     mcdu.addNewAtsuMessage(error);
@@ -188,9 +188,9 @@ class CDUAtcLatRequestFansB {
             if (value === FMCMainDisplay.clrValue) {
                 data.weatherDeviation = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.weatherDeviation = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.weatherDeviation = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -227,7 +227,7 @@ class CDUAtcLatRequestFansB {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcLatRequestFansB.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcLatRequestFansB.CreateRequests(mcdu, data);

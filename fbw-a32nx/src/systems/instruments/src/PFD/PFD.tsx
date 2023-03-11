@@ -1,5 +1,4 @@
 import { A320Failure, FailuresConsumer } from '@failures';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';

@@ -7,17 +7,17 @@ class CDUAtcPositionReport {
 
     static AltitudeToString(altitude) {
         if (Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD") {
-            return Atsu.InputValidation.formatScratchpadAltitude(`FL${Math.round(altitude / 100)}`);
+            return AtsuCommon.InputValidation.formatScratchpadAltitude(`FL${Math.round(altitude / 100)}`);
         }
-        return Atsu.InputValidation.formatScratchpadAltitude(`${altitude}FT`);
+        return AtsuCommon.InputValidation.formatScratchpadAltitude(`${altitude}FT`);
     }
 
     static FillDataBlock(mcdu, data) {
-        const current = mcdu.atsu.currentFlightState();
-        const target = mcdu.atsu.targetFlightState();
-        const lastWp = mcdu.atsu.lastWaypoint();
-        const activeWp = mcdu.atsu.activeWaypoint();
-        const nextWp = mcdu.atsu.nextWaypoint();
+        const current = data.atsuFlightStateData;
+        const target = data.atsuAutopilotData;
+        const lastWp = data.atsuLastWaypoint;
+        const activeWp = data.atsuActiveWaypoint;
+        const nextWp = data.atsuNextWaypoint;
 
         if (lastWp && !data.passedWaypoint[3]) {
             data.passedWaypoint[0] = lastWp.ident;
@@ -40,29 +40,29 @@ class CDUAtcPositionReport {
         if (nextWp && !data.nextWaypoint[1]) {
             data.nextWaypoint[0] = nextWp.ident;
         }
-        if (mcdu.atsu.destinationWaypoint() && !data.eta[1]) {
-            data.eta[0] = CDUAtcPositionReport.SecondsToString(mcdu.atsu.destinationWaypoint().utc);
+        if (data.atsuDestination && !data.eta[1]) {
+            data.eta[0] = CDUAtcPositionReport.SecondsToString(data.atsuDestination.utc);
         }
 
         if (!data.wind[1]) {
-            const windDirection = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_WIND_DIRECTION", 500);
-            const windSpeed = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_IR_1_WIND_SPEED", 500);
+            const windDirection = data.atsuEnvironmentData.windDirection;
+            const windSpeed = data.atsuEnvironmentData.windSpeed;
 
             const wind = `${Math.round(windDirection.value)}/${Math.round(windSpeed.value)}`;
-            if (Atsu.InputValidation.validateScratchpadWind(wind) === Atsu.AtsuStatusCodes.Ok) {
-                data.wind[0] = Atsu.InputValidation.formatScratchpadWind(wind);
+            if (AtsuCommon.InputValidation.validateScratchpadWind(wind) === AtsuCommon.AtsuStatusCodes.Ok) {
+                data.wind[0] = AtsuCommon.InputValidation.formatScratchpadWind(wind);
             }
         }
         if (!data.sat[1]) {
-            const sat = Arinc429Word.fromSimVarValue("L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE", 500);
-            if (Atsu.InputValidation.validateScratchpadTemperature(sat.value) === Atsu.AtsuStatusCodes.Ok) {
-                data.sat[0] = Math.round(Atsu.InputValidation.formatScratchpadTemperature(`${sat.value}`));
+            const sat = data.atsuEnvironmentData.temperature;
+            if (AtsuCommon.InputValidation.validateScratchpadTemperature(sat.value) === AtsuCommon.AtsuStatusCodes.Ok) {
+                data.sat[0] = Math.round(AtsuCommon.InputValidation.formatScratchpadTemperature(`${sat.value}`));
             }
         }
 
-        data.indicatedAirspeed[0] = !data.indicatedAirspeed[1] ? Atsu.InputValidation.formatScratchpadSpeed(`${current.indicatedAirspeed}`) : data.indicatedAirspeed[0];
-        data.groundSpeed[0] = !data.groundSpeed[1] ? Atsu.InputValidation.formatScratchpadSpeed(`${current.groundSpeed}`) : data.groundSpeed[0];
-        data.verticalSpeed[0] = !data.verticalSpeed[1] ? Atsu.InputValidation.formatScratchpadVerticalSpeed(`${current.verticalSpeed}`) : data.verticalSpeed[0];
+        data.indicatedAirspeed[0] = !data.indicatedAirspeed[1] ? AtsuCommon.InputValidation.formatScratchpadSpeed(`${current.indicatedAirspeed}`) : data.indicatedAirspeed[0];
+        data.groundSpeed[0] = !data.groundSpeed[1] ? AtsuCommon.InputValidation.formatScratchpadSpeed(`${current.groundSpeed}`) : data.groundSpeed[0];
+        data.verticalSpeed[0] = !data.verticalSpeed[1] ? AtsuCommon.InputValidation.formatScratchpadVerticalSpeed(`${current.verticalSpeed}`) : data.verticalSpeed[0];
         // TODO add deviating
         data.heading[0] = !data.heading[1] ? current.heading : data.heading[0];
         data.track[0] = !data.track[1] ? current.track : data.track[0];
@@ -75,6 +75,13 @@ class CDUAtcPositionReport {
 
     static CreateDataBlock(mcdu, requestMessage, autoFill) {
         const retval = {
+            atsuFlightStateData: null,
+            atsuAutopilotData: null,
+            atsuEnvironmentData: null,
+            atsuLastWaypoint: null,
+            atsuActiveWaypoint: null,
+            atsuNextWaypoint: null,
+            atsuDestination: null,
             passedWaypoint: [null, null, null, !autoFill],
             activeWaypoint: [null, null, !autoFill],
             nextWaypoint: [null, !autoFill],
@@ -98,7 +105,15 @@ class CDUAtcPositionReport {
         };
 
         if (autoFill === true) {
-            setTimeout(() => {
+            mcdu.atsu.receivePositionReportData().then((data) => {
+                retval.atsuFlightStateData = data.flightState;
+                retval.atsuAutopilotData = data.autopilot;
+                retval.atsuEnvironmentData = data.environment;
+                retval.atsuLastWaypoint = data.lastWaypoint;
+                retval.atsuActiveWaypoint = data.activeWaypoint;
+                retval.atsuNextWaypoint = data.nextWaypoint;
+                retval.atsuDestination = data.destination;
+
                 CDUAtcPositionReport.FillDataBlock(mcdu, retval);
                 if (mcdu.page.Current === mcdu.page.ATCPositionReport1) {
                     CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, retval);
@@ -107,7 +122,7 @@ class CDUAtcPositionReport {
                 } else if (mcdu.page.Current === mcdu.page.ATCPositionReport3) {
                     CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, retval);
                 }
-            }, 1500);
+            });
         }
 
         return retval;
@@ -126,113 +141,113 @@ class CDUAtcPositionReport {
     }
 
     static CreateReport(mcdu, data) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink['DM48'][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink['DM48'][1].deepCopy());
 
         // define the overhead
-        let extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        let extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `OVHD: ${data.passedWaypoint[0]}`;
         retval.Content.push(extension);
-        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `AT ${data.passedWaypoint[1]}Z/${data.passedWaypoint[2]}`;
         retval.Content.push(extension);
         // define the present position
-        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `PPOS: ${Atsu.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, false)}`;
+        extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension.Content[0].Value = `PPOS: ${AtsuCommon.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, false)}`;
         retval.Content.push(extension);
-        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `AT ${data.currentUtc[0]}Z/${data.currentAltitude[0]}`;
         retval.Content.push(extension);
         // define the active position
-        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `TO :${data.activeWaypoint[0]} AT ${data.activeWaypoint[1]}Z`;
         retval.Content.push(extension);
         // define the next position
-        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `NEXT: ${data.nextWaypoint[0]}`;
         retval.Content.push(extension);
 
         // create wind and temperature data
         if (data.wind[0] && data.sat[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `WIND: ${data.wind[0]} SAT: ${data.sat[0]}`;
             retval.Content.push(extension);
         } else if (data.wind[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `WIND: ${data.wind[0]}`;
             retval.Content.push(extension);
         } else if (data.sat[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `SAT: ${data.sat[0]}`;
             retval.Content.push(extension);
         }
 
         // create the initial data
         if (data.eta[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `DEST ETA: ${data.eta[0]}Z`;
             retval.Content.push(extension);
         }
         if (data.descending[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `DESCENDING TO ${data.descending[0]}`;
             retval.Content.push(extension);
         } else if (data.climbing[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `CLIMBING TO ${data.climbing[0]}`;
             retval.Content.push(extension);
         }
         if (data.endurance[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `ENDURANCE: ${data.endurance[0]}`;
             retval.Content.push(extension);
         }
         if (data.icing[0] && data.turbulence[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `ICING: ${data.icing[0]} TURBULENCE: ${data.turbulence[0]}`;
             retval.Content.push(extension);
         } else if (data.icing[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `ICING: ${data.icing[0]}`;
             retval.Content.push(extension);
         } else if (data.turbulence[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `TURBULENCE: ${data.turbulence[0]}`;
             retval.Content.push(extension);
         }
         if (data.indicatedAirspeed[0] && data.groundSpeed[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `SPD: ${data.indicatedAirspeed[0]} GS: ${data.groundSpeed[0]}`;
             retval.Content.push(extension);
         } else if (data.indicatedAirspeed[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `SPD: ${data.indicatedAirspeed[0]}`;
             retval.Content.push(extension);
         } else if (data.groundSpeed[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `GS: ${data.groundSpeed[0]}`;
             retval.Content.push(extension);
         }
         if (data.verticalSpeed[0] && data.verticalSpeed[0] !== "0FTM") {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `VS: ${data.verticalSpeed[0]}`;
             retval.Content.push(extension);
         }
         if (data.heading[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `HDG: ${data.heading[0]}°TRUE`;
             retval.Content.push(extension);
         }
         if (data.track[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `TRK: ${data.track[0]}°`;
             retval.Content.push(extension);
         }
 
         if (data.deviating[0]) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-            extension.Content[0].Value = `DEVIATING ${Atsu.InputValidation.expandLateralOffset(data.deviating[0])}`;
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension.Content[0].Value = `DEVIATING ${AtsuCommon.InputValidation.expandLateralOffset(data.deviating[0])}`;
             retval.Content.push(extension);
         }
 
@@ -273,7 +288,7 @@ class CDUAtcPositionReport {
 
         const ppos = ["_______[color]amber", "____/______[color]amber"];
         if (data.currentPosition[0]) {
-            ppos[0] = `{cyan}${Atsu.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, true)}{end}`;
+            ppos[0] = `{cyan}${AtsuCommon.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, true)}{end}`;
             if (data.currentPosition[1] === false) {
                 ppos[0] = `{small}${ppos[0]}{end}`;
             }
@@ -488,16 +503,16 @@ class CDUAtcPositionReport {
             } else {
                 const elements = value.split("/");
                 if (elements.length === 2) {
-                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0], false);
-                    const altError = Atsu.InputValidation.validateScratchpadAltitude(elements[1]);
+                    const timeError = AtsuCommon.InputValidation.validateScratchpadTime(elements[0], false);
+                    const altError = AtsuCommon.InputValidation.validateScratchpadAltitude(elements[1]);
 
-                    if (timeError !== Atsu.AtsuStatusCodes.Ok) {
+                    if (timeError !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(timeError);
-                    } else if (altError !== Atsu.AtsuStatusCodes.Ok) {
+                    } else if (altError !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(altError);
                     } else {
                         data.passedWaypoint[1] = elements[0].length === 5 ? elements[0].substring(0, 4) : elements[0];
-                        data.passedWaypoint[2] = Atsu.InputValidation.formatScratchpadAltitude(elements[1]);
+                        data.passedWaypoint[2] = AtsuCommon.InputValidation.formatScratchpadAltitude(elements[1]);
                         data.passedWaypoint[3] = true;
                     }
                 } else {
@@ -518,12 +533,12 @@ class CDUAtcPositionReport {
             } else {
                 const elements = value.split("/");
                 if (elements.length === 2) {
-                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0], false);
-                    const altError = Atsu.InputValidation.validateScratchpadAltitude(elements[1]);
+                    const timeError = AtsuCommon.InputValidation.validateScratchpadTime(elements[0], false);
+                    const altError = AtsuCommon.InputValidation.validateScratchpadAltitude(elements[1]);
 
-                    if (timeError !== Atsu.AtsuStatusCodes.Ok) {
+                    if (timeError !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(timeError);
-                    } else if (altError !== Atsu.AtsuStatusCodes.Ok) {
+                    } else if (altError !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(altError);
                     } else {
                         data.currentUtc = [elements[0].length === 5 ? elements[0].substring(0, 4) : elements[0], true];
@@ -545,9 +560,9 @@ class CDUAtcPositionReport {
                 data.activeWaypoint[1] = null;
                 data.activeWaypoint[2] = true;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadTime(value, false);
+                const error = AtsuCommon.InputValidation.validateScratchpadTime(value, false);
 
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.activeWaypoint[1] = value.length === 5 ? value.substring(0, 4) : value;
@@ -578,13 +593,13 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.atc.updateMessage(requestMessage);
+                        mcdu.atsu.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }
@@ -648,9 +663,9 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.wind = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadWind(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.wind = [Atsu.InputValidation.formatScratchpadWind(value), true];
+                const error = AtsuCommon.InputValidation.validateScratchpadWind(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.wind = [AtsuCommon.InputValidation.formatScratchpadWind(value), true];
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 }
@@ -678,7 +693,7 @@ class CDUAtcPositionReport {
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.eta = [null, true];
-            } else if (Atsu.InputValidation.validateScratchpadTime(value)) {
+            } else if (AtsuCommon.InputValidation.validateScratchpadTime(value)) {
                 data.eta = [value, true];
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -711,9 +726,9 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.sat = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadTemperature(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.sat = [Atsu.InputValidation.formatScratchpadTemperature(value), true];
+                const error = AtsuCommon.InputValidation.validateScratchpadTemperature(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.sat = [AtsuCommon.InputValidation.formatScratchpadTemperature(value), true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -741,8 +756,8 @@ class CDUAtcPositionReport {
         mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.endurance = [null, true];
-            } else if (Atsu.InputValidation.validateScratchpadEndurance(value)) {
-                data.endurance = [Atsu.InputValidation.formatScratchpadEndurance(value), true];
+            } else if (AtsuCommon.InputValidation.validateScratchpadEndurance(value)) {
+                data.endurance = [AtsuCommon.InputValidation.formatScratchpadEndurance(value), true];
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
@@ -769,13 +784,13 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.atc.updateMessage(requestMessage);
+                        mcdu.atsu.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }
@@ -819,8 +834,8 @@ class CDUAtcPositionReport {
         const descending = ["\xa0DSCENDING TO", "[   ]"];
         const climbing = ["CLBING TO\xa0", "[   ]"];
 
-        const current = mcdu.atsu.currentFlightState();
-        const target = mcdu.atsu.targetFlightState();
+        const current = data.atsuFlightStateData;
+        const target = data.atsuAutopilotData;
         if (target.apActive && target.altitude === current.altitude) {
             descending[0] = descending[1] = "";
             climbing[0] = climbing[1] = "";
@@ -866,9 +881,9 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.indicatedAirspeed = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadSpeed(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.indicatedAirspeed = [Atsu.InputValidation.formatScratchpadSpeed(value), true];
+                const error = AtsuCommon.InputValidation.validateScratchpadSpeed(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.indicatedAirspeed = [AtsuCommon.InputValidation.formatScratchpadSpeed(value), true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -884,9 +899,9 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.verticalSpeed = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadVerticalSpeed(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.verticalSpeed = [Atsu.InputValidation.formatScratchpadVerticalSpeed(value), true];
+                const error = AtsuCommon.InputValidation.validateScratchpadVerticalSpeed(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.verticalSpeed = [AtsuCommon.InputValidation.formatScratchpadVerticalSpeed(value), true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -902,8 +917,8 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.heading = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadDegree(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadDegree(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                     data.heading = [value, true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
@@ -917,16 +932,16 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = (value) => {
-            const current = mcdu.atsu.currentFlightState();
-            const target = mcdu.atsu.targetFlightState();
+            const current = data.atsuFlightStateData;
+            const target = data.atsuAutopilotData;
 
             if (!target.apActive || (target.apActive && target.altitude !== current.altitude)) {
                 if (value === FMCMainDisplay.clrValue) {
                     data.descending = [null, true];
                 } else {
-                    const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                    if (error === Atsu.AtsuStatusCodes.Ok) {
-                        data.descending = [Atsu.InputValidation.formatScratchpadAltitude(value), true];
+                    const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                    if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                        data.descending = [AtsuCommon.InputValidation.formatScratchpadAltitude(value), true];
                     } else {
                         mcdu.addNewAtsuMessage(error);
                     }
@@ -961,9 +976,9 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.groundSpeed = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadSpeed(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.groundSpeed = [Atsu.InputValidation.formatScratchpadSpeed(value), true];
+                const error = AtsuCommon.InputValidation.validateScratchpadSpeed(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.groundSpeed = [AtsuCommon.InputValidation.formatScratchpadSpeed(value), true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -979,9 +994,9 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.deviating = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.deviating = [Atsu.InputValidation.formatScratchpadOffset(value), true];
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.deviating = [AtsuCommon.InputValidation.formatScratchpadOffset(value), true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -997,8 +1012,8 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.track = [null, true];
             } else {
-                const error = Atsu.InputValidation.validateScratchpadDegree(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadDegree(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                     data.track = [value, true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
@@ -1019,9 +1034,9 @@ class CDUAtcPositionReport {
                 if (value === FMCMainDisplay.clrValue) {
                     data.climbing = [null, true];
                 } else {
-                    const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                    if (error === Atsu.AtsuStatusCodes.Ok) {
-                        data.climbing = [Atsu.InputValidation.formatScratchpadAltitude(value), true];
+                    const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                    if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                        data.climbing = [AtsuCommon.InputValidation.formatScratchpadAltitude(value), true];
                     } else {
                         mcdu.addNewAtsuMessage(error);
                     }
@@ -1051,13 +1066,13 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.atc.updateMessage(requestMessage);
+                        mcdu.atsu.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }

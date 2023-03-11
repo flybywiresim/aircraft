@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
 import { NXDataStore } from '@shared/persistence';
 import { AFloor } from './AFloor';
