@@ -1,7 +1,7 @@
 use crate::{
     shared::{
-        low_pass_filter::LowPassFilter, pid::PidController, AverageExt, CabinSimulation,
-        ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared,
+        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, pid::PidController, AverageExt,
+        CabinSimulation, ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
@@ -41,7 +41,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     outflow_valve_controller: OutflowValveController,
     exterior_pressure: LowPassFilter<Pressure>,
     exterior_flight_altitude: Length,
-    exterior_vertical_speed: Velocity,
+    exterior_vertical_speed: LowPassFilter<Velocity>,
     reference_pressure: Pressure,
     cabin_pressure: Pressure,
     cabin_alt: Length,
@@ -70,7 +70,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
 
     const VERTICAL_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
-    const AMBIENT_PRESSURE_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
+    const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
     // Altitude in ft equivalent to 0.1 PSI delta P at sea level
     const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
@@ -96,11 +96,14 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
             outflow_valve_controller: OutflowValveController::new(),
             exterior_pressure: LowPassFilter::new_with_init_value(
-                Self::AMBIENT_PRESSURE_FILTER_TIME_CONSTANT,
+                Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
                 Pressure::new::<hectopascal>(Self::P_0),
             ),
             exterior_flight_altitude: Length::default(),
-            exterior_vertical_speed: Velocity::default(),
+            exterior_vertical_speed: LowPassFilter::new_with_init_value(
+                Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
+                Velocity::default(),
+            ),
             reference_pressure: Pressure::new::<hectopascal>(Self::P_0),
             cabin_pressure: Pressure::new::<hectopascal>(Self::P_0),
             cabin_alt: Length::default(),
@@ -150,7 +153,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 engines,
                 lgciu_gears_compressed,
                 self.exterior_flight_altitude,
-                self.exterior_vertical_speed,
+                self.exterior_vertical_speed.output(),
             ));
         }
         self.cabin_target_vs = self.calculate_cabin_target_vs();
@@ -206,13 +209,13 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
         );
 
-        let new_exterior_altitude = self.calculate_altitude(
-            self.exterior_pressure.output(),
-            Pressure::new::<hectopascal>(Self::P_0),
-        );
+        let new_exterior_altitude =
+            self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
 
-        self.exterior_vertical_speed =
-            self.calculate_exterior_vertical_speed(context, new_exterior_altitude);
+        self.exterior_vertical_speed.update(
+            context.delta(),
+            self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
+        );
 
         self.exterior_flight_altitude = new_exterior_altitude;
     }
@@ -254,7 +257,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             ),
             Some(PressureScheduleManager::ClimbInternal(_)) => {
                 // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
-                let target_vs_fpm = self.exterior_vertical_speed.get::<foot_per_minute>()
+                let target_vs_fpm = self
+                    .exterior_vertical_speed
+                    .output()
+                    .get::<foot_per_minute>()
                     * (0.00000525 * self.exterior_flight_altitude.get::<foot>() + 0.09);
                 Velocity::new::<foot_per_minute>(
                     if self.cabin_delta_p() >= Pressure::new::<psi>(C::MAX_CLIMB_DELTA_P) {
@@ -274,7 +280,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             Some(PressureScheduleManager::DescentInternal(_)) => {
                 let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev().get::<foot>();
                 let target_vs_fpm = self.get_int_diff_with_ldg_elev().get::<foot>()
-                    * self.exterior_vertical_speed.get::<foot_per_minute>()
+                    * self
+                        .exterior_vertical_speed
+                        .output()
+                        .get::<foot_per_minute>()
                     / ext_diff_with_ldg_elev;
                 Velocity::new::<foot_per_minute>(if ext_diff_with_ldg_elev <= 0. {
                     0.
@@ -300,6 +309,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     fn get_ext_diff_with_ldg_elev(&self) -> Length {
+        // TODO: Replace constant target landing alt diff for pressure diff
         self.exterior_flight_altitude
             - (self.landing_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF))
     }
@@ -466,7 +476,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     pub(super) fn is_low_diff_pressure(&self) -> bool {
         self.cabin_delta_p() < Pressure::new::<psi>(C::LOW_DIFFERENTIAL_PRESSURE_WARNING)
             && self.cabin_alt > (self.landing_elevation + Length::new::<foot>(1500.))
-            && self.exterior_vertical_speed < Velocity::new::<foot_per_minute>(-500.)
+            && self.exterior_vertical_speed.output() < Velocity::new::<foot_per_minute>(-500.)
     }
 
     pub fn landing_elevation(&self) -> Length {
@@ -543,7 +553,9 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.landing_elevation = reader.read(&self.auto_landing_elevation_id);
+        let landing_elevation_word: Arinc429Word<Length> =
+            reader.read_arinc429(&self.auto_landing_elevation_id);
+        self.landing_elevation = landing_elevation_word.normal_value().unwrap_or_default();
         self.departure_elevation = reader.read(&self.departure_elevation_id);
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
     }
