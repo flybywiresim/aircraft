@@ -13,9 +13,9 @@ class CDUAtcProcedureRequest {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -96,8 +96,8 @@ class CDUAtcProcedureRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.sid = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadPosition(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadPosition(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.sid = value;
@@ -113,8 +113,8 @@ class CDUAtcProcedureRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.star = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadPosition(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadPosition(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.star = value;
@@ -144,8 +144,8 @@ class CDUAtcProcedureRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.departureTransition = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadPosition(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadPosition(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.departureTransition = value;
@@ -161,8 +161,8 @@ class CDUAtcProcedureRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.arrivalTransition = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadPosition(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadPosition(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.arrivalTransition = value;
@@ -188,7 +188,7 @@ class CDUAtcProcedureRequest {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcProcedureRequest.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcProcedureRequest.CreateRequests(mcdu, data);

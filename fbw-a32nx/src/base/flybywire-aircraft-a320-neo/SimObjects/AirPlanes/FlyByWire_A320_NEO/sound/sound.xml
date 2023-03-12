@@ -2228,7 +2228,7 @@
 
         <!-- CRC and Caution ========================================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="CRC" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_MASTER_WARNING">
+        <Sound WwiseData="true" WwiseEvent="CRC" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_FWC_CRC">
             <Range LowerBound="0.5" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
@@ -2353,7 +2353,7 @@
         </Sound>
 
 
-        <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_MASTER_CAUTION" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_SC" Continuous="false">
             <Range LowerBound="0.5" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />

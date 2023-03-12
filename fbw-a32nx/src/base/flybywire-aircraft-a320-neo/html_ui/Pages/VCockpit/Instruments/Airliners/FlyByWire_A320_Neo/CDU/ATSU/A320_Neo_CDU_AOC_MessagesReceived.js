@@ -1,7 +1,7 @@
 class CDUAocMessagesReceived {
     static ShowPage(mcdu, messages = null, page = 0) {
         if (!messages) {
-            messages = mcdu.atsu.aoc.inputMessages();
+            messages = mcdu.atsu.aocInputMessages();
         }
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCRcvdMsgs;
@@ -25,10 +25,10 @@ class CDUAocMessagesReceived {
 
             if (messages.length > (offset - i) && messages[offset - i]) {
                 let sender = messages[offset - i].Station;
-                if (messages[offset - i].Type === Atsu.AtsuMessageType.ATIS) {
+                if (messages[offset - i].Type === AtsuCommon.AtsuMessageType.ATIS) {
                     sender = messages[offset - i].Reports[0].airport;
                 }
-                headerLeft += `${messages[offset - i].Timestamp.mcduTimestamp()} FROM ${sender}[color]green`;
+                headerLeft += `${messages[offset - i].Timestamp.fmsTimestamp()} FROM ${sender}[color]green`;
                 if (!messages[offset - i].Confirmed) {
                     headerRight = "NEW[color]green";
                 }
@@ -76,7 +76,7 @@ class CDUAocMessagesReceived {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID, true);
                         CDUAocMessagesReceived.ShowPage(mcdu, null, page);
                     } else {
                         CDUAocRequestsMessage.ShowPage(mcdu, messages, offset - 5 + i);

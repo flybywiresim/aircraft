@@ -1,9 +1,3 @@
-export class Arinc429WordSsmParseError extends Error {
-    constructor(public ssm: number) {
-        super();
-    }
-}
-
 export enum Arinc429SignStatusMatrix {
     FailureWarning = 0b00,
     NoComputedData = 0b01,
@@ -26,27 +20,18 @@ export interface Arinc429WordData {
 }
 
 export class Arinc429Word implements Arinc429WordData {
-    static f64View = new Float64Array(1);
+    static u32View = new Uint32Array(1);
 
-    static u32View = new Uint32Array(Arinc429Word.f64View.buffer);
-
-    static f32View = new Float32Array(Arinc429Word.f64View.buffer);
+    static f32View = new Float32Array(Arinc429Word.u32View.buffer);
 
     ssm: Arinc429SignStatusMatrix;
 
     value: number;
 
     constructor(word: number) {
-        Arinc429Word.f64View[0] = word;
-
-        const ssm = Arinc429Word.u32View[0];
-        if (ssm >= 0b00 && ssm <= 0b11) {
-            this.ssm = ssm as Arinc429SignStatusMatrix;
-        } else {
-            throw new Arinc429WordSsmParseError(ssm);
-        }
-
-        this.value = Arinc429Word.f32View[1];
+        Arinc429Word.u32View[0] = (word & 0xffffffff) >>> 0;
+        this.ssm = (Math.trunc(word / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
+        this.value = Arinc429Word.f32View[0];
     }
 
     static empty(): Arinc429Word {
@@ -55,6 +40,12 @@ export class Arinc429Word implements Arinc429WordData {
 
     static fromSimVarValue(name: string): Arinc429Word {
         return new Arinc429Word(SimVar.GetSimVarValue(name, 'number'));
+    }
+
+    static async toSimVarValue(name: string, value: number, ssm: Arinc429SignStatusMatrix) {
+        Arinc429Word.f32View[0] = value;
+        const simVal = Arinc429Word.u32View[0] + Math.trunc(ssm) * 2 ** 32;
+        return SimVar.SetSimVarValue(name, 'string', simVal.toString());
     }
 
     isFailureWarning() {
@@ -76,7 +67,7 @@ export class Arinc429Word implements Arinc429WordData {
     /**
      * Returns the value when normal operation, the supplied default value otherwise.
      */
-    valueOr(defaultValue: number) {
+    valueOr(defaultValue: number | undefined | null) {
         return this.isNormalOperation() ? this.value : defaultValue;
     }
 
@@ -84,17 +75,23 @@ export class Arinc429Word implements Arinc429WordData {
         return ((this.value >> (bit - 1)) & 1) !== 0;
     }
 
-    getBitValueOr(bit: number, defaultValue: boolean): boolean {
+    getBitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
         return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+    }
+
+    setBitValue(bit: number, value: boolean): void {
+        if (value) {
+            this.value |= 1 << (bit - 1);
+        } else {
+            this.value &= ~(1 << (bit - 1));
+        }
     }
 }
 
 export class Arinc429Register implements Arinc429WordData {
-    f64View = new Float64Array(1);
+    u32View = new Uint32Array(1);
 
-    u32View = new Uint32Array(this.f64View.buffer);
-
-    f32View = new Float32Array(this.f64View.buffer);
+    f32View = new Float32Array(this.u32View.buffer);
 
     ssm: Arinc429SignStatusMatrix;
 
@@ -109,16 +106,9 @@ export class Arinc429Register implements Arinc429WordData {
     }
 
     set(word: number) {
-        this.f64View[0] = word;
-
-        const ssm = this.u32View[0];
-        if (ssm >= 0b00 && ssm <= 0b11) {
-            this.ssm = ssm as Arinc429SignStatusMatrix;
-        } else {
-            throw new Arinc429WordSsmParseError(ssm);
-        }
-
-        this.value = this.f32View[1];
+        this.u32View[0] = (word & 0xffffffff) >>> 0;
+        this.ssm = (Math.trunc(word / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
+        this.value = this.f32View[0];
     }
 
     isFailureWarning() {
