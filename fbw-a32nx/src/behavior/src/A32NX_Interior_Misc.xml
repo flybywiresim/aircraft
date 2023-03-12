@@ -713,4 +713,28 @@ if groundCtl and !groundControlPermissives {
 }
         </Update>
     </Template>
+
+    <Template Name="FBW_JET_PUMP">
+        <Parameters Type="Default">
+            <PUMP_INDEX>1</PUMP_INDEX>
+            <JUNCTION_INDEX>1</JUNCTION_INDEX>
+            <AUTO_VALVE_INDEX>1</AUTO_VALVE_INDEX>
+            <DISABLE_VALVE_INDEX>1</DISABLE_VALVE_INDEX>
+        </Parameters>
+        <Component ID="JET_PUMP_#PUMP_INDEX#">
+            <UseTemplate Name="Asobo_GT_Update">
+                <FREQUENCY>1</FREQUENCY>
+                <UPDATE_CODE type="rnp">
+                    let manualSelected = (A:FUELSYSTEM JUNCTION SETTING:#JUNCTION_INDEX#, number) > 1.5;
+                    let autoSelected = (A:FUELSYSTEM VALVE OPEN:#AUTO_VALVE_INDEX#, percent over 100) > 0.0 and !manualSelected;
+                    let valveOpen = (A:FUELSYSTEM VALVE OPEN:#DISABLE_VALVE_INDEX#, percent over 100) > 0.0 and (autoSelected or manualSelected);
+                    let jetPump = (A:FUELSYSTEM PUMP ACTIVE:#PUMP_INDEX#, bool);
+
+                    if valveOpen != jetPump {
+                        (K:FUELSYSTEM_PUMP_TOGGLE) = #PUMP_INDEX, number#;
+                    }
+                </UPDATE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
 </ModelBehaviors>

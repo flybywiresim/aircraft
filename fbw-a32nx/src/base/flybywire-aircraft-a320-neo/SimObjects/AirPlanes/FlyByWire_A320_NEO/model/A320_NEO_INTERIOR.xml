@@ -1995,6 +1995,20 @@
                     <OFF_TOOLTIP>A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON</ON_TOOLTIP>
                 </UseTemplate>
+
+                <!-- run the MSFS jet "pump" depending on which valves are open -->
+                <UseTemplate Name="FBW_JET_PUMP">
+                    <PUMP_INDEX>1</PUMP_INDEX>
+                    <JUNCTION_INDEX>4</JUNCTION_INDEX>
+                    <AUTO_VALVE_INDEX>11</AUTO_VALVE_INDEX>
+                    <DISABLE_VALVE_INDEX>9</DISABLE_VALVE_INDEX>
+                </UseTemplate>
+                <UseTemplate Name="FBW_JET_PUMP">
+                    <PUMP_INDEX>4</PUMP_INDEX>
+                    <JUNCTION_INDEX>5</JUNCTION_INDEX>
+                    <AUTO_VALVE_INDEX>12</AUTO_VALVE_INDEX>
+                    <DISABLE_VALVE_INDEX>10</DISABLE_VALVE_INDEX>
+                </UseTemplate>
             </Component>
 
             <!-- FLT CTL -->
