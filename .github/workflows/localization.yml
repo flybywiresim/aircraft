@@ -17,7 +17,7 @@ jobs:
       - name: Install Localazy CLI
         run: npm install -g @localazy/cli
       - name: Download Translations
-        run: cd fbw-a32nx/src/systems/instruments/src/EFB/Localization && node build-translation.js
+        run: cd fbw-a32nx/src/localisation && node build-flypad-translation.js
       - name: Print git status
         run: git status
       - name: Create PR
@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: fbw-a32nx/src/systems/instruments/src/EFB/Localization/*.json
+          path: fbw-a32nx/src/localisation/*.json
           branch: efb-localazy-update # Specify branch that this action uses.
           commit-message: 'automatically updated flyPadOS 3 localization'
           title: 'build: update flyPadOS 3 localization'
