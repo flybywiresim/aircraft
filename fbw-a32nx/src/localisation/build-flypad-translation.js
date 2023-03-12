@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 
+const fileExtension = '.json';
 const localazyConfigFile = 'localazy-flypad-download-config.json';
 const workingDir = path.resolve('flypad');
 const langFilesPath = 'downloaded';
@@ -35,20 +36,18 @@ console.log('Updating translations files.');
 /**
  * This function is a safety net to check the JSON of the language files.
  * It is probably not required as Localazy should always provide valid JSON files.
- * @param dirent {fs.Dirent} file to process
+ * @param
  * @returns {boolean} true if file was processed successfully, false otherwise
  */
-function processFile(dirent) {
-    const name = dirent.name.replace('.json', '');
-
-    console.log(`Processing file: ${name}.json ...`);
+function processFile(fileName) {
+    console.log(`Processing file: ${fileName} ...`);
 
     // Read Localazy json file
     let content;
     try {
-        content = fs.readFileSync(path.join(workingDir, langFilesPath, dirent.name));
+        content = fs.readFileSync(path.join(workingDir, langFilesPath, fileName));
     } catch (e) {
-        console.error(`Error while reading language file "${dirent.name}": ${e}`);
+        console.error(`Error while reading language file "${fileName}": ${e}`);
         return false;
     }
 
@@ -57,20 +56,20 @@ function processFile(dirent) {
     try {
         json = JSON.parse(content);
     } catch (e) {
-        console.error(`Error while checking json language file "${dirent.name}": ${e}`);
+        console.error(`Error while checking json language file "${fileName}": ${e}`);
         return false;
     }
 
     // Write json file to filesystem
     try {
-        fs.writeFileSync(path.join(workingDir, convertedFilesPath, `${name}.json`),
+        fs.writeFileSync(path.join(workingDir, convertedFilesPath, `${fileName}`),
             JSON.stringify(json, null, 2));
     } catch (e) {
-        console.error(`Error while writing file "${dirent.name}": ${e}`);
+        console.error(`Error while writing file "${fileName}": ${e}`);
         return false;
     }
 
-    console.log(`Successfully completed file: ${name}.json`);
+    console.log(`Successfully completed file: ${fileName}`);
     return true;
 }
 
@@ -79,7 +78,7 @@ function processFile(dirent) {
 console.log('Removing previous language files...');
 try {
     for (const dirent of fs.readdirSync(path.join(workingDir, langFilesPath), { withFileTypes: true })) {
-        if (dirent.isFile() && dirent.name.endsWith('.json')) {
+        if (dirent.isFile() && dirent.name.endsWith(fileExtension)) {
             fs.rmSync(path.join(workingDir, langFilesPath, dirent.name));
         }
     }
@@ -119,8 +118,8 @@ exec(localazyCommand,
             process.exit(1);
         }
         for (const dirent of readdirSync) {
-            if (dirent.isFile() && dirent.name.endsWith('.json')) {
-                if (!processFile(dirent)) {
+            if (dirent.isFile() && dirent.name.endsWith(fileExtension)) {
+                if (!processFile(dirent.name)) {
                     result = false;
                 }
             }

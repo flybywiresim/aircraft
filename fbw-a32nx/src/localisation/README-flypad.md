@@ -1,5 +1,7 @@
 # flyPadOS 3 EFB Localization HowTo
 
+[//]: # (TODO - Rewrite this after new process is in place 12-03-2023)
+
 TOC:
 
 - [Development Process](#development-process)

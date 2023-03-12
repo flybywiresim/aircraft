@@ -140,7 +140,14 @@ exec(localazyCommand,
                 }
             }
         }
+
         console.log('Copying en-US.locPak to out folder');
-        fs.copyFileSync(path.join(workingDir, convertedFilesPath, 'en-US.locPak'), path.join(outFolder, 'en-US.locPak'));
+        try {
+            fs.copyFileSync(path.join(workingDir, convertedFilesPath, 'en-US.locPak'), path.join(outFolder, 'en-US.locPak'));
+        } catch (e) {
+            console.error(`Error while copying file "en-US.locPak": ${e}`);
+            result = false;
+        }
+
         process.exit(result ? 0 : 1);
     });
