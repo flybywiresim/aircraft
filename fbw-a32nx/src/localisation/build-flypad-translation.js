@@ -25,7 +25,7 @@ process.argv.forEach((val) => {
     }
 });
 if (!process.env.GITHUB_ACTIONS && !UPDATE_LOCAL) {
-    console.warn('Error: Only runs on github actions');
+    console.warn('Error: Only runs on github actions. Add "local" as parameter to run locally.');
     // exit with '0' to show build as successful to not confuse devs
     process.exit(0);
 }
