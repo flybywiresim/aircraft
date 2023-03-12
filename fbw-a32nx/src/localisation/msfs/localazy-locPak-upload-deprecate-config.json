@@ -1,0 +1,17 @@
+{
+  "upload": {
+    "skipFailedAutodetection": true,
+    "deprecate": "project",
+    "appVersion": 0,
+    "keySeparator": ".",
+    "features": [],
+    "folder": ".",
+    "type": "json",
+    "files": {
+      "pattern": "en-US.locPak",
+      "type": "json",
+      "path": ".",
+      "file": "flybywire.locPak"
+    }
+  }
+}

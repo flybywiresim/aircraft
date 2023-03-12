@@ -8,8 +8,11 @@ export default new TaskOfTasks("all", [
         // Currently, these can be run in parallel but in the future, we may need to run them in sequence if there are any dependencies.
         new TaskOfTasks("preparation", [
             new ExecTask("copy-base-files", "npm run build-a32nx:copy-base-files"),
-            new ExecTask("efb-translation", "npm run build-a32nx:efb-translation")
-        ], true),
+            new TaskOfTasks("localisation", [
+                new ExecTask("efb-translation", "npm run build-a32nx:efb-translation"),
+                new ExecTask("locPak-translation", "npm run build-a32nx:locPak-translation")
+            ], true),
+        ], false),
 
         // Group all typescript and react build tasks together.
         new TaskOfTasks("build", [
