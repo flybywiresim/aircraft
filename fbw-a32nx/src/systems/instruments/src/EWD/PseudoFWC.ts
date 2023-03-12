@@ -1,6 +1,6 @@
 import { Subject, Subscribable, MappedSubject, ArraySubject, DebounceTimer } from 'msfssdk';
 
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
 import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@instruments/common/NXLogic';
 import { NXDataStore } from '@shared/persistence';
 
@@ -279,6 +279,14 @@ export class PseudoFWC {
 
     private readonly flapsLeverNotZeroWarning = Subject.create(false);
 
+    private readonly phase84s5Trigger = new NXLogicTriggeredMonostableNode(4.5, false);
+
+    private readonly groundSpoiler5sDelayed = new NXLogicConfirmNode(5, false);
+
+    private readonly speedBrake5sDelayed = new NXLogicConfirmNode(5, false);
+
+    private readonly groundSpoilerNotArmedWarning = Subject.create(false);
+
     /* FUEL */
 
     private readonly centerFuelPump1Auto = Subject.create(false);
@@ -357,6 +365,8 @@ export class PseudoFWC {
 
     private readonly flightPhase129 = Subject.create(false);
 
+    private readonly flightPhase67 = Subject.create(false);
+
     private readonly flightPhase78 = Subject.create(false);
 
     private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
@@ -418,6 +428,10 @@ export class PseudoFWC {
 
     private readonly lgciu2Fault = Subject.create(false);
 
+    private readonly lgciu1DiscreteWord1 = Arinc429Register.empty();
+
+    private readonly lgciu2DiscreteWord1 = Arinc429Register.empty();
+
     private readonly nwSteeringDisc = Subject.create(false);
 
     private readonly parkBrake = Subject.create(false);
@@ -474,7 +488,12 @@ export class PseudoFWC {
 
     private readonly apuAvail = Subject.create(0);
 
+    /** @deprecated use radioHeight vars */
     private readonly radioAlt = Subject.create(0);
+
+    private readonly radioHeight1 = Arinc429Register.empty();
+
+    private readonly radioHeight2 = Arinc429Register.empty();
 
     private readonly fac1Failed = Subject.create(0);
 
@@ -509,6 +528,10 @@ export class PseudoFWC {
     private readonly autothrustLeverWarningToga = Subject.create(false);
 
     private readonly thrustLeverNotSet = Subject.create(false);
+
+    private readonly eng1Or2TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
+
+    private readonly eng1Or2TakeoffPower = Subject.create(false);
 
     /* FIRE */
 
@@ -751,6 +774,7 @@ export class PseudoFWC {
         this.flightPhase34.set([3, 4].includes(this.fwcFlightPhase.get()));
         this.flightPhase345.set(this.flightPhase34.get() || this.fwcFlightPhase.get() === 5);
         this.flightPhase129.set([1, 2, 9].includes(this.fwcFlightPhase.get()));
+        this.flightPhase67.set([6, 7].includes(this.fwcFlightPhase.get()));
         this.flightPhase78.set([7, 8].includes(this.fwcFlightPhase.get()));
 
         // TO CONFIG button
@@ -809,6 +833,8 @@ export class PseudoFWC {
         this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
 
         this.radioAlt.set(SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND MINUS CG', 'feet'));
+        this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
+        this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
 
         this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
@@ -831,6 +857,13 @@ export class PseudoFWC {
         this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
         this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
         this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
+        // FIXME ECU doesn't have the necessary output words so we go purely on TLA
+        const flexThrustLimit = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number') === 3;
+        const toPower = this.throttle1Position.get() >= 45 || (this.throttle1Position.get() >= 35 && flexThrustLimit)
+            || this.throttle2Position.get() >= 45 || (this.throttle2Position.get() >= 35 && flexThrustLimit);
+        this.eng1Or2TakeoffPowerConfirm.write(toPower, deltaTime);
+        const raAbove1500 = this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500;
+        this.eng1Or2TakeoffPower.set(toPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
 
         this.engDualFault.set(!this.aircraftOnGround.get() && (
             (this.fireButton1.get() && this.fireButton2.get())
@@ -890,8 +923,14 @@ export class PseudoFWC {
         this.landingLight3Retracted.set(SimVar.GetSimVarValue('L:LANDING_3_Retracted', 'bool'));
         this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
         this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
+        this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
+        this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
         this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
         this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
+        const mainGearDownlocked = (this.lgciu1DiscreteWord1.bitValueOr(23, false) || this.lgciu2DiscreteWord1.bitValueOr(23, false))
+            && (this.lgciu1DiscreteWord1.bitValueOr(24, false) || this.lgciu2DiscreteWord1.bitValueOr(24, false));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const gearDownlocked = mainGearDownlocked && (this.lgciu1DiscreteWord1.bitValueOr(25, false) || this.lgciu2DiscreteWord1.bitValueOr(25, false));
 
         /* 22 - AUTOFLIGHT */
         const fm1DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3');
@@ -1027,6 +1066,8 @@ export class PseudoFWC {
         const fcdc2DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_3');
         const fcdc1DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_4');
         const fcdc2DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_4');
+        const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
+        const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
 
         // ELAC 1 FAULT computation
         const se1f = (fcdc1DiscreteWord1.getBitValueOr(19, false) || fcdc2DiscreteWord1.getBitValueOr(19, false))
@@ -1099,6 +1140,19 @@ export class PseudoFWC {
         const rhElevGreenFail = (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.getBitValueOr(18, false))
         || (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.getBitValueOr(18, false));
         this.lrElevFaultCondition.set(lhElevBlueFail && lhElevGreenFail && rhElevBlueFail && rhElevGreenFail && ![1, 10].includes(this.fwcFlightPhase.get()));
+
+        // GND SPLRS FAULT status
+        const sec1GroundSpoilerFault = fcdc1DiscreteWord5.getBitValue(14) || fcdc2DiscreteWord5.getBitValue(14);
+        const sec2GroundSpoilerFault = fcdc1DiscreteWord5.getBitValue(15) || fcdc2DiscreteWord5.getBitValue(15);
+        const sec3GroundSpoilerFault = fcdc1DiscreteWord5.getBitValue(16) || fcdc2DiscreteWord5.getBitValue(16);
+        const sec1SpeedbrakeLeverFault = fcdc1DiscreteWord5.getBitValue(11) || fcdc2DiscreteWord5.getBitValue(11);
+        const sec2SpeedbrakeLeverFault = fcdc1DiscreteWord5.getBitValue(12) || fcdc2DiscreteWord5.getBitValue(12);
+        const sec3SpeedbrakeLeverFault = fcdc1DiscreteWord5.getBitValue(13) || fcdc2DiscreteWord5.getBitValue(13);
+        const allGroundSpoilersInop = (
+            (sec1GroundSpoilerFault || sec1SpeedbrakeLeverFault)
+            && (sec2GroundSpoilerFault || sec2SpeedbrakeLeverFault)
+            && (sec3GroundSpoilerFault || sec3SpeedbrakeLeverFault)
+        );
 
         this.spoilersArmed.set(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false));
         this.speedBrakeCommand.set(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false));
@@ -1204,6 +1258,20 @@ export class PseudoFWC {
         this.flapsLeverNotZeroWarning.set(
             (adr1PressureAltitude.valueOr(0) >= 22000 || adr2PressureAltitude.valueOr(0) >= 22000 || adr3PressureAltitude.valueOr(0) >= 22000)
             && this.fwcFlightPhase.get() === 6 && !this.slatFlapSelectionS0F0,
+        );
+
+        // gnd splr not armed
+        const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
+
+        const lgDown = this.lgciu1DiscreteWord1.bitValueOr(29, false) || this.lgciu2DiscreteWord1.bitValueOr(29, false) && mainGearDownlocked;
+        this.phase84s5Trigger.write(this.fwcFlightPhase.get() === 8, deltaTime);
+        this.groundSpoiler5sDelayed.write(fcdc1DiscreteWord4.getBitValueOr(27, false) || fcdc2DiscreteWord4.getBitValueOr(27, false), deltaTime);
+        this.speedBrake5sDelayed.write(fcdc1DiscreteWord4.getBitValueOr(28, false) || fcdc2DiscreteWord4.getBitValueOr(28, false), deltaTime);
+
+        this.groundSpoilerNotArmedWarning.set(
+            raBelow500 && lgDown && this.flightPhase67.get() && !this.phase84s5Trigger.read() && !this.eng1Or2TakeoffPower.get() && !allGroundSpoilersInop
+            && !(this.groundSpoiler5sDelayed.read() || this.speedBrake5sDelayed.read())
+            && (fcdc1DiscreteWord4.isNormalOperation() || fcdc2DiscreteWord4.isNormalOperation()),
         );
 
         /* FIRE */
@@ -1974,6 +2042,16 @@ export class PseudoFWC {
             codesToReturn: ['270055701'],
             memoInhibit: () => false,
             failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2700870: { // GND SPLR NOT ARMED
+            flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
+            simVarIsActive: this.groundSpoilerNotArmedWarning,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['270087001'],
+            memoInhibit: () => false,
+            failure: 2,
             sysPage: -1,
             side: 'LEFT',
         },

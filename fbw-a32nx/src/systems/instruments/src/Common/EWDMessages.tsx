@@ -247,6 +247,7 @@ const EWDMessages = {
     '270046501': '\x1b<4m\x1b4mF/CTL\x1bm FLAP/MCDU DISAGREE',
     '270055501': '\x1b<4m\x1b4mF/CTL\x1bm FCDC 1 FAULT',
     '270055701': '\x1b<4m\x1b4mF/CTL\x1bm FCDC 2 FAULT',
+    '270087001': '\x1b<4m\x1b4mF/CTL\x1bm GND SPLR NOT ARMED',
     '280013001': '\x1b<4m\x1b4mFUEL\x1bm L WING TK LO LVL',
     '280013002': '\x1b<5m -FUEL MODE SEL......MAN',
     '280013003': '\x1b<7m  .IF NO FUEL LEAK AND',
