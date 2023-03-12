@@ -1,4 +1,4 @@
-name: 'FlyPad Localazy Download'
+name: 'Localazy Update Download'
 on:
   schedule:
     # https://crontab.guru/
@@ -18,6 +18,8 @@ jobs:
         run: npm install -g @localazy/cli
       - name: Download Translations
         run: cd fbw-a32nx/src/localisation && node build-flypad-translation.js
+      - name: Download Translations
+        run: cd fbw-a32nx/src/localisation && node build-lokPak-translation.js
       - name: Print git status
         run: git status
       - name: Create PR
@@ -25,15 +27,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: fbw-a32nx/src/localisation/*.json
-          branch: efb-localazy-update # Specify branch that this action uses.
-          commit-message: 'automatically updated flyPadOS 3 localization'
-          title: 'build: update flyPadOS 3 localization'
+          path: fbw-a32nx/src/localisation
+          branch: localazy-update # Specify branch that this action uses.
+          commit-message: 'automatically updated FlyByWire localization'
+          title: 'build: update FlyByWire localization'
           body: >
             This PR automatically downloads and updates the approved changes from Localazy translations for 
-            the flyPadOS3 for persisting these changes in the repo. 
+            the flyPadOS3 and the locPak files for persisting these changes in the repo. 
             Changes will be collected in this PR and this PR needs to be manually merged to master eventually.
-            Ask on Discord #efb if you have questions about this.
+            Ask on Discord #localisation if you have questions about this.
           labels: |
             EFB,
             i18n

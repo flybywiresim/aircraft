@@ -36,7 +36,7 @@ console.log('Updating translations files.');
 /**
  * This function is a safety net to check the JSON of the language files.
  * It is probably not required as Localazy should always provide valid JSON files.
- * @param
+ * @param fileName {string} file to process
  * @returns {boolean} true if file was processed successfully, false otherwise
  */
 function processFile(fileName) {

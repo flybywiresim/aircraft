@@ -96,6 +96,7 @@ obj/
 target/
 *.tgz
 *.wasm
+localazy.keys.json
 cmake-build*
 
 # ======== OLD =============
