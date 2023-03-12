@@ -122,7 +122,6 @@ class Display : public DisplayBase {
         }
       } else {
         this->resetNavigationDisplayData();
-        this->_ignoreNextFrame = false;
       }
     });
 
@@ -133,6 +132,7 @@ class Display : public DisplayBase {
     this->_thresholds->setOnChangeCallback([=]() {
       this->_frameBufferSize = this->_thresholds->data().frameByteCount;
       this->_frameData->reserve(this->_frameBufferSize);
+      this->_ignoreNextFrame = this->_ignoreNextFrame && (this->_thresholds->data().firstFrame == 0);
 
       this->_ndThresholdData->template value<NdMinElevation>() = this->_thresholds->data().lowerThreshold;
       this->_ndThresholdData->template value<NdMinElevationMode>() = this->_thresholds->data().lowerThresholdMode;
