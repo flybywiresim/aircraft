@@ -145,7 +145,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    * @return true if successful, false otherwise
    */
   bool writeDataToSim() override {
-    int chunkCount = 0;
+    [[maybe_unused]] int chunkCount = 0; // for debugging output only
     std::size_t sentBytes = 0;
     std::size_t remainingBytes = this->content.size();
 
