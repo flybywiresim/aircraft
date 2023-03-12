@@ -3,6 +3,7 @@ import { Subject, Subscribable, MappedSubject, ArraySubject, DebounceTimer } fro
 import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
 import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@instruments/common/NXLogic';
 import { NXDataStore } from '@shared/persistence';
+import { VerticalMode } from '@shared/autopilot';
 
 export function xor(a: boolean, b: boolean): boolean {
     return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -278,6 +279,28 @@ export class PseudoFWC {
     private readonly rudderTrimNotToWarning = Subject.create(false);
 
     private readonly flapsLeverNotZeroWarning = Subject.create(false);
+
+    private readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
+
+    private readonly speedBrakeCommand50sConfirm = new NXLogicConfirmNode(50, true);
+
+    private readonly speedBrakeCaution1Confirm = new NXLogicConfirmNode(30, true);
+
+    private readonly engAboveIdleWithSpeedBrakeConfirm = new NXLogicConfirmNode(10, false);
+
+    private readonly apTcasRaNoseUpConfirm = new NXLogicConfirmNode(4, true);
+
+    private readonly speedBrakeCaution3Confirm = new NXLogicConfirmNode(3, true);
+
+    private readonly speedBrakeCaution3Monostable = new NXLogicTriggeredMonostableNode(1.5, true);
+
+    private readonly speedBrakeCaution1Pulse = new NXLogicPulseNode(true);
+
+    private readonly speedBrakeCaution2Pulse = new NXLogicPulseNode(true);
+
+    private readonly speedBrakeStillOutWarning = Subject.create(false);
+
+    private readonly amberSpeedBrake = Subject.create(false);
 
     private readonly phase84s5Trigger = new NXLogicTriggeredMonostableNode(4.5, false);
 
@@ -822,6 +845,8 @@ export class PseudoFWC {
         this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
         this.N1IdleEng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1:1', 'number'));
         this.N1IdleEng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1:2', 'number'));
+        // FIXME the ECU does not provide the appropriate labels, so we calculate this ourselves
+        const oneEngineAboveMinPower = this.N1Eng1.get() <= (this.N1IdleEng1.get() + 1) || this.N1Eng2.get() <= (this.N1IdleEng1.get() + 1);
 
         this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
         this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
@@ -1259,6 +1284,29 @@ export class PseudoFWC {
             (adr1PressureAltitude.valueOr(0) >= 22000 || adr2PressureAltitude.valueOr(0) >= 22000 || adr3PressureAltitude.valueOr(0) >= 22000)
             && this.fwcFlightPhase.get() === 6 && !this.slatFlapSelectionS0F0,
         );
+
+        // spd brk still out
+        this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
+        this.speedBrakeCommand50sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
+        this.engAboveIdleWithSpeedBrakeConfirm.write(this.speedBrakeCommand50sConfirm.read() && !oneEngineAboveMinPower, deltaTime);
+        this.speedBrakeCaution1Confirm.write(this.fwcFlightPhase.get() === 6 && this.speedBrakeCommand50sConfirm.read() && !this.engAboveIdleWithSpeedBrakeConfirm.read(), deltaTime);
+        const speedBrakeCaution1 = this.speedBrakeCaution1Confirm.read();
+        const speedBrakeCaution2 = this.fwcFlightPhase.get() === 7 && this.speedBrakeCommand5sConfirm.read();
+        // FIXME FCU does not provide the bit, so we synthesize it
+        const apVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
+        const apTcasRaNoseUp = apVerticalMode === VerticalMode.TCAS
+            && SimVar.GetSimVarValue('L:A32NX_TCAS_RA_CORRECTIVE', 'bool') > 0
+            && SimVar.GetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'number') > 0;
+        this.apTcasRaNoseUpConfirm.write(apTcasRaNoseUp, deltaTime);
+        this.speedBrakeCaution3Confirm.write(this.speedBrakeCommand.get() && this.fwcFlightPhase.get() === 6 && oneEngineAboveMinPower && this.apTcasRaNoseUpConfirm.read(), deltaTime);
+        this.speedBrakeCaution3Monostable.write(this.speedBrakeCaution3Confirm.read(), deltaTime);
+        const speedBrakeCaution3 = this.speedBrakeCaution3Confirm.read() || this.speedBrakeCaution3Monostable.read();
+        this.amberSpeedBrake.set(this.speedBrakeCaution1Confirm.previousInput || speedBrakeCaution2 || speedBrakeCaution3 || !this.flightPhase67.get());
+        const speedBrakeDoNotUse = fcdc1DiscreteWord5.getBitValue(27) || fcdc2DiscreteWord5.getBitValue(27);
+        this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
+        this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
+        const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
+        this.speedBrakeStillOutWarning.set(!this.speedBrakeCaution1Pulse.read() && !this.speedBrakeCaution2Pulse.read() && speedBrakeCaution && !speedBrakeDoNotUse);
 
         // gnd splr not armed
         const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
@@ -2025,6 +2073,16 @@ export class PseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
+        2700502: { // SPD BRK STILL OUT
+            flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
+            simVarIsActive: this.speedBrakeStillOutWarning,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['270050201'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
         2700555: { // FCDC 1 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: this.fcdc1FaultCondition,
@@ -2636,9 +2694,13 @@ export class PseudoFWC {
             side: 'RIGHT',
         },
         '0000060': { // SPEED BRK
-            flightPhaseInhib: [1, 8, 9, 10],
-            simVarIsActive: this.speedBrakeCommand,
-            whichCodeToReturn: () => [![6, 7].includes(this.fwcFlightPhase.get()) ? 1 : 0],
+            flightPhaseInhib: [],
+            simVarIsActive: MappedSubject.create(
+                ([speedBrakeCommand, fwcFlightPhase]) => speedBrakeCommand && ![1, 8, 9, 10].includes(fwcFlightPhase),
+                this.speedBrakeCommand,
+                this.fwcFlightPhase,
+            ),
+            whichCodeToReturn: () => [this.amberSpeedBrake.get() ? 1 : 0],
             codesToReturn: ['000006001', '000006002'],
             memoInhibit: () => false,
             failure: 0,
