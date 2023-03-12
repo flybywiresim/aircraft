@@ -149,12 +149,6 @@ impl WindTurbine {
     }
 
     fn wind_power_converted(&self, context: &UpdateContext) -> Power {
-        println!(
-            "*****eff {:.3}  machC {:.3}  TSR {:.2}",
-            self.power_efficiency().get::<ratio>(),
-            self.mach_effect_ratio(context).get::<ratio>(),
-            self.tip_speed_ratio.get::<ratio>()
-        );
         self.wind_power_available(context)
             * self.power_efficiency()
             * self.mach_effect_ratio(context)
@@ -200,15 +194,6 @@ impl WindTurbine {
         };
 
         self.torque_sum += generated_torque;
-
-        println!(
-            "GENERATED BLADE TORQUE {:.1}Nm, Power :{:.0}W  AIR DENSITY {:.3}",
-            generated_torque.get::<newton_meter>(),
-            generated_torque.get::<newton_meter>() * self.speed.get::<radian_per_second>(),
-            context
-                .ambient_air_density()
-                .get::<kilogram_per_cubic_meter>()
-        );
     }
 
     fn update_friction_torque(&mut self, resistant_torque: Torque) {
@@ -223,12 +208,6 @@ impl WindTurbine {
         let pumping_torque =
             Torque::new::<newton_meter>(2. * (5. * self.position.get::<radian>()).cos());
 
-        println!(
-            "FRICTION TORQUE {:.1}Nm, RESISTANT GEN TORQUE {:.1}Nm",
-            (friction_torque + pumping_torque).get::<newton_meter>(),
-            resistant_torque.get::<newton_meter>(),
-        );
-
         self.torque_sum += resistant_torque + friction_torque + pumping_torque;
     }
 
@@ -241,13 +220,6 @@ impl WindTurbine {
         );
         self.position += Angle::new::<radian>(
             self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
-        );
-
-        println!(
-            "RAT FINAL NET TORQUE {:.1}Nm speed rpm {:.0} BladePitch {:.2}",
-            self.torque_sum.get::<newton_meter>(),
-            self.speed.get::<revolution_per_minute>(),
-            self.propeller_beta_pitch.output().get::<ratio>()
         );
 
         // Reset torque accumulator at end of update

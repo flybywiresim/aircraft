@@ -2940,15 +2940,9 @@ impl RatAntiStallPumpController {
             - (Self::LOW_SPEED_CUT_OFF_THRESHOLD_RPM - Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM))
             / Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM)
             .clamp(Self::MIN_ANTI_STALL_RATIO, 1.);
+
         self.anti_stall_ratio
             .update(context.delta(), Ratio::new::<ratio>(cut_off_ratio));
-
-        if self.anti_stall_ratio.output().get::<ratio>() < 1. {
-            println!(
-                "--------------RAT ANTISTALL={:.2}-------------",
-                cut_off_ratio
-            );
-        }
     }
 }
 impl PumpController for RatAntiStallPumpController {
@@ -3076,18 +3070,10 @@ impl PressureSource for RamAirTurbine {
     }
 
     fn flow(&self) -> VolumeRate {
-        println!(
-            "-----------RAT FINAL FLOW= {:.4}gpm-------------",
-            self.pump.flow().get::<gallon_per_minute>()
-        );
         self.pump.flow()
     }
 
     fn displacement(&self) -> Volume {
-        println!(
-            "-----------RAT FINAL DIS= {:.4}gal-------------",
-            self.pump.displacement().get::<gallon>()
-        );
         self.pump.displacement()
     }
 }

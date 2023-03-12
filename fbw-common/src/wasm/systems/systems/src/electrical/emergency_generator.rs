@@ -8,10 +8,7 @@ use super::{
 use crate::shared::{
     EmergencyGeneratorControlUnit, EmergencyGeneratorPower, PowerConsumptionReport,
 };
-use uom::si::{
-    angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, frequency::hertz,
-    power::watt,
-};
+use uom::si::{electric_potential::volt, f64::*, frequency::hertz, power::watt};
 
 pub struct EmergencyGenerator {
     identifier: ElectricalElementIdentifier,
@@ -67,13 +64,6 @@ impl EmergencyGenerator {
         } else {
             Power::default()
         };
-
-        println!(
-            "EMERGENCY GEN: DEMAND {:.1}W motor speed{:.0} current power output {:.1}",
-            self.demand.get::<watt>(),
-            gcu.motor_speed().get::<revolution_per_minute>(),
-            self.demand.min(gcu.max_allowed_power()).get::<watt>()
-        );
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));

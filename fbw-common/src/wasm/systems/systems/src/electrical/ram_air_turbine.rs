@@ -160,12 +160,6 @@ impl<const N: usize> GeneratorControlUnit<N> {
         self.is_active = elec_emergency_state.is_in_emergency_elec()
             || (self.manual_generator_on_was_pressed
                 && !lgciu.left_and_right_gear_compressed(false));
-
-        println!(
-            "GENERATOR SPEED RPM {:.0} ACTIVE: {:?}",
-            self.current_speed.get::<revolution_per_minute>(),
-            self.is_active
-        );
     }
 
     pub fn update(
