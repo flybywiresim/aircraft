@@ -1772,7 +1772,7 @@ export class PseudoFWC {
                 !(this.emergencyGeneratorOn.get()) ? 1 : null,
                 5,
                 !(this.apuMasterSwitch.get() === 1 || this.apuAvail.get() === 1) && this.radioAlt.get() < 2500 ? 6 : null,
-                (this.engine1AboveIdle.get() || this.engine2AboveIdle.get()) ? 7 : null,
+                (this.throttle1Position.get() > 0 || this.throttle2Position.get() > 0) ? 7 : null,
                 this.fac1Failed.get() === 1 ? 8 : null,
                 9, 10, 11,
             ],
