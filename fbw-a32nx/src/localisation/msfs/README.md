@@ -3,12 +3,16 @@
 Only change the `en-US.locPak` file. 
 
 The other files are generated automatically from Localazy and any changes will be overwritten.
-                                
-[//]: # (TODO: GitHub secrets do not work on PRs from forks - check if this workflow is even possible)
 
-Add new keys to the `en-US.locPak` file. These will be automatically added to Localazy and will be available for translation
-after the PR has been approved. 
+## Uploading new keys and changed default texts
 
-Changes to existing keys will be automatically updated in Localazy once the PR is merged to master. They will be visible 
-in the PR build though.  
+Add new keys to the `en.json` file.
+Make changes to default texts in the `en.json` file.
+
+Use one of the following commands to upload the file to Localazy:
+
+localazy upload -w <writeKey> -c localazy-locPak-upload-config.json -d msfs
+localazy upload -w <writeKey> -c localazy-locPak-upload-deprecate-config.json -d msfs
+
+Use the option `-s` for a test run. Remove this option to actually upload the file.
 

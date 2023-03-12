@@ -4,11 +4,16 @@ Only change the `en.json` file.
 
 The other files are generated automatically from Localazy and any changes will be overwritten.
                                 
-[//]: # (TODO: GitHub secrets do not work on PRs from forks - check if this workflow is even possible)
+## Uploading new keys and changed default texts
 
-Add new keys to the `en.json` file. These will be automatically added to Localazy and will be available for translation
-after the PR has been approved. 
+Add new keys to the `en.json` file. 
+Make changes to default texts in the `en.json` file.
 
-Changes to existing keys will be automatically updated in Localazy once the PR is merged to master. They will be visible 
-in the PR build though.  
+Use one of the following commands to upload the file to Localazy:
+
+localazy upload -w <writeKey> -c localazy-flypad-upload-config.json -d flypad
+localazy upload -w <writeKey> -c localazy-flypad-upload-deprecate-config.json -d flypad
+
+Use the option `-s` for a test run. Remove this option to actually upload the file.
+
 
