@@ -213,7 +213,7 @@ bool LightingPresets::readFromStore(int64_t presetNr) {
   // load file
   bool result = iniFile.read(ini);
 
-  const std::string iniSectionName = "iniSectionName " + std::to_string(presetNr);
+  const std::string iniSectionName = "preset " + std::to_string(presetNr);
 
   // check if iniSectionName is available
   // if not use a 50% default iniSectionName
