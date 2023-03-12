@@ -15,7 +15,7 @@ import { distanceTo } from 'msfs-geo';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
-import NavigraphClient, { NavigraphContext } from './Apis/Navigraph/Navigraph';
+import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
 

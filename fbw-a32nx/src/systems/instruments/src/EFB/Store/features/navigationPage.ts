@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { NavigraphBoundingBox } from '../../Apis/Navigraph/Navigraph';
+import { NavigraphBoundingBox } from '../../ChartsApi/Navigraph';
 import { store, RootState } from '../store';
 import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';
 
