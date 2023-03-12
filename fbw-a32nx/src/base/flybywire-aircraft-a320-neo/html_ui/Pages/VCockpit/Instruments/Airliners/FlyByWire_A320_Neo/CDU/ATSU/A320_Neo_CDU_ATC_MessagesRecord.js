@@ -29,7 +29,7 @@ class CDUAtcMessagesRecord {
         mcdu.page.Current = mcdu.page.ATCMessageRecord;
 
         if (!messages) {
-            messages = mcdu.atsu.atc.messages();
+            messages = mcdu.atsu.atcMessages();
         }
 
         // regular update due to showing dynamic data on this page
@@ -52,15 +52,15 @@ class CDUAtcMessagesRecord {
             let headerLeft = "", headerRight = "", contentStart = "";
 
             if (messages.length > (offset + i) && messages[offset + i]) {
-                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
+                headerLeft = `${messages[offset + i].Timestamp.mailboxTimestamp()} ${messages[offset + i].Direction === AtsuCommon.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].Response);
 
                 // ignore the headline with the station and the timestamp
-                const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n");
+                const lines = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.Printer).split("\n");
                 let firstLine = "CPDLC";
                 if (lines.length >= 2) {
-                    firstLine = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n")[1];
+                    firstLine = messages[offset + i].serialize(AtsuCommon.AtsuMessageSerializationFormat.Printer).split("\n")[1];
                 }
                 if (firstLine.length <= 24) {
                     contentStart = firstLine;
@@ -117,7 +117,7 @@ class CDUAtcMessagesRecord {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID, false);
                         CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
                     } else {
                         CDUAtcMessage.ShowPage(mcdu, messages, offset + i, true);
@@ -134,7 +134,7 @@ class CDUAtcMessagesRecord {
                 if (!confirmErase) {
                     CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, true);
                 } else {
-                    mcdu.atsu.atc.cleanupMessages();
+                    mcdu.atsu.cleanupAtcMessages();
                     CDUAtcMessagesRecord.ShowPage(mcdu, null, 0, false);
                 }
             }

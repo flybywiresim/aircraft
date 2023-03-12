@@ -156,6 +156,8 @@
       "DeboardConfirmationConfirm": "Aussteigen",
       "DeboardConfirmationTitle": "Alle Passagiere aussteigen?",
       "EstimatedDurationUnit": "Minuten",
+      "GW": "GW",
+      "GWCG": "GW CG",
       "LoadingTime": "Ladezeit",
       "Passengers": "Passagiere",
       "Planned": "Geplant",
@@ -163,6 +165,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Flugzeug muss am Boden sein und die Triebwerke müssen ausgeschaltet sein, um die Boarding-Dauer zu ändern",
         "FillPayloadFromSimbrief": "Beladungsdaten von Simbrief laden",
         "MaxCargo": "Maximale Fracht",
+        "MaxGW": "Maximales GW",
+        "MaxGWCG": "Maximaler GW CG",
         "MaxPassengers": "Maximale Passagieranzahl",
         "MaxZFW": "Maximales ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
@@ -570,9 +574,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX Betankungssynchronisation",
+      "GsxPayloadEnabled": "GSX Beladungssynchronisation",
+      "Title": "Optionen von Drittanbietern"
     },
     "ThrottleConfig": {
       "Apply": "Anwenden",
@@ -654,7 +658,7 @@
     "RecommendationText": "Bitte mit Hilfe des FlyByWire-Installer die neueste Version installieren.",
     "StatusBarWarning": "Neue A32NX Version verfügbar",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Bitte mit Hilfe des FlyByWire-Installer die neueste Version installieren."
     },
     "Title": "Neue Version verfügbar"
   }

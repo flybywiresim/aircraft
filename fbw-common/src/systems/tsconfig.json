@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "baseUrl": ".",
+    "resolveJsonModule" : true,
+    "typeRoots": [
+      "../typings",
+      "../../../node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "paths": {
+      "@datalink/aoc": ["datalink/aoc/src/index.ts"],
+      "@datalink/atc": ["datalink/atc/src/index.ts"],
+      "@datalink/common": ["datalink/common/src/index.ts"],
+      "@datalink/router": ["datalink/router/src/index.ts"],
+      "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
+      "@shared/*": ["../../../fbw-a32nx/src/systems/shared/src/*"],
+      "@typings/*": ["../typings/*"],
+    }
+  },
+}

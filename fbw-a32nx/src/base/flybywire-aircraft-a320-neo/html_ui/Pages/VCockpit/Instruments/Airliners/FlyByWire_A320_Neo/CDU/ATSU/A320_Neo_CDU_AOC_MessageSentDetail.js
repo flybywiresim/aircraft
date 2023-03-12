@@ -2,10 +2,10 @@ class CDUAocMessageSentDetail {
     static ShowPage(mcdu, messages, messageIndex, offset = 0) {
         mcdu.clearDisplay();
         const message = messages[messageIndex];
-        const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split("\n");
+        const lines = message.serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplay).split("\n");
 
         // mark message as read
-        mcdu.atsu.messageRead(message.UniqueMessageID);
+        mcdu.atsu.messageRead(message.UniqueMessageID, true);
 
         const msgArrows = messages.length > 1 ? " {}" : "";
 
@@ -31,7 +31,7 @@ class CDUAocMessageSentDetail {
 
         mcdu.setTemplate([
             ["AOC SENT MSG"],
-            [`[b-text]${message.Timestamp.mcduTimestamp()} TO ${message.Station}[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
+            [`[b-text]${message.Timestamp.fmsTimestamp()} TO ${message.Station}[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
             [`[s-text]${lines[offset] ? lines[offset] : ""}`],
             [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`[s-text]${lines[offset + 2] ? lines[offset + 2] : ""}`],

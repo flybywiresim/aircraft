@@ -31,7 +31,7 @@ class CDUAtcMessage {
         }
 
         let color = '{cyan}';
-        if (message.ComStatus === Atsu.AtsuMessageComStatus.Failed) {
+        if (message.ComStatus === AtsuCommon.AtsuMessageComStatus.Failed) {
             color = '{red}';
         }
         retval = `${color}{small}${retval}{end}{end}`;
@@ -42,10 +42,10 @@ class CDUAtcMessage {
     static ShowPage(mcdu, messages, messageIndex, messageList, offset = 0) {
         mcdu.clearDisplay();
         const message = messages[messageIndex];
-        const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split("\n");
+        const lines = message.serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplay).split("\n");
 
         // mark message as read
-        mcdu.atsu.messageRead(message.UniqueMessageID);
+        mcdu.atsu.messageRead(message.UniqueMessageID, false);
 
         const msgArrows = messages.length > 1 ? " {}" : "";
 
