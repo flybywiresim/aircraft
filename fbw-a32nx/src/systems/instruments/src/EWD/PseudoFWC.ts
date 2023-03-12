@@ -489,13 +489,22 @@ export class PseudoFWC {
 
     private readonly N1Eng2 = Subject.create(0);
 
-    private readonly N1IdleEng1 = Subject.create(0);
+    private readonly N2Eng1 = Subject.create(0);
 
-    private readonly N1IdleEng2 = Subject.create(0);
+    private readonly N2Eng2 = Subject.create(0);
 
-    private readonly N1AboveIdle = MappedSubject.create(([n1, idleN1]) => Math.floor(n1) > idleN1, this.N1Eng1, this.N1IdleEng1);
+    private readonly N1IdleEng = Subject.create(0);
 
-    private readonly N2AboveIdle = MappedSubject.create(([n1, idleN1]) => Math.floor(n1) > idleN1, this.N1Eng2, this.N1IdleEng2);
+    // FIXME ECU should provide this in a discrete word
+    private readonly engine1AboveIdle = MappedSubject.create(([n1, idleN1]) => n1 > (idleN1 + 0.5), this.N1Eng1, this.N1IdleEng);
+
+    private readonly engine2AboveIdle = MappedSubject.create(([n1, idleN1]) => n1 > (idleN1 + 0.5), this.N1Eng2, this.N1IdleEng);
+
+    // FIXME ECU should provide this in a discrete word, and calculate based on f(OAT)
+    // this is absolute min at low temperatures
+    private readonly engine1CoreAtOrAboveMinIdle = MappedSubject.create(([n2]) => n2 >= (100 * 10630 / 16645), this.N2Eng1);
+
+    private readonly engine2CoreAtOrAboveMinIdle = MappedSubject.create(([n2]) => n2 >= (100 * 10630 / 16645), this.N2Eng2);
 
     private readonly engDualFault = Subject.create(false);
 
@@ -843,10 +852,10 @@ export class PseudoFWC {
         this.engine2State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum'));
         this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
         this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
-        this.N1IdleEng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1:1', 'number'));
-        this.N1IdleEng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1:2', 'number'));
-        // FIXME the ECU does not provide the appropriate labels, so we calculate this ourselves
-        const oneEngineAboveMinPower = this.N1Eng1.get() <= (this.N1IdleEng1.get() + 1) || this.N1Eng2.get() <= (this.N1IdleEng1.get() + 1);
+        this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
+        this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
+        this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
+        const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
 
         this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
         this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
@@ -894,7 +903,7 @@ export class PseudoFWC {
             (this.fireButton1.get() && this.fireButton2.get())
             || (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get())
             || (this.engine1State.get() === 0 && this.engine2State.get() === 0)
-            || (!this.N1AboveIdle.get() && !this.N2AboveIdle.get())
+            || (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())
         ));
 
         /* HYDRAULICS */
@@ -1763,7 +1772,7 @@ export class PseudoFWC {
                 !(this.emergencyGeneratorOn.get()) ? 1 : null,
                 5,
                 !(this.apuMasterSwitch.get() === 1 || this.apuAvail.get() === 1) && this.radioAlt.get() < 2500 ? 6 : null,
-                (this.N1AboveIdle.get() || this.N2AboveIdle.get()) ? 7 : null,
+                (this.engine1AboveIdle.get() || this.engine2AboveIdle.get()) ? 7 : null,
                 this.fac1Failed.get() === 1 ? 8 : null,
                 9, 10, 11,
             ],
