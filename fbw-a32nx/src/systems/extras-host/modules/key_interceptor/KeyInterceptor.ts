@@ -4,6 +4,7 @@
 import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
 import { NotificationManager } from '@shared/notification';
 import { PopUpDialog } from '@shared/popup';
+import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
 /**
  * This class is used to intercept the key events for the engine auto start and engine auto shutdown.
@@ -49,6 +50,7 @@ export class KeyInterceptor {
         subscriber.on('key_intercept').handle((keyData) => {
             switch (keyData.key) {
             case 'ENGINE_AUTO_START':
+                console.log('KeyInterceptor: ENGINE_AUTO_START');
                 this.engineAutoStartAction();
                 break;
             case 'ENGINE_AUTO_SHUTDOWN':
@@ -62,66 +64,70 @@ export class KeyInterceptor {
 
     private engineAutoStartAction() {
         if (!this.dialogVisible) {
+            // If loading already in progress show a notification and return
+            if (this.isAlreadyLoading()) return;
+            // Show a dialog to ask user to load a preset or cancel
             this.dialogVisible = true;
             const dialog = new PopUpDialog();
             dialog.showPopUp(
                 'Ctrl+E Not supported',
                 `<div style="font-size: 120%; text-align: left;">
-                        Engine Auto Start is not supported by the A32NX.<br/>
-                        <br/>                        
-                        Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
-                        <strong>"Ready for Taxi"</strong>?
-                    </div>`,
+                           Engine Auto Start is not supported by the A32NX.<br/>
+                           <br/>                        
+                           Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
+                           <strong>"Ready for Taxi"</strong>?
+                         </div>`,
                 'small',
-                () => {
-                    console.log('Setting aircraft preset to "Ready for Taxi"');
-                    // stop any running preset loads
-                    SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
-                    // use a timeout to allow the presets backend to recognize the stop
-                    setTimeout(() => {
-                        SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 4);
-                    }, 500);
-                    this.dialogVisible = false;
-                },
-                () => {
-                    this.dialogVisible = false;
-                },
+                () => this.loadPreset(4),
+                () => this.dialogVisible = false,
             );
         }
     }
 
     private engineAutoStopAction() {
+        if (this.isAlreadyLoading()) return;
+        // If engines are running show a dialog to ask user to load a preset or cancel
+        if (!this.dialogVisible && this.isOneEngineRunning()) {
+            this.dialogVisible = true;
+            const dialog = new PopUpDialog();
+            dialog.showPopUp(
+                'Shift+Ctrl+E Not supported',
+                `<div style="font-size: 120%; text-align: left;">
+                               Engine Auto Shutdown is not supported by the A32NX.<br/>
+                               <br/>
+                               Do you want to you use the flyPad's Aircraft Presets to set the aircraft to
+                               <strong>"Powered"</strong>?
+                             </div>`,
+                'small',
+                () => this.loadPreset(2),
+                () => this.dialogVisible = false,
+            );
+        }
+    }
+
+    private isAlreadyLoading() {
+        const loadingInProgress = SimVar.GetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number');
+        if (loadingInProgress > 0) {
+            this.notification.showNotification({
+                title: 'Aircraft Presets',
+                message: `Loading Preset is already in progress "${(AircraftPresetsList.getPresetName(loadingInProgress))}"`,
+                type: 'MESSAGE',
+                duration: 1500,
+            });
+            return true;
+        }
+        return false;
+    }
+
+    private isOneEngineRunning() {
         const engine1N1 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'Number');
         const engine2N1 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'Number');
+        return engine1N1 > 0.1 || engine2N1 > 0.1;
+    }
 
-        if (engine1N1 > 0.1 || engine2N1 > 0.1) {
-            if (!this.dialogVisible) {
-                this.dialogVisible = true;
-                const dialog = new PopUpDialog();
-                dialog.showPopUp(
-                    'Shift+Ctrl+E Not supported',
-                    `<div style="font-size: 120%; text-align: left;">
-                        Engine Auto Shutdown is not supported by the A32NX.<br/>
-                        <br/>
-                        Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
-                        <strong>"Powered"</strong>?
-                    </div>`,
-                    'small',
-                    () => {
-                        console.log('Setting aircraft preset to "Powered"');
-                        // stop any running preset loads
-                        SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 0);
-                        // use a timeout to allow the presets backend to recognize the stop
-                        setTimeout(() => {
-                            SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', 2);
-                        }, 500);
-                        this.dialogVisible = false;
-                    },
-                    () => {
-                        this.dialogVisible = false;
-                    },
-                );
-            }
-        }
+    private loadPreset(presetID: number) {
+        console.log(`Setting aircraft preset to ${AircraftPresetsList.getPresetName(presetID)}`);
+        SimVar.SetSimVarValue('L:A32NX_AIRCRAFT_PRESET_LOAD', 'Number', presetID);
+        this.dialogVisible = false;
     }
 }

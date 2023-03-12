@@ -3,6 +3,7 @@
 
 import { EventBus, EventSubscriber, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
 import { NotificationManager } from '@shared/notification';
+import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
 interface SimVars {
     load: number;
@@ -50,16 +51,6 @@ export class AircraftPresetsLoadProgress {
         loadCurrentId: 0,
     }
 
-    // These need to align with the IDs in the Presets C++ WASM and the AircraftPresets.tsx in the EFB.
-    // WASM: src/presets/src/Aircraft/AircraftProcedures.h
-    private static AircraftPresetsList: { index: number, name: string }[] = [
-        { index: 1, name: 'Cold & Dark' },
-        { index: 2, name: 'Powered' },
-        { index: 3, name: 'Ready for Pushback' },
-        { index: 4, name: 'Ready for Taxi' },
-        { index: 5, name: 'Ready for Takeoff' },
-    ];
-
     constructor(private readonly bus: EventBus) {
         console.log('AircraftPresetsLoadProgress: Created');
         this.eventBus = bus;
@@ -99,25 +90,17 @@ export class AircraftPresetsLoadProgress {
         if (this.previousValues.load === 0 && presetID > 0) {
             this.notification.showNotification({
                 title: 'Aircraft Presets',
-                message: `Loading Preset "${(this.getPresetName(presetID))}"`,
+                message: `Loading Preset "${(AircraftPresetsList.getPresetName(presetID))}"`,
                 type: 'MESSAGE',
                 duration: 1500,
             });
         } else if (this.previousValues.load > 0 && presetID === 0) {
             this.notification.showNotification({
                 title: 'Aircraft Presets',
-                message: `Finished loading "${(this.getPresetName(this.previousValues.load))}" (or aborted)`,
+                message: `Finished loading "${(AircraftPresetsList.getPresetName(this.previousValues.load))}" (or aborted)`,
                 type: 'MESSAGE',
                 duration: 1500,
             });
         }
-    }
-
-    private getPresetName(presetID: number): string {
-        const index = presetID - 1;
-        if (index < 0 || index > AircraftPresetsLoadProgress.AircraftPresetsList.length) {
-            return '';
-        }
-        return AircraftPresetsLoadProgress.AircraftPresetsList[index].name;
     }
 }
