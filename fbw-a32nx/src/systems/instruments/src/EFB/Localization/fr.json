@@ -156,6 +156,8 @@
       "DeboardConfirmationConfirm": "Débarquement",
       "DeboardConfirmationTitle": "Débarquer tous les passagers?",
       "EstimatedDurationUnit": "minutes",
+      "GW": "GW",
+      "GWCG": "Centre de gravité GW",
       "LoadingTime": "Loading Time",
       "Passengers": "Passagers",
       "Planned": "Planifié",
@@ -163,6 +165,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
+        "MaxGW": "GW maximal",
+        "MaxGWCG": "Centre de gravité GW maximal",
         "MaxPassengers": "Nombre maximum de passagers",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
@@ -455,7 +459,7 @@
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Connecté",
     "SimBridgeConnecting": "Connexion...",
-    "SimBridgeOff": "Off",
+    "SimBridgeOff": "Désactivé",
     "SimBridgeOffline": "Non disponible",
     "TT": {
       "AlignAdirs": "Aligner ADIRS instantanément",
@@ -466,7 +470,7 @@
       "PowerButton": "Éteindre",
       "Settings": "Accéder à la page des paramètres du flyPad",
       "SimBridge": "Contrôler la connexion SimBridge",
-      "Sleep": "Standby"
+      "Sleep": "Veille"
     },
     "Title": "Commandes rapides"
   },
@@ -654,7 +658,7 @@
     "RecommendationText": "Veuillez mettre à jour votre avion à l'aide du programme d'installation FlyByWire.",
     "StatusBarWarning": "Version d'avion obsolète",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Veuillez mettre à jour votre avion à l'aide du programme d'installation FlyByWire."
     },
     "Title": "Nouvelle version disponible"
   }
