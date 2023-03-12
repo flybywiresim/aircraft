@@ -156,6 +156,8 @@
       "DeboardConfirmationConfirm": "Vyložit",
       "DeboardConfirmationTitle": "Vyložit všechny cestující?",
       "EstimatedDurationUnit": "minut",
+      "GW": "GW",
+      "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
       "Passengers": "Cestující",
       "Planned": "Plánované",
@@ -163,6 +165,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Pro změnu délky nastupování musí být letadlo na zemi s vypnutými motory",
         "FillPayloadFromSimbrief": "Načíst informace o naložení ze SimBriefu",
         "MaxCargo": "Maximum nákladu",
+        "MaxGW": "Maximální GW",
+        "MaxGWCG": "Maximální GW CG",
         "MaxPassengers": "Maximum cestujících",
         "MaxZFW": "Maximální ZFW",
         "MaxZFWCG": "Maximální ZFWCG",
@@ -458,10 +462,10 @@
     "SimBridgeOff": "vypnutý",
     "SimBridgeOffline": "nedostupný",
     "TT": {
-      "AlignAdirs": "Okamžité zarovnání ADIRS",
+      "AlignAdirs": "Okamžitě zarovnat ADIRS",
       "AutoBrightness": "Zapnutí/vypnutí automatického jasu",
       "Brightness": "Nastavení jasu flyPad",
-      "FinishBoarding": "Okamžité dokončení nástupu (boardingu)",
+      "FinishBoarding": "Okamžitě dokončit nástup (boarding)",
       "OnScreenKeyboard": "Zapnutí/vypnutí klávesnice na obrazovce",
       "PowerButton": "Vypnout",
       "Settings": "Přejít na stránku Nastavení flyPad",
@@ -560,7 +564,7 @@
       "Off": "Vypnuto",
       "Save": "Uložit",
       "Side": "Strana",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Externí hostitelská adresa SimBridge",
       "SimBridgePort": "Externí port SimBridge",
       "SyncMsfsFlightPlan": "Synchronizace letového plánu MSFS",
       "ThrottleDetents": "Zarážky plynu",
@@ -570,9 +574,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX synchronizace paliva",
+      "GsxPayloadEnabled": "GSX synchronizace cestujících a nákladu",
+      "Title": "Možnosti třetích stran"
     },
     "ThrottleConfig": {
       "Apply": "Použít",
@@ -654,7 +658,7 @@
     "RecommendationText": "Aktualizujte prosím své letadlo pomocí instalátoru FlyByWire.",
     "StatusBarWarning": "Zastaralá verze letadla",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Aktualizujte prosím své letadlo pomocí instalátoru FlyByWire."
     },
     "Title": "Je dostupná nová verze"
   }

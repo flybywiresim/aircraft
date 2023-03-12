@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getSimbriefData } from '../../Apis/Simbrief';
-import { IFuel, IWeights } from '../../Apis/Simbrief/simbriefInterface';
+import { getSimbriefData } from '../../SimbriefApi';
+import { IFuel, IWeights } from '../../SimbriefApi/simbriefInterface';
 
 import { store, RootState } from '../store';
 
