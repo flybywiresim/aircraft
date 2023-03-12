@@ -7,6 +7,7 @@ import {
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
+import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTDESC';
 const additionalSetting = [0, 8000];
@@ -42,11 +43,12 @@ export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
 const onErase = (_genID : number) => {
 };
 
-const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, modal : ModalContextInterface)
+=> JSX.Element = (genID : number, generatorSettings : FailureGenData, modal : ModalContextInterface) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Altitude above sea:', 40, 'feet', 0, 40000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
-        setNewSetting, generatorSettings, genID, 1),
+        setNewSetting, generatorSettings, genID, 1, modal),
     ];
     return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable);
 };

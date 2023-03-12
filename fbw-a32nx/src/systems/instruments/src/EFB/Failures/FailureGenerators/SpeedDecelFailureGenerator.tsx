@@ -7,6 +7,7 @@ import {
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
+import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL';
 const additionalSetting = [0, 200];
@@ -42,11 +43,12 @@ export const failureGenConfigSpeedDecel : ()=>FailureGenData = () => {
 const onErase = (_genID : number) => {
 };
 
-const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, showModal : ModalContextInterface)
+=> JSX.Element = (genID : number, generatorSettings : FailureGenData, showModal : ModalContextInterface) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Speed:', 32, 'knots', 0, 400,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
-        setNewSetting, generatorSettings, genID, 1),
+        setNewSetting, generatorSettings, genID, 1, showModal),
     ];
     return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable);
 };

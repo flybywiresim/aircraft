@@ -7,6 +7,7 @@ import {
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
+import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 8;
@@ -46,35 +47,36 @@ const onErase = (genID : number) => {
     failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
-const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData) => JSX.Element = (genID : number, generatorSettings : FailureGenData) => {
+const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, modal : ModalContextInterface)
+=> JSX.Element = (genID : number, generatorSettings : FailureGenData, modal : ModalContextInterface) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorFailureSetting('Failure per take-off:', 20, '%', 0, 100,
         settings[genID * numberOfSettingsPerGenerator + 1], 100, false,
-        setNewSetting, generatorSettings, genID, 1),
+        setNewSetting, generatorSettings, genID, 1, modal),
     FailureGeneratorFailureSetting('Low Speed chance:', 20, '%', 0,
         100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100,
         settings[genID * numberOfSettingsPerGenerator + 2], 100, false,
-        setNewSetting, generatorSettings, genID, 2),
+        setNewSetting, generatorSettings, genID, 2, modal),
     FailureGeneratorFailureSetting('Medium Speed chance:', 20, '%', 0,
         100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100,
         settings[genID * numberOfSettingsPerGenerator + 3], 100, false,
-        setNewSetting, generatorSettings, genID, 3),
+        setNewSetting, generatorSettings, genID, 3, modal),
     FailureGeneratorFailureSetting('Minimum speed:', 20, 'knots',
         0, settings[genID * numberOfSettingsPerGenerator + 5],
         settings[genID * numberOfSettingsPerGenerator + 4], 1, false,
-        setNewSetting, generatorSettings, genID, 4),
+        setNewSetting, generatorSettings, genID, 4, modal),
     FailureGeneratorFailureSetting('Speed transition low-med:', 20, 'knots',
         settings[genID * numberOfSettingsPerGenerator + 4],
         settings[genID * numberOfSettingsPerGenerator + 6],
         settings[genID * numberOfSettingsPerGenerator + 5], 1, false,
-        setNewSetting, generatorSettings, genID, 5),
+        setNewSetting, generatorSettings, genID, 5, modal),
     FailureGeneratorFailureSetting('Max speed:', 20, 'knots',
         settings[genID * numberOfSettingsPerGenerator + 4], 300,
         settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
-        setNewSetting, generatorSettings, genID, 6),
+        setNewSetting, generatorSettings, genID, 6, modal),
     FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
         settings[genID * numberOfSettingsPerGenerator + 7], 100, true,
-        setNewSetting, generatorSettings, genID, 7)];
+        setNewSetting, generatorSettings, genID, 7, modal)];
     return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable);
 };
 

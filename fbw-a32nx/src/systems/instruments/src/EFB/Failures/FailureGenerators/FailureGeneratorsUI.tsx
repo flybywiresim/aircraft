@@ -8,6 +8,7 @@ import {
 import { Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
+import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
@@ -55,20 +56,20 @@ export const FailureGeneratorsUI = () => {
                     />
                 </div>
                 <ScrollableContainer height={48}>
-                    {generatorsCardList(settings.allGenSettings)}
+                    {generatorsCardList(settings.allGenSettings, settings.modals)}
                 </ScrollableContainer>
             </div>
         </>
     );
 };
 
-export const generatorsCardList : (generatorSettings : Map<string, FailureGenData>) => JSX.Element[] = (generatorSettings : Map<string, FailureGenData>) => {
+export const generatorsCardList : (generatorSettings : Map<string, FailureGenData>, modal : ModalContextInterface)
+=> JSX.Element[] = (generatorSettings : Map<string, FailureGenData>, modal : ModalContextInterface) => {
     const temp : JSX.Element[] = [];
     generatorSettings.forEach((generatorSetting) => {
-        console.info('printing card');
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            temp.push(generatorSetting.FailureGeneratorCard(i, generatorSetting));
+            temp.push(generatorSetting.FailureGeneratorCard(i, generatorSetting, modal));
         }
     });
     return temp;
@@ -142,27 +143,77 @@ export function FailureGeneratorFailureSetting(title:string, width : number,
     unit : string, min:number, max:number,
     value: number, mult : number,
     last : boolean, setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    generatorSettings : FailureGenData, genIndex : number, settingIndex : number) {
+    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, modal : ModalContextInterface) {
     const multCheck = mult === 0 ? 1 : mult;
     return (
-        <div className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}>
+        <div
+            className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
+        >
             <div className="break-keep">{title}</div>
             <div className="flex flex-row items-center">
-                <SimpleInput
-                    className={`my-2 w-${width} font-mono`}
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={min}
-                    max={max}
-                    value={value * multCheck}
-                    onBlur={(x: string) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                        }
+                <div
+                    className={`my-2 w-${width} font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
+                    focus-within:outline-none focus-within:border-theme-highlight
+                    placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text`}
+                    onClick={() => {
+                        modal.showModal(ModalSimpleInput(value, multCheck, title, width, unit, min, max, setNewSetting, generatorSettings, genIndex, settingIndex, modal));
                     }}
-                />
+                >
+                    {value * multCheck}
+                </div>
                 <div className="ml-2">{unit}</div>
             </div>
         </div>
+    );
+}
+
+function ModalSimpleInput(
+    value : number,
+    multCheck : number,
+    title:string,
+    width : number,
+    unit : string,
+    min:number,
+    max:number,
+    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    generatorSettings : FailureGenData,
+    genIndex : number,
+    settingIndex : number,
+    modal : ModalContextInterface,
+) {
+    return (
+        <div className="p-8 w-5/12 rounded-xl border-2 bg-theme-body border-theme-accent">
+            <h1 className="font-bold">New Setting</h1>
+            <div className="flex flex-col justify-between p-2 text-left">
+                <div className="break-keep">{title}</div>
+                <div className="flex flex-row items-center">
+                    <SimpleInput
+                        className={`my-2 w-${width} font-mono`}
+                        fontSizeClassName="text-2xl"
+                        number
+                        min={min}
+                        max={max}
+                        value={value * multCheck}
+                        onBlur={(x: string) => {
+                            if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                                setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
+                            }
+                        }}
+                    />
+                    <div className="ml-2">{unit}</div>
+                </div>
+            </div>
+            <div className="flex flex-row mt-8 space-x-4">
+                <div
+                    className="flex justify-center items-center py-2 px-8 w-full text-center rounded-md border-2
+                    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
+                    border-theme-accent hover:border-theme-highlight"
+                    onClick={() => modal.popModal()}
+                >
+                    Close
+                </div>
+            </div>
+        </div>
+
     );
 }
