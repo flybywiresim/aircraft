@@ -13,35 +13,35 @@ class MsfsHandler;
 // Struct to hold all relevant light levels
 struct LightingValues {
   // EFB
-  FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS
+  FLOAT64 efbBrightness;                 // A32NX_EFB_BRIGHTNESS
   // OVHD
-  FLOAT64 cabinLightLevel;         // 7 (0, 50, 100)
-  FLOAT64 ovhdIntegralLightLevel;  // 86
+  FLOAT64 cabinLightLevel;               // 7 (0, 50, 100)
+  FLOAT64 ovhdIntegralLightLevel;        // 86
   // Glareshield
-  FLOAT64 glareshieldIntegralLightLevel;  // 84
-  FLOAT64 glareshieldLcdLightLevel;       // 87
-  FLOAT64 tableLightCptLevel;             // 10
-  FLOAT64 tableLightFoLevel;              // 11
+  FLOAT64 glareshieldIntegralLightLevel; // 84
+  FLOAT64 glareshieldLcdLightLevel;      // 87
+  FLOAT64 tableLightCptLevel;            // 10
+  FLOAT64 tableLightFoLevel;             // 11
   // Instruments
-  FLOAT64 pfdBrtCptLevel;        // 88
-  FLOAT64 ndBrtCptLevel;         // 89
-  FLOAT64 wxTerrainBrtCptLevel;  // 94
-  FLOAT64 consoleLightCptLevel;  // 8 (0, 50, 100)
-  FLOAT64 pfdBrtFoLevel;         // 90
-  FLOAT64 ndBrtFoLevel;          // 91
-  FLOAT64 wxTerrainBrtFoLevel;   // 95
-  FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
+  FLOAT64 pfdBrtCptLevel;                // 88
+  FLOAT64 ndBrtCptLevel;                 // 89
+  FLOAT64 wxTerrainBrtCptLevel;          // 94
+  FLOAT64 consoleLightCptLevel;          // 8 (0, 50, 100)
+  FLOAT64 pfdBrtFoLevel;                 // 90
+  FLOAT64 ndBrtFoLevel;                  // 91
+  FLOAT64 wxTerrainBrtFoLevel;           // 95
+  FLOAT64 consoleLightFoLevel;           // 9 (0, 50, 100)
   // ISIS display has automatic brightness adjustment.
-  FLOAT64 dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
-  FLOAT64 dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
-  FLOAT64 mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
-  FLOAT64 mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
+  FLOAT64 dcduLeftLightLevel;            // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
+  FLOAT64 dcduRightLightLevel;           // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
+  FLOAT64 mcduLeftLightLevel;            // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
+  FLOAT64 mcduRightLightLevel;           // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
   // Pedestal
-  FLOAT64 ecamUpperLightLevel;         // 92
-  FLOAT64 ecamLowerLightLevel;         // 93
-  FLOAT64 floodPnlLightLevel;          // 83
-  FLOAT64 pedestalIntegralLightLevel;  // 85
-  FLOAT64 floodPedLightLevel;          // 76
+  FLOAT64 ecamUpperLightLevel;           // 92
+  FLOAT64 ecamLowerLightLevel;           // 93
+  FLOAT64 floodPnlLightLevel;            // 83
+  FLOAT64 pedestalIntegralLightLevel;    // 85
+  FLOAT64 floodPedLightLevel;            // 76
 };
 
 /**
@@ -58,9 +58,9 @@ struct LightingValues {
  */
 class LightingPresets : public Module {
  private:
+  static constexpr SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
+  static constexpr FLOAT64 STEP_SIZE = 2.0;
   const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
-
-  static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
 
   // Convenience pointer to the data manager
   DataManager* dataManager{};
@@ -102,7 +102,11 @@ class LightingPresets : public Module {
   ClientEventPtr lightPotentiometerSetEvent;
   ClientEventPtr cabinLightSetEvent;
 
-  // Lighting values
+  // THe current lighting values in the aircraft
+  LightingValues currentLightValues{};
+  // The lighting values that are loaded from the ini-file
+  LightingValues loadedLightValues{};
+  // The lighting values that are used to converge from the current values to the preset values
   LightingValues intermediateLightValues{};
 
  public:
@@ -130,6 +134,8 @@ class LightingPresets : public Module {
   /**
    * Loads a specified preset
    * @param loadPresetRequest the number of the preset to be loaded
+   * @return true if loading is finished or an error occurred - this should end the loading process
+   * @return false if loading is not finished
    */
   bool loadLightingPreset(int64_t loadPresetRequest);
 
@@ -138,6 +144,7 @@ class LightingPresets : public Module {
    * @param savePresetRequest the number of the preset to be saved
    */
   void saveLightingPreset(int64_t savePresetRequest);
+
 
   /**
    * Read the current lighting level from the aircraft.
@@ -196,6 +203,36 @@ class LightingPresets : public Module {
 
   [[maybe_unused]] const LightingValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
                                                        100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
+  bool calculateIntermediateValues();
+  FLOAT64 convergeValue(FLOAT64 momentary, FLOAT64 target);
 };
+
+inline bool operator==(const LightingValues& p1, const LightingValues& p2) {
+  const double epsilon = 0.1;
+  return helper::Math::almostEqual(p1.efbBrightness, p2.efbBrightness, epsilon) &&
+         helper::Math::almostEqual(p1.cabinLightLevel, p2.cabinLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.ovhdIntegralLightLevel, p2.ovhdIntegralLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.glareshieldIntegralLightLevel, p2.glareshieldIntegralLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.glareshieldLcdLightLevel, p2.glareshieldLcdLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.tableLightCptLevel, p2.tableLightCptLevel, epsilon) &&
+         helper::Math::almostEqual(p1.tableLightFoLevel, p2.tableLightFoLevel, epsilon) &&
+         helper::Math::almostEqual(p1.pfdBrtCptLevel, p2.pfdBrtCptLevel, epsilon) &&
+         helper::Math::almostEqual(p1.ndBrtCptLevel, p2.ndBrtCptLevel, epsilon) &&
+         helper::Math::almostEqual(p1.wxTerrainBrtCptLevel, p2.wxTerrainBrtCptLevel, epsilon) &&
+         helper::Math::almostEqual(p1.consoleLightCptLevel, p2.consoleLightCptLevel, epsilon) &&
+         helper::Math::almostEqual(p1.pfdBrtFoLevel, p2.pfdBrtFoLevel, epsilon) &&
+         helper::Math::almostEqual(p1.ndBrtFoLevel, p2.ndBrtFoLevel, epsilon) &&
+         helper::Math::almostEqual(p1.wxTerrainBrtFoLevel, p2.wxTerrainBrtFoLevel, epsilon) &&
+         helper::Math::almostEqual(p1.consoleLightFoLevel, p2.consoleLightFoLevel, epsilon) &&
+         helper::Math::almostEqual(p1.dcduLeftLightLevel, p2.dcduLeftLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.dcduRightLightLevel, p2.dcduRightLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.mcduLeftLightLevel, p2.mcduLeftLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.mcduRightLightLevel, p2.mcduRightLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.ecamUpperLightLevel, p2.ecamUpperLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.ecamLowerLightLevel, p2.ecamLowerLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.floodPnlLightLevel, p2.floodPnlLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.pedestalIntegralLightLevel, p2.pedestalIntegralLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.floodPedLightLevel, p2.floodPedLightLevel, epsilon);
+}
 
 #endif  // FLYBYWIRE_LIGHTINGPRESETS_H

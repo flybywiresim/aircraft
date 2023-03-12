@@ -13,7 +13,7 @@
 ///
 // DataManager Howto Note:
 // =======================
-
+//
 // The AircraftPresets module uses the DataManager to get and set variables.
 // Looking at the make_xxx_var functions, you can see that they are updated
 // with different update cycles.
@@ -23,12 +23,16 @@
 // - SIM ON GROUND
 //
 // The rest are read on demand after the state of the above variables have been checked.
-//
 // No variable is written automatically.
+//
+// This makes sure variables are only read or written to when really needed. And as
+// AircraftPresets will be dormant most of the time, this is saving a lot of
+// unnecessary reads/writes.
 //
 // In addition, the AircraftPresets module is a very specific use case amd uses
 // SimConnect execute_calculator_code extensively for the procedures to work.
-// This is a good demonstration that the framework does not limit applications to a specific pattern.
+// This is a good demonstration that the Cpp WASM framework does not limit
+// applications to a specific pattern.
 ///
 
 bool AircraftPresets::initialize() {
@@ -156,8 +160,8 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       return true;
     }
 
-    // test if the next step is required or if the state is already
-    // set then set in which case the action can be skipped and delay can be ignored.
+    // test if the next step is required or if the state is already set in
+    // which case the action can be skipped and delay can be ignored.
     fvalue = 0;
     ivalue = 0;
     svalue = "";
