@@ -11,8 +11,24 @@ if [ "${GITHUB_ACTIONS}" == "true" ]; then
   chown -R root:root /external
 fi
 
-# run build
-time npx igniter "$@"
+# Loop through the arguments
+args=()
+for arg in "$@"; do
+  # If the argument is "-clean", perform some action
+  if [ "$arg" = "-clean" ]; then
+    echo "Removing out directories..."
+    rm -rf /external/fbw-a32nx/out
+    rm -rf /external/fbw-a32nx/bundles
+    rm -rf /external/fbw-a380x/out
+    rm -rf /external/fbw-ingamepanels-checklist-fix/out
+  else
+    # Otherwise, add the arg it to the new array
+    args+=("$arg")
+  fi
+done
+
+# run build with the new arguments
+time npx igniter "${args[@]}"
 
 # restore ownership (when run as github action)
 if [ "${GITHUB_ACTIONS}" == "true" ]; then

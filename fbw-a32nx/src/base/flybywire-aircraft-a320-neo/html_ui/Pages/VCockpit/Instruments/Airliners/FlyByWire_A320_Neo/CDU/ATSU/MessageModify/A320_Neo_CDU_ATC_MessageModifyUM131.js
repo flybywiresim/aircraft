@@ -57,8 +57,8 @@ class CDUAtcMessageModifyUM131 {
             if (value === FMCMainDisplay.clrValue) {
                 data.personsOnBoard = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadPersonsOnBoard(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadPersonsOnBoard(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                     data.personsOnBoard = parseInt(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
@@ -72,7 +72,7 @@ class CDUAtcMessageModifyUM131 {
         };
         mcdu.onLeftInput[4] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
-                mcdu.atsu.atc.updateMessage(message);
+                mcdu.atsu.updateMessage(message);
                 CDUAtcMenu.ShowPage(mcdu);
             }
         };
@@ -91,9 +91,9 @@ class CDUAtcMessageModifyUM131 {
             if (value === FMCMainDisplay.clrValue) {
                 data.endurance = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadEndurance(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.endurance = Atsu.InputValidation.formatScratchpadEndurance(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadEndurance(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.endurance = AtsuCommon.InputValidation.formatScratchpadEndurance(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -107,7 +107,7 @@ class CDUAtcMessageModifyUM131 {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 CDUAtcMessageModifyUM131.UpdateResponseMessage(message, data);
-                if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                     CDUAtcTextFansA.ShowPage1(mcdu, [message]);
                 } else {
                     CDUAtcTextFansB.ShowPage(mcdu, [message]);
@@ -121,7 +121,7 @@ class CDUAtcMessageModifyUM131 {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 CDUAtcMessageModifyUM131.UpdateResponseMessage(message, data);
-                mcdu.atsu.atc.updateMessage(message);
+                mcdu.atsu.updateMessage(message);
                 CDUAtcMenu.ShowPage(mcdu, message);
             }
         };

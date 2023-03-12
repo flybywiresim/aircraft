@@ -1,12 +1,12 @@
 function translateAtsuMessageType(type) {
     switch (type) {
-        case Atsu.AtsuMessageType.Freetext:
+        case AtsuCommon.AtsuMessageType.Freetext:
             return "FREETEXT";
-        case Atsu.AtsuMessageType.METAR:
+        case AtsuCommon.AtsuMessageType.METAR:
             return "METAR";
-        case Atsu.AtsuMessageType.TAF:
+        case AtsuCommon.AtsuMessageType.TAF:
             return "TAF";
-        case Atsu.AtsuMessageType.ATIS:
+        case AtsuCommon.AtsuMessageType.ATIS:
             return "ATIS";
         default:
             return "UNKNOWN";

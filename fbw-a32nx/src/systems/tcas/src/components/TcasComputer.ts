@@ -197,9 +197,9 @@ export class TcasComputer implements TcasComponent {
 
     private ppos: LatLongData; // Plane PPOS
 
-    private altitude: Arinc429Word | null; // ADR1/2 Altitude
+    private baroCorrectedAltitude1: Arinc429Word | null; // ADR1/2 Altitude
 
-    private altitudeStandby: Arinc429Word | null; // ADR3 Altitude
+    private adr3BaroCorrectedAltitude1: Arinc429Word | null; // ADR3 Altitude
 
     private pressureAlt: number | null; // Pressure Altitude
 
@@ -285,8 +285,8 @@ export class TcasComputer implements TcasComponent {
         ) && !(
             !radioAlt1.isNoComputedData() && radioAlt2.isFailureWarning()
         ) ? radioAlt2 : radioAlt1;
-        this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
-        this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
+        this.baroCorrectedAltitude1 = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_BARO_CORRECTED_ALTITUDE_1`);
+        this.adr3BaroCorrectedAltitude1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_BARO_CORRECTED_ALTITUDE_1');
         this.trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
         this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
         this.simRate = SimVar.GetGlobalVarValue('SIMULATION RATE', 'number');
@@ -354,10 +354,10 @@ export class TcasComputer implements TcasComponent {
         }
 
         // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
-        if (!this.altitude || !this.altitudeStandby
-                || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation()
+        if (!this.baroCorrectedAltitude1 || !this.adr3BaroCorrectedAltitude1
+                || !this.baroCorrectedAltitude1.isNormalOperation() || !this.adr3BaroCorrectedAltitude1.isNormalOperation()
                 || this.radioAlt.isFailureWarning()
-                || this.altitude.value - this.altitudeStandby.value > 300 || !this.tcasPower) {
+                || this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 || !this.tcasPower) {
             this.tcasFault.setVar(true);
         } else {
             this.tcasFault.setVar(false);

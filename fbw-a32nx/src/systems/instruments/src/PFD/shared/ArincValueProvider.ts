@@ -129,7 +129,7 @@ export class ArincValueProvider {
             publisher.pub('speedAr', this.speed);
         });
 
-        subscriber.on('altitude').handle((a) => {
+        subscriber.on('baroCorrectedAltitude').handle((a) => {
             this.altitude = new Arinc429Word(a);
             publisher.pub('altitudeAr', this.altitude);
         });
@@ -187,38 +187,20 @@ export class ArincValueProvider {
             publisher.pub('da', this.da);
         });
 
-        subscriber.on('landingElevation1').handle((elevation) => {
+        subscriber.on('landingElevation1Raw').handle((elevation) => {
             if (getDisplayIndex() === 1) {
-                this.ownLandingElevation.value = elevation;
+                this.ownLandingElevation = new Arinc429Word(elevation);
             } else {
-                this.oppLandingElevation.value = elevation;
+                this.oppLandingElevation = new Arinc429Word(elevation);
             }
             this.determineAndPublishChosenLandingElevation(publisher);
         });
 
-        subscriber.on('landingElevation1Ssm').handle((ssm) => {
+        subscriber.on('landingElevation2Raw').handle((elevation) => {
             if (getDisplayIndex() === 1) {
-                this.ownLandingElevation.ssm = ssm as any;
+                this.ownLandingElevation = new Arinc429Word(elevation);
             } else {
-                this.oppLandingElevation.ssm = ssm as any;
-            }
-            this.determineAndPublishChosenLandingElevation(publisher);
-        });
-
-        subscriber.on('landingElevation1').handle((elevation) => {
-            if (getDisplayIndex() === 1) {
-                this.oppLandingElevation.value = elevation;
-            } else {
-                this.ownLandingElevation.value = elevation;
-            }
-            this.determineAndPublishChosenLandingElevation(publisher);
-        });
-
-        subscriber.on('landingElevation1Ssm').handle((ssm) => {
-            if (getDisplayIndex() === 1) {
-                this.oppLandingElevation.ssm = ssm as any;
-            } else {
-                this.ownLandingElevation.ssm = ssm as any;
+                this.oppLandingElevation = new Arinc429Word(elevation);
             }
             this.determineAndPublishChosenLandingElevation(publisher);
         });

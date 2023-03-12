@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subscribable, Subject, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, Subscribable, Subject, VNode } from 'msfssdk';
 
 import './gauges.scss';
 

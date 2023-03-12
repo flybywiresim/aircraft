@@ -302,9 +302,10 @@
                 <ID>3</ID>
                 <ANIM_NAME>Ribbons_Door-Rear-Anim</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>5</ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>Ribbons_Cargo-Anim</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
         </Component>
         <Component ID="LANDING_FX">

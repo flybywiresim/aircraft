@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import useInterval from '@instruments/common/useInterval';
+import { MathUtils } from '@shared/MathUtils';
 
 type AutoBrightnessProps = {
     bugsActive: boolean
@@ -11,82 +12,42 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
     const minBrightness = 0.15;
     const maxBrightness = 0.99;
     const dayBrightness = 0.85;
-    const nightBrightness = 0.50;
+    const nightBrightness = 0.25;
     const brightnessGranularity = 0.05;
-    const transitionSpeedModifier = 0.01;
 
-    const [timeOfDay] = useSimVar('E:TIME OF DAY', 'enum', 10000);
-    const isDaytimeRef = useRef(timeOfDay === 1 || timeOfDay === 2);
+    const [rawAutoBrightness] = useSimVar('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'number', 1000);
+    const [autoBrightness, setAutoBrightness] = useState(0.5);
+    const [manualOffset, setManualOffset] = useState(0);
+    const [targetBrightness, setTargetBrightness] = useState(0.5);
 
-    const [targetBrightness, setTargetBrightness] = useState(isDaytimeRef.current ? dayBrightness : nightBrightness);
-    const [currentBrightness, setCurrentBrightness] = useSimVar('L:A32NX_BARO_BRIGHTNESS', 'number', 10000);
+    const [plusHeld, setPlusHeld] = useState(false);
+    const [minusHeld, setMinusHeld] = useState(false);
 
-    const isBrightnessUpPressed = useRef(false);
-    const isBrightnessDownPressed = useRef(false);
+    useInteractionEvent('A32NX_ISIS_PLUS_PRESSED', () => !bugsActive && setPlusHeld(true));
 
-    useInteractionEvent('A32NX_ISIS_PLUS_PRESSED', () => {
-        if (bugsActive) {
-            return;
-        }
+    useInteractionEvent('A32NX_ISIS_PLUS_RELEASED', () => setPlusHeld(false));
 
-        isBrightnessUpPressed.current = !isBrightnessUpPressed.current;
-        if (!isBrightnessUpPressed.current) {
-            return;
-        }
+    useInteractionEvent('A32NX_ISIS_MINUS_PRESSED', () => !bugsActive && setMinusHeld(true));
 
-        const newBrightness = Math.min(maxBrightness, currentBrightness + brightnessGranularity);
-        setTargetBrightness(newBrightness);
-        setCurrentBrightness(newBrightness);
-    });
-
-    useInteractionEvent('A32NX_ISIS_MINUS_PRESSED', () => {
-        if (bugsActive) {
-            return;
-        }
-
-        isBrightnessDownPressed.current = !isBrightnessDownPressed.current;
-        if (!isBrightnessDownPressed.current) {
-            return;
-        }
-
-        const newBrightness = Math.max(minBrightness, currentBrightness - brightnessGranularity);
-        setTargetBrightness(newBrightness);
-        setCurrentBrightness(newBrightness);
-    });
+    useInteractionEvent('A32NX_ISIS_MINUS_RELEASED', () => setMinusHeld(false));
 
     useInterval(() => {
-        if (isBrightnessUpPressed.current && currentBrightness < maxBrightness) {
-            const newBrightness = Math.min(maxBrightness, currentBrightness + brightnessGranularity);
-
-            setTargetBrightness(newBrightness);
-            setCurrentBrightness(newBrightness);
-        } else if (isBrightnessDownPressed.current && currentBrightness > minBrightness) {
-            const newBrightness = Math.max(minBrightness, currentBrightness - brightnessGranularity);
-
-            setTargetBrightness(newBrightness);
-            setCurrentBrightness(newBrightness);
+        if (!bugsActive && plusHeld) {
+            setManualOffset(MathUtils.clamp(manualOffset + brightnessGranularity, minBrightness - autoBrightness, maxBrightness - autoBrightness));
+        } else if (!bugsActive && minusHeld) {
+            setManualOffset(MathUtils.clamp(manualOffset - brightnessGranularity, minBrightness - autoBrightness, maxBrightness - autoBrightness));
         }
-    }, isBrightnessUpPressed.current || isBrightnessDownPressed.current ? 150 : null,
-    { runOnStart: false, additionalDeps: [isBrightnessDownPressed.current, isBrightnessUpPressed.current] });
+    }, plusHeld || minusHeld ? 150 : null,
+    { runOnStart: true, additionalDeps: [plusHeld, minusHeld] });
 
     useEffect(() => {
-        const newIsDaytime = timeOfDay === 1 || timeOfDay === 2;
+        setAutoBrightness(Avionics.Utils.lerpAngle(nightBrightness, dayBrightness, Math.max(0, autoBrightness - 0.15 / 0.85)));
+        setManualOffset(MathUtils.clamp(manualOffset, minBrightness - autoBrightness, maxBrightness - autoBrightness));
+    }, [rawAutoBrightness]);
 
-        if (newIsDaytime !== isDaytimeRef.current) {
-            isDaytimeRef.current = newIsDaytime;
-
-            const newTargetBrightness = targetBrightness - (nightBrightness - dayBrightness) * (newIsDaytime ? 1 : -1);
-            setTargetBrightness(Math.max(minBrightness, Math.min(maxBrightness, newTargetBrightness)));
-        }
-    }, [timeOfDay]);
-
-    useInterval(
-        () => setCurrentBrightness(targetBrightness > currentBrightness
-            ? Math.min(currentBrightness + transitionSpeedModifier, targetBrightness)
-            : Math.max(currentBrightness - transitionSpeedModifier, targetBrightness)),
-        targetBrightness === currentBrightness ? null : 150,
-        { additionalDeps: [currentBrightness, targetBrightness], runOnStart: false },
-    );
+    useEffect(() => {
+        setTargetBrightness(MathUtils.clamp(autoBrightness + manualOffset, minBrightness, maxBrightness));
+    }, [autoBrightness, manualOffset]);
 
     return (
         <g>
@@ -97,7 +58,7 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
                     left: '0%',
                     width: '100%',
                     height: '100%',
-                    backgroundColor: `rgba(0,0,0, ${1 - currentBrightness})`,
+                    backgroundColor: `rgba(0,0,0, ${1 - targetBrightness})`,
                     zIndex: 3,
                 }}
                 viewBox="0 0 512 512"
