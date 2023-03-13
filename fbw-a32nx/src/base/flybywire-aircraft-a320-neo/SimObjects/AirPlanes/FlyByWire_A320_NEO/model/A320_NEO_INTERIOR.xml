@@ -4697,7 +4697,6 @@
                     <ANIM_NAME_PUSH_RECEIVER_ADF2>PUSH_OVHD_RADIO_ADF2</ANIM_NAME_PUSH_RECEIVER_ADF2>
 
                     <NODE_ID_SWITCH_INT>SWITCH_OVHD_RADIO_INT</NODE_ID_SWITCH_INT>
-
                 </UseTemplate>
             </Component>
         </Component>
