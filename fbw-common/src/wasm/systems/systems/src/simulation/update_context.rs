@@ -12,7 +12,7 @@ use uom::si::{
 use super::{Read, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    simulation::{InitContext, SideControlling, VariableIdentifier},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -162,6 +162,7 @@ pub struct UpdateContext {
     mach_number_id: VariableIdentifier,
     plane_height_id: VariableIdentifier,
     latitude_id: VariableIdentifier,
+    side_controlling_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -187,6 +188,7 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
+    side_controlling: SideControlling,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -214,6 +216,7 @@ impl UpdateContext {
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
     pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
+    pub(crate) const SIDE_CONTROLLING: &'static str = "SIDE_CONTROLLING";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -239,6 +242,7 @@ impl UpdateContext {
         bank: Angle,
         mach_number: MachNumber,
         latitude: Angle,
+        side_controlling: SideControlling,
     ) -> UpdateContext {
         UpdateContext {
             is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
@@ -270,6 +274,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
             plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
+            side_controlling_id: context.get_identifier(Self::SIDE_CONTROLLING.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -314,6 +319,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude,
+            side_controlling,
         }
     }
 
@@ -344,6 +350,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
             plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
+            side_controlling_id: context.get_identifier("SIDE_CONTROLLING".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -357,6 +364,7 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
+            side_controlling: SideControlling::BOTH,
 
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
@@ -442,6 +450,8 @@ impl UpdateContext {
         self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.latitude = reader.read(&self.latitude_id);
+
+        self.side_controlling = reader.read(&self.side_controlling_id);
 
         self.update_relative_wind();
 
@@ -612,6 +622,10 @@ impl UpdateContext {
 
     pub fn mach_number(&self) -> MachNumber {
         self.mach_number
+    }
+
+    pub fn side_controlling(&self) -> SideControlling {
+        self.side_controlling
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {
