@@ -106,6 +106,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn gsx_requested_deboard_state(mut self) -> Self {
+        self.write_by_name("FSDT_GSX_DEBOARDING_STATE", GsxState::Requested);
+        self
+    }
+
     fn gsx_complete_board_state(mut self) -> Self {
         self.write_by_name("FSDT_GSX_BOARDING_STATE", GsxState::Completed);
         self
@@ -365,6 +370,12 @@ impl BoardingTestBed {
 
     fn has_half_pax(&mut self) {
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
+
+        let mut total_pax = 0;
+        for ps in A320Pax::iterator() {
+            total_pax += self.pax_num(ps)
+        }
+        println!("Total amount of passengers {}", total_pax);
 
         for ps in A320Pax::iterator() {
             let pax_num = A320_PAX[ps].max_pax / 2;
@@ -1240,3 +1251,38 @@ fn gsx_deboarding_half_pax() {
     test_bed.has_no_sound_pax_ambience();
     test_bed.sound_boarding_complete_reset();
 }
+
+#[test]
+#[ignore]
+fn gsx_deboarding_full_pax_partial() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .init_vars_gsx()
+        .with_full_cargo()
+        .with_full_pax()
+        .target_no_pax()
+        .target_no_cargo()
+        .gsx_requested_deboard_state()
+        .gsx_performing_deboard_state()
+        .deboard_gsx_pax_half()
+        .deboard_gsx_cargo_half()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.has_half_pax();
+    test_bed.has_half_cargo();
+
+    let mut test_bed = test_bed
+        .deboard_gsx_pax_full()
+        .deboard_gsx_cargo_full()
+        .and_run()
+        .gsx_complete_deboard_state();
+
+    test_bed.has_no_pax();
+    test_bed.has_no_cargo();
+
+    test_bed = test_bed.and_run();
+    test_bed.has_no_sound_pax_ambience();
+    test_bed.sound_boarding_complete_reset();
+}
+
