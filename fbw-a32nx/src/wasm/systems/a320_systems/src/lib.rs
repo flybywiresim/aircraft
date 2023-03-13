@@ -35,6 +35,11 @@ use systems::{
         AuxiliaryPowerUnitFactory, AuxiliaryPowerUnitFireOverheadPanel,
         AuxiliaryPowerUnitOverheadPanel,
     },
+    communications::Communications,
+    communications::Communications,
+    communications::Communications,
+    communications::Communications,
+    communications::Communications,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
@@ -75,6 +80,7 @@ pub struct A320 {
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
     reverse_thrust: ReverserForce,
+    communications: Communications,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
@@ -133,6 +139,7 @@ impl A320 {
                 0,
             ),
             reverse_thrust: ReverserForce::new(context),
+            communications: Communications::new(context),
         }
     }
 }
@@ -254,6 +261,8 @@ impl Aircraft for A320 {
         );
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+
+        self.communications.update(context);
     }
 }
 impl SimulationElement for A320 {
@@ -286,6 +295,7 @@ impl SimulationElement for A320 {
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
         self.reverse_thrust.accept(visitor);
+        self.communications.accept(visitor);
 
         visitor.visit(self);
     }
