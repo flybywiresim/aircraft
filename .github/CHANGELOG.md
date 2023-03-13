@@ -54,6 +54,7 @@
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
+1. [COMMS] Enabled all components of all ACPs/RMPs and AudioSwitching knob. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.9.0
 
