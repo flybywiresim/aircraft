@@ -504,6 +504,7 @@ impl UpdateContext {
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
             local_acceleration_plane_reference: Vector3::new(0., -9.8, 0.),
+            
             side_controlling: SideControlling::CAPTAIN,
 
             local_acceleration_plane_reference_filtered:
