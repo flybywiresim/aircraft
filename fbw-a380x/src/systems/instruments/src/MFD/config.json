@@ -1,9 +1,0 @@
-{
-  "index": "./index.tsx",
-  "isInteractive": true,
-  "name": "MFD",
-  "dimensions": {
-    "width": 768,
-    "height": 1024
-  }
-}

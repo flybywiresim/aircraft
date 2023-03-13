@@ -1,7 +1,0 @@
-{
-  "index": "./instrument.tsx",
-  "isInteractive": false,
-  "extraDeps": [
-    "../MsfsAvionicsCommon"
-  ]
-}
