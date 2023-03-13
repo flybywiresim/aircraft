@@ -156,8 +156,8 @@
       "DeboardConfirmationConfirm": "Sbarca",
       "DeboardConfirmationTitle": "Sbarcare tutti i Passeggeri?",
       "EstimatedDurationUnit": "minuti",
-      "GW": "GW",
-      "GWCG": "GW CG",
+      "GW": "PL",
+      "GWCG": "CG PL",
       "LoadingTime": "Loading Time",
       "Passengers": "Passeggeri",
       "Planned": "Pianificato",
@@ -663,4 +663,5 @@
     "Title": "Nuova Versione Disponibile"
   }
 }
+
 
