@@ -1,16 +1,32 @@
 #include "ATCServices.hpp"
 
-#define BLINK_LIGHT_TIME_MS 300
-#define CALL_TIMEOUT_MS 60000
+#define SELCAL_LIGHT_TIME_MS 300
+#define FLASHING_LIGHTS_TIMEOUT_MS 60000
 
 using Milliseconds = std::chrono::milliseconds;
 
 ATCServices::ATCServices(HANDLE hSimConnect) : _hSimConnect(hSimConnect) {}
 
 void ATCServices::initialize() {
+  _selcalLVar = register_named_variable("A32NX_ACP_SELCAL");
+  _selcalResetLVar = register_named_variable("A32NX_ACP_RESET");
+  _volumeCOM1ACP1LVar = register_named_variable("A32NX_ACP1_Volume_VHF1");
+  _volumeCOM1ACP2LVar = register_named_variable("A32NX_ACP2_Volume_VHF1");
+  _volumeCOM1ACP3LVar = register_named_variable("A32NX_ACP3_Volume_VHF1");
+  _volumeCOM2ACP1LVar = register_named_variable("A32NX_ACP1_Volume_VHF2");
+  _volumeCOM2ACP2LVar = register_named_variable("A32NX_ACP2_Volume_VHF2");
+  _volumeCOM2ACP3LVar = register_named_variable("A32NX_ACP3_Volume_VHF2");
+  _knobCOM1ACP1LVar = register_named_variable("A32NX_ACP1_VHF1_Knob_Volume_Down");
+  _knobCOM1ACP2LVar = register_named_variable("A32NX_ACP2_VHF1_Knob_Volume_Down");
+  _knobCOM1ACP3LVar = register_named_variable("A32NX_ACP3_VHF1_Knob_Volume_Down");
+  _knobCOM2ACP1LVar = register_named_variable("A32NX_ACP1_VHF2_Knob_Volume_Down");
+  _knobCOM2ACP2LVar = register_named_variable("A32NX_ACP2_VHF2_Knob_Volume_Down");
+  _knobCOM2ACP3LVar = register_named_variable("A32NX_ACP3_VHF2_Knob_Volume_Down");
+  _updateATCServicesFromACPsLVar = register_named_variable("A32NX_COM_updateATCServicesFromACPsLVar");
+
   _isInitialized = true;
 
-  // notifyATCServicesStart();
+  notifyATCServicesStart();
 
   std::cout << "FLYPAD_BACKEND (ATCServices): ATCServices initialized" << std::endl;
 }
@@ -21,23 +37,15 @@ void ATCServices::shutdown() {
 }
 
 void ATCServices::updateData(ATCServicesDataIVAO* data) {
-  if (data->volumeCOM1 != this->_previousVolumeCOM1 || data->volumeCOM2 != this->_previousVolumeCOM2 ||
-      data->selcal != this->_previousSelcal) {
-    _data.volumeCOM1 = data->volumeCOM1;
-    _data.volumeCOM2 = data->volumeCOM2;
-    _data.selcal = data->selcal;
+  _data.selcal = data->selcal;
+  _data.volumeCOM1 = data->volumeCOM1;
+  _data.volumeCOM2 = data->volumeCOM2;
 
-    new_data_available = true;
-  }
+  new_data_available = true;
 }
 void ATCServices::updateData(ATCServicesDataVPILOT* data) {
-  if (data->selcal != this->_previousSelcal) {
-    _data.selcal = data->selcal;
-    _data.volumeCOM1 = UINT8_MAX;
-    _data.volumeCOM2 = UINT8_MAX;
-
-    new_data_available = true;
-  }
+  _data.selcal = data->selcal;
+  new_data_available = true;
 }
 
 void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
@@ -45,134 +53,105 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
     return;
 
   if (this->new_data_available) {
-    if (_data.volumeCOM1 != UINT8_MAX && get_named_variable_value(_volumeCOM1FromATCServicesLVar) >= 0 ||
-        _data.volumeCOM2 != UINT8_MAX && get_named_variable_value(_volumeCOM2FromATCServicesLVar) >= 0) {
-      // Waiting for lvars to be processed by Rust code
-      return;
-    }
-
-    if (this->_selcalActive != _data.selcal) {
-      this->_selcalActive = _data.selcal;
-      this->_previousSelcal = _data.selcal;
-      this->_previousTimeSELCAL = std::chrono::system_clock::now();
-    }
-
-    // Setting the lvars with the new volume
-    // _volumeCOM1FromATCServicesLVar is read by the Rust code
-    if (_data.volumeCOM1 != UINT8_MAX) {
-      set_named_variable_value(_volumeCOM1FromATCServicesLVar, _data.volumeCOM1);
-      this->_previousVolumeCOM1 = _data.volumeCOM1;
-    } else {
-      set_named_variable_value(_volumeCOM1FromATCServicesLVar, -1);
-    }
-
-    if (_data.volumeCOM2 != UINT8_MAX) {
-      set_named_variable_value(_volumeCOM2FromATCServicesLVar, _data.volumeCOM2);
-      this->_previousVolumeCOM2 = _data.volumeCOM2;
-    } else {
-      set_named_variable_value(_volumeCOM2FromATCServicesLVar, -1);
-    }
-
     this->new_data_available = false;
+    this->_baseTime = std::chrono::system_clock::now();
+
+    this->_selcalActive = _data.selcal;
+
+    if ((unsigned)_data.volumeCOM1 != (unsigned)this->_previousVolumeCOM1) {
+      double volumeCOM1over100 = _data.volumeCOM1 / 100.0;
+
+      std::cout << "New Volume COM1 from third party " << (unsigned)_data.volumeCOM1 << "     Previous was "
+                << (unsigned)this->_previousVolumeCOM1 << std::endl;
+
+      set_named_variable_value(_volumeCOM1ACP1LVar, volumeCOM1over100);
+      set_named_variable_value(_volumeCOM1ACP2LVar, volumeCOM1over100);
+      set_named_variable_value(_volumeCOM1ACP3LVar, volumeCOM1over100);
+
+      execute_calculator_code((std::to_string(_data.volumeCOM1) + " (>K:COM1_VOLUME_SET)").c_str(), nullptr, nullptr, nullptr);
+
+      this->_previousVolumeCOM1 = _data.volumeCOM1;
+    }
+
+    if ((unsigned)_data.volumeCOM2 != (unsigned)this->_previousVolumeCOM2) {
+      double volumeCOM2over100 = _data.volumeCOM2 / 100.0;
+
+      std::cout << "New Volume COM2 from third party " << (unsigned)_data.volumeCOM2 << "     Previous was "
+                << (unsigned)this->_previousVolumeCOM2 << std::endl;
+
+      set_named_variable_value(_volumeCOM2ACP1LVar, volumeCOM2over100);
+      set_named_variable_value(_volumeCOM2ACP2LVar, volumeCOM2over100);
+      set_named_variable_value(_volumeCOM2ACP3LVar, volumeCOM2over100);
+
+      execute_calculator_code((std::to_string(_data.volumeCOM2) + " (>K:COM2_VOLUME_SET)").c_str(), nullptr, nullptr, nullptr);
+
+      this->_previousVolumeCOM2 = _data.volumeCOM2;
+    }
   } else {
+    bool update = false;
+
     auto now = std::chrono::system_clock::now();
 
-    if (get_named_variable_value(_acpResetLVar) == 0) {
+    // Reset everything if RESET is pressed OR if 60 seconds have passed (FCOM compliant)
+    if (get_named_variable_value(_selcalResetLVar) == 0 &&
+        std::chrono::duration_cast<Milliseconds>(now - this->_baseTime).count() < FLASHING_LIGHTS_TIMEOUT_MS) {
       if (this->_selcalActive) {
-        // Makes CALL button (with id _selcalActive) blink
+        // Makes the push button blink every SELCAL_LIGHT_TIME_MS
         // It sets the BLINK_ID (foundable in the XML behaviors) then 0 to make it blink
-        if (std::chrono::duration_cast<Milliseconds>(now - this->_previousTimeSELCAL).count() >= BLINK_LIGHT_TIME_MS) {
+        if (std::chrono::duration_cast<Milliseconds>(now - this->_previousTime).count() >= SELCAL_LIGHT_TIME_MS) {
           set_named_variable_value(_selcalLVar, get_named_variable_value(_selcalLVar) == this->_selcalActive ? 0 : this->_selcalActive);
-          this->_previousTimeSELCAL = now;
-        }
-      }
-
-      // Makes ATT and MECH CALL blink
-      // Reset whenever 60 has passed, FCOM compliant
-
-      /*
-       * For now there is no use case for this but maybe in the future
-       */
-
-      if (this->_previousTimeATT == std::chrono::system_clock::from_time_t(0) && get_named_variable_value(_attCallingLVar) == 1) {
-        this->_baseTimeATT = std::chrono::system_clock::now();
-      }
-
-      if (this->_baseTimeATT > std::chrono::system_clock::from_time_t(0)) {
-        if (std::chrono::duration_cast<Milliseconds>(now - this->_previousTimeATT).count() >= BLINK_LIGHT_TIME_MS) {
-          set_named_variable_value(_attCallingLVar, !get_named_variable_value(_attCallingLVar));
-          this->_previousTimeATT = now;
-        } else if (std::chrono::duration_cast<Milliseconds>(now - this->_baseTimeATT).count() >= CALL_TIMEOUT_MS) {
-          this->_previousTimeATT = this->_baseTimeATT = {};
-          set_named_variable_value(_attCallingLVar, 0);
-        }
-      }
-
-      if (this->_previousTimeMECH == std::chrono::system_clock::from_time_t(0) && get_named_variable_value(_mechCallingLVar) == 1) {
-        this->_baseTimeMECH = std::chrono::system_clock::now();
-      }
-
-      if (this->_baseTimeMECH > std::chrono::system_clock::from_time_t(0)) {
-        if (std::chrono::duration_cast<Milliseconds>(now - this->_previousTimeMECH).count() >= BLINK_LIGHT_TIME_MS) {
-          set_named_variable_value(_mechCallingLVar, !get_named_variable_value(_mechCallingLVar));
-          this->_previousTimeMECH = now;
-        } else if (std::chrono::duration_cast<Milliseconds>(now - this->_baseTimeMECH).count() >= CALL_TIMEOUT_MS) {
-          this->_previousTimeMECH = this->_baseTimeMECH = {};
-          set_named_variable_value(_mechCallingLVar, 0);
+          this->_previousTime = now;
         }
       }
     } else {
-      // Reset everything related to blinking if RESET push button was pressed on one ACP
-      set_named_variable_value(_acpResetLVar, 0);
-      set_named_variable_value(_attCallingLVar, 0);
-      set_named_variable_value(_mechCallingLVar, 0);
+      // Reset everything related to SELCAL if RESET push button was pressed on one ACP
+      // OR 60s have passed (according to FCOM)
+      set_named_variable_value(_selcalResetLVar, 0);
       set_named_variable_value(_selcalLVar, 0);
-
       this->_selcalActive = 0;
+      update = true;
 
-      this->_baseTimeATT = {};
-      this->_baseTimeMECH = {};
+      this->_previousTime = now;
+    }
 
-      setATCServicesDataIVAO(false, volumeCOM1, volumeCOM2);
-      setATCServicesDataVPILOT(true, false);
+    // In case the volume was changed via the knobs on the ACPs
+    if (get_named_variable_value(_updateATCServicesFromACPsLVar) == 1 &&
+        ((unsigned)volumeCOM1 != (unsigned)this->_previousVolumeCOM1 || (unsigned)volumeCOM2 != (unsigned)this->_previousVolumeCOM2)) {
+      std::cout << "New Volume COM1 from ACP " << (unsigned)volumeCOM1 << "     Previous was " << (unsigned)this->_previousVolumeCOM1
+                << std::endl;
+      std::cout << "New Volume COM2 from ACP " << (unsigned)volumeCOM2 << "     Previous was " << (unsigned)this->_previousVolumeCOM2
+                << std::endl;
+
+      this->_previousVolumeCOM1 = volumeCOM1;
+      this->_previousVolumeCOM2 = volumeCOM2;
+
+      update = true;
+
+      set_named_variable_value(_updateATCServicesFromACPsLVar, 0);
+    }
+
+    if (update) {
+      setATCServicesDataIVAO(this->_selcalActive, this->_previousVolumeCOM1, this->_previousVolumeCOM2);
+      setATCServicesDataVPILOT(1, this->_selcalActive);
     }
   }
-
-  // Update third party volume with volume from ACPs
-  if (get_named_variable_value(_updateVolumeATCServicesFromACPLvar) == 1 &&
-      (volumeCOM1 != this->_previousVolumeCOM1 || volumeCOM2 != this->_previousVolumeCOM2)) {
-    set_named_variable_value(_updateVolumeATCServicesFromACPLvar, 0);
-    this->_previousVolumeCOM1 = volumeCOM1;
-    this->_previousVolumeCOM2 = volumeCOM2;
-
-    setATCServicesDataIVAO(this->_selcalActive, volumeCOM1, volumeCOM2);
-  }
 }
 
-/* notifyATCServicesShutdown()
- *
- * Notifying the third party the plane is unloaded
- */
+/// @brief Notifying the third party the plane is unloaded
 void ATCServices::notifyATCServicesShutdown() {
-  // MSFS's start/stop sequence, fires start and stop events twice therefore
+  // In MSFS's start/stop sequence, start and stop events are called twice therefore
   // we have to uninit it to make notifyATCServicesStart ineffective
   _isInitialized = false;
-  // setATCServicesDataVPILOT(false, false);
-
-  // No need to notify IVAO as it detects unloading itself
-  // setATCServicesDataIVAO(false, 0, 0);
+  setATCServicesDataVPILOT(false, false);
+  setATCServicesDataIVAO(false, 0, 0);
 }
 
-/* notifyATCServicesStart()
- *
- * Notifying the third party the plane is loaded
- */
+/// @brief Notifying the third party the plane is loaded
 void ATCServices::notifyATCServicesStart() const {
   if (_isInitialized) {
-    // notifying vPilot the aircraft is loaded
-    // setATCServicesDataVPILOT(true, false);
+    setATCServicesDataIVAO(false, 80, 40);
 
-    // No need to notify IVAO as it detects loading itself
-    // setATCServicesDataIVAO(false, 80, 40);
+    // notifying vPilot the aircraft is loaded
+    setATCServicesDataVPILOT(true, false);
   }
 }
