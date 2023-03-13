@@ -618,6 +618,8 @@ export class PseudoFWC {
 
     private readonly voiceVhf3 = Subject.create(0);
 
+    private readonly audioSwitchingKnob = Subject.create(0);
+
     /* SETTINGS */
 
     private readonly configPortableDevices = Subject.create(false);
@@ -996,6 +998,7 @@ export class PseudoFWC {
         this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
         this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
         this.voiceVhf3.set(SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', 'number'));
+        this.audioSwitchingKnob.set(SimVar.GetSimVarValue('A32NX_AUDIOSWITCHING_KNOB', 'number'));
 
         /* FUEL */
         const fuelGallonsToKg = SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilogram');
@@ -2529,6 +2532,17 @@ export class PseudoFWC {
             simVarIsActive: this.showLandingInhibit,
             whichCodeToReturn: () => [0],
             codesToReturn: ['000015001'],
+            memoInhibit: () => false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000280': // AUDIO SWITCHING KNOB
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: this.audioSwitchingKnob.map((v) => v !== 1),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['000028001'],
             memoInhibit: () => false,
             failure: 0,
             sysPage: -1,
