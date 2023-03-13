@@ -502,8 +502,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSyncFoEfisEnabled = std::make_unique<LocalVariable>("A32NX_FO_SYNC_EFIS_ENABLED");
 
-  idLs1Active = std::make_unique<LocalVariable>("BTN_LS_1_FILTER_ACTIVE");
-  idLs2Active = std::make_unique<LocalVariable>("BTN_LS_2_FILTER_ACTIVE");
+  idLs1Active = std::make_unique<LocalVariable>("A32NX_BTN_LS_1_FILTER_ACTIVE");
+  idLs2Active = std::make_unique<LocalVariable>("A32NX_BTN_LS_2_FILTER_ACTIVE");
   idIsisLsActive = std::make_unique<LocalVariable>("A32NX_ISIS_LS_ACTIVE");
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
