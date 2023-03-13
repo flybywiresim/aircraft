@@ -1,7 +1,7 @@
 use crate::{
     shared::{
         arinc429::Arinc429Word, low_pass_filter::LowPassFilter, pid::PidController, AverageExt,
-        CabinSimulation, ControllerSignal, EngineCorrectedN1, PressurizationOverheadShared,
+        CabinSimulation, ControllerSignal, EngineCorrectedN1,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
@@ -12,6 +12,7 @@ use crate::{
 use super::{
     pressure_valve::{OutflowValve, PressureValveSignal, SafetyValve},
     AdirsToAirCondInterface, OutflowValveSignal, PressurizationConstants,
+    PressurizationOverheadShared,
 };
 
 use std::{marker::PhantomData, time::Duration};

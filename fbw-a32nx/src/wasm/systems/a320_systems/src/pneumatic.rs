@@ -1387,12 +1387,15 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
-    use crate::air_conditioning::A320PressurizationOverheadPanel;
+    use crate::air_conditioning::{
+        A320AirConditioningSystemOverhead, A320PressurizationOverheadPanel,
+    };
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
     struct TestAirConditioning {
         a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
+        air_conditioning_overhead: A320AirConditioningSystemOverhead<3>,
         test_cabin: TestCabin,
 
         adirs: TestAdirs,
@@ -1407,10 +1410,14 @@ mod tests {
             Self {
                 a320_air_conditioning_system: AirConditioningSystem::new(
                     context,
-                    cabin_zones,
+                    &cabin_zones,
                     vec![ElectricalBusType::DirectCurrent(1)],
                     vec![ElectricalBusType::DirectCurrent(2)],
                     ElectricalBusType::AlternatingCurrent(1),
+                ),
+                air_conditioning_overhead: A320AirConditioningSystemOverhead::new(
+                    context,
+                    &cabin_zones,
                 ),
                 test_cabin: TestCabin::new(),
 
@@ -1430,6 +1437,7 @@ mod tests {
         ) {
             self.a320_air_conditioning_system.update(
                 context,
+                &self.air_conditioning_overhead,
                 &self.adirs,
                 &self.test_cabin,
                 engines,

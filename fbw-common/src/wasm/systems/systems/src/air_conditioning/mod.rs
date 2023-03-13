@@ -4,7 +4,6 @@ use self::acs_controller::{
 };
 
 use crate::{
-    overhead::{OnOffFaultPushButton, OnOffPushButton, ValueKnob},
     pneumatic::{
         valve::{DefaultValve, PneumaticExhaust},
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe,
@@ -13,11 +12,11 @@ use crate::{
         arinc429::Arinc429Word, AverageExt, CabinAltitude, CabinSimulation, ConsumePower,
         ControllerSignal, ElectricalBusType, ElectricalBuses, EngineBleedPushbutton,
         EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
-        PackFlowValveState, PneumaticBleed, PressurizationOverheadShared,
+        PackFlowValveState, PneumaticBleed,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorWriter,
+        UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -61,6 +60,21 @@ pub trait AdirsToAirCondInterface {
     fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure>;
     fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure>;
+}
+
+pub trait AirConditioningOverheadShared {
+    fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature;
+    fn pack_pushbuttons_state(&self) -> Vec<bool>;
+    fn hot_air_pushbutton_is_on(&self) -> bool;
+    fn cabin_fans_is_on(&self) -> bool;
+    fn flow_selector_position(&self) -> OverheadFlowSelector;
+}
+
+pub trait PressurizationOverheadShared {
+    fn is_in_man_mode(&self) -> bool;
+    fn ditching_is_on(&self) -> bool;
+    fn ldg_elev_is_auto(&self) -> bool;
+    fn ldg_elev_knob_value(&self) -> f64;
 }
 
 pub enum ZoneType {
@@ -144,7 +158,6 @@ pub trait PressurizationConstants {
 }
 
 pub struct AirConditioningSystem<const ZONES: usize, const FANS: usize, const ENGINES: usize> {
-    acs_overhead: AirConditioningSystemOverhead<ZONES>,
     acsc: AirConditioningSystemController<ZONES, ENGINES>,
     cabin_fans: [CabinFan; FANS],
     mixer_unit: MixerUnit<ZONES>,
@@ -158,29 +171,29 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
 {
     pub fn new(
         context: &mut InitContext,
-        cabin_zones: [ZoneType; ZONES],
+        cabin_zones: &[ZoneType; ZONES],
         acsc_primary_powered_by: Vec<ElectricalBusType>,
         acsc_secondary_powered_by: Vec<ElectricalBusType>,
         fans_powered_by: ElectricalBusType,
     ) -> Self {
         Self {
-            acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zones),
             acsc: AirConditioningSystemController::new(
                 context,
-                &cabin_zones,
+                cabin_zones,
                 acsc_primary_powered_by,
                 acsc_secondary_powered_by,
             ),
             cabin_fans: [CabinFan::new(fans_powered_by); FANS],
-            mixer_unit: MixerUnit::new(&cabin_zones),
+            mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
-            trim_air_system: TrimAirSystem::new(context, &cabin_zones),
+            trim_air_system: TrimAirSystem::new(context, cabin_zones),
         }
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        acs_overhead: &impl AirConditioningOverheadShared,
         adirs: &impl AdirsToAirCondInterface,
         cabin_simulation: &impl CabinSimulation,
         engines: [&impl EngineCorrectedN1; ENGINES],
@@ -194,7 +207,7 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
         self.acsc.update(
             context,
             adirs,
-            &self.acs_overhead,
+            acs_overhead,
             cabin_simulation,
             engines,
             engine_fire_push_buttons,
@@ -205,9 +218,6 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
             lgciu,
             &self.trim_air_system,
         );
-
-        self.acs_overhead
-            .set_pack_pushbutton_fault(self.acsc.pack_fault_determination(pneumatic));
 
         for fan in self.cabin_fans.iter_mut() {
             fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
@@ -230,6 +240,10 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
 
         self.trim_air_system
             .update(context, &self.mixer_unit, &self.acsc);
+    }
+
+    pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
+        self.acsc.pack_fault_determination(pneumatic)
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -278,7 +292,6 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> SimulationElem
     for AirConditioningSystem<ZONES, FANS, ENGINES>
 {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        self.acs_overhead.accept(visitor);
         self.acsc.accept(visitor);
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
@@ -287,87 +300,8 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> SimulationElem
     }
 }
 
-pub struct AirConditioningSystemOverhead<const ZONES: usize> {
-    flow_selector_id: VariableIdentifier,
-
-    pack_pbs: [OnOffFaultPushButton; 2],
-    hot_air_pb: OnOffFaultPushButton,
-    cabin_fans_pb: OnOffPushButton,
-    temperature_selectors: Vec<ValueKnob>,
-    flow_selector: OverheadFlowSelector,
-}
-
-impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
-    fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
-        let mut overhead = Self {
-            flow_selector_id: context
-                .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
-
-            pack_pbs: [
-                OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
-                OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
-            ],
-            hot_air_pb: OnOffFaultPushButton::new_on(context, "COND_HOT_AIR"),
-            cabin_fans_pb: OnOffPushButton::new_on(context, "VENT_CAB_FANS"),
-            temperature_selectors: Vec::new(),
-            flow_selector: OverheadFlowSelector::Norm,
-        };
-        for id in cabin_zone_ids {
-            let knob_id = format!("COND_{}_SELECTOR", id);
-            overhead
-                .temperature_selectors
-                .push(ValueKnob::new_with_value(context, &knob_id, 24.));
-        }
-        overhead
-    }
-
-    fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature {
-        let knob = &self.temperature_selectors[zone_id];
-        // Map from knob range 0-300 to 18-30 degrees C
-        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
-    }
-
-    fn pack_pushbuttons_state(&self) -> Vec<bool> {
-        self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
-    }
-
-    fn set_pack_pushbutton_fault(&mut self, pb_has_fault: [bool; 2]) {
-        self.pack_pbs
-            .iter_mut()
-            .enumerate()
-            .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
-    }
-
-    fn hot_air_pushbutton_is_on(&self) -> bool {
-        self.hot_air_pb.is_on()
-    }
-
-    fn cabin_fans_is_on(&self) -> bool {
-        self.cabin_fans_pb.is_on()
-    }
-
-    fn flow_selector_position(&self) -> OverheadFlowSelector {
-        self.flow_selector
-    }
-}
-
-impl<const ZONES: usize> SimulationElement for AirConditioningSystemOverhead<ZONES> {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.flow_selector = reader.read(&self.flow_selector_id);
-    }
-
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.temperature_selectors, visitor);
-        accept_iterable!(self.pack_pbs, visitor);
-        self.hot_air_pb.accept(visitor);
-        self.cabin_fans_pb.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
 #[derive(Clone, Copy)]
-enum OverheadFlowSelector {
+pub enum OverheadFlowSelector {
     Lo = 80,
     Norm = 100,
     Hi = 120,
