@@ -272,6 +272,7 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
+1. [COMMS] Enabled all components of all ACPs/RMPs and AudioSwitching knob. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.9.0
 
