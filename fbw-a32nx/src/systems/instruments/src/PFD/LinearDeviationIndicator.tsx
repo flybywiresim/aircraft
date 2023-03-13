@@ -1,5 +1,4 @@
 import { DisplayComponent, EventBus, FSComponent, NodeReference, VNode } from 'msfssdk';
-import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
@@ -24,7 +23,8 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
     private latchSymbol = FSComponent.createRef<SVGPathElement>();
 
-    private altitude = Arinc429Word.empty();
+    // TODO: Use ARINC value for this
+    private flightPathAltitude: Feet = 0;
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -32,31 +32,17 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('altitudeAr').handle((alt) => {
-            this.altitude = alt;
-        });
-
-        sub.on('linearDeviationActive').whenChanged().handle((isActive) => {
-            this.lastIsActive = isActive;
-
-            hideOrShow(this.component)(isActive);
-            hideOrShow(this.upperLinearDeviationReadout)(isActive);
-            hideOrShow(this.lowerLinearDeviationReadout)(isActive);
-        });
-
-        sub.on('verticalProfileLatched').whenChanged().handle(hideOrShow(this.latchSymbol));
-
-        sub.on('targetAltitude').atFrequency(5).handle((targetAltitude) => {
-            if (!this.altitude.isNormalOperation()) {
+            if (!alt.isNormalOperation()) {
+                // TODO: Should probably hide the yoyo in this case
                 return;
             }
-
-            const deviation = this.altitude.value - targetAltitude;
 
             // Only update this if it's actually active
             if (!this.lastIsActive) {
                 return;
             }
 
+            const deviation = alt.value - this.flightPathAltitude;
             const pixelOffset = this.pixelOffsetFromDeviation(Math.max(Math.min(deviation, 500), -500));
 
             this.component.instance.style.transform = `translate3d(0px, ${pixelOffset}px, 0px)`;
@@ -91,6 +77,20 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
                 this.linearDeviationDot.instance.style.visibility = 'hidden';
             }
+        });
+
+        sub.on('linearDeviationActive').whenChanged().handle((isActive) => {
+            this.lastIsActive = isActive;
+
+            hideOrShow(this.component)(isActive);
+            hideOrShow(this.upperLinearDeviationReadout)(isActive);
+            hideOrShow(this.lowerLinearDeviationReadout)(isActive);
+        });
+
+        sub.on('verticalProfileLatched').whenChanged().handle(hideOrShow(this.latchSymbol));
+
+        sub.on('targetAltitude').atFrequency(1000 / 60).handle((targetAltitude) => {
+            this.flightPathAltitude = targetAltitude;
         });
     }
 
