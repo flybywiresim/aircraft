@@ -23,6 +23,25 @@ pub use update_context::*;
 
 pub mod test;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum SideControlling {
+    CAPTAIN,
+    FO,
+    BOTH,
+}
+
+read_write_enum!(SideControlling);
+
+impl From<f64> for SideControlling {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => SideControlling::CAPTAIN,
+            1 => SideControlling::FO,
+            _ => SideControlling::BOTH,
+        }
+    }
+}
+
 /// Trait for a type which can read and write simulator data.
 /// Using this trait implementors can abstract away the way the code
 /// interacts with the simulator. This separation of concerns is very important
