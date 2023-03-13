@@ -371,8 +371,9 @@ export class TacticalDescentPathBuilder {
 
     private doesPhaseViolateAltitudeConstraint(previousResult: VerticalCheckpoint, phase: SubPhase, altitudeConstraint: MinimumDescentAltitudeConstraint) {
         if (phase.lastResult.altitude - altitudeConstraint.minimumAltitude >= -1 // We're still above the constraint
-        || previousResult.altitude - altitudeConstraint.minimumAltitude < -100 // We were already below the constraint before this subphase
+            || previousResult.altitude - altitudeConstraint.minimumAltitude < -100 // We were already more than 100 ft below the constraint before this subphase
             || previousResult.distanceFromStart > altitudeConstraint.distanceFromStart // We're already behind the constraint
+            || phase.shouldFlyAsLevelSegment // A level segment already tries its best at not violating the constraint
         ) {
             return false;
         }
