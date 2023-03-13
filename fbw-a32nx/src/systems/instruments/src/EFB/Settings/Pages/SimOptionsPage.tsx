@@ -29,6 +29,7 @@ export const SimOptionsPage = () => {
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
     const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
+    const [sideControlling, setSideControlling] = usePersistentNumberProperty('SIDE_CONTROLLING', 2);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -40,6 +41,12 @@ export const SimOptionsPage = () => {
         { name: t('Settings.SimOptions.None'), setting: 'NONE' },
         { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
         { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
+    ];
+
+    const defaultCockpitSeatUsedToControlButtons: ButtonType[] = [
+        { name: t('Settings.SimOptions.Captain'), setting: 'Captain', index: 0 },
+        { name: t('Settings.SimOptions.Copilot'), setting: 'Copilot', index: 1 },
+        { name: t('Settings.SimOptions.Both'), setting: 'Both', index: 2 },
     ];
 
     const isGSXSyncEnabled = () => !!gsxFuelSyncEnabled || !!gsxPayloadSyncEnabled;
@@ -196,6 +203,21 @@ export const SimOptionsPage = () => {
                         >
                             {t('Settings.SimOptions.Calibrate')}
                         </button>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.SimOptions.CockpitSeatUsedToControl')}>
+                        <SelectGroup>
+                            {defaultCockpitSeatUsedToControlButtons.map((button) => (
+                                <SelectItem
+                                    onSelect={() => {
+                                        setSideControlling(button.index);
+                                    }}
+                                    selected={sideControlling === button.index}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
                     </SettingItem>
 
                 </SettingsPage>
