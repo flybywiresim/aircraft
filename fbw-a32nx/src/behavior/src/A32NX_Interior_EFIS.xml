@@ -17,7 +17,7 @@
 
         <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Button_Template">
             <INDICATOR_CODE type="rnp" return="boolean">
-                (L:BTN_LS_#ID#_FILTER_ACTIVE, boolean)
+                (L:A32NX_BTN_LS_#ID#_FILTER_ACTIVE, boolean)
             </INDICATOR_CODE>
             <BUTTON_CODE type="rnp">
                 (H:A320_Neo_PFD_BTN_LS_#ID#, boolean) = true;
