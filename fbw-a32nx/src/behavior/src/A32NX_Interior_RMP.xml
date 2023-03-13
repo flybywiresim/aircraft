@@ -163,6 +163,7 @@
                     (if #RMP_POWERED, bool# and indicatorsPowered and (sel or #EMISSIVE_TEST, bool#) {
                         #EMISSIVE_DIM, number#
                     } else {
+                        (L:A32NX_RMP_SEL_LIGHT_ON, number) = 0;
                         0
                     })
                 </EMISSIVE_CODE>
