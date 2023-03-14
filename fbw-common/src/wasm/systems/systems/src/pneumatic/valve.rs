@@ -1,9 +1,8 @@
 use std::f64::consts::PI;
 
 use crate::{
-    pneumatic::{Solenoid, SolenoidSignal},
-    shared::{interpolation, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    shared::{ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
+    simulation::{SideControlling, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use uom::si::{
