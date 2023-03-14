@@ -21,8 +21,8 @@ void ATCServices::initialize() {
   _knobCOM1ACP3LVar = register_named_variable("A32NX_ACP3_VHF1_Knob_Volume_Down");
   _knobCOM2ACP1LVar = register_named_variable("A32NX_ACP1_VHF2_Knob_Volume_Down");
   _knobCOM2ACP2LVar = register_named_variable("A32NX_ACP2_VHF2_Knob_Volume_Down");
-  _knobCOM2ACP3LVar = register_named_variable("A32NX_ACP3_VHF2_Knob_Volume_Down");
-  _updateATCServicesFromACPsLVar = register_named_variable("A32NX_COM_updateATCServicesFromACPsLVar");
+  _knobCOM2ACP3LVar = register_named_variable("A32NX_ACP3_VHF2_Knob_Volume_Down") _updateATCServicesFromACPsLVar =
+      register_named_variable("A32NX_COM_updateATCServicesFromACPsLVar");
 
   _isInitialized = true;
 

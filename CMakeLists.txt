@@ -17,6 +17,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/fbw-a380x/src/wasm/fbw_a380
         ${PROJECT_SOURCE_DIR}/fbw-common/src/wasm/fadec_common
         ${PROJECT_SOURCE_DIR}/fbw-common/src/wasm/fbw_common
+        ${PROJECT_SOURCE_DIR}/fbw-common/src/wasm/flypad-backend_common
 )
 
 add_subdirectory(./fbw-a32nx/src/wasm/fadec_a320)
@@ -25,3 +26,4 @@ add_subdirectory(./fbw-a32nx/src/wasm/flypad-backend)
 add_subdirectory(./fbw-a380x/src/wasm/fadec_a380)
 add_subdirectory(./fbw-a380x/src/wasm/fbw_a380)
 add_subdirectory(./fbw-a380x/src/wasm/flypad-backend)
+add_subdirectory(./fbw-common/src/wasm/flypad-backend_common)
