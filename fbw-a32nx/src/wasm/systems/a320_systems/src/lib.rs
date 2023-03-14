@@ -36,10 +36,6 @@ use systems::{
         AuxiliaryPowerUnitOverheadPanel,
     },
     communications::Communications,
-    communications::Communications,
-    communications::Communications,
-    communications::Communications,
-    communications::Communications,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
@@ -47,6 +43,7 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
+    pressurization::{Pressurization, PressurizationOverheadPanel},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
