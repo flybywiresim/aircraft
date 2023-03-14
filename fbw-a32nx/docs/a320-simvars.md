@@ -453,6 +453,14 @@
       0 | Not selected
       1 | Selected
 
+- A32NX_VOLUME_VHF{1,2}_FROM_ATC_SERVICES
+    - Number
+    - Volume of VHF 1/2 provided by ATC Services (IVAO, vPilot for instance)
+      Value | Meaning
+      --- | ---
+      -1 | No volume to set
+      0-100 | Volume to set
+
 - A32NX_ACP{1,2,3}_VHF{1,2,3}_VOLUME
     - Number
     - Volume of VHF 1/2/3 on the left/right/overhead ACP
