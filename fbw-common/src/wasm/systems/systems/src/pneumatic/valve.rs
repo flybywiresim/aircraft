@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 use crate::{
     shared::{ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
-    simulation::{SideControlling, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use uom::si::{
