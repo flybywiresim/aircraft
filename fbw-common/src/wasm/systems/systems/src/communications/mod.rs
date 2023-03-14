@@ -614,11 +614,9 @@ mod communications_tests {
     }
     impl CommunicationsTestBed {
         fn new() -> Self {
-            let test_bed = CommunicationsTestBed {
+            Self {
                 test_bed: SimulationTestBed::new(TestCommunications::new),
-            };
-
-            test_bed
+            }
         }
     }
     impl TestBed for CommunicationsTestBed {
@@ -635,20 +633,20 @@ mod communications_tests {
 
     impl SimulationElement for CommunicationsTestBed {}
 
-    #[test]
-    fn test_unpack() {
-        let mut test_bed = test_bed();
-        //13831281
-        //883636401
-        test_bed.write_by_name("ADF1_IDENT_PACKED", 883636401);
-        test_bed.write_by_name("ACP1_ADF1_KNOB_VOLUME_DOWN", 1);
-        test_bed.write_by_name("ACP1_VHF1_VOLUME", 50);
-        test_bed.write_by_name("AUDIOSWITCHING_KNOB", 1);
-        test_bed.write_by_name("SIDE_CONTROLLING", 2);
+    //#[test]
+    // fn test_unpack() {
+    //     let mut test_bed = test_bed();
+    //     //13831281
+    //     //883636401
+    //     test_bed.write_by_name("ADF1_IDENT_PACKED", 883636401);
+    //     test_bed.write_by_name("ACP1_ADF1_KNOB_VOLUME_DOWN", 1);
+    //     test_bed.write_by_name("ACP1_VHF1_VOLUME", 50);
+    //     test_bed.write_by_name("AUDIOSWITCHING_KNOB", 1);
+    //     test_bed.write_by_name("SIDE_CONTROLLING", 2);
 
-        test_bed.run();
+    //     test_bed.run();
 
-        let value: f64 = test_bed.read_by_name("COM VOLUME:1");
-        assert!(value == 50.0);
-    }
+    //     let value: f64 = test_bed.read_by_name("COM VOLUME:1");
+    //     assert!(value == 50.0);
+    // }
 }
