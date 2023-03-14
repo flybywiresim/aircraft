@@ -174,8 +174,6 @@ impl A380Electrical {
             .update(context, electricity, &self.alternating_current, overhead);
         self.secondary_galley
             .update(electricity, &self.alternating_current, overhead);
-
-        self.debug_assert_invariants();
     }
 
     fn emergency_generator_contactor_is_closed(&self) -> bool {
@@ -189,10 +187,6 @@ impl A380Electrical {
 
     fn galley_is_shed(&self) -> bool {
         self.main_galley.is_shed() || self.secondary_galley.is_shed()
-    }
-
-    fn debug_assert_invariants(&self) {
-        self.direct_current.debug_assert_invariants();
     }
 
     #[cfg(test)]

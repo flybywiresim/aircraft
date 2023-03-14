@@ -327,6 +327,7 @@ pub enum ElectricalBusType {
     DirectCurrentBattery,
     DirectCurrentHot(u8),
     DirectCurrentGndFltService,
+    DirectCurrentNamed(&'static str),
 
     /// A sub bus is a subsection of a larger bus. An example of
     /// a sub bus is the A320's 202PP, which is a sub bus of DC BUS 2 (2PP).
@@ -357,6 +358,7 @@ impl Display for ElectricalBusType {
             ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
             ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
             ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
+            ElectricalBusType::DirectCurrentNamed(name) => write!(f, "{}", name),
             ElectricalBusType::Sub(name) => write!(f, "SUB_{}", name),
         }
     }
