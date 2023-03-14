@@ -113,7 +113,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
     lightPresetPtr->onUpdate(deltaTime);
     aircraftPresetPtr->onUpdate(deltaTime);
     pushbackPtr->onUpdate(deltaTime);
-    ATCServicesPtr->onUpdate(simulationData.volumeCOM1, simulationData.volumeCOM2);
+    ATCServicesPtr->onUpdate(/*simulationData.volumeCOM1, simulationData.volumeCOM2*/);
 
     return true;
   }
