@@ -577,7 +577,7 @@ impl SimulationElement for Communications {
 mod communications_tests {
     use super::*;
     use crate::simulation::{
-        test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+        test::{SimulationTestBed, TestBed, WriteByName},
         Aircraft,
     };
 
@@ -633,7 +633,7 @@ mod communications_tests {
 
     impl SimulationElement for CommunicationsTestBed {}
 
-    //#[test]
+    #[test]
     fn test_unpack() {
         let mut test_bed = test_bed();
         //13831281
