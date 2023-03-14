@@ -15,7 +15,7 @@ import { failureGenConfigTakeOff, failureGeneratorTakeOff }
     from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
-import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
+import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
     const [maxFailuresAtOnce, setMaxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);

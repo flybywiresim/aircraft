@@ -4,7 +4,7 @@ import { t } from 'instruments/src/EFB/translation';
 import {
     eraseGenerator, FailureGenData,
     failureGeneratorAdd, failureGeneratorsSettings, setNewSetting,
-} from 'instruments/src/EFB/Failures/RandomFailureGen';
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';

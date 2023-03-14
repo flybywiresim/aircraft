@@ -1,6 +1,7 @@
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Failure } from '@failures';
+import { allGeneratorFailures, failureGeneratorCommonFunction, failureGeneratorsSettings } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { t } from '../../translation';
 import { FailureButton } from '../FailureButton';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
@@ -15,6 +16,18 @@ interface FailureGroupProps {
 const FailureGroup = ({ title, failures }: FailureGroupProps) => {
     const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
+    const settingsFailureGen = failureGeneratorsSettings();
+    const activeGens = useMemo(() => {
+        const temp : string[] = [];
+        settingsFailureGen.allGenSettings.forEach((genSetting) => {
+            for (let i = 0; i < genSetting.settings.length / genSetting.numberOfSettingsPerGenerator; i++) {
+                temp.push(genSetting.uniqueGenPrefix + i.toString());
+            }
+        });
+        return temp;
+    }, [settingsFailureGen.allGenSettings]);
+    const { allFailures } = failureGeneratorCommonFunction();
+    const { generatorFailuresGetters } = allGeneratorFailures(allFailures);
 
     const getHighlightedTerm = (failureName: string) => {
         const searchQueryIdx = failureName.toUpperCase().indexOf(searchQuery);
@@ -38,15 +51,33 @@ const FailureGroup = ({ title, failures }: FailureGroupProps) => {
 
             <div className="grid grid-cols-4 auto-rows-auto">
                 {failures.map((failure, index) => (
-                    <FailureButton
-                        key={failure.identifier}
-                        name={failure.name}
-                        isActive={activeFailures.has(failure.identifier)}
-                        isChanging={changingFailures.has(failure.identifier)}
-                        highlightedTerm={getHighlightedTerm(failure.name)}
-                        onClick={() => handleFailureButtonClick(failure.identifier)}
-                        className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}
-                    />
+                    <div className={`flex flex-col items-stretch justify-self-stretch ${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'}`}>
+                        <FailureButton
+                            key={failure.identifier}
+                            name={failure.name}
+                            isActive={activeFailures.has(failure.identifier)}
+                            isChanging={changingFailures.has(failure.identifier)}
+                            highlightedTerm={getHighlightedTerm(failure.name)}
+                            onClick={() => handleFailureButtonClick(failure.identifier)}
+                            className="h-36 grow"
+                        />
+                        <div className={`grid grid-cols-${Math.min(4, activeGens.length)} auto-rows-auto h-${8 * Math.ceil((activeGens.length + 1) / 4)} ${index >= 4 && 'mt-4'}`}>
+                            {
+                                activeGens.map((genID) => (
+                                    <button
+                                        type="button"
+                                        className={
+                                            `flex px-2 h-8 pt-3 pb-2 text-center rounded-b-md ${generatorFailuresGetters.get(failure.identifier).includes(genID)
+                                                ? 'bg-theme-highlight'
+                                                : 'bg-theme-accent'}`
+                                        }
+                                    >
+                                        {genID}
+                                    </button>
+                                ))
+                            }
+                        </div>
+                    </div>
                 ))}
             </div>
         </div>

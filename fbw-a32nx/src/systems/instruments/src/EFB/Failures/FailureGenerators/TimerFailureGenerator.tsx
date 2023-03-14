@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import {
     activateRandomFailure, basicData, FailureGenData, failureGeneratorCommonFunction,
     FailurePhases, findGeneratorFailures, flatten, setNewSetting,
-} from 'instruments/src/EFB/Failures/RandomFailureGen';
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
