@@ -93,6 +93,13 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                     >
                         (MAX 40 SECONDS)
                     </text>
+                    <text
+                        className="SelfTestText"
+                        x="50%"
+                        y="62%"
+                    >
+                        HELLO FLYBYWIRE A32NX!
+                    </text>
                 </svg>
             </>
         );
