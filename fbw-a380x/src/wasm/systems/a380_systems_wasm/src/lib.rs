@@ -227,45 +227,33 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
     .with_aspect(|builder| {
-        builder.copy(
-            Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
-            Variable::aspect("OVHD_ELEC_APU_GEN_PB_IS_ON"),
-        );
+        for i in 1..=2 {
+            builder.copy(
+                Variable::aircraft("APU GENERATOR SWITCH", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_APU_GEN_{i}_PB_IS_ON")),
+            );
+        }
 
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 1),
-            Variable::aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 2),
-            Variable::aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 3),
-            Variable::aspect("OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 4),
-            Variable::aspect("OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO"),
-        );
+        for i in 1..=4 {
+            builder.copy(
+                Variable::aircraft("BLEED AIR ENGINE", "Bool", i),
+                Variable::aspect(&format!("OVHD_PNEU_ENG_{i}_BLEED_PB_IS_AUTO")),
+            );
 
-        builder.copy(
-            Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", 1),
-            Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"),
-        );
-        builder.copy(
-            Variable::aircraft("EXTERNAL POWER ON", "Bool", 1),
-            Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_ON"),
-        );
+            builder.copy(
+                Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_AVAILABLE")),
+            );
+            builder.copy(
+                Variable::aircraft("EXTERNAL POWER ON", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_ON")),
+            );
 
-        builder.copy(
-            Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 1),
-            Variable::aspect("OVHD_ELEC_ENG_GEN_1_PB_IS_ON"),
-        );
-        builder.copy(
-            Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 2),
-            Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
-        );
+            builder.copy(
+                Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_ENG_GEN_{i}_PB_IS_ON")),
+            );
+        }
 
         builder.map(
             ExecuteOn::PreTick,

@@ -105,31 +105,27 @@ impl A380DirectCurrentElectrical {
         electricity.flow(ac_state.tr_1(), &self.tr_1_contactor);
 
         self.tr_2_contactor.close_when(
-            electricity.is_powered(ac_state.tr_2()) && ac_state.ac_bus_2_powered(electricity),
+            electricity.is_powered(ac_state.tr_2()) && ac_state.ac_bus_powered(electricity, 3),
         );
         electricity.flow(ac_state.tr_2(), &self.tr_2_contactor);
 
         self.tr_2_to_dc_gnd_flt_service_bus_contactor.close_when(
-            electricity.is_powered(ac_state.tr_2()) && !ac_state.ac_bus_2_powered(electricity),
+            electricity.is_powered(ac_state.tr_2()) && !ac_state.ac_bus_powered(electricity, 3),
         );
         electricity.flow(
             ac_state.tr_2(),
             &self.tr_2_to_dc_gnd_flt_service_bus_contactor,
         );
 
-        self.tr_ess_contactor.close_when(
-            !ac_state.tr_1_and_2_available(electricity)
-                && electricity.is_powered(ac_state.tr_ess()),
-        );
+        self.tr_ess_contactor
+            .close_when(electricity.is_powered(ac_state.tr_ess()));
         electricity.flow(ac_state.tr_ess(), &self.tr_ess_contactor);
 
         electricity.flow(&self.tr_1_contactor, &self.dc_bus_1);
         electricity.flow(&self.tr_2_contactor, &self.dc_bus_2);
 
         self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .close_when(
-                electricity.is_powered(ac_state.tr_2()) && ac_state.ac_bus_2_powered(electricity),
-            );
+            .close_when(electricity.is_powered(ac_state.tr_2()));
         electricity.flow(
             &self.dc_bus_2,
             &self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor,
@@ -222,8 +218,7 @@ impl A380DirectCurrentElectrical {
             .close_when(should_close_2xb_contactor);
         electricity.flow(&self.hot_bus_2, &self.hot_bus_2_to_dc_ess_bus_contactor);
 
-        self.dc_bat_bus_to_dc_ess_bus_contactor
-            .close_when(ac_state.tr_1_and_2_available(electricity));
+        self.dc_bat_bus_to_dc_ess_bus_contactor.close_when(false);
         electricity.flow(&self.dc_bat_bus, &self.dc_bat_bus_to_dc_ess_bus_contactor);
 
         electricity.flow(&self.dc_bat_bus_to_dc_ess_bus_contactor, &self.dc_ess_bus);

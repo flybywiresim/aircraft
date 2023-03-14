@@ -98,19 +98,19 @@ impl A380Electrical {
         &mut self,
         context: &UpdateContext,
         electricity: &mut Electricity,
-        ext_pwr: &ExternalPowerSource,
+        ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 2],
+        engines: [&impl EngineCorrectedN2; 4],
         lgciu1: &impl LgciuWeightOnWheels,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
             electricity,
-            ext_pwr,
+            ext_pwrs,
             overhead,
             emergency_overhead,
             apu,
@@ -145,7 +145,7 @@ impl A380Electrical {
         self.alternating_current.update(
             context,
             electricity,
-            ext_pwr,
+            ext_pwrs,
             overhead,
             &self.emergency_gen,
         );
@@ -192,7 +192,6 @@ impl A380Electrical {
     }
 
     fn debug_assert_invariants(&self) {
-        self.alternating_current.debug_assert_invariants();
         self.direct_current.debug_assert_invariants();
     }
 
@@ -260,22 +259,22 @@ trait A380DirectCurrentElectricalSystem {
 }
 
 trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem {
-    fn ac_bus_2_powered(&self, electricity: &Electricity) -> bool;
-    fn tr_1_and_2_available(&self, electricity: &Electricity) -> bool;
+    fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool;
     fn tr_1(&self) -> &TransformerRectifier;
     fn tr_2(&self) -> &TransformerRectifier;
     fn tr_ess(&self) -> &TransformerRectifier;
+    fn tr_apu(&self) -> &TransformerRectifier;
 }
 
 pub(super) struct A380ElectricalOverheadPanel {
-    batteries: [AutoOffFaultPushButton; 2],
-    idgs: [FaultReleasePushButton; 2],
-    generators: [OnOffFaultPushButton; 2],
-    apu_gen: OnOffFaultPushButton,
+    batteries: [AutoOffFaultPushButton; 4],
+    idgs: [FaultReleasePushButton; 4],
+    generators: [OnOffFaultPushButton; 4],
+    apu_gens: [OnOffFaultPushButton; 2],
     bus_tie: AutoOffFaultPushButton,
     ac_ess_feed: NormalAltnFaultPushButton,
     galy_and_cab: AutoOffFaultPushButton,
-    ext_pwr: OnOffAvailablePushButton,
+    ext_pwrs: [OnOffAvailablePushButton; 4],
     commercial: OnOffFaultPushButton,
 }
 impl A380ElectricalOverheadPanel {
@@ -284,20 +283,20 @@ impl A380ElectricalOverheadPanel {
             batteries: [
                 AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_1"),
                 AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_2"),
+                AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_ESS"),
+                AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_APU"),
             ],
-            idgs: [
-                FaultReleasePushButton::new_in(context, "ELEC_IDG_1"),
-                FaultReleasePushButton::new_in(context, "ELEC_IDG_2"),
-            ],
-            generators: [
-                OnOffFaultPushButton::new_on(context, "ELEC_ENG_GEN_1"),
-                OnOffFaultPushButton::new_on(context, "ELEC_ENG_GEN_2"),
-            ],
-            apu_gen: OnOffFaultPushButton::new_on(context, "ELEC_APU_GEN"),
+            idgs: [1, 2, 3, 4]
+                .map(|i| FaultReleasePushButton::new_in(context, &format!("ELEC_IDG_{i}"))),
+            generators: [1, 2, 3, 4]
+                .map(|i| OnOffFaultPushButton::new_on(context, &format!("ELEC_ENG_GEN_{i}"))),
+            apu_gens: [1, 2]
+                .map(|i| OnOffFaultPushButton::new_on(context, &format!("ELEC_APU_GEN_{i}"))),
             bus_tie: AutoOffFaultPushButton::new_auto(context, "ELEC_BUS_TIE"),
             ac_ess_feed: NormalAltnFaultPushButton::new_normal(context, "ELEC_AC_ESS_FEED"),
             galy_and_cab: AutoOffFaultPushButton::new_auto(context, "ELEC_GALY_AND_CAB"),
-            ext_pwr: OnOffAvailablePushButton::new_off(context, "ELEC_EXT_PWR"),
+            ext_pwrs: [1, 2, 3, 4]
+                .map(|i| OnOffAvailablePushButton::new_off(context, &format!("ELEC_EXT_PWR_{i}"))),
             commercial: OnOffFaultPushButton::new_on(context, "ELEC_COMMERCIAL"),
         }
     }
@@ -322,16 +321,16 @@ impl A380ElectricalOverheadPanel {
         self.generators[number - 1].is_on()
     }
 
-    pub fn external_power_is_available(&self) -> bool {
-        self.ext_pwr.is_available()
+    pub fn external_power_is_available(&self, number: usize) -> bool {
+        self.ext_pwrs[number - 1].is_available()
     }
 
-    pub fn external_power_is_on(&self) -> bool {
-        self.ext_pwr.is_on()
+    pub fn external_power_is_on(&self, number: usize) -> bool {
+        self.ext_pwrs[number - 1].is_on()
     }
 
-    pub fn apu_generator_is_on(&self) -> bool {
-        self.apu_gen.is_on()
+    pub fn apu_generator_is_on(&self, number: usize) -> bool {
+        self.apu_gens[number - 1].is_on()
     }
 
     fn bus_tie_is_auto(&self) -> bool {
@@ -373,12 +372,12 @@ impl SimulationElement for A380ElectricalOverheadPanel {
         accept_iterable!(self.batteries, visitor);
         accept_iterable!(self.idgs, visitor);
         accept_iterable!(self.generators, visitor);
+        accept_iterable!(self.ext_pwrs, visitor);
+        accept_iterable!(self.apu_gens, visitor);
 
-        self.apu_gen.accept(visitor);
         self.bus_tie.accept(visitor);
         self.ac_ess_feed.accept(visitor);
         self.galy_and_cab.accept(visitor);
-        self.ext_pwr.accept(visitor);
         self.commercial.accept(visitor);
 
         visitor.visit(self);
@@ -2875,12 +2874,12 @@ mod a380_electrical_circuit_tests {
         }
 
         fn run_waiting_for_ac_ess_feed_transition(self) -> Self {
-            self.run_waiting_for(A380AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS)
+            self.run_waiting_for(A380AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_4_DELAY_IN_SECONDS)
         }
 
         fn run_waiting_until_just_before_ac_ess_feed_transition(self) -> Self {
             self.run_waiting_for(
-                A380AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS
+                A380AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_4_DELAY_IN_SECONDS
                     - Duration::from_millis(1),
             )
         }

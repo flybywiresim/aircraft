@@ -90,7 +90,7 @@ impl A320 {
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
             electrical: A320Electrical::new(context),
             power_consumption: A320PowerConsumption::new(context),
-            ext_pwr: ExternalPowerSource::new(context),
+            ext_pwr: ExternalPowerSource::new(context, 1),
             lgcius: LandingGearControlInterfaceUnitSet::new(
                 context,
                 ElectricalBusType::DirectCurrentEssential,
