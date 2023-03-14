@@ -6,8 +6,8 @@ use crate::{
         HydraulicColor, PneumaticValve,
     },
     simulation::{
-        InitContext, Read, Reader, SideControlling, SimulationElement, SimulationElementVisitor,
-        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -856,7 +856,7 @@ mod tests {
         electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
-        simulation::{test::TestVariableRegistry, UpdateContext},
+        simulation::{test::TestVariableRegistry, SideControlling, UpdateContext},
     };
     use ntest::assert_about_eq;
     use std::time::Duration;

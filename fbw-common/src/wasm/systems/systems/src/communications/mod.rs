@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CommunicationPanelSideName {
     NONE,
     CAPTAIN,
@@ -17,7 +17,7 @@ pub enum CommunicationPanelSideName {
     OVHD,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AudioSwitchingKnobPosition {
     CAPTAIN,
     NORM,
@@ -477,8 +477,8 @@ impl Communications {
                     self.communications_panel_elected =
                         Some(self.communications_panel_first_officer);
                 }
-            // ACP3 taken into account only if the audioswitching knob is in Captain or FO mode
-            } else if self.update_comms == CommunicationPanelSideName::OVHD {
+            // ACP3 taken into account only if the audioswitching knob and side playing are matching
+            } else {
                 if side_controlling == SideControlling::BOTH
                     || (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
                         && side_controlling == SideControlling::CAPTAIN)
