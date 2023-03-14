@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.19)
+project(flybywire-common-flypad-backend)
+
+set(CMAKE_CXX_STANDARD 20)
+set(MSFS_SDK "C:\\MSFS SDK")
+
+set(CMAKE_CXX_FLAGS "-c -g -DDEBUG -Wno-unused-command-line-argument -Wno-ignored-attributes -Wno-macro-redefined --sysroot \"${MSFS_SDK}/WASM/wasi-sysroot\" -target wasm32-unknown-wasi -flto -D_MSFS_WASM=1 -D__wasi__ -D_LIBCPP_HAS_NO_THREADS -D_WINDLL -D_MBCS -mthread-model single -fno-exceptions -fms-extensions")
+
+include_directories("${MSFS_SDK}/WASM/include")
+include_directories("${MSFS_SDK}/WASM/wasi-sysroot/include")
+include_directories("${MSFS_SDK}/SimConnect SDK/include")
+
+include_directories(
+        ./src
+        ./src/ATCServices
+        ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src/inih
+)
+
+add_executable(flybywire-common-flypad-backend
+        ./src/FlyPadBackend.cpp
+        ./src/ATCServices/ATCServices.cpp
+)
