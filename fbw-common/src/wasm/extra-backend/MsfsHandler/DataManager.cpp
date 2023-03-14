@@ -273,6 +273,8 @@ KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const
 }
 
 bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId) {
+  std::ignore = callbackId;
+
   if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
     if (auto callbackPair = eventPair->second.find(keyEventId); callbackPair != eventPair->second.end()) {
       eventPair->second.erase(callbackPair);
@@ -292,7 +294,7 @@ bool DataManager::sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1
   auto result = trigger_key_event_EX1(keyEventId, param0, param1, param2, param3, param4);
   if (result == 0) {
     LOG_VERBOSE("Sent key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", " + std::to_string(param1) +
-              ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", " + std::to_string(param4));
+                ", " + std::to_string(param2) + ", " + std::to_string(param3) + ", " + std::to_string(param4));
     return true;
   }
   LOG_WARN("Failed to send key event " + std::to_string(keyEventId) + " with params " + std::to_string(param0) + ", " +
@@ -338,6 +340,7 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
 
     case SIMCONNECT_RECV_ID_EXCEPTION: {
       auto* const pException = reinterpret_cast<SIMCONNECT_RECV_EXCEPTION*>(pRecv);
+      std::ignore = pException;
       LOG_ERROR("DataManager: Exception in SimConnect connection: " +
                 SimconnectExceptionStrings::getSimConnectExceptionString(static_cast<SIMCONNECT_EXCEPTION>(pException->dwException)) +
                 " send_id:" + std::to_string(pException->dwSendID) + " index:" + std::to_string(pException->dwIndex));
