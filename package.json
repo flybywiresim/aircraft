@@ -3,6 +3,8 @@
   "version": "0.11.0",
   "edition": "development",
   "scripts": {
+    "====== Common =================": "==========================================",
+    "build-common:flypad-backend": "cd fbw-common/src/wasm/flypad-backend_common && ./build.sh && wasm-opt -O1 -o /external/fbw-common/out/flypad-backend.wasm /external/fbw-common/out/flypad-backend.wasm",
     "====== A320 =================": "==========================================",
 
     "build-a32nx:copy-base-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/)",
