@@ -56,7 +56,7 @@ class ATCServices {
   void initialize();
   void updateData(ATCServicesDataIVAO*);
   void updateData(ATCServicesDataVPILOT*);
-  void onUpdate(INT64, INT64);
+  void onUpdate(/*INT64, INT64*/);
   void shutdown();
 
   void notifyATCServicesShutdown();
