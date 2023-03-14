@@ -478,15 +478,13 @@ impl Communications {
                         Some(self.communications_panel_first_officer);
                 }
             // ACP3 taken into account only if the audioswitching knob and side playing are matching
-            } else {
-                if side_controlling == SideControlling::BOTH
-                    || (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
-                        && side_controlling == SideControlling::CAPTAIN)
-                    || (self.audio_switching_knob == AudioSwitchingKnobPosition::FO
-                        && side_controlling == SideControlling::FO)
-                {
-                    self.communications_panel_elected = Some(self.communications_panel_ovhd);
-                }
+            } else if side_controlling == SideControlling::BOTH
+                || (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
+                    && side_controlling == SideControlling::CAPTAIN)
+                || (self.audio_switching_knob == AudioSwitchingKnobPosition::FO
+                    && side_controlling == SideControlling::FO)
+            {
+                self.communications_panel_elected = Some(self.communications_panel_ovhd);
             }
         }
 

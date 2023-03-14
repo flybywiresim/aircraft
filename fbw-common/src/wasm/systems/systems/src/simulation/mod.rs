@@ -23,7 +23,7 @@ pub use update_context::*;
 
 pub mod test;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SideControlling {
     CAPTAIN,
     FO,
