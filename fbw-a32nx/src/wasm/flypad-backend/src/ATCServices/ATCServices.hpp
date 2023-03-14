@@ -16,22 +16,9 @@ class ATCServices {
 
   ID _selcalLVar{};
   ID _selcalResetLVar{};
-  ID _volumeCOM1ACP1LVar{};
-  ID _volumeCOM1ACP2LVar{};
-  ID _volumeCOM1ACP3LVar{};
-  ID _volumeCOM2ACP1LVar{};
-  ID _volumeCOM2ACP2LVar{};
-  ID _volumeCOM2ACP3LVar{};
-  ID _knobCOM1ACP1LVar{};
-  ID _knobCOM1ACP2LVar{};
-  ID _knobCOM1ACP3LVar{};
-  ID _knobCOM2ACP1LVar{};
-  ID _knobCOM2ACP2LVar{};
-  ID _knobCOM2ACP3LVar{};
-  ID _updateATCServicesFromACPsLVar{};
+  ID _volumeCOM1FromATCServicesLVar{};
+  ID _volumeCOM2FromATCServicesLVar{};
 
-  INT64 _previousVolumeCOM1 = 0;
-  INT64 _previousVolumeCOM2 = 0;
   uint8_t _selcalActive = 0;  // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
 
   ATCServicesData _data;
@@ -58,7 +45,7 @@ class ATCServices {
   void initialize();
   void updateData(ATCServicesDataIVAO*);
   void updateData(ATCServicesDataVPILOT*);
-  void onUpdate(INT64, INT64);
+  void onUpdate(/*INT64, INT64*/);
   void shutdown();
 
   void notifyATCServicesShutdown();
