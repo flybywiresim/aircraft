@@ -464,14 +464,14 @@ impl A380MainPowerSources {
             );
         }
         let close_isolation_contactor = overhead.bus_tie_is_auto()
-            && powered_by[..2]
+            && (powered_by[..2]
                 .iter()
                 .any(|pb| matches!(*pb, Some(ACBusPowerSource::APUGenerator(2))))
-            || powered_by[2..]
-                .iter()
-                .any(|pb| matches!(*pb, Some(ACBusPowerSource::APUGenerator(1))))
-            || matches!(powered_by[0], Some(ACBusPowerSource::ACBus(4)))
-            || matches!(powered_by[3], Some(ACBusPowerSource::ACBus(1)));
+                || powered_by[2..]
+                    .iter()
+                    .any(|pb| matches!(*pb, Some(ACBusPowerSource::APUGenerator(1))))
+                || matches!(powered_by[0], Some(ACBusPowerSource::ACBus(4)))
+                || matches!(powered_by[3], Some(ACBusPowerSource::ACBus(1))));
         self.system_isolation_contactor
             .close_when(close_isolation_contactor);
 
