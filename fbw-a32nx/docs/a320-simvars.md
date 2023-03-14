@@ -579,6 +579,133 @@
       0 | Captain
       1 | FO
 
+- A32NX_RMP_SEL_LIGHT_ON
+    - Bool
+    - If the SEL light is on
+
+- A32NX_ACP{1,2,3}_VHF{1,2}_TRANSMIT
+    - Bool
+    - Indicates which VHF is selected for transmission on which ACP
+      Value | Meaning
+      --- | ---
+      0 | Not selected
+      1 | Selected
+
+- A32NX_ACP{1,2,3}_VHF{1,2,3}_VOLUME
+    - Number
+    - Volume of VHF 1/2/3 on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_HF{1,2}_VOLUME
+    - Number
+    - Volume of HF 1/2 on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_MECH_VOLUME
+    - Number
+    - Volume of MECH on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_ATT_VOLUME
+    - Number
+    - Volume of CABIN on the left/right/overhead ACP
+
+- A32NX_ACP{1,2,3}_PA_VOLUME
+    - Number
+    - Volume of PA on the left/right/overhead ACP
+
+- A32NX_HF1_VOLUME
+    - Number
+    - The HF1 volume equal to one of the ACPs (or all) depending on the controlling mode
+- A32NX_HF2_VOLUME
+    - Number
+    - The HF2 volume equal to one of the ACPs (or all) depending on the controlling mode
+- A32NX_ACP_MECH_VOLUME
+    - Number
+    - The MECH volume equal to one of the ACPs (or all) depending on the controlling mode
+
+- A32NX_ACP_ATT_VOLUME
+    - Number
+    - The CABIN volume equal to one of the ACPs(or all) depending on the controlling mode
+
+- A32NX_ACP_PA_VOLUME
+    - Number
+    - The PA volume equal to one of the ACPs (or all) depending on the controlling mode
+
+- L:A32NX_ACP{1,2,3}_VHF{1,2,3}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the VHF 1/2/3 volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_HF{1,2}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the HF 1/2 volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_MECH_KNOB_VOLUME_DOWN
+    - Bool
+    - If the MECH volume knob is activated on the left/right/overhead
+
+- L:A32NX_ACP{1,2,3}_ATT_KNOB_VOLUME_DOWN
+    - Bool
+    - If the CABIN volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_PA_KNOB_VOLUME_DOWN
+    - Bool
+    - If the PA volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_VOR{1,2}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the VOR 1/2 volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_ILS_KNOB_VOLUME_DOWN
+    - Bool
+    - If the ILS volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_MLS_KNOB_VOLUME_DOWN
+    - Bool
+    - If the MLS volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_MKR_KNOB_VOLUME_DOWN
+    - Bool
+    - If the ILS Markers volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_ADF{1,2}_KNOB_VOLUME_DOWN
+    - Bool
+    - If the ADF 1/2 volume knob is activated on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_VOR{1,2}_VOLUME
+    - Number
+    - Volume of VOR 1/2 on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_ILS_VOLUME
+    - Number
+    - Volume of ILS on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_MLS_VOLUME
+    - Number
+    - Volume of MLS on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_MKR_VOLUME
+    - Number
+    - Volume of the ILS Markers on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_ADF{1,2}_VOLUME
+    - Number
+    - Volume of ADF 1/2 on the left/right/overhead ACP
+
+- L:A32NX_ACP{1,2,3}_SWITCH_INT
+    - Number
+    - Set to 0 whenever on RAD position. 50 whenever neutral position. 100 whenever in INT position
+
+- L:A32NX_IS_EMITTING_ON_FREQUENCY
+    - Bool
+    - True if the INTRAD switch on the ACPs (depending on controlling mode) is on RAD thus transmitting
+
+- L:A32NX_SIDE_CONTROLLING
+    - Enum
+    - Indicates which side controls the communications
+      Value | Meaning
+      --- | ---
+      0 | Captain
+      1 | FO
+      2 | Both sides
+
 - A32NX_TO_CONFIG_FLAPS
     - Enum
     - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry, -1 if not entered
