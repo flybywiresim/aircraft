@@ -3,6 +3,7 @@
 
 #include "FlyPadBackend.h"
 #include <unistd.h>
+#include "ATCServices/ATCServices.hpp"
 #include "Aircraft/AircraftPreset.h"
 #include "Lighting/LightPreset.h"
 #include "Pushback/Pushback.h"
@@ -83,8 +84,37 @@ bool FlyPadBackend::initialize() {
     return false;
   }
 
+  // To be able to notity vPilot the plane is unloaded
+  result &= SimConnect_SubscribeToSystemEvent(hSimConnect, Events::SIMSTOP, "SIMSTOP");
+
   if (result != S_OK) {
     std::cout << "FLYPAD_BACKEND: Subscription to Events definition failed! " << std::endl;
+    return false;
+  }
+
+  // Do not call SimConnect_CreateClientData since Altitude does it already
+  // It would cause errors otherwise
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "IVAO Altitude Data", ClientData::IVAO);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::IVAODataID, 0, sizeof(ATCServicesDataIVAO));
+  result &=
+      SimConnect_RequestClientData(hSimConnect, ClientData::IVAO, DataStructureRequestIDs::IVAORequestID, DataStructureIDs::IVAODataID,
+                                   SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+
+  if (result != S_OK) {
+    std::cout << "FLYPAD_BACKEND: IVAO definition failed! " << std::endl;
+    return false;
+  }
+
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "vPILOT FBW", ClientData::VPILOT);
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::VPILOT, sizeof(ATCServicesDataVPILOT),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, DataStructureIDs::VPILOTDataID, 0, sizeof(ATCServicesDataVPILOT));
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::VPILOT, DataStructureRequestIDs::VPILOTRequestID,
+                                         DataStructureIDs::VPILOTDataID, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET,
+                                         SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+
+  if (result != S_OK) {
+    std::cout << "FLYPAD_BACKEND: vPilot definition failed! " << std::endl;
     return false;
   }
 
@@ -223,6 +253,14 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
 
     case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
       simConnectProcessSimObjectData(static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData));
+      break;
+
+    case SIMCONNECT_RECV_ID_CLIENT_DATA:
+      simConnectProcessClientData(static_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData));
+      break;
+
+    case SIMCONNECT_RECV_ID_EVENT:
+      simConnectProcessRecvSubscribedEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
       break;
 
     case SIMCONNECT_RECV_ID_EXCEPTION:
