@@ -373,7 +373,7 @@ impl Communications {
             if side_controlling == SideControlling::BOTH {
                 // See last_acp_used definition in update() top comment
                 self.communications_panel_elected = match self.last_acp_used {
-                    CommunicationPanelSideName::CAPTAIN => {println!("cpt elected"); Some(self.communications_panel_captain)},
+                    CommunicationPanelSideName::CAPTAIN => Some(self.communications_panel_captain),
                     CommunicationPanelSideName::FO => Some(self.communications_panel_first_officer),
                     CommunicationPanelSideName::OVHD => Some(self.communications_panel_ovhd),
                     _ => None,
@@ -479,9 +479,11 @@ impl Communications {
                 }
             // ACP3 taken into account only if the audioswitching knob is in Captain or FO mode
             } else if self.update_comms == CommunicationPanelSideName::OVHD {
-                if side_controlling == SideControlling::BOTH || (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
-                && side_controlling == SideControlling::CAPTAIN) || (self.audio_switching_knob == AudioSwitchingKnobPosition::FO
-                    && side_controlling == SideControlling::FO)
+                if side_controlling == SideControlling::BOTH
+                    || (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
+                        && side_controlling == SideControlling::CAPTAIN)
+                    || (self.audio_switching_knob == AudioSwitchingKnobPosition::FO
+                        && side_controlling == SideControlling::FO)
                 {
                     self.communications_panel_elected = Some(self.communications_panel_ovhd);
                 }
@@ -491,7 +493,6 @@ impl Communications {
         self.communications_panel_elected
     }
 }
-
 
 impl SimulationElement for Communications {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

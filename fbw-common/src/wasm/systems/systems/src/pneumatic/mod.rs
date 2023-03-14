@@ -6,8 +6,8 @@ use crate::{
         HydraulicColor, PneumaticValve,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SideControlling, SimulationElement, SimulationElementVisitor,
+        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 

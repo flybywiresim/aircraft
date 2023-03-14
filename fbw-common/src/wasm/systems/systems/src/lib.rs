@@ -9,6 +9,7 @@ pub mod macros;
 
 pub mod air_conditioning;
 pub mod apu;
+pub mod communications;
 pub mod electrical;
 pub mod engine;
 pub mod failures;
@@ -23,4 +24,3 @@ pub mod pressurization;
 pub mod shared;
 pub mod simulation;
 pub mod wind_turbine;
-pub mod communications;

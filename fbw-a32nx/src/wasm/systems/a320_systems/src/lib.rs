@@ -27,6 +27,7 @@ use systems::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
+    communications::Communications,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
@@ -34,7 +35,6 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    communications::Communications,
     pressurization::{Pressurization, PressurizationOverheadPanel},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
