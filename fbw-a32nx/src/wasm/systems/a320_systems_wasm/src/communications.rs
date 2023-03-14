@@ -1,9 +1,5 @@
 use std::error::Error;
-use systems::shared::{from_bool, to_bool};
-use systems_wasm::aspects::{
-    max, EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariableToEventMapping,
-    VariableToEventWriteOn,
-};
+use systems_wasm::aspects::{MsfsAspectBuilder, VariableToEventMapping, VariableToEventWriteOn};
 use systems_wasm::Variable;
 
 pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
