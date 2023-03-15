@@ -132,13 +132,18 @@ class Display : public DisplayBase {
     this->_thresholds->setOnChangeCallback([=]() {
       this->_frameBufferSize = this->_thresholds->data().frameByteCount;
       this->_frameData->reserve(this->_frameBufferSize);
-      this->_ignoreNextFrame = this->_ignoreNextFrame && (this->_thresholds->data().firstFrame == 0);
+      this->_ignoreNextFrame =
+          this->_ignoreNextFrame &&
+          (this->_thresholds->data().firstFrame == 0 || this->_configuration.mode != this->_thresholds->data().displayMode ||
+           this->_configuration.range != (this->_thresholds->data().displayRange * types::nauticmile));
 
-      this->_ndThresholdData->template value<NdMinElevation>() = this->_thresholds->data().lowerThreshold;
-      this->_ndThresholdData->template value<NdMinElevationMode>() = this->_thresholds->data().lowerThresholdMode;
-      this->_ndThresholdData->template value<NdMaxElevation>() = this->_thresholds->data().upperThreshold;
-      this->_ndThresholdData->template value<NdMaxElevationMode>() = this->_thresholds->data().upperThresholdMode;
-      this->_ndThresholdData->writeValues();
+      if (!this->_ignoreNextFrame) {
+        this->_ndThresholdData->template value<NdMinElevation>() = this->_thresholds->data().lowerThreshold;
+        this->_ndThresholdData->template value<NdMinElevationMode>() = this->_thresholds->data().lowerThresholdMode;
+        this->_ndThresholdData->template value<NdMaxElevation>() = this->_thresholds->data().upperThreshold;
+        this->_ndThresholdData->template value<NdMaxElevationMode>() = this->_thresholds->data().upperThresholdMode;
+        this->_ndThresholdData->writeValues();
+      }
     });
   }
   Display(const Display&) = delete;

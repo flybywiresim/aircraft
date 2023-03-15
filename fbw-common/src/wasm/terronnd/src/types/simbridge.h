@@ -53,6 +53,8 @@ struct ThresholdData {
   std::int16_t upperThreshold;
   std::uint8_t upperThresholdMode;
   std::uint8_t firstFrame;
+  std::uint16_t displayRange;
+  std::uint8_t displayMode;
   std::uint32_t frameByteCount;
 } __attribute__((packed));
 
