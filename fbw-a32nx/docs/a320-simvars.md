@@ -3520,8 +3520,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - `Arinc429Word<Feet>`
     - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
     - {number}
-        - 0
         - 1
+        - 2
 
 ## Electronic Flight Bag (ATA 46)
 
