@@ -108,14 +108,14 @@ void DataManager::getRequestedData() const {
 // =================================================================================================
 
 NamedVariablePtr DataManager::make_named_var(const std::string varName,
-                                             Unit unit,
+                                             SimUnit unit,
                                              bool autoReading,
                                              bool autoWriting,
                                              FLOAT64 maxAgeTime,
                                              UINT64 maxAgeTicks) {
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
-  // used in different places with different expected values via Units.
+  // used in different places with different expected values via SimUnits.
   const std::string uniqueName{varName + ":" + unit.name};
 
   // Check if variable already exists
@@ -151,14 +151,14 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
                                                    int index,
                                                    const std::string setterEventName,
                                                    ClientEventPtr setterEvent,
-                                                   Unit unit,
+                                                   SimUnit unit,
                                                    bool autoReading,
                                                    bool autoWriting,
                                                    FLOAT64 maxAgeTime,
                                                    UINT64 maxAgeTicks) {
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
-  // used in different places with different expected values via Index and Units.
+  // used in different places with different expected values via Index and SimUnits.
   const std::string uniqueName{varName + ":" + std::to_string(index) + ":" + unit.name};
 
   // Check if variable already exists
@@ -197,13 +197,13 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
 }
 
 AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string varName,
-                                                          Unit unit,
+                                                          SimUnit unit,
                                                           bool autoReading,
                                                           FLOAT64 maxAgeTime,
                                                           UINT64 maxAgeTicks) {
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
-  // used in different places with different expected values via Index and Units.
+  // used in different places with different expected values via Index and SimUnits.
   const std::string uniqueName = varName + ":" + std::to_string(0) + ":" + unit.name;
 
   // Check if variable already exists

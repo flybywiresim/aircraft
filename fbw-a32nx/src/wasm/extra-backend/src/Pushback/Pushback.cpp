@@ -7,11 +7,12 @@
 #include "MsfsHandler.h"
 #include "NamedVariable.h"
 #include "Pushback.h"
-#include "Units.h"
+#include "SimUnits.h"
 #include "logging.h"
+#include "math_utils.hpp"
 
-static constexpr double SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
-static constexpr double TURN_SPEED_FACTOR = 0.16;  // ft/sec for "ROTATION VELOCITY BODY Y"
+static constexpr FLOAT64 SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
+static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.16;  // ft/sec for "ROTATION VELOCITY BODY Y"
 
 ///
 // DataManager Howto Note:
@@ -68,7 +69,7 @@ bool Pushback::initialize() {
   tugHeadingEvent = dataManager->make_client_event("KEY_TUG_HEADING", NOTIFICATION_GROUP_1);
   tugSpeedEvent = dataManager->make_client_event("KEY_TUG_SPEED", NOTIFICATION_GROUP_1);
 
-  isInitialized = true;
+  _isInitialized = true;
   LOG_INFO("Pushback initialized");
   return true;
 }
@@ -79,12 +80,12 @@ bool Pushback::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool Pushback::update(sGaugeDrawData* pData) {
-  if (!isInitialized) {
+  if (!_isInitialized) {
     std::cerr << "Pushback::update() - not initialized" << std::endl;
     return false;
   }
 
-  if (!msfsHandler.getA32NxIsReady())
+  if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
   // Check if the pushback system is enabled and conditions are met
@@ -108,7 +109,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
   const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
 
   const double turnSpeedHdgFactor = parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_FACTOR / 10) : TURN_SPEED_FACTOR;
-  const FLOAT64 computedRotationVelocity = sgn<FLOAT64>(tugCmdSpd) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
+  const FLOAT64 computedRotationVelocity = helper::Math::sgn(tugCmdSpd) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
 
   // As we might use the elevator for taxiing we compensate for wind to avoid
   // the aircraft lifting any gears. The hard coded values are based on testing
@@ -124,7 +125,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
   }
 
   FLOAT64 aircraftHeadingDeg = aircraftHeading->get() * (180.0 / PI);
-  const FLOAT64 computedHdg = angleAdd(aircraftHeadingDeg, -90 * tugCommandedHeadingFactor->get());
+  const FLOAT64 computedHdg = helper::Math::angleAdd(aircraftHeadingDeg, -90 * tugCommandedHeadingFactor->get());
 
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   // https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Aircraft_Misc_Events.htm#TUG_HEADING
@@ -160,7 +161,7 @@ bool Pushback::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool Pushback::shutdown() {
-  isInitialized = false;
+  _isInitialized = false;
   std::cout << "Pushback::shutdown()" << std::endl;
   return true;
 }

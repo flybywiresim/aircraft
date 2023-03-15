@@ -33,7 +33,7 @@ class Pushback : public Module {
   static const SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
 
   // Convenience pointer to the data manager
-  DataManager* dataManager{};
+  DataManager* dataManager = nullptr;
 
   // Used to smoothen acceleration and deceleration
   InertialDampener inertialDampener{0.0, 0.15};
@@ -84,33 +84,6 @@ class Pushback : public Module {
   bool postUpdate(sGaugeDrawData* pData) override;
   bool shutdown() override;
 
- private:
-  /**
-   * Adds two angles with wrap around to result in 0-360°
-   * @param a - positive or negative angle
-   * @param b - positive or negative angle
-   */
-  static double angleAdd(double a, double b) {
-    double r = a + b;
-    while (r > 360.0) {
-      r -= 360.0;
-    }
-    while (r < 0.0) {
-      r += 360.0;
-    }
-    return r;
-  };
-
-  /**
-   * Returns the signum (sign) of the given value.
-   * @tparam T
-   * @param val
-   * @return sign of value or 0 when value==0
-   */
-  template <typename T>
-  int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-  }
 };
 
 #endif  // FLYBYWIRE_PUSHBACK_H

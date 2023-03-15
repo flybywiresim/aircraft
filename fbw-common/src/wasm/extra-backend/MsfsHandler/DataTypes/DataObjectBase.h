@@ -11,19 +11,22 @@
 
 #include <MSFS/Legacy/gauges.h>
 
-#include "Units.h"
+#include "SimUnits.h"
 
 /**
  * @brief The DataObjectBase class is the base class for all data objects.
  */
 class DataObjectBase {
+ private:
+
  protected:
   /**
    * The name of the variable in the sim
    */
   const std::string name;
 
-  explicit DataObjectBase(std::string varName) : name(std::move(varName)) {}
+  explicit DataObjectBase(const std::string& varName) : name(varName) {}
+
 
  public:
   DataObjectBase() = delete;                                  // no default constructor
@@ -40,9 +43,7 @@ class DataObjectBase {
    * @return as string representation of the data object for logging and debugging purposes
    */
   [[nodiscard]] virtual std::string str() const {
-    std::stringstream ss;
-    ss << name;
-    return ss.str();
+    return name;
   }
 };
 

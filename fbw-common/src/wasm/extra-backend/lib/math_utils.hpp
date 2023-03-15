@@ -28,30 +28,32 @@ class Math {
   }
 
   /**
-   * Fowler-Noll-Vo hash function
-   * @tparam T the type of the values in the provided vector
-   * @param vec the vector of values to hash
-   * @return the hash value
+   * Adds two angles with wrap around to result in 0-360°
+   * @param a - positive or negative angle
+   * @param b - positive or negative angle
    */
-  template<typename T>
-  static uint64_t fingerPrintFVN(const std::vector<T>& vec) {
-    const uint64_t FNV_OFFSET_BASIS = 0xcbf29ce484222325;
-    const uint64_t FNV_PRIME = 0x100000001b3;
-    uint64_t fp = 0;
-    for (const auto& elem : vec) {
-      const T &value = elem;
-      uint64_t hash = FNV_OFFSET_BASIS;
-      const unsigned char* bytes = reinterpret_cast<const unsigned char*>(&value);
-      for (size_t i = 0; i < sizeof(T); i++) {
-        hash ^= static_cast<uint64_t>(bytes[i]);
-        hash *= FNV_PRIME;
-      }
-      uint64_t h = hash;
-      fp ^= h;
-      fp *= FNV_PRIME;
+  static double angleAdd(double a, double b) {
+    double r = a + b;
+    while (r > 360.0) {
+      r -= 360.0;
     }
-    return fp;
+    while (r < 0.0) {
+      r += 360.0;
+    }
+    return r;
+  };
+
+  /**
+   * Returns the signum (sign) of the given value.
+   * @tparam T
+   * @param val
+   * @return sign of value or 0 when value==0
+   */
+  template <typename T>
+  static int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
   }
+
 };
 
 }  // namespace helper

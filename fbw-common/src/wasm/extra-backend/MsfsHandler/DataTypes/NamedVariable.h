@@ -35,7 +35,7 @@ class NamedVariable : public CacheableVariable {
    * as it de-duplicates variables and only creates one instance of each name-unit combination.
    *
    * @param varName The varName of the variable in the sim. An aircraft prefix (e.g. A32NX_) will be added automatically.
-   * @param unit The unit  of the variable as per the sim. See Units.h
+   * @param unit The unit  of the variable as per the sim. See SimUnits.h
    * @param autoReading Used by external classes to determine if the variable should be updated
    * automatically from the sim.
    * @param autoWriting Used by external classes to determine if the variable should be written
@@ -44,12 +44,12 @@ class NamedVariable : public CacheableVariable {
    * @param maxAgeTicks The maximum age of an auto updated variable in sim ticks.
    */
   explicit NamedVariable(const std::string& varName,
-                         Unit unit = UNITS.Number,
+                         SimUnit unit = UNITS.Number,
                          bool autoReading = false,
                          bool autoWriting = false,
                          FLOAT64 maxAgeTime = 0.0,
                          UINT64 maxAgeTicks = 0)
-      : CacheableVariable(std::string(AIRCRAFT_PREFIX) + varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks) {
+      : CacheableVariable(AIRCRAFT_PREFIX + varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks) {
     dataID = register_named_variable(name.c_str());
   };
 
@@ -57,8 +57,9 @@ class NamedVariable : public CacheableVariable {
   NamedVariable() = delete;                                 // no default constructor
   NamedVariable(const NamedVariable&) = delete;             // no copy constructor
   NamedVariable& operator=(const NamedVariable&) = delete;  // no copy assignment
+  ~NamedVariable()  = default;
 
-  FLOAT64 rawReadFromSim() override;
+  FLOAT64 rawReadFromSim() const override;
   void rawWriteToSim() override;
 
   [[nodiscard]] std::string str() const override;

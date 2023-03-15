@@ -4,13 +4,14 @@
 #ifndef FLYBYWIRE_IDGENERATOR_H
 #define FLYBYWIRE_IDGENERATOR_H
 
+#include <cstdint>
+
 /**
  * @brief The IDGenerator class is used to generate unique IDs for the modules.
  *
+ * Largest possible value is 2^64 - 1 then it wraps around.
  * Uniqueness is only guaranteed within the same instance of this class.
  * It is used to identify the modules in the MSFS gauges system.
- *
- * Starts at one - never returns zero.
  */
 class IDGenerator {
  private:

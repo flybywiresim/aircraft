@@ -31,7 +31,7 @@ class Module {
   /**
    * Flag to indicate if the module has been initialized.
    */
-  bool isInitialized = false;
+  bool _isInitialized = false;
 
  public:
   Module() = delete;                          // no default constructor
@@ -88,7 +88,7 @@ class Module {
   /**
    * @return true if the module has been initialized, false otherwise.
    */
-  [[nodiscard]] bool isInitialized1() const { return isInitialized; }
+  [[nodiscard]] bool isInitialized() const { return _isInitialized; }
 };
 
 #endif  // FLYBYWIRE_MODULE_H

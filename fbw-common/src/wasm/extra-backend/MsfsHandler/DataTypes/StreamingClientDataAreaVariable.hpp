@@ -63,7 +63,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    *                    the requestUpdateFromSim() method.
    */
   StreamingClientDataAreaVariable<T, ChunkSize>(HANDLE hSimConnect,
-                                               const std::string clientDataName,
+                                               const std::string& clientDataName,
                                                SIMCONNECT_CLIENT_DATA_ID clientDataId,
                                                SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
                                                SIMCONNECT_DATA_REQUEST_ID requestId,
@@ -72,7 +72,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
                                                FLOAT64 maxAgeTime = 0.0,
                                                UINT64 maxAgeTicks = 0)
       : ClientDataAreaVariable<T>(hSimConnect,
-                                  std::move(clientDataName),
+                                  clientDataName,
                                   clientDataId,
                                   clientDataDefinitionId,
                                   requestId,
@@ -88,7 +88,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
   StreamingClientDataAreaVariable<T, ChunkSize>(const StreamingClientDataAreaVariable&) = delete;  // no copy constructor
   // no copy assignment
   StreamingClientDataAreaVariable<T, ChunkSize>& operator=(const StreamingClientDataAreaVariable<T, ChunkSize>&) = delete;
-  ~StreamingClientDataAreaVariable() override = default;
+  ~StreamingClientDataAreaVariable() = default;  // destructor
 
   bool allocateClientDataArea(bool readOnlyForOthers = false) override {
     const DWORD readOnlyFlag =

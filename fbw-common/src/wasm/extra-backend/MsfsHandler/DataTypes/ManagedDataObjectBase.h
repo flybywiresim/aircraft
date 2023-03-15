@@ -9,13 +9,14 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include <map>
 
 #include <MSFS/Legacy/gauges.h>
 
 #include "Callback.h"
 #include "DataObjectBase.h"
 #include "IDGenerator.h"
-#include "Units.h"
+#include "SimUnits.h"
 #include "logging.h"
 #include "math_utils.hpp"
 
@@ -82,13 +83,13 @@ class ManagedDataObjectBase : public DataObjectBase {
   /**
    * The time stamp of the last update from the sim
    */
-  FLOAT64 timeStampSimTime{};
+  FLOAT64 timeStampSimTime = 0.0;
 
   /**
    * The maximum age of the value in sim time before it is updated from the sim by the
    * requestUpdateFromSim() method.
    */
-  FLOAT64 maxAgeTime = 0;
+  FLOAT64 maxAgeTime = 0.0;
 
   /**
    * The tick counter of the last update from the sim
@@ -108,10 +109,8 @@ class ManagedDataObjectBase : public DataObjectBase {
    * @param maxAgeTime the maximum age of the value in sim time before it is updated from the sim
    * @param maxAgeTicks the maximum age of the value in ticks before it is updated from the sim
    */
-  ManagedDataObjectBase(const std::string varName, bool autoRead, bool autoWrite, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
-      : DataObjectBase(std::move(varName)), autoRead(autoRead), autoWrite(autoWrite), maxAgeTime(maxAgeTime), maxAgeTicks(maxAgeTicks) {}
-
-  ~ManagedDataObjectBase() override = default;
+  ManagedDataObjectBase(const std::string& varName, bool autoRead, bool autoWrite, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
+      : DataObjectBase(varName), autoRead(autoRead), autoWrite(autoWrite), maxAgeTime(maxAgeTime), maxAgeTicks(maxAgeTicks) {}
 
   /**
    * Sets the changed flag to the given value and triggers the registered callbacks
@@ -131,6 +130,7 @@ class ManagedDataObjectBase : public DataObjectBase {
   ManagedDataObjectBase() = delete;                                         // no default constructor
   ManagedDataObjectBase(const ManagedDataObjectBase&) = delete;             // no copy constructor
   ManagedDataObjectBase& operator=(const ManagedDataObjectBase&) = delete;  // no copy assignment
+  virtual ~ManagedDataObjectBase() = default;
 
   /**
    * Adds a callback function to be called when the data object's data changed.<p/>
@@ -168,6 +168,8 @@ class ManagedDataObjectBase : public DataObjectBase {
    * @return true if the variable needs to be updated from the sim, false otherwise
    */
   [[nodiscard]] bool needsUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) const {
+    // TODO: have these stored in variables and calculate them once when updated to avoid the
+    //  calculation every time
     const FLOAT64 timeStampPlusAge = timeStampSimTime + maxAgeTime;
     const UINT64 tickStampPlusAge = tickStamp + maxAgeTicks;
     return (timeStampPlusAge < timeStamp && tickStampPlusAge < tickCounter);

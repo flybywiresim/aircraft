@@ -8,7 +8,7 @@
 #include "logging.h"
 
 ClientEvent::ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName)
-    : hSimConnect(hSimConnect), clientEventId(clientEventId), clientEventName(std::move(clientEventName)) {}
+    : hSimConnect(hSimConnect), clientEventId(clientEventId), clientEventName(clientEventName) {}
 
 ClientEvent::~ClientEvent() {
   callbacks.clear();

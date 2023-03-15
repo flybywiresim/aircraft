@@ -13,7 +13,7 @@
 #include <SimConnect.h>
 
 #include "IDGenerator.h"
-#include "Units.h"
+#include "SimUnits.h"
 #include "logging.h"
 
 #include "ClientDataAreaVariable.hpp"
@@ -173,16 +173,16 @@ class DataManager {
    * E.g. "A32NX_" for the A32NX. Do not add this prefix yourself.
    *
    * @param varName Name of the variable in the sim
-   * @param optional unit Unit of the variable (default=Number)
+   * @param optional unit SimUnit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
-   * @see Units.h for available units
+   * @see SimUnits.h for available units
    */
   [[nodiscard]] NamedVariablePtr make_named_var(const std::string varName,
-                                                Unit unit = UNITS.Number,
+                                                SimUnit unit = UNITS.Number,
                                                 bool autoReading = false,
                                                 bool autoWriting = false,
                                                 FLOAT64 maxAgeTime = 0.0,
@@ -201,19 +201,19 @@ class DataManager {
    * @param index Index of the indexed variable in the sim (default=0)
    * @param setterEventName the name of the event to set the variable with an event or calculator code (default="")
    * @param setterEvent an instance of an event variable to set the variable with an event or calculator code (default=nullptr)
-   * @param unit Unit of the variable (default=Number)
+   * @param unit SimUnit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
-   * @see Units.h for available units
+   * @see SimUnits.h for available units
    */
   [[nodiscard]] AircraftVariablePtr make_aircraft_var(const std::string varName,
                                                       int index = 0,
                                                       const std::string setterEventName = "",
                                                       ClientEventPtr setterEvent = nullptr,
-                                                      Unit unit = UNITS.Number,
+                                                      SimUnit unit = UNITS.Number,
                                                       bool autoReading = false,
                                                       bool autoWriting = false,
                                                       FLOAT64 maxAgeTime = 0.0,
@@ -225,15 +225,15 @@ class DataManager {
    * does not have an index.
    *
    * @param varName Name of the variable in the sim
-   * @param unit Unit of the variable (default=Number)
+   * @param unit SimUnit of the variable (default=Number)
    * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
-   * @see Units.h for available units
+   * @see SimUnits.h for available units
    */
   [[nodiscard]] AircraftVariablePtr make_simple_aircraft_var(const std::string varName,
-                                                             Unit unit = UNITS.Number,
+                                                             SimUnit unit = UNITS.Number,
                                                              bool autoReading = false,
                                                              FLOAT64 maxAgeTime = 0.0,
                                                              UINT64 maxAgeTicks = 0);

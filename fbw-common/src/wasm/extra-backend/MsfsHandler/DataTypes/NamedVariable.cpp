@@ -7,7 +7,7 @@
 
 #include "NamedVariable.h"
 
-FLOAT64 NamedVariable::rawReadFromSim() {
+FLOAT64 NamedVariable::rawReadFromSim() const {
   return get_named_variable_typed_value(dataID, unit.id);
 }
 

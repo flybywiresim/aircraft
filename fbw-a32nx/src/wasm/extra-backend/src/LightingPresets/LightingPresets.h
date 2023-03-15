@@ -63,7 +63,7 @@ class LightingPresets : public Module {
   const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
 
   // Convenience pointer to the data manager
-  DataManager* dataManager{};
+  DataManager* dataManager = nullptr;
 
   // Control LVARs
   NamedVariablePtr elecAC1Powered;

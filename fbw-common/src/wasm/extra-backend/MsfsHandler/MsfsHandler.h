@@ -95,7 +95,7 @@ class MsfsHandler {
    * Creates a new MsfsHandler instance.
    * @param name string containing an appropriate simconnect name for the client program.
    */
-  explicit MsfsHandler(std::string name) : dataManager(this), simConnectName(std::move(name)) {}
+  explicit MsfsHandler(std::string&& name) : dataManager(this), simConnectName(std::move(name)) {}
 
   /**
    * Initializes the MsfsHandler instance. This method must be called before any other method.
@@ -137,13 +137,13 @@ class MsfsHandler {
   /**
    * @return value of LVAR A32NX_IS_READY
    */
-  [[nodiscard]] bool getA32NxIsReady() const;
+  [[nodiscard]] bool getAircraftIsReadyVar() const;
 
   /**
    *
    * @return value of LVAR A32NX_DEVELOPMENT_STATE
    */
-  [[nodiscard]] FLOAT64 getA32NxIsDevelopmentState() const;
+  [[nodiscard]] FLOAT64 getAircraftDevelopmentStateVar() const;
 
   /**
    * @return the current simulation time

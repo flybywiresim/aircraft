@@ -7,7 +7,7 @@
 #include "AircraftVariable.h"
 #include "MsfsHandler.h"
 #include "NamedVariable.h"
-#include "Units.h"
+#include "SimUnits.h"
 #include "logging.h"
 
 ///
@@ -48,7 +48,7 @@ bool AircraftPresets::initialize() {
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
 
-  isInitialized = true;
+  _isInitialized = true;
   LOG_INFO("AircraftPresets initialized");
   return true;
 }
@@ -59,12 +59,12 @@ bool AircraftPresets::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool AircraftPresets::update(sGaugeDrawData* pData) {
-  if (!isInitialized) {
+  if (!_isInitialized) {
     LOG_ERROR("AircraftPresets::update() - not initialized");
     return false;
   }
 
-  if (!msfsHandler.getA32NxIsReady())
+  if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
   const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
@@ -207,7 +207,7 @@ bool AircraftPresets::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool AircraftPresets::shutdown() {
-  isInitialized = false;
+  _isInitialized = false;
   std::cout << "AircraftPresets::shutdown()" << std::endl;
   return true;
 }

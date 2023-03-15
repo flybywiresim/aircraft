@@ -13,6 +13,7 @@
 #include "logging.h"
 #include "longtext.h"
 #include "math_utils.hpp"
+#include "fingerprint.hpp"
 
 bool ExampleModule::initialize() {
   dataManager = &msfsHandler.getDataManager();
@@ -152,7 +153,7 @@ bool ExampleModule::initialize() {
     auto s = std::string_view((const char*)&bigClientDataPtr->data().dataChunk, 100);
     std::cout << bigClientDataPtr->data().dataChunk.size() << " bytes: " << s << " ... " << std::endl;
     std::cout << "Fingerprint: "
-              << helper::Math::fingerPrintFVN(
+              << Fingerprint::fingerPrintFVN(
                      std::vector(bigClientDataPtr->data().dataChunk.begin(), bigClientDataPtr->data().dataChunk.end()))
               << std::endl;
   });
@@ -187,7 +188,7 @@ bool ExampleModule::initialize() {
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - streamReceiverTimerStart);
     std::cout << "--- CALLBACK: STREAM RECEIVER DATA (External - reading)" << std::endl;
     std::cout << streamReveicerDataPtr->str() << std::endl;
-    const uint64_t fingerPrintFvn = helper::Math::fingerPrintFVN(streamReveicerDataPtr->getData());
+    const uint64_t fingerPrintFvn = Fingerprint::fingerPrintFVN(streamReveicerDataPtr->getData());
     std::cout << "STREAM RECEIVER DATA "
               << " size = " << streamReveicerDataPtr->getData().size() << " bytes = " << streamReveicerDataPtr->getReceivedBytes()
               << " chunks = " << streamReveicerDataPtr->getReceivedChunks() << " fingerprint = " << std::setw(21) << fingerPrintFvn
@@ -274,7 +275,7 @@ bool ExampleModule::initialize() {
   inputEventPtr->setInputGroupPriority(INPUT_GROUP_0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 #endif
 
-  isInitialized = true;
+  _isInitialized = true;
   LOG_INFO("ExampleModule initialized");
   return true;
 }
@@ -285,14 +286,14 @@ bool ExampleModule::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
-  if (!isInitialized) {
+  if (!_isInitialized) {
     LOG_ERROR("ExampleModule::update() - not initialized");
     return false;
   }
 
   // Do not do anything if the sim is not running - this is not required but is a good idea
   // It is ready after the click on "READY TO FLY"
-  if (!msfsHandler.getA32NxIsReady())
+  if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
 #ifdef STREAM_RECEIVE_EXAMPLE
@@ -470,7 +471,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     // ======================
     // Sending large data to the sim
     streamSenderMetaDataPtr->data().size = streamSenderDataPtr->getData().size();
-    streamSenderMetaDataPtr->data().hash = helper::Math::fingerPrintFVN(streamSenderDataPtr->getData());
+    streamSenderMetaDataPtr->data().hash = Fingerprint::fingerPrintFVN(streamSenderDataPtr->getData());
     streamSenderMetaDataPtr->writeDataToSim();
     LOG_DEBUG("--- STREAM SENDER DATA - writing: " + std::to_string(streamSenderMetaDataPtr->data().size) + " bytes + fingerprint: " + std::to_string(streamSenderMetaDataPtr->data().hash));
     streamSenderDataPtr->writeDataToSim();
@@ -487,7 +488,7 @@ bool ExampleModule::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool ExampleModule::shutdown() {
-  isInitialized = false;
+  _isInitialized = false;
   std::cout << "ExampleModule::shutdown()" << std::endl;
   return true;
 }

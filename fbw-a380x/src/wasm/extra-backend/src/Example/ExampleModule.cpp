@@ -274,7 +274,7 @@ bool ExampleModule::initialize() {
   inputEventPtr->setInputGroupPriority(INPUT_GROUP_0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 #endif
 
-  isInitialized = true;
+  _isInitialized = true;
   LOG_INFO("ExampleModule initialized");
   return true;
 }
@@ -285,7 +285,7 @@ bool ExampleModule::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
-  if (!isInitialized) {
+  if (!_isInitialized) {
     LOG_ERROR("ExampleModule::update() - not initialized");
     return false;
   }
@@ -487,7 +487,7 @@ bool ExampleModule::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool ExampleModule::shutdown() {
-  isInitialized = false;
+  _isInitialized = false;
   std::cout << "ExampleModule::shutdown()" << std::endl;
   return true;
 }

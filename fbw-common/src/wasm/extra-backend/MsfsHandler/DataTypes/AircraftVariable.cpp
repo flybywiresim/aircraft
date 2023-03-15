@@ -5,15 +5,15 @@
 
 #include "AircraftVariable.h"
 
-FLOAT64 AircraftVariable::rawReadFromSim() {
+FLOAT64 AircraftVariable::rawReadFromSim() const {
   if (dataID == -1) {
     LOG_ERROR("Aircraft variable " + name + " not found in the Simulator");
     return FLOAT64{};
   }
-  const FLOAT64 d = aircraft_varget(dataID, unit.id, index);
-  LOG_TRACE("AircraftVariable::rawReadFromSim() " + this->name + std::to_string(this->index) + " fromSim = " + std::to_string(d) +
+  const FLOAT64 value = aircraft_varget(dataID, unit.id, index);
+  LOG_TRACE("AircraftVariable::rawReadFromSim() " + this->name + std::to_string(this->index) + " fromSim = " + std::to_string(value) +
             " cached  = " + std::to_string(cachedValue.value_or(-999999)) + " as " + unit.name);
-  return d;
+  return value;
 }
 
 // these are overwritten to issue an error message if the variable is read-only

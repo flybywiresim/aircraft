@@ -31,7 +31,7 @@ class DataManager;
 struct DataDefinition {
   std::string name;
   int index{0};
-  Unit unit{UNITS.Number};
+  SimUnit unit{UNITS.Number};
   SIMCONNECT_DATATYPE dataType{SIMCONNECT_DATATYPE_FLOAT64};
   float epsilon{0.0};
 };
@@ -105,7 +105,7 @@ class DataDefinitionVariable : public SimObjectBase {
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
    */
   DataDefinitionVariable<T>(HANDLE hSimConnect,
-                            const std::string varName,
+                            const std::string& varName,
                             const std::vector<DataDefinition>& dataDefinitions,
                             SIMCONNECT_DATA_DEFINITION_ID dataDefId,
                             SIMCONNECT_DATA_REQUEST_ID requestId,
@@ -113,16 +113,16 @@ class DataDefinitionVariable : public SimObjectBase {
                             bool autoWrite = false,
                             FLOAT64 maxAgeTime = 0.0,
                             UINT64 maxAgeTicks = 0)
-      : SimObjectBase(hSimConnect, std::move(varName), dataDefId, requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
+      : SimObjectBase(hSimConnect, varName, dataDefId, requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
         dataDefinitions(dataDefinitions),
         dataStruct{} {
-    for (auto& ddef : dataDefinitions) {
-      std::string fullVarName = ddef.name;
-      if (ddef.index != 0)
-        fullVarName += ":" + std::to_string(ddef.index);
-      if (!SUCCEEDED(
-              SimConnect_AddToDataDefinition(hSimConnect, dataDefId, fullVarName.c_str(), ddef.unit.name, ddef.dataType, ddef.epsilon))) {
-        LOG_ERROR("Failed to add " + ddef.name + " to data definition.");
+    for (const auto& definition : dataDefinitions) {
+      std::string fullVarName = definition.name;
+      if (definition.index != 0)
+        fullVarName += ":" + std::to_string(definition.index);
+      if (!SUCCEEDED(SimConnect_AddToDataDefinition(hSimConnect, dataDefId, fullVarName.c_str(), definition.unit.name, definition.dataType,
+                                                    definition.epsilon))) {
+        LOG_ERROR("Failed to add " + definition.name + " to data definition.");
       }
     }
   }
@@ -137,7 +137,7 @@ class DataDefinitionVariable : public SimObjectBase {
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
    * is freed when the sim is closed.
    */
-  ~DataDefinitionVariable<T>() override {
+  ~DataDefinitionVariable<T>() {
     // Clear the client data definition
     LOG_INFO("DataDefinitionVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
@@ -165,7 +165,8 @@ class DataDefinitionVariable : public SimObjectBase {
    * be called even if the sim if paused
    *
    * @param period the SIMCONNECT_PERIOD with which the sim should send the data
-   * @param periodFlags the SIMCONNECT_DATA_REQUEST_FLAG with which the sim should send the data (default SIMCONNECT_DATA_REQUEST_FLAG_CHANGED)
+   * @param periodFlags the SIMCONNECT_DATA_REQUEST_FLAG with which the sim should send the data (default
+   *                    SIMCONNECT_DATA_REQUEST_FLAG_CHANGED)
    * @param origin The number of Period events that should elapse before transmission of the data
    *               begins. The default is zero, which means transmissions will start immediately. (default 0)
    * @param interval The number of Period events that should elapse between transmissions of the
@@ -178,10 +179,10 @@ class DataDefinitionVariable : public SimObjectBase {
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_PERIOD.htm
    */
   bool requestPeriodicDataFromSim(SIMCONNECT_PERIOD period,
-                                                DWORD periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
-                                                DWORD origin = 0,
-                                                DWORD interval = 0,
-                                                DWORD limit = 0) const {
+                                  DWORD periodFlags = SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT,
+                                  DWORD origin = 0,
+                                  DWORD interval = 0,
+                                  DWORD limit = 0) const {
     if (autoRead && period >= SIMCONNECT_PERIOD_ONCE) {
       LOG_ERROR("DataDefinitionVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;

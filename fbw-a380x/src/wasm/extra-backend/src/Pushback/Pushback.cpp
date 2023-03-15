@@ -7,7 +7,7 @@
 #include "MsfsHandler.h"
 #include "NamedVariable.h"
 #include "Pushback.h"
-#include "Units.h"
+#include "SimUnits.h"
 #include "logging.h"
 
 static constexpr double SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
@@ -68,7 +68,7 @@ bool Pushback::initialize() {
   tugHeadingEvent = dataManager->make_client_event("KEY_TUG_HEADING", NOTIFICATION_GROUP_1);
   tugSpeedEvent = dataManager->make_client_event("KEY_TUG_SPEED", NOTIFICATION_GROUP_1);
 
-  isInitialized = true;
+  _isInitialized = true;
   LOG_INFO("Pushback initialized");
   return true;
 }
@@ -79,12 +79,12 @@ bool Pushback::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool Pushback::update(sGaugeDrawData* pData) {
-  if (!isInitialized) {
+  if (!_isInitialized) {
     std::cerr << "Pushback::update() - not initialized" << std::endl;
     return false;
   }
 
-  if (!msfsHandler.getA32NxIsReady())
+  if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
   // Check if the pushback system is enabled and conditions are met
@@ -160,7 +160,7 @@ bool Pushback::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool Pushback::shutdown() {
-  isInitialized = false;
+  _isInitialized = false;
   std::cout << "Pushback::shutdown()" << std::endl;
   return true;
 }

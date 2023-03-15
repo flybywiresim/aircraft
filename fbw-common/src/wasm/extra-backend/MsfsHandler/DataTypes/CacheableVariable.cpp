@@ -16,7 +16,7 @@ FLOAT64 CacheableVariable::get() const {
     return cachedValue.value();
   }
   LOG_ERROR("CacheableVariable::get() called on " + name + " but no value is cached");
-  return FLOAT64{};
+  return 0.0;
 }
 
 FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) {

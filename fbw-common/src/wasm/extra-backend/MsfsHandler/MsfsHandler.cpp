@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include <algorithm>
+#include <functional>
 
 #include "Callback.h"
 #include "ClientEvent.h"
@@ -39,10 +40,11 @@ bool MsfsHandler::initialize() {
   // function must be static.
   // See https://blog.mbedded.ninja/programming/languages/c-plus-plus/callbacks/#static-variables-with-templating
   Callback<void(ID32, UINT32, UINT32, UINT32, UINT32, UINT32, PVOID)>::func =
-      [ObjectPtr = &dataManager](auto&& PH1, auto&& PH2, auto&& PH3, auto&& PH4, auto&& PH5, auto&& PH6, [[maybe_unused]] auto&& PH7) {
-        ObjectPtr->processKeyEvent(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), std::forward<decltype(PH3)>(PH3),
-                                   std::forward<decltype(PH4)>(PH4), std::forward<decltype(PH5)>(PH5), std::forward<decltype(PH6)>(PH6));
-      };
+        [ObjectPtr = &dataManager](auto&& PH1, auto&& PH2, auto&& PH3, auto&& PH4, auto&& PH5, auto&& PH6, [[maybe_unused]] auto&& PH7) {
+          ObjectPtr->processKeyEvent(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), std::forward<decltype(PH3)>(PH3),
+                                     std::forward<decltype(PH4)>(PH4), std::forward<decltype(PH5)>(PH5),
+                                     std::forward<decltype(PH6)>(PH6));
+        };
   keyEventHandlerEx1 =
       static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(Callback<void(ID32, UINT32, UINT32, UINT32, UINT32, UINT32, PVOID)>::callback);
 
@@ -98,8 +100,7 @@ bool MsfsHandler::initialize() {
   */
 
   // Initialize modules
-  result = true;
-  result &= std::all_of(modules.begin(), modules.end(), [](Module* pModule) { return pModule->initialize(); });
+  result = std::all_of(modules.begin(), modules.end(), [](Module* pModule) { return pModule->initialize(); });
   if (!result) {
     LOG_ERROR(simConnectName + ": Failed to initialize modules");
     return false;
@@ -162,20 +163,17 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
 }
 
 bool MsfsHandler::shutdown() {
-  bool result = true;
-
-  result &= std::all_of(modules.begin(), modules.end(), [](Module* pModule) { return pModule->shutdown(); });
+  bool result = std::all_of(modules.begin(), modules.end(), [](Module* pModule) { return pModule->shutdown(); });
   modules.clear();
   result &= dataManager.shutdown();
   unregister_key_event_handler_EX1(reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(keyEventHandlerEx1), nullptr);
-
   return result;
 }
 
-bool MsfsHandler::getA32NxIsReady() const {
+bool MsfsHandler::getAircraftIsReadyVar() const {
   return a32nxIsReady->getAsBool();
 }
 
-FLOAT64 MsfsHandler::getA32NxIsDevelopmentState() const {
+FLOAT64 MsfsHandler::getAircraftDevelopmentStateVar() const {
   return a32nxIsDevelopmentState->get();
 }

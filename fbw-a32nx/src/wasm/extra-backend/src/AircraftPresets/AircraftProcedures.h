@@ -246,7 +246,7 @@ class AircraftProcedures {
   }
 
 #ifdef DEBUG
-  static inline void printProcedure(ProcedureDefinition& procedures) {
+  static inline void printProcedure(const ProcedureDefinition& procedures) {
     for (const auto& p : procedures) {
       std::cout << p.id << " = " << p.description << std::endl;
     }

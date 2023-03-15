@@ -55,7 +55,7 @@ class AircraftVariable : public CacheableVariable {
    * @param varName The name of the variable in the sim.
    * @param varIndex The index of the variable in the sim.
    * @param setterEventName The name of the event used to write to the variable.
-   * @param unit The unit of the variable as per the sim. See Units.h
+   * @param unit The unit of the variable as per the sim. See SimUnits.h
    * @param autoReading Used by external classes to determine if the variable should be updated
    * automatically from the sim.
    * @param autoWriting Used by external classes to determine if the variable should be written
@@ -64,17 +64,17 @@ class AircraftVariable : public CacheableVariable {
    * @param maxAgeTicks The maximum age of an auto updated the variable in sim ticks.
    * @param setterEventName The calculator code to write to the variable.
    */
-  explicit AircraftVariable(const std::string varName,
+  explicit AircraftVariable(const std::string& varName,
                             int varIndex = 0,
-                            std::string setterEventName = "",
-                            Unit unit = UNITS.Number,
+                            const std::string& setterEventName = "",
+                            SimUnit unit = UNITS.Number,
                             bool autoReading = false,
                             bool autoWriting = false,
                             FLOAT64 maxAgeTime = 0.0,
                             UINT64 maxAgeTicks = 0)
-      : CacheableVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
+      : CacheableVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
         index(varIndex),
-        setterEventName(std::move(setterEventName)),
+        setterEventName(setterEventName),
         setterEvent(nullptr) {
     dataID = get_aircraft_var_enum(varName.c_str());
     if (dataID == -1) {  // cannot throw an exception in MSFS
@@ -88,7 +88,7 @@ class AircraftVariable : public CacheableVariable {
    * @param varName The name of the variable in the sim.
    * @param varIndex The index of the variable in the sim.
    * @param setterEvent The event used to write to the variable.
-   * @param unit The unit of the variable as per the sim. See Units.h
+   * @param unit The unit of the variable as per the sim. See SimUnits.h
    * @param autoReading Used by external classes to determine if the variable should be updated
    * automatically from the sim.
    * @param autoWriting Used by external classes to determine if the variable should be written
@@ -99,15 +99,15 @@ class AircraftVariable : public CacheableVariable {
    */
   explicit AircraftVariable(const std::string& varName,
                             int varIndex = 0,
-                            std::shared_ptr<ClientEvent> setterEvent = nullptr,
-                            Unit unit = UNITS.Number,
+                            const std::shared_ptr<ClientEvent>& setterEvent = nullptr,
+                            SimUnit unit = UNITS.Number,
                             bool autoReading = false,
                             bool autoWriting = false,
                             FLOAT64 maxAgeTime = 0.0,
                             UINT64 maxAgeTicks = 0)
       : CacheableVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
         index(varIndex),
-        setterEvent(std::move(setterEvent)) {
+        setterEvent(setterEvent) {
     dataID = get_aircraft_var_enum(varName.c_str());
     if (dataID == -1) {  // cannot throw an exception in MSFS
       LOG_ERROR("Aircraft variable " + varName + " not found in the Simulator");
@@ -118,8 +118,9 @@ class AircraftVariable : public CacheableVariable {
   AircraftVariable() = delete;                                    // no default constructor
   AircraftVariable(const AircraftVariable&) = delete;             // no copy constructor
   AircraftVariable& operator=(const AircraftVariable&) = delete;  // no copy assignment
+  ~AircraftVariable() = default;
 
-  FLOAT64 rawReadFromSim() override;
+  FLOAT64 rawReadFromSim() const override;
   void rawWriteToSim() override;
   void setAutoWrite(bool autoWriting) override;
   void set(FLOAT64 value) override;

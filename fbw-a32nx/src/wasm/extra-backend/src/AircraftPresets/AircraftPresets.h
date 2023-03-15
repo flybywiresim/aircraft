@@ -4,6 +4,8 @@
 #ifndef FLYBYWIRE_AIRCRAFTPRESETS_H
 #define FLYBYWIRE_AIRCRAFTPRESETS_H
 
+#include <cstdint>
+
 #include "AircraftProcedures.h"
 #include "DataManager.h"
 #include "Module.h"
@@ -17,7 +19,7 @@ class MsfsHandler;
 class AircraftPresets : public Module {
  private:
   // Convenience pointer to the data manager
-  DataManager* dataManager{};
+  DataManager* dataManager = nullptr;
 
   // LVARs
   NamedVariablePtr aircraftPresetVerbose{};

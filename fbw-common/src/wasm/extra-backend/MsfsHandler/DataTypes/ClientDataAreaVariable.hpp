@@ -91,7 +91,7 @@ class ClientDataAreaVariable : public SimObjectBase {
    *                    the requestUpdateFromSim() method.
    */
   ClientDataAreaVariable<T>(HANDLE hSimConnect,
-                            const std::string clientDataName,
+                            const std::string& clientDataName,
                             SIMCONNECT_CLIENT_DATA_ID clientDataId,
                             SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
                             SIMCONNECT_DATA_REQUEST_ID requestId,
@@ -101,7 +101,7 @@ class ClientDataAreaVariable : public SimObjectBase {
                             FLOAT64 maxAgeTime = 0.0,
                             UINT64 maxAgeTicks = 0)
       : SimObjectBase(hSimConnect,
-                      std::move(clientDataName),
+                      clientDataName,
                       clientDataDefinitionId,
                       requestId,
                       autoRead,
@@ -143,7 +143,7 @@ class ClientDataAreaVariable : public SimObjectBase {
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
    * is freed when the sim is closed.
    */
-  ~ClientDataAreaVariable<T>() override {
+  ~ClientDataAreaVariable<T>() {
     LOG_INFO("ClientDataAreaVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
       LOG_ERROR("ClientDataAreaVariable: Clearing client data definition failed: " + name);

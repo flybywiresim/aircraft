@@ -10,10 +10,8 @@ the FlyByWire Simulations code base which aims to readability, maintainability o
 the code base which is also easily accessible for new developers.
 
 ## C++ Code Style
-This guide does not enforce any specific code style. But it is helpful
-if the code style is consistent throughout the code base.
-Using styles like the Google C++ Style Guide or the LLVM C++ Style Guide is
-recommended.
+The FlyByWire Cpp code style is based on the clang-format Chromium style 
+( see`.clang-format`). 
 
 ## Commenting
 Good commenting is a very important part of writing readable and maintainable

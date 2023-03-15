@@ -36,7 +36,7 @@ enum Events {
 /// <summary>
 /// A collection of SimVar unit enums.
 /// </summary>
-class Units {
+class SimUnits {
  public:
   ENUM Percent = get_units_enum("Percent");
   ENUM Pounds = get_units_enum("Pounds");
@@ -62,7 +62,7 @@ class Units {
 /// </summary>
 class SimVars {
  public:
-  Units* m_Units;
+  SimUnits* m_Units;
 
   /// <summary>
   /// Collection of SimVars for the A32NX
@@ -265,7 +265,7 @@ class SimVars {
     this->setThrustLimitClimb(0);
     this->setThrustLimitMct(0);
 
-    m_Units = new Units();
+    m_Units = new SimUnits();
   }
 
   // Collection of LVar 'set' Functions

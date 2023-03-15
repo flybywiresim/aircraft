@@ -56,7 +56,7 @@ class ClientEvent {
   SIMCONNECT_CLIENT_EVENT_ID clientEventId;
 
   // the name of the client event - for custom events this should contain a period
-  const std::string clientEventName{};
+  const std::string clientEventName;
 
   IDGenerator callbackIdGen{};
   std::map<CallbackID, EventCallbackFunction> callbacks;

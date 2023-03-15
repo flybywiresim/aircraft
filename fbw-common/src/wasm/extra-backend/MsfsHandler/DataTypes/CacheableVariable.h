@@ -12,7 +12,7 @@
 #include <MSFS/Legacy/gauges.h>
 
 #include "ManagedDataObjectBase.h"
-#include "Units.h"
+#include "SimUnits.h"
 
 /**
  * @brief Virtual base class for sim variables like named variables, aircraft variables that support value caching.
@@ -29,10 +29,10 @@ class CacheableVariable : public ManagedDataObjectBase {
 
   /**
    * The unit of the variable as per the sim
-   * @See Units.h
+   * @See SimUnits.h
    * @See https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variable_Units.htm
    */
-  Unit unit{UNITS.Number};
+  SimUnit unit{UNITS.Number};
 
   /**
    * The value of the variable as it was last read from the sim or updated by the
@@ -61,25 +61,25 @@ class CacheableVariable : public ManagedDataObjectBase {
    */
   ID dataID = -1;
 
-  ~CacheableVariable() override = default;
 
   /**
    * Constructor
    * @param name The name of the variable in the sim
-   * @param unit The unit of the variable as per the sim (see Unit.h)
+   * @param unit The unit of the variable as per the sim (see SimUnit.h)
    * @param autoReading Used by external classes to determine if the variable should be automatically updated from the
    * sim
    * @param autoWriting Used by external classes to determine if the variable should be automatically written to the sim
    * @param maxAgeTime The maximum age of the variable in seconds when using requestUpdateFromSim()
    * @param maxAgeTicks The maximum age of the variable in ticks when using updateDataToSim()
    */
-  CacheableVariable(const std::string varName, const Unit& unit, bool autoRead, bool autoWrite, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
-      : ManagedDataObjectBase(std::move(varName), autoRead, autoWrite, maxAgeTime, maxAgeTicks), unit(unit) {}
+  CacheableVariable(const std::string& varName, const SimUnit& unit, bool autoRead, bool autoWrite, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
+      : ManagedDataObjectBase(varName, autoRead, autoWrite, maxAgeTime, maxAgeTicks), unit(unit) {}
 
  public:
   CacheableVariable() = delete;                                     // no default constructor
   CacheableVariable(const CacheableVariable&) = delete;             // no copy constructor
   CacheableVariable& operator=(const CacheableVariable&) = delete;  // no copy assignment
+  virtual ~CacheableVariable() = default;
 
   /**
    * Returns the cached value or the default value (FLOAT64{}) if the cache is empty.<p/>
@@ -131,7 +131,7 @@ class CacheableVariable : public ManagedDataObjectBase {
    * This method is called by the readFromSim() method.
    * @return the value read from the sim
    */
-  virtual FLOAT64 rawReadFromSim() = 0;
+  virtual FLOAT64 rawReadFromSim() const = 0;
 
   /**
    * Sets the cache value and marks the variable as dirty.<p/>
@@ -170,10 +170,10 @@ class CacheableVariable : public ManagedDataObjectBase {
   // Getters and Setters
 
   /**
-   * @return the Unit of the variable
-   * @see Unit.h
+   * @return the SimUnit of the variable
+   * @see SimUnit.h
    */
-  [[nodiscard]] Unit getUnit() const { return unit; }
+  [[nodiscard]] const SimUnit& getUnit() const { return unit; }
 
   /**
    * @return the index of the variable
@@ -186,6 +186,8 @@ class CacheableVariable : public ManagedDataObjectBase {
   [[nodiscard]] bool isDirty() const { return dirty; }
 
   /**
+   * OBS: This method only does a simple static cast to a bool. Make sure that a cast from
+   * the double (FLOAT64) is sufficient for your use case. Otherwise use get() and almostEqual().
    * @return the value casted to a boolean
    */
   [[nodiscard]] bool getAsBool() const { return static_cast<bool>(get()); }

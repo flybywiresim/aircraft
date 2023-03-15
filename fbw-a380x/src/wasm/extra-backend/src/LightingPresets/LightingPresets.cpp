@@ -77,7 +77,7 @@ bool LightingPresets::initialize() {
   loadLightingPresetRequest->setAsInt64(0);
   saveLightingPresetRequest->setAsInt64(0);
 
-  isInitialized = true;
+  _isInitialized = true;
   LOG_INFO("LightingPresets initialized");
   return true;
 }
@@ -88,13 +88,13 @@ bool LightingPresets::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
-  if (!isInitialized) {
+  if (!_isInitialized) {
     LOG_ERROR("LightingPresets::update() - not initialized");
     return false;
   }
 
   // only run when aircraft is powered
-  if (!msfsHandler.getA32NxIsReady() || !elecAC1Powered->getAsBool()) {
+  if (!msfsHandler.getAircraftIsReadyVar() || !elecAC1Powered->getAsBool()) {
     return true;
   }
 
@@ -119,7 +119,7 @@ bool LightingPresets::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool LightingPresets::shutdown() {
-  isInitialized = false;
+  _isInitialized = false;
   LOG_INFO("LightingPresets::shutdown()");
   return true;
 }

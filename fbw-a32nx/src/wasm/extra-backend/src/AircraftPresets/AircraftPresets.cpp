@@ -7,7 +7,7 @@
 #include "AircraftVariable.h"
 #include "MsfsHandler.h"
 #include "NamedVariable.h"
-#include "Units.h"
+#include "SimUnits.h"
 #include "logging.h"
 
 ///
@@ -48,7 +48,7 @@ bool AircraftPresets::initialize() {
   // Simvars
   simOnGround = dataManager->make_simple_aircraft_var("SIM ON GROUND", UNITS.Number, true);
 
-  isInitialized = true;
+  _isInitialized = true;
   LOG_INFO("AircraftPresets initialized");
   return true;
 }
@@ -59,24 +59,24 @@ bool AircraftPresets::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool AircraftPresets::update(sGaugeDrawData* pData) {
-  if (!isInitialized) {
+  if (!_isInitialized) {
     LOG_ERROR("AircraftPresets::update() - not initialized");
     return false;
   }
 
-  if (!msfsHandler.getA32NxIsReady())
+  if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
   const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
   const UINT64 tickCounter = msfsHandler.getTickCounter();
 
   // has request to load a preset been received?
-  if (loadAircraftPresetRequest->get() > 0) {
+  if (loadAircraftPresetRequest->getAsInt64() > 0) {
     // we do not allow loading of presets in the air to prevent users from
     // accidentally changing the aircraft configuration
     if (!simOnGround->getAsBool()) {
       LOG_WARN("AircraftPresets: Aircraft must be on the ground to load a preset!");
-      loadAircraftPresetRequest->set(0);
+      loadAircraftPresetRequest->setAsInt64(0);
       loadingIsActive = false;
       return true;
     }
@@ -141,9 +141,9 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;
 
     // prepare return values for execute_calculator_code
-    FLOAT64 fvalue = 0;
+    FLOAT64 fvalue = 0.0;
     SINT32 ivalue = 0;
-    PCSTRINGZ svalue = "";
+    PCSTRINGZ svalue = nullptr;
 
     // check if the current step is a condition step and check the condition
     if (currentStepPtr->isConditional) {
@@ -153,7 +153,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
       execute_calculator_code(currentStepPtr->actionCode.c_str(), &fvalue, &ivalue, &svalue);
       LOG_INFO("AircraftPresets: Aircraft Preset Step " + std::to_string(currentStep) + " Condition: " + currentStepPtr->description +
                " (delay between tests: " + std::to_string(currentStepPtr->delayAfter) + ")");
-      if (static_cast<bool>(fvalue)) {
+      if (!helper::Math::almostEqual(0.0, fvalue)) {
         currentDelay = 0;
         currentStep++;
       }
@@ -171,7 +171,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
                   << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
       }
       execute_calculator_code(currentStepPtr->expectedStateCheckCode.c_str(), &fvalue, &ivalue, &svalue);
-      if (static_cast<bool>(fvalue)) {
+      if (!helper::Math::almostEqual(0.0, fvalue)) {
         if (aircraftPresetVerbose->getAsBool()) {
           std::cout << "AircraftPresets: Aircraft Preset Step " << currentStep << " Skipping: " << currentStepPtr->description
                     << " TEST: \"" << currentStepPtr->expectedStateCheckCode << "\"" << std::endl;
@@ -207,7 +207,7 @@ bool AircraftPresets::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 }
 
 bool AircraftPresets::shutdown() {
-  isInitialized = false;
+  _isInitialized = false;
   std::cout << "AircraftPresets::shutdown()" << std::endl;
   return true;
 }
