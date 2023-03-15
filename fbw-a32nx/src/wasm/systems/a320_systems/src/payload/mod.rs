@@ -6,6 +6,7 @@ use std::{cell::Cell, rc::Rc, time::Duration};
 use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
+    accept_iterable,
     payload::{BoardingRate, Cargo, CargoInfo, GsxState, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -289,8 +290,8 @@ impl A320Payload {
         match self.gsx_deboarding_state {
             GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
             GsxState::Requested => {
-                self.reset_all_pax_and_targets();
-                self.reset_all_cargo_and_targets();
+                self.reset_all_pax_targets();
+                self.reset_all_cargo_targets();
             }
             GsxState::Completed => {
                 for cs in A320Cargo::iterator() {
@@ -415,9 +416,9 @@ impl A320Payload {
         self.boarding_sounds.stop_pax_complete();
     }
 
-    fn reset_all_pax_and_targets(&mut self) {
+    fn reset_all_pax_targets(&mut self) {
         for ps in A320Pax::iterator() {
-            self.reset_pax_and_target(ps);
+            self.reset_pax_target(ps);
         }
     }
 
@@ -449,9 +450,9 @@ impl A320Payload {
         }
     }
 
-    fn reset_all_cargo_and_targets(&mut self) {
+    fn reset_all_cargo_targets(&mut self) {
         for cs in A320Cargo::iterator() {
-            self.reset_cargo_and_target(cs);
+            self.reset_cargo_target(cs);
         }
     }
 
@@ -571,12 +572,12 @@ impl A320Payload {
         self.pax[ps as usize].move_one_pax();
     }
 
-    fn reset_pax_and_target(&mut self, ps: A320Pax) {
-        self.pax[ps as usize].reset_pax_and_target();
+    fn reset_pax_target(&mut self, ps: A320Pax) {
+        self.pax[ps as usize].reset_pax_target();
     }
 
-    fn reset_cargo_and_target(&mut self, cs: A320Cargo) {
-        self.cargo[cs as usize].reset_cargo_and_target();
+    fn reset_cargo_target(&mut self, cs: A320Cargo) {
+        self.cargo[cs as usize].reset_cargo_target();
     }
 
     fn cargo_is_sync(&mut self, cs: A320Cargo) -> bool {
@@ -627,12 +628,8 @@ impl A320Payload {
 }
 impl SimulationElement for A320Payload {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for ps in 0..self.pax.len() {
-            self.pax[ps].accept(visitor);
-        }
-        for cs in 0..self.cargo.len() {
-            self.cargo[cs].accept(visitor);
-        }
+        accept_iterable!(self.pax, visitor);
+        accept_iterable!(self.cargo, visitor);
         self.boarding_sounds.accept(visitor);
 
         visitor.visit(self);

@@ -1,10 +1,12 @@
 use std::{cell::Cell, rc::Rc};
 
-use crate::simulation::{
-    Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-    VariableIdentifier, Write, Writer,
+use crate::{
+    shared::random_from_range,
+    simulation::{
+        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, VariableIdentifier, Write, Writer,
+    },
 };
-use rand::Rng;
 use uom::si::{f64::Mass, mass::kilogram, mass::pound};
 
 const JS_MAX_SAFE_INTEGER: i8 = 53;
@@ -90,7 +92,7 @@ impl Pax {
             payload_id,
             pax_target: 0,
             pax: 0,
-            payload: Mass::new::<pound>(0.),
+            payload: Mass::default(),
         }
     }
 
@@ -147,9 +149,9 @@ impl Pax {
         } else {
             self.pax & !self.pax_target
         };
-        let count = n.count_ones() as i8;
-        if count > 0 {
-            let mut skip: i8 = rand::thread_rng().gen_range(0..count);
+        let count = n.count_ones() as f64;
+        if count > 0. {
+            let mut skip: i8 = random_from_range(0., count) as i8;
 
             for i in 0..JS_MAX_SAFE_INTEGER {
                 let bit = 1 << i;
@@ -165,8 +167,7 @@ impl Pax {
         self.load_payload();
     }
 
-    pub fn reset_pax_and_target(&mut self) {
-        self.pax = 0;
+    pub fn reset_pax_target(&mut self) {
         self.pax_target = 0;
     }
 }
@@ -202,9 +203,9 @@ impl Cargo {
             cargo_id,
             cargo_target_id,
             payload_id,
-            cargo: Mass::new::<kilogram>(0.),
-            cargo_target: Mass::new::<kilogram>(0.),
-            payload: Mass::new::<pound>(0.),
+            cargo: Mass::default(),
+            cargo_target: Mass::default(),
+            payload: Mass::default(),
         }
     }
 
@@ -253,9 +254,8 @@ impl Cargo {
         self.load_payload();
     }
 
-    pub fn reset_cargo_and_target(&mut self) {
-        self.cargo = Mass::new::<kilogram>(0.);
-        self.cargo_target = Mass::new::<kilogram>(0.);
+    pub fn reset_cargo_target(&mut self) {
+        self.cargo_target = Mass::default();
     }
 }
 impl SimulationElement for Cargo {

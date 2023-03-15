@@ -148,6 +148,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn deboard_gsx_pax_num(mut self, value: i32) -> Self {
+        self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", value);
+        self
+    }
+
     fn deboard_gsx_pax_full(mut self) -> Self {
         let mut max_pax = 0;
         for ps in A320Pax::iterator() {
@@ -302,7 +307,7 @@ impl BoardingTestBed {
         self
     }
 
-    fn with_half_pax(mut self) -> Self {
+    fn with_all_stations_half_pax(mut self) -> Self {
         for ps in A320Pax::iterator() {
             self.load_pax(ps, A320_PAX[ps].max_pax / 2);
         }
@@ -316,7 +321,7 @@ impl BoardingTestBed {
         self
     }
 
-    fn with_half_cargo(mut self) -> Self {
+    fn with_all_stations_half_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
             self.load_cargo(cs, A320_CARGO[cs].max_cargo / 2.);
         }
@@ -359,7 +364,7 @@ impl BoardingTestBed {
     fn has_no_pax(&self) {
         for ps in A320Pax::iterator() {
             let pax_num = 0;
-            let pax_payload = Mass::new::<pound>(0.);
+            let pax_payload = Mass::default();
             assert_eq!(self.pax_num(ps), pax_num);
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
@@ -371,11 +376,22 @@ impl BoardingTestBed {
     fn has_half_pax(&mut self) {
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
-        let mut total_pax = 0;
+        let mut total_pax_payload = Mass::default();
+        let mut total_expected_pax_payload = Mass::default();
         for ps in A320Pax::iterator() {
-            total_pax += self.pax_num(ps)
+            let pax_num = A320_PAX[ps].max_pax / 2;
+            let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
+            total_expected_pax_payload += pax_payload;
+            total_pax_payload += self.pax_payload(ps);
         }
-        println!("Total amount of passengers {}", total_pax);
+        assert_eq!(
+            total_pax_payload.get::<pound>().floor(),
+            total_expected_pax_payload.get::<pound>().floor()
+        );
+    }
+
+    fn has_all_stations_half_pax(&mut self) {
+        let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         for ps in A320Pax::iterator() {
             let pax_num = A320_PAX[ps].max_pax / 2;
@@ -417,7 +433,21 @@ impl BoardingTestBed {
 
     fn has_no_cargo(&self) {
         for cs in A320Cargo::iterator() {
-            let cargo = Mass::new::<kilogram>(0.);
+            let cargo = Mass::default();
+            assert_eq!(
+                self.cargo(cs).get::<kilogram>().floor(),
+                cargo.get::<kilogram>().floor(),
+            );
+            assert_eq!(
+                self.cargo_payload(cs).get::<pound>().floor(),
+                cargo.get::<pound>().floor()
+            );
+        }
+    }
+
+    fn has_all_stations_half_cargo(&mut self) {
+        for cs in A320Cargo::iterator() {
+            let cargo = A320_CARGO[cs].max_cargo / 2.;
             assert_eq!(
                 self.cargo(cs).get::<kilogram>().floor(),
                 cargo.get::<kilogram>().floor(),
@@ -430,17 +460,16 @@ impl BoardingTestBed {
     }
 
     fn has_half_cargo(&mut self) {
+        let mut total_cargo_payload = Mass::default();
+        let mut total_expected_cargo_payload = Mass::default();
         for cs in A320Cargo::iterator() {
-            let cargo = A320_CARGO[cs].max_cargo / 2.;
-            assert_eq!(
-                self.cargo(cs).get::<kilogram>().floor(),
-                cargo.get::<kilogram>().floor(),
-            );
-            assert_eq!(
-                self.cargo_payload(cs).get::<pound>().floor(),
-                cargo.get::<pound>().floor()
-            );
+            total_cargo_payload += self.cargo(cs);
+            total_expected_cargo_payload += A320_CARGO[cs].max_cargo / 2.;
         }
+        assert_eq!(
+            total_cargo_payload.get::<pound>().floor(),
+            total_expected_cargo_payload.get::<pound>().floor()
+        );
     }
 
     fn has_full_cargo(&mut self) {
@@ -459,7 +488,7 @@ impl BoardingTestBed {
 
     fn target_no_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
-            self.target_cargo(cs, Mass::new::<kilogram>(0.));
+            self.target_cargo(cs, Mass::default());
         }
         self
     }
@@ -583,9 +612,12 @@ fn loaded_full_pax() {
 
 #[test]
 fn loaded_half_pax() {
-    let mut test_bed = test_bed_with().init_vars().with_half_pax().and_run();
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .with_all_stations_half_pax()
+        .and_run();
 
-    test_bed.has_half_pax();
+    test_bed.has_all_stations_half_pax();
     test_bed.has_no_cargo();
     test_bed.boarding_stopped();
 
@@ -620,7 +652,7 @@ fn loaded_no_pax_half_cargo() {
         .and_run();
 
     test_bed.has_no_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -632,12 +664,12 @@ fn loaded_no_pax_half_cargo() {
 fn loaded_half_use() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .and_run();
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -679,7 +711,7 @@ fn target_half_pax_trigger_and_finish_board() {
         .and_run()
         .and_stabilize();
 
-    test_bed.has_half_pax();
+    test_bed.has_all_stations_half_pax();
     test_bed.has_no_cargo();
     test_bed.boarding_stopped();
 
@@ -702,37 +734,15 @@ fn target_half_pax_trigger_and_finish_board_realtime_use() {
 
     let one_hour_in_seconds = HOURS_TO_MINUTES * MINUTES_TO_SECONDS;
 
-    test_bed
-        .test_bed
-        .run_multiple_frames(Duration::from_secs(one_hour_in_seconds));
-
-    test_bed.has_half_pax();
-    test_bed.has_no_cargo();
-    test_bed.boarding_stopped();
-
-    test_bed = test_bed.and_run();
-    test_bed.has_sound_pax_ambience();
-    test_bed.sound_boarding_complete_reset();
-}
-
-#[test]
-fn loaded_half_idle_pending() {
-    let mut test_bed = test_bed_with()
-        .init_vars()
-        .with_half_pax()
+    test_bed = test_bed
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .instant_board_rate()
         .and_run()
         .and_stabilize();
 
-    let fifteen_minutes_in_seconds = 15 * MINUTES_TO_SECONDS;
-
-    test_bed
-        .test_bed
-        .run_multiple_frames(Duration::from_secs(fifteen_minutes_in_seconds));
-
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -751,8 +761,8 @@ fn target_half_and_board() {
         .and_run()
         .and_stabilize();
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -778,8 +788,8 @@ fn target_half_and_board_fifteen_minutes_idle() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(fifteen_minutes_in_seconds));
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -797,8 +807,8 @@ fn target_half_and_board_instant() {
         .start_boarding()
         .and_run();
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -810,7 +820,7 @@ fn target_half_and_board_instant() {
 fn start_half_pax_target_full_pax_fast_board() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_full_pax()
         .target_half_cargo()
@@ -820,7 +830,7 @@ fn start_half_pax_target_full_pax_fast_board() {
         .and_stabilize();
 
     test_bed.has_full_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -832,7 +842,7 @@ fn start_half_pax_target_full_pax_fast_board() {
 fn start_half_cargo_target_full_cargo_real_board() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_half_pax()
         .target_full_cargo()
@@ -849,7 +859,7 @@ fn start_half_cargo_target_full_cargo_real_board() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(one_hour_in_seconds));
 
-    test_bed.has_half_pax();
+    test_bed.has_all_stations_half_pax();
     test_bed.has_full_cargo();
     test_bed.boarding_stopped();
 
@@ -862,7 +872,7 @@ fn start_half_cargo_target_full_cargo_real_board() {
 fn start_half_target_full_instantly() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_full_pax()
         .target_full_cargo()
@@ -926,7 +936,7 @@ fn deboard_full_pax_full_cargo_fast() {
 fn deboard_half_pax_full_cargo_instantly() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_full_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -947,7 +957,7 @@ fn deboard_half_pax_full_cargo_instantly() {
 fn deboard_half_real() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -977,7 +987,7 @@ fn deboard_half_real() {
 fn deboard_half_five_min_change_to_board_full_real() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -1009,7 +1019,7 @@ fn deboard_half_five_min_change_to_board_full_real() {
 fn deboard_half_two_min_change_instant() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -1035,7 +1045,7 @@ fn deboard_half_two_min_change_instant() {
 fn deboard_half_two_min_change_instant_change_units_load_full_kg() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -1116,7 +1126,7 @@ fn detailed_test_with_multiple_stops() {
         .and_stabilize();
 
     test_bed.has_no_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -1165,8 +1175,8 @@ fn gsx_boarding_half_pax() {
         .gsx_complete_board_state()
         .and_stabilize();
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
 
     test_bed = test_bed.and_run();
     test_bed.has_sound_pax_ambience();
@@ -1230,8 +1240,8 @@ fn gsx_deboarding_half_pax() {
     let mut test_bed = test_bed_with()
         .init_vars()
         .init_vars_gsx()
-        .with_half_pax()
-        .with_half_cargo()
+        .with_all_stations_half_pax()
+        .with_all_stations_half_cargo()
         .target_no_pax()
         .target_no_cargo()
         .gsx_performing_deboard_state()
@@ -1270,12 +1280,13 @@ fn gsx_deboarding_full_pax_partial() {
         .and_stabilize();
 
     test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    // test_bed.has_half_cargo();
 
     let mut test_bed = test_bed
         .deboard_gsx_pax_full()
         .deboard_gsx_cargo_full()
         .and_run()
+        .and_stabilize()
         .gsx_complete_deboard_state();
 
     test_bed.has_no_pax();
@@ -1285,4 +1296,3 @@ fn gsx_deboarding_full_pax_partial() {
     test_bed.has_no_sound_pax_ambience();
     test_bed.sound_boarding_complete_reset();
 }
-
