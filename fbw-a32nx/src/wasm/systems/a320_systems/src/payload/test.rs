@@ -1271,7 +1271,7 @@ fn gsx_deboarding_full_pax_partial() {
         .with_full_cargo()
         .with_full_pax()
         .target_no_pax()
-        .target_no_cargo()
+        .target_full_cargo()
         .gsx_requested_deboard_state()
         .gsx_performing_deboard_state()
         .deboard_gsx_pax_half()
@@ -1280,7 +1280,7 @@ fn gsx_deboarding_full_pax_partial() {
         .and_stabilize();
 
     test_bed.has_half_pax();
-    // test_bed.has_half_cargo();
+    test_bed.has_half_cargo();
 
     let mut test_bed = test_bed
         .deboard_gsx_pax_full()

@@ -291,12 +291,14 @@ impl A320Payload {
             GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
             GsxState::Requested => {
                 self.reset_all_pax_targets();
-                self.reset_all_cargo_targets();
+                // Temp workaround for cargo deboarding issue
+                // self.reset_all_cargo_targets();
             }
             GsxState::Completed => {
                 for cs in A320Cargo::iterator() {
                     self.move_all_cargo(cs);
                 }
+                self.reset_all_cargo_targets();
             }
             GsxState::Performing => {
                 self.move_all_pax_num(
