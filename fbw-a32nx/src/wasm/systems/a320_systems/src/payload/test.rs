@@ -96,6 +96,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn gsx_requested_board_state(mut self) -> Self {
+        self.write_by_name("FSDT_GSX_BOARDING_STATE", GsxState::Requested);
+        self
+    }
+
     fn gsx_performing_board_state(mut self) -> Self {
         self.write_by_name("FSDT_GSX_BOARDING_STATE", GsxState::Performing);
         self
@@ -734,15 +739,12 @@ fn target_half_pax_trigger_and_finish_board_realtime_use() {
 
     let one_hour_in_seconds = HOURS_TO_MINUTES * MINUTES_TO_SECONDS;
 
-    test_bed = test_bed
-        .with_all_stations_half_pax()
-        .load_half_cargo()
-        .instant_board_rate()
-        .and_run()
-        .and_stabilize();
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(one_hour_in_seconds));
 
     test_bed.has_all_stations_half_pax();
-    test_bed.has_all_stations_half_cargo();
+    test_bed.has_no_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -751,15 +753,20 @@ fn target_half_pax_trigger_and_finish_board_realtime_use() {
 }
 
 #[test]
-fn target_half_and_board() {
+fn loaded_half_idle_pending() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .target_half_pax()
-        .target_half_cargo()
-        .fast_board_rate()
-        .start_boarding()
+        .with_all_stations_half_pax()
+        .load_half_cargo()
+        .instant_board_rate()
         .and_run()
         .and_stabilize();
+
+    let fifteen_minutes_in_seconds = 15 * MINUTES_TO_SECONDS;
+
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(fifteen_minutes_in_seconds));
 
     test_bed.has_all_stations_half_pax();
     test_bed.has_all_stations_half_cargo();
@@ -1168,6 +1175,8 @@ fn gsx_boarding_half_pax() {
         .init_vars_gsx()
         .target_half_pax()
         .target_half_cargo()
+        .gsx_requested_board_state()
+        .and_run()
         .gsx_performing_board_state()
         .board_gsx_pax_half()
         .board_gsx_cargo_half()
@@ -1190,6 +1199,8 @@ fn gsx_boarding_full_pax() {
         .init_vars_gsx()
         .target_full_pax()
         .target_full_cargo()
+        .gsx_requested_board_state()
+        .and_run()
         .gsx_performing_board_state()
         .board_gsx_pax_half()
         .board_gsx_cargo_half()
@@ -1215,8 +1226,10 @@ fn gsx_deboarding_full_pax() {
         .init_vars_gsx()
         .with_full_pax()
         .with_full_cargo()
-        .target_no_pax()
-        .target_no_cargo()
+        .target_full_pax()
+        .target_full_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
         .gsx_performing_deboard_state()
         .deboard_gsx_pax_half()
         .deboard_gsx_cargo_half()
@@ -1242,8 +1255,10 @@ fn gsx_deboarding_half_pax() {
         .init_vars_gsx()
         .with_all_stations_half_pax()
         .with_all_stations_half_cargo()
-        .target_no_pax()
-        .target_no_cargo()
+        .target_half_pax()
+        .target_half_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
         .gsx_performing_deboard_state()
         .deboard_gsx_pax_half()
         .deboard_gsx_cargo_half()
@@ -1263,7 +1278,6 @@ fn gsx_deboarding_half_pax() {
 }
 
 #[test]
-#[ignore]
 fn gsx_deboarding_full_pax_partial() {
     let mut test_bed = test_bed_with()
         .init_vars()
@@ -1273,6 +1287,7 @@ fn gsx_deboarding_full_pax_partial() {
         .target_no_pax()
         .target_full_cargo()
         .gsx_requested_deboard_state()
+        .and_run()
         .gsx_performing_deboard_state()
         .deboard_gsx_pax_half()
         .deboard_gsx_cargo_half()
@@ -1283,6 +1298,8 @@ fn gsx_deboarding_full_pax_partial() {
     test_bed.has_half_cargo();
 
     let mut test_bed = test_bed
+        .deboard_gsx_pax_num(100)
+        .and_run()
         .deboard_gsx_pax_full()
         .deboard_gsx_cargo_full()
         .and_run()
