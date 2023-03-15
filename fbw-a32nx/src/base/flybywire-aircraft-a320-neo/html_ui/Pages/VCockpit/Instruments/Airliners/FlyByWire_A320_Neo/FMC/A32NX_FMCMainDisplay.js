@@ -191,6 +191,8 @@ class FMCMainDisplay extends BaseAirliners {
          * This is the destination runway coordinate, or airport coordinate if runway is not selected
          */
         this.destinationLongitude = undefined;
+        /** Speed in KCAS when the first engine failed during takeoff */
+        this.takeoffEngineOutSpeed = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -547,6 +549,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.toSpeedsNotInserted = false;
         this.toSpeedsTooLow = false;
         this.vSpeedDisagree = false;
+        this.takeoffEngineOutSpeed = undefined;
 
         this.onAirport = () => {};
 
@@ -1146,7 +1149,9 @@ class FMCMainDisplay extends BaseAirliners {
                 case FmgcFlightPhases.TAKEOFF: {
                     if (this.v2Speed) {
                         vPfd = this.v2Speed;
-                        this.managedSpeedTarget = this.v2Speed + (engineOut ? 20 : 10);
+                        this.managedSpeedTarget = engineOut
+                            ? Math.min(this.v2Speed + 15, Math.max(this.v2Speed, this.takeoffEngineOutSpeed ? this.takeoffEngineOutSpeed : 0))
+                            : this.v2Speed + 10;
                     }
                     break;
                 }
@@ -1203,11 +1208,12 @@ class FMCMainDisplay extends BaseAirliners {
                     const accAlt = engineOut ? activePlan.missedEngineOutAccelerationAltitude : activePlan.missedAccelerationAltitude;
                     if (accAlt === undefined || Simplane.getAltitude() < accAlt) {
                         const speed = Math.min(
-                            this.computedVls + (engineOut ? 25 : 15),
+                            this.computedVls + (engineOut ? 15 : 25),
                             Math.max(
                                 SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number"),
                                 SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number")
-                            )
+                            ),
+                            SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 5,
                         );
 
                         SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed); //TODO: figure that this does
@@ -1398,6 +1404,11 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number") === 1) {
             SimVar.SetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number", 0);
             this.updateAutopilotCooldown = -1;
+        }
+
+        if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && !this.isAllEngineOn() && this.takeoffEngineOutSpeed === undefined) {
+            const casWord = ADIRS.getCalibratedAirspeed();
+            this.takeoffEngineOutSpeed = casWord.isNormalOperation() ? casWord.value : undefined;
         }
 
         if (this.updateAutopilotCooldown < 0) {
