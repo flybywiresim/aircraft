@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
-    eraseGenerator, FailureGenData,
-    failureGeneratorAdd, failureGeneratorsSettings, setNewSetting,
+    eraseGenerator, FailureGenContext, FailureGenData,
+    failureGeneratorAdd, failureGeneratorsSettings, findGeneratorFailures, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
+import { Failure } from 'failures/src/failures-orchestrator';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
@@ -43,7 +45,10 @@ export const FailureGeneratorsUI = () => {
                 <div className="flex items-center">
                     <div className="mr-2">Max number of simultaneous failures:</div>
                     <SimpleInput
-                        className="my-2 w-10 font-mono"
+                        className="my-2 w-10 font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
+                    focus-within:outline-none focus-within:border-theme-highlight
+                    placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text hover:bg-theme-body
+                     hover:border-theme-highlight"
                         fontSizeClassName="text-2xl"
                         number
                         min={0}
@@ -56,37 +61,102 @@ export const FailureGeneratorsUI = () => {
                     />
                 </div>
                 <ScrollableContainer height={48}>
-                    {generatorsCardList(settings.allGenSettings, settings.modals)}
+                    {generatorsCardList(settings)}
                 </ScrollableContainer>
             </div>
         </>
     );
 };
 
-export const generatorsCardList : (generatorSettings : Map<string, FailureGenData>, modal : ModalContextInterface)
-=> JSX.Element[] = (generatorSettings : Map<string, FailureGenData>, modal : ModalContextInterface) => {
+export const generatorsCardList : (settings : FailureGenContext)
+=> JSX.Element[] = (settings : FailureGenContext) => {
     const temp : JSX.Element[] = [];
-    generatorSettings.forEach((generatorSetting) => {
+    settings.allGenSettings.forEach((generatorSetting) => {
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            temp.push(generatorSetting.FailureGeneratorCard(i, generatorSetting, modal));
+            temp.push(generatorSetting.FailureGeneratorCard(i, generatorSetting, settings));
         }
     });
     return temp;
 };
 
+function switchFailureOnGenerator(failureGenContext: FailureGenContext, identifier:number, genID : string, state : boolean) {
+    let failureGenString = failureGenContext.generatorFailuresGetters.get(identifier);
+
+    if (state) {
+        if (failureGenString.length === 0) failureGenString = failureGenString.concat(genID);
+        else failureGenString = failureGenString.concat(`,${genID}`);
+    } else {
+
+    }
+    failureGenContext.generatorFailuresSetters.get(identifier)(failureGenString);
+}
+
+function GeneratorFailureSelection(genID: string, generatorSettings: FailureGenData, failureGenContext: FailureGenContext): JSX.Element {
+    const generatorFailureTable :Failure[] = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, genID);
+
+    return (
+        <div className="flex flex-col justify-center items-center py-2 px-8 w-3/4 border-2 bg-theme-body border-theme-accent">
+            <div className="w-max text-left">
+                <h1>Failure pool selection</h1>
+                <p>Select the failures that may be triggered by this failure generator</p>
+            </div>
+            <div
+                className="flex py-2 px-8 text-center rounded-md border-2
+    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
+    border-theme-accent hover:border-theme-highlight"
+                onClick={() => failureGenContext.modals.popModal()}
+            >
+                Close
+            </div>
+            <ScrollableContainer height={48}>
+                {failureGenContext.allFailures.map<JSX.Element>((failure) => {
+                    const active = generatorFailureTable.find((genFailure) => failure.identifier === genFailure.identifier) !== undefined;
+                    return (
+                        <div
+                            className="flex flex-row justify"
+                        >
+                            <Toggle
+                                value={!!active}
+                                onToggle={(value) => {
+
+                                }}
+                            />
+                            <div className="pl-8"><h2>{failure.name}</h2></div>
+                        </div>
+                    );
+                })}
+            </ScrollableContainer>
+        </div>
+    );
+}
+
 export function FailureGeneratorCardTemplateUI(
     genID : number,
     generatorSettings : FailureGenData,
     settingTable : JSX.Element[],
+    failureGenContext: FailureGenContext,
 ) {
+    const generatorUniqueID = `${generatorSettings.uniqueGenPrefix}${genID.toString()}`;
+
     return (
         <div className="flex flex-col flex-1 py-2 px-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
             <div className="flex flex-row justify-between">
                 <div className="mr-4 w-1/3 text-left align-left">
                     <h2>
-                        {`${generatorSettings.uniqueGenPrefix}${genID.toString()} : ${generatorSettings.alias}`}
+                        {`${generatorUniqueID} : ${generatorSettings.alias}`}
                     </h2>
+                    <div
+                        className="flex-1 px-8 py-2 mr-4 h-10 rounded-md transition duration-100 border-2 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
+                        border-theme-accent hover:border-theme-highlight"
+                        onClick={() => {
+                            failureGenContext.modals.showModal(GeneratorFailureSelection(generatorUniqueID,
+                                generatorSettings, failureGenContext));
+                        }}
+                    >
+                        {`Failures assigned: ${findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, generatorUniqueID).length}
+                        / ${failureGenContext.allFailures.length}`}
+                    </div>
                 </div>
                 {RearmSettingsUI(generatorSettings, genID, setNewSetting)}
                 <button
@@ -154,7 +224,8 @@ export function FailureGeneratorFailureSetting(title:string, width : number,
                 <div
                     className={`my-2 w-${width} font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
                     focus-within:outline-none focus-within:border-theme-highlight
-                    placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text`}
+                    placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text hover:bg-theme-body
+                     hover:border-theme-highlight`}
                     onClick={() => {
                         modal.showModal(ModalSimpleInput(value, multCheck, title, width, unit, min, max, setNewSetting, generatorSettings, genIndex, settingIndex, modal));
                     }}

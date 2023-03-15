@@ -33,8 +33,18 @@ export type FailureGenData = {setting: string,
     onErase : (genID : number) => void,
     failureGeneratorArmed:boolean[],
     genName : string,
-    FailureGeneratorCard : (genID: number, generatorSettings: FailureGenData, modal : ModalContextInterface) => JSX.Element,
+    FailureGeneratorCard : (genID: number, generatorSettings: FailureGenData, failureGenContext : FailureGenContext) => JSX.Element,
     alias : string
+}
+
+export type FailureGenContext = {
+    maxFailuresAtOnce: number,
+    setMaxFailuresAtOnce: (value: number) => void,
+    allGenSettings: Map<string, FailureGenData>,
+    modals: ModalContextInterface,
+    generatorFailuresGetters : Map<number, string>,
+    generatorFailuresSetters : Map<number, (value: string) => void>,
+    allFailures: readonly Readonly<Failure>[],
 }
 
 export const flatten = (settings : number[]) => {
@@ -101,7 +111,6 @@ export const deleteGeneratorFailures = (allFailures : readonly Readonly<Failure>
 };
 
 export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>, generatorUniqueID: string) => {
-    // console.info('Looking for failures on generator %s', generatorUniqueID);
     const failureIDs : Failure[] = [];
     if (allFailures.length > 0) {
         allFailures.forEach((failure) => {
@@ -147,9 +156,10 @@ export const basicData = () => {
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
 
-export const failureGeneratorsSettings = () => {
+export const failureGeneratorsSettings : () => FailureGenContext = () => {
     const modals = useModals();
-    const { maxFailuresAtOnce, setMaxFailuresAtOnce } = failureGeneratorCommonFunction();
+    const { maxFailuresAtOnce, setMaxFailuresAtOnce, allFailures } = failureGeneratorCommonFunction();
+    const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings : Map<string, FailureGenData> = new Map();
     allGenSettings.set(failureGenConfigAltClimb().genName, failureGenConfigAltClimb());
     allGenSettings.set(failureGenConfigAltDesc().genName, failureGenConfigAltDesc());
@@ -163,6 +173,9 @@ export const failureGeneratorsSettings = () => {
         setMaxFailuresAtOnce,
         allGenSettings,
         modals,
+        generatorFailuresGetters,
+        generatorFailuresSetters,
+        allFailures,
     };
 };
 
