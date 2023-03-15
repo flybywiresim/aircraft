@@ -290,11 +290,12 @@ impl A320Payload {
         match self.gsx_deboarding_state {
             GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
             GsxState::Requested => {
+                self.update_cargo_loaded();
                 self.reset_all_pax_targets();
-                // Temp workaround for cargo deboarding issue
-                // self.reset_all_cargo_targets();
+                self.reset_all_cargo_targets();
             }
             GsxState::Completed => {
+                self.reset_cargo_loaded();
                 for cs in A320Cargo::iterator() {
                     self.move_all_cargo(cs);
                 }
@@ -306,6 +307,18 @@ impl A320Payload {
                 );
                 self.load_all_cargo_percent(100. - self.gsx_cargo_deboarding_pct);
             }
+        }
+    }
+
+    fn update_cargo_loaded(&mut self) {
+        for cs in A320Cargo::iterator() {
+            self.cargo[cs as usize].update_cargo_loaded()
+        }
+    }
+
+    fn reset_cargo_loaded(&mut self) {
+        for cs in A320Cargo::iterator() {
+            self.cargo[cs as usize].reset_cargo_loaded()
         }
     }
 

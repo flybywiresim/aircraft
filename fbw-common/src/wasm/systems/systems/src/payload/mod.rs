@@ -190,6 +190,7 @@ pub struct Cargo {
     cargo_id: VariableIdentifier,
     payload_id: VariableIdentifier,
     cargo: Mass,
+    cargo_loaded: Mass,
     cargo_target: Mass,
     payload: Mass,
 }
@@ -204,6 +205,7 @@ impl Cargo {
             cargo_target_id,
             payload_id,
             cargo: Mass::default(),
+            cargo_loaded: Mass::default(),
             cargo_target: Mass::default(),
             payload: Mass::default(),
         }
@@ -211,6 +213,14 @@ impl Cargo {
 
     pub fn cargo(&self) -> Mass {
         self.cargo
+    }
+
+    pub fn update_cargo_loaded(&mut self) {
+        self.cargo_loaded = self.cargo
+    }
+
+    pub fn reset_cargo_loaded(&mut self) {
+        self.cargo_loaded = Mass::default()
     }
 
     pub fn payload(&self) -> Mass {
@@ -250,7 +260,11 @@ impl Cargo {
     }
 
     pub fn load_cargo_percent(&mut self, percent: f64) {
-        self.cargo = (percent / 100.) * self.cargo_target;
+        if self.cargo_loaded.get::<kilogram>() > 0. {
+            self.cargo = self.cargo_loaded * ((100. - percent) /100.)
+        } else {
+            self.cargo = (percent / 100.) * self.cargo_target;
+        }
         self.load_payload();
     }
 
