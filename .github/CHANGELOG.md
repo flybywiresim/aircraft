@@ -54,6 +54,8 @@
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
+1. [FWC] Add GND SPLR NOT ARMED warning - @tracernz (Mike)
+1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
 
 ## 0.9.0
 
