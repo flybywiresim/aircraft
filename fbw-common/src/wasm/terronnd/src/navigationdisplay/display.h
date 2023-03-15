@@ -151,18 +151,14 @@ class Display : public DisplayBase {
    * @param config The new ND configuration instance
    */
   void update(const DisplayBase::NdConfiguration& config) override {
-    const bool oldArcMode = this->_configuration.mode == NavigationDisplayArcModeId;
-    const bool oldRoseMode = this->_configuration.mode == NavigationDisplayRoseLsModeId ||
-                             this->_configuration.mode == NavigationDisplayRoseVorModeId ||
-                             this->_configuration.mode == NavigationDisplayRoseNavModeId;
-    const bool newArcMode = config.mode == NavigationDisplayArcModeId;
-    const bool newRoseMode = config.mode == NavigationDisplayRoseLsModeId || config.mode == NavigationDisplayRoseVorModeId ||
-                             config.mode == NavigationDisplayRoseNavModeId;
-    const bool resetMapData = oldArcMode != newArcMode || oldRoseMode != newRoseMode || config.range != this->_configuration.range;
+    const bool resetMapData = this->_configuration.mode != config.mode || config.range != this->_configuration.range;
+    const bool validEfisMode = config.mode == NavigationDisplayArcModeId || config.mode == NavigationDisplayRoseLsModeId ||
+                               config.mode == NavigationDisplayRoseNavModeId || config.mode == NavigationDisplayRoseVorModeId;
 
     this->_configuration = config;
+    this->_configuration.terrainActive &= validEfisMode;
 
-    if (!config.terrainActive || resetMapData) {
+    if (!this->_configuration.terrainActive || !validEfisMode || resetMapData) {
       this->resetNavigationDisplayData();
       this->destroyImage();
       this->_ignoreNextFrame = true;

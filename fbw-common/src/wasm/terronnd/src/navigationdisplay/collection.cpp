@@ -136,6 +136,7 @@ void Collection::updateDisplay(FsContext context) {
     this->_simconnectAircraftStatus->data().ndArcModeCapt = this->_configurationLeft.mode == NavigationDisplayArcModeId;
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveCapt =
         static_cast<std::uint8_t>(this->_configurationLeft.terrainActive && terrainMapMode);
+    this->_simconnectAircraftStatus->data().efisModeCapt = this->_configurationLeft.mode;
 
     arcMode = this->_configurationRight.mode == NavigationDisplayArcModeId;
     terrainMapMode = this->_configurationRight.mode == NavigationDisplayRoseLsModeId ||
@@ -146,6 +147,7 @@ void Collection::updateDisplay(FsContext context) {
     this->_simconnectAircraftStatus->data().ndArcModeFO = this->_configurationRight.mode == NavigationDisplayArcModeId;
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveFO =
         static_cast<std::uint8_t>(this->_configurationRight.terrainActive && terrainMapMode);
+    this->_simconnectAircraftStatus->data().efisModeFO = this->_configurationRight.mode;
 
     this->_simconnectAircraftStatus->data().ndTerrainOnNdRenderingMode = this->_egpwcData.terrOnNdRenderingMode;
     this->_simconnectAircraftStatus->data().groundTruthLatitude = this->_groundTruth.latitude.convert(types::degree);
