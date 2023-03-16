@@ -10,7 +10,7 @@ mod pneumatic;
 mod power_consumption;
 
 use self::{
-    air_conditioning::A320AirConditioning,
+    air_conditioning::{A320AirConditioning, A320PressurizationOverheadPanel},
     fuel::A320Fuel,
     payload::A320Payload,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
@@ -36,7 +36,6 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    pressurization::{Pressurization, PressurizationOverheadPanel},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -49,6 +48,7 @@ pub struct A320 {
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A320PneumaticOverheadPanel,
+    pressurization_overhead: A320PressurizationOverheadPanel,
     electrical_overhead: A320ElectricalOverheadPanel,
     emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
     payload: A320Payload,
@@ -64,8 +64,6 @@ pub struct A320 {
     hydraulic_overhead: A320HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
-    pressurization: Pressurization,
-    pressurization_overhead: PressurizationOverheadPanel,
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
 }
@@ -85,6 +83,7 @@ impl A320 {
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(context),
+            pressurization_overhead: A320PressurizationOverheadPanel::new(context),
             electrical_overhead: A320ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(context),
             payload: A320Payload::new(context),
@@ -104,8 +103,6 @@ impl A320 {
             hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
             landing_gear: LandingGear::new(context),
-            pressurization: Pressurization::new(context),
-            pressurization_overhead: PressurizationOverheadPanel::new(context),
             pneumatic: A320Pneumatic::new(context),
             radio_altimeters: A320RadioAltimeters::new(context),
         }
@@ -166,13 +163,6 @@ impl Aircraft for A320 {
 
         self.radio_altimeters.update(context);
 
-        self.pressurization.update(
-            context,
-            &self.pressurization_overhead,
-            [&self.engine_1, &self.engine_2],
-            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
-        );
-
         self.hydraulic.update(
             context,
             &self.engine_1,
@@ -218,7 +208,6 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
             &self.pneumatic,
             &self.pneumatic_overhead,
-            &self.pressurization,
             &self.pressurization_overhead,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
@@ -237,6 +226,7 @@ impl SimulationElement for A320 {
         self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
+        self.pressurization_overhead.accept(visitor);
         self.engine_1.accept(visitor);
         self.engine_2.accept(visitor);
         self.engine_fire_overhead.accept(visitor);
@@ -249,8 +239,6 @@ impl SimulationElement for A320 {
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
-        self.pressurization.accept(visitor);
-        self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
 
         visitor.visit(self);

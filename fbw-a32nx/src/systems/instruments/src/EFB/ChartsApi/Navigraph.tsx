@@ -10,17 +10,27 @@ export interface NavigraphBoundingBox {
     height: number,
 }
 
+export interface ChartType {
+    code: string,
+    category: string,
+    details: string,
+    precision: string,
+    section: string,
+}
+
 export interface NavigraphChart {
-    fileUrlDay: string,
-    fileUrlNight: string,
+    fileDay: string,
+    fileNight: string,
     thumbDay: string,
     thumbNight: string,
     icaoAirportIdentifier: string,
     id: string,
-    category: string,
+    extId: string,
+    fileName: string,
+    type: ChartType,
     indexNumber: string,
-    name: string,
-    runways: string[],
+    procedureIdentifier: string,
+    runway: string[],
     boundingBox?: NavigraphBoundingBox,
 }
 
@@ -210,18 +220,22 @@ export default class NavigraphClient {
         }
     }
 
-    public async getChartImage(url: string): Promise<string> {
-        if (url.length !== 0) {
-            const callResp = await fetch(url, { headers: { Authorization: `Bearer ${this.accessToken}` } });
+    public async chartCall(icao: string, item: string): Promise<string> {
+        if (icao.length === 4) {
+            const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`,
+                {
+                    headers: {
+                        Authorization:
+                         `Bearer ${this.accessToken}`,
+                    },
+                });
             if (callResp.ok) {
-                const blob = await callResp.blob();
-                const objectUrl = URL.createObjectURL(blob);
-                return Promise.resolve(objectUrl);
+                return callResp.text();
             }
             // Unauthorized
             if (callResp.status === 401) {
                 await this.getToken();
-                return this.getChartImage(url);
+                return this.chartCall(icao, item);
             }
         }
         return Promise.reject();
@@ -229,46 +243,61 @@ export default class NavigraphClient {
 
     public async getChartList(icao: string): Promise<NavigraphAirportCharts> {
         if (this.hasToken) {
-            const chartJsonResp = await fetch(`https://api.navigraph.com/v2/charts/${icao}?version=CAO`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
+            const chartJsonUrl = await this.chartCall(icao, 'charts.json');
+
+            const chartJsonResp = await fetch(chartJsonUrl);
 
             if (chartJsonResp.ok) {
                 const chartJson = await chartJsonResp.json();
 
                 const chartArray: NavigraphChart[] = chartJson.charts.map((chart) => ({
-                    fileUrlDay: chart.image_day_url,
-                    fileUrlNight: chart.image_night_url,
+                    fileDay: chart.file_day,
+                    fileNight: chart.file_night,
                     thumbDay: chart.thumb_day,
                     thumbNight: chart.thumb_night,
                     icaoAirportIdentifier: chart.icao_airport_identifier,
                     id: chart.id,
-                    category: chart.category,
+                    extId: chart.ext_id,
+                    fileName: chart.file_name,
+                    type: {
+                        code: chart.type.code,
+                        category: chart.type.category,
+                        details: chart.type.details,
+                        precision: chart.type.precision,
+                        section: chart.type.section,
+                    },
                     indexNumber: chart.index_number,
-                    name: chart.name,
-                    runways: chart.runways,
-                    boundingBox: chart.bounding_boxes?.planview ? {
+                    procedureIdentifier: chart.procedure_identifier,
+                    runway: chart.runway,
+                    boundingBox: chart.planview ? {
                         bottomLeft: {
-                            lat: chart.bounding_boxes.planview.latlng.lat1,
-                            lon: chart.bounding_boxes.planview.latlng.lng1,
-                            xPx: chart.bounding_boxes.planview.pixels.x1,
-                            yPx: chart.bounding_boxes.planview.pixels.y1,
+                            lat: chart.planview.bbox_geo[1],
+                            lon: chart.planview.bbox_geo[0],
+                            xPx: chart.planview.bbox_local[0],
+                            yPx: chart.planview.bbox_local[1],
                         },
                         topRight: {
-                            lat: chart.bounding_boxes.planview.latlng.lat2,
-                            lon: chart.bounding_boxes.planview.latlng.lng2,
-                            xPx: chart.bounding_boxes.planview.pixels.x2,
-                            yPx: chart.bounding_boxes.planview.pixels.y2,
+                            lat: chart.planview.bbox_geo[3],
+                            lon: chart.planview.bbox_geo[2],
+                            xPx: chart.planview.bbox_local[2],
+                            yPx: chart.planview.bbox_local[3],
                         },
-                        width: chart.width,
-                        height: chart.height,
+                        width: chart.bbox_local[2],
+                        height: chart.bbox_local[1],
                     } : undefined,
                 }));
 
                 return {
-                    arrival: chartArray.filter((chart) => chart.category === 'ARR'),
-                    approach: chartArray.filter((chart) => chart.category === 'APP'),
-                    airport: chartArray.filter((chart) => chart.category === 'APT'),
-                    departure: chartArray.filter((chart) => chart.category === 'DEP'),
-                    reference: chartArray.filter((chart) => chart.category === 'REF'),
+                    arrival: chartArray.filter((chart) => chart.type.category === 'ARRIVAL'),
+                    approach: chartArray.filter((chart) => chart.type.category === 'APPROACH'),
+                    airport: chartArray.filter((chart) => chart.type.category === 'AIRPORT'),
+                    departure: chartArray.filter((chart) => chart.type.category === 'DEPARTURE'),
+                    reference: chartArray.filter((chart) => (
+                        (chart.type.category !== 'ARRIVAL')
+                        && (chart.type.category !== 'APPROACH')
+                        && (chart.type.category !== 'AIRPORT')
+                        && (chart.type.category !== 'DEPARTURE')
+                    )),
                 };
             }
         }
@@ -278,12 +307,14 @@ export default class NavigraphClient {
 
     public async getAirportInfo(icao: string): Promise<AirportInfo | null> {
         if (this.hasToken) {
-            const airportJsonResp = await fetch(`https://api.navigraph.com/v2/airport/${icao}`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
+            const chartJsonUrl = await this.chartCall(icao, 'airport.json');
 
-            if (airportJsonResp.ok) {
-                const airportJson = await airportJsonResp.json();
+            const chartJsonResp = await fetch(chartJsonUrl);
 
-                return { name: airportJson.name };
+            if (chartJsonResp.ok) {
+                const chartJson = await chartJsonResp.json();
+
+                return { name: chartJson.name };
             }
         }
 

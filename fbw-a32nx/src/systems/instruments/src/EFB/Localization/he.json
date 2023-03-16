@@ -156,6 +156,8 @@
       "DeboardConfirmationConfirm": "הורד נוסעים",
       "DeboardConfirmationTitle": "האם להוריד את כל הנוסעים?",
       "EstimatedDurationUnit": "דקות",
+      "GW": "GW",
+      "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
       "Passengers": "נוסעים",
       "Planned": "מתוכנן",
@@ -163,6 +165,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "המטוס חייב להיות על הקרקע עם מנועים כוביים בכדי לשנות את משך העליה למטוס",
         "FillPayloadFromSimbrief": "מלא מידע על המטען מ-Simbrief",
         "MaxCargo": "משא מקסימלי",
+        "MaxGW": "Maximum GW",
+        "MaxGWCG": "Maximum GW CG",
         "MaxPassengers": "מספר נוסעים מקסימלי",
         "MaxZFW": "משקל ללא דלק מקסימלי",
         "MaxZFWCG": "מרכז כובד של משקל ללא דלק מקסימלי",
@@ -449,26 +453,26 @@
     "UseControllerInput": "השתמש בקלט בקר"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "כוונן ADIRS",
+    "FinishBoarding": "סיום עליה למטוס",
+    "OnScreenKeyboard": "מקלדת מסך",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "מחובר",
+    "SimBridgeConnecting": "מתחבר...",
+    "SimBridgeOff": "כבוי",
+    "SimBridgeOffline": "לא זמין",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "יישר ADIRS באופן מיידי",
+      "AutoBrightness": "הפעל/כבה בהירות אוטומטית",
+      "Brightness": "הגדר את הבהירות",
+      "FinishBoarding": "סיום עליה למטוס באופן מיידי",
+      "OnScreenKeyboard": "הפעל/כבה מקלדת מסך",
+      "PowerButton": "כיבוי",
+      "Settings": "עבור לדף ההגדרות של flyPad",
+      "SimBridge": "בקרת חיבור SimBridge",
+      "Sleep": "מצב שינה"
     },
-    "Title": "Quick Controls"
+    "Title": "קיצורי דרך"
   },
   "Settings": {
     "About": {
@@ -542,12 +546,12 @@
     "SimOptions": {
       "Active": "פעיל",
       "Auto": "אוטומטי",
-      "Both": "Synchronized",
+      "Both": "מסונכרן",
       "Calibrate": "ויסות",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "קפטן",
+      "CockpitSeatUsedToControl": "מושב השליטה",
       "ConesEnabled": "קונוס בטיחות",
-      "Copilot": "Copilot",
+      "Copilot": "טייס משנה",
       "DefaultBarometerUnit": "יחידת ברומטר ברירת מחדל",
       "DynamicRegistrationDecal": "דִינָמִי מדבקת רישום",
       "EnableSimBridge": "אפשר חיבור Simbridge (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
@@ -560,7 +564,7 @@
       "Off": "כבוי",
       "Save": "שמור",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "כתובת SimBridge חיצונית",
       "SimBridgePort": "פורט SimBridge חיצוני",
       "SyncMsfsFlightPlan": "סנכרן את תוכנית הטיסה מ-MSFS",
       "ThrottleDetents": "מעצורי מצערת",
@@ -570,9 +574,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "סנכון GSX - תדלוק",
+      "GsxPayloadEnabled": "סנכון GSX - כבודה",
+      "Title": "אפשרויות צד שלישי"
     },
     "ThrottleConfig": {
       "Apply": "הפעל",
@@ -641,7 +645,7 @@
       "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "מחובר ל-SimBridge",
       "DisconnectedFromLocalApi": "מנותק מ-SimBridge",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "לחץ בכדי לפתוח קיצורי דרך",
       "TurnOffOrShutdownEfb": "כיבוי EFB"
     },
     "Thu": "חמישי",
@@ -649,13 +653,13 @@
     "Wed": "רביעי"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "את/ה משתמש/ת במהדורה $edition עם גרסה:",
+    "LatestVersionText": "הגרסה האחרונה של $edition היא",
+    "RecommendationText": "אנא עדכן את המטוס באמצעות ה-FlyByWire Installer",
+    "StatusBarWarning": "גרסת מטוס פגת תוקף",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "אנא עדכן את המטוס באמצעות ה-FlyByWire Installer"
     },
-    "Title": "New Version Available"
+    "Title": "גרסה חדשה זמינה"
   }
 }
