@@ -10,7 +10,9 @@ use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
     f64::*,
     length::meter,
+    mass_rate::kilogram_per_second,
     pressure::{hectopascal, pascal},
+    ratio::ratio,
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
 
@@ -20,6 +22,7 @@ pub mod update_iterator;
 
 mod random;
 pub use random::*;
+
 pub mod arinc429;
 pub mod arinc825;
 pub mod can_bus;
@@ -187,13 +190,25 @@ pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
 }
 
-pub trait CabinAir {
+pub trait CabinAltitude {
     fn altitude(&self) -> Length;
-    fn pressure(&self) -> Pressure;
 }
 
-pub trait CabinTemperature {
+pub trait CabinSimulation {
     fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature>;
+    fn exterior_pressure(&self) -> Pressure {
+        Pressure::new::<hectopascal>(1013.25)
+    }
+    fn cabin_pressure(&self) -> Pressure {
+        Pressure::new::<hectopascal>(1013.25)
+    }
+}
+
+pub trait PressurizationOverheadShared {
+    fn is_in_man_mode(&self) -> bool;
+    fn ditching_is_on(&self) -> bool;
+    fn ldg_elev_is_auto(&self) -> bool;
+    fn ldg_elev_knob_value(&self) -> f64;
 }
 
 pub trait PneumaticBleed {
@@ -215,10 +230,6 @@ pub trait PackFlowValveState {
     // Pack id is 1 or 2
     fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool;
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
-}
-
-pub trait GroundSpeed {
-    fn ground_speed(&self) -> Velocity;
 }
 
 pub trait AdirsDiscreteOutputs {
@@ -735,11 +746,24 @@ impl Average for Pressure {
             count += 1;
         }
 
-        if count > 0 {
-            Pressure::new::<hectopascal>(sum / (count as f64))
-        } else {
-            Pressure::new::<hectopascal>(0.)
+        Pressure::new::<hectopascal>(if count > 0 { sum / (count as f64) } else { 0. })
+    }
+}
+
+impl Average for MassRate {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = MassRate>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<kilogram_per_second>();
+            count += 1;
         }
+
+        MassRate::new::<kilogram_per_second>(if count > 0 { sum / (count as f64) } else { 0. })
     }
 }
 
@@ -756,11 +780,24 @@ impl Average for ThermodynamicTemperature {
             count += 1;
         }
 
-        if count > 0 {
-            ThermodynamicTemperature::new::<kelvin>(sum / (count as f64))
-        } else {
-            ThermodynamicTemperature::new::<kelvin>(0.)
+        ThermodynamicTemperature::new::<kelvin>(if count > 0 { sum / (count as f64) } else { 0. })
+    }
+}
+
+impl Average for Ratio {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Ratio>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<ratio>();
+            count += 1;
         }
+
+        Ratio::new::<ratio>(if count > 0 { sum / (count as f64) } else { 0. })
     }
 }
 
@@ -773,10 +810,28 @@ impl<'a> Average<&'a Pressure> for Pressure {
     }
 }
 
+impl<'a> Average<&'a MassRate> for MassRate {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a MassRate>,
+    {
+        iter.copied().average()
+    }
+}
+
 impl<'a> Average<&'a ThermodynamicTemperature> for ThermodynamicTemperature {
     fn average<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a ThermodynamicTemperature>,
+    {
+        iter.copied().average()
+    }
+}
+
+impl<'a> Average<&'a Ratio> for Ratio {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Ratio>,
     {
         iter.copied().average()
     }
