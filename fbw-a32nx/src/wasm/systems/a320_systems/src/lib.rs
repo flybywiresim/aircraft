@@ -8,6 +8,8 @@ mod navigation;
 mod pneumatic;
 mod power_consumption;
 
+use std::time::Duration;
+
 use self::{
     air_conditioning::A320AirConditioning,
     fuel::A320Fuel,

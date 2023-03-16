@@ -10,6 +10,8 @@ mod navigation;
 mod pneumatic;
 mod power_consumption;
 
+use std::time::Duration;
+
 use self::{
     air_conditioning::A380AirConditioning,
     avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
@@ -24,7 +26,10 @@ use electrical::{
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use systems::simulation::InitContext;
+use systems::{
+    icing_state::{IcingState, PassiveIcingElement},
+    simulation::InitContext,
+};
 
 use systems::{
     apu::{
@@ -75,6 +80,7 @@ pub struct A380 {
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     cds: A380ControlDisplaySystem,
+    icing_stick: IcingState,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -119,6 +125,14 @@ impl A380 {
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             cds: A380ControlDisplaySystem::new(context),
+
+            icing_stick: IcingState::new(
+                context,
+                "ICING_STICK_INDICATOR",
+                Duration::from_secs(120),
+                Duration::from_secs(200),
+                None,
+            ),
         }
     }
 }
@@ -243,6 +257,9 @@ impl Aircraft for A380 {
 
         self.engines_flex_physics.update(context);
         self.cds.update();
+
+        self.icing_stick
+            .update(context, None::<&PassiveIcingElement>)
     }
 }
 impl SimulationElement for A380 {
@@ -277,6 +294,7 @@ impl SimulationElement for A380 {
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
+        self.icing_stick.accept(visitor);
 
         visitor.visit(self);
     }

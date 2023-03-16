@@ -3,8 +3,9 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
     f64::*,
+    length::millimeter,
     mass_density::kilogram_per_cubic_meter,
-    pressure::inch_of_mercury,
+    pressure::{inch_of_mercury, millimeter_of_mercury},
     time::second,
     velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };
@@ -162,6 +163,8 @@ pub struct UpdateContext {
     mach_number_id: VariableIdentifier,
     plane_height_id: VariableIdentifier,
     latitude_id: VariableIdentifier,
+    precipitation_rate_id: VariableIdentifier,
+    in_cloud_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -187,10 +190,17 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
+
+    // From msfs in millimeters
+    precipitation_rate: Length,
+
+    in_cloud: bool,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
     pub(crate) const AMBIENT_DENSITY_KEY: &'static str = "AMBIENT DENSITY";
+    pub(crate) const IN_CLOUD_KEY: &'static str = "AMBIENT IN CLOUD";
+    pub(crate) const AMBIENT_PRECIP_RATE_KEY: &'static str = "AMBIENT PRECIP RATE";
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
@@ -270,6 +280,8 @@ impl UpdateContext {
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
             plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
+            precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
+            in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -314,6 +326,8 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude,
+            precipitation_rate: Length::default(),
+            in_cloud: false,
         }
     }
 
@@ -344,6 +358,8 @@ impl UpdateContext {
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
             plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
+            precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
+            in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -385,6 +401,8 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
+            precipitation_rate: Length::default(),
+            in_cloud: false,
         }
     }
 
@@ -442,6 +460,11 @@ impl UpdateContext {
         self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.latitude = reader.read(&self.latitude_id);
+
+        let precipitation_height_millimeter = reader.read(&self.precipitation_rate_id);
+        self.precipitation_rate = Length::new::<millimeter>(precipitation_height_millimeter);
+
+        self.in_cloud = reader.read(&self.in_cloud_id);
 
         self.update_relative_wind();
 
@@ -564,6 +587,14 @@ impl UpdateContext {
 
     pub fn is_on_ground(&self) -> bool {
         self.is_on_ground
+    }
+
+    pub fn is_in_cloud(&self) -> bool {
+        self.in_cloud
+    }
+
+    pub fn precipitation_rate(&self) -> Length {
+        self.precipitation_rate
     }
 
     pub fn long_accel(&self) -> Acceleration {

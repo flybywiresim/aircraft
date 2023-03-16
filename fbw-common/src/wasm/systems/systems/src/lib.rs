@@ -13,6 +13,7 @@ pub mod electrical;
 pub mod engine;
 pub mod failures;
 pub mod hydraulic;
+pub mod icing_state;
 pub mod indicating_recording;
 pub mod integrated_modular_avionics;
 pub mod landing_gear;
