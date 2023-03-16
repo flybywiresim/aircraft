@@ -136,22 +136,4 @@ export class CruiseToDescentCoordinator {
         profile.checkpoints.push(...cruisePath.get());
         profile.checkpoints.push(...descentPath.get(true).reverse());
     }
-
-    // TODO: Remove since it unused I think?
-    addSpeedLimitAsCheckpoint(profile: NavGeometryProfile) {
-        const { flightPhase, descentSpeedLimit: { underAltitude }, presentPosition: { alt }, cruiseAltitude } = this.observer.get();
-
-        // Don't try to place speed limit if the cruise alt is higher
-        if (underAltitude > cruiseAltitude) {
-            return;
-        }
-
-        if ((underAltitude <= alt) && flightPhase >= FmgcFlightPhase.Descent) {
-            return;
-        }
-
-        const distance = profile.interpolateDistanceAtAltitudeBackwards(underAltitude);
-
-        profile.addInterpolatedCheckpoint(distance, { reason: VerticalCheckpointReason.CrossingDescentSpeedLimit });
-    }
 }

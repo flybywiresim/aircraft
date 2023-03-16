@@ -120,8 +120,10 @@ export class DescentPathBuilder {
             } else {
                 // Try alt path
                 let finalAltitude = Math.min(altitude + 1500, topOfDescentAltitude);
-                if (isUnderSpeedLimitAltitude) {
-                    finalAltitude = Math.min(finalAltitude, descentSpeedLimit.underAltitude);
+                let reason = VerticalCheckpointReason.IdlePathAtmosphericConditions;
+                if (isUnderSpeedLimitAltitude && finalAltitude >= descentSpeedLimit.underAltitude) {
+                    finalAltitude = descentSpeedLimit.underAltitude;
+                    reason = VerticalCheckpointReason.CrossingDescentSpeedLimit;
                 }
 
                 const altitudeStep = this.idleDescentStrategy.predictToAltitude(altitude, finalAltitude, speed, managedDescentSpeedMach, remainingFuelOnBoard, headwind);
@@ -133,7 +135,7 @@ export class DescentPathBuilder {
                     const distanceStep = this.idleDescentStrategy.predictToDistance(altitude, distanceToConstraint, speed, managedDescentSpeedMach, remainingFuelOnBoard, headwind);
                     sequence.addCheckpointFromStep(distanceStep, VerticalCheckpointReason.SpeedConstraint);
                 } else {
-                    sequence.addCheckpointFromStep(altitudeStep, VerticalCheckpointReason.IdlePathAtmosphericConditions);
+                    sequence.addCheckpointFromStep(altitudeStep, reason);
                 }
             }
 
