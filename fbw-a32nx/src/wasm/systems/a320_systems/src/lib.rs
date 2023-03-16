@@ -206,6 +206,7 @@ impl Aircraft for A320 {
             &self.adirs,
             [&self.engine_1, &self.engine_2],
             &self.engine_fire_overhead,
+            &self.payload,
             &self.pneumatic,
             &self.pneumatic_overhead,
             &self.pressurization_overhead,

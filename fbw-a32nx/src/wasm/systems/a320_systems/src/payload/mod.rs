@@ -17,6 +17,10 @@ use systems::{
 #[cfg(test)]
 pub mod test;
 
+pub trait NumberOfPassengers {
+    fn number_of_passengers(&self, ps: A320Pax) -> i8;
+}
+
 #[derive(Debug, Clone, Copy, Enum)]
 pub enum A320Pax {
     A,
@@ -671,5 +675,10 @@ impl SimulationElement for A320Payload {
             &self.per_pax_weight_id,
             self.per_pax_weight().get::<kilogram>(),
         );
+    }
+}
+impl NumberOfPassengers for A320Payload {
+    fn number_of_passengers(&self, ps: A320Pax) -> i8 {
+        self.pax_num(ps)
     }
 }
