@@ -2,6 +2,7 @@ pub mod audio;
 pub mod communications_panel;
 
 use crate::{
+    communications::audio::{DEFAULT_INT_RAD_SWITCH, TRANSMIT_ID_INT},
     communications::communications_panel::CommunicationsPanel,
     simulation::{
         InitContext, Read, SideControlling, SimulationElement, SimulationElementVisitor,
@@ -266,8 +267,13 @@ impl Communications {
 
             self.is_emitting = chosen_panel.is_emitting();
 
-            self.pilot_transmit_channel = chosen_panel.get_transmit_channel_value();
-            self.copilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+            if chosen_panel.get_int_rad_switch() <= DEFAULT_INT_RAD_SWITCH {
+                self.pilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+                self.copilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+            } else {
+                self.pilot_transmit_channel = TRANSMIT_ID_INT;
+                self.copilot_transmit_channel = TRANSMIT_ID_INT;
+            }
 
             self.receive_com1 = chosen_panel.get_receive_com1();
             self.receive_com2 = chosen_panel.get_receive_com2();

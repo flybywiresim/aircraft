@@ -3,6 +3,11 @@ use crate::simulation::{
     SimulatorWriter, VariableIdentifier, Write,
 };
 
+pub const DEFAULT_INT_RAD_SWITCH: u8 = 50;
+
+// Foundable in XML behaviors for MECH
+pub const TRANSMIT_ID_INT: u8 = 6;
+
 #[derive(Copy, Clone)]
 pub struct AudioControlPanel {
     transmit_channel_id: VariableIdentifier,
@@ -27,7 +32,7 @@ impl AudioControlPanel {
             int_rad_switch_id: context.get_identifier(format!("ACP{}_SWITCH_INT", id_acp)),
             voice_button: false,
             transmit_channel: 1,
-            int_rad_switch: 50,
+            int_rad_switch: DEFAULT_INT_RAD_SWITCH,
             vhfs: [
                 VHF::new(context, "VHF1", id_acp),
                 VHF::new(context, "VHF2", id_acp),
@@ -175,7 +180,7 @@ impl AudioControlPanel {
         self.voice_button
     }
 
-    fn get_int_rad_switch(&self) -> u8 {
+    pub fn get_int_rad_switch(&self) -> u8 {
         self.int_rad_switch
     }
 

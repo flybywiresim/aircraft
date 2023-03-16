@@ -59,32 +59,39 @@
                 </Condition>
                 <CURSOR>Hand</CURSOR>
                 <MOUSEFLAGS>LeftSingle+RightSingle+RightRelease+WheelUp+WheelDown</MOUSEFLAGS>
-                <CALLBACKCODE>
-                    (M:Event) 'LeftSingle' scmi 0 == if{
-                        (L:A32NX_ACP#ID#_SWITCH_INT, number) #ANIM_LENGTH# == if{
-                            #ANIM_LENGTH# 2 / (&gt;L:A32NX_ACP#ID#_SWITCH_INT, number)
-                        } els{
-                            #ANIM_LENGTH# (&gt;L:A32NX_ACP#ID#_SWITCH_INT, number)
+                <CALLBACKCODE type="rnp">
+                    alias switch = (L:A32NX_ACP#ID#_SWITCH_INT, number);
+                    let anim_length = #ANIM_LENGTH, number#;
+
+                    if (M:Event, string) == 'LeftSingle' {
+                        if switch == anim_length {
+                            switch = anim_length / 2;
+                        } else {
+                            switch = anim_length;
                         }
-                    }
-                    (M:Event) 'RightSingle' scmp 0 == if{
-                        #ANIM_LENGTH# 2 / (L:A32NX_ACP#ID#_SWITCH_INT) == if{
-                            0 (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
-                        }
-                    }
-                    (M:Event) 'RightRelease' scmp 0 == if{
-                        0 (L:A32NX_ACP#ID#_SWITCH_INT) == if{
-                            #ANIM_LENGTH# 2 / (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
-                        }
-                    }
-                    (M:Event) 'WheelUp' scmp 0 == if{
-                        #ANIM_LENGTH# 2 / (L:A32NX_ACP#ID#_SWITCH_INT) + #ANIM_LENGTH# min (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
-                    }
-                    (M:Event) 'WheelDown' scmi 0 == if{
-                       (L:A32NX_ACP#ID#_SWITCH_INT) #ANIM_LENGTH# 2 / - 0 max (&gt;L:A32NX_ACP#ID#_SWITCH_INT)
                     }
 
-                    #ID# (&gt;L:A32NX_UPDATE_COMMS)
+                    if (M:Event, string) == 'RightSingle' {
+                        if switch == (anim_length / 2) {
+                            switch = 0;
+                        }
+                    }
+
+                    if (M:Event, string) == 'RightRelease' {
+                        if switch == 0 {
+                            switch = anim_length / 2;
+                        }
+                    }
+
+                    if (M:Event, string) == 'WheelUp' {
+                        switch = ((anim_length / 2) + switch).min(anim_length);
+                    }
+
+                    if (M:Event, string) == 'WheelDown' {
+                        (L:A32NX_ACP#ID#, number) = (switch - (anim_length / 2)).max(0);
+                    }
+
+                    (L:A32NX_UPDATE_COMMS) = #ID, number#;
                 </CALLBACKCODE>
             </UseTemplate>
         </Component>
