@@ -158,6 +158,10 @@ impl CommunicationsPanel {
         self.acp.get_voice_button()
     }
 
+    pub fn get_int_rad_switch(&self) -> u8 {
+        self.acp.get_int_rad_switch()
+    }
+
     pub fn is_emitting(&self) -> bool {
         self.acp.is_emitting()
     }
