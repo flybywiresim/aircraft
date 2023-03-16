@@ -5,11 +5,14 @@ use systems::{
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
-        AdirsToAirCondInterface, AirConditioningSystem, DuctTemperature, OutflowValveSignal,
-        OutletAir, PackFlowControllers, PressurizationConstants, PressurizationOverheadShared,
-        ZoneType,
+        AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningSystem,
+        DuctTemperature, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlowControllers,
+        PressurizationConstants, PressurizationOverheadShared, ZoneType,
     },
-    overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
+    overhead::{
+        AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
+        SpringLoadedSwitch, ValueKnob,
+    },
     pneumatic::PneumaticContainer,
     shared::{
         random_number, update_iterator::MaxStepLoop, CabinAltitude, CabinSimulation,
@@ -24,11 +27,14 @@ use systems::{
 };
 
 use std::time::Duration;
-use uom::si::{f64::*, pressure::hectopascal, ratio::percent, velocity::knot};
+use uom::si::{
+    f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
+    velocity::knot,
+};
 
 pub(super) struct A380AirConditioning {
     a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3, 2, 4>,
+    a380_air_conditioning_system: A380AirConditioningSystem,
     a320_pressurization_system: A320PressurizationSystem,
 
     pressurization_updater: MaxStepLoop,
@@ -38,24 +44,28 @@ impl A380AirConditioning {
     const PRESSURIZATION_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(50);
 
     pub fn new(context: &mut InitContext) -> Self {
-        let cabin_zones: [ZoneType; 3] =
-            [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
+        let cabin_zones: [ZoneType; 16] = [
+            ZoneType::Cockpit,
+            ZoneType::Cabin(11),
+            ZoneType::Cabin(12),
+            ZoneType::Cabin(13),
+            ZoneType::Cabin(14),
+            ZoneType::Cabin(15),
+            ZoneType::Cabin(16),
+            ZoneType::Cabin(17),
+            ZoneType::Cabin(18),
+            ZoneType::Cabin(21),
+            ZoneType::Cabin(22),
+            ZoneType::Cabin(23),
+            ZoneType::Cabin(24),
+            ZoneType::Cabin(25),
+            ZoneType::Cabin(26),
+            ZoneType::Cabin(27),
+        ];
 
         Self {
-            a320_cabin: A320Cabin::new(context),
-            a320_air_conditioning_system: AirConditioningSystem::new(
-                context,
-                cabin_zones,
-                vec![
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::AlternatingCurrent(1),
-                ],
-                vec![
-                    ElectricalBusType::DirectCurrent(2),
-                    ElectricalBusType::AlternatingCurrent(2),
-                ],
-                ElectricalBusType::AlternatingCurrent(1),
-            ),
+            a320_cabin: A320Cabin::new(context, &cabin_zones),
+            a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
             a320_pressurization_system: A320PressurizationSystem::new(context),
 
             pressurization_updater: MaxStepLoop::new(Self::PRESSURIZATION_SIM_MAX_TIME_STEP),
@@ -75,7 +85,7 @@ impl A380AirConditioning {
     ) {
         self.pressurization_updater.update(context);
 
-        self.a320_air_conditioning_system.update(
+        self.a380_air_conditioning_system.update(
             context,
             adirs,
             &self.a320_cabin,
@@ -94,7 +104,7 @@ impl A380AirConditioning {
         for cur_time_step in self.pressurization_updater {
             self.a320_cabin.update(
                 &context.with_delta(cur_time_step),
-                &self.a320_air_conditioning_system,
+                &self.a380_air_conditioning_system,
                 lgciu,
                 &self.a320_pressurization_system,
             );
@@ -114,7 +124,7 @@ impl A380AirConditioning {
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
-        self.a320_air_conditioning_system
+        self.a380_air_conditioning_system
             .mix_packs_air_update(pack_container);
     }
 
@@ -128,9 +138,9 @@ impl A380AirConditioning {
     }
 }
 
-impl PackFlowControllers<3, 4> for A380AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 4> {
-        self.a320_air_conditioning_system
+impl PackFlowControllers<4> for A380AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
+        self.a380_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
 }
@@ -138,7 +148,7 @@ impl PackFlowControllers<3, 4> for A380AirConditioning {
 impl SimulationElement for A380AirConditioning {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.a320_cabin.accept(visitor);
-        self.a320_air_conditioning_system.accept(visitor);
+        self.a380_air_conditioning_system.accept(visitor);
         self.a320_pressurization_system.accept(visitor);
 
         visitor.visit(self);
@@ -152,15 +162,15 @@ struct A320Cabin {
 
     fwd_door_is_open: bool,
     rear_door_is_open: bool,
-    number_of_passengers: [u8; 3],
-    cabin_air_simulation: CabinAirSimulation<A320PressurizationConstants, 3>,
+    number_of_passengers: [u8; 16],
+    cabin_air_simulation: CabinAirSimulation<A320PressurizationConstants, 16>,
 }
 
 impl A320Cabin {
     const FWD_DOOR: &'static str = "INTERACTIVE POINT OPEN:0";
     const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
 
-    fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 16]) -> Self {
         let passenger_rows_id = [
             None,
             Some(vec![
@@ -172,6 +182,8 @@ impl A320Cabin {
                 context.get_identifier("PAX_TOTAL_ROWS_22_29".to_owned()),
             ]),
         ];
+        let mut number_of_passengers: [u8; 16] = [0; 16];
+        number_of_passengers[0] = 2;
 
         Self {
             passenger_rows_id,
@@ -180,11 +192,8 @@ impl A320Cabin {
 
             fwd_door_is_open: false,
             rear_door_is_open: false,
-            number_of_passengers: [2, 0, 0],
-            cabin_air_simulation: CabinAirSimulation::new(
-                context,
-                &[ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)],
-            ),
+            number_of_passengers,
+            cabin_air_simulation: CabinAirSimulation::new(context, cabin_zones),
         }
     }
 
@@ -198,7 +207,7 @@ impl A320Cabin {
         let lgciu_gears_compressed = lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
-        let number_of_open_doors: u8 = self.fwd_door_is_open as u8 + self.rear_door_is_open as u8;
+        let number_of_open_doors = self.fwd_door_is_open as u8 + self.rear_door_is_open as u8;
 
         self.cabin_air_simulation.update(
             context,
@@ -246,6 +255,212 @@ impl SimulationElement for A320Cabin {
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.cabin_air_simulation.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct A380AirConditioningSystem {
+    air_conditioning_system: AirConditioningSystem<16, 2, 4>,
+    air_conditioning_overhead: A380AirConditioningSystemOverhead,
+}
+
+impl A380AirConditioningSystem {
+    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 16]) -> Self {
+        Self {
+            air_conditioning_system: AirConditioningSystem::new(
+                context,
+                cabin_zones,
+                vec![
+                    ElectricalBusType::DirectCurrent(1),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ],
+                vec![
+                    ElectricalBusType::DirectCurrent(2),
+                    ElectricalBusType::AlternatingCurrent(2),
+                ],
+                ElectricalBusType::AlternatingCurrent(1),
+            ),
+            air_conditioning_overhead: A380AirConditioningSystemOverhead::new(context),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsToAirCondInterface,
+        cabin_simulation: &impl CabinSimulation,
+        engines: [&impl EngineCorrectedN1; 4],
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
+        pneumatic_overhead: &impl EngineBleedPushbutton<4>,
+        pressurization: &impl CabinAltitude,
+        pressurization_overhead: &A380PressurizationOverheadPanel,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+    ) {
+        self.air_conditioning_system.update(
+            context,
+            &self.air_conditioning_overhead,
+            adirs,
+            cabin_simulation,
+            engines,
+            engine_fire_push_buttons,
+            pneumatic,
+            pneumatic_overhead,
+            pressurization,
+            pressurization_overhead,
+            lgciu,
+        );
+        self.air_conditioning_overhead.set_pack_pushbutton_fault(
+            self.air_conditioning_system
+                .pack_fault_determination(pneumatic),
+        );
+    }
+
+    pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
+        self.air_conditioning_system
+            .mix_packs_air_update(pack_container);
+    }
+}
+
+impl PackFlowControllers<4> for A380AirConditioningSystem {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
+        self.air_conditioning_system.pack_flow_controller(pack_id)
+    }
+}
+
+impl DuctTemperature for A380AirConditioningSystem {
+    fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        self.air_conditioning_system.duct_temperature()
+    }
+}
+
+impl OutletAir for A380AirConditioningSystem {
+    fn outlet_air(&self) -> Air {
+        self.air_conditioning_system.outlet_air()
+    }
+}
+
+impl SimulationElement for A380AirConditioningSystem {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+        self.air_conditioning_system.accept(visitor);
+        self.air_conditioning_overhead.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub(crate) struct A380AirConditioningSystemOverhead {
+    flow_selector_id: VariableIdentifier,
+
+    // Air panel
+    flow_selector: OverheadFlowSelector,
+    hot_air_pbs: [OnOffFaultPushButton; 2],
+    temperature_selectors: [ValueKnob; 2], // This might need to change due to both knobs not being the same
+    ram_air_pb: OnOffPushButton,
+    pack_pbs: [OnOffFaultPushButton; 2],
+
+    // Vent panel
+    cabin_fans_pb: OnOffPushButton,
+
+    // Cargo air cond panel
+    isol_valves_pbs: [OnOffFaultPushButton; 2],
+    cargo_temperature_regulators: [ValueKnob; 2],
+    cargo_heater_pb: OnOffFaultPushButton,
+}
+
+impl A380AirConditioningSystemOverhead {
+    pub fn new(context: &mut InitContext) -> Self {
+        Self {
+            flow_selector_id: context
+                .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
+
+            // Air panel
+            flow_selector: OverheadFlowSelector::Norm,
+            hot_air_pbs: [
+                OnOffFaultPushButton::new_on(context, "COND_HOT_AIR_1"),
+                OnOffFaultPushButton::new_on(context, "COND_HOT_AIR_2"),
+            ],
+            temperature_selectors: [
+                ValueKnob::new_with_value(context, "COND_CKPT_SELECTOR", 24.),
+                ValueKnob::new_with_value(context, "COND_CABIN_SELECTOR", 24.),
+            ],
+            ram_air_pb: OnOffPushButton::new_off(context, "COND_RAM_AIR"),
+            pack_pbs: [
+                OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
+                OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
+            ],
+
+            // Vent panel
+            cabin_fans_pb: OnOffPushButton::new_on(context, "VENT_CAB_FANS"),
+
+            // Cargo air cond panel
+            isol_valves_pbs: [
+                OnOffFaultPushButton::new_on(context, "CARGO_AIR_ISOL_VALVES_FWD"),
+                OnOffFaultPushButton::new_on(context, "CARGO_AIR_ISOL_VALVES_BULK"),
+            ],
+            cargo_temperature_regulators: [
+                ValueKnob::new_with_value(context, "CARGO_AIR_TEMP_REGUL_FWD", 15.),
+                ValueKnob::new_with_value(context, "CARGO_AIR_TEMP_REGUL_BULK", 15.),
+            ],
+            cargo_heater_pb: OnOffFaultPushButton::new_on(context, "CARGO_AIR_HEATER"),
+        }
+    }
+
+    fn set_pack_pushbutton_fault(&mut self, pb_has_fault: [bool; 2]) {
+        self.pack_pbs
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
+    }
+}
+
+impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
+    fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature {
+        // The A380 has 16 cabin zones but only one knob
+        let knob = if zone_id > 1 {
+            &self.temperature_selectors[1]
+        } else {
+            &self.temperature_selectors[0]
+        };
+        // Map from knob range 0-300 to 18-30 degrees C
+        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
+    }
+
+    fn pack_pushbuttons_state(&self) -> Vec<bool> {
+        self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
+    }
+
+    fn hot_air_pushbutton_is_on(&self) -> bool {
+        // FIXME: Temporary solution until A380 air cond is implemented
+        self.hot_air_pbs[0].is_on() || self.hot_air_pbs[1].is_on()
+    }
+
+    fn cabin_fans_is_on(&self) -> bool {
+        self.cabin_fans_pb.is_on()
+    }
+
+    fn flow_selector_position(&self) -> OverheadFlowSelector {
+        self.flow_selector
+    }
+}
+
+impl SimulationElement for A380AirConditioningSystemOverhead {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.flow_selector = reader.read(&self.flow_selector_id);
+    }
+
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.hot_air_pbs, visitor);
+        accept_iterable!(self.temperature_selectors, visitor);
+        self.ram_air_pb.accept(visitor);
+        accept_iterable!(self.pack_pbs, visitor);
+
+        self.cabin_fans_pb.accept(visitor);
+
+        accept_iterable!(self.isol_valves_pbs, visitor);
+        accept_iterable!(self.cargo_temperature_regulators, visitor);
+        self.cargo_heater_pb.accept(visitor);
 
         visitor.visit(self);
     }
@@ -726,7 +941,7 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+            pack_flow_valve_signals: &impl PackFlowControllers<4>,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -891,7 +1106,7 @@ mod tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+            pack_flow_valve_signals: &impl PackFlowControllers<4>,
         ) {
             self.pack_flow_valve.update_open_amount(
                 &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),

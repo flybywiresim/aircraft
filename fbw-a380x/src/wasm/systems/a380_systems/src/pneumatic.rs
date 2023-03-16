@@ -203,7 +203,7 @@ impl A380Pneumatic {
         pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+        pack_flow_valve_signals: &impl PackFlowControllers<4>,
     ) {
         self.physics_updater.update(context);
 
@@ -226,7 +226,7 @@ impl A380Pneumatic {
         overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+        pack_flow_valve_signals: &impl PackFlowControllers<4>,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -1212,7 +1212,7 @@ impl PackComplex {
         context: &UpdateContext,
         left_input: &mut impl PneumaticContainer,
         right_input: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+        pack_flow_valve_signals: &impl PackFlowControllers<4>,
     ) {
         self.left_pack_flow_valve.update_open_amount(
             &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
@@ -1429,14 +1429,17 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
-    use crate::air_conditioning::A380PressurizationOverheadPanel;
+    use crate::air_conditioning::{
+        A380AirConditioningSystemOverhead, A380PressurizationOverheadPanel,
+    };
 
     use super::{A380Pneumatic, A380PneumaticOverheadPanel};
 
     struct TestAirConditioning {
         a380_air_conditioning_system: AirConditioningSystem<3, 2, 4>,
-
+        air_conditioning_overhead: A380AirConditioningSystemOverhead,
         test_cabin: TestCabin,
+
         adirs: TestAdirs,
         pressurization: TestPressurization,
         pressurization_overhead: A380PressurizationOverheadPanel,
@@ -1449,13 +1452,13 @@ mod tests {
             Self {
                 a380_air_conditioning_system: AirConditioningSystem::new(
                     context,
-                    cabin_zones,
+                    &cabin_zones,
                     vec![ElectricalBusType::DirectCurrent(1)],
                     vec![ElectricalBusType::DirectCurrent(2)],
                     ElectricalBusType::AlternatingCurrent(1),
                 ),
                 test_cabin: TestCabin::new(),
-
+                air_conditioning_overhead: A380AirConditioningSystemOverhead::new(context),
                 adirs: TestAdirs::new(),
                 pressurization: TestPressurization::new(),
                 pressurization_overhead: A380PressurizationOverheadPanel::new(context),
@@ -1472,6 +1475,7 @@ mod tests {
         ) {
             self.a380_air_conditioning_system.update(
                 context,
+                &self.air_conditioning_overhead,
                 &self.adirs,
                 &self.test_cabin,
                 engines,
@@ -1484,8 +1488,8 @@ mod tests {
             );
         }
     }
-    impl PackFlowControllers<3, 4> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 4> {
+    impl PackFlowControllers<4> for TestAirConditioning {
+        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
             self.a380_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }

@@ -37,7 +37,7 @@ enum ACSCActiveComputer {
 pub(super) struct AirConditioningSystemController<const ZONES: usize, const ENGINES: usize> {
     aircraft_state: AirConditioningStateManager,
     zone_controller: Vec<ZoneController<ZONES>>,
-    pack_flow_controller: [PackFlowController<ZONES, ENGINES>; 2],
+    pack_flow_controller: [PackFlowController<ENGINES>; 2],
     trim_air_system_controller: TrimAirSystemController<ZONES, ENGINES>,
     cabin_fans_controller: CabinFanController<ZONES>,
     primary_powered_by: Vec<ElectricalBusType>,
@@ -192,10 +192,10 @@ impl<const ZONES: usize, const ENGINES: usize> PackFlow
     }
 }
 
-impl<const ZONES: usize, const ENGINES: usize> PackFlowControllers<ZONES, ENGINES>
+impl<const ZONES: usize, const ENGINES: usize> PackFlowControllers<ENGINES>
     for AirConditioningSystemController<ZONES, ENGINES>
 {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES, ENGINES> {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ENGINES> {
         self.pack_flow_controller[pack_id.to_index()]
     }
 }
@@ -670,7 +670,7 @@ impl From<usize> for Pack {
 }
 
 #[derive(Copy, Clone)]
-pub struct PackFlowController<const ZONES: usize, const ENGINES: usize> {
+pub struct PackFlowController<const ENGINES: usize> {
     pack_flow_id: VariableIdentifier,
 
     id: usize,
@@ -685,7 +685,7 @@ pub struct PackFlowController<const ZONES: usize, const ENGINES: usize> {
     fcv_timer_open: Duration,
 }
 
-impl<const ZONES: usize, const ENGINES: usize> PackFlowController<ZONES, ENGINES> {
+impl<const ENGINES: usize> PackFlowController<ENGINES> {
     const PACK_START_TIME_SECOND: f64 = 30.;
     const PACK_START_FLOW_LIMIT: f64 = 100.;
     const APU_SUPPLY_FLOW_LIMIT: f64 = 120.;
@@ -882,15 +882,13 @@ impl<const ZONES: usize, const ENGINES: usize> PackFlowController<ZONES, ENGINES
     }
 }
 
-impl<const ZONES: usize, const ENGINES: usize> PackFlow for PackFlowController<ZONES, ENGINES> {
+impl<const ENGINES: usize> PackFlow for PackFlowController<ENGINES> {
     fn pack_flow(&self) -> MassRate {
         self.pack_flow
     }
 }
 
-impl<const ZONES: usize, const ENGINES: usize> ControllerSignal<PackFlowValveSignal>
-    for PackFlowController<ZONES, ENGINES>
-{
+impl<const ENGINES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowController<ENGINES> {
     fn signal(&self) -> Option<PackFlowValveSignal> {
         // Only send signal to move the valve if the computer is powered
         if !matches!(self.operation_mode, ACSCActiveComputer::None) {
@@ -906,9 +904,7 @@ impl<const ZONES: usize, const ENGINES: usize> ControllerSignal<PackFlowValveSig
     }
 }
 
-impl<const ZONES: usize, const ENGINES: usize> SimulationElement
-    for PackFlowController<ZONES, ENGINES>
-{
+impl<const ENGINES: usize> SimulationElement for PackFlowController<ENGINES> {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pack_flow_id, self.flow_demand);
     }
@@ -941,7 +937,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         context: &UpdateContext,
         acs_overhead: &impl AirConditioningOverheadShared,
         duct_demand_temperature: &[ThermodynamicTemperature],
-        pack_flow_controller: &[PackFlowController<ZONES, ENGINES>; 2],
+        pack_flow_controller: &[PackFlowController<ENGINES>; 2],
         operation_mode: ACSCActiveComputer,
         pneumatic: &impl PackFlowValveState,
         trim_air_system: &TrimAirSystem<ZONES, ENGINES>,
@@ -976,7 +972,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
 
     fn trim_air_pressure_regulating_valve_is_open_determination(
         &self,
-        pack_flow_controller: &[PackFlowController<ZONES, ENGINES>; 2],
+        pack_flow_controller: &[PackFlowController<ENGINES>; 2],
         pneumatic: &impl PackFlowValveState,
     ) -> bool {
         !pack_flow_controller
@@ -1491,7 +1487,7 @@ mod acs_controller_tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<2, 2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2>,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -1671,7 +1667,7 @@ mod acs_controller_tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<2, 2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2>,
         ) {
             self.pack_flow_valve.update_open_amount(
                 &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),

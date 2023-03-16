@@ -47,8 +47,8 @@ pub trait PackFlow {
     fn pack_flow(&self) -> MassRate;
 }
 
-pub trait PackFlowControllers<const ZONES: usize, const ENGINES: usize> {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES, ENGINES>;
+pub trait PackFlowControllers<const ENGINES: usize> {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ENGINES>;
 }
 
 pub trait OutletAir {
@@ -77,21 +77,30 @@ pub trait PressurizationOverheadShared {
     fn ldg_elev_knob_value(&self) -> f64;
 }
 
+/// Cabin Zones with double digit IDs are specific to the A380
+/// 1X is main deck, 2X is upper deck
 pub enum ZoneType {
     Cockpit,
-    Cabin(u8),
+    Cabin(usize),
 }
 
 impl ZoneType {
     fn id(&self) -> usize {
         match self {
             ZoneType::Cockpit => 0,
-            ZoneType::Cabin(number) => *number as usize,
+            ZoneType::Cabin(number) => {
+                if number < &10 {
+                    *number
+                } else if number < &20 {
+                    *number as usize - 10
+                } else {
+                    *number as usize - 13
+                }
+            }
         }
     }
 }
 
-// TODO: At the moment this lives here but it's specific to the A320.
 impl Display for ZoneType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -99,9 +108,53 @@ impl Display for ZoneType {
             ZoneType::Cabin(number) => match number {
                 1 => write!(f, "FWD"),
                 2 => write!(f, "AFT"),
-                _ => panic!("Not implemented for the A320 aircraft."),
+                11 => write!(f, "MAIN_DECK_1"),
+                12 => write!(f, "MAIN_DECK_2"),
+                13 => write!(f, "MAIN_DECK_3"),
+                14 => write!(f, "MAIN_DECK_4"),
+                15 => write!(f, "MAIN_DECK_5"),
+                16 => write!(f, "MAIN_DECK_6"),
+                17 => write!(f, "MAIN_DECK_7"),
+                18 => write!(f, "MAIN_DECK_8"),
+                21 => write!(f, "UPPER_DECK_1"),
+                22 => write!(f, "UPPER_DECK_2"),
+                23 => write!(f, "UPPER_DECK_3"),
+                24 => write!(f, "UPPER_DECK_4"),
+                25 => write!(f, "UPPER_DECK_5"),
+                26 => write!(f, "UPPER_DECK_6"),
+                27 => write!(f, "UPPER_DECK_7"),
+                _ => panic!("Not implemented for this aircraft."),
             },
         }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum OverheadFlowSelector {
+    Lo = 80,
+    Norm = 100,
+    Hi = 120,
+    Man = 0,
+}
+
+read_write_enum!(OverheadFlowSelector);
+
+impl From<f64> for OverheadFlowSelector {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            // Note: A380 overhead only has 0,1,2 positions, it doesn't rotate to MAN
+            0 => OverheadFlowSelector::Lo,
+            1 => OverheadFlowSelector::Norm,
+            2 => OverheadFlowSelector::Hi,
+            3 => OverheadFlowSelector::Man,
+            _ => panic!("Overhead flow selector position not recognized."),
+        }
+    }
+}
+
+impl From<OverheadFlowSelector> for Ratio {
+    fn from(value: OverheadFlowSelector) -> Self {
+        Ratio::new::<percent>((value as u8) as f64)
     }
 }
 
@@ -267,10 +320,10 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> PackFlow
     }
 }
 
-impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
-    PackFlowControllers<ZONES, ENGINES> for AirConditioningSystem<ZONES, FANS, ENGINES>
+impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> PackFlowControllers<ENGINES>
+    for AirConditioningSystem<ZONES, FANS, ENGINES>
 {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ZONES, ENGINES> {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ENGINES> {
         self.acsc.pack_flow_controller(pack_id)
     }
 }
@@ -297,32 +350,6 @@ impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> SimulationElem
         accept_iterable!(self.cabin_fans, visitor);
 
         visitor.visit(self);
-    }
-}
-
-#[derive(Clone, Copy)]
-pub enum OverheadFlowSelector {
-    Lo = 80,
-    Norm = 100,
-    Hi = 120,
-}
-
-read_write_enum!(OverheadFlowSelector);
-
-impl From<f64> for OverheadFlowSelector {
-    fn from(value: f64) -> Self {
-        match value as u8 {
-            0 => OverheadFlowSelector::Lo,
-            1 => OverheadFlowSelector::Norm,
-            2 => OverheadFlowSelector::Hi,
-            _ => panic!("Overhead flow selector position not recognized."),
-        }
-    }
-}
-
-impl From<OverheadFlowSelector> for Ratio {
-    fn from(value: OverheadFlowSelector) -> Self {
-        Ratio::new::<percent>((value as u8) as f64)
     }
 }
 

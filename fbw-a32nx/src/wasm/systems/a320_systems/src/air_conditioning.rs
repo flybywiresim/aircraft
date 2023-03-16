@@ -116,8 +116,8 @@ impl A320AirConditioning {
     }
 }
 
-impl PackFlowControllers<3, 2> for A320AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 2> {
+impl PackFlowControllers<2> for A320AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
         self.a320_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
@@ -308,8 +308,8 @@ impl A320AirConditioningSystem {
     }
 }
 
-impl PackFlowControllers<3, 2> for A320AirConditioningSystem {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 2> {
+impl PackFlowControllers<2> for A320AirConditioningSystem {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
         self.air_conditioning_system.pack_flow_controller(pack_id)
     }
 }
@@ -895,7 +895,7 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2>,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -1060,7 +1060,7 @@ mod tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2>,
         ) {
             self.pack_flow_valve.update_open_amount(
                 &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
