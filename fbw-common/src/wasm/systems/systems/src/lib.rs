@@ -19,7 +19,6 @@ pub mod landing_gear;
 pub mod navigation;
 pub mod overhead;
 pub mod pneumatic;
-pub mod pressurization;
 pub mod shared;
 pub mod simulation;
 pub mod wind_turbine;
