@@ -5,7 +5,7 @@ use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
-        AdirsDiscreteOutputs, AirDataSource, GroundSpeed, MachNumber,
+        AdirsDiscreteOutputs, AirDataSource, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
