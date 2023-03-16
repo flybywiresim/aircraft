@@ -23,14 +23,15 @@ export const StatusArea = () => {
 
     const [isaVisible, setIsaVisible] = useState(false);
 
-    const [airDataReferenceSource, setAirDataSource] = useState(0);
-    const [inertialReferenceSource, setInertialSource] = useState(0);
+    const [airDataReferenceSource, setAirDataSource] = useState(1);
+    const [inertialReferenceSource, setInertialSource] = useState(1);
     const [loadFactorVisibleElement, setLoadFactorVisibleElement] = useState(false);
     const [loadFactorText, setLoadFactorText] = useState('');
 
     const sat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`, 6000);
     const tat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`, 6000);
-    const isa = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA`, 6000);
+    const zp = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_ALTITUDE`, 6000);
+    const isa = sat.valueOr(0) + (zp.valueOr(0) / 500) - 15;
     const loadFactor = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_BODY_NORMAL_ACC`, 300);
 
     const [loadFactorSet] = useState(new NXLogicConfirmNode(2));
@@ -70,12 +71,13 @@ export const StatusArea = () => {
         const isInStdMode = baroMode !== 0 && baroMode !== 1;
         // As ISA relates to SAT, we cannot present ISA when SAT is unavailable. We might want to move this into
         // Rust ADIRS code itself.
-        const isaShouldBeVisible = isInStdMode && isa.isNormalOperation() && sat.isNormalOperation();
+        const isaShouldBeVisible = isInStdMode && zp.isNormalOperation() && sat.isNormalOperation();
         setIsaVisible(isaShouldBeVisible);
-    }, [isa, sat]);
+    }, [isa, sat, zp]);
 
     const satPrefix = sat.value > 0 ? '+' : '';
     const tatPrefix = tat.value > 0 ? '+' : '';
+    const isaPrefix = isa > 0 ? '+' : '';
     const seconds = Math.floor(zulu);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - (hours * 3600)) / 60);
@@ -195,7 +197,10 @@ export const StatusArea = () => {
                     {isaVisible && (
                         <>
                             <Text title x={74} y={111} alignEnd>ISA</Text>
-                            <Text value x={130} y={111} alignEnd>{Math.round(isa.value)}</Text>
+                            <Text value x={130} y={111} alignEnd>
+                                {isaPrefix}
+                                {Math.round(isa)}
+                            </Text>
                             <Text unit x={150} y={111} alignStart>&#176;C</Text>
                         </>
 

@@ -1,11 +1,17 @@
 #include "Arinc429Utils.h"
 
 base_arinc_429 Arinc429Utils::fromSimVar(double simVar) {
-  return *reinterpret_cast<base_arinc_429*>(&simVar);
+  base_arinc_429 ret;
+  const auto u64Val = static_cast<uint64_t>(simVar);
+  const uint32_t u32Val = u64Val & 0xffffffff;
+  ret.SSM = u64Val >> 32;
+  ret.Data = *reinterpret_cast<const float*>(&u32Val);
+  return ret;
 }
 
 double Arinc429Utils::toSimVar(base_arinc_429 word) {
-  return *reinterpret_cast<double*>(&word);
+  const uint64_t u64Val = *reinterpret_cast<const uint32_t*>(&word.Data) | static_cast<uint64_t>(word.SSM) << 32;
+  return static_cast<double>(u64Val);
 }
 
 bool Arinc429Utils::isFw(base_arinc_429 word) {

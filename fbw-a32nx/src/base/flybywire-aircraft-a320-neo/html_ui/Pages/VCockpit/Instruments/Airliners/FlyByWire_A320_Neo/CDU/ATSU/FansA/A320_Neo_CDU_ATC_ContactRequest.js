@@ -10,9 +10,9 @@ class CDUAtcContactRequest {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -71,11 +71,11 @@ class CDUAtcContactRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.climb = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.climb = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.climb = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 }
             }
             CDUAtcContactRequest.ShowPage(mcdu, data);
@@ -88,11 +88,11 @@ class CDUAtcContactRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.altitude = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.altitude = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.altitude = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 }
             }
             CDUAtcContactRequest.ShowPage(mcdu, data);
@@ -129,7 +129,7 @@ class CDUAtcContactRequest {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcContactRequest.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcContactRequest.CreateRequests(mcdu, data);

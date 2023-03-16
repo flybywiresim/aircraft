@@ -34,7 +34,7 @@ export const PagesContainer = () => {
     const [apuAboveThresholdTimer, setApuAboveThresholdTimer] = useState(-1);
     const apuRpm = useArinc429Var('L:A32NX_APU_N', 100);
 
-    const altitude = useArinc429Var('L:A32NX_ADIRS_ADR_1_ALTITUDE', 300);
+    const baroCorrectedAltitude1 = useArinc429Var('L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1', 300);
 
     const [page, setPage] = useSimVar('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', 50);
 
@@ -133,7 +133,7 @@ export const PagesContainer = () => {
                 const spoilerOrFlapsDeployed = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number') !== 0
                 || SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') !== 0;
 
-                if (isGearExtended && (altitude.value < 16000)) {
+                if (isGearExtended && (baroCorrectedAltitude1.value < 16000)) {
                     setPageWhenUnselected(9);
                     checkApuPage(deltaTime);
                     checkEnginePage(deltaTime);

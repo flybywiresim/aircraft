@@ -36,19 +36,6 @@
         "kind": "build",
         "isDefault": true
       }
-    },
-    {
-      "label": "Build Rust Tests",
-      "type": "shell",
-      "command": "cargo test build",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      }
     }
   ]
 }
