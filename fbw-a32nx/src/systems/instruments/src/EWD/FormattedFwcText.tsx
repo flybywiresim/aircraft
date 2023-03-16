@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
 
 interface FormattedFwcTextProps {
     message: Subscribable<string>;

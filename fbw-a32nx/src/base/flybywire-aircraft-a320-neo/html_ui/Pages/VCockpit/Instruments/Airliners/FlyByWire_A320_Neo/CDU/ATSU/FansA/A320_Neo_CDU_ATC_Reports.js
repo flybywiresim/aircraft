@@ -3,6 +3,7 @@ class CDUAtcReports {
         return {
             backOnRoute: false,
             deviating: null,
+            updateInProgress: false,
         };
     }
 
@@ -11,9 +12,9 @@ class CDUAtcReports {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -29,7 +30,7 @@ class CDUAtcReports {
             retval.push(CDUAtcReports.CreateRequest(mcdu, "DM20"));
         }
         if (data.deviating) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.deviating).split(" ");
+            const elements = AtsuCommon.InputValidation.expandLateralOffset(data.deviating).split(" ");
             retval.push(CDUAtcReports.CreateRequest(mcdu, "DM80", [elements[0], elements[1]]));
         }
 
@@ -66,8 +67,8 @@ class CDUAtcReports {
             [deviating],
             [""],
             ["<MANUAL POS REPORT"],
-            [`\xa0AUTO POS REPORT: ${mcdu.atsu.atc.automaticPositionReportActive() ? "ON" : "OFF"}`],
-            [`{cyan}*SET ${mcdu.atsu.atc.automaticPositionReportActive() ? "OFF" : "ON"}{end}`],
+            [`\xa0AUTO POS REPORT: ${mcdu.atsu.automaticPositionReportActive() ? "ON" : "OFF"}`],
+            [`{cyan}${data.updateInProgress ? '\xa0' : '*'}SET ${mcdu.atsu.automaticPositionReportActive() ? "OFF" : "ON"}{end}`],
             ["\xa0ALL FIELDS"],
             [erase, text],
             ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
@@ -93,9 +94,9 @@ class CDUAtcReports {
             if (value === FMCMainDisplay.clrValue) {
                 data.deviating = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.deviating = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.deviating = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -114,7 +115,16 @@ class CDUAtcReports {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = () => {
-            mcdu.atsu.atc.toggleAutomaticPositionReportActive();
+            mcdu.atsu.toggleAutomaticPositionReportActive().then((status) => {
+                if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
+
+                data.updateInProgress = false;
+                CDUAtcReports.ShowPage(mcdu, data);
+            });
+
+            data.updateInProgress = true;
             CDUAtcReports.ShowPage(mcdu, data);
         };
 
@@ -149,7 +159,7 @@ class CDUAtcReports {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcReports.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcReports.CreateRequests(mcdu, data);

@@ -47,6 +47,7 @@ class A32NX_EWD extends BaseInstrument {
 
         this.arincProvider.init();
         this.clock.init();
+        this.pseudoFwc.init();
 
         this.simVarPublisher.subscribe('acEssBus');
         this.simVarPublisher.subscribe('ewdPotentiometer');

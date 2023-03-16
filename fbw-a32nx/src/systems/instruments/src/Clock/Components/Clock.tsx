@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ComponentProps, DisplayComponent, FSComponent, EventBus, VNode, Subject, HEvent } from 'msfssdk';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';
 

@@ -128,6 +128,8 @@ declare global {
 
         oneWayRunways: OneWayRunway[];
 
+        elevation: number | undefined;
+
         UpdateNamedFrequencies(icao?: string): Promise<void>
     }
 
@@ -208,8 +210,10 @@ declare global {
         // unknown/empty
         icaos: Array<string>;
         missedLegs: RawProcedureLeg[];
-        // "(VOR|ILS|LOC|RNAV|...) [0-9]{2} ([A-Z])?"
+        /** Short format approach name (up to 7 chars) for MCDU */
         name: string;
+        /** Long format approach name (up to 9 chars) for EIS */
+        longName: string;
         rnavTypeFlags: RnavTypeFlags;
         // 3 digits [0-9]{2}[LCR]
         runway: string;
