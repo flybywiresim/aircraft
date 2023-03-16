@@ -262,7 +262,11 @@ export class VerticalProfileManager {
                 index + 2, // Add two so we don't splice the intercept checkpoint away after adding it
                 Infinity,
                 ...this.descentProfile.checkpoints.map( // Use AtmosphericConditions as reason to make sure we don't get the DECEL point from the guidance profile to show up on the ND
-                    (checkpoint) => ({ ...checkpoint, reason: VerticalCheckpointReason.AtmosphericConditions, distanceFromStart: checkpoint.distanceFromStart + offset }),
+                    (checkpoint) => ({
+                        ...checkpoint,
+                        reason: checkpoint.reason !== VerticalCheckpointReason.Decel ? checkpoint.reason : VerticalCheckpointReason.AtmosphericConditions,
+                        distanceFromStart: checkpoint.distanceFromStart + offset,
+                    }),
                 ).filter(({ distanceFromStart }) => distanceFromStart > interceptDistance),
             );
 
@@ -273,7 +277,11 @@ export class VerticalProfileManager {
         } else {
             ndProfile.checkpoints.push(
                 ...this.descentProfile.checkpoints.map( // Use AtmosphericConditions as reason to make sure we don't get the DECEL point from the guidance profile to show up on the ND
-                    (checkpoint) => ({ ...checkpoint, reason: VerticalCheckpointReason.AtmosphericConditions, distanceFromStart: checkpoint.distanceFromStart + offset }),
+                    (checkpoint) => ({
+                        ...checkpoint,
+                        reason: checkpoint.reason !== VerticalCheckpointReason.Decel ? checkpoint.reason : VerticalCheckpointReason.AtmosphericConditions,
+                        distanceFromStart: checkpoint.distanceFromStart + offset,
+                    }),
                 ).filter(({ distanceFromStart }) => distanceFromStart > ndProfile.lastCheckpoint.distanceFromStart),
             );
         }
@@ -365,12 +373,32 @@ export class VerticalProfileManager {
         }
 
         const [index, interceptDistance] = ProfileInterceptCalculator.calculateIntercept(mcduProfile.checkpoints, this.descentProfile.checkpoints, offset);
+
         if (index >= 0) {
+            // If we have an intercept, adjust the fuel predictions/time predictions based on the current aircraft state
+            const {
+                secondsFromPresent: tacticalTimeAtIntercept,
+                remainingFuelOnBoard: tacticalFuelAtIntercept,
+            } = mcduProfile.interpolateEverythingFromStart(interceptDistance, false);
+            const {
+                secondsFromPresent: guidanceTimeAtIntercept,
+                remainingFuelOnBoard: guidanceFuelAtIntercept,
+            } = this.descentProfile.interpolateEverythingFromStart(interceptDistance - offset, false);
+
+            // How much more fuel is predicted in the tactical profile vs the guidance profile
+            const fuelOffset = tacticalFuelAtIntercept - guidanceFuelAtIntercept;
+            const timeOffset = tacticalTimeAtIntercept - guidanceTimeAtIntercept;
+
             mcduProfile.checkpoints.splice(
                 index + 1,
                 Infinity,
                 ...this.descentProfile.checkpoints
-                    .map((checkpoint) => ({ ...checkpoint, distanceFromStart: checkpoint.distanceFromStart + offset }))
+                    .map((checkpoint) => ({
+                        ...checkpoint,
+                        distanceFromStart: checkpoint.distanceFromStart + offset,
+                        remainingFuelOnBoard: checkpoint.remainingFuelOnBoard + fuelOffset,
+                        secondsFromPresent: checkpoint.secondsFromPresent + timeOffset,
+                    }))
                     .filter(({ distanceFromStart }) => distanceFromStart > interceptDistance),
             );
         }
