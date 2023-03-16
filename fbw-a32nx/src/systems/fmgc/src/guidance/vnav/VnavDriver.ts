@@ -144,6 +144,8 @@ export class VnavDriver implements GuidanceComponent {
         this.updateLegSpeedPredictions();
 
         this.profileManager.computeTacticalNdProfile();
+        this.profileManager.computeVerticalProfileForExpediteClimb();
+
         this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
 
         this.version++;

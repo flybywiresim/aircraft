@@ -149,7 +149,7 @@ export class VerticalProfileManager {
         this.descentProfile.finalizeProfile();
     }
 
-    private computeVerticalProfileForExpediteClimb(): void {
+    computeVerticalProfileForExpediteClimb(): void {
         try {
             const { approachSpeed, fcuAltitude, presentPosition, fuelOnBoard, managedClimbSpeedMach } = this.observer.get();
 
@@ -229,7 +229,7 @@ export class VerticalProfileManager {
      */
     private interceptNdWithGuidanceProfile(ndProfile: BaseGeometryProfile): void {
         const { flightPhase, fcuVerticalMode, fcuArmedVerticalMode, presentPosition, fcuAltitude } = this.observer.get();
-        if (!this.descentProfile || !ndProfile
+        if (!this.fcuModes.isLatAutoControlActive() || !this.descentProfile || !ndProfile
             || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
             return;
         }
@@ -292,7 +292,7 @@ export class VerticalProfileManager {
      */
     private insertLevelSegmentPwp(ndProfile: BaseGeometryProfile): void {
         const { flightPhase, fcuArmedVerticalMode, presentPosition } = this.observer.get();
-        if (!this.descentProfile || !ndProfile
+        if (!this.fcuModes.isLatAutoControlActive() || !this.descentProfile || !ndProfile
             || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
             return;
         }
@@ -331,7 +331,8 @@ export class VerticalProfileManager {
      */
     private insertNextDescentPwp(ndProfile: BaseGeometryProfile): void {
         const { flightPhase, fcuAltitude } = this.observer.get();
-        if (!ndProfile || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
+        if (!this.fcuModes.isLatAutoControlActive() || !ndProfile
+            || flightPhase !== FmgcFlightPhase.Descent && flightPhase !== FmgcFlightPhase.Approach) {
             return;
         }
 
