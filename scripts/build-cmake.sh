@@ -33,9 +33,18 @@ while [ $# -gt 0 ]; do
 shift
 done
 
-#echo "Environment:"
-#env
-#echo ""
+A32NX_WASM_OUT_DIR="../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel"
+if [ ! -d "$A32NX_WASM_OUT_DIR" ]; then
+  echo "$A32NX_WASM_OUT_DIR directory does not exist."
+  mkdir -p $A32NX_WASM_OUT_DIR
+  echo "$A32NX_WASM_OUT_DIR directory created."
+fi
+A380X_WASM_OUT_DIR="../fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel"
+if [ ! -d "$A380X_WASM_OUT_DIR" ]; then
+  echo "$A380X_WASM_OUT_DIR directory does not exist."
+  mkdir -p $A380X_WASM_OUT_DIR
+  echo "$A380X_WASM_OUT_DIR directory created."
+fi
 
 echo "Toolchain versions:"
 cmake --version
