@@ -34,5 +34,9 @@ set(INCLUDE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/StreamingClientDataAreaVariable.hpp
 )
 
-# create the target
-add_library(extra-backend-common OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
+# create the targets for all aircrafts
+add_library(extra-backend-common-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
+target_compile_definitions(extra-backend-common-a32nx PUBLIC A32NX)
+
+add_library(extra-backend-common-a380x OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
+target_compile_definitions(extra-backend-common-a380x PUBLIC A380X)
