@@ -130,8 +130,12 @@ impl A380DirectCurrentElectrical {
             .close_when(electricity.is_powered(ac_state.tr_ess()));
         electricity.flow(ac_state.tr_ess(), &self.tr_ess_contactor);
 
-        self.tr_apu_contactor
-            .close_when(electricity.is_powered(ac_state.tr_apu()));
+        // TODO: Move contactor logic into TR APU
+        self.tr_apu_contactor.close_when(
+            electricity.is_powered(ac_state.tr_apu())
+                && (matches!(apu.signal(), Some(ContactorSignal::Close))
+                    || self.battery_apu.needs_charging()),
+        );
         electricity.flow(ac_state.tr_apu(), &self.tr_apu_contactor);
 
         electricity.flow(&self.tr_1_contactor, &self.dc_bus_1);
@@ -180,7 +184,8 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.battery_1_emergency_contactor, &self.dc_ess_bus);
 
         electricity.supplied_by(&self.battery_2);
-        self.battery_2_contactor.close_when(overhead.bat_is_auto(2) && electricity.is_powered(&self.dc_bus_2));
+        self.battery_2_contactor
+            .close_when(overhead.bat_is_auto(2) && electricity.is_powered(&self.dc_bus_2));
         electricity.flow(&self.battery_2_contactor, &self.battery_2);
         electricity.flow(&self.hot_bus_2, &self.battery_2);
         electricity.flow(&self.battery_2_contactor, &self.dc_bus_2);
@@ -200,8 +205,14 @@ impl A380DirectCurrentElectrical {
         );
 
         electricity.supplied_by(&self.battery_apu);
-        self.battery_apu_contactor
-            .close_when(overhead.bat_is_auto(4));
+        // TODO: Move contactor logic into TR APU
+        self.battery_apu_contactor.close_when(
+            overhead.bat_is_auto(4)
+                && (matches!(apu.signal(), Some(ContactorSignal::Close))
+                    && self.tr_apu_contactor.is_open())
+                || (!matches!(apu.signal(), Some(ContactorSignal::Close))
+                    && self.battery_apu.needs_charging()),
+        );
         electricity.flow(&self.battery_apu_contactor, &self.battery_apu);
         electricity.flow(&self.hot_bus_apu, &self.battery_apu);
         electricity.flow(&self.battery_apu_contactor, &self.apu_bat_bus);
