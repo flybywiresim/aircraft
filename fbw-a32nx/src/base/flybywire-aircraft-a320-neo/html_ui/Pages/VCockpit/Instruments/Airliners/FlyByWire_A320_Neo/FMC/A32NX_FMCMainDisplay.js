@@ -3152,15 +3152,20 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async trySetThrustReductionAccelerationAltitude(s) {
+        const plan = this.flightPlanManager.getCurrentFlightPlan();
+        if (!plan) {
+            return false;
+        }
+
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF || !this.flightPlanManager.getPersistentOrigin()) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
 
         if (s === FMCMainDisplay.clrValue) {
-            if (this.flightPlanManager.getCurrentFlightPlan().hasThrustReductionAltitudeDefault && this.flightPlanManager.getCurrentFlightPlan().hasAccelerationAltitudeDefault) {
-                this.flightPlanManager.getCurrentFlightPlan().thrustReductionAltitudePilot = undefined;
-                this.flightPlanManager.getCurrentFlightPlan().accelerationAltitudePilot = undefined;
+            if (plan.hasThrustReductionAltitudeDefault && plan.hasAccelerationAltitudeDefault) {
+                plan.thrustReductionAltitudePilot = undefined;
+                plan.accelerationAltitudePilot = undefined;
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3180,7 +3185,6 @@ class FMCMainDisplay extends BaseAirliners {
         let elevation = origin.infos.elevation !== undefined ? origin.infos.elevation : 0;
         const minimumAltitude = elevation + 400;
 
-        const plan = this.flightPlanManager.getCurrentFlightPlan();
         const newThrRed = thrRed !== undefined ? thrRed : plan.thrustReductionAltitude;
         const newAccAlt = accAlt !== undefined ? accAlt : plan.accelerationAltitude;
 
@@ -3194,25 +3198,30 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         if (thrRed !== undefined) {
-            this.flightPlanManager.getCurrentFlightPlan().thrustReductionAltitudePilot = thrRed;
+            plan.thrustReductionAltitudePilot = thrRed;
         }
 
         if (accAlt !== undefined) {
-            this.flightPlanManager.getCurrentFlightPlan().accelerationAltitudePilot = accAlt;
+            plan.accelerationAltitudePilot = accAlt;
         }
 
         return true;
     }
 
     async trySetEngineOutAcceleration(s) {
+        const plan = this.flightPlanManager.getCurrentFlightPlan();
+        if (!plan) {
+            return false;
+        }
+
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF || !this.flightPlanManager.getPersistentOrigin()) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
 
         if (s === FMCMainDisplay.clrValue) {
-            if (this.flightPlanManager.getCurrentFlightPlan().hasEngineOutAccelerationAltitudeDefault) {
-                this.flightPlanManager.getCurrentFlightPlan().engineOutAccelerationAltitudePilot = undefined;
+            if (plan.hasEngineOutAccelerationAltitudeDefault) {
+                plan.engineOutAccelerationAltitudePilot = undefined;
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3236,21 +3245,26 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.flightPlanManager.getCurrentFlightPlan().engineOutAccelerationAltitudePilot = accAlt;
+        plan.engineOutAccelerationAltitudePilot = accAlt;
 
         return true;
     }
 
     async trySetThrustReductionAccelerationAltitudeGoaround(s) {
+        const plan = this.flightPlanManager.getCurrentFlightPlan();
+        if (!plan) {
+            return false;
+        }
+
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.GOAROUND || !this.flightPlanManager.getDestination()) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
 
         if (s === FMCMainDisplay.clrValue) {
-            if (this.flightPlanManager.getCurrentFlightPlan().hasMissedThrustReductionAltitudeDefault && this.flightPlanManager.getCurrentFlightPlan().hasMissedAccelerationAltitudeDefault) {
-                this.flightPlanManager.getCurrentFlightPlan().missedThrustReductionAltitudePilot = undefined;
-                this.flightPlanManager.getCurrentFlightPlan().missedAccelerationAltitudePilot = undefined;
+            if (plan.hasMissedThrustReductionAltitudeDefault && plan.hasMissedAccelerationAltitudeDefault) {
+                plan.missedThrustReductionAltitudePilot = undefined;
+                plan.missedAccelerationAltitudePilot = undefined;
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3270,7 +3284,6 @@ class FMCMainDisplay extends BaseAirliners {
         let elevation = destination.infos.elevation !== undefined ? destination.infos.elevation : 0;
         const minimumAltitude = elevation + 400;
 
-        const plan = this.flightPlanManager.getCurrentFlightPlan();
         const newThrRed = thrRed !== undefined ? thrRed : plan.missedThrustReductionAltitude;
         const newAccAlt = accAlt !== undefined ? accAlt : plan.missedAccelerationAltitude;
 
@@ -3284,25 +3297,30 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         if (thrRed !== undefined) {
-            this.flightPlanManager.getCurrentFlightPlan().missedThrustReductionAltitudePilot = thrRed;
+            plan.missedThrustReductionAltitudePilot = thrRed;
         }
 
         if (accAlt !== undefined) {
-            this.flightPlanManager.getCurrentFlightPlan().missedAccelerationAltitudePilot = accAlt;
+            plan.missedAccelerationAltitudePilot = accAlt;
         }
 
         return true;
     }
 
     async trySetEngineOutAccelerationAltitudeGoaround(s) {
+        const plan = this.flightPlanManager.getCurrentFlightPlan();
+        if (!plan) {
+            return false;
+        }
+
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.GOAROUND || !this.flightPlanManager.getDestination()) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
 
         if (s === FMCMainDisplay.clrValue) {
-            if (this.flightPlanManager.getCurrentFlightPlan().hasMissedEngineOutAccelerationAltitudeDefault) {
-                this.flightPlanManager.getCurrentFlightPlan().missedEngineOutAccelerationAltitudePilot = undefined;
+            if (plan.hasMissedEngineOutAccelerationAltitudeDefault) {
+                plan.missedEngineOutAccelerationAltitudePilot = undefined;
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3326,7 +3344,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.flightPlanManager.getCurrentFlightPlan().missedEngineOutAccelerationAltitudePilot = accAlt;
+        plan.missedEngineOutAccelerationAltitudePilot = accAlt;
 
         return true;
     }
