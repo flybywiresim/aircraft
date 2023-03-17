@@ -12,7 +12,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd "${DIR}" || exit
 
 PARALLEL=8
-OUTPUT_DIR="cmake-build-devenv-release/"
+OUTPUT_DIR="../build/cmake-build-devenv-release/"
 CONFIG="Release"
 CLEAN=""
 
@@ -20,7 +20,7 @@ CLEAN=""
 while [ $# -gt 0 ]; do
   case "$1" in
      --debug| -d)
-         OUTPUT_DIR="cmake-build-devenv-debug/"
+         OUTPUT_DIR="../build/cmake-build-devenv-debug/"
          CONFIG="Debug"
          ;;
      --clean| -c)
@@ -44,7 +44,7 @@ wasm-ld --version
 echo ""
 
 echo "Building extra-backend with CMAKE..."
-cmake -DCMAKE_TOOLCHAIN_FILE=../../../scripts/cmake//DockerToolchain.cmake -B${OUTPUT_DIR} -DCMAKE_BUILD_TYPE=${CONFIG} || (echo "CMake config failed" && exit 1)
+cmake -DCMAKE_TOOLCHAIN_FILE=scripts/cmake/DockerToolchain.cmake -B${OUTPUT_DIR} -DCMAKE_BUILD_TYPE=${CONFIG} ../ || (echo "CMake config failed" && exit 1)
 cmake --build ${OUTPUT_DIR} --config ${CONFIG} ${CLEAN} -j ${PARALLEL} || (echo "CMake build failed" && exit 1)
 echo ""
 
