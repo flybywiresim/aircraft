@@ -62,37 +62,37 @@ export class ManagedFlightPlan {
     public destinationTransitionLevelPilot?: number;
 
     /** Thrust reduction altitude in feet MSL for the origin airport from the nav database elevation, or undefined if none */
-    public thrustReductionAltitudeDb?: number;
+    public thrustReductionAltitudeDefault?: number;
 
     /** Thrust reduction altitude in feet MSL entered by the pilot, or undefined if none */
     public thrustReductionAltitudePilot?: number;
 
     /** Acceleration altitude in feet MSL for the origin airport from the nav database elevation, or undefined if none */
-    public accelerationAltitudeDb?: number;
+    public accelerationAltitudeDefault?: number;
 
     /** Acceleration altitude in feet MSL entered by the pilot, or undefined if none */
     public accelerationAltitudePilot?: number;
 
     /** Engine out acceleration altitude in feet MSL for the origin airport from the nav database elevation, or undefined if none */
-    public engineOutAccelerationAltitudeDb?: number;
+    public engineOutAccelerationAltitudeDefault?: number;
 
     /** Engine out acceleration altitude in feet MSL entered by the pilot, or undefined if none */
     public engineOutAccelerationAltitudePilot?: number;
 
     /** Missed approach thrust reduction altitude in feet MSL for the destination airport from the nav database elevation, or undefined if none */
-    public missedThrustReductionAltitudeDb?: number;
+    public missedThrustReductionAltitudeDefault?: number;
 
     /** Missed approach thrust reduction altitude in feet MSL entered by the pilot, or undefined if none */
     public missedThrustReductionAltitudePilot?: number;
 
     /** Missed approach acceleration altitude in feet MSL for the destination airport from the nav database elevation, or undefined if none */
-    public missedAccelerationAltitudeDb?: number;
+    public missedAccelerationAltitudeDefault?: number;
 
     /** Missed approach acceleration altitude in feet MSL entered by the pilot, or undefined if none */
     public missedAccelerationAltitudePilot?: number;
 
     /** Missed approach engine out acceleration altitude in feet MSL for the destination airport from the nav database elevation, or undefined if none */
-    public missedEngineOutAccelerationAltitudeDb?: number;
+    public missedEngineOutAccelerationAltitudeDefault?: number;
 
     /** Missed approach engine out acceleration altitude in feet MSL entered by the pilot, or undefined if none */
     public missedEngineOutAccelerationAltitudePilot?: number;
@@ -346,17 +346,17 @@ export class ManagedFlightPlan {
         this.destinationAirfield = undefined;
         this.destinationTransitionLevelDb = undefined;
         this.destinationTransitionLevelPilot = undefined;
-        this.thrustReductionAltitudeDb = undefined;
+        this.thrustReductionAltitudeDefault = undefined;
         this.thrustReductionAltitudePilot = undefined;
-        this.accelerationAltitudeDb = undefined;
+        this.accelerationAltitudeDefault = undefined;
         this.accelerationAltitudePilot = undefined;
-        this.engineOutAccelerationAltitudeDb = undefined;
+        this.engineOutAccelerationAltitudeDefault = undefined;
         this.engineOutAccelerationAltitudePilot = undefined;
-        this.missedThrustReductionAltitudeDb = undefined;
+        this.missedThrustReductionAltitudeDefault = undefined;
         this.missedThrustReductionAltitudePilot = undefined;
-        this.missedAccelerationAltitudeDb = undefined;
+        this.missedAccelerationAltitudeDefault = undefined;
         this.missedAccelerationAltitudePilot = undefined;
-        this.missedEngineOutAccelerationAltitudeDb = undefined;
+        this.missedEngineOutAccelerationAltitudeDefault = undefined;
         this.missedEngineOutAccelerationAltitudePilot = undefined;
 
         this.cruiseAltitude = 0;
@@ -1697,13 +1697,13 @@ export class ManagedFlightPlan {
     private setOriginDefaults(airport: WayPoint): void {
         const referenceAltitude = (airport.infos as AirportInfo).elevation;
         if (referenceAltitude !== undefined) {
-            this.thrustReductionAltitudeDb = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
-            this.accelerationAltitudeDb = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
-            this.engineOutAccelerationAltitudeDb = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
+            this.thrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
+            this.accelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
+            this.engineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
         } else {
-            this.thrustReductionAltitudeDb = undefined;
-            this.accelerationAltitudeDb = undefined;
-            this.engineOutAccelerationAltitudeDb = undefined;
+            this.thrustReductionAltitudeDefault = undefined;
+            this.accelerationAltitudeDefault = undefined;
+            this.engineOutAccelerationAltitudeDefault = undefined;
         }
         this.thrustReductionAltitudePilot = undefined;
         this.accelerationAltitudePilot = undefined;
@@ -1713,13 +1713,13 @@ export class ManagedFlightPlan {
     private setDestinationDefaults(airport: WayPoint): void {
         const referenceAltitude = (airport.infos as AirportInfo).elevation;
         if (referenceAltitude !== undefined) {
-            this.missedThrustReductionAltitudeDb = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
-            this.missedAccelerationAltitudeDb = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
-            this.missedEngineOutAccelerationAltitudeDb = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
+            this.missedThrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
+            this.missedAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
+            this.missedEngineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
         } else {
-            this.missedThrustReductionAltitudeDb = undefined;
-            this.missedAccelerationAltitudeDb = undefined;
-            this.missedEngineOutAccelerationAltitudeDb = undefined;
+            this.missedThrustReductionAltitudeDefault = undefined;
+            this.missedAccelerationAltitudeDefault = undefined;
+            this.missedEngineOutAccelerationAltitudeDefault = undefined;
         }
         this.missedThrustReductionAltitudePilot = undefined;
         this.missedAccelerationAltitudePilot = undefined;
@@ -1731,7 +1731,7 @@ export class ManagedFlightPlan {
      * @returns altitude in feet MSL, or undefined if none
      */
     public get thrustReductionAltitude(): number | undefined {
-        return ManagedFlightPlan.round(this.thrustReductionAltitudePilot ?? this.thrustReductionAltitudeDb, 10);
+        return ManagedFlightPlan.round(this.thrustReductionAltitudePilot ?? this.thrustReductionAltitudeDefault, 10);
     }
 
     /**
@@ -1747,7 +1747,7 @@ export class ManagedFlightPlan {
      * @returns true if default is available
      */
     public get hasThrustReductionAltitudeDefault(): boolean {
-        return this.thrustReductionAltitudeDb !== undefined;
+        return this.thrustReductionAltitudeDefault !== undefined;
     }
 
     /**
@@ -1755,7 +1755,7 @@ export class ManagedFlightPlan {
      * @returns altitude in feet MSL, or undefined if none
      */
     public get accelerationAltitude(): number | undefined {
-        return ManagedFlightPlan.round(this.accelerationAltitudePilot ?? this.accelerationAltitudeDb, 10);
+        return ManagedFlightPlan.round(this.accelerationAltitudePilot ?? this.accelerationAltitudeDefault, 10);
     }
 
     /**
@@ -1771,7 +1771,7 @@ export class ManagedFlightPlan {
      * @returns true if default is available
      */
     public get hasAccelerationAltitudeDefault(): boolean {
-        return this.accelerationAltitudeDb !== undefined;
+        return this.accelerationAltitudeDefault !== undefined;
     }
 
     /**
@@ -1779,7 +1779,7 @@ export class ManagedFlightPlan {
      * @returns altitude in feet MSL, or undefined if none
      */
     public get engineOutAccelerationAltitude(): number | undefined {
-        return ManagedFlightPlan.round(this.engineOutAccelerationAltitudePilot ?? this.engineOutAccelerationAltitudeDb, 10);
+        return ManagedFlightPlan.round(this.engineOutAccelerationAltitudePilot ?? this.engineOutAccelerationAltitudeDefault, 10);
     }
 
     /**
@@ -1795,7 +1795,7 @@ export class ManagedFlightPlan {
      * @returns true if default is available
      */
     public get hasEngineOutAccelerationAltitudeDefault(): boolean {
-        return this.engineOutAccelerationAltitudeDb !== undefined;
+        return this.engineOutAccelerationAltitudeDefault !== undefined;
     }
 
     /**
@@ -1803,7 +1803,7 @@ export class ManagedFlightPlan {
      * @returns altitude in feet MSL, or undefined if none
      */
     public get missedThrustReductionAltitude(): number | undefined {
-        return ManagedFlightPlan.round(this.missedThrustReductionAltitudePilot ?? this.missedThrustReductionAltitudeDb, 10);
+        return ManagedFlightPlan.round(this.missedThrustReductionAltitudePilot ?? this.missedThrustReductionAltitudeDefault, 10);
     }
 
     /**
@@ -1819,7 +1819,7 @@ export class ManagedFlightPlan {
      * @returns true if default is available
      */
     public get hasMissedThrustReductionAltitudeDefault(): boolean {
-        return this.missedThrustReductionAltitudeDb !== undefined;
+        return this.missedThrustReductionAltitudeDefault !== undefined;
     }
 
     /**
@@ -1827,7 +1827,7 @@ export class ManagedFlightPlan {
      * @returns altitude in feet MSL, or undefined if none
      */
     public get missedAccelerationAltitude(): number | undefined {
-        return ManagedFlightPlan.round(this.missedAccelerationAltitudePilot ?? this.missedAccelerationAltitudeDb, 10);
+        return ManagedFlightPlan.round(this.missedAccelerationAltitudePilot ?? this.missedAccelerationAltitudeDefault, 10);
     }
 
     /**
@@ -1843,7 +1843,7 @@ export class ManagedFlightPlan {
      * @returns true if default is available
      */
     public get hasMissedAccelerationAltitudeDefault(): boolean {
-        return this.missedAccelerationAltitudeDb !== undefined;
+        return this.missedAccelerationAltitudeDefault !== undefined;
     }
 
     /**
@@ -1851,7 +1851,7 @@ export class ManagedFlightPlan {
      * @returns altitude in feet MSL, or undefined if none
      */
     public get missedEngineOutAccelerationAltitude(): number | undefined {
-        return ManagedFlightPlan.round(this.missedEngineOutAccelerationAltitudePilot ?? this.missedEngineOutAccelerationAltitudeDb, 10);
+        return ManagedFlightPlan.round(this.missedEngineOutAccelerationAltitudePilot ?? this.missedEngineOutAccelerationAltitudeDefault, 10);
     }
 
     /**
@@ -1867,7 +1867,7 @@ export class ManagedFlightPlan {
      * @returns true if default is available
      */
     public get hasMissedEngineOutAccelerationAltitudeDefault(): boolean {
-        return this.missedEngineOutAccelerationAltitudeDb !== undefined;
+        return this.missedEngineOutAccelerationAltitudeDefault !== undefined;
     }
 
     /**
@@ -1892,7 +1892,7 @@ export class ManagedFlightPlan {
     public reconcileThrustReductionWithConstraints(): boolean {
         const lowestClimbConstraint = this.lowestClimbConstraint();
         if (isFinite(lowestClimbConstraint) && this.thrustReductionAltitude > lowestClimbConstraint) {
-            this.thrustReductionAltitudeDb = this.thrustReductionAltitudeDb !== undefined ? Math.min(this.thrustReductionAltitudeDb, lowestClimbConstraint) : undefined;
+            this.thrustReductionAltitudeDefault = this.thrustReductionAltitudeDefault !== undefined ? Math.min(this.thrustReductionAltitudeDefault, lowestClimbConstraint) : undefined;
             this.thrustReductionAltitudePilot = this.thrustReductionAltitudePilot !== undefined ? Math.min(this.thrustReductionAltitudePilot, lowestClimbConstraint) : undefined;
             return true;
         }
@@ -1907,7 +1907,7 @@ export class ManagedFlightPlan {
     public reconcileAccelerationWithConstraints(): boolean {
         const lowestClimbConstraint = this.lowestClimbConstraint();
         if (isFinite(lowestClimbConstraint) && this.accelerationAltitude > lowestClimbConstraint) {
-            this.accelerationAltitudeDb = this.accelerationAltitudeDb !== undefined ? Math.min(this.accelerationAltitudeDb, lowestClimbConstraint) : undefined;
+            this.accelerationAltitudeDefault = this.accelerationAltitudeDefault !== undefined ? Math.min(this.accelerationAltitudeDefault, lowestClimbConstraint) : undefined;
             this.accelerationAltitudePilot = this.accelerationAltitudePilot !== undefined ? Math.min(this.accelerationAltitudePilot, lowestClimbConstraint) : undefined;
             return true;
         }
