@@ -144,7 +144,6 @@ impl A380AlternatingCurrentElectrical {
         &mut self,
         context: &UpdateContext,
         electricity: &mut Electricity,
-        emergency_generator: &EmergencyGenerator,
         dc_state: &impl A380DirectCurrentElectricalSystem,
     ) {
         electricity.flow(dc_state.static_inverter(), &self.ac_emer_contactor[1]);
@@ -496,10 +495,14 @@ impl A380MainPowerSources {
             .zip(self.bus_tie_contactors.chunks_exact(2))
         {
             electricity.flow(apu_contactor, &self.system_isolation_contactor);
+            electricity.flow(&contactors[0], &contactors[1]);
             for contactor in contactors {
                 electricity.flow(apu_contactor, contactor);
+                electricity.flow(&self.system_isolation_contactor, contactor);
             }
         }
+
+        electricity.flow(&self.bus_tie_contactors[4], &self.bus_tie_contactors[5]);
     }
 
     fn power_ac_buses(&self, electricity: &mut Electricity, buses: &[ElectricalBus; 4]) {
@@ -507,25 +510,6 @@ impl A380MainPowerSources {
         for (i, (bus_tie, bus)) in self.bus_tie_contactors.iter().zip(buses).enumerate() {
             electricity.flow(&self.engine_generator_contactors[i], bus);
             electricity.flow(&self.ext_pwr_contactors[i], bus);
-            electricity.flow(bus_tie, bus);
-        }
-        electricity.flow(&self.bus_tie_contactors[4], &buses[1]);
-        electricity.flow(&self.bus_tie_contactors[5], &buses[2]);
-
-        // Now "distribute"
-        // We need to do this 2 times because else bus tie contactor 4 could not power anything else
-        for _ in 0..2 {
-            for contactor in &self.bus_tie_contactors[..4] {
-                electricity.flow(&self.system_isolation_contactor, contactor);
-            }
-        }
-
-        for contactors in self.bus_tie_contactors.chunks_exact(2) {
-            electricity.flow(&contactors[0], &contactors[1]);
-        }
-
-        // And now "power" the buses from the contactors
-        for (bus_tie, bus) in self.bus_tie_contactors[..4].iter().zip(buses) {
             electricity.flow(bus_tie, bus);
         }
         electricity.flow(&self.bus_tie_contactors[4], &buses[1]);

@@ -166,7 +166,6 @@ impl A380Electrical {
         self.alternating_current.update_after_direct_current(
             context,
             electricity,
-            &self.emergency_gen,
             &self.direct_current,
         );
 
