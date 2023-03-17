@@ -1459,6 +1459,7 @@ mod tests {
     impl SimulationElement for TestAirConditioning {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.a320_air_conditioning_system.accept(visitor);
+            self.air_conditioning_overhead.accept(visitor);
 
             visitor.visit(self);
         }

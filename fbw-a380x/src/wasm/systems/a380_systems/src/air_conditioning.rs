@@ -46,21 +46,21 @@ impl A380AirConditioning {
     pub fn new(context: &mut InitContext) -> Self {
         let cabin_zones: [ZoneType; 16] = [
             ZoneType::Cockpit,
-            ZoneType::Cabin(11),
-            ZoneType::Cabin(12),
-            ZoneType::Cabin(13),
-            ZoneType::Cabin(14),
-            ZoneType::Cabin(15),
-            ZoneType::Cabin(16),
-            ZoneType::Cabin(17),
-            ZoneType::Cabin(18),
-            ZoneType::Cabin(21),
-            ZoneType::Cabin(22),
-            ZoneType::Cabin(23),
-            ZoneType::Cabin(24),
-            ZoneType::Cabin(25),
-            ZoneType::Cabin(26),
-            ZoneType::Cabin(27),
+            ZoneType::Cabin(11), // MAIN_DECK_1
+            ZoneType::Cabin(12), // MAIN_DECK_2
+            ZoneType::Cabin(13), // MAIN_DECK_3
+            ZoneType::Cabin(14), // MAIN_DECK_4
+            ZoneType::Cabin(15), // MAIN_DECK_5
+            ZoneType::Cabin(16), // MAIN_DECK_6
+            ZoneType::Cabin(17), // MAIN_DECK_7
+            ZoneType::Cabin(18), // MAIN_DECK_8
+            ZoneType::Cabin(21), // UPPER_DECK_1
+            ZoneType::Cabin(22), // UPPER_DECK_2
+            ZoneType::Cabin(23), // UPPER_DECK_3
+            ZoneType::Cabin(24), // UPPER_DECK_4
+            ZoneType::Cabin(25), // UPPER_DECK_5
+            ZoneType::Cabin(26), // UPPER_DECK_6
+            ZoneType::Cabin(27), // UPPER_DECK_7
         ];
 
         Self {
