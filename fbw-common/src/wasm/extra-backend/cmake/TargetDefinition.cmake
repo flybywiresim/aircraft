@@ -14,7 +14,8 @@ macro(add_wasm_library)
 
     # create the custom command to create the wasm library
     add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${ADD_WASM_LIBRARY_NAME}.wasm
+        OUTPUT always_rebuild
+        # OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${ADD_WASM_LIBRARY_NAME}.wasm
         COMMAND ${CMAKE_WASM_LINKER} ${CMAKE_WASM_LINKER_FLAGS} ${OBJECT_FILES} -o ${CMAKE_CURRENT_BINARY_DIR}/${ADD_WASM_LIBRARY_NAME}.wasm
         DEPENDS ${ADD_WASM_LIBRARY_DEPENDENCIES}
         COMMENT "Compiling WASM library ${ADD_WASM_LIBRARY_NAME}"
@@ -25,12 +26,13 @@ macro(add_wasm_library)
     add_custom_command(
         OUTPUT ${OUTPUT_DIRECTORY}/${ADD_WASM_LIBRARY_NAME}.wasm
         COMMAND ${CMAKE_WASM_OPTIMIZER} -O1 -o ${OUTPUT_DIRECTORY}/${ADD_WASM_LIBRARY_NAME}.wasm ${CMAKE_CURRENT_BINARY_DIR}/${ADD_WASM_LIBRARY_NAME}.wasm
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${ADD_WASM_LIBRARY_NAME}.wasm
+        DEPENDS always_rebuild
         COMMENT "Compiling optimized WASM library ${ADD_WASM_LIBRARY_NAME}"
     )
 
     # define the target
     add_custom_target(${ADD_WASM_LIBRARY_NAME}_wasm ALL
         SOURCES ${OUTPUT_DIRECTORY}/${ADD_WASM_LIBRARY_NAME}.wasm
+        DEPENDS always_rebuild
     )
 endmacro()
