@@ -29,9 +29,11 @@
     "build-a32nx:metadata": "node scripts/metadata.js fbw-a32nx/out/flybywire-aircraft-a320-neo a32nx",
     "build-a32nx:manifest": "node scripts/build_a32nx.js",
     "build-a32nx:systems-host": "cd fbw-a32nx/src/systems/systems-host && rollup -c",
+
+    "build-a32nx:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -c .\\fbw-a32nx\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
+    "watch-a32nx:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\fbw-a32nx\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
+
     "serve:efb": "cd fbw-a32nx/src/systems/instruments/src/EFB/ && vite --port 9696",
-    "build:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -c .\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
-    "watch:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
     "build:instruments": "rollup --max-old-space-size=8192 -c src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "prettier": "prettier --write **/*.json **/*.yml fbw-a32nx/src/systems/instruments/**/*.css",

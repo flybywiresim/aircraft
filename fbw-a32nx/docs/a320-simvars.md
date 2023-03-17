@@ -1416,23 +1416,27 @@
         - 2
         - 3
 
-- A32NX_PAX_TOTAL_ROWS_{rows}
-    - Number
-    - Indicates the current number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_BOARDING_STARTED_BY_USR
+    - Bool
+    - Indicates current pax/cargo loading state
 
-- A32NX_PAX_TOTAL_ROWS_{rows}_DESIRED
-    - Number
-    - Indicates the target number of pax in the selected rows
+- A32NX_PAX_{station}
+    - Bitwise
+    - Indicates the current pax in the selected rows (max 53 bits)
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_PAX_{station}_DESIRED
+    - Bitwise
+    - Indicates the target number of pax in the selected rows (max 53 bits)
     - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+        - A
+        - B
+        - C
+        - D
 
 - PAYLOAD STATION WEIGHT:{stationIndex}
     - Number (Kilograms)

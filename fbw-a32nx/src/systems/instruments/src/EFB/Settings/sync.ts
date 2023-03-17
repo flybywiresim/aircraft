@@ -1,6 +1,7 @@
 import { NXDataStore } from '@shared/persistence';
 
 type SimVar = [name: string, type: string, defaultValue: string];
+type SimVarEnum = [name: string, type: string, defaultValue: string, map: Map<string, number>];
 
 function syncSetting(simVar: SimVar, propertyName: string) {
     NXDataStore.getAndSubscribe(propertyName, (prop, value) => {
@@ -8,6 +9,12 @@ function syncSetting(simVar: SimVar, propertyName: string) {
     }, simVar[2]);
 }
 
+function syncEnumSetting(simVarEnum: SimVarEnum, propertyName: string) {
+    NXDataStore.getAndSubscribe(propertyName, (prop, value) => {
+        const mapValue = simVarEnum[3].get(value);
+        SimVar.SetSimVarValue(simVarEnum[0], simVarEnum[1], mapValue).catch((e) => console.log(propertyName, e));
+    }, simVarEnum[2]);
+}
 /**
  * This contains a list of NXDataStore settings that must be synced to simvars on plane load
  */
@@ -31,8 +38,19 @@ const settingsToSync: Map<string, SimVar> = new Map([
     ['MODEL_SATCOM_ENABLED', ['L:A32NX_SATCOM_ENABLED', 'bool', '0']],
     ['CONFIG_PILOT_AVATAR_VISIBLE', ['L:A32NX_PILOT_AVATAR_VISIBLE_0', 'bool', '0']],
     ['CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', ['L:A32NX_PILOT_AVATAR_VISIBLE_1', 'bool', '0']],
+    ['GSX_PAYLOAD_SYNC', ['L:A32NX_GSX_PAYLOAD_SYNC_ENABLED', 'bool', '0']],
+    ['CONFIG_USING_METRIC_UNIT', ['L:A32NX_EFB_USING_METRIC_UNIT', 'bool', '1']],
+]);
+
+const settingEnumToSync: Map<string, SimVarEnum> = new Map([
+    ['CONFIG_BOARDING_RATE',
+        ['L:A32NX_BOARDING_RATE', 'number', '0',
+            new Map([['REAL', 2], ['FAST', 1], ['INSTANT', 0]]),
+        ],
+    ],
 ]);
 
 export function readSettingsFromPersistentStorage() {
     settingsToSync.forEach((simVar, propertyName) => syncSetting(simVar, propertyName));
+    settingEnumToSync.forEach((simVarEnum, propertyName) => syncEnumSetting(simVarEnum, propertyName));
 }

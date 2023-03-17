@@ -59,6 +59,8 @@
 1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
 1. [PRESS] Merge pressurization and air conditioning system - @mjuhe (Miquel Juhe)
 1. [ADIRU] Add baro correction setting to ADIRS - @mjuhe (Miquel Juhe)
+1. [EFB] Allow payload page passenger seating to be manipulated by external apps & WASM via LocalVars - @2hwk (2Cas#1022)
+1. [EFB] GW and GWCG display on payload page - @2hwk (2Cas#1022)
 
 ## 0.9.0
 

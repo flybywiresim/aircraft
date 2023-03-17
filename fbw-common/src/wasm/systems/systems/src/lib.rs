@@ -20,6 +20,7 @@ pub mod integrated_modular_avionics;
 pub mod landing_gear;
 pub mod navigation;
 pub mod overhead;
+pub mod payload;
 pub mod pneumatic;
 pub mod shared;
 pub mod simulation;

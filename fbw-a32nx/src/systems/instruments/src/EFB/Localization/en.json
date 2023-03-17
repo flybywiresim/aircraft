@@ -168,7 +168,9 @@
         "MaxGW": "Maximum GW",
         "MaxGWCG": "Maximum GW CG",
         "MaxPassengers": "Maximum Passengers",
+        "MaxGW": "Maximum GW",
         "MaxZFW": "Maximum ZFW",
+        "MaxGWCG": "Maximum GW CG",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
@@ -177,7 +179,9 @@
       },
       "Title": "Payload",
       "ZFW": "ZFW",
-      "ZFWCG": "ZFWCG"
+      "GW": "GW",
+      "ZFWCG": "ZFWCG",
+      "GWCG": "GW CG"
     },
     "Pushback": {
       "Title": "Pushback"

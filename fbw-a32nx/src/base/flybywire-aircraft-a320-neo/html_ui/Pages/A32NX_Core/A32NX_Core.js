@@ -29,11 +29,6 @@ class A32NX_Core {
                 updateInterval: 150,
             },
             {
-                name: 'Boarding',
-                module: new A32NX_Boarding(),
-                updateInterval: 150,
-            },
-            {
                 name: 'LocalVars',
                 module: new A32NX_LocalVarUpdater(),
                 updateInterval: 50,
