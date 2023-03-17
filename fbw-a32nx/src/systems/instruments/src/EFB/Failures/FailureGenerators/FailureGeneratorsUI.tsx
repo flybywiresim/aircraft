@@ -3,14 +3,16 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import {
     eraseGenerator, FailureGenContext, FailureGenData,
-    failureGeneratorAdd, failureGeneratorsSettings, findGeneratorFailures, setNewSetting, setSelectedFailure,
+    failureGeneratorAdd, failureGeneratorsSettings, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
+import { findGeneratorFailures, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { ArrowLeft, Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { Failure } from 'failures/src/failures-orchestrator';
 import { Link, Route } from 'react-router-dom';
+import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -88,9 +90,10 @@ export const generatorsCardList : (settings : FailureGenContext)
 
 function GeneratorFailureSelection(genID: string, failureGenContext: FailureGenContext): JSX.Element {
     const generatorFailureTable :Failure[] = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, genID);
+
     return (
-        <div className="flex flex-col justify-center items-start py-2 px-8 w-max border-2 bg-theme-body border-theme-accent">
-            <Link to="/failures/failuregenerators/" className="inline-block w-max">
+        <div className="flex flex-col justify-center items-start py-2 px-8 w-full border-2 bg-theme-body border-theme-accent">
+            <Link to="/failures/failuregenerators/" className="inline-block w-full">
                 <div className="flex flex-row items-start space-x-3 text-left transition duration-100 hover:text-theme-highlight">
                     <ArrowLeft size={30} />
                     <h1 className="font-bold text-current">
@@ -98,28 +101,48 @@ function GeneratorFailureSelection(genID: string, failureGenContext: FailureGenC
                     </h1>
                 </div>
             </Link>
-            <div className="w-max text-left">
+            <div className="w-full text-left">
                 <p>Select the failures that may be triggered by this failure generator</p>
             </div>
             <ScrollableContainer height={48}>
-                {failureGenContext.allFailures.map<JSX.Element>((failure) => {
-                    const active = generatorFailureTable.find((genFailure) => failure.identifier === genFailure.identifier) !== undefined;
-                    return (
-                        <div
-                            className="flex flex-row justify"
-                        >
-                            <Toggle
-                                value={active}
-                                onToggle={() => {
-                                    setSelectedFailure(failure, genID, failureGenContext, !active);
-                                }}
-                            />
-                            <div className="pl-8"><h2>{failure.name}</h2></div>
+                {
+                    failureGenContext.chapters.map<JSX.Element>((chapter) => (
+                        <div>
+                            <div className="ml-10"><u>{AtaChaptersTitle[chapter]}</u></div>
+                            {FailureATAList(failureGenContext, generatorFailureTable, genID, chapter)}
                         </div>
-                    );
-                })}
+                    ))
+                }
             </ScrollableContainer>
         </div>
+    );
+}
+
+function FailureATAList(failureGenContext:FailureGenContext, generatorFailureTable :Failure[], genID: string, chapter : AtaChapterNumber) {
+    const bibi : JSX.Element[] = failureGenContext.allFailures.map<JSX.Element>((failure) => {
+        if (failure.ata === chapter) {
+            const active = generatorFailureTable.find((genFailure) => failure.identifier === genFailure.identifier) !== undefined;
+            return (
+                <div
+                    className="flex flex-row justify"
+                >
+                    <Toggle
+                        value={active}
+                        onToggle={() => {
+                            setSelectedFailure(failure, genID, failureGenContext, !active);
+                        }}
+                    />
+                    <div className="pl-8"><h2>{failure.name}</h2></div>
+                </div>
+            );
+        }
+        return (<></>);
+    });
+
+    return (
+        <>
+            {bibi}
+        </>
     );
 }
 
