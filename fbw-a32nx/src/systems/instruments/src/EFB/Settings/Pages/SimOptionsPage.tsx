@@ -194,17 +194,6 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
-                        <button
-                            type="button"
-                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight
-                                       hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
-                            onClick={() => setShowThrottleSettings(true)}
-                        >
-                            {t('Settings.SimOptions.Calibrate')}
-                        </button>
-                    </SettingItem>
-
                     <SettingItem name={t('Settings.SimOptions.CockpitSeatUsedToControl')}>
                         <SelectGroup>
                             {defaultCockpitSeatUsedToControlButtons.map((button) => (
@@ -218,6 +207,17 @@ export const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
+                        <button
+                            type="button"
+                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight
+                                       hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            onClick={() => setShowThrottleSettings(true)}
+                        >
+                            {t('Settings.SimOptions.Calibrate')}
+                        </button>
                     </SettingItem>
 
                 </SettingsPage>
