@@ -14,6 +14,8 @@ set(COMPILER_FLAGS "-Wall -Wextra -Werror -Wno-unused-function -Wno-unused-comma
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_FLAGS}")
 
+message("MSFS SDK: " ${MSFS_SDK})
+
 # add the include paths
 include_directories(
     "${MSFS_SDK}/WASM/include"

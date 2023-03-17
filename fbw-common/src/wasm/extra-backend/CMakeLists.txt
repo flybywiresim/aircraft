@@ -13,7 +13,7 @@ set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/aircraft_prefix.h
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/Callback.h
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/IDGenerator.h
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/Units.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/SimUnits.h
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/logging.h
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/math_utils.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/quantity.hpp
