@@ -3,13 +3,14 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import {
     eraseGenerator, FailureGenContext, FailureGenData,
-    failureGeneratorAdd, failureGeneratorsSettings, findGeneratorFailures, setNewSetting,
+    failureGeneratorAdd, failureGeneratorsSettings, findGeneratorFailures, setNewSetting, setSelectedFailure,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
-import { Trash } from 'react-bootstrap-icons';
+import { ArrowLeft, Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { Failure } from 'failures/src/failures-orchestrator';
+import { Link, Route } from 'react-router-dom';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -19,51 +20,56 @@ export const FailureGeneratorsUI = () => {
     const settings = failureGeneratorsSettings();
     return (
         <>
-            <div className="flex flex-col">
-                <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
-                    <h2 className="flex-none">
-                        {t('Failures.Generators.Select')}
-                    </h2>
-                    <SelectInput
-                        className="flex-none w-96 h-10"
-                        value={chosenGen}
-                        onChange={(value) => setChosenGen(value as string)}
-                        options={Array.from(settings.allGenSettings.values()).map((genSetting : FailureGenData) => ({
-                            value: genSetting.genName,
-                            displayValue: `${genSetting.alias}`,
-                        }))}
-                        maxHeight={32}
-                    />
-                    <button
-                        onClick={() => failureGeneratorAdd(settings.allGenSettings.get(chosenGen))}
-                        type="button"
-                        className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:bg-theme-highlight"
-                    >
-                        <h2>{t('Failures.Generators.Add')}</h2>
-                    </button>
-                </div>
-                <div className="flex items-center">
-                    <div className="mr-2">Max number of simultaneous failures:</div>
-                    <SimpleInput
-                        className="my-2 w-10 font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
+            <Route exact path="/failures/failuregenerators/">
+                <div className="flex flex-col">
+                    <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
+                        <h2 className="flex-none">
+                            {t('Failures.Generators.Select')}
+                        </h2>
+                        <SelectInput
+                            className="flex-none w-96 h-10"
+                            value={chosenGen}
+                            onChange={(value) => setChosenGen(value as string)}
+                            options={Array.from(settings.allGenSettings.values()).map((genSetting : FailureGenData) => ({
+                                value: genSetting.genName,
+                                displayValue: `${genSetting.alias}`,
+                            }))}
+                            maxHeight={32}
+                        />
+                        <button
+                            onClick={() => failureGeneratorAdd(settings.allGenSettings.get(chosenGen))}
+                            type="button"
+                            className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:bg-theme-highlight"
+                        >
+                            <h2>{t('Failures.Generators.Add')}</h2>
+                        </button>
+                    </div>
+                    <div className="flex items-center">
+                        <div className="mr-2">Max number of simultaneous failures:</div>
+                        <SimpleInput
+                            className="my-2 w-10 font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
                     focus-within:outline-none focus-within:border-theme-highlight
                     placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text hover:bg-theme-body
                      hover:border-theme-highlight"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        value={settings.maxFailuresAtOnce}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseInt(x) || parseInt(x) >= 0)) {
-                                settings.setMaxFailuresAtOnce(parseInt(x));
-                            }
-                        }}
-                    />
+                            fontSizeClassName="text-2xl"
+                            number
+                            min={0}
+                            value={settings.maxFailuresAtOnce}
+                            onBlur={(x: string) => {
+                                if (!Number.isNaN(parseInt(x) || parseInt(x) >= 0)) {
+                                    settings.setMaxFailuresAtOnce(parseInt(x));
+                                }
+                            }}
+                        />
+                    </div>
+                    <ScrollableContainer height={48}>
+                        {generatorsCardList(settings)}
+                    </ScrollableContainer>
                 </div>
-                <ScrollableContainer height={48}>
-                    {generatorsCardList(settings)}
-                </ScrollableContainer>
-            </div>
+            </Route>
+            <Route exact path="/failures/failuregenerators/generatorFailureSelect">
+                {GeneratorFailureSelection(settings.generatorNameArgument, settings)}
+            </Route>
         </>
     );
 };
@@ -80,34 +86,20 @@ export const generatorsCardList : (settings : FailureGenContext)
     return temp;
 };
 
-function switchFailureOnGenerator(failureGenContext: FailureGenContext, identifier:number, genID : string, state : boolean) {
-    let failureGenString = failureGenContext.generatorFailuresGetters.get(identifier);
-
-    if (state) {
-        if (failureGenString.length === 0) failureGenString = failureGenString.concat(genID);
-        else failureGenString = failureGenString.concat(`,${genID}`);
-    } else {
-
-    }
-    failureGenContext.generatorFailuresSetters.get(identifier)(failureGenString);
-}
-
-function GeneratorFailureSelection(genID: string, generatorSettings: FailureGenData, failureGenContext: FailureGenContext): JSX.Element {
+function GeneratorFailureSelection(genID: string, failureGenContext: FailureGenContext): JSX.Element {
     const generatorFailureTable :Failure[] = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, genID);
-
     return (
-        <div className="flex flex-col justify-center items-center py-2 px-8 w-3/4 border-2 bg-theme-body border-theme-accent">
+        <div className="flex flex-col justify-center items-start py-2 px-8 w-max border-2 bg-theme-body border-theme-accent">
+            <Link to="/failures/failuregenerators/" className="inline-block w-max">
+                <div className="flex flex-row items-start space-x-3 text-left transition duration-100 hover:text-theme-highlight">
+                    <ArrowLeft size={30} />
+                    <h1 className="font-bold text-current">
+                        Failure pool selection
+                    </h1>
+                </div>
+            </Link>
             <div className="w-max text-left">
-                <h1>Failure pool selection</h1>
                 <p>Select the failures that may be triggered by this failure generator</p>
-            </div>
-            <div
-                className="flex py-2 px-8 text-center rounded-md border-2
-    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
-    border-theme-accent hover:border-theme-highlight"
-                onClick={() => failureGenContext.modals.popModal()}
-            >
-                Close
             </div>
             <ScrollableContainer height={48}>
                 {failureGenContext.allFailures.map<JSX.Element>((failure) => {
@@ -117,9 +109,9 @@ function GeneratorFailureSelection(genID: string, generatorSettings: FailureGenD
                             className="flex flex-row justify"
                         >
                             <Toggle
-                                value={!!active}
-                                onToggle={(value) => {
-
+                                value={active}
+                                onToggle={() => {
+                                    setSelectedFailure(failure, genID, failureGenContext, !active);
                                 }}
                             />
                             <div className="pl-8"><h2>{failure.name}</h2></div>
@@ -146,17 +138,19 @@ export function FailureGeneratorCardTemplateUI(
                     <h2>
                         {`${generatorUniqueID} : ${generatorSettings.alias}`}
                     </h2>
-                    <div
-                        className="flex-1 px-8 py-2 mr-4 h-10 rounded-md transition duration-100 border-2 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
+
+                    <Link to="/failures/failuregenerators/generatorFailureSelect" className="inline-block">
+                        <div
+                            className="flex-1 px-8 py-2 mr-4 h-10 rounded-md transition duration-100 border-2 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
                         border-theme-accent hover:border-theme-highlight"
-                        onClick={() => {
-                            failureGenContext.modals.showModal(GeneratorFailureSelection(generatorUniqueID,
-                                generatorSettings, failureGenContext));
-                        }}
-                    >
-                        {`Failures assigned: ${findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, generatorUniqueID).length}
+                            onClick={() => {
+                                failureGenContext.setGeneratorNameArgument(generatorUniqueID);
+                            }}
+                        >
+                            {`Failures assigned: ${findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, generatorUniqueID).length}
                         / ${failureGenContext.allFailures.length}`}
-                    </div>
+                        </div>
+                    </Link>
                 </div>
                 {RearmSettingsUI(generatorSettings, genID, setNewSetting)}
                 <button

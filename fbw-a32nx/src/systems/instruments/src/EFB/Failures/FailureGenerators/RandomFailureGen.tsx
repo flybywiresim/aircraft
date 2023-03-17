@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGenConfigAltClimb, failureGeneratorAltClimb }
@@ -45,6 +45,8 @@ export type FailureGenContext = {
     generatorFailuresGetters : Map<number, string>,
     generatorFailuresSetters : Map<number, (value: string) => void>,
     allFailures: readonly Readonly<Failure>[],
+    generatorNameArgument : string,
+    setGeneratorNameArgument : (name : string)=>void,
 }
 
 export const flatten = (settings : number[]) => {
@@ -74,6 +76,35 @@ export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[])
         });
     }
     return { generatorFailuresGetters, generatorFailuresSetters };
+};
+
+export const setSelectedFailure = (failure : Failure, genIDToChange : string, failureGenContext :FailureGenContext, value : boolean) => {
+    const initialString = failureGenContext.generatorFailuresGetters.get(failure.identifier);
+    const generatorsForFailure = initialString.split(',');
+    let newSetting : string = '';
+    console.info(`setting ${genIDToChange} to ${value}`);
+    console.info(`initial setting string ${initialString}`);
+    if (value === true) {
+        if (generatorsForFailure.length > 0) {
+            newSetting = initialString.concat(`,${genIDToChange}`);
+        } else {
+            newSetting = genIDToChange;
+        }
+    } else if (generatorsForFailure.length > 0) {
+        let first = true;
+        generatorsForFailure.forEach((generatorID) => {
+            if (genIDToChange !== generatorID) {
+                if (first) {
+                    newSetting = newSetting.concat(generatorID);
+                } else {
+                    first = false;
+                    newSetting = newSetting.concat(`,${generatorID}`);
+                }
+            }
+        });
+    }
+    console.info(`New setting string ${newSetting}`);
+    failureGenContext.generatorFailuresSetters.get(failure.identifier)(newSetting);
 };
 
 export const deleteGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>,
@@ -168,6 +199,7 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
     allGenSettings.set(failureGenConfigPerHour().genName, failureGenConfigPerHour());
     allGenSettings.set(failureGenConfigTimer().genName, failureGenConfigTimer());
     allGenSettings.set(failureGenConfigTakeOff().genName, failureGenConfigTakeOff());
+    const [generatorNameArgument, setGeneratorNameArgument] = useState<string>('');
     return {
         maxFailuresAtOnce,
         setMaxFailuresAtOnce,
@@ -176,6 +208,8 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
         generatorFailuresGetters,
         generatorFailuresSetters,
         allFailures,
+        generatorNameArgument,
+        setGeneratorNameArgument,
     };
 };
 
@@ -192,7 +226,7 @@ const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => v
 export const randomFailureGenerator = () => {
     const { failureFlightPhase } = basicData();
     const { allFailures } = failureGeneratorCommonFunction();
-    const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
+    const { generatorFailuresGetters } = allGeneratorFailures(allFailures);
 
     // TODO: to be improved, changing doesn't mean active but this is not critical
 
@@ -203,63 +237,6 @@ export const randomFailureGenerator = () => {
     useEffect(() => {
         console.info('Failure phase: %d', failureFlightPhase);
     }, [failureFlightPhase]);
-
-    useEffect(() => {
-        generatorFailuresSetters.get(22000)('');
-        generatorFailuresSetters.get(22001)('');
-        generatorFailuresSetters.get(24000)('');
-        generatorFailuresSetters.get(24001)('');
-        generatorFailuresSetters.get(24002)('');
-        generatorFailuresSetters.get(27000)('');
-        generatorFailuresSetters.get(27001)('');
-        generatorFailuresSetters.get(27002)('G0');
-        generatorFailuresSetters.get(27003)('G1');
-        generatorFailuresSetters.get(27004)('');
-        generatorFailuresSetters.get(27005)('');
-        generatorFailuresSetters.get(27006)('');
-        generatorFailuresSetters.get(29000)('');
-        generatorFailuresSetters.get(29001)('');
-        generatorFailuresSetters.get(29002)('');
-        generatorFailuresSetters.get(29003)('');
-        generatorFailuresSetters.get(29004)('');
-        generatorFailuresSetters.get(29005)('');
-        generatorFailuresSetters.get(29006)('');
-        generatorFailuresSetters.get(29007)('');
-        generatorFailuresSetters.get(29008)('');
-        generatorFailuresSetters.get(29009)('');
-        generatorFailuresSetters.get(29010)('');
-        generatorFailuresSetters.get(29011)('');
-        generatorFailuresSetters.get(29012)('');
-        generatorFailuresSetters.get(31000)('');
-        generatorFailuresSetters.get(31001)('');
-        generatorFailuresSetters.get(32000)('');
-        generatorFailuresSetters.get(32001)('');
-        generatorFailuresSetters.get(32002)('');
-        generatorFailuresSetters.get(32003)('');
-        generatorFailuresSetters.get(32004)('');
-        generatorFailuresSetters.get(32005)('');
-        generatorFailuresSetters.get(32006)('');
-        generatorFailuresSetters.get(32007)('');
-        generatorFailuresSetters.get(32008)('');
-        generatorFailuresSetters.get(32009)('');
-        generatorFailuresSetters.get(32010)('');
-        generatorFailuresSetters.get(32011)('');
-        generatorFailuresSetters.get(32012)('');
-        generatorFailuresSetters.get(32013)('');
-        generatorFailuresSetters.get(32014)('');
-        generatorFailuresSetters.get(32015)('');
-        generatorFailuresSetters.get(32020)('');
-        generatorFailuresSetters.get(32021)('');
-        generatorFailuresSetters.get(32022)('');
-        generatorFailuresSetters.get(32023)('');
-        generatorFailuresSetters.get(32024)('');
-        generatorFailuresSetters.get(32025)('');
-        generatorFailuresSetters.get(32100)('');
-        generatorFailuresSetters.get(32101)('');
-        generatorFailuresSetters.get(32150)('');
-        generatorFailuresSetters.get(34000)('');
-        generatorFailuresSetters.get(34001)('');
-    }, []);
 };
 
 export const failureGeneratorAdd = (generatorsSettings : FailureGenData) => {
