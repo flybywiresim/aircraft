@@ -57,7 +57,7 @@ declare global {
              * @returns -1 if the instrument should not update, or the time elapsed since the last
              *          update in milliseconds
              */
-            canUpdate(deltaTime: number, forceUpdate?: boolean);
+            canUpdate(deltaTime: number, forceUpdate?: boolean): number;
         }
     }
 }
