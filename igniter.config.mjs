@@ -135,7 +135,7 @@ export default new TaskOfTasks("all", [
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
             ]),
             new ExecTask('extra-backend-a32nx',
-                "npm run build:extra-backend-cmake",
+                "npm run build:cpp-wasm-cmake",
                 [
                     'fbw-a32nx/src/wasm/extra-backend',
                     'fbw-common/src/wasm/extra-backend',
@@ -200,7 +200,7 @@ export default new TaskOfTasks("all", [
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
             ]),
             new ExecTask('extra-backend',
-                "npm run build:extra-backend-cmake",
+                "npm run build:cpp-wasm-cmake",
                 [
                     'fbw-a380x/src/wasm/extra-backend',
                     'fbw-common/src/wasm/extra-backend',

@@ -8,9 +8,9 @@
   "scripts": {
     "====== Generic===============": "==========================================",
 
-    "build:extra-backend-cmake":       "scripts/build-cmake.sh",
-    "build:extra-backend-cmake-debug": "scripts/build-cmake.sh --debug",
-    "build:extra-backend-cmake-clean": "scripts/build-cmake.sh --clean",
+    "build:cpp-wasm-cmake":       "scripts/build-cmake.sh",
+    "build:cpp-wasm-cmake-debug": "scripts/build-cmake.sh --debug",
+    "build:cpp-wasm-cmake-clean": "scripts/build-cmake.sh --clean",
 
     "====== A320 =================": "==========================================",
 
