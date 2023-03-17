@@ -17,6 +17,7 @@ static const std::string AIRCRAFT_PREFIX{"A32NX_"};
 
 #else
 
+#error "No valid aircraft definition found"
 static const std::string AIRCRAFT_PREFIX{"UNKNOWN_"};
 
 #endif
