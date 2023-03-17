@@ -169,7 +169,7 @@ export class LegsProcedure {
                       mappedLeg = this.mapVectors(currentLeg, this._previousFix);
                       break;
                   case LegType.IF:
-                      if (currentLeg.fixIcao[0] !== 'A') {
+                      if (currentLeg.fixIcao[0] !== 'A' && currentLeg.fixIcao[0] !== 'R') {
                           const leg = this.mapExactFix(currentLeg);
                           const prevLeg = this._previousFix;
 

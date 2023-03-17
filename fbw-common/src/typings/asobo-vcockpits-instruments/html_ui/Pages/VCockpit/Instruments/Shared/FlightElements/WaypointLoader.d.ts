@@ -1,3 +1,4 @@
 declare class FacilityLoader {
-    getFacilityRaw(icao: string, timeout?: number, skipIntersectionData?: boolean): Promise<any>;
+    getFacility(icao, loadFacilitiesTransitively = false): Promise<WayPoint | undefined>;
+    getFacilityRaw(icao: string, timeout?: number, skipIntersectionData?: boolean): Promise<RawFacility | undefined>;
 }

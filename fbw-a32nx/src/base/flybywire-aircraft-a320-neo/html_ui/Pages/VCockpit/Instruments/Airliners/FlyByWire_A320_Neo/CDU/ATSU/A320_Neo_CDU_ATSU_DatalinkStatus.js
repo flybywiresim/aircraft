@@ -13,6 +13,7 @@ class CDUAtsuDatalinkStatus {
         mcdu.pageRedrawCallback = () => {
             updateView();
         };
+        setTimeout(mcdu.requestUpdate.bind(mcdu), 500);
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         const vhfStatusCode = mcdu.atsu.getDatalinkStatus('vhf');

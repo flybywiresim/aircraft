@@ -202,12 +202,9 @@ class FacilityLoader {
     getFacilityCB(icao, callback, loadFacilitiesTransitively = false) {
         if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
             this.getFacilityDataCB(icao, (data) => {
-                let waypoint;
                 if (data) {
-                    waypoint = new WayPoint(this.instrument);
-                    waypoint.SetFromIFacility(data, () => {
-                        callback(waypoint);
-                    }, loadFacilitiesTransitively);
+                    const waypoint = Fmgc.RawDataMapper.toWaypoint(data, this.instrument);
+                    callback(waypoint);
                 } else {
                     callback(undefined);
                 }
@@ -274,8 +271,7 @@ class FacilityLoader {
         await this.waitRegistration();
         const data = await this.getAirportData(icao);
         if (data) {
-            const airport = new WayPoint(this.instrument);
-            airport.SetFromIFacility(data, EmptyCallback.Void, loadFacilitiesTransitively);
+            const airport = Fmgc.RawDataMapper.toWaypoint(data, this.instrument);
             return airport;
         }
     }
@@ -378,8 +374,7 @@ class FacilityLoader {
         const datas = await this.getAirportsData(icaos);
         if (datas) {
             for (let i = 0; i < datas.length; i++) {
-                const airport = new WayPoint(this.instrument);
-                airport.SetFromIFacility(datas[i]);
+                const airport = Fmgc.RawDataMapper.toWaypoint(data, this.instrument);
                 airports.push(airport);
             }
         }
@@ -601,8 +596,7 @@ class FacilityLoader {
         const datas = await this.getIntersectionsData(icaos);
         if (datas) {
             for (let i = 0; i < datas.length; i++) {
-                const intersection = new WayPoint(this.instrument);
-                intersection.SetFromIFacility(datas[i]);
+                const intersection = Fmgc.RawDataMapper.toWaypoint(datas[i], this.instrument);
                 intersections.push(intersection);
             }
         }
@@ -780,8 +774,7 @@ class FacilityLoader {
         const datas = await this.getNdbsData(icaos);
         if (datas) {
             for (let i = 0; i < datas.length; i++) {
-                const ndb = new WayPoint(this.instrument);
-                ndb.SetFromIFacility(datas[i]);
+                const ndb = Fmgc.RawDataMapper.toWaypoint(datas[i], this.instrument);
                 ndbs.push(ndb);
             }
         }
@@ -949,8 +942,7 @@ class FacilityLoader {
         const datas = await this.getVorsData(icaos);
         if (datas) {
             for (let i = 0; i < datas.length; i++) {
-                const vor = new WayPoint(this.instrument);
-                vor.SetFromIFacility(datas[i]);
+                const vor = Fmgc.RawDataMapper.toWaypoint(datas[i], this.instrument);
                 vors.push(vor);
             }
         }

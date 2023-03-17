@@ -432,10 +432,6 @@
     - Number
     - The ILS course tuned via the left/right RMP
 
-- A32NX_RMP_ILS_TUNED
-    - Bool
-    - If the ILS is tuned via the RMP
-
 - A32NX_TO_CONFIG_FLAPS
     - Enum
     - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry, -1 if not entered
@@ -1055,6 +1051,7 @@
     - Auto brake panel push button for MAX mode is pressed
 
 - A32NX_FM_LS_COURSE
+    - ** DEPRECATED ** Do not use.
     - Number<Degrees | -1>
     - Landing system course. Values, in priority order:
         - Pilot entered course
@@ -1076,15 +1073,6 @@
       APPROACH | 5
       GOAROUND | 6
       DONE | 7
-
-- A32NX_FMGC_RADIONAV_TUNING_MODE
-    - Enum
-    - Hold the FMGCs current tuning mode
-      Value | Meaning
-      --- | ---
-      0 | AUTO
-      1 | MANUAL
-      2 | REMOTE VIA RMPs
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number

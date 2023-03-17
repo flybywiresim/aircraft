@@ -156,7 +156,7 @@ declare class FlightPlanManager {
     isLoadedApproach(forceSimVarCall?: boolean): boolean;
     private _isActiveApproach;
     private _isActiveApproachTimeLastSimVarCall;
-    isActiveApproach(forceSimVarCall?: boolean): boolean;
+    isActiveApproach(flightPlanIndex?: number): boolean;
     activateApproach(callback?: () => void): void;
     deactivateApproach(): void;
     tryAutoActivateApproach(): void;

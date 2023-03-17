@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { TuningMode } from '@fmgc/radionav';
 import { EfisNdMode, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
+import { useArinc429Var } from '@instruments/common/arinc429';
 
 export type RadioNavInfoProps = {
     index: 1 | 2,
@@ -10,13 +10,26 @@ export type RadioNavInfoProps = {
     mode: EfisNdMode,
 }
 
-const TuningModeIndicator: React.FC<{ index: 1 | 2 }> = ({ index }) => {
-    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
+const TuningModeIndicator: React.FC<{ index: 1 | 2, adf?: boolean }> = ({ index, adf = false }) => {
+    const [fm1Healthy] = useSimVar('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean');
+    const [fm2Healthy] = useSimVar('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean');
+    const fm1NavDiscrete = useArinc429Var('L:A32NX_FM1_NAV_DISCRETE');
+    const fm2NavDiscrete = useArinc429Var('L:A32NX_FM2_NAV_DISCRETE');
+    const [tuningMode, setTuningMode] = useState('');
+
+    useEffect(() => {
+        const bitIndex = 10 + index + (adf ? 2 : 0);
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavDiscrete.isNormalOperation() && !fm2NavDiscrete.isNormalOperation())) {
+            setTuningMode('R');
+        } else if (fm1NavDiscrete.getBitValueOr(bitIndex, false) || fm2NavDiscrete.getBitValueOr(bitIndex, false)) {
+            setTuningMode('M');
+        } else {
+            setTuningMode('');
+        }
+    }, [fm1Healthy, fm1NavDiscrete.value, fm1NavDiscrete.ssm, fm2Healthy, fm2NavDiscrete.value, fm2NavDiscrete.ssm]);
 
     return (
-        tuningMode !== TuningMode.Auto && (
-            <text x={index === 1 ? 138 : 616} y={720} fontSize={20} textDecoration="underline" fill="#ffffff">{tuningMode === TuningMode.Manual ? 'M' : 'R'}</text>
-        ) || null
+        <text x={index === 1 ? 138 : 616} y={720} fontSize={20} textDecoration="underline" fill="#ffffff">{tuningMode}</text>
     );
 };
 
@@ -132,7 +145,7 @@ const AdfInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
             {!adfAvailable && adfFrequency > 0 && (
                 <text x={x} y={722} fontSize={24} className="Green">{Math.floor(adfFrequency).toFixed(0)}</text>
             )}
-            <TuningModeIndicator index={index} />
+            <TuningModeIndicator index={index} adf />
         </g>
     );
 };

@@ -71,7 +71,6 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     aoa: number;
     selectedFpa: number;
     ilsCourse: number;
-    ilsRMPTuned: boolean;
     metricAltToggle: boolean;
     tla1: number;
     tla2: number;
@@ -150,6 +149,7 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     trueHeadingRaw: number;
     trueTrackRaw: number;
     slatPosLeft: number;
+    fm1NavDiscrete: number;
   }
 
 export enum PFDVars {
@@ -219,7 +219,6 @@ export enum PFDVars {
     aoa = 'INCIDENCE ALPHA',
     selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
-    ilsRMPTuned = 'L:A32NX_RMP_ILS_TUNED',
     metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
     tla1='L:A32NX_AUTOTHRUST_TLA:1',
     tla2='L:A32NX_AUTOTHRUST_TLA:2',
@@ -297,6 +296,7 @@ export enum PFDVars {
     trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
     trueTrackRaw = 'L:A32NX_ADIRS_IR_1_TRUE_TRACK',
     slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
+    fm1NavDiscrete = 'L:A32NX_FM1_NAV_DISCRETE',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -370,7 +370,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['aoa', { name: PFDVars.aoa, type: SimVarValueType.Degree }],
         ['selectedFpa', { name: PFDVars.selectedFpa, type: SimVarValueType.Degree }],
         ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
-        ['ilsRMPTuned', { name: PFDVars.ilsRMPTuned, type: SimVarValueType.Bool }],
         ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
         ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
         ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],
@@ -448,6 +447,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['trueHeadingRaw', { name: PFDVars.trueHeadingRaw, type: SimVarValueType.Number }],
         ['trueTrackRaw', { name: PFDVars.trueTrackRaw, type: SimVarValueType.Number }],
         ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
+        ['fm1NavDiscrete', { name: PFDVars.fm1NavDiscrete, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {
