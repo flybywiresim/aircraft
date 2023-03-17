@@ -77,6 +77,7 @@ export function baseCompile(instrumentName, instrumentFolder) {
             'process.env.NODE_ENV': JSON.stringify('production'),
             'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
             'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
+            'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
             'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
         }),
         postCss(instrumentName, instrumentFolder),
