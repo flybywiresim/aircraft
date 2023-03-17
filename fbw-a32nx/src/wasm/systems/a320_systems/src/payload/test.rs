@@ -108,6 +108,7 @@ impl BoardingTestBed {
 
     fn gsx_performing_deboard_state(mut self) -> Self {
         self.write_by_name("FSDT_GSX_DEBOARDING_STATE", GsxState::Performing);
+        self.write_by_name("FSDT_GSX_DEBOARDING_CARGO_PERCENT", 0.);
         self
     }
 
@@ -153,6 +154,7 @@ impl BoardingTestBed {
         self
     }
 
+    #[allow(dead_code)]
     fn deboard_gsx_pax_num(mut self, value: i32) -> Self {
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", value);
         self
@@ -370,7 +372,7 @@ impl BoardingTestBed {
         for ps in A320Pax::iterator() {
             let pax_num = 0;
             let pax_payload = Mass::default();
-            assert_eq!(self.pax_num(ps), pax_num);
+            assert_eq!(self.pax_num(ps), pax_num, "Expected Pax: {}, current Pax: {}", pax_num, self.pax_num(ps));
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
                 pax_payload.get::<pound>().floor()
@@ -1285,10 +1287,19 @@ fn gsx_deboarding_full_pax_partial() {
         .with_full_cargo()
         .with_full_pax()
         .target_no_pax()
-        .target_full_cargo()
+        .target_no_cargo()
         .gsx_requested_deboard_state()
         .and_run()
         .gsx_performing_deboard_state()
+        .and_run()
+        .and_stabilize();
+
+    // Check that cargo and pax remain the same when GSX has started performing
+    test_bed.has_full_pax();
+    test_bed.has_full_cargo();
+
+    // SET GSX values to half and run
+    let mut test_bed = test_bed
         .deboard_gsx_pax_half()
         .deboard_gsx_cargo_half()
         .and_run()
@@ -1298,13 +1309,13 @@ fn gsx_deboarding_full_pax_partial() {
     test_bed.has_half_cargo();
 
     let mut test_bed = test_bed
-        .deboard_gsx_pax_num(100)
-        .and_run()
         .deboard_gsx_pax_full()
         .deboard_gsx_cargo_full()
         .and_run()
         .and_stabilize()
-        .gsx_complete_deboard_state();
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
 
     test_bed.has_no_pax();
     test_bed.has_no_cargo();

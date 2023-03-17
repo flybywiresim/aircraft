@@ -295,10 +295,8 @@ impl A320Payload {
                 self.reset_all_cargo_targets();
             }
             GsxState::Completed => {
+                self.move_all_payload();
                 self.reset_cargo_loaded();
-                for cs in A320Cargo::iterator() {
-                    self.move_all_cargo(cs);
-                }
                 self.reset_all_cargo_targets();
             }
             GsxState::Performing => {
@@ -619,6 +617,15 @@ impl A320Payload {
 
     fn load_cargo_percent(&mut self, cs: A320Cargo, percent: f64) {
         self.cargo[cs as usize].load_cargo_percent(percent)
+    }
+
+    fn move_all_payload(&mut self) {
+        for ps in A320Pax::iterator() {
+            self.move_all_pax(ps)
+        }
+        for cs in A320Cargo::iterator() {
+            self.move_all_cargo(cs)
+        }
     }
 
     fn sync_cargo(&mut self, cs: A320Cargo) {
