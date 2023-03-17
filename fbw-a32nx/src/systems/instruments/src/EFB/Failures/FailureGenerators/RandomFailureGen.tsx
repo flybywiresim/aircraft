@@ -16,6 +16,8 @@ import { failureGenConfigTakeOff, failureGeneratorTakeOff }
 import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { AtaChapterNumber } from '@shared/ata';
+import { deleteGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -177,10 +179,13 @@ export function setNewSetting(newSetting: number, generatorSettings : FailureGen
     generatorSettings.setSetting(flatten(settings));
 }
 
-export const eraseGenerator :(genID : number, generatorSettings : FailureGenData) => void = (genID : number, generatorSettings : FailureGenData) => {
+export const eraseGenerator :(genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) =>
+void = (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
     generatorSettings.setSetting(flatten(generatorSettings.settings));
     // arming
     generatorSettings.failureGeneratorArmed.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
     generatorSettings.onErase(genID);
+
+    deleteGeneratorFailures(generatorSettings, failureGenContext, `${generatorSettings.uniqueGenPrefix}${genID}`);
 };

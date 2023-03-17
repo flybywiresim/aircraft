@@ -7,7 +7,6 @@ import {
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailureGeneratorCardTemplateUI, FailureGeneratorFailureSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
-import { ModalContextInterface } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
@@ -63,7 +62,7 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
     const settingsTimer : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const nbGeneratorTimer = useMemo(() => Math.floor(settingsTimer.length / numberOfSettingsPerGenerator), [settingsTimer]);
-    // Failure Specific memos
+
     const { failureFlightPhase } = basicData();
 
     useEffect(() => {
