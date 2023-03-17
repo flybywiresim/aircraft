@@ -10,7 +10,7 @@ class CDUAtsuDatalinkStatus {
             }
         }
 
-        mcdu.refreshPageCallback = () => {
+        mcdu.pageRedrawCallback = () => {
             updateView();
         };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
