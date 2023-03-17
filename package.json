@@ -8,9 +8,10 @@
   "scripts": {
     "====== Generic===============": "==========================================",
 
-    "build:cpp-wasm-cmake":       "scripts/build-cmake.sh",
-    "build:cpp-wasm-cmake-debug": "scripts/build-cmake.sh --debug",
-    "build:cpp-wasm-cmake-clean": "scripts/build-cmake.sh --clean",
+    "build:cpp-wasm-cmake":             "scripts/build-cmake.sh",
+    "build:cpp-wasm-cmake-clean":       "scripts/build-cmake.sh --clean",
+    "build:cpp-wasm-cmake-debug":       "scripts/build-cmake.sh --debug",
+    "build:cpp-wasm-cmake-debug-clean": "scripts/build-cmake.sh --debug --clean",
 
     "====== A320 =================": "==========================================",
 
