@@ -103,6 +103,7 @@ class WayPoint {
         }
     }
     SetFromIFacility(data, callback = EmptyCallback.Void, loadFacilitiesTransitively = false) {
+        this.additionalData.facility = data;
         this.icao = data.icao;
         if (!this.icao) {
             console.warn("FacilityData without ICAO was used to Set a Waypoint, expect the unexpected.");

@@ -243,6 +243,7 @@ export class LegsProcedure {
                   mappedLeg.additionalData.recommendedIcao = currentLeg.originIcao.trim().length > 0 ? currentLeg.originIcao : undefined;
                   mappedLeg.additionalData.recommendedFrequency = recNavaid ? recNavaid.freqMHz : undefined;
                   mappedLeg.additionalData.recommendedLocation = recNavaid ? { lat: recNavaid.lat, long: recNavaid.lon } : undefined;
+                  mappedLeg.additionalData.recommendedFacility = recNavaid ?? null;
                   mappedLeg.additionalData.rho = currentLeg.rho / 1852;
                   mappedLeg.additionalData.theta = currentLeg.theta;
                   mappedLeg.additionalData.thetaTrue = A32NX_Util.magneticToTrue(currentLeg.theta, magCorrection);
