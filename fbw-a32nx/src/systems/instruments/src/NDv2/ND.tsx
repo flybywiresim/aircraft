@@ -281,7 +281,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <Chrono bus={this.props.bus} />
 
                     <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
-                    <FmMessages bus={this.props.bus} />
+                    <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
                 </svg>
             </DisplayUnit>
         );

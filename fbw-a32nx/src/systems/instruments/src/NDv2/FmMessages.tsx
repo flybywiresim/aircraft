@@ -1,16 +1,16 @@
-import {
-    FSComponent,
-    DisplayComponent,
-    EventBus,
-    VNode,
-    ArraySubject,
-    Subject,
-} from 'msfssdk';
+import { ArraySubject, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 
-export class FmMessages extends DisplayComponent<{ bus: EventBus }> {
+export interface FmMessagesProps {
+    bus: EventBus,
+
+    mode: Subscribable<EfisNdMode>,
+}
+
+export class FmMessages extends DisplayComponent<FmMessagesProps> {
     private readonly activeMessages = ArraySubject.create<FMMessage>([]);
 
     private readonly lastActiveMessage = Subject.create<FMMessage | null>(null);
@@ -18,6 +18,14 @@ export class FmMessages extends DisplayComponent<{ bus: EventBus }> {
     private readonly boxRef = FSComponent.createRef<SVGRectElement>();
 
     private readonly overflowArrowRef = FSComponent.createRef<SVGPathElement>();
+
+    private readonly visible = this.props.mode.map((mode) => {
+        if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR) {
+            return false;
+        }
+
+        return true;
+    });
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -58,18 +66,18 @@ export class FmMessages extends DisplayComponent<{ bus: EventBus }> {
     private handleBoxVisibility() {
         const shown = this.activeMessages.length > 0;
 
-        this.boxRef.instance.style.visibility = shown ? 'visible' : 'hidden';
+        this.boxRef.instance.style.visibility = shown ? 'inherit' : 'hidden';
     }
 
     private handleOverflowArrow() {
         const shown = this.activeMessages.length > 1;
 
-        this.overflowArrowRef.instance.style.visibility = shown ? 'visible' : 'hidden';
+        this.overflowArrowRef.instance.style.visibility = shown ? 'inherit' : 'hidden';
     }
 
     render(): VNode | null {
         return (
-            <Layer x={164} y={707}>
+            <Layer x={164} y={707} visible={this.visible}>
                 <rect ref={this.boxRef} x={0} y={0} width={440} height={27} class="White BackgroundFill" stroke-width={1.75} />
 
                 { /* the text message is offset from centre on the real one...
