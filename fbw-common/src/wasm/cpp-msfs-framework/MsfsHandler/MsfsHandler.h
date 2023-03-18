@@ -94,8 +94,14 @@ class MsfsHandler {
   /**
    * Creates a new MsfsHandler instance.
    * @param name string containing an appropriate simconnect name for the client program.
+   * @param aircraftPrefix string containing the prefix for all named variables (LVARs).
+   *                       E.g. "A32NX_" for the A32NX aircraft or "A380X_" for the A380X aircraft.
    */
-  explicit MsfsHandler(std::string&& name) : dataManager(this), simConnectName(std::move(name)) {}
+  explicit MsfsHandler(std::string&& name, const std::string& aircraftPrefix)
+      : dataManager(this), simConnectName(std::move(name)) {
+    LOG_INFO("Creating MsfsHandler instance with Simconnect name " + simConnectName + " and aircraft prefix " + aircraftPrefix);
+    NamedVariable::setAircraftPrefix(aircraftPrefix);
+  }
 
   /**
    * Initializes the MsfsHandler instance. This method must be called before any other method.

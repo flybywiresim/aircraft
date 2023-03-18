@@ -17,6 +17,8 @@
 #include "SimUnits.h"
 #include "logging.h"
 
+#include "NamedVariable.h"
+
 #include "ClientDataAreaVariable.hpp"
 #include "DataDefinitionVariable.hpp"
 #include "StreamingClientDataAreaVariable.hpp"
@@ -24,7 +26,6 @@
 // Forward declarations
 class MsfsHandler;
 class CacheableVariable;
-class NamedVariable;
 class AircraftVariable;
 class SimObjectBase;
 struct DataDefinition;

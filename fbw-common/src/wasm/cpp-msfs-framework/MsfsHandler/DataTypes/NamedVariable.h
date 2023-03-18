@@ -8,7 +8,7 @@
 #include <string>
 
 #include "CacheableVariable.h"
-#include "aircraft_prefix.h"
+#include "simple_assert.h"
 
 class DataManager;
 
@@ -26,6 +26,8 @@ class DataManager;
 class NamedVariable : public CacheableVariable {
   // The data manager is a friend, so it can access the private constructor.
   friend DataManager;
+
+  static std::string AIRCRAFT_PREFIX;
 
   /**
    * Creates an instance of a named variable.<p/>
@@ -49,7 +51,10 @@ class NamedVariable : public CacheableVariable {
                          bool autoWriting = false,
                          FLOAT64 maxAgeTime = 0.0,
                          UINT64 maxAgeTicks = 0)
-      : CacheableVariable(AIRCRAFT_PREFIX + varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks) {
+      : CacheableVariable(NamedVariable::AIRCRAFT_PREFIX + varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks) {
+    // just while the build is not yet finalized - this makes sure to quickly spot an issue with the prefix
+    SIMPLE_ASSERT(NamedVariable::AIRCRAFT_PREFIX == "A32NX_" || NamedVariable::AIRCRAFT_PREFIX == "A380X_",
+                  "Aircraft prefix is not set correctly!");
     dataID = register_named_variable(name.c_str());
   };
 
@@ -64,7 +69,26 @@ class NamedVariable : public CacheableVariable {
 
   [[nodiscard]] std::string str() const override;
 
+  /**
+   * Sets the aircraft prefix for all NamedVariables.
+   * This will usually be set by the MsfsHandler constructor.
+   * @param aircraftPrefix The aircraft prefix to use.
+   */
+  static void setAircraftPrefix(const std::string& aircraftPrefix) {
+    NamedVariable::AIRCRAFT_PREFIX = aircraftPrefix;
+  }
+
+  /**
+   * Returns the aircraft prefix for all NamedVariables.
+   * @return The aircraft prefix.
+   */
+  static const std::string& getAircraftPrefix() { return AIRCRAFT_PREFIX; }
+
   friend std::ostream& operator<<(std::ostream& os, const NamedVariable& namedVariable);
 };
+
+// This is a default value for the prefix, it will be overwritten
+// by the MsfsHandler constructor.
+inline std::string NamedVariable::AIRCRAFT_PREFIX = "FBW_";
 
 #endif  // FLYBYWIRE_NAMEDVARIABLE_H

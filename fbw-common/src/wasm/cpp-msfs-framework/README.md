@@ -223,18 +223,8 @@ It is based on the CacheableVariable - see above.
 OBS: A prefix is added to the variable name to distinguish different aircraft 
 (e.g. A32NX_ or A380X_).
 
-It is defined in the build script as a compile-time variable and **must not be added
-manually to the variable name.**<br/>
-
-```sh
-...
-AIRCRAFT="A32NX"
-...
-clang++ \
-  -c \
-  -D${AIRCRAFT} \
-...  
-```
+The prefix is set via the static variable `AIRCRAFT_PREFIX` in the NamedVariable class. 
+It is set by the MsfsHandler class' constructor. 
 
 ##### AircraftVariable
 The AircraftVariable is a variable which is mapped to an aircraft simvar. As simvars 

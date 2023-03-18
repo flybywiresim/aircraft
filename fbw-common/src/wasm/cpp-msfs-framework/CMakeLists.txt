@@ -25,7 +25,6 @@ set(INCLUDE_FILES
 		lib/Callback.h
 		lib/IDGenerator.h
 		lib/SimUnits.h
-		lib/aircraft_prefix.h
 		lib/fingerprint.hpp
 		lib/inih/ini.h
 		lib/inih/ini_type_conversion.h

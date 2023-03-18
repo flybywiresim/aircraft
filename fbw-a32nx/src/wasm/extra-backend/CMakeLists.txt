@@ -1,3 +1,11 @@
+# add additional compiler definitions for the a32nx extra-backend build
+add_definitions(
+		# ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
+		-DLOG_LEVEL=4
+		# EXAMPLES | NO_EXAMPLES
+		-DNO_EXAMPLES
+)
+
 # add the local include directories
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -24,12 +32,6 @@ set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Pushback/InertialDampener.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Pushback/Pushback.h
-)
-
-# add additional compiler definitions for the a32nx extra-backend build
-add_definitions(
-		-DLOG_LEVEL=5
-		-DEXAMPLES
 )
 
 # create the targets

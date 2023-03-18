@@ -21,7 +21,7 @@
 #include "MsfsHandler.h"
 #include "Pushback/Pushback.h"
 
-MsfsHandler msfsHandler("Gauge_Extra_Backend");
+MsfsHandler msfsHandler("Gauge_Extra_Backend", "A32NX_");
 #ifdef EXAMPLES
 [[maybe_unused]] ExampleModule exampleModule(msfsHandler);
 #endif
