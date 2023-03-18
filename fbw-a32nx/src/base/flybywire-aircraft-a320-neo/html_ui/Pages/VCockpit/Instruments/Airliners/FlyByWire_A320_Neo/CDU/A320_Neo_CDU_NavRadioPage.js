@@ -241,7 +241,11 @@ class CDUNavRadioPage {
     }
 
     static handleMmrCrsLsk(mcdu, input, scratchpadCallback) {
-        // FIXME handle ils lock under 700 feet on approach
+        if (mcdu.isMmrTuningLocked()) {
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return;
+        }
+
         if (input === FMCMainDisplay.clrValue) {
             const mmr = mcdu.getMmrTuningData(1);
             if (mmr.courseManual) {
