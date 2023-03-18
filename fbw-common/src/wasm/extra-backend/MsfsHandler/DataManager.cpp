@@ -8,8 +8,8 @@
 #include "NamedVariable.h"
 #include "SimconnectExceptionStrings.h"
 
-bool DataManager::initialize(HANDLE hdlSimConnect) {
-  hSimConnect = hdlSimConnect;
+bool DataManager::initialize(HANDLE simConnectHandle) {
+  hSimConnect = simConnectHandle;
   isInitialized = true;
   return true;
 }
@@ -107,7 +107,7 @@ void DataManager::getRequestedData() const {
 // Generators / make_ functions
 // =================================================================================================
 
-NamedVariablePtr DataManager::make_named_var(const std::string varName,
+NamedVariablePtr DataManager::make_named_var(const std::string& varName,
                                              SimUnit unit,
                                              bool autoReading,
                                              bool autoWriting,
@@ -121,7 +121,8 @@ NamedVariablePtr DataManager::make_named_var(const std::string varName,
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
   // use the update method and frequency of the automated one with faster update frequency
-  if (auto pair = variables.find(uniqueName); pair != variables.end()) {
+  const auto pair = variables.find(uniqueName);
+  if (pair != variables.end()) {
     if (!pair->second->isAutoRead() && autoReading) {
       pair->second->setAutoRead(true);
     }
@@ -140,14 +141,14 @@ NamedVariablePtr DataManager::make_named_var(const std::string varName,
 
   // Create new var and store it in the map
   NamedVariablePtr var =
-      std::shared_ptr<NamedVariable>(new NamedVariable(std::move(varName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+      std::shared_ptr<NamedVariable>(new NamedVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_named_var(): created variable " + var->str());
   return var;
 }
 
-AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
+AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
                                                    int index,
                                                    const std::string setterEventName,
                                                    ClientEventPtr setterEvent,
@@ -164,7 +165,8 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
   // use the update method and frequency of the automated one with faster update frequency
-  if (auto pair = variables.find(uniqueName); pair != variables.end()) {
+  const auto pair = variables.find(uniqueName);
+  if (pair != variables.end()) {
     if (!pair->second->isAutoRead() && autoReading) {
       pair->second->setAutoRead(true);
     }
@@ -187,7 +189,7 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
   AircraftVariablePtr var;
   var = setterEventName.empty()
             ? std::shared_ptr<AircraftVariable>(
-                  new AircraftVariable(std::move(varName), index, setterEvent, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks))
+                  new AircraftVariable(varName, index, setterEvent, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks))
             : std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), index, std::move(setterEventName), unit,
                                                                      autoReading, autoWriting, maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
@@ -196,7 +198,7 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string varName,
   return var;
 }
 
-AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string varName,
+AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string& varName,
                                                           SimUnit unit,
                                                           bool autoReading,
                                                           FLOAT64 maxAgeTime,
@@ -204,12 +206,13 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string varN
   // The name needs to contain all the information to identify the variable
   // and the expected value uniquely. This is because the same variable can be
   // used in different places with different expected values via Index and SimUnits.
-  const std::string uniqueName = varName + ":" + std::to_string(0) + ":" + unit.name;
+  const std::string uniqueName = varName + ":" + "0:" + unit.name;
 
   // Check if variable already exists
   // Check which update method and frequency to use - if two variables are the same
   // use the update method and frequency of the automated one with faster update frequency
-  if (auto pair = variables.find(uniqueName); pair != variables.end()) {
+  const auto pair = variables.find(uniqueName);
+  if (pair != variables.end()) {
     if (!pair->second->isAutoRead() && autoReading) {
       pair->second->setAutoRead(true);
     }
@@ -225,7 +228,7 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string varN
 
   // Create new var and store it in the map
   AircraftVariablePtr var =
-      std::shared_ptr<AircraftVariable>(new AircraftVariable(std::move(varName), 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks));
+      std::shared_ptr<AircraftVariable>(new AircraftVariable(varName, 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_simple_aircraft_var(): created variable " + var->str());
@@ -244,7 +247,7 @@ ClientEventPtr DataManager::make_client_event(const std::string& clientEventName
   }
   // create a new event instance
   ClientEventPtr clientEvent =
-      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), std::move(clientEventName)));
+      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), clientEventName));
   if (registerToSim) {
     clientEvent->mapToSimEvent();
   }
@@ -275,8 +278,10 @@ KeyEventCallbackID DataManager::addKeyEventCallback(KeyEventID keyEventId, const
 bool DataManager::removeKeyEventCallback(KeyEventID keyEventId, KeyEventCallbackID callbackId) {
   std::ignore = callbackId;
 
-  if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
-    if (auto callbackPair = eventPair->second.find(keyEventId); callbackPair != eventPair->second.end()) {
+  const auto eventPair = keyEventCallbacks.find(keyEventId);
+  if (eventPair != keyEventCallbacks.end()) {
+    const auto callbackPair = eventPair->second.find(keyEventId);
+    if (callbackPair != eventPair->second.end()) {
       eventPair->second.erase(callbackPair);
       LOG_DEBUG("Removed callback from key event " + std::to_string(keyEventId) + " with ID " + std::to_string(callbackId) + " and " +
                 std::to_string(eventPair->second.size()) + " callbacks left");
@@ -304,7 +309,8 @@ bool DataManager::sendKeyEvent(KeyEventID keyEventId, DWORD param0, DWORD param1
 }
 
 void DataManager::processKeyEvent(KeyEventID keyEventId, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4) {
-  if (auto eventPair = keyEventCallbacks.find(keyEventId); eventPair != keyEventCallbacks.end()) {
+  const auto eventPair = keyEventCallbacks.find(keyEventId);
+  if (eventPair != keyEventCallbacks.end()) {
     for (auto& callbackPair : eventPair->second) {
       callbackPair.second(evdata0, evdata1, evdata2, evdata3, evdata4);
     }
@@ -355,7 +361,8 @@ void DataManager::processDispatchMessage(SIMCONNECT_RECV* pRecv, [[maybe_unused]
 
 void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) const {
   const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
-  if (auto pair = simObjects.find(pSimobjectData->dwRequestID); pair != simObjects.end()) {
+  const auto pair = simObjects.find(pSimobjectData->dwRequestID);
+  if (pair != simObjects.end()) {
     pair->second->processSimData(pData, msfsHandler->getTimeStamp(), msfsHandler->getTickCounter());
     return;
   }
@@ -363,7 +370,8 @@ void DataManager::processSimObjectData(SIMCONNECT_RECV* pData) const {
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) const {
-  if (auto pair = clientEvents.find(pRecv->uEventID); pair != clientEvents.end()) {
+  const auto pair = clientEvents.find(pRecv->uEventID);
+  if (pair != clientEvents.end()) {
     pair->second->processEvent(pRecv->dwData);
     return;
   }
@@ -371,7 +379,8 @@ void DataManager::processEvent(const SIMCONNECT_RECV_EVENT* pRecv) const {
 }
 
 void DataManager::processEvent(const SIMCONNECT_RECV_EVENT_EX1* pRecv) const {
-  if (auto pair = clientEvents.find(pRecv->uEventID); pair != clientEvents.end()) {
+  const auto pair = clientEvents.find(pRecv->uEventID);
+  if (pair != clientEvents.end()) {
     pair->second->processEvent(pRecv->dwData0, pRecv->dwData1, pRecv->dwData2, pRecv->dwData3, pRecv->dwData4);
     return;
   }

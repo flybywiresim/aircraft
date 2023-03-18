@@ -40,11 +40,10 @@ bool MsfsHandler::initialize() {
   // function must be static.
   // See https://blog.mbedded.ninja/programming/languages/c-plus-plus/callbacks/#static-variables-with-templating
   Callback<void(ID32, UINT32, UINT32, UINT32, UINT32, UINT32, PVOID)>::func =
-        [ObjectPtr = &dataManager](auto&& PH1, auto&& PH2, auto&& PH3, auto&& PH4, auto&& PH5, auto&& PH6, [[maybe_unused]] auto&& PH7) {
-          ObjectPtr->processKeyEvent(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), std::forward<decltype(PH3)>(PH3),
-                                     std::forward<decltype(PH4)>(PH4), std::forward<decltype(PH5)>(PH5),
-                                     std::forward<decltype(PH6)>(PH6));
-        };
+      [ObjectPtr = &dataManager](auto&& PH1, auto&& PH2, auto&& PH3, auto&& PH4, auto&& PH5, auto&& PH6, [[maybe_unused]] auto&& PH7) {
+        ObjectPtr->processKeyEvent(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), std::forward<decltype(PH3)>(PH3),
+                                   std::forward<decltype(PH4)>(PH4), std::forward<decltype(PH5)>(PH5), std::forward<decltype(PH6)>(PH6));
+      };
   keyEventHandlerEx1 =
       static_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(Callback<void(ID32, UINT32, UINT32, UINT32, UINT32, UINT32, PVOID)>::callback);
 

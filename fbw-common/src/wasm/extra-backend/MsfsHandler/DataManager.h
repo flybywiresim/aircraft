@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <cstdint>
 
 #include <MSFS/Legacy/gauges.h>
 #include <MSFS/MSFS.h>
@@ -35,16 +36,16 @@ typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
 typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
 typedef std::shared_ptr<ClientEvent> ClientEventPtr;
-// convenience defines
+// convenience define
 #define DATA_DEF_PTR std::shared_ptr<DataDefinitionVariable<T>>
 #define CLIENT_AREA_PTR std::shared_ptr<ClientDataAreaVariable<T>>
 #define STREAMING_AREA_PTR std::shared_ptr<StreamingClientDataAreaVariable<T, ChunkSize>>
 
 // Used to identify a key event
-typedef unsigned int KeyEventID;
+typedef ID32 KeyEventID;
 
 // Used for callback registration to allow removal of callbacks
-typedef uint64_t KeyEventCallbackID;
+typedef std::uint64_t KeyEventCallbackID;
 
 /**
  * Defines a callback function for a key event
@@ -117,7 +118,7 @@ class DataManager {
    * Usually called in the MsfsHandler initialization.
    * @param hdl Handle to the simconnect instance
    */
-  bool initialize(HANDLE hdlSimConnect);
+  bool initialize(HANDLE simConnectHandle);
 
   /**
    * Called by the MsfsHandler update() method.<br/>
@@ -181,7 +182,7 @@ class DataManager {
    * @return A shared pointer to the variable
    * @see SimUnits.h for available units
    */
-  [[nodiscard]] NamedVariablePtr make_named_var(const std::string varName,
+  [[nodiscard]] NamedVariablePtr make_named_var(const std::string& varName,
                                                 SimUnit unit = UNITS.Number,
                                                 bool autoReading = false,
                                                 bool autoWriting = false,
@@ -209,7 +210,7 @@ class DataManager {
    * @return A shared pointer to the variable
    * @see SimUnits.h for available units
    */
-  [[nodiscard]] AircraftVariablePtr make_aircraft_var(const std::string varName,
+  [[nodiscard]] AircraftVariablePtr make_aircraft_var(const std::string& varName,
                                                       int index = 0,
                                                       const std::string setterEventName = "",
                                                       ClientEventPtr setterEvent = nullptr,
@@ -232,7 +233,7 @@ class DataManager {
    * @return A shared pointer to the variable
    * @see SimUnits.h for available units
    */
-  [[nodiscard]] AircraftVariablePtr make_simple_aircraft_var(const std::string varName,
+  [[nodiscard]] AircraftVariablePtr make_simple_aircraft_var(const std::string& varName,
                                                              SimUnit unit = UNITS.Number,
                                                              bool autoReading = false,
                                                              FLOAT64 maxAgeTime = 0.0,
@@ -256,14 +257,14 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T>
-  [[nodiscard]] DATA_DEF_PTR make_datadefinition_var(const std::string name,
-                                                     std::vector<DataDefinition>& dataDefinitions,
+  [[nodiscard]] DATA_DEF_PTR make_datadefinition_var(const std::string& name,
+                                                     const std::vector<DataDefinition>& dataDefinitions,
                                                      bool autoReading = false,
                                                      bool autoWriting = false,
                                                      FLOAT64 maxAgeTime = 0.0,
                                                      UINT64 maxAgeTicks = 0) {
     DATA_DEF_PTR var =
-        DATA_DEF_PTR(new DataDefinitionVariable<T>(hSimConnect, std::move(name), dataDefinitions, dataDefIDGen.getNextId(),
+        DATA_DEF_PTR(new DataDefinitionVariable<T>(hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(),
                                                    dataReqIDGen.getNextId(), autoReading, autoWriting, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
@@ -292,12 +293,12 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T>
-  [[nodiscard]] CLIENT_AREA_PTR make_clientdataarea_var(const std::string clientDataName,
+  [[nodiscard]] CLIENT_AREA_PTR make_clientdataarea_var(const std::string& clientDataName,
                                                         bool autoReading = false,
                                                         bool autoWriting = false,
                                                         FLOAT64 maxAgeTime = 0.0,
                                                         UINT64 maxAgeTicks = 0) {
-    CLIENT_AREA_PTR var = CLIENT_AREA_PTR(new ClientDataAreaVariable<T>(hSimConnect, std::move(clientDataName), clientDataIDGen.getNextId(),
+    CLIENT_AREA_PTR var = CLIENT_AREA_PTR(new ClientDataAreaVariable<T>(hSimConnect, clientDataName, clientDataIDGen.getNextId(),
                                                                         dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), sizeof(T),
                                                                         autoReading, autoWriting, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
@@ -337,13 +338,13 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T, std::size_t ChunkSize = SIMCONNECT_CLIENTDATA_MAX_SIZE>
-  [[nodiscard]] STREAMING_AREA_PTR make_streamingclientdataarea_var(const std::string clientDataName,
+  [[nodiscard]] STREAMING_AREA_PTR make_streamingclientdataarea_var(const std::string& clientDataName,
                                                       bool autoReading = false,
                                                       bool autoWriting = false,
                                                       FLOAT64 maxAgeTime = 0.0,
                                                       UINT64 maxAgeTicks = 0) {
     STREAMING_AREA_PTR var = STREAMING_AREA_PTR(new StreamingClientDataAreaVariable<T, ChunkSize>(
-        hSimConnect, std::move(clientDataName), clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(),
+        hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(),
         autoReading, autoWriting, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
@@ -418,6 +419,8 @@ class DataManager {
 
   /**
    * Sends a key event to the sim.
+   * Specifies up to 5 additional integer values (param0-4).
+   * Set this to zero if it is not required.
    * @param keyEventId The ID of the key event to send.
    * @param param0
    * @param param1
@@ -432,13 +435,16 @@ class DataManager {
 
   /**
    * Is called by the MsfsHandler when a key event is received from the sim.
-   * @param event
+   *
+   * @param event The ID of the key event.
    * @param evdata0
    * @param evdata1
    * @param evdata2
    * @param evdata3
    * @param evdata4
-   * @param userdata
+   * @param userdata An optional value for use by the gauge developer. This value will be returned
+   *                 to the key event handler function, when it has been set when registering the
+   *                 key event handler. Currently this is not used by this framework.
    */
   void processKeyEvent(KeyEventID event, UINT32 evdata0, UINT32 evdata1, UINT32 evdata2, UINT32 evdata3, UINT32 evdata4);
 

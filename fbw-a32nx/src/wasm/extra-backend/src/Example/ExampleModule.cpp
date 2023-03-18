@@ -211,7 +211,6 @@ bool ExampleModule::initialize() {
   streamSenderDataPtr = dataManager->make_streamingclientdataarea_var<char, SIMCONNECT_CLIENTDATA_MAX_SIZE>("STREAM SENDER DATA");
   streamSenderDataPtr->allocateClientDataArea();
   streamSenderDataPtr->getData().assign(longText.begin(), longText.end());
-
 #endif
 
 #ifdef KEY_EVENT_EXAMPLE
