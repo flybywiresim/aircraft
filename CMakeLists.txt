@@ -7,7 +7,7 @@ set(FBW_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(FBW_COMMON ${FBW_ROOT}/fbw-common/src/wasm)
 
 # cmake helper scripts
-include("${FBW_COMMON}/extra-backend/cmake/TargetDefinition.cmake")
+include("${FBW_COMMON}/cpp-msfs-framework/cmake/TargetDefinition.cmake")
 
 # compiler refinement
 set(COMPILER_FLAGS "-Wall -Wextra -Werror -Wno-unused-function -Wno-unused-command-line-argument -Wno-ignored-attributes -Wno-macro-redefined -target wasm32-unknown-wasi --sysroot \"${MSFS_SDK}/WASM/wasi-sysroot\" -mthread-model single -fno-exceptions -fms-extensions -fvisibility=hidden -ffunction-sections -fdata-sections -fno-stack-protector")
@@ -28,9 +28,9 @@ include_directories(
         "${MSFS_SDK}/WASM/wasi-sysroot/include"
         "${MSFS_SDK}/WASM/wasi-sysroot/include/c++/v1"
         "${MSFS_SDK}/SimConnect SDK/include"
-        "${FBW_COMMON}/extra-backend/lib"
-        "${FBW_COMMON}/extra-backend/MsfsHandler"
-        "${FBW_COMMON}/extra-backend/MsfsHandler/DataTypes"
+        "${FBW_COMMON}/cpp-msfs-framework/lib"
+        "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler"
+        "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler/DataTypes"
 )
 
 # add compiler definitions

@@ -36,5 +36,5 @@ add_definitions(
 add_library(extra-backend-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
 add_wasm_library(
     NAME extra-backend-a32nx
-    DEPENDENCIES extra-backend-a32nx extra-backend-common-a32nx
+    DEPENDENCIES extra-backend-a32nx cpp-msfs-framework-a32nx
 )

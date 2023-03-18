@@ -3,7 +3,7 @@
 A lightweight framework to abstract the most common aspects when developing
 C++ WASM modules using the MSFS SDK and SimConnect.
 
-See [GUIDELINES.md](https://github.com/flybywiresim/a32nx/blob/cpp-wasm-framework/fbw-common/src/wasm/extra-backend/GUIDELINES.md) 
+See [GUIDELINES.md](https://github.com/flybywiresim/a32nx/blob/cpp-msfs-framework/fbw-common/src/wasm/extra-backend/GUIDELINES.md) 
 for more information on how to write good C++ code for FlyByWire Simulations.
 
 ## Purpose
