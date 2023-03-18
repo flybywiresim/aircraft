@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { failureGenConfigAltClimb, failureGeneratorAltClimb }
@@ -150,7 +150,6 @@ const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => v
 ];
 
 export const randomFailureGenerator = () => {
-    const { failureFlightPhase } = basicData();
     const { allFailures } = failureGeneratorCommonFunction();
     const { generatorFailuresGetters } = allGeneratorFailures(allFailures);
 
