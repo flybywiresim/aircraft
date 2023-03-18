@@ -36,6 +36,7 @@ typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
 typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
 typedef std::shared_ptr<ClientEvent> ClientEventPtr;
+// convenience typedefs for templated variables
 template <typename T>
 using DataDefinitionVariablePtr = std::shared_ptr<DataDefinitionVariable<T>>;
 template <typename T>
