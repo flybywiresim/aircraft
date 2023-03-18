@@ -161,10 +161,9 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     isSelectedVerticalModeActive(): boolean {
-        const { fcuVerticalMode } = this.computationParametersObserver.get();
-        const isExpediteModeActive = SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1;
+        const { fcuVerticalMode, fcuExpediteModeActive } = this.computationParametersObserver.get();
 
-        return isExpediteModeActive
+        return fcuExpediteModeActive
             || fcuVerticalMode === VerticalMode.VS
             || fcuVerticalMode === VerticalMode.FPA
             || fcuVerticalMode === VerticalMode.OP_CLB
@@ -188,14 +187,13 @@ export class VnavDriver implements GuidanceComponent {
             return;
         }
 
-        const { flightPhase, managedDescentSpeed, managedDescentSpeedMach, presentPosition, approachSpeed } = this.computationParametersObserver.get();
-        const isExpediteModeActive = SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1;
+        const { flightPhase, managedDescentSpeed, managedDescentSpeedMach, presentPosition, approachSpeed, fcuExpediteModeActive } = this.computationParametersObserver.get();
         const isHoldActive = this.guidanceController.isManualHoldActive() || this.guidanceController.isManualHoldNext();
         const currentDistanceFromStart = this.isLatAutoControlActive() ? this.constraintReader.distanceToPresentPosition : 0;
         const currentAltitude = presentPosition.alt;
 
         // Speed guidance for holds is handled elsewhere for now, so we don't want to interfere here
-        if (flightPhase !== FmgcFlightPhase.Descent || isExpediteModeActive || isHoldActive) {
+        if (flightPhase !== FmgcFlightPhase.Descent || fcuExpediteModeActive || isHoldActive) {
             return;
         }
 
@@ -350,9 +348,9 @@ export class VnavDriver implements GuidanceComponent {
     }
 
     public findNextSpeedChange(): NauticalMiles | null {
-        const { presentPosition, flightPhase, fcuAltitude } = this.computationParametersObserver.get();
+        const { presentPosition, flightPhase, fcuAltitude, fcuSpeedManaged, fcuExpediteModeActive } = this.computationParametersObserver.get();
 
-        if (!Simplane.getAutoPilotAirspeedManaged() || SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1 || flightPhase === FmgcFlightPhase.Approach) {
+        if (!fcuSpeedManaged || fcuExpediteModeActive || flightPhase === FmgcFlightPhase.Approach) {
             return null;
         }
 
