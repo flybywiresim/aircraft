@@ -156,7 +156,7 @@ export class LandingSystemSelectionManager {
 
                 this._selectedIls = loc;
                 this._selectedLocCourse = frequency.localizerCourse;
-                this._selectedGsSlope = frequency.hasGlideslope ? frequency.glideslopeAngle : null;
+                this._selectedGsSlope = frequency.hasGlideslope ? -frequency.glideslopeAngle : null;
                 return true;
             }
         }
@@ -249,7 +249,7 @@ export class LandingSystemSelectionManager {
                 if (frequency.freqMHz > 0 && frequency.icao === ils.icao) {
                     LandingSystemSelectionManager.courseSlopeCache.backcourse = approach.approachType === ApproachType.APPROACH_TYPE_LOCALIZER_BACK_COURSE;
                     LandingSystemSelectionManager.courseSlopeCache.course = frequency.localizerCourse;
-                    LandingSystemSelectionManager.courseSlopeCache.slope = frequency.hasGlideslope ? frequency.glideslopeAngle : null;
+                    LandingSystemSelectionManager.courseSlopeCache.slope = frequency.hasGlideslope ? -frequency.glideslopeAngle : null;
                     return LandingSystemSelectionManager.courseSlopeCache;
                 }
             }
