@@ -305,3 +305,8 @@ rect.shadow {
 .chrono {
   font-family: "NDChrono", monospace !important;
 }
+
+.nd-inverted-map-area {
+  background: $display-background;
+  fill: rgb(4,4,5);
+}

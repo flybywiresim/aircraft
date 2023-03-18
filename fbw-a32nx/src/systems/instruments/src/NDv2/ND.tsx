@@ -23,6 +23,7 @@ import { TcasWxrMessages } from './TcasWxrMessages';
 import { Arinc429RegisterSubject } from '../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Chrono } from './Chrono';
 import { WindIndicator } from './shared/WindIndicator';
+import { TerrainMapThresholds } from './TerrainMapThresholds';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -201,27 +202,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
             <DisplayUnit bus={this.props.bus} failed={this.displayFailed} powered={this.displayPowered} brightness={this.displayBrightness}>
                 {/* ND Vector graphics - bottom layer */}
                 <svg class="nd-svg" viewBox="0 0 768 768">
-                    <WindIndicator bus={this.props.bus} />
-                    <SpeedIndicator bus={this.props.bus} />
-                    <ToWaypointIndicator bus={this.props.bus} />
-                    <ApproachIndicator bus={this.props.bus} />
-
-                    <Flag shown={Subject.create(false)} x={384} y={54} class="Cyan FontSmallest">TRUE</Flag>
-                    <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
-                    <Flag shown={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
-
-                    <Flag shown={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
-                        RANGE CHANGE
-                    </Flag>
-                    <Flag
-                        shown={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
-                        x={384}
-                        y={320}
-                        class="Green FontIntermediate"
-                    >
-                        MODE CHANGE
-                    </Flag>
-
                     <RoseLSPage
                         bus={this.props.bus}
                         ref={this.roseLSPage}
@@ -259,6 +239,29 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         bus={this.props.bus}
                         aircraftTrueHeading={this.trueHeadingWord}
                     />
+
+                    <WindIndicator bus={this.props.bus} />
+                    <SpeedIndicator bus={this.props.bus} />
+                    <ToWaypointIndicator bus={this.props.bus} />
+                    <ApproachIndicator bus={this.props.bus} />
+
+                    <Flag shown={Subject.create(false)} x={384} y={54} class="Cyan FontSmallest">TRUE</Flag>
+                    <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
+                    <Flag shown={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
+
+                    <Flag shown={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
+                        RANGE CHANGE
+                    </Flag>
+                    <Flag
+                        shown={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
+                        x={384}
+                        y={320}
+                        class="Green FontIntermediate"
+                    >
+                        MODE CHANGE
+                    </Flag>
+
+                    <TerrainMapThresholds bus={this.props.bus} />
 
                     <RadioNavInfo bus={this.props.bus} index={1} />
                     <RadioNavInfo bus={this.props.bus} index={2} />

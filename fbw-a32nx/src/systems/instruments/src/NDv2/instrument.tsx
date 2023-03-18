@@ -12,6 +12,8 @@ import { NDControlEvents } from './NDControlEvents';
 import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 
 import './style.scss';
+import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+import { EfisSide } from '@shared/NavigationDisplay';
 
 class A32NX_ND extends BaseInstrument {
     private readonly bus: EventBus;
@@ -35,6 +37,8 @@ class A32NX_ND extends BaseInstrument {
     private readonly clock: Clock;
 
     private adirsValueProvider: AdirsValueProvider<NDSimvars>;
+
+    private egpwcBusPublisher: EgpwcBusPublisher;
 
     /**
      * "mainmenu" = 0
@@ -78,7 +82,10 @@ class A32NX_ND extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
-        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, getDisplayIndex() === 1 ? 'L' : 'R');
+        const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
+
+        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
+        this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
 
         this.clock.init();
 
@@ -160,7 +167,12 @@ class A32NX_ND extends BaseInstrument {
         this.tcasBusPublisher.subscribe('tcasFault');
         this.tcasBusPublisher.subscribe('tcasMode');
 
-        FSComponent.render(<NDComponent bus={this.bus} side={getDisplayIndex() === 1 ? 'L' : 'R'} />, document.getElementById('ND_CONTENT'));
+        this.egpwcBusPublisher.subscribe('egpwc.minElevation');
+        this.egpwcBusPublisher.subscribe('egpwc.minElevationMode');
+        this.egpwcBusPublisher.subscribe('egpwc.maxElevation');
+        this.egpwcBusPublisher.subscribe('egpwc.maxElevationMode');
+
+        FSComponent.render(<NDComponent bus={this.bus} side={side} />, document.getElementById('ND_CONTENT'));
 
         // Remove "instrument didn't load" text
         document.getElementById('ND_CONTENT').querySelector(':scope > h1').remove();
@@ -186,6 +198,7 @@ class A32NX_ND extends BaseInstrument {
                 this.fmsSymbolsPublisher.startPublish();
                 this.vorBusPublisher.startPublish();
                 this.tcasBusPublisher.startPublish();
+                this.egpwcBusPublisher.startPublish();
                 this.hEventPublisher.startPublish();
                 this.adirsValueProvider.start();
             }
@@ -198,6 +211,7 @@ class A32NX_ND extends BaseInstrument {
             this.fmsSymbolsPublisher.onUpdate();
             this.vorBusPublisher.onUpdate();
             this.tcasBusPublisher.onUpdate();
+            this.egpwcBusPublisher.onUpdate();
             this.clock.onUpdate();
         }
     }

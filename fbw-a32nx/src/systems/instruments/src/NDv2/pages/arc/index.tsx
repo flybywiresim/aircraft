@@ -196,6 +196,11 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
     render(): VNode | null {
         return (
             <g visibility={this.isVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
+                {/* inverted map overlays for terrain map in WASM module  */}
+                <path name="arc-mode-bottom-left-map-area" d="M0,625 L122,625 L174,683 L174,768 L0,768 L0,625" class="nd-inverted-map-area" />
+                <path name="arc-mode-bottom-right-map-area" d="M768,562 L648,562 L591,625 L591,768 L768,768 L768,562" class="nd-inverted-map-area" />
+                <path name="arc-mode-top-map-area" d="M0,0 L0,312 a492,492 0 0 1 768,0 L768,0 L0,0" class="nd-inverted-map-area" />
+
                 <ArcModeUnderlay
                     bus={this.props.bus}
                     ringAvailable={this.ringAvailable}
