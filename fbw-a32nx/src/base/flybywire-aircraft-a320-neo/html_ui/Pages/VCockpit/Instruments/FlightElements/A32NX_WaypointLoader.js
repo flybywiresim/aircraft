@@ -188,6 +188,14 @@ class FacilityLoader {
                         }
                         return facilities[0];
                     });
+            case 'R':
+                const airportIcao = `A      ${icao.substring(3, 7)}`;
+                console.log(airportIcao);
+                return new Promise((resolve) => {
+                    this.getAirportData(airportIcao).then((airport) => {
+                        resolve(this.createRunwayFromAirport(icao, airport));
+                    }).catch(() => resolve(undefined));
+                });
         }
 
     }
@@ -246,6 +254,8 @@ class FacilityLoader {
                 return this.getVorDataCB(icao, callback);
             } else if (typeChar === "N") {
                 return this.getNdbDataCB(icao, callback);
+            } else if (typeChar === "R") {
+                return this.getRunwayDataCB(icao, callback);
             } else {
                 return callback(undefined);
             }
@@ -438,6 +448,55 @@ class FacilityLoader {
             };
             loadedAirportsCallback();
         });
+    }
+    getRunwayDataCB(icao, callback) {
+        if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
+            icao = icao.trim();
+            const runway = this.loadedFacilities.find(f => {
+                return f.icaoTrimed === icao;
+            });
+            if (runway) {
+                return callback(runway);
+            }
+            if (icao[0] !== "R") {
+                console.warn("Icao mismatch trying to load RUNWAY of invalid icao '" + icao + "'");
+            }
+            if (this.loadingFacilities.indexOf(icao) === -1) {
+                this.getFacilityRaw(icao).then((runway) => {
+                    if (runway) {
+                        this.addFacility(runway, 'R');
+                    }
+                })
+                this.loadingFacilities.push(icao);
+            }
+            let attempts = 0;
+            const checkDataLoaded = () => {
+                const airport = this.loadedFacilities.find(f => {
+                    return f.icaoTrimed === icao;
+                });
+                if (airport) {
+                    const n = this.loadingFacilities.indexOf(icao);
+                    if (n >= 0) {
+                        this.loadingFacilities.splice(n, 1);
+                    }
+                    callback(airport);
+                } else {
+                    attempts++;
+                    if (attempts > 5) {
+                        const n = this.loadingFacilities.indexOf(icao);
+                        if (n >= 0) {
+                            this.loadingFacilities.splice(n, 1);
+                        }
+                        callback(undefined);
+                    } else {
+                        this.instrument.requestCall(checkDataLoaded);
+                    }
+                }
+            };
+            checkDataLoaded();
+        } else {
+            this.instrument.requestCall(this.getAirportDataCB.bind(this, icao, callback));
+        }
     }
     getIntersectionDataCB(icao, callback) {
         if (icao == "") {
@@ -1164,12 +1223,12 @@ class FacilityLoader {
      * @param {RawAirport} rawAirport
      */
     addRunwayByItselfApproaches(rawAirport) {
-        const airportIdent = rawAirport.icao.substring(7, 11);
+        const airportIdent = WayPoint.formatIdentFromIcao(rawAirport.icao);
         const airportRegion = 'XX';
         /** @type {OneWayRunway[]} */
         const runways = [];
         rawAirport.runways.forEach((rawRunway) => {
-            const runway = Object.assign(new Runway, rawRunway);
+            const runway = Object.assign(new Runway(airportIdent), rawRunway);
             runways.push(...runway.splitIfTwoWays());
         });
 
@@ -1237,13 +1296,14 @@ class FacilityLoader {
     /** @param {string} icao */
     loadRunwayCfFix(icao) {
         return new Promise((resolve, reject) => {
-            const airportIcao = `A      ${icao.substring(3, 7)} `;
+            const airportIdent = WayPoint.formatIdentFromIcao(rawAirport.icao);
+            const airportIcao = `A      ${airportIdent} `;
             const runwayDesignation = icao.substring(9, 12).trim();
             this.getFacilityRaw(airportIcao).then((rawAirport) => {
                 if (rawAirport) {
                     const runways = [];
                     rawAirport.runways.forEach((rawRunway) => {
-                        const runway = Object.assign(new Runway, rawRunway);
+                        const runway = Object.assign(new Runway(airportIdent), rawRunway);
                         runways.push(...runway.splitIfTwoWays());
                     });
                     /** @type {OneWayRunway} */
@@ -1277,6 +1337,70 @@ class FacilityLoader {
                 }
             }).catch((reason) => reject(reason));
         });
+    }
+
+    /**
+     * @param {string} runwayIcao
+     * @param {RawAirport} rawAirport
+     */
+    createRunwayFromAirport(runwayIcao, rawAirport) {
+        const match = runwayIcao.match(/^R[A-Z0-9 ]{2}[A-Z0-9]{4}RW([0-9]{1,2})([LRCABW])?\s*$/);
+        if (!match) {
+            return;
+        }
+        const runwayNumber = parseInt(match[1]);
+        let runwayDesignator = RunwayDesignator.RUNWAY_DESIGNATOR_NONE;
+        switch (match[2]) {
+            case 'L':
+                runwayDesignator = RunwayDesignator.RUNWAY_DESIGNATOR_LEFT;
+                break;
+            case 'R':
+                runwayDesignator = RunwayDesignator.RUNWAY_DESIGNATOR_RIGHT;
+                break;
+            case 'C':
+                runwayDesignator = RunwayDesignator.RUNWAY_DESIGNATOR_CENTER;
+                break;
+            case 'A':
+                runwayDesignator = RunwayDesignator.RUNWAY_DESIGNATOR_A;
+                break;
+            case 'B':
+                runwayDesignator = RunwayDesignator.RUNWAY_DESIGNATOR_B;
+                break;
+            case 'W':
+                runwayDesignator = RunwayDesignator.RUNWAY_DESIGNATOR_WATER;
+                break;
+        }
+
+        /** @type {OneWayRunway[]} */
+        const runways = [];
+        rawAirport.runways.forEach((rawRunway) => {
+            const runway = Object.assign(new Runway(WayPoint.formatIdentFromIcao(rawAirport.icao)), rawRunway);
+            runways.push(...runway.splitIfTwoWays());
+        });
+
+        for (const runway of runways) {
+            if (runway.number === runwayNumber && runway.designator === runwayDesignator) {
+                /** @type {RawIntersection} */
+                const intersection = {
+                    city: rawAirport.city,
+                    icao: runwayIcao,
+                    lat: runway.thresholdCoordinates.lat,
+                    lon: runway.thresholdCoordinates.long,
+                    name: `${WayPoint.formatIdentFromIcao(rawAirport.icao)}${runway.designation}`,
+                    nearestVorDistance: 0,
+                    nearestVorFrequencyBCD16: 0,
+                    nearestVorFrequencyMHz: 0,
+                    nearestVorICAO: '',
+                    nearestVorMagneticRadial: 0,
+                    nearestVorTrueRadial: 0,
+                    nearestVorType: 0,
+                    region: rawAirport.region,
+                    routes: [],
+                    __Type: 'JS_FacilityIntersection',
+                };
+                return intersection;
+            }
+        }
     }
 }
 class WaypointLoader {

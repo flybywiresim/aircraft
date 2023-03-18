@@ -53,6 +53,7 @@ class Runway {
             newRunway.surface = this.surface;
             newRunway.lighting = this.lighting;
             newRunway.primaryILSFrequency = i == 0 ? this.primaryILSFrequency : this.secondaryILSFrequency;
+            newRunway.secondaryILSFrequency = i == 0 ? this.secondaryILSFrequency : this.primaryILSFrequency;
             newRunway.thresholdCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction - 180, (this.length * 0.5 - newRunway.thresholdLength) / 1852, this.latitude, this.longitude);
             newRunway.beginningCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction - 180, this.length / 1852 * 0.5, this.latitude, this.longitude);
             newRunway.endCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction, this.length / 1852 * 0.5, this.latitude, this.longitude);

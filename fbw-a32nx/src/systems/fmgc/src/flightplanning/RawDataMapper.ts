@@ -101,6 +101,9 @@ export class RawDataMapper {
         case 'W':
             waypoint.infos = new IntersectionInfo(instrument);
             break;
+        case 'R':
+            waypoint.infos = new WayPointInfo(instrument);
+            break;
         default:
             waypoint.infos = new WayPointInfo(instrument);
             break;
