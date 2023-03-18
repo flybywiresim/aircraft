@@ -16,6 +16,7 @@ const uniqueGenPrefix = 'A';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'AltClimb';
 const alias = t('Failures.Generators.GenAltClimb');
+const disableTakeOffRearm = false;
 
 export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -37,6 +38,7 @@ export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
         genName,
         FailureGeneratorCard,
         alias,
+        disableTakeOffRearm,
     };
 };
 
@@ -58,18 +60,18 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
     const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settingsAltClimb : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
+    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
-    const nbGeneratorAltClimb = useMemo(() => Math.floor(settingsAltClimb.length / numberOfSettingsPerGenerator), [settingsAltClimb]);
+    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
-    const altitude = Simplane.getAltitudeAboveGround();
+    const altitude = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempSettings : number[] = Array.from(settingsAltClimb);
+            const tempSettings : number[] = Array.from(settings);
             let change = false;
-            for (let i = 0; i < nbGeneratorAltClimb; i++) {
-                if (failureGeneratorArmed[i] && altitude > settingsAltClimb[i * numberOfSettingsPerGenerator + 1]) {
+            for (let i = 0; i < nbGenerator; i++) {
+                if (failureGeneratorArmed[i] && altitude > settings[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Climb altitude failure triggered');
@@ -85,15 +87,16 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        for (let i = 0; i < nbGeneratorAltClimb; i++) {
+        for (let i = 0; i < nbGenerator; i++) {
             if (!failureGeneratorArmed[i]
-                && altitude < settingsAltClimb[i * numberOfSettingsPerGenerator + 1] - 100
-                && (settingsAltClimb[i * numberOfSettingsPerGenerator + 0] === 1
-                || (settingsAltClimb[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
-                || settingsAltClimb[i * numberOfSettingsPerGenerator + 0] === 3)) {
+                && altitude < settings[i * numberOfSettingsPerGenerator + 1] - 100
+                && (settings[i * numberOfSettingsPerGenerator + 0] === 1
+                || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
-                console.info('Climb altitude failure armed at %d m', settingsAltClimb[i * numberOfSettingsPerGenerator + 1]);
+                console.info('Climb altitude failure armed at %d m', settings[i * numberOfSettingsPerGenerator + 1]);
             }
+            if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime1s]);
 

@@ -16,6 +16,7 @@ const uniqueGenPrefix = 'B';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'AltDesc';
 const alias = t('Failures.Generators.GenAltDesc');
+const disableTakeOffRearm = false;
 
 export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -37,6 +38,7 @@ export const failureGenConfigAltDesc : ()=>FailureGenData = () => {
         genName,
         FailureGeneratorCard,
         alias,
+        disableTakeOffRearm,
     };
 };
 
@@ -58,18 +60,18 @@ export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, s
     const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settingsAltDesc : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
+    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
-    const nbGeneratorAltDesc = useMemo(() => Math.floor(settingsAltDesc.length / numberOfSettingsPerGenerator), [settingsAltDesc]);
+    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
-    const altitude = Simplane.getAltitudeAboveGround();
+    const altitude = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempSettings : number[] = Array.from(settingsAltDesc);
+            const tempSettings : number[] = Array.from(settings);
             let change = false;
-            for (let i = 0; i < nbGeneratorAltDesc; i++) {
-                if (failureGeneratorArmed[i] && altitude < settingsAltDesc[i * numberOfSettingsPerGenerator + 1]) {
+            for (let i = 0; i < nbGenerator; i++) {
+                if (failureGeneratorArmed[i] && altitude < settings[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Descent altitude failure triggered');
@@ -85,15 +87,16 @@ export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, s
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        for (let i = 0; i < nbGeneratorAltDesc; i++) {
+        for (let i = 0; i < nbGenerator; i++) {
             if (!failureGeneratorArmed[i]
-                && altitude > settingsAltDesc[i * numberOfSettingsPerGenerator + 1] + 100
-                && (settingsAltDesc[i * numberOfSettingsPerGenerator + 0] === 1
-                    || (settingsAltDesc[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
-                    || settingsAltDesc[i * numberOfSettingsPerGenerator + 0] === 3)) {
+                && altitude > settings[i * numberOfSettingsPerGenerator + 1] + 100
+                && (settings[i * numberOfSettingsPerGenerator + 0] === 1
+                    || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                    || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
-                console.info('Descent altitude failure armed at %d m', settingsAltDesc[i * numberOfSettingsPerGenerator + 1]);
+                console.info('Descent altitude failure armed at %d m', settings[i * numberOfSettingsPerGenerator + 1]);
             }
+            if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime1s]);
 

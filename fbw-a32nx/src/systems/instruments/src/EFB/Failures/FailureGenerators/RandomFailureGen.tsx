@@ -37,7 +37,8 @@ export type FailureGenData = {setting: string,
     failureGeneratorArmed:boolean[],
     genName : string,
     FailureGeneratorCard : (genID: number, generatorSettings: FailureGenData, failureGenContext : FailureGenContext) => JSX.Element,
-    alias : string
+    alias : string,
+    disableTakeOffRearm : boolean
 }
 
 export type FailureGenContext = {

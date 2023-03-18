@@ -22,7 +22,7 @@ export function GeneratorFailureSelection(genID: string, failureGenContext: Fail
                 </div>
             </Link>
             <div className="flex flex-row justify-between ml-10 w-full">
-                <div className="text-left">Select the failures that may be triggered by this failure generator</div>
+                <div className="text-left">Select the failures that may be triggered during this scenario</div>
                 <div
                     className="flex flex-row mr-10"
                 >

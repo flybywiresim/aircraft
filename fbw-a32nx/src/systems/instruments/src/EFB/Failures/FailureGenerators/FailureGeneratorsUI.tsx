@@ -140,7 +140,7 @@ const rearmButtons: (ButtonType & SettingVar)[] = [
     { name: 'OFF', setting: 'OFF', settingVar: 0 },
     { name: 'Once', setting: 'Once', settingVar: 1 },
     { name: 'Take-Off', setting: 'Take-Off', settingVar: 2 },
-    { name: 'Always', setting: 'Always', settingVar: 3 },
+    { name: 'Repeat', setting: 'Repeat', settingVar: 3 },
 ];
 
 export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number,
@@ -150,17 +150,22 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
             <h2>Rearming</h2>
             <div className="flex flex-row">
                 <SelectGroup>
-                    {rearmButtons.map((button) => (
-                        <SelectItem
-                            key={button.name}
-                            onSelect={() => {
-                                setNewSetting(button.settingVar, generatorSettings, genID, 0);
-                            }}
-                            selected={generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + 0] === button.settingVar}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
+                    {rearmButtons.map((button) => {
+                        if (button.name !== 'Take-Off' || generatorSettings.disableTakeOffRearm === false) {
+                            return (
+                                <SelectItem
+                                    key={button.name}
+                                    onSelect={() => {
+                                        setNewSetting(button.settingVar, generatorSettings, genID, 0);
+                                    }}
+                                    selected={generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + 0] === button.settingVar}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            );
+                        }
+                        return (<></>);
+                    })}
                 </SelectGroup>
             </div>
         </div>

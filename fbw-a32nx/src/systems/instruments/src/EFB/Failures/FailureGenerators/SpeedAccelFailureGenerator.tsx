@@ -16,6 +16,7 @@ const uniqueGenPrefix = 'C';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'SpeedAccel';
 const alias = t('Failures.Generators.GenSpeedAccel');
+const disableTakeOffRearm = false;
 
 export const failureGenConfigSpeedAccel : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -37,6 +38,7 @@ export const failureGenConfigSpeedAccel : ()=>FailureGenData = () => {
         genName,
         FailureGeneratorCard,
         alias,
+        disableTakeOffRearm,
     };
 };
 
@@ -58,18 +60,18 @@ export const failureGeneratorSpeedAccel = (generatorFailuresGetters : Map<number
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settingsSpeedAccel : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
+    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
-    const nbGeneratorSpeedAccel = useMemo(() => Math.floor(settingsSpeedAccel.length / numberOfSettingsPerGenerator), [settingsSpeedAccel]);
+    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempSettings : number[] = Array.from(settingsSpeedAccel);
+            const tempSettings : number[] = Array.from(settings);
             let change = false;
-            for (let i = 0; i < nbGeneratorSpeedAccel; i++) {
-                if (failureGeneratorArmed[i] && gs > settingsSpeedAccel[i * numberOfSettingsPerGenerator + 1]) {
+            for (let i = 0; i < nbGenerator; i++) {
+                if (failureGeneratorArmed[i] && gs > settings[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Accel speed failure triggered');
@@ -85,15 +87,16 @@ export const failureGeneratorSpeedAccel = (generatorFailuresGetters : Map<number
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        for (let i = 0; i < nbGeneratorSpeedAccel; i++) {
+        for (let i = 0; i < nbGenerator; i++) {
             if (!failureGeneratorArmed[i]
-                && gs < settingsSpeedAccel[i * numberOfSettingsPerGenerator + 1] - 10
-                && (settingsSpeedAccel[i * numberOfSettingsPerGenerator + 0] === 1
-                    || (settingsSpeedAccel[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
-                    || settingsSpeedAccel[i * numberOfSettingsPerGenerator + 0] === 3)) {
+                && gs < settings[i * numberOfSettingsPerGenerator + 1] - 10
+                && (settings[i * numberOfSettingsPerGenerator + 0] === 1
+                    || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                    || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
-                console.info('Accel speed failure armed at %d knots', settingsSpeedAccel[i * numberOfSettingsPerGenerator + 0]);
+                console.info('Accel speed failure armed at %d knots', settings[i * numberOfSettingsPerGenerator + 0]);
             }
+            if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime500ms]);
 

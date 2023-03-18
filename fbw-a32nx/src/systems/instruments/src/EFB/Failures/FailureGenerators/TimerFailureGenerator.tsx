@@ -14,14 +14,15 @@ const additionalSetting = [0, 300];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'F';
 const failureGeneratorArmed :boolean[] = [];
-const failureTime:number[] = [];
+const failureStartTime:number[] = [];
 const genName = 'Timer';
 const alias = t('Failures.Generators.GenTimer');
+const disableTakeOffRearm = false;
 
 export const failureGenConfigTimer : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
-        console.info(setting);
+        console.info('timer setting: %s', setting);
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
@@ -38,11 +39,12 @@ export const failureGenConfigTimer : ()=>FailureGenData = () => {
         genName,
         FailureGeneratorCard,
         alias,
+        disableTakeOffRearm,
     };
 };
 
 const onErase = (genID : number) => {
-    failureTime.splice(genID, 1);
+    failureStartTime.splice(genID, 1);
 };
 
 const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext: FailureGenContext)
@@ -60,17 +62,17 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
     const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settingsTimer : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
-    const nbGeneratorTimer = useMemo(() => Math.floor(settingsTimer.length / numberOfSettingsPerGenerator), [settingsTimer]);
+    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
+    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
     const { failureFlightPhase } = basicData();
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempSettings : number[] = Array.from(settingsTimer);
+            const tempSettings : number[] = Array.from(settings);
             let change = false;
-            for (let i = 0; i < nbGeneratorTimer; i++) {
-                if (failureGeneratorArmed[i] && absoluteTime5s > failureTime[i]) {
+            for (let i = 0; i < nbGenerator; i++) {
+                if (failureGeneratorArmed[i] && absoluteTime5s > failureStartTime[i] + settings[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
                     console.info('Time based failure triggered');
@@ -86,14 +88,15 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        for (let i = 0; i < nbGeneratorTimer; i++) {
-            if (!failureGeneratorArmed[i] && (settingsTimer[i * numberOfSettingsPerGenerator + 0] === 1
-                    || (failureFlightPhase === FailurePhases.TAKEOFF && settingsTimer[i * numberOfSettingsPerGenerator + 0] === 2)
-                    || settingsTimer[i * numberOfSettingsPerGenerator + 0] === 3)) {
+        for (let i = 0; i < nbGenerator; i++) {
+            if (!failureGeneratorArmed[i] && (settings[i * numberOfSettingsPerGenerator + 0] === 1
+                    || (failureFlightPhase === FailurePhases.TAKEOFF && settings[i * numberOfSettingsPerGenerator + 0] === 2)
+                    || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
-                failureTime[i] = settingsTimer[i * numberOfSettingsPerGenerator + 1] + absoluteTime5s;
-                console.info('Timer based failure armed at %.1f s', settingsTimer[i * numberOfSettingsPerGenerator + 1]);
+                failureStartTime[i] = absoluteTime5s;
+                console.info('Timer based failure armed');
             }
+            if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime1s]);
 

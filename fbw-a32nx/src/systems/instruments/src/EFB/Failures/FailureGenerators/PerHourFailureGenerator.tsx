@@ -16,6 +16,7 @@ const uniqueGenPrefix = 'E';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'PerHour';
 const alias = t('Failures.Generators.GenPerHour');
+const disableTakeOffRearm = false;
 
 export const failureGenConfigPerHour : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -37,6 +38,7 @@ export const failureGenConfigPerHour : ()=>FailureGenData = () => {
         genName,
         FailureGeneratorCard,
         alias,
+        disableTakeOffRearm,
     };
 };
 
@@ -57,16 +59,16 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settingsPerHour : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
+    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
-    const nbGeneratorPerHour = useMemo(() => Math.floor(settingsPerHour.length / numberOfSettingsPerGenerator), [settingsPerHour]);
+    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempSettings : number[] = Array.from(settingsPerHour);
+            const tempSettings : number[] = Array.from(settings);
             let change = false;
-            for (let i = 0; i < nbGeneratorPerHour; i++) {
-                const tempSetting = settingsPerHour[i * numberOfSettingsPerGenerator + 1];
+            for (let i = 0; i < nbGenerator; i++) {
+                const tempSetting = settings[i * numberOfSettingsPerGenerator + 1];
                 if (failureGeneratorArmed[i] && tempSetting > 0) {
                     const chancePerSecond = tempSetting / 3600;
                     const rollDice = Math.random();
@@ -88,14 +90,15 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
     }, [absoluteTime5s]);
 
     useEffect(() => {
-        for (let i = 0; i < nbGeneratorPerHour; i++) {
+        for (let i = 0; i < nbGenerator; i++) {
             if (!failureGeneratorArmed[i]
-                && (settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 1
-                    || (settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
-                    || settingsPerHour[i * numberOfSettingsPerGenerator + 0] === 3)) {
+                && (settings[i * numberOfSettingsPerGenerator + 0] === 1
+                    || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                    || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
-                console.info('Failure set at %.4f per hour ', settingsPerHour[i * numberOfSettingsPerGenerator + 1]);
+                console.info('Failure set at %.4f per hour ', settings[i * numberOfSettingsPerGenerator + 1]);
             }
+            if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime5s]);
 

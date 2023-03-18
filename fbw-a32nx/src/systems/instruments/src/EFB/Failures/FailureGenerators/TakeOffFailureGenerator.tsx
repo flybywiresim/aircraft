@@ -18,6 +18,7 @@ const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
 const genName = 'TakeOff';
 const alias = t('Failures.Generators.GenTakeOff');
+const disableTakeOffRearm = true;
 
 export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -39,6 +40,7 @@ export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
         genName,
         FailureGeneratorCard,
         alias,
+        disableTakeOffRearm,
     };
 };
 
@@ -85,12 +87,12 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
 
-    const settingsTakeOff : number[] = useMemo<number[]>(() => {
+    const settings : number[] = useMemo<number[]>(() => {
         console.info('ici');
         return failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
     }, [failureGeneratorSetting]);
 
-    const nbGeneratorTakeOff = useMemo(() => Math.floor(settingsTakeOff.length / numberOfSettingsPerGenerator), [settingsTakeOff]);
+    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
     const { failureFlightPhase } = basicData();
 
     const altitude = Simplane.getAltitudeAboveGround();
@@ -98,10 +100,9 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempSettings : number[] = Array.from(settingsTakeOff);
+            const tempSettings : number[] = Array.from(settings);
             let change = false;
-            for (let i = 0; i < nbGeneratorTakeOff; i++) {
-                // console.info(failureTakeOffSpeedThreshold[i], failureTakeOffAltitudeThreshold[i], tempFailureGeneratorArmed[i]);
+            for (let i = 0; i < nbGenerator; i++) {
                 if (failureGeneratorArmed[i]
                     && ((altitude >= failureTakeOffAltitudeThreshold[i] && failureTakeOffAltitudeThreshold[i] !== -1)
                     || (gs >= failureTakeOffSpeedThreshold[i] && failureTakeOffSpeedThreshold[i] !== -1))) {
@@ -121,15 +122,15 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
 
     useEffect(() => {
         if (failureFlightPhase === FailurePhases.TAKEOFF && gs < 1.0) {
-            for (let i = 0; i < nbGeneratorTakeOff; i++) {
-                if (!failureGeneratorArmed[i] && settingsTakeOff[i * numberOfSettingsPerGenerator + 0] > 0) {
-                    if (Math.random() < settingsTakeOff[i * numberOfSettingsPerGenerator + 1]) {
-                        const chanceFailureLowTakeOffRegime : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 2];
-                        const chanceFailureMediumTakeOffRegime : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 3];
-                        const minFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 4];
-                        const mediumTakeOffRegimeSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 5];
-                        const maxFailureTakeOffSpeed : number = settingsTakeOff[i * numberOfSettingsPerGenerator + 6];
-                        const takeOffDeltaAltitudeEnd : number = 100 * settingsTakeOff[i * numberOfSettingsPerGenerator + 7];
+            for (let i = 0; i < nbGenerator; i++) {
+                if (!failureGeneratorArmed[i] && settings[i * numberOfSettingsPerGenerator + 0] > 0) {
+                    if (Math.random() < settings[i * numberOfSettingsPerGenerator + 1]) {
+                        const chanceFailureLowTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + 2];
+                        const chanceFailureMediumTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + 3];
+                        const minFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + 4];
+                        const mediumTakeOffRegimeSpeed : number = settings[i * numberOfSettingsPerGenerator + 5];
+                        const maxFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + 6];
+                        const takeOffDeltaAltitudeEnd : number = 100 * settings[i * numberOfSettingsPerGenerator + 7];
                         const rolledDice = Math.random();
                         if (rolledDice < chanceFailureLowTakeOffRegime) {
                             // Low Take Off speed regime
@@ -153,6 +154,7 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
                         failureGeneratorArmed[i] = true;
                     }
                 }
+                if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
             }
         }
     }, [absoluteTime500ms]);

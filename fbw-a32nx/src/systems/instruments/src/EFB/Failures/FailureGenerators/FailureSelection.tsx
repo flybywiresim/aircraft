@@ -52,12 +52,9 @@ export const deleteGeneratorFailures = (generatorSettings : FailureGenData, fail
     console.info('Looking for failures on generator %s', generatorUniqueIDRemoved);
     const letterTable = generatorUniqueIDRemoved.match(regexLetter);
     const numberTable = generatorUniqueIDRemoved.match(regexNumber);
-    console.info(letterTable);
-    console.info(numberTable);
     if (letterTable && letterTable.length > 0 && numberTable && numberTable.length > 0) {
         const removedLetter = letterTable[0];
         const removedNumber = parseInt(numberTable[0]);
-        console.info('Looking for failures on generator %s %s %d', generatorUniqueIDRemoved, removedLetter, removedNumber);
         if (failureGenContext.allFailures.length > 0) {
             failureGenContext.allFailures.forEach((failure) => {
                 let first = true;
@@ -83,7 +80,6 @@ export const deleteGeneratorFailures = (generatorSettings : FailureGenData, fail
                                 }
                             }
                         });
-                        console.info('setting new gen failure string %s', newString);
                         failureGenContext.generatorFailuresSetters.get(failure.identifier)(newString);
                     }
                 }
