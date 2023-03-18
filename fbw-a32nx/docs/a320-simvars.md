@@ -450,10 +450,6 @@
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
 
-- A32NX_ENG_OUT_ACC_ALT
-    - feet
-    - The engine out acceleration altitude, set in the PERF TAKE OFF page.
-
 - A32NX_SLIDES_ARMED
     - Boolean
     - Indicates whether the door slides are armed or not
@@ -1508,6 +1504,22 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<hPa>
     - The corrected average static pressure.
 
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the first officer side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the first officer side.
+
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
     - The pressure altitude in feet.
@@ -1740,6 +1752,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
+- L:A32NX_FM{number}_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 - A32NX_FM{number}_DEST_LAT
     - Destination latitude
     - Arinc429<Angle>
@@ -1777,9 +1796,44 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 17  | Takeoff speeds too low            |
       | 18  | Takeoff speeds not inserted       |
 
+- L:A32NX_FM{number}_EO_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 - L:A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_EO_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_THR_RED_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach thrust reduction altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_THR_RED_ALT
+    - ARINC429<number> (feet MSL)
+    - The thrust reduction altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -3520,8 +3574,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - `Arinc429Word<Feet>`
     - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
     - {number}
-        - 0
         - 1
+        - 2
 
 ## Electronic Flight Bag (ATA 46)
 

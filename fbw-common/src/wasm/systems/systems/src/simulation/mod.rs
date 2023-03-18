@@ -722,6 +722,13 @@ macro_rules! read_write_uom {
                 value.get::<$t2>()
             }
         }
+
+        impl<T: Writer> Write<Arinc429Word<$t>> for T {
+            fn convert(&mut self, value: Arinc429Word<$t>) -> f64 {
+                let v = self.convert(value.value());
+                Arinc429Word::new(v, value.ssm()).into()
+            }
+        }
     };
 }
 
