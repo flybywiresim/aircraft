@@ -4,10 +4,10 @@
 #ifndef FLYBYWIRE_DATAMANAGER_H
 #define FLYBYWIRE_DATAMANAGER_H
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
-#include <cstdint>
 
 #include <MSFS/Legacy/gauges.h>
 #include <MSFS/MSFS.h>
@@ -36,10 +36,12 @@ typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
 typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
 typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
 typedef std::shared_ptr<ClientEvent> ClientEventPtr;
-// convenience define
-#define DATA_DEF_PTR std::shared_ptr<DataDefinitionVariable<T>>
-#define CLIENT_AREA_PTR std::shared_ptr<ClientDataAreaVariable<T>>
-#define STREAMING_AREA_PTR std::shared_ptr<StreamingClientDataAreaVariable<T, ChunkSize>>
+template <typename T>
+using DataDefinitionVariablePtr = std::shared_ptr<DataDefinitionVariable<T>>;
+template <typename T>
+using ClientDataAreaVariablePtr = std::shared_ptr<ClientDataAreaVariable<T>>;
+template <typename T, std::size_t ChunkSize>
+using StreamingClientDataAreaVariablePtr = std::shared_ptr<StreamingClientDataAreaVariable<T, ChunkSize>>;
 
 // Used to identify a key event
 typedef ID32 KeyEventID;
@@ -257,15 +259,15 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T>
-  [[nodiscard]] DATA_DEF_PTR make_datadefinition_var(const std::string& name,
-                                                     const std::vector<DataDefinition>& dataDefinitions,
-                                                     bool autoReading = false,
-                                                     bool autoWriting = false,
-                                                     FLOAT64 maxAgeTime = 0.0,
-                                                     UINT64 maxAgeTicks = 0) {
-    DATA_DEF_PTR var =
-        DATA_DEF_PTR(new DataDefinitionVariable<T>(hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(),
-                                                   dataReqIDGen.getNextId(), autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+  [[nodiscard]] DataDefinitionVariablePtr<T> make_datadefinition_var(const std::string& name,
+                                                                     const std::vector<DataDefinition>& dataDefinitions,
+                                                                     bool autoReading = false,
+                                                                     bool autoWriting = false,
+                                                                     FLOAT64 maxAgeTime = 0.0,
+                                                                     UINT64 maxAgeTicks = 0) {
+    DataDefinitionVariablePtr<T> var = DataDefinitionVariablePtr<T>(
+        new DataDefinitionVariable<T>(hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), autoReading,
+                                      autoWriting, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
     return var;
@@ -293,14 +295,14 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T>
-  [[nodiscard]] CLIENT_AREA_PTR make_clientdataarea_var(const std::string& clientDataName,
-                                                        bool autoReading = false,
-                                                        bool autoWriting = false,
-                                                        FLOAT64 maxAgeTime = 0.0,
-                                                        UINT64 maxAgeTicks = 0) {
-    CLIENT_AREA_PTR var = CLIENT_AREA_PTR(new ClientDataAreaVariable<T>(hSimConnect, clientDataName, clientDataIDGen.getNextId(),
-                                                                        dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), sizeof(T),
-                                                                        autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+  [[nodiscard]] ClientDataAreaVariablePtr<T> make_clientdataarea_var(const std::string& clientDataName,
+                                                                     bool autoReading = false,
+                                                                     bool autoWriting = false,
+                                                                     FLOAT64 maxAgeTime = 0.0,
+                                                                     UINT64 maxAgeTicks = 0) {
+    ClientDataAreaVariablePtr<T> var = ClientDataAreaVariablePtr<T>(
+        new ClientDataAreaVariable<T>(hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(),
+                                      dataReqIDGen.getNextId(), sizeof(T), autoReading, autoWriting, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
     return var;
@@ -338,14 +340,15 @@ class DataManager {
    * @return A shared pointer to the variable
    */
   template <typename T, std::size_t ChunkSize = SIMCONNECT_CLIENTDATA_MAX_SIZE>
-  [[nodiscard]] STREAMING_AREA_PTR make_streamingclientdataarea_var(const std::string& clientDataName,
-                                                      bool autoReading = false,
-                                                      bool autoWriting = false,
-                                                      FLOAT64 maxAgeTime = 0.0,
-                                                      UINT64 maxAgeTicks = 0) {
-    STREAMING_AREA_PTR var = STREAMING_AREA_PTR(new StreamingClientDataAreaVariable<T, ChunkSize>(
-        hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(),
-        autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+  [[nodiscard]] StreamingClientDataAreaVariablePtr<T, ChunkSize> make_streamingclientdataarea_var(const std::string& clientDataName,
+                                                                                                  bool autoReading = false,
+                                                                                                  bool autoWriting = false,
+                                                                                                  FLOAT64 maxAgeTime = 0.0,
+                                                                                                  UINT64 maxAgeTicks = 0) {
+    StreamingClientDataAreaVariablePtr<T, ChunkSize> var =
+        StreamingClientDataAreaVariablePtr<T, ChunkSize>(new StreamingClientDataAreaVariable<T, ChunkSize>(
+            hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), autoReading,
+            autoWriting, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     return var;
