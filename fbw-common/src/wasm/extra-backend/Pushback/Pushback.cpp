@@ -11,9 +11,6 @@
 #include "logging.h"
 #include "math_utils.hpp"
 
-static constexpr FLOAT64 SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
-static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.16;  // ft/sec for "ROTATION VELOCITY BODY Y"
-
 ///
 // DataManager Howto Note:
 // =======================
@@ -33,6 +30,9 @@ static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.16;  // ft/sec for "ROTATION VELO
 // This makes sure variables are only read or written to when really needed. And as pushback will
 // be dormant most of the time, this is saving a lot of unnecessary reads/writes.
 ///
+
+static constexpr FLOAT64 SPEED_FACTOR = 18.0;      // ft/sec for "VELOCITY BODY Z"
+static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.16; // ft/sec for "ROTATION VELOCITY BODY Y"
 
 bool Pushback::initialize() {
   dataManager = &msfsHandler.getDataManager();

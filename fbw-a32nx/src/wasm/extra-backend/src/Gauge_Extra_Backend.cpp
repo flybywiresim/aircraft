@@ -15,10 +15,14 @@
 #include <MSFS/MSFS.h>
 #include <MSFS/MSFS_Render.h>
 
-#include "AircraftPresets/AircraftPresets.h"
-#include "Example/ExampleModule.h"
-#include "LightingPresets/LightingPresets.h"
 #include "MsfsHandler.h"
+
+#ifdef EXAMPLES
+#include "Example/ExampleModule.h"
+#endif
+
+#include "AircraftPresets/AircraftPresets.h"
+#include "LightingPresets/LightingPresets.h"
 #include "Pushback/Pushback.h"
 
 MsfsHandler msfsHandler("Gauge_Extra_Backend", "A32NX_");

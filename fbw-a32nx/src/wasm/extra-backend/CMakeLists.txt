@@ -9,6 +9,7 @@ add_definitions(
 # add the local include directories
 include_directories(
 	${FBW_COMMON}/cpp-msfs-framework/
+	${FBW_COMMON}/extra-backend/
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets
@@ -19,19 +20,19 @@ include_directories(
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Extra_Backend.cpp
 	${FBW_COMMON}/cpp-msfs-framework/Example/ExampleModule.cpp
+	${FBW_COMMON}/extra-backend/Pushback/InertialDampener.cpp
+	${FBW_COMMON}/extra-backend/Pushback/Pushback.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresets.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Pushback/Pushback.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Pushback/InertialDampener.cpp
 )
 set(INCLUDE_FILES
-		../../../../fbw-common/src/wasm/cpp-msfs-framework/Example/ExampleModule.h
-		../../../../fbw-common/src/wasm/cpp-msfs-framework/Example/longtext.h
+	${FBW_COMMON}/cpp-msfs-framework/Example/ExampleModule.h
+	${FBW_COMMON}/cpp-msfs-framework/Example/longtext.h
+	${FBW_COMMON}/extra-backend/Pushback/InertialDampener.h
+    ${FBW_COMMON}/extra-backend/Pushback/Pushback.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresets.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftProcedures.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Pushback/InertialDampener.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Pushback/Pushback.h
 )
 
 # create the targets

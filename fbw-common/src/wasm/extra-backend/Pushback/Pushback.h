@@ -4,8 +4,8 @@
 #ifndef FLYBYWIRE_PUSHBACK_H
 #define FLYBYWIRE_PUSHBACK_H
 
+#include "Pushback/InertialDampener.h"
 #include "DataManager.h"
-#include "InertialDampener.h"
 #include "Module.h"
 
 #ifdef __cpp_lib_math_constants
