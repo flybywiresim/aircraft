@@ -198,19 +198,7 @@ export class Navigation implements NavigationProvider {
     }
 
     public getSelectedNavaids(cdu: 1 | 2 = 1): SelectedNavaid[] {
-        if (this.navaidTuner.rmpTuningActive) {
-            for (let i = 0; i < 4; i++) {
-                this.resetSelectedNavaid(i);
-                // No DME pair with RMP active
-                if (i === 1 || i === 2) {
-                    continue;
-                }
-                const selected = this.selectedNavaids[i];
-                selected.type = i === 3 ? SelectedNavaidType.Ils : SelectedNavaidType.None;
-                selected.mode = SelectedNavaidMode.Rmp;
-                selected.frequency = SimVar.GetSimVarValue(`NAV ACTIVE FREQUENCY:${i === 0 ? cdu : cdu + 2}`, 'mhz');
-            }
-        } else {
+        if (this.navaidTuner.isFmTuningActive()) {
             const vorStatus = this.navaidTuner.getVorRadioTuningStatus(cdu);
             if (vorStatus.frequency !== null) {
                 const selected = this.selectedNavaids[0];
@@ -246,6 +234,19 @@ export class Navigation implements NavigationProvider {
                 selected.facility = mmrStatus.facility ?? null;
             } else {
                 this.resetSelectedNavaid(3);
+            }
+        } else {
+            // RMP
+            for (let i = 0; i < 4; i++) {
+                this.resetSelectedNavaid(i);
+                // No DME pair with RMP active
+                if (i === 1 || i === 2) {
+                    continue;
+                }
+                const selected = this.selectedNavaids[i];
+                selected.type = i === 3 ? SelectedNavaidType.Ils : SelectedNavaidType.None;
+                selected.mode = SelectedNavaidMode.Rmp;
+                selected.frequency = SimVar.GetSimVarValue(`NAV ACTIVE FREQUENCY:${i === 0 ? cdu : cdu + 2}`, 'mhz');
             }
         }
 

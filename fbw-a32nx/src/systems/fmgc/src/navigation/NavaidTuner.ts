@@ -113,7 +113,7 @@ export class NavaidTuner {
     /** Increments each time the tuned navaids change */
     public navaidVersion = 0;
 
-    public rmpTuningActive = false;
+    private rmpTuningActive = false;
 
     private readonly arincNavDiscrete = Arinc429Word.empty();
 
