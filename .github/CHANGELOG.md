@@ -60,6 +60,16 @@
 1. [ADIRU] Add baro correction setting to ADIRS - @mjuhe (Miquel Juhe)
 1. [FMGC] Fixed various bugs with thrust reduction and acceleration altitude - @tracernz (Mike)
 1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
+1. [FMS] Implemented FMS navaid selection for navigation and display - @tracernz (Mike)
+1. [FMS] Implemented FMS LS tuning lock below 700 feet on approach - @tracernz (Mike)
+1. [FMS] Implemented navaid tuning state discretes and integrate with EFIS - @tracernz (Mike)
+1. [FMS] Send tuned navaids to the EFIS - @tracernz (Mike)
+1. [FMS] Make ILS course and slope available for database navaids - @tracernz (Mike)
+1. [MCDU] Re-implemented RADIO NAV page - @tracernz (Mike)
+1. [MCDU] Implemented SELECTED NAVAIDS page - @tracernz (Mike)
+1. [MCDU] Implemented NAVAID page - @tracernz (Mike)
+1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
+1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
 
 ## 0.9.0
 
