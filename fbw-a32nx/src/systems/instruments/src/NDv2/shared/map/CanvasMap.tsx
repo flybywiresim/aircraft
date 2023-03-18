@@ -15,8 +15,6 @@ import { RunwayLayer } from './RunwayLayer';
 import { TrafficLayer } from './TrafficLayer';
 import { FixInfoLayer } from './FixInfoLayer';
 import { NDControlEvents } from '../../NDControlEvents';
-import { TerrainMap } from './TerrainMap';
-import { TerrainImageRenderer } from './TerrainImageRenderer';
 
 const ARC_CLIP = new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312');
 
@@ -73,8 +71,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     public pointerX = 0;
 
     public pointerY = 0;
-
-    // private readonly terrainMap = new TerrainMap(this.props.bus, 'L', 768, 768);
 
     private readonly constraintsLayer = new ConstraintsLayer();
 

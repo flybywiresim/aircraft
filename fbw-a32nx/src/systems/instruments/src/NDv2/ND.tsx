@@ -22,8 +22,6 @@ import { Airplane } from './shared/Airplane';
 import { TcasWxrMessages } from './TcasWxrMessages';
 import { Arinc429RegisterSubject } from '../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Chrono } from './Chrono';
-import { TerrainImageRendererComponent } from './shared/map/TerrainImageRenderer';
-import { TerrainMap } from './shared/map/TerrainMap';
 import { WindIndicator } from './shared/WindIndicator';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
@@ -85,10 +83,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
         return pageChange || rangeChange;
     }, this.pageChangeInProgress, this.rangeChangeInProgress);
 
-    private readonly terrainMap = new TerrainMap(this.props.bus, this.props.side, 984, 492);
-
-    private lastFrameTime = Date.now();
-
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -136,11 +130,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
         sub.on('ndMode').whenChanged().handle((mode) => {
             this.handleNewMapPage(mode);
-        });
-
-        sub.on('realTime').handle((time) => {
-            this.terrainMap.update(time - this.lastFrameTime);
-            this.lastFrameTime = time;
         });
 
         this.mapRecomputing.sub((recomputing) => {
@@ -210,16 +199,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
     render(): VNode | null {
         return (
             <DisplayUnit bus={this.props.bus} failed={this.displayFailed} powered={this.displayPowered} brightness={this.displayBrightness}>
-                <TerrainImageRendererComponent
-                    bus={this.props.bus}
-                    visualisation={this.terrainMap.visualisation}
-                    cx={384}
-                    cy={620}
-                    width={984}
-                    height={492}
-                    onTransitionDone={() => this.terrainMap.mapTransitionDone()}
-                />
-
                 {/* ND Vector graphics - bottom layer */}
                 <svg class="nd-svg" viewBox="0 0 768 768">
                     <WindIndicator bus={this.props.bus} />
