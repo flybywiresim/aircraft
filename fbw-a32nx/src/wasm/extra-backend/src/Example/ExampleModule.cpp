@@ -72,14 +72,12 @@ bool ExampleModule::initialize() {
   // LVARS
   // requested multiple times to demonstrate de-duplication - also shows optional parameters
   // use this to familiarise yourself with the different parameters
-  debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, true, false, 0, 0);
-  debugLVARPtr->setEpsilon(1.0);  // only read when difference is >1.0
-  debugLVARPtr->addCallback([&, this]() { LOG_INFO("Callback: DEBUG_LVAR value changed to " + std::to_string(debugLVARPtr->get())); });
-
+  debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, true, true, 0, 0);
+  //  debugLVARPtr->setEpsilon(1.0);  // only read when difference is >1.0
+  //  debugLVARPtr->addCallback([&, this]() { LOG_INFO("Callback: DEBUG_LVAR value changed to " + std::to_string(debugLVARPtr->get())); });
   // these are unique and not the same as the first
-  debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, false, false, 0, 0);
-  debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, false, false, 0, 0);
-
+  debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, true, false, 0, 1000);
+  debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, true, false, 5.0, 0);
   // this is a duplicate of the first one, so should be the same pointer
   debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
 #endif
@@ -361,19 +359,22 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     // difference if using different units
     LOG_INFO("--- LVAR EXAMPLE");
-    LOG_INFO("timeStamp = " + std::to_string(timeStamp) + "/ ticks = " + std::to_string(msfsHandler.getTickCounter()));
-    debugLVAR3Ptr->setAndWriteToSim(msfsHandler.getTickCounter());
-    LOG_INFO("Setting DEBUG_LVAR to tickCounter = " + std::to_string(tickCounter));
-    LOG_INFO("debugLVARPtr  DEBUG_LVAR (hours)   " + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " " + std::to_string(debugLVARPtr->updateFromSim(timeStamp, tickCounter)));
-    LOG_INFO("debugLVAR2Ptr DEBUG_LVAR (minutes) " + std::to_string(debugLVAR2Ptr->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter())));
-    LOG_INFO("debugLVAR3Ptr DEBUG_LVAR (seconds) " + std::to_string(debugLVAR3Ptr->updateFromSim(msfsHandler.getTimeStamp(), msfsHandler.getTickCounter())));
+    LOG_INFO("timeStamp = " + std::to_string(timeStamp) + " / ticks = " + std::to_string(msfsHandler.getTickCounter()));
+
+    LOG_INFO("debugLVARPtr  DEBUG_LVAR (hours)   = " + std::to_string(debugLVARPtr->get()));
+    LOG_INFO("debugLVAR2Ptr DEBUG_LVAR (minutes) = " + std::to_string(debugLVAR2Ptr->get()));
+    LOG_INFO("debugLVAR3Ptr DEBUG_LVAR (seconds) = " + std::to_string(debugLVAR3Ptr->get()));
 
     // this second read of the duplicate should not trigger a read from the sim
     // enable LOG_TRACE to see the read in updateFromSim()
-    LOG_INFO("debugLVAR4Ptr DEBUG_LVAR (hours)   " + std::to_string(reinterpret_cast<int>(debugLVARPtr.get())) + " " + std::to_string(debugLVAR4Ptr->updateFromSim(timeStamp, tickCounter)));
+    LOG_INFO("debugLVAR4Ptr DEBUG_LVAR (hours)   = " + std::to_string(debugLVAR4Ptr->get()));
 
     // testing doubled LVARs
     std::cout << "Pointer Address of duplicates:  debugLVARPtr=" << std::addressof(*debugLVARPtr) << " debugLVAR4Ptr=" << std::addressof(*debugLVAR4Ptr) << std::endl;
+
+
+    LOG_INFO("Setting DEBUG_LVAR to tickCounter  = " + std::to_string(tickCounter));
+    debugLVARPtr->set(tickCounter);
 
     // manual changing in the sim's LocalVariables dialog - uncomment below and comment out above
     //

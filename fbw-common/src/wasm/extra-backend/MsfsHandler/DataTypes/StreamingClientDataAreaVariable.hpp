@@ -132,8 +132,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
 
     // received all data?
     if (this->receivedBytes >= this->expectedByteCount) {
-      this->timeStampSimTime = simTime;
-      this->tickStamp = tickCounter;
+      this->updateStamps(simTime, tickCounter);
       this->setChanged(true);
       return;
     }
@@ -215,7 +214,9 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
     ss << ", receivedChunks=" << this->receivedChunks;
     ss << ", structSize=" << content.size() * sizeof(T);
     ss << ", timeStamp: " << this->timeStampSimTime;
+    ss << ", nextUpdateTimeStamp: " << this->nextUpdateTimeStamp;
     ss << ", tickStamp: " << this->tickStamp;
+    ss << ", nextUpdateTickStamp: " << this->nextUpdateTickStamp;
     ss << ", skipChangeCheck: " << this->skipChangeCheck;
     ss << ", dataChanged: " << this->hasChanged();
     ss << ", autoRead: " << this->autoRead;

@@ -34,10 +34,10 @@ bool DataManager::preUpdate([[maybe_unused]] sGaugeDrawData* pData) const {
   }
 
   // request all data definitions set to automatically read
-  for (auto& ddv : simObjects) {
-    if (ddv.second->isAutoRead()) {
-      if (!ddv.second->requestUpdateFromSim(timeStamp, tickCounter)) {
-        LOG_ERROR("DataManager::preUpdate(): requestUpdateFromSim() failed for " + ddv.second->getName());
+  for (const auto& simObject : simObjects) {
+    if (simObject.second->isAutoRead()) {
+      if (!simObject.second->requestUpdateFromSim(timeStamp, tickCounter)) {
+        LOG_ERROR("DataManager::preUpdate(): requestUpdateFromSim() failed for " + simObject.second->getName());
       }
     }
   }

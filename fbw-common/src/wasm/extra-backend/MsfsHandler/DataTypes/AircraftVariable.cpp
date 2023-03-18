@@ -92,7 +92,9 @@ std::string AircraftVariable::str() const {
   ss << ", changed: " << hasChanged();
   ss << ", dirty: " << dirty;
   ss << ", timeStamp: " << timeStampSimTime;
+  ss << ", nextUpdateTimeStamp: " << nextUpdateTimeStamp;
   ss << ", tickStamp: " << tickStamp;
+  ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
   ss << ", autoRead: " << autoRead;
   ss << ", autoWrite: " << autoWrite;
   ss << ", maxAgeTime: " << maxAgeTime;

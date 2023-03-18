@@ -86,6 +86,11 @@ class ManagedDataObjectBase : public DataObjectBase {
   FLOAT64 timeStampSimTime = 0.0;
 
   /**
+   * The time the next update from the sim should be done
+   */
+  FLOAT64 nextUpdateTimeStamp = 0.0;
+
+  /**
    * The maximum age of the value in sim time before it is updated from the sim by the
    * requestUpdateFromSim() method.
    */
@@ -95,6 +100,11 @@ class ManagedDataObjectBase : public DataObjectBase {
    * The tick counter of the last update from the sim
    */
   UINT64 tickStamp = 0;
+
+  /**
+   * The tick counter the next update from the sim should be done
+   */
+  UINT64 nextUpdateTickStamp = 0;
 
   /**
    * The maximum age of the value in ticks before it is updated from the sim by the
@@ -168,11 +178,19 @@ class ManagedDataObjectBase : public DataObjectBase {
    * @return true if the variable needs to be updated from the sim, false otherwise
    */
   [[nodiscard]] bool needsUpdateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) const {
-    // TODO: have these stored in variables and calculate them once when updated to avoid the
-    //  calculation every time
-    const FLOAT64 timeStampPlusAge = timeStampSimTime + maxAgeTime;
-    const UINT64 tickStampPlusAge = tickStamp + maxAgeTicks;
-    return (timeStampPlusAge < timeStamp && tickStampPlusAge < tickCounter);
+    return (nextUpdateTimeStamp < timeStamp && nextUpdateTickStamp < tickCounter);
+  }
+
+  /**
+   * Updates the time stamps and stamps for the next update from the sim.
+   * @param timeStamp - current sim time
+   * @param tickCounter - current tick counter
+   */
+  void updateStamps(FLOAT64 timeStamp, UINT64 tickCounter) {
+    timeStampSimTime = timeStamp;
+    nextUpdateTimeStamp = timeStamp + maxAgeTime;
+    tickStamp = tickCounter;
+    nextUpdateTickStamp = tickCounter + maxAgeTicks;
   }
 
   /**

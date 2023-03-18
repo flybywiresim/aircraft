@@ -214,8 +214,7 @@ class DataDefinitionVariable : public SimObjectBase {
     if (skipChangeCheck || std::memcmp(&pSimobjectData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       LOG_TRACE("DataDefinitionVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pSimobjectData->dwData, sizeof(T));
-      timeStampSimTime = simTime;
-      tickStamp = tickCounter;
+      updateStamps(simTime, tickCounter);
       setChanged(true);
       return;
     }
@@ -258,7 +257,9 @@ class DataDefinitionVariable : public SimObjectBase {
     ss << " definitions=" << dataDefinitions.size();
     ss << ", structSize=" << sizeof(T);
     ss << ", timeStamp: " << timeStampSimTime;
+    ss << ", nextUpdateTimeStamp: " << nextUpdateTimeStamp;
     ss << ", tickStamp: " << tickStamp;
+    ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
     ss << ", skipChangeCheck: " << skipChangeCheck;
     ss << ", dataChanged: " << hasChanged();
     ss << ", autoRead: " << autoRead;

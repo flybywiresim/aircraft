@@ -233,8 +233,7 @@ class ClientDataAreaVariable : public SimObjectBase {
     // if not required then skip the rather expensive check for change
     if (skipChangeCheck || std::memcmp(&pClientData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       std::memcpy(&this->dataStruct, &pClientData->dwData, sizeof(T));
-      timeStampSimTime = simTime;
-      tickStamp = tickCounter;
+      updateStamps(simTime, tickCounter);
       setChanged(true);
       return;
     }
@@ -270,7 +269,9 @@ class ClientDataAreaVariable : public SimObjectBase {
     ss << ", requestId=" << requestId;
     ss << ", structSize=" << sizeof(T);
     ss << ", timeStamp: " << timeStampSimTime;
+    ss << ", nextUpdateTimeStamp: " << nextUpdateTimeStamp;
     ss << ", tickStamp: " << tickStamp;
+    ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
     ss << ", skipChangeCheck: " << skipChangeCheck;
     ss << ", dataChanged: " << hasChanged();
     ss << ", autoRead: " << autoRead;
