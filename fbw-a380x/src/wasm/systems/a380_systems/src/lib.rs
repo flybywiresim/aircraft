@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod avionics_data_communication_network;
 mod control_display_system;
 mod electrical;
 mod fuel;
@@ -10,7 +11,8 @@ mod pneumatic;
 mod power_consumption;
 
 use self::{
-    air_conditioning::A380AirConditioning,
+    air_conditioning::{A380AirConditioning, A380PressurizationOverheadPanel},
+    avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
     control_display_system::A380ControlDisplaySystem,
     fuel::A380Fuel,
     pneumatic::{A380Pneumatic, A380PneumaticOverheadPanel},
@@ -22,7 +24,9 @@ use electrical::{
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
+use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
+use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
     apu::{
@@ -37,12 +41,12 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    pressurization::{Pressurization, PressurizationOverheadPanel},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 pub struct A380 {
+    adcn: A380AvionicsDataCommunicationNetwork,
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
@@ -50,6 +54,7 @@ pub struct A380 {
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A380PneumaticOverheadPanel,
+    pressurization_overhead: A380PressurizationOverheadPanel,
     electrical_overhead: A380ElectricalOverheadPanel,
     emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel,
     fuel: A380Fuel,
@@ -66,16 +71,16 @@ pub struct A380 {
     hydraulic_overhead: A380HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
-    pressurization: Pressurization,
-    pressurization_overhead: PressurizationOverheadPanel,
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     cds: A380ControlDisplaySystem,
+    egpwc: EnhancedGroundProximityWarningComputer,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
         A380 {
+            adcn: A380AvionicsDataCommunicationNetwork::new(context),
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
@@ -89,6 +94,7 @@ impl A380 {
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
             pneumatic_overhead: A380PneumaticOverheadPanel::new(context),
+            pressurization_overhead: A380PressurizationOverheadPanel::new(context),
             electrical_overhead: A380ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel::new(context),
             fuel: A380Fuel::new(context),
@@ -109,12 +115,24 @@ impl A380 {
             hydraulic_overhead: A380HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
             landing_gear: LandingGear::new(context),
-            pressurization: Pressurization::new(context),
-            pressurization_overhead: PressurizationOverheadPanel::new(context),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             cds: A380ControlDisplaySystem::new(context),
+            egpwc: EnhancedGroundProximityWarningComputer::new(
+                context,
+                ElectricalBusType::DirectCurrent(1),
+                vec![
+                    Length::new::<nautical_mile>(10.0),
+                    Length::new::<nautical_mile>(20.0),
+                    Length::new::<nautical_mile>(40.0),
+                    Length::new::<nautical_mile>(80.0),
+                    Length::new::<nautical_mile>(160.0),
+                    Length::new::<nautical_mile>(320.0),
+                    Length::new::<nautical_mile>(640.0),
+                ],
+                1,
+            ),
         }
     }
 }
@@ -162,6 +180,7 @@ impl Aircraft for A380 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
+        self.adcn.update();
         self.lgcius.update(
             context,
             &self.landing_gear,
@@ -170,13 +189,6 @@ impl Aircraft for A380 {
         );
 
         self.radio_altimeters.update(context);
-
-        self.pressurization.update(
-            context,
-            &self.pressurization_overhead,
-            [&self.engine_1, &self.engine_2],
-            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
-        );
 
         self.hydraulic.update(
             context,
@@ -219,6 +231,8 @@ impl Aircraft for A380 {
             &self.apu,
             &self.air_conditioning,
         );
+        self.air_conditioning
+            .mix_packs_air_update(self.pneumatic.packs());
         self.air_conditioning.update(
             context,
             &self.adirs,
@@ -231,18 +245,19 @@ impl Aircraft for A380 {
             &self.engine_fire_overhead,
             &self.pneumatic,
             &self.pneumatic_overhead,
-            &self.pressurization,
             &self.pressurization_overhead,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
 
         self.engines_flex_physics.update(context);
-
         self.cds.update();
+
+        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
     }
 }
 impl SimulationElement for A380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.adcn.accept(visitor);
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
         self.air_conditioning.accept(visitor);
@@ -253,6 +268,7 @@ impl SimulationElement for A380 {
         self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
+        self.pressurization_overhead.accept(visitor);
         self.engine_1.accept(visitor);
         self.engine_2.accept(visitor);
         self.engine_3.accept(visitor);
@@ -267,11 +283,10 @@ impl SimulationElement for A380 {
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
-        self.pressurization.accept(visitor);
-        self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
+        self.egpwc.accept(visitor);
 
         visitor.visit(self);
     }

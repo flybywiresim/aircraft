@@ -104,6 +104,10 @@ pub trait TestBed {
             .set_indicated_altitude(indicated_altitude);
     }
 
+    fn set_pressure_altitude(&mut self, pressure_altitude: Length) {
+        self.test_bed_mut().set_pressure_altitude(pressure_altitude);
+    }
+
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
         self.test_bed_mut()
             .set_ambient_temperature(ambient_temperature);
@@ -358,6 +362,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
         self.write_by_name(UpdateContext::INDICATED_ALTITUDE_KEY, indicated_altitude);
+    }
+
+    fn set_pressure_altitude(&mut self, pressure_altitude: Length) {
+        self.write_by_name(UpdateContext::PRESSURE_ALTITUDE_KEY, pressure_altitude);
     }
 
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {

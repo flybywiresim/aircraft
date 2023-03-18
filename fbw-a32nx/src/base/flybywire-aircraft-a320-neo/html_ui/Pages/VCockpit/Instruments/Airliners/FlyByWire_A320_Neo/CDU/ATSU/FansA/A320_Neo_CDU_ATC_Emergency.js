@@ -24,9 +24,9 @@ class CDUAtcEmergencyFansA {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -54,7 +54,7 @@ class CDUAtcEmergencyFansA {
             retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM58"));
         }
         if (data.deviating) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.deviating).split(" ");
+            const elements = AtsuCommon.InputValidation.expandLateralOffset(data.deviating).split(" ");
             retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM80", [elements[0], elements[1]]));
         }
         if (data.climbingTo) {
@@ -162,8 +162,8 @@ class CDUAtcEmergencyFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.personsOnBoard = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadPersonsOnBoard(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadPersonsOnBoard(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                     data.personsOnBoard = parseInt(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
@@ -193,9 +193,9 @@ class CDUAtcEmergencyFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.descendingTo = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.descendingTo = Atsu.InputValidation.formatScratchpadAltitude(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.descendingTo = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -210,9 +210,9 @@ class CDUAtcEmergencyFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.endurance = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadEndurance(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.endurance = Atsu.InputValidation.formatScratchpadEndurance(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadEndurance(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.endurance = AtsuCommon.InputValidation.formatScratchpadEndurance(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -249,7 +249,7 @@ class CDUAtcEmergencyFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcEmergencyFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcEmergencyFansA.CreateRequests(mcdu, data);
@@ -325,9 +325,9 @@ class CDUAtcEmergencyFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.deviating = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.deviating = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.deviating = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -346,8 +346,8 @@ class CDUAtcEmergencyFansA {
                 const split = value.split("/");
                 if (split.length === 2) {
                     if (split[0].length !== 0) {
-                        const error = Atsu.InputValidation.validateScratchpadPosition(split[0]);
-                        if (error === Atsu.AtsuStatusCodes.Ok) {
+                        const error = AtsuCommon.InputValidation.validateScratchpadPosition(split[0]);
+                        if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                             data.diverting = split[0];
                         } else {
                             mcdu.addNewAtsuMessage(error);
@@ -355,15 +355,15 @@ class CDUAtcEmergencyFansA {
                         }
                     }
 
-                    const error = Atsu.InputValidation.validateScratchpadPosition(split[1]);
-                    if (error === Atsu.AtsuStatusCodes.Ok) {
+                    const error = AtsuCommon.InputValidation.validateScratchpadPosition(split[1]);
+                    if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                         data.divertingVia = split[1];
                     } else {
                         mcdu.addNewAtsuMessage(error);
                     }
                 } else if (split.length === 1) {
-                    const error = Atsu.InputValidation.validateScratchpadPosition(value);
-                    if (error === Atsu.AtsuStatusCodes.Ok) {
+                    const error = AtsuCommon.InputValidation.validateScratchpadPosition(value);
+                    if (error === AtsuCommon.AtsuStatusCodes.Ok) {
                         if (data.diverting) {
                             data.divertingVia = value;
                         } else {
@@ -374,7 +374,7 @@ class CDUAtcEmergencyFansA {
                         mcdu.addNewAtsuMessage(error);
                     }
                 } else {
-                    mcdu.addNewAtsuMessage(Atsu.AtsuStatusCodes.FormatError);
+                    mcdu.addNewAtsuMessage(AtsuCommon.AtsuStatusCodes.FormatError);
                 }
             }
             CDUAtcEmergencyFansA.ShowPage2(mcdu, data);
@@ -413,9 +413,9 @@ class CDUAtcEmergencyFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.climbingTo = null;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.climbingTo = Atsu.InputValidation.formatScratchpadAltitude(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.climbingTo = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -440,7 +440,7 @@ class CDUAtcEmergencyFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcEmergencyFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcEmergencyFansA.CreateRequests(mcdu, data);

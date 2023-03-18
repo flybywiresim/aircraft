@@ -15,9 +15,9 @@ class CDUAtcSpeedRequest {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -49,7 +49,7 @@ class CDUAtcSpeedRequest {
 
         let speedWhenSmall = "";
         let speedWhen = "";
-        if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+        if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
             speedWhenSmall = "\xa0WHEN CAN WE EXPECT SPD";
             speedWhen = "[ ][color]cyan";
             if (data.whenSpeed) {
@@ -91,9 +91,9 @@ class CDUAtcSpeedRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.speed = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadSpeed(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.speed = Atsu.InputValidation.formatScratchpadSpeed(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadSpeed(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.speed = AtsuCommon.InputValidation.formatScratchpadSpeed(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -105,13 +105,13 @@ class CDUAtcSpeedRequest {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansA) {
                 if (value === FMCMainDisplay.clrValue) {
                     data.whenSpeed = null;
                 } else if (value) {
-                    const error = Atsu.InputValidation.validateScratchpadSpeed(value);
-                    if (error === Atsu.AtsuStatusCodes.Ok) {
-                        data.whenSpeed = Atsu.InputValidation.formatScratchpadSpeed(value);
+                    const error = AtsuCommon.InputValidation.validateScratchpadSpeed(value);
+                    if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                        data.whenSpeed = AtsuCommon.InputValidation.formatScratchpadSpeed(value);
                     } else {
                         mcdu.addNewAtsuMessage(error);
                     }
@@ -141,9 +141,9 @@ class CDUAtcSpeedRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.offset = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.offset = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.offset = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                     data.offsetStart = null;
                 } else {
                     mcdu.addNewAtsuMessage(error);
@@ -159,9 +159,9 @@ class CDUAtcSpeedRequest {
             if (value === FMCMainDisplay.clrValue) {
                 data.weatherDeviation = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadOffset(value);
-                if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.weatherDeviation = Atsu.InputValidation.formatScratchpadOffset(value);
+                const error = AtsuCommon.InputValidation.validateScratchpadOffset(value);
+                if (error === AtsuCommon.AtsuStatusCodes.Ok) {
+                    data.weatherDeviation = AtsuCommon.InputValidation.formatScratchpadOffset(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -198,7 +198,7 @@ class CDUAtcSpeedRequest {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcSpeedRequest.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcSpeedRequest.CreateRequests(mcdu, data);

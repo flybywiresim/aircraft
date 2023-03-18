@@ -2,10 +2,10 @@ class CDUAocRequestsMessage {
     static ShowPage(mcdu, messages, messageIndex, offset = 0) {
         mcdu.clearDisplay();
         const message = messages[messageIndex];
-        const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split("\n");
+        const lines = message.serialize(AtsuCommon.AtsuMessageSerializationFormat.FmsDisplay).split("\n");
 
         // mark message as read
-        mcdu.atsu.messageRead(message.UniqueMessageID);
+        mcdu.atsu.messageRead(message.UniqueMessageID, true);
 
         const msgArrows = messages.length > 1 ? " {}" : "";
 
@@ -30,13 +30,13 @@ class CDUAocRequestsMessage {
         }
 
         let from = message.Station;
-        if (message.Type === Atsu.AtsuMessageType.ATIS) {
+        if (message.Type === AtsuCommon.AtsuMessageType.ATIS) {
             from = message.Reports[0].airport;
         }
 
         mcdu.setTemplate([
             ["AOC MSG DISPLAY"],
-            [`${message.Timestamp.mcduTimestamp()} FROM ${from}[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
+            [`${message.Timestamp.fmsTimestamp()} FROM ${from}[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
             [`{small}${lines[offset] ? lines[offset] : ""}{end}`],
             [`${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`{small}${lines[offset + 2] ? lines[offset + 2] : ""}{end}`],

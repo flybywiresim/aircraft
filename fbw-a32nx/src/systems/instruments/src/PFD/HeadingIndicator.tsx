@@ -354,7 +354,6 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
     private readonly trueFlagRef = FSComponent.createRef<SVGGElement>();
 
     /** @inheritdoc */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onAfterRender(node: VNode): void {
         this.props.bus.getSubscriber<DisplayManagementComputerEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
         // FIXME this should be 127-11 from FWC

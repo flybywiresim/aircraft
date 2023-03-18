@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
-import { DcduStatusMessage } from '@atsu/components/DcduLink';
+import { MailboxStatusMessage } from '@datalink/common';
 import { Checkerboard } from './Checkerboard';
 
 interface ColorizedWord {
@@ -26,7 +26,7 @@ type MessageVisualizationProps = {
     deltaY: number,
     seperatorLine?: number,
     watchdogIndices?: number[],
-    updateSystemStatusMessage: (status: DcduStatusMessage) => void,
+    updateSystemStatusMessage: (status: MailboxStatusMessage) => void,
     reachedEndOfMessage: (uid: number, reachedEnd: boolean) => void
 }
 
@@ -256,10 +256,10 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
 
         reachedEndOfMessage(messageUid, pageCount === 1);
         if (pageIndex > 0) {
-            updateSystemStatusMessage(DcduStatusMessage.NoMessage);
+            updateSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setPageIndex(pageIndex - 1);
         } else {
-            updateSystemStatusMessage(DcduStatusMessage.NoMorePages);
+            updateSystemStatusMessage(MailboxStatusMessage.NoMorePages);
         }
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEPLUS', 'A32NX_DCDU_BTN_MPR_POEPLUS'], () => {
@@ -270,10 +270,10 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         // actual pageIndex is the one below and the index starts at 0 -> increase by one
         reachedEndOfMessage(messageUid, pageCount <= pageIndex + 2);
         if (pageCount > pageIndex + 1) {
-            updateSystemStatusMessage(DcduStatusMessage.NoMessage);
+            updateSystemStatusMessage(MailboxStatusMessage.NoMessage);
             setPageIndex(pageIndex + 1);
         } else {
-            updateSystemStatusMessage(DcduStatusMessage.NoMorePages);
+            updateSystemStatusMessage(MailboxStatusMessage.NoMorePages);
         }
     });
 
