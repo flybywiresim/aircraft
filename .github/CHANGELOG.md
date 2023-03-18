@@ -58,6 +58,8 @@
 1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
 1. [PRESS] Merge pressurization and air conditioning system - @mjuhe (Miquel Juhe)
 1. [ADIRU] Add baro correction setting to ADIRS - @mjuhe (Miquel Juhe)
+1. [FMGC] Fixed various bugs with thrust reduction and acceleration altitude - @tracernz (Mike)
+1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
 1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084), @tracernz (Mike), @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.9.0
