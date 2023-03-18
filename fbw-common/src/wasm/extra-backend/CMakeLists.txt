@@ -1,27 +1,14 @@
 # define the source files
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataManager.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/MsfsHandler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/AircraftVariable.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/CacheableVariable.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/ClientEvent.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/NamedVariable.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/MsfsHandler.cpp
 )
 set(INCLUDE_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/inih/ini.h
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/inih/ini_type_conversion.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/aircraft_prefix.h
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/Callback.h
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/IDGenerator.h
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/SimUnits.h
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/logging.h
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/math_utils.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/quantity.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/simple_assert.h
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataManager.h
-	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/Module.h
-	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/MsfsHandler.h
-	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/SimconnectExceptionStrings.h
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/AircraftVariable.h
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/CacheableVariable.h
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/ClientDataAreaVariable.hpp
@@ -32,6 +19,20 @@ set(INCLUDE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/NamedVariable.h
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/SimObjectBase.h
 	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/DataTypes/StreamingClientDataAreaVariable.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/Module.h
+	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/MsfsHandler.h
+	${CMAKE_CURRENT_SOURCE_DIR}/MsfsHandler/SimconnectExceptionStrings.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/Callback.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/IDGenerator.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/SimUnits.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/aircraft_prefix.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/fingerprint.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/inih/ini.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/inih/ini_type_conversion.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/logging.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/math_utils.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/quantity.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/simple_assert.h
 )
 
 # create the targets for all aircrafts

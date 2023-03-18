@@ -41,8 +41,6 @@ add_definitions(
         -D_LIBCPP_HAS_NO_THREADS
         -D_WINDLL
         -D_MBCS
-        -DLOG_LEVEL=4
-        -DNO_EXAMPLES
 )
 
 # add the common components

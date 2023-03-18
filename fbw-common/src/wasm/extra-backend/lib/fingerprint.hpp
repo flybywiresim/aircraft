@@ -1,6 +1,6 @@
-//
-// Created by frank on 15.03.2023.
-//
+
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFT_FINGERPRINT_HPP
 #define FLYBYWIRE_AIRCRAFT_FINGERPRINT_HPP
