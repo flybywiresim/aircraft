@@ -3172,14 +3172,14 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        const match = s.match(/^([0-9]{4,5})?(\/([0-9]{4,5}))?$/);
-        if (match === null || (match[1] === undefined && match[3] === undefined)) {
+        const match = s.match(/^(([0-9]{4,5})\/?)?(\/([0-9]{4,5}))?$/);
+        if (match === null || (match[2] === undefined && match[4] === undefined) || s.split('/').length > 2) {
             this.setScratchpadMessage(NXSystemMessages.formatError);
             return false;
         }
 
-        const thrRed = match[1] !== undefined ? FMCMainDisplay.round(parseInt(match[1]), 10) : undefined;
-        const accAlt = match[3] !== undefined ? FMCMainDisplay.round(parseInt(match[3]), 10) : undefined;
+        const thrRed = match[2] !== undefined ? FMCMainDisplay.round(parseInt(match[2]), 10) : undefined;
+        const accAlt = match[4] !== undefined ? FMCMainDisplay.round(parseInt(match[4]), 10) : undefined;
 
         const origin = this.flightPlanManager.getPersistentOrigin();
         let elevation = origin.infos.elevation !== undefined ? origin.infos.elevation : 0;
@@ -3271,14 +3271,14 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        const match = s.match(/^([0-9]{4,5})?(\/([0-9]{4,5}))?$/);
-        if (match === null || (match[1] === undefined && match[3] === undefined)) {
+        const match = s.match(/^(([0-9]{4,5})\/?)?(\/([0-9]{4,5}))?$/);
+        if (match === null || (match[2] === undefined && match[4] === undefined) || s.split('/').length > 2) {
             this.setScratchpadMessage(NXSystemMessages.formatError);
             return false;
         }
 
-        const thrRed = match[1] !== undefined ? FMCMainDisplay.round(parseInt(match[1]), 10) : undefined;
-        const accAlt = match[3] !== undefined ? FMCMainDisplay.round(parseInt(match[3]), 10) : undefined;
+        const thrRed = match[2] !== undefined ? FMCMainDisplay.round(parseInt(match[2]), 10) : undefined;
+        const accAlt = match[4] !== undefined ? FMCMainDisplay.round(parseInt(match[4]), 10) : undefined;
 
         const destination = this.flightPlanManager.getDestination();
         let elevation = destination.infos.elevation !== undefined ? destination.infos.elevation : 0;
