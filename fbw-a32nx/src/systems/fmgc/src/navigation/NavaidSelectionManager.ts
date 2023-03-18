@@ -370,24 +370,31 @@ export class NavaidSelectionManager {
         }
 
         // route navaid (to waypoint or 5 next downpath within FoM limit)
-        for (let i = 0; i <= 5; i++) {
-            const leg = this.fpm.getWaypoint(i, FlightPlans.Active, true);
-            if (!leg) {
-                break;
-            }
+        const activeLegIndex = this.fpm.getActiveWaypointIndex(false, false, FlightPlans.Active);
+        if (activeLegIndex >= 0) {
+            for (let i = activeLegIndex; i < activeLegIndex + 5; i++) {
+                const leg = this.fpm.getWaypoint(i, FlightPlans.Active, true);
+                if (!leg) {
+                    break;
+                }
 
-            // eslint-disable-next-line no-underscore-dangle
-            const facility: RawVor | null = leg.additionalData.facility?.__Type === 'JS_FacilityVOR' ? leg.additionalData.facility : null;
-            if (facility !== null && this.isVor(facility as RawVor) && this.isWithinFom(facility)) {
-                this.setDisplayVor(facility, VorSelectionReason.Route);
-                return;
+                // eslint-disable-next-line no-underscore-dangle
+                const facility: RawVor | null = leg.additionalData.facility?.__Type === 'JS_FacilityVOR' ? leg.additionalData.facility : null;
+                if (facility !== null && this.isVor(facility as RawVor) && this.isWithinFom(facility)) {
+                    this.setDisplayVor(facility, VorSelectionReason.Route);
+                    return;
+                }
             }
         }
 
         // closest vor/dme within FoM, with a little bit of stickiness to avoid swapping back and forth
         if (this.vorCandidateList.length > 0 && this.displayVor !== null) {
             const currentVor = this.vorCandidateList.find((v) => v.icao === this.displayVor.icao);
-            if (!currentVor || (currentVor.distance - this.vorCandidateList[0].distance) > NavaidSelectionManager.DISPLAY_VOR_STICKINESS_THRESHOLD) {
+            const replaceCurrentVor = !currentVor
+                || this.selectedDisplayVorReason !== VorSelectionReason.Display
+                || (currentVor.distance - this.vorCandidateList[0].distance) > NavaidSelectionManager.DISPLAY_VOR_STICKINESS_THRESHOLD;
+
+            if (replaceCurrentVor) {
                 this.setDisplayVor(this.vorCandidateList[0], VorSelectionReason.Display);
             }
         } else if (this.vorCandidateList.length > 0) {
