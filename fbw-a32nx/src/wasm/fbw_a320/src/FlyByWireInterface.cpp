@@ -346,12 +346,15 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
 
   idFmgcAltitudeConstraint = std::make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
-  idFmgcThrustReductionAltitude = std::make_unique<LocalVariable>("AIRLINER_THR_RED_ALT");
-  idFmgcThrustReductionAltitudeGoAround = std::make_unique<LocalVariable>("AIRLINER_THR_RED_ALT_GOAROUND");
-  idFmgcAccelerationAltitude = std::make_unique<LocalVariable>("AIRLINER_ACC_ALT");
-  idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_ENG_OUT_ACC_ALT");
-  idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("AIRLINER_ACC_ALT_GOAROUND");
-  idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("AIRLINER_ENG_OUT_ACC_ALT_GOAROUND");
+  // FIXME consider FM1/FM2
+  // thrust reduction/acceleration ARINC vars
+  idFmgcThrustReductionAltitude = std::make_unique<LocalVariable>("A32NX_FM1_THR_RED_ALT");
+  idFmgcThrustReductionAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_THR_RED_ALT");
+  idFmgcAccelerationAltitude = std::make_unique<LocalVariable>("A32NX_FM1_ACC_ALT");
+  idFmgcAccelerationAltitudeEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_EO_ACC_ALT");
+  idFmgcAccelerationAltitudeGoAround = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_ACC_ALT");
+  idFmgcAccelerationAltitudeGoAroundEngineOut = std::make_unique<LocalVariable>("A32NX_FM1_MISSED_EO_ACC_ALT");
+
   idFmgcCruiseAltitude = std::make_unique<LocalVariable>("AIRLINER_CRUISE_ALTITUDE");
   idFmgcFlexTemperature = std::make_unique<LocalVariable>("AIRLINER_TO_FLEX_TEMP");
 
@@ -805,6 +808,14 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // update all local variables
   LocalVariable::readAll();
 
+  // FM thrust reduction/acceleration ARINC words
+  fmThrustReductionAltitude->setFromSimVar(idFmgcThrustReductionAltitude->get());
+  fmThrustReductionAltitudeGoAround->setFromSimVar(idFmgcThrustReductionAltitudeGoAround->get());
+  fmAccelerationAltitude->setFromSimVar(idFmgcAccelerationAltitude->get());
+  fmAccelerationAltitudeEngineOut->setFromSimVar(idFmgcAccelerationAltitudeEngineOut->get());
+  fmAccelerationAltitudeGoAround->setFromSimVar(idFmgcAccelerationAltitudeGoAround->get());
+  fmAccelerationAltitudeGoAroundEngineOut->setFromSimVar(idFmgcAccelerationAltitudeGoAroundEngineOut->get());
+
   // update simulation rate limits
   simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());
 
@@ -819,12 +830,12 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data,
         idFlightGuidanceAvailable->get(),
         idFmgcAltitudeConstraint->get(),
-        idFmgcThrustReductionAltitude->get(),
-        idFmgcThrustReductionAltitudeGoAround->get(),
-        idFmgcAccelerationAltitude->get(),
-        idFmgcAccelerationAltitudeEngineOut->get(),
-        idFmgcAccelerationAltitudeGoAround->get(),
-        idFmgcAccelerationAltitudeGoAroundEngineOut->get(),
+        fmThrustReductionAltitude->valueOr(0),
+        fmThrustReductionAltitudeGoAround->valueOr(0),
+        fmAccelerationAltitude->valueOr(0),
+        fmAccelerationAltitudeEngineOut->valueOr(0),
+        fmAccelerationAltitudeGoAround->valueOr(0),
+        fmAccelerationAltitudeGoAroundEngineOut->valueOr(0),
         idFmgcCruiseAltitude->get(),
         simConnectInterface.getSimInputAutopilot().DIR_TO_trigger,
         idFcuTrkFpaModeActive->get(),
@@ -1807,12 +1818,12 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotStateMachineInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
-    autopilotStateMachineInput.in.data.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
-    autopilotStateMachineInput.in.data.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
-    autopilotStateMachineInput.in.data.acceleration_altitude = idFmgcAccelerationAltitude->get();
-    autopilotStateMachineInput.in.data.acceleration_altitude_engine_out = idFmgcAccelerationAltitudeEngineOut->get();
-    autopilotStateMachineInput.in.data.acceleration_altitude_go_around = idFmgcAccelerationAltitudeGoAround->get();
-    autopilotStateMachineInput.in.data.acceleration_altitude_go_around_engine_out = idFmgcAccelerationAltitudeGoAroundEngineOut->get();
+    autopilotStateMachineInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
+    autopilotStateMachineInput.in.data.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
+    autopilotStateMachineInput.in.data.acceleration_altitude = fmAccelerationAltitude->valueOr(0);
+    autopilotStateMachineInput.in.data.acceleration_altitude_engine_out = fmAccelerationAltitudeEngineOut->valueOr(0);
+    autopilotStateMachineInput.in.data.acceleration_altitude_go_around = fmAccelerationAltitudeGoAround->valueOr(0);
+    autopilotStateMachineInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
     autopilotStateMachineInput.in.data.cruise_altitude = idFmgcCruiseAltitude->get();
     autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
@@ -2158,12 +2169,12 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotLawsInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotLawsInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
-    autopilotLawsInput.in.data.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
-    autopilotLawsInput.in.data.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
-    autopilotLawsInput.in.data.acceleration_altitude = idFmgcAccelerationAltitude->get();
-    autopilotLawsInput.in.data.acceleration_altitude_engine_out = idFmgcAccelerationAltitudeEngineOut->get();
-    autopilotLawsInput.in.data.acceleration_altitude_go_around = idFmgcAccelerationAltitudeGoAround->get();
-    autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = idFmgcAccelerationAltitudeGoAroundEngineOut->get();
+    autopilotLawsInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
+    autopilotLawsInput.in.data.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
+    autopilotLawsInput.in.data.acceleration_altitude = fmAccelerationAltitude->valueOr(0);
+    autopilotLawsInput.in.data.acceleration_altitude_engine_out = fmAccelerationAltitudeEngineOut->valueOr(0);
+    autopilotLawsInput.in.data.acceleration_altitude_go_around = fmAccelerationAltitudeGoAround->valueOr(0);
+    autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
     autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
     autopilotLawsInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
@@ -2356,8 +2367,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         autopilotStateMachineOutput.vertical_mode == 40,
         autopilotStateMachineOutput.vertical_mode == 41,
         autopilotStateMachineOutput.vertical_mode == 32,
-        idFmgcThrustReductionAltitude->get(),
-        idFmgcThrustReductionAltitudeGoAround->get(),
+        fmThrustReductionAltitude->valueOr(0),
+        fmThrustReductionAltitudeGoAround->valueOr(0),
         idFmgcFlightPhase->get(),
         autopilotStateMachineOutput.ALT_soft_mode_active,
         getTcasAdvisoryState() > 1,
@@ -2426,8 +2437,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_SRS_TO_mode_active = autopilotStateMachineOutput.vertical_mode == 40;
     autoThrustInput.in.input.is_SRS_GA_mode_active = autopilotStateMachineOutput.vertical_mode == 41;
     autoThrustInput.in.input.is_LAND_mode_active = autopilotStateMachineOutput.vertical_mode == 32;
-    autoThrustInput.in.input.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
-    autoThrustInput.in.input.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
+    autoThrustInput.in.input.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
+    autoThrustInput.in.input.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
     autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();
     autoThrustInput.in.input.is_alt_soft_mode_active = autopilotStateMachineOutput.ALT_soft_mode_active;
     autoThrustInput.in.input.is_anti_ice_wing_active = additionalData.wingAntiIce == 1;

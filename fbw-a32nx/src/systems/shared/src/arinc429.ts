@@ -111,6 +111,10 @@ export class Arinc429Register implements Arinc429WordData {
         this.value = this.f32View[0];
     }
 
+    setFromSimVar(name: string): void {
+        this.set(SimVar.GetSimVarValue(name, 'number'));
+    }
+
     isFailureWarning() {
         return this.ssm === Arinc429SignStatusMatrix.FailureWarning;
     }
@@ -125,5 +129,20 @@ export class Arinc429Register implements Arinc429WordData {
 
     isNormalOperation() {
         return this.ssm === Arinc429SignStatusMatrix.NormalOperation;
+    }
+
+    /**
+     * Returns the value when normal operation, the supplied default value otherwise.
+     */
+    valueOr(defaultValue: number | undefined | null) {
+        return this.isNormalOperation() ? this.value : defaultValue;
+    }
+
+    bitValue(bit: number): boolean {
+        return ((this.value >> (bit - 1)) & 1) !== 0;
+    }
+
+    bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+        return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
     }
 }

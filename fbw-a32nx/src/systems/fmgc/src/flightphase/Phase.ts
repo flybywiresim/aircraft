@@ -1,6 +1,8 @@
+import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, getAutopilotVerticalMode, isAllEngineOn, isAnEngineOn, isOnGround, conditionTakeOff } from '@shared/flightphase';
 import { ConfirmationNode } from '@shared/logic';
+import { NXDataStore } from '@shared/persistence';
 
 export abstract class Phase {
     // eslint-disable-next-line no-empty-function
@@ -33,10 +35,11 @@ export class TakeOffPhase extends Phase {
     init() {
         this.nextPhase = FmgcFlightPhase.Climb;
         SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', false);
-        const accAlt = SimVar.GetSimVarValue('L:AIRLINER_ACC_ALT', 'Number');
-        const thrRedAlt = SimVar.GetSimVarValue('L:AIRLINER_THR_RED_ALT', 'Number');
-        this.accelerationAltitudeMsl = accAlt || thrRedAlt;
-        this.accelerationAltitudeMslEo = SimVar.GetSimVarValue('L:A32NX_ENG_OUT_ACC_ALT', 'feet');
+
+        const accAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_ACC_ALT');
+        this.accelerationAltitudeMsl = accAlt.valueOr(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+        const eoAccAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_EO_ACC_ALT');
+        this.accelerationAltitudeMslEo = eoAccAlt.valueOr(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
     }
 
     shouldActivateNextPhase(_deltaTime) {

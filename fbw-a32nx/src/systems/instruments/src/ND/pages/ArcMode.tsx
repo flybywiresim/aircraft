@@ -13,7 +13,6 @@ import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
-import { TerrainMap } from '../elements/TerrainMap';
 
 export interface ArcModeProps {
     symbols: NdSymbol[],
@@ -55,7 +54,6 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     if (adirsAlign) {
         return (
             <>
-                <TerrainMap x={-108} y={128} width={984} height={492} side={side} potentiometerIndex={side === 'L' ? 94 : 95} clipName="arc-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}
@@ -203,6 +201,10 @@ const ArcModeOverlayDefs = memo(() => (
         <clipPath id="arc-mode-overlay-clip-1">
             <path d="m 0 519 l 384 145 l 384 -86 v -580 h -768 z" />
         </clipPath>
+        {/* inverted map overlays for terrain map in WASM module  */}
+        <path name="arc-mode-bottom-left-map-area" d="M0,625 L122,625 L174,683 L174,768 L0,768 L0,625" className="nd-inverted-map-area" />
+        <path name="arc-mode-bottom-right-map-area" d="M768,562 L648,562 L591,625 L591,768 L768,768 L768,562" className="nd-inverted-map-area" />
+        <path name="arc-mode-top-map-area" d="M0,0 L0,312 a492,492 0 0 1 768,0 L768,0 L0,0" className="nd-inverted-map-area" />
     </>
 ));
 
