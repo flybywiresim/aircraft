@@ -683,7 +683,7 @@ class CDUFlightPlanPage {
             let destTimeCell = "----";
             let destDistCell = "---";
             let destEFOBCell = "---";
-
+            
             if (fpm.getDestination()) {
                 const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
                 if (destStats) {
@@ -696,7 +696,9 @@ class CDUFlightPlanPage {
                     }
                 }
             }
-            if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
+            if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
+                mcdu.tryUpdateRouteTrip(isFlying);
+            } else {
                 destEFOBCell = "---";
             }
 
