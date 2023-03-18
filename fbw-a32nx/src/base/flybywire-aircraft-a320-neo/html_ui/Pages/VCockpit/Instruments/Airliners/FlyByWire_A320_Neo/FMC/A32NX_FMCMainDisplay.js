@@ -2982,6 +2982,10 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getToSpeedsTooLow() {
+        if (this.flaps === null || this.zeroFuelWeight === undefined || this.blockFuel === undefined) {
+            return false;
+        }
+
         let departureElevation = null;
         if (this.flightPlanManager.getOriginRunway()) {
             departureElevation = this.flightPlanManager.getOriginRunway().thresholdElevation / 0.3048;
@@ -2993,18 +2997,15 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        const conf = this.flaps ? this.flaps : 0;
-        const tow = this.zeroFuelWeight + this.blockFuel - this.taxiFuelWeight;
+        const tow = this.zeroFuelWeight + this.blockFuel - (this.taxiFuelWeight ? this.taxiFuelWeight : 0);
 
-        return departureElevation !== undefined && (
-            this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
+        return this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
             || this.vRSpeed < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
             || this.v2Speed < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
-            || (isFinite(tow) && this.v2Speed < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, conf, true)))
-        );
+            || (isFinite(tow) && this.v2Speed < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, this.flaps, true)));
     }
 
-    toSpeedsChecks(init = false) {
+    toSpeedsChecks() {
         const toSpeedsNotInserted = !this.v1Speed || !this.vRSpeed || !this.v2Speed;
         if (toSpeedsNotInserted !== this.toSpeedsNotInserted) {
             this.toSpeedsNotInserted = toSpeedsNotInserted;
