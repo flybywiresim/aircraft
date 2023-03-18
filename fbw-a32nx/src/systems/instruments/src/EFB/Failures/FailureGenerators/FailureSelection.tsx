@@ -49,7 +49,6 @@ const regexLetter = /\D{1,2}/;
 const regexNumber = /\d{1,2}/;
 
 export const deleteGeneratorFailures = (generatorSettings : FailureGenData, failureGenContext:FailureGenContext, generatorUniqueIDRemoved: string) => {
-    console.info('Looking for failures on generator %s', generatorUniqueIDRemoved);
     const letterTable = generatorUniqueIDRemoved.match(regexLetter);
     const numberTable = generatorUniqueIDRemoved.match(regexNumber);
     if (letterTable && letterTable.length > 0 && numberTable && numberTable.length > 0) {
@@ -59,7 +58,6 @@ export const deleteGeneratorFailures = (generatorSettings : FailureGenData, fail
             failureGenContext.allFailures.forEach((failure) => {
                 let first = true;
                 const generatorSetting = failureGenContext.generatorFailuresGetters.get(failure.identifier);
-                console.info(generatorSetting);
                 let newString = '';
                 if (generatorSetting) {
                     const failureGeneratorsTable = generatorSetting.split(',');

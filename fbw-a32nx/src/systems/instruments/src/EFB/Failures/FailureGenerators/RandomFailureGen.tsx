@@ -85,12 +85,10 @@ export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[])
 
 export const activateRandomFailure = (failureList : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>), activeFailures : Set<number>, _generatorID : string) => {
     const failuresOffMap = failureList.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
-    console.info('list of #%d failures, only %d active', failureList.length, failuresOffMap.length);
     if (failuresOffMap.length > 0) {
         const pick = Math.floor(Math.random() * failuresOffMap.length);
         const pickedFailure = failureList.find((failure) => failure.identifier === failuresOffMap[pick]);
         if (pickedFailure) {
-            console.info('Failure #%d triggered: %s', pickedFailure.identifier, pickedFailure.name);
             activate(failuresOffMap[pick]);
         }
     }
@@ -161,15 +159,10 @@ export const randomFailureGenerator = () => {
     for (let i = 0; i < failureGenerators.length; i++) {
         failureGenerators[i](generatorFailuresGetters);
     }
-
-    useEffect(() => {
-        console.info('Failure phase: %d', failureFlightPhase);
-    }, [failureFlightPhase]);
 };
 
 export const failureGeneratorAdd = (generatorsSettings : FailureGenData) => {
     if (generatorsSettings.settings === undefined || generatorsSettings.settings.length % generatorsSettings.numberOfSettingsPerGenerator !== 0 || generatorsSettings.settings.length === 0) {
-        // console.warn('Undefined generator setting, resetting');
         generatorsSettings.setSetting(flatten(generatorsSettings.additionalSetting));
     } else generatorsSettings.setSetting(flatten(generatorsSettings.settings.concat(generatorsSettings.additionalSetting)));
 };

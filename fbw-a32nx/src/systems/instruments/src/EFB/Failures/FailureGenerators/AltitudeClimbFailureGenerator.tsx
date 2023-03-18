@@ -21,7 +21,6 @@ const disableTakeOffRearm = false;
 export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
-        console.info(setting);
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
@@ -74,7 +73,6 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
                 if (failureGeneratorArmed[i] && altitude > settings[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
-                    console.info('Climb altitude failure triggered');
                     failureGeneratorArmed[i] = false;
                     change = true;
                     if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
@@ -94,7 +92,6 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
                 || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
                 || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
-                console.info('Climb altitude failure armed at %d m', settings[i * numberOfSettingsPerGenerator + 1]);
             }
             if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }

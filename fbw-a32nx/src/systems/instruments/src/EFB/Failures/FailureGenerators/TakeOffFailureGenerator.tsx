@@ -23,7 +23,6 @@ const disableTakeOffRearm = true;
 export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
-        console.info(setting);
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
@@ -87,10 +86,7 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
 
-    const settings : number[] = useMemo<number[]>(() => {
-        console.info('ici');
-        return failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
-    }, [failureGeneratorSetting]);
+    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
 
     const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
     const { failureFlightPhase } = basicData();
@@ -108,7 +104,6 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
                     || (gs >= failureTakeOffSpeedThreshold[i] && failureTakeOffSpeedThreshold[i] !== -1))) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
-                    console.info('Take-off failure triggered');
                     failureGeneratorArmed[i] = false;
                     change = true;
                     if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
@@ -137,19 +132,16 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
                             const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
                             failureTakeOffAltitudeThreshold[i] = -1;
                             failureTakeOffSpeedThreshold[i] = temp;
-                            console.info('A failure will occur during this Take-Off at the speed of %d knots', temp);
                         } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureLowTakeOffRegime) {
                             // Medium Take Off speed regime
                             const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
                             failureTakeOffAltitudeThreshold[i] = -1;
                             failureTakeOffSpeedThreshold[i] = temp;
-                            console.info('A failure will occur during this Take-Off at the speed of %d knots', temp);
                         } else {
                             // High Take Off speed regime
                             const temp = altitude + 10 + Math.random() * takeOffDeltaAltitudeEnd;
                             failureTakeOffAltitudeThreshold[i] = temp;
                             failureTakeOffSpeedThreshold[i] = -1;
-                            console.info('A failure will occur during this Take-Off at altitude %d', temp);
                         }
                         failureGeneratorArmed[i] = true;
                     }

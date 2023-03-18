@@ -21,7 +21,6 @@ const disableTakeOffRearm = false;
 export const failureGenConfigPerHour : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
-        console.info(setting);
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
@@ -72,9 +71,7 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
                 if (failureGeneratorArmed[i] && tempSetting > 0) {
                     const chancePerSecond = tempSetting / 3600;
                     const rollDice = Math.random();
-                    // console.info('dice: %.4f / %.4f', rollDice, chancePerSecond * 5);
                     if (rollDice < chancePerSecond * 5) {
-                        console.info('PerHour Failure triggered');
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                             activate, activeFailures, uniqueGenPrefix + i.toString());
                         failureGeneratorArmed[i] = false;
@@ -96,7 +93,6 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
                     || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
                     || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
-                console.info('Failure set at %.4f per hour ', settings[i * numberOfSettingsPerGenerator + 1]);
             }
             if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }

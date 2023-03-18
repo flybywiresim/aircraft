@@ -22,7 +22,6 @@ const disableTakeOffRearm = false;
 export const failureGenConfigTimer : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
-        console.info('timer setting: %s', setting);
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it : string) => parseFloat(it)));
         return [];
@@ -75,7 +74,6 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
                 if (failureGeneratorArmed[i] && absoluteTime5s > failureStartTime[i] + settings[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
-                    console.info('Time based failure triggered');
                     failureGeneratorArmed[i] = false;
                     change = true;
                     if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
@@ -94,7 +92,6 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
                     || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
                 failureStartTime[i] = absoluteTime5s;
-                console.info('Timer based failure armed');
             }
             if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }
