@@ -95,7 +95,6 @@ class CDUNavRadioPage {
             mcdu.setManualVor(receiverIndex, freq);
         } else if (input.length >= 1 && input.length <= 4) {
             // ident
-            // TODO tune ILS as well (but only the DME is valid)
             mcdu.getOrSelectVORsByIdent(input, (navaid) => {
                 if (navaid) {
                     if (mcdu.deselectedNavaids.find((icao) => icao === navaid.icao)) {

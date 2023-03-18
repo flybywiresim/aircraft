@@ -54,7 +54,7 @@ class CDUSelectedNavaids {
 
         for (const [i, navaid] of selectedNavaids.entries()) {
             if (navaid.frequency < 1) {
-                break;
+                continue;
             }
 
             const labelRow = 2 * i + 1;

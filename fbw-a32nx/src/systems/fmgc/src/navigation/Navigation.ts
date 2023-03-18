@@ -188,59 +188,65 @@ export class Navigation implements NavigationProvider {
         return this.navaidTuner;
     }
 
+    private resetSelectedNavaid(i: number): void {
+        const selected = this.selectedNavaids[i];
+        selected.type = SelectedNavaidType.None;
+        selected.mode = SelectedNavaidMode.Auto;
+        selected.ident = '';
+        selected.frequency = 0;
+        selected.facility = null;
+    }
+
     public getSelectedNavaids(cdu: 1 | 2 = 1): SelectedNavaid[] {
-        let i = 0;
         if (this.navaidTuner.rmpTuningActive) {
-            for (; i < 2; i++) {
+            for (let i = 0; i < 4; i++) {
+                this.resetSelectedNavaid(i);
+                // No DME pair with RMP active
+                if (i === 1 || i === 2) {
+                    continue;
+                }
                 const selected = this.selectedNavaids[i];
-                selected.type = i === 1 ? SelectedNavaidType.Ils : SelectedNavaidType.None;
+                selected.type = i === 3 ? SelectedNavaidType.Ils : SelectedNavaidType.None;
                 selected.mode = SelectedNavaidMode.Rmp;
-                selected.ident = '';
-                selected.frequency = SimVar.GetSimVarValue(`NAV FREQUENCY:${i = 0 ? 1 : 3}`, 'mhz');
-                selected.facility = null;
+                selected.frequency = SimVar.GetSimVarValue(`NAV ACTIVE FREQUENCY:${i === 0 ? cdu : cdu + 2}`, 'mhz');
             }
         } else {
             const vorStatus = this.navaidTuner.getVorRadioTuningStatus(cdu);
             if (vorStatus.frequency !== null) {
-                const selected = this.selectedNavaids[i];
+                const selected = this.selectedNavaids[0];
                 selected.type = this.getSelectedNavaidType(vorStatus.facility);
                 selected.mode = vorStatus.manual ? SelectedNavaidMode.Manual : SelectedNavaidMode.Auto;
                 selected.ident = vorStatus.ident;
                 selected.frequency = vorStatus.frequency;
                 selected.facility = vorStatus.facility ?? null;
-                i++;
+            } else {
+                this.resetSelectedNavaid(0);
             }
             const dmePair = this.navaidSelectionManager.dmePair;
             if (dmePair !== null) {
-                for (const dme of dmePair) {
-                    const selected = this.selectedNavaids[i];
+                for (const [i, dme] of dmePair.entries()) {
+                    const selected = this.selectedNavaids[i + 1];
                     selected.type = this.getSelectedNavaidType(dme);
                     selected.mode = SelectedNavaidMode.Auto;
                     selected.ident = WayPoint.formatIdentFromIcao(dme.icao);
                     selected.frequency = dme.freqMHz;
                     selected.facility = dme;
-                    i++;
                 }
+            } else {
+                this.resetSelectedNavaid(1);
+                this.resetSelectedNavaid(2);
             }
             const mmrStatus = this.navaidTuner.getMmrRadioTuningStatus(1);
             if (mmrStatus.frequency !== null) {
-                const selected = this.selectedNavaids[i];
+                const selected = this.selectedNavaids[3];
                 selected.type = this.getSelectedNavaidType(mmrStatus.facility);
                 selected.mode = mmrStatus.manual ? SelectedNavaidMode.Manual : SelectedNavaidMode.Auto;
                 selected.ident = mmrStatus.ident;
                 selected.frequency = mmrStatus.frequency;
                 selected.facility = mmrStatus.facility ?? null;
-                i++;
+            } else {
+                this.resetSelectedNavaid(3);
             }
-        }
-
-        for (; i < this.selectedNavaids.length; i++) {
-            const selected = this.selectedNavaids[i];
-            selected.type = SelectedNavaidType.None;
-            selected.mode = SelectedNavaidMode.Auto;
-            selected.ident = '';
-            selected.frequency = 0;
-            selected.facility = null;
         }
 
         return this.selectedNavaids;
