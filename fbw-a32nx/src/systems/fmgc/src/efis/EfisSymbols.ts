@@ -359,7 +359,7 @@ export class EfisSymbols {
 
                     if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !isFromWp) {
                         // TODO vnav to predict
-                        type |= NdSymbolTypeFlags.ConstraintUnknown;
+                        type |= NdSymbolTypeFlags.Constraint;
                     }
 
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
@@ -400,7 +400,7 @@ export class EfisSymbols {
 
             // we can only send 2 constraint predictions, so filter out any past the 2 close to the AC
             let constraintPredictions = 0;
-            const constraintFlags = NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed;
+            const constraintFlags = NdSymbolTypeFlags.Constraint | NdSymbolTypeFlags.MagentaColor | NdSymbolTypeFlags.AmberColor;
             for (let i = symbols.length - 1; i >= 0; i--) {
                 if ((symbols[i].type & constraintFlags) === 0) {
                     continue;
