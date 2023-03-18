@@ -1508,6 +1508,22 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<hPa>
     - The corrected average static pressure.
 
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the first officer side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the first officer side.
+
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
     - The pressure altitude in feet.

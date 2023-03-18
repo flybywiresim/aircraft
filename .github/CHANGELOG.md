@@ -56,6 +56,8 @@
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
 1. [FWC] Add GND SPLR NOT ARMED warning - @tracernz (Mike)
 1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
+1. [PRESS] Merge pressurization and air conditioning system - @mjuhe (Miquel Juhe)
+1. [ADIRU] Add baro correction setting to ADIRS - @mjuhe (Miquel Juhe)
 
 ## 0.9.0
 
