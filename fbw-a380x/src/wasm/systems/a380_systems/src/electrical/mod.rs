@@ -2235,6 +2235,7 @@ mod a380_electrical_circuit_tests {
         }
     }
 
+    #[derive(Clone, Copy)]
     struct TestEngine {
         is_running: bool,
     }
@@ -2366,8 +2367,8 @@ mod a380_electrical_circuit_tests {
     }
 
     struct A380ElectricalTestAircraft {
-        engines: [TestEngine; 2],
-        ext_pwr: ExternalPowerSource,
+        engines: [TestEngine; 4],
+        ext_pwrs: [ExternalPowerSource; 4],
         elec: A380Electrical,
         overhead: A380ElectricalOverheadPanel,
         emergency_overhead: A380EmergencyElectricalOverheadPanel,
@@ -2380,8 +2381,8 @@ mod a380_electrical_circuit_tests {
     impl A380ElectricalTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                engines: [TestEngine::new(), TestEngine::new()],
-                ext_pwr: ExternalPowerSource::new(context),
+                engines: [TestEngine::new(); 4],
+                ext_pwrs: [1, 2, 3, 4].map(|i| ExternalPowerSource::new(context, i)),
                 elec: A380Electrical::new(context),
                 overhead: A380ElectricalOverheadPanel::new(context),
                 emergency_overhead: A380EmergencyElectricalOverheadPanel::new(context),
@@ -2477,13 +2478,18 @@ mod a380_electrical_circuit_tests {
             self.elec.update(
                 context,
                 electricity,
-                &self.ext_pwr,
+                &self.ext_pwrs,
                 &self.overhead,
                 &self.emergency_overhead,
                 &mut self.apu,
                 &self.apu_overhead,
                 &self.engine_fire_push_buttons,
-                [&self.engines[0], &self.engines[1]],
+                [
+                    &self.engines[0],
+                    &self.engines[1],
+                    &self.engines[2],
+                    &self.engines[3],
+                ],
                 &TestLandingGear::new(),
             );
             self.overhead
@@ -2494,7 +2500,7 @@ mod a380_electrical_circuit_tests {
     }
     impl SimulationElement for A380ElectricalTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.ext_pwr.accept(visitor);
+            accept_iterable!(self.ext_pwrs, visitor);
             self.elec.accept(visitor);
             self.overhead.accept(visitor);
             self.emergency_overhead.accept(visitor);

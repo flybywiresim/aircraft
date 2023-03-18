@@ -169,7 +169,7 @@ mod external_power_source_tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                ext_pwr: ExternalPowerSource::new(context),
+                ext_pwr: ExternalPowerSource::new(context, 1),
                 ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }

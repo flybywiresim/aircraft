@@ -2304,7 +2304,7 @@ mod a320_electrical_circuit_tests {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 engines: [TestEngine::new(), TestEngine::new()],
-                ext_pwr: ExternalPowerSource::new(context),
+                ext_pwr: ExternalPowerSource::new(context, 1),
                 elec: A320Electrical::new(context),
                 overhead: A320ElectricalOverheadPanel::new(context),
                 emergency_overhead: A320EmergencyElectricalOverheadPanel::new(context),
