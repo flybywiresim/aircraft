@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(flybywire-aircraft C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(FBW_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(FBW_COMMON ${FBW_ROOT}/fbw-common/src/wasm)
 
