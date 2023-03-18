@@ -249,7 +249,7 @@ export class NavaidTuner {
                 mmr.databaseBackcourse = this.landingSystemSelectionManager.selectedApprBackcourse;
                 mmr.course = mmr.databaseCourse;
                 mmr.courseManual = false;
-                mmr.frequency = autoFacility.freqMHz ?? null;
+                mmr.frequency = autoFacility?.freqMHz ?? null;
                 mmr.facility = autoFacility;
                 mmr.ident = autoFacility?.icao ? WayPoint.formatIdentFromIcao(autoFacility.icao) : null;
                 mmr.backcourse = this.landingSystemSelectionManager.selectedApprBackcourse;
@@ -264,7 +264,7 @@ export class NavaidTuner {
             const autoFacility = this.navaidSelectionManager.displayNdb ?? undefined;
             if (!adf.manual && adf.facility?.icao !== autoFacility?.icao) {
                 adf.facility = autoFacility;
-                adf.frequency = autoFacility?.freqMHz;
+                adf.frequency = autoFacility?.freqMHz ?? null;
                 adf.ident = autoFacility?.icao ? WayPoint.formatIdentFromIcao(autoFacility.icao) : null;
             }
 
