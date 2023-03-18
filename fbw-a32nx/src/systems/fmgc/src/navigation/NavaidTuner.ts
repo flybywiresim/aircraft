@@ -550,4 +550,18 @@ export class NavaidTuner {
     public isFmTuningActive(): boolean {
         return this.tuningActive;
     }
+
+    /** Reset all state e.g. when the nav database is switched */
+    public resetState(): void {
+        for (let i = 1; i <= 2; i++) {
+            const n = i as 1 | 2;
+            this.setManualAdf(n, null);
+            this.setManualVor(n, null);
+            this.setVorCourse(n, null);
+        }
+        this.setManualIls(null);
+        this.setIlsCourse(null);
+
+        this.tuningLockoutTimer = NavaidTuner.DELAY_AFTER_RMP_TUNING;
+    }
 }

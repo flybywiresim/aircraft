@@ -622,6 +622,24 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', newState);
     }
 
+    async switchNavDatabase() {
+        // Only performing a reset of the MCDU for now, no secondary database
+        // Speed AP returns to selected
+        //const isSelected = Simplane.getAutoPilotAirspeedSelected();
+        //if (isSelected == false)
+        //    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
+        // flight plan
+        this.resetCoroute();
+        this.atsu.resetAtisAutoUpdate();
+        await this.flightPlanManager.clearFlightPlan();
+        // stored data
+        this.dataManager.deleteAllStoredWaypoints();
+        // Reset MCDU apart from TakeOff config
+        this.initVariables(false);
+
+        this.navigation.resetState();
+    }
+
     /**
      * This method is called by the FlightPhaseManager after a flight phase change
      * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states

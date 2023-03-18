@@ -508,4 +508,18 @@ export class NavaidSelectionManager {
     get isSpecifiedNdbDeselected(): boolean {
         return this.specifiedNdbDeselected;
     }
+
+    /** Reset all state e.g. when the nav database is switched */
+    resetState(): void {
+        this.candidateList.length = 0;
+        this.vorCandidateList.length = 0;
+        this.blackList.clear();
+        this.selectedDisplayVor = null;
+        this.selectedDisplayVorReason = VorSelectionReason.None;
+        this.selectedDmePair = null;
+        this.selectedNdb = null;
+        this.deselectedFacilities.clear();
+        this.specifiedVorDeselected = false;
+        this.specifiedNdbDeselected = false;
+    }
 }

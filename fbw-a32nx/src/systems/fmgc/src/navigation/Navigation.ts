@@ -108,6 +108,15 @@ export class Navigation implements NavigationProvider {
         this.navaidTuner.update(deltaTime);
     }
 
+    /** Reset all state e.g. when the nav database is switched */
+    resetState(): void {
+        this.navaidSelectionManager.resetState();
+        this.landingSystemSelectionManager.resetState();
+        this.navaidTuner.resetState();
+
+        // FIXME reset FMS position
+    }
+
     private getAdiruValue(simVars: string[]): number | null {
         for (const adiru of Navigation.adiruOrder) {
             const simVar = simVars[adiru - 1];
@@ -274,7 +283,4 @@ export class Navigation implements NavigationProvider {
             return SelectedNavaidType.None;
         }
     }
-
-    // TODO:
-    ///  NOTE : When FMC internal position will be coded, there needs to be a way to make the FMC lose its position in flight when switching database in the A320_Neo_CDU_IdentPage.js
 }

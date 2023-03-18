@@ -381,4 +381,12 @@ export class LandingSystemSelectionManager {
     get selectedGsSlope(): number | null {
         return this._selectedGsSlope;
     }
+
+    /** Reset all state e.g. when the nav database is switched */
+    resetState(): void {
+        this._selectedIls = null;
+        this._selectedLocCourse = null;
+        this._selectedApproachBackcourse = false;
+        this._selectedGsSlope = null;
+    }
 }
