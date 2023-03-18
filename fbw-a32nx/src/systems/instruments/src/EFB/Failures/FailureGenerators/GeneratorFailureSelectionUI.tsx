@@ -5,6 +5,7 @@ import { ArrowLeft } from 'react-bootstrap-icons';
 import { Failure } from 'failures/src/failures-orchestrator';
 import { Link } from 'react-router-dom';
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
+import { t } from 'instruments/src/EFB/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
@@ -17,12 +18,12 @@ export function GeneratorFailureSelection(genID: string, failureGenContext: Fail
                 <div className="flex flex-row items-start space-x-3 text-left transition duration-100 hover:text-theme-highlight">
                     <ArrowLeft size={30} />
                     <h1 className="font-bold text-current">
-                        Failure pool selection
+                        {t('Failures.Generators.FailureSelection')}
                     </h1>
                 </div>
             </Link>
             <div className="flex flex-row justify-between ml-10 w-full">
-                <div className="text-left">Select the failures that may be triggered during this scenario</div>
+                <div className="text-left">{t('Failures.Generators.FailureSelectionText')}</div>
                 <div
                     className="flex flex-row mr-10"
                 >
@@ -31,14 +32,14 @@ export function GeneratorFailureSelection(genID: string, failureGenContext: Fail
                         className="mx-2"
                         onClick={() => selectAllFailures(failureGenContext, genID, true)}
                     >
-                        <h2 className="hover:text-theme-highlight"><u>All</u></h2>
+                        <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
                     </div>
                     <div><h2>/</h2></div>
                     <div
                         className="mx-2 hover:text-theme-highlight"
                         onClick={() => selectAllFailures(failureGenContext, genID, false)}
                     >
-                        <h2 className="hover:text-theme-highlight"><u>None</u></h2>
+                        <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
                     </div>
                     <div className="mr-2"><h2>)</h2></div>
                 </div>
@@ -56,14 +57,14 @@ export function GeneratorFailureSelection(genID: string, failureGenContext: Fail
                                     className="mx-2 hover:text-theme-highlight"
                                     onClick={() => selectAllFailureChapter(chapter, failureGenContext, genID, true)}
                                 >
-                                    <h2 className="hover:text-theme-highlight"><u>All</u></h2>
+                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
                                 </div>
                                 <div><h2>/</h2></div>
                                 <div
                                     className="mx-2 hover:text-theme-highlight"
                                     onClick={() => selectAllFailureChapter(chapter, failureGenContext, genID, false)}
                                 >
-                                    <h2 className="hover:text-theme-highlight"><u>None</u></h2>
+                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
                                 </div>
                                 <div className="mr-2"><h2>)</h2></div>
                             </div>
@@ -76,7 +77,7 @@ export function GeneratorFailureSelection(genID: string, failureGenContext: Fail
     );
 }
 function FailureATAList(failureGenContext: FailureGenContext, generatorFailureTable: Failure[], genID: string, chapter: AtaChapterNumber) {
-    const bibi: JSX.Element[] = failureGenContext.allFailures.map<JSX.Element>((failure) => {
+    const ATAList: JSX.Element[] = failureGenContext.allFailures.map<JSX.Element>((failure) => {
         if (failure.ata === chapter) {
             const active = generatorFailureTable.find((genFailure) => failure.identifier === genFailure.identifier) !== undefined;
             return (
@@ -98,7 +99,7 @@ function FailureATAList(failureGenContext: FailureGenContext, generatorFailureTa
 
     return (
         <>
-            {bibi}
+            {ATAList}
         </>
     );
 }

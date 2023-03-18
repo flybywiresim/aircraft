@@ -16,7 +16,7 @@ const uniqueGenPrefix = 'F';
 const failureGeneratorArmed :boolean[] = [];
 const failureStartTime:number[] = [];
 const genName = 'Timer';
-const alias = t('Failures.Generators.GenTimer');
+const alias = () => t('Failures.Generators.GenTimer');
 const disableTakeOffRearm = false;
 
 export const failureGenConfigTimer : ()=>FailureGenData = () => {
@@ -50,7 +50,7 @@ const onErase = (genID : number) => {
 const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext: FailureGenContext)
 => JSX.Element = (genID : number, generatorSettings : FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
-    const settingTable = [FailureGeneratorFailureSetting('Delay after arming:', 40, 'second', 0, 10000,
+    const settingTable = [FailureGeneratorFailureSetting(`${t('Failures.Generators.DelayAfterArming')}:`, 40, t('Failures.Generators.seconds'), 0, 10000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1, failureGenContext.modals),
     ];

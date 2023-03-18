@@ -15,7 +15,7 @@ const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'D';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'SpeedDecel';
-const alias = t('Failures.Generators.GenSpeedDecel');
+const alias = () => t('Failures.Generators.GenSpeedDecel');
 const disableTakeOffRearm = false;
 
 export const failureGenConfigSpeedDecel : ()=>FailureGenData = () => {
@@ -48,7 +48,7 @@ const onErase = (_genID : number) => {
 const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext)
 => JSX.Element = (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
-    const settingTable = [FailureGeneratorFailureSetting('Speed:', 32, 'knots', 0, 400,
+    const settingTable = [FailureGeneratorFailureSetting(`${t('Failures.Generators.GroundSpeed')}:`, 32, t('Failures.Generators.knots'), 0, 400,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1, failureGenContext.modals),
     ];

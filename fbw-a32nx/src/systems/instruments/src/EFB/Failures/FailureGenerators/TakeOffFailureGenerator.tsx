@@ -17,7 +17,7 @@ const failureGeneratorArmed :boolean[] = [];
 const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
 const genName = 'TakeOff';
-const alias = t('Failures.Generators.GenTakeOff');
+const alias = () => t('Failures.Generators.GenTakeOff');
 const disableTakeOffRearm = true;
 
 export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
@@ -52,31 +52,31 @@ const onErase = (genID : number) => {
 const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext: FailureGenContext)
 => JSX.Element = (genID : number, generatorSettings : FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
-    const settingTable = [FailureGeneratorFailureSetting('Failure per take-off:', 20, '%', 0, 100,
+    const settingTable = [FailureGeneratorFailureSetting(`${t('Failures.Generators.FailureChancePerTakeOff')}:`, 20, '%', 0, 100,
         settings[genID * numberOfSettingsPerGenerator + 1], 100, false,
         setNewSetting, generatorSettings, genID, 1, failureGenContext.modals),
-    FailureGeneratorFailureSetting('Low Speed chance:', 20, '%', 0,
+    FailureGeneratorFailureSetting(`${t('Failures.Generators.LowSpeedChance')}:`, 20, '%', 0,
         100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100,
         settings[genID * numberOfSettingsPerGenerator + 2], 100, false,
         setNewSetting, generatorSettings, genID, 2, failureGenContext.modals),
-    FailureGeneratorFailureSetting('Medium Speed chance:', 20, '%', 0,
+    FailureGeneratorFailureSetting(`${t('Failures.Generators.MedSpeedChance')}:`, 20, '%', 0,
         100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100,
         settings[genID * numberOfSettingsPerGenerator + 3], 100, false,
         setNewSetting, generatorSettings, genID, 3, failureGenContext.modals),
-    FailureGeneratorFailureSetting('Minimum speed:', 20, 'knots',
+    FailureGeneratorFailureSetting(`${t('Failures.Generators.MinimumSpeed')}:`, 20, t('Failures.Generators.knots'),
         0, settings[genID * numberOfSettingsPerGenerator + 5],
         settings[genID * numberOfSettingsPerGenerator + 4], 1, false,
         setNewSetting, generatorSettings, genID, 4, failureGenContext.modals),
-    FailureGeneratorFailureSetting('Speed transition low-med:', 20, 'knots',
+    FailureGeneratorFailureSetting(`${t('Failures.Generators.SpeedTransLowMed')}:`, 20, t('Failures.Generators.knots'),
         settings[genID * numberOfSettingsPerGenerator + 4],
         settings[genID * numberOfSettingsPerGenerator + 6],
         settings[genID * numberOfSettingsPerGenerator + 5], 1, false,
         setNewSetting, generatorSettings, genID, 5, failureGenContext.modals),
-    FailureGeneratorFailureSetting('Max speed:', 20, 'knots',
+    FailureGeneratorFailureSetting(`${t('Failures.Generators.MaximumSpeed')}:`, 20, t('Failures.Generators.knots'),
         settings[genID * numberOfSettingsPerGenerator + 4], 300,
         settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
         setNewSetting, generatorSettings, genID, 6, failureGenContext.modals),
-    FailureGeneratorFailureSetting('Max altitude above runway:', 24, 'feet', 0, 10000,
+    FailureGeneratorFailureSetting(`${t('Failures.Generators.MaxAltAboveRunway')}:`, 24, t('Failures.Generators.feet'), 0, 10000,
         settings[genID * numberOfSettingsPerGenerator + 7], 100, true,
         setNewSetting, generatorSettings, genID, 7, failureGenContext.modals)];
     return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable, failureGenContext);

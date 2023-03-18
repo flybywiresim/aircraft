@@ -32,7 +32,7 @@ export const FailureGeneratorsUI = () => {
                             onChange={(value) => setChosenGen(value as string)}
                             options={Array.from(settings.allGenSettings.values()).map((genSetting : FailureGenData) => ({
                                 value: genSetting.genName,
-                                displayValue: `${genSetting.alias}`,
+                                displayValue: `${genSetting.alias()}`,
                             }))}
                             maxHeight={32}
                         />
@@ -44,7 +44,10 @@ export const FailureGeneratorsUI = () => {
                         </div>
                     </div>
                     <div className="flex items-center">
-                        <div className="mr-2">Max number of simultaneous failures:</div>
+                        <div className="mr-2">
+                            {t('Failures.Generators.MaxSimultaneous')}
+                            :
+                        </div>
                         <SimpleInput
                             className="my-2 w-10 font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
                     focus-within:outline-none focus-within:border-theme-highlight
@@ -98,7 +101,7 @@ export function FailureGeneratorCardTemplateUI(
             <div className="flex flex-row justify-between">
                 <div className="mr-4 w-1/3 text-left align-left">
                     <h2>
-                        {`${generatorUniqueID} : ${generatorSettings.alias}`}
+                        {`${generatorUniqueID} : ${generatorSettings.alias()}`}
                     </h2>
 
                     <Link to="/failures/failuregenerators/generatorFailureSelect" className="inline-block">
@@ -109,7 +112,11 @@ export function FailureGeneratorCardTemplateUI(
                                 failureGenContext.setGeneratorNameArgument(generatorUniqueID);
                             }}
                         >
-                            {`Failures assigned: ${findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, generatorUniqueID).length}
+                            {`${
+                                t('Failures.Generators.FailuresAssigned')
+                            }: ${
+                                findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, generatorUniqueID).length
+                            }
                         / ${failureGenContext.allFailures.length}`}
                         </div>
                     </Link>
@@ -137,24 +144,24 @@ type SettingVar = {
 }
 
 const rearmButtons: (ButtonType & SettingVar)[] = [
-    { name: 'OFF', setting: 'OFF', settingVar: 0 },
-    { name: 'Once', setting: 'Once', settingVar: 1 },
-    { name: 'Take-Off', setting: 'Take-Off', settingVar: 2 },
-    { name: 'Repeat', setting: 'Repeat', settingVar: 3 },
+    { name: t('Failures.Generators.Off'), setting: 'OFF', settingVar: 0 },
+    { name: t('Failures.Generators.Once'), setting: 'Once', settingVar: 1 },
+    { name: t('Failures.Generators.TakeOff'), setting: 'Take-Off', settingVar: 2 },
+    { name: t('Failures.Generators.Repeat'), setting: 'Repeat', settingVar: 3 },
 ];
 
 export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number,
     setNewSetting : (newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) => void) {
     return (
         <div className="flex flex-col text-center">
-            <h2>Rearming</h2>
+            <h2>{t('Failures.Generators.Rearming')}</h2>
             <div className="flex flex-row">
                 <SelectGroup>
                     {rearmButtons.map((button) => {
-                        if (button.name !== 'Take-Off' || generatorSettings.disableTakeOffRearm === false) {
+                        if (button.setting !== 'Take-Off' || generatorSettings.disableTakeOffRearm === false) {
                             return (
                                 <SelectItem
-                                    key={button.name}
+                                    key={button.setting}
                                     onSelect={() => {
                                         setNewSetting(button.settingVar, generatorSettings, genID, 0);
                                     }}
@@ -217,7 +224,7 @@ function ModalSimpleInput(
 ) {
     return (
         <div className="p-8 w-5/12 rounded-xl border-2 bg-theme-body border-theme-accent">
-            <h1 className="font-bold">New Setting</h1>
+            <h1 className="font-bold">{t('Failures.Generators.NewSetting')}</h1>
             <div className="flex flex-col justify-between p-2 text-left">
                 <div className="break-keep">{title}</div>
                 <div className="flex flex-row items-center">
@@ -244,7 +251,7 @@ function ModalSimpleInput(
                     border-theme-accent hover:border-theme-highlight"
                     onClick={() => modal.popModal()}
                 >
-                    Close
+                    {t('Failures.Generators.Close')}
                 </div>
             </div>
         </div>

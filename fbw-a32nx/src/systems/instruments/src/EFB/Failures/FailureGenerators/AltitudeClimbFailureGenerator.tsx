@@ -15,7 +15,7 @@ const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'A';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'AltClimb';
-const alias = t('Failures.Generators.GenAltClimb');
+const alias = () => t('Failures.Generators.GenAltClimb');
 const disableTakeOffRearm = false;
 
 export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
@@ -48,7 +48,7 @@ const onErase = (_genID : number) => {
 const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext)
 => JSX.Element = (genID : number, generatorSettings : any, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
-    const settingTable = [FailureGeneratorFailureSetting('Altitude above sea:', 40, 'feet', 0, 40000,
+    const settingTable = [FailureGeneratorFailureSetting(`${t('Failures.Generators.AltitudeAboveSea')}:`, 40, t('Failures.Generators.feet'), 0, 40000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1, failureGenContext.modals),
     ];
