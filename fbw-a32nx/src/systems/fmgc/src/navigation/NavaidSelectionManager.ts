@@ -156,7 +156,7 @@ export class NavaidSelectionManager {
                 this.candidateList.push(candidate);
             }
 
-            if (this.vorCandidateList.length < 7 && this.isEligibleDisplayVor(facility, distance)) {
+            if (this.isEligibleDisplayVor(facility, distance)) {
                 this.vorCandidateList.push(candidate);
             }
         }
@@ -170,6 +170,7 @@ export class NavaidSelectionManager {
 
         this.candidateList.sort((a, b) => a.distance - b.distance);
         this.vorCandidateList.sort((a, b) => a.distance - b.distance);
+        this.vorCandidateList.length = Math.min(this.vorCandidateList.length, 7);
     }
 
     private isEligibleCandidate(facility: RawVor, distance: number): boolean {
