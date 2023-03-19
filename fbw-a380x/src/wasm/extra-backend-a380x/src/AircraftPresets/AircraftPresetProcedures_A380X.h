@@ -11,6 +11,8 @@
  * A32NX specific aircraft procedures definition.
  *
  * @see AircraftProceduresDefinition
+ *
+ * FIXME: This is not yet adapted to the A380X - not all necessary systems and APIs are available yet.
  */
 class AircraftPresetProcedures_A380X {
  public:

@@ -8,6 +8,8 @@
 
 class MsfsHandler;
 
+// FIXME: This is not yet adapted to the A380X - not all necessary systems and APIs are available yet.
+
 // Struct to hold all relevant light levels for the A32NX
 struct LightingValues_A380X {
   // EFB
