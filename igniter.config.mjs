@@ -170,6 +170,12 @@ export default new TaskOfTasks("all", [
                     "fbw-a380x/src/wasm/flypad-backend",
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm"
+                ]),
+            new ExecTask("keyboard-mapper",
+                "npm run build-a380x:keyboard-mapper",
+                [
+                    "fbw-a380x/src/wasm/keyboard_mapper",
+                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/keyboard-mapper.wasm"
                 ])
         ], true)
     ]),
