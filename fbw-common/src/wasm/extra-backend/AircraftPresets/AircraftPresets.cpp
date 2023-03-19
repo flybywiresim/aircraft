@@ -1,11 +1,9 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #include <iostream>
 
 #include "AircraftPresets.h"
-#include "AircraftVariable.h"
-#include "NamedVariable.h"
 #include "SimUnits.h"
 #include "logging.h"
 
@@ -49,11 +47,6 @@ bool AircraftPresets::initialize() {
 
   _isInitialized = true;
   LOG_INFO("AircraftPresets initialized");
-  return true;
-}
-
-bool AircraftPresets::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
-  // empty
   return true;
 }
 
@@ -197,11 +190,6 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     loadingIsActive = false;
   }
 
-  return true;
-}
-
-bool AircraftPresets::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
-  // empty
   return true;
 }
 

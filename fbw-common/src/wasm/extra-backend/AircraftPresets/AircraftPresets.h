@@ -1,4 +1,4 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 #ifndef FLYBYWIRE_AIRCRAFTPRESETS_H
@@ -36,7 +36,7 @@ class AircraftPresets : public Module {
   const PresetProcedures presetProcedures;
 
   // current procedure ID
-  int64_t currentProcedureID = 0;
+  int currentProcedureID = 0;
   // current procedure
   const std::vector<const ProcedureStep*>* currentProcedure = nullptr;
   // flag to signal that a loading process is ongoing
@@ -46,7 +46,7 @@ class AircraftPresets : public Module {
   // time for next action in respect to currentLoadingTime
   double currentDelay = 0;
   // step number in the array of steps
-  uint64_t currentStep = 0;
+  std::size_t currentStep = 0;
 
  public:
   AircraftPresets() = delete;
@@ -60,9 +60,9 @@ class AircraftPresets : public Module {
       : Module(msfsHandler), presetProcedures(PresetProcedures(aircraftProceduresDefinitions)) {}
 
   bool initialize() override;
-  bool preUpdate(sGaugeDrawData* pData) override;
+  bool preUpdate(sGaugeDrawData*) override { return true; }; // not required for this module
   bool update(sGaugeDrawData* pData) override;
-  bool postUpdate(sGaugeDrawData* pData) override;
+  bool postUpdate(sGaugeDrawData*) override { return true; }; // not required for this module
   bool shutdown() override;
 };
 

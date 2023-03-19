@@ -1,3 +1,6 @@
+// Copyright (c) 2023 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 #ifndef FBW_CPP_FRAMEWORK_TEST_LONGTEXT_H
 #define FBW_CPP_FRAMEWORK_TEST_LONGTEXT_H
 
