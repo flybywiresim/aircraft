@@ -26,7 +26,9 @@
 #include "LightingPresets/LightingPresets_A380X.h"
 #include "Pushback/Pushback.h"
 
-MsfsHandler msfsHandler("Gauge_Extra_Backend", "A380X_");
+// FIXME: Using the A32NX_ prefix is a workaround until the A380X_ prefix is used
+//  in the A380X EFB
+MsfsHandler msfsHandler("Gauge_Extra_Backend", "A32NX_");
 #ifdef EXAMPLES
 ExampleModule exampleModule(msfsHandler);
 #endif
