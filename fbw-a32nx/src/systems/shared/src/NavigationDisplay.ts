@@ -39,10 +39,6 @@ export enum NdSymbolTypeFlags {
     Constraint = 1 << 10,
     FixInfo = 1 << 11,
     FlightPlan = 1 << 12,
-    FlightPlanVectorLine = 1 << 13,
-    FlightPlanVectorArc = 1 << 14,
-    FlightPlanVectorDebugPoint = 1 << 15,
-    ActiveFlightPlanVector = 1 << 16,
     CourseReversalLeft = 1 << 17,
     CourseReversalRight = 1 << 18,
     PwpDecel = 1 << 19,
@@ -66,10 +62,6 @@ export interface NdSymbol {
     location: Coordinates,
     direction?: number, // true
     length?: number, // nautical miles
-    lineEnd?: Coordinates,
-    arcRadius?: number,
-    arcSweepAngle?: Degrees,
-    arcEnd?: Coordinates,
     type: NdSymbolTypeFlags,
     constraints?: string[],
     radials?: number[],
