@@ -4,8 +4,8 @@
 #ifndef FLYBYWIRE_AIRCRAFT_AIRCRAFTPRESETPROCEDURES_A32NX_H
 #define FLYBYWIRE_AIRCRAFT_AIRCRAFTPRESETPROCEDURES_A32NX_H
 
-#include "PresetProceduresDefinition.h"
-#include "ProcedureStep.h"
+#include "AircraftPresets/PresetProceduresDefinition.h"
+#include "AircraftPresets/ProcedureStep.h"
 
 /**
  * A32NX specific aircraft procedures definition.

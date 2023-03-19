@@ -22,7 +22,7 @@ set(SOURCE_FILES
 	${FBW_COMMON}/cpp-msfs-framework/Example/ExampleModule.cpp
 	${FBW_COMMON}/extra-backend/Pushback/InertialDampener.cpp
 	${FBW_COMMON}/extra-backend/Pushback/Pushback.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresets.cpp
+	${FBW_COMMON}/extra-backend/AircraftPresets/AircraftPresets.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets.cpp
 )
 set(INCLUDE_FILES
@@ -30,10 +30,10 @@ set(INCLUDE_FILES
 	${FBW_COMMON}/cpp-msfs-framework/Example/longtext.h
 	${FBW_COMMON}/extra-backend/Pushback/InertialDampener.h
     ${FBW_COMMON}/extra-backend/Pushback/Pushback.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresets.h
-		${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/PresetProcedures.h
-		${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/ProcedureStep.h
-		${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresetProcedures_A32NX.h
+	${FBW_COMMON}/extra-backend/AircraftPresets/AircraftPresets.h
+	${FBW_COMMON}/extra-backend/AircraftPresets/PresetProcedures.h
+	${FBW_COMMON}/extra-backend/AircraftPresets/ProcedureStep.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresetProcedures_A32NX.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets.h
 )
 
