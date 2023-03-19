@@ -696,7 +696,9 @@ class CDUFlightPlanPage {
                     }
                 }
             }
-            if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
+            if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
+                mcdu.tryUpdateRouteTrip(isFlying);
+            } else {
                 destEFOBCell = "---";
             }
 
