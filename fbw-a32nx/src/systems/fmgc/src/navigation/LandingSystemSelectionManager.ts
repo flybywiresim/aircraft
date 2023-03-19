@@ -78,6 +78,7 @@ export class LandingSystemSelectionManager {
                 }
             } catch (e) {
                 console.error('Failed to select ILS', e);
+                this.resetSelectedIls();
             } finally {
                 this.inProcess = false;
             }
@@ -384,9 +385,6 @@ export class LandingSystemSelectionManager {
 
     /** Reset all state e.g. when the nav database is switched */
     resetState(): void {
-        this._selectedIls = null;
-        this._selectedLocCourse = null;
-        this._selectedApproachBackcourse = false;
-        this._selectedGsSlope = null;
+        this.resetSelectedIls();
     }
 }
