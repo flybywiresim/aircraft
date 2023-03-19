@@ -74,7 +74,7 @@ bool LightingPresets_A380X::initialize() {
   saveLightingPresetRequest->setAsInt64(0);
 
   _isInitialized = true;
-  LOG_INFO("LightingPresets_A32NX initialized");
+  LOG_INFO("LightingPresets_A380X initialized");
   return true;
 }
 
