@@ -1537,6 +1537,30 @@ mod tests {
         }
 
         #[test]
+        fn pressure_initialization_works() {
+            let test_bed = test_bed()
+                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                    Length::new::<foot>(39000.),
+                ))
+                .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(-50.))
+                .iterate(2);
+
+            assert!(
+                (test_bed.cabin_altitude() - Length::new::<foot>(7800.)).abs()
+                    < Length::new::<foot>(50.)
+            );
+            assert!(
+                (test_bed.cabin_pressure()
+                    - InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                        7800.
+                    )))
+                .get::<hectopascal>()
+                .abs()
+                    < 20.
+            );
+        }
+
+        #[test]
         fn positive_cabin_vs_reduces_cabin_pressure() {
             let test_bed = test_bed()
                 .run_and()
@@ -1774,7 +1798,7 @@ mod tests {
 
         #[test]
         fn outflow_valve_stays_open_on_ground() {
-            let mut test_bed = test_bed().set_on_ground();
+            let mut test_bed = test_bed().set_on_ground().iterate(10);
 
             assert_eq!(
                 test_bed.outflow_valve_open_amount(),
