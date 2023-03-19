@@ -419,7 +419,7 @@ export class VerticalProfileManager {
         if (!spdLimCrossingInMcdu) {
             const spdLimCrossingInGuidanceProfile = this.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.CrossingDescentSpeedLimit);
             if (spdLimCrossingInGuidanceProfile) {
-                const spdLimCrossingDistance = mcduProfile.interpolateDistanceAtAltitude(spdLimCrossingInGuidanceProfile.altitude);
+                const spdLimCrossingDistance = mcduProfile.interpolateDistanceAtAltitudeBackwards(spdLimCrossingInGuidanceProfile.altitude);
 
                 mcduProfile.addInterpolatedCheckpoint(spdLimCrossingDistance, { reason: VerticalCheckpointReason.CrossingDescentSpeedLimit });
             }
