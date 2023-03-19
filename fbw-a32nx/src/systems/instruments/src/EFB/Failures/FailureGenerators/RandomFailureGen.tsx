@@ -23,6 +23,7 @@ import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 export const failureGeneratorCommonFunction = () => {
     const [maxFailuresAtOnce, setMaxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
     const { changingFailures, activeFailures, allFailures, activate } = useFailuresOrchestrator();
+
     const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size, [changingFailures, activeFailures]);
     return { maxFailuresAtOnce, setMaxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
 };
@@ -152,8 +153,6 @@ const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => v
 export const randomFailureGenerator = () => {
     const { allFailures } = failureGeneratorCommonFunction();
     const { generatorFailuresGetters } = allGeneratorFailures(allFailures);
-
-    // TODO: to be improved, changing doesn't mean active but this is not critical
 
     for (let i = 0; i < failureGenerators.length; i++) {
         failureGenerators[i](generatorFailuresGetters);
