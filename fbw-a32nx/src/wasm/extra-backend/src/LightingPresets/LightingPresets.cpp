@@ -128,7 +128,7 @@ bool LightingPresets::shutdown() {
 // PRIVATE METHODS
 // =================================================================================================
 
-bool LightingPresets::loadLightingPreset(int64_t loadPresetRequest) {
+bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
   readFromAircraft();
@@ -141,7 +141,7 @@ bool LightingPresets::loadLightingPreset(int64_t loadPresetRequest) {
   return true;
 }
 
-void LightingPresets::saveLightingPreset(int64_t savePresetRequest) {
+void LightingPresets::saveLightingPreset(INT64 savePresetRequest) {
   std::cout << "LightingPresets: Save to Lighting Preset: " << savePresetRequest << std::endl;
   readFromAircraft();
   if (saveToStore(savePresetRequest)) {
@@ -205,7 +205,7 @@ void LightingPresets::applyToAircraft() {
   floodPedLightLevel->setAndWriteToSim(intermediateLightValues.floodPedLightLevel);
 }
 
-bool LightingPresets::readFromStore(int64_t presetNr) {
+bool LightingPresets::readFromStore(INT64 presetNr) {
   // create ini file and data structure
   mINI::INIStructure ini;
   mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
@@ -251,7 +251,7 @@ bool LightingPresets::readFromStore(int64_t presetNr) {
   return result;
 }
 
-bool LightingPresets::saveToStore(int64_t presetNr) {
+bool LightingPresets::saveToStore(INT64 presetNr) {
   // create ini file and data structure
   mINI::INIStructure ini;
   mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
