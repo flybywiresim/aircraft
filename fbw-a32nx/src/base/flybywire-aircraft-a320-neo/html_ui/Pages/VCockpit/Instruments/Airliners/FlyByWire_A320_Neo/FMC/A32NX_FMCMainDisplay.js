@@ -657,6 +657,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.toSpeedsChecks();
             this.thrustReductionAccelerationChecks();
             this.updateThrustReductionAcceleration();
+            this.updateMinimums();
         }
 
         this.A32NXCore.update();
@@ -684,7 +685,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.efisSymbols.update(_deltaTime);
         }
 
-        this.updateMinimums();
         this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
     }
 
@@ -1725,8 +1725,8 @@ class FMCMainDisplay extends BaseAirliners {
         const MDAssm = inRange && this.perfApprMDA ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
         const DHssm = inRange && this.perfApprDH ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData
 
-        this.arincMDA(this.perfApprMDA ? this.perfApprMDA : 0, MDAssm, 17, 131072, 0);
-        this.arincDH(this.perfApprDH ? this.perfApprDH : 0, DHssm, 16, 8192, 0);
+        this.arincMDA.setBnrValue(this.perfApprMDA ? this.perfApprMDA : 0, MDAssm, 17, 131072, 0);
+        this.arincDH.setBnrValue(this.perfApprDH ? this.perfApprDH : 0, DHssm, 16, 8192, 0);
     }
 
     shouldTransmitMinimums() {
