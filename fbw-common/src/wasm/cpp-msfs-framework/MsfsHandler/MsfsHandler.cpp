@@ -51,8 +51,8 @@ bool MsfsHandler::initialize() {
   register_key_event_handler_EX1(keyEventHandlerEx1, nullptr);
 
   // initialize all data variables needed for the MsfsHandler itself
-  a32nxIsDevelopmentState = dataManager.make_named_var("DEVELOPER_STATE", UNITS.Number);
-  a32nxIsReady = dataManager.make_named_var("IS_READY", UNITS.Bool);
+  aircraftDevelopmentState = dataManager.make_named_var("DEVELOPER_STATE", UNITS.Number);
+  aircraftIsReady = dataManager.make_named_var("IS_READY", UNITS.Bool);
 
   // base sim data mainly for pause detection
   std::vector<DataDefinition> baseDataDef = {
@@ -117,8 +117,8 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
     return false;
   }
 
-  a32nxIsReady->readFromSim();
-  a32nxIsDevelopmentState->readFromSim();
+  aircraftIsReady->readFromSim();
+  aircraftDevelopmentState->readFromSim();
 
   // initial request of data from sim to retrieve all requests which have
   // periodic updates enabled. This includes the base sim data for pause detection.
@@ -170,9 +170,9 @@ bool MsfsHandler::shutdown() {
 }
 
 bool MsfsHandler::getAircraftIsReadyVar() const {
-  return a32nxIsReady->getAsBool();
+  return aircraftIsReady->getAsBool();
 }
 
 FLOAT64 MsfsHandler::getAircraftDevelopmentStateVar() const {
-  return a32nxIsDevelopmentState->get();
+  return aircraftDevelopmentState->get();
 }

@@ -67,14 +67,14 @@ class MsfsHandler {
   };
 
   // Common variables required by the MsfsHandler itself
-  NamedVariablePtr a32nxIsReady;
-  NamedVariablePtr a32nxIsDevelopmentState;
+  NamedVariablePtr aircraftIsReady;
+  NamedVariablePtr aircraftDevelopmentState;
   std::shared_ptr<DataDefinitionVariable<BaseSimData>> baseSimData;
 
   // Pause detection - not working because of sim issue - see initialize() for details
-  NamedVariablePtr a32nxPauseDetected;
-  ClientEventPtr pauseDetectedEvent;
-  [[maybe_unused]] CallbackID pauseDetectedEventCallbackId;
+  //  NamedVariablePtr a32nxPauseDetected;
+  //  ClientEventPtr pauseDetectedEvent;
+  //  [[maybe_unused]] CallbackID pauseDetectedEventCallbackId;
 
   /**
    * Current simulation time used for pause detection and time stamping variable updates
