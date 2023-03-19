@@ -1,6 +1,6 @@
 use super::{
     A380AlternatingCurrentElectricalSystem, A380DirectCurrentElectricalSystem,
-    A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
+    A380ElectricalOverheadPanel,
 };
 use std::time::Duration;
 use systems::accept_iterable;
@@ -70,7 +70,6 @@ impl A380AlternatingCurrentElectrical {
         electricity: &mut Electricity,
         ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
-        emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 4],

@@ -112,7 +112,6 @@ impl A380Electrical {
             electricity,
             ext_pwrs,
             overhead,
-            emergency_overhead,
             apu,
             engine_fire_push_buttons,
             engines,
@@ -378,15 +377,12 @@ impl SimulationElement for A380ElectricalOverheadPanel {
 }
 
 pub(super) struct A380EmergencyElectricalOverheadPanel {
-    // The GEN 1 line fault represents the SMOKE light illumination state.
-    gen_1_line: OnOffFaultPushButton,
     rat_and_emergency_gen_fault: FaultIndication,
     rat_and_emer_gen_man_on: MomentaryPushButton,
 }
 impl A380EmergencyElectricalOverheadPanel {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            gen_1_line: OnOffFaultPushButton::new_on(context, "EMER_ELEC_GEN_1_LINE"),
             rat_and_emergency_gen_fault: FaultIndication::new(
                 context,
                 "EMER_ELEC_RAT_AND_EMER_GEN",
@@ -410,17 +406,12 @@ impl A380EmergencyElectricalOverheadPanel {
         );
     }
 
-    fn generator_1_line_is_on(&self) -> bool {
-        self.gen_1_line.is_on()
-    }
-
     fn rat_and_emer_gen_man_on(&self) -> bool {
         self.rat_and_emer_gen_man_on.is_pressed()
     }
 }
 impl SimulationElement for A380EmergencyElectricalOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.gen_1_line.accept(visitor);
         self.rat_and_emergency_gen_fault.accept(visitor);
         self.rat_and_emer_gen_man_on.accept(visitor);
 
