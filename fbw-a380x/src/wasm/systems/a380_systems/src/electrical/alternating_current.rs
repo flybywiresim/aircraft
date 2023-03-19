@@ -550,13 +550,17 @@ impl A380MainPowerSources {
 
         let mut powered_by = [None; 4];
         let mut can_power_other_bus = [false; 4];
+        let mut apu_gen_supplying_count = [0; 2];
         for row in priority_table {
+            let mut new_apu_gen_supplying_count = apu_gen_supplying_count;
             for (i, &source) in row.iter().enumerate() {
                 if powered_by[i].is_none() {
                     let power_valid = match source {
                         Some(ACBusPowerSource::Generator) => gen_available[i],
                         Some(ACBusPowerSource::ExternalPower) => ext_pwr_available[i],
-                        Some(ACBusPowerSource::APUGenerator(i)) => apu_gen_available[i - 1],
+                        Some(ACBusPowerSource::APUGenerator(i)) => {
+                            apu_gen_available[i - 1] && apu_gen_supplying_count[i - 1] < 2
+                        }
                         Some(ACBusPowerSource::ACBus(i)) => can_power_other_bus[i - 1],
                         None => false,
                     };
@@ -570,12 +574,16 @@ impl A380MainPowerSources {
                         if let Some(ACBusPowerSource::ACBus(i)) = source {
                             can_power_other_bus[i - 1] = false;
                         }
+                        if let Some(ACBusPowerSource::APUGenerator(i)) = source {
+                            new_apu_gen_supplying_count[i - 1] += 1;
+                        }
                     }
                 }
             }
             if powered_by.iter().all(|p| p.is_some()) {
                 break;
             }
+            apu_gen_supplying_count = new_apu_gen_supplying_count;
         }
         powered_by
     }
