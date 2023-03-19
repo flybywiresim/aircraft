@@ -683,7 +683,7 @@ class CDUFlightPlanPage {
             let destTimeCell = "----";
             let destDistCell = "---";
             let destEFOBCell = "---";
-            
+
             if (fpm.getDestination()) {
                 if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
                     mcdu.tryUpdateRouteTrip(isFlying);
