@@ -236,6 +236,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.arincDH,
             this.arincThrustReductionAltitude,
             this.arincAccelerationAltitude,
+            this.arincEoAccelerationAltitude,
             this.arincMissedThrustReductionAltitude,
             this.arincMissedAccelerationAltitude,
             this.arincMissedEoAccelerationAltitude,
