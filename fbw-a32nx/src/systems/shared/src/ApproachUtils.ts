@@ -1,6 +1,8 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { RunwayUtils } from '@shared/RunwayUtils';
+
 export type ApproachNameComponents = {
     // the approach type, e.g. ILS or RNAV
     type: string,
@@ -17,19 +19,38 @@ export class ApproachUtils {
         // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
         // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
         // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
-        const match = name.trim().match(/^(ILS|LOC|RNAV|NDB|VOR|GPS) (RW)?([0-9]{1,2}[LCRT]?)([\s-]*([A-Z0-9]))?$/);
+        const match = name.trim().match(/^(ILS|LOC|RNAV|NDB|VOR|GPS)? ?(RW)?([0-9]{1,2}[LCRT]?)?([\s-]*([A-Z0-9]))?$/);
         if (!match) {
             return undefined;
         }
         return {
-            type: match[1],
-            runway: match[3],
-            designator: match[5],
+            type: match[1] ?? '',
+            runway: match[3] ?? '',
+            designator: match[5] ?? '',
         };
     }
 
-    private static formatShortApproachName(arg0: ApproachNameComponents | string): string {
-        const appr = typeof arg0 === 'string' ? ApproachUtils.parseApproachName(arg0) : arg0;
+    public static parseApproach(approach: RawApproach): ApproachNameComponents | undefined {
+        const type = ApproachUtils.approachTypeString(approach.approachType);
+        const runway = RunwayUtils.runwayString(approach.runwayNumber, approach.runwayDesignator);
+        const designator = approach.approachSuffix;
+        return {
+            type,
+            runway,
+            designator,
+        };
+    }
+
+    private static formatShortApproachName(arg0: ApproachNameComponents | string | RawApproach): string {
+        let appr: ApproachNameComponents;
+        if (typeof arg0 === 'string') {
+            appr = ApproachUtils.parseApproachName(arg0);
+        } else if ('finalLegs' in arg0) {
+            appr = ApproachUtils.parseApproach(arg0);
+        } else {
+            appr = arg0;
+        }
+
         if (!appr) {
             return typeof arg0 === 'string' ? arg0 : '';
         }
@@ -52,12 +73,22 @@ export class ApproachUtils {
          * @returns An approach name in short format (e.g. RNV23LY)
          */
         (components: ApproachNameComponents): string;
+        /**
+         * Format an approach name in short format (max 7 chars)
+         * @param approach A JS_Approach approach object
+         * @returns An approach name in short format (e.g. RNV23LY)
+         */
+        (approach: RawApproach): string;
     } = ApproachUtils.formatShortApproachName;
 
-    private static formatLongApproachName(arg0: ApproachNameComponents | string): string {
-        const appr = typeof arg0 === 'string' ? ApproachUtils.parseApproachName(arg0) : arg0;
-        if (!appr) {
-            return typeof arg0 === 'string' ? arg0 : '';
+    private static formatLongApproachName(arg0: ApproachNameComponents | string | RawApproach): string {
+        let appr: ApproachNameComponents;
+        if (typeof arg0 === 'string') {
+            appr = ApproachUtils.parseApproachName(arg0);
+        } else if ('finalLegs' in arg0) {
+            appr = ApproachUtils.parseApproach(arg0);
+        } else {
+            appr = arg0;
         }
 
         const runway = Avionics.Utils.formatRunway(appr.runway);
@@ -78,5 +109,37 @@ export class ApproachUtils {
          * @returns An approach name in long format (e.g. RNAV23L-Y)
          */
         (components: ApproachNameComponents): string;
+        /**
+         * Format an approach name in long format (max 9 chars)
+         * @param approach A JS_Approach approach object
+         * @returns An approach name in long format (e.g. RNAV23L-Y)
+         */
+        (approach: RawApproach): string;
     } = ApproachUtils.formatLongApproachName;
+
+    public static approachTypeString(type: ApproachType): string {
+        switch (type) {
+        case ApproachType.APPROACH_TYPE_GPS:
+            return 'GPS';
+        case ApproachType.APPROACH_TYPE_ILS:
+            return 'ILS';
+        case ApproachType.APPROACH_TYPE_LDA:
+            return 'LDA';
+        case ApproachType.APPROACH_TYPE_LOCALIZER:
+        case ApproachType.APPROACH_TYPE_LOCALIZER_BACK_COURSE:
+            return 'LOC';
+        case ApproachType.APPROACH_TYPE_NDB:
+        case ApproachType.APPROACH_TYPE_NDBDME:
+            return 'NDB';
+        case ApproachType.APPROACH_TYPE_RNAV:
+            return 'RNAV';
+        case ApproachType.APPROACH_TYPE_SDF:
+            return 'SDF';
+        case ApproachType.APPROACH_TYPE_VOR:
+        case ApproachType.APPROACH_TYPE_VORDME:
+            return 'VOR';
+        default:
+            return '';
+        }
+    }
 }
