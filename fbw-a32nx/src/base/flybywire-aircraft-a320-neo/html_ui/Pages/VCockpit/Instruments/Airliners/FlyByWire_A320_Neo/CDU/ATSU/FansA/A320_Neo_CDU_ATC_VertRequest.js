@@ -35,65 +35,64 @@ class CDUAtcVertRequestFansA {
             let altitude = null;
             let start = null;
 
-            const error = Atsu.InputValidation.validateScratchpadAltitude(entries[0]);
+            const error = AtsuCommon.InputValidation.validateScratchpadAltitude(entries[0]);
             if (!error) {
                 updateAlt = true;
-                altitude = Atsu.InputValidation.formatScratchpadAltitude(entries[0]);
+                altitude = AtsuCommon.InputValidation.formatScratchpadAltitude(entries[0]);
                 entries.shift();
             }
 
             if (entries.length !== 0) {
                 const startingPoint = entries.join("/");
 
-                Atsu.InputValidation.classifyScratchpadWaypointType(mcdu, startingPoint, true).then((type) => {
-                    if (altitude || (data.climb && climbRequest || data.descend && !climbRequest)) {
-                        switch (type[0]) {
-                            case Atsu.InputWaypointType.GeoCoordinate:
-                            case Atsu.InputWaypointType.Place:
+                const type = AtsuCommon.InputValidation.classifyScratchpadWaypointType(startingPoint, true);
+                if (altitude || (data.climb && climbRequest || data.descend && !climbRequest)) {
+                    switch (type[0]) {
+                        case AtsuCommon.InputWaypointType.GeoCoordinate:
+                        case AtsuCommon.InputWaypointType.Place:
+                            start = startingPoint;
+                            break;
+                        case AtsuCommon.InputWaypointType.Timepoint:
+                            if (startingPoint.endsWith("Z")) {
                                 start = startingPoint;
-                                break;
-                            case Atsu.InputWaypointType.Timepoint:
-                                if (startingPoint.endsWith("Z")) {
-                                    start = startingPoint;
-                                } else {
-                                    start = `${startingPoint}Z`;
-                                }
-                                break;
-                            default:
-                                mcdu.addNewAtsuMessage(type[1]);
-                                start = null;
-                                if (updateAlt) {
-                                    altitude = null;
-                                }
-                                break;
-                        }
-                    }
-
-                    if (altitude || start) {
-                        if (altitude && start) {
-                            data.startAt = start;
-                            if (climbRequest) {
-                                data.climbStart = altitude;
                             } else {
-                                data.descendStart = altitude;
+                                start = `${startingPoint}Z`;
                             }
-                        } else if (altitude) {
-                            // update the altitude and keep the start at
-                            const lastStart = data.startAt;
-                            data.startAt = lastStart;
-                            if (climbRequest) {
-                                data.climbStart = altitude;
-                            } else {
-                                data.descendStart = altitude;
+                            break;
+                        default:
+                            mcdu.addNewAtsuMessage(type[1]);
+                            start = null;
+                            if (updateAlt) {
+                                altitude = null;
                             }
-                        } else if (start && (data.climbStart || data.descendStart)) {
-                            // update start at if climb or descend are set
-                            data.startAt = start;
-                        }
+                            break;
                     }
+                }
 
-                    CDUAtcVertRequestFansA.ShowPage2(mcdu, data);
-                });
+                if (altitude || start) {
+                    if (altitude && start) {
+                        data.startAt = start;
+                        if (climbRequest) {
+                            data.climbStart = altitude;
+                        } else {
+                            data.descendStart = altitude;
+                        }
+                    } else if (altitude) {
+                        // update the altitude and keep the start at
+                        const lastStart = data.startAt;
+                        data.startAt = lastStart;
+                        if (climbRequest) {
+                            data.climbStart = altitude;
+                        } else {
+                            data.descendStart = altitude;
+                        }
+                    } else if (start && (data.climbStart || data.descendStart)) {
+                        // update start at if climb or descend are set
+                        data.startAt = start;
+                    }
+                }
+
+                CDUAtcVertRequestFansA.ShowPage2(mcdu, data);
             } else if (updateAlt) {
                 if (climbRequest) {
                     data.climbStart = altitude;
@@ -109,9 +108,9 @@ class CDUAtcVertRequestFansA {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.CpdlcMessage();
-        retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
+        const retval = new AtsuCommon.CpdlcMessage();
+        retval.Station = mcdu.atsu.currentStation();
+        retval.Content.push(AtsuCommon.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
             retval.Content[0].Content[i].Value = values[i];
@@ -220,11 +219,11 @@ class CDUAtcVertRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.climb = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.climb = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.climb = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
@@ -237,11 +236,11 @@ class CDUAtcVertRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.altitude = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.altitude = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.altitude = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
@@ -259,12 +258,12 @@ class CDUAtcVertRequestFansA {
                 if (entries.length !== 2) {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 } else {
-                    const error = Atsu.InputValidation.validateAltitudeRange(entries[0], entries[1]);
-                    if (error !== Atsu.AtsuStatusCodes.Ok) {
+                    const error = AtsuCommon.InputValidation.validateAltitudeRange(entries[0], entries[1]);
+                    if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(error);
                     } else {
-                        data.blockAltitudeLow = Atsu.InputValidation.formatScratchpadAltitude(entries[0]);
-                        data.blockAltitudeHigh = Atsu.InputValidation.formatScratchpadAltitude(entries[1]);
+                        data.blockAltitudeLow = AtsuCommon.InputValidation.formatScratchpadAltitude(entries[0]);
+                        data.blockAltitudeHigh = AtsuCommon.InputValidation.formatScratchpadAltitude(entries[1]);
                         CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
                     }
                 }
@@ -278,11 +277,11 @@ class CDUAtcVertRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.cruise = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.cruise = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.cruise = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
@@ -295,11 +294,11 @@ class CDUAtcVertRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.cruise = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.cruise = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.cruise = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
@@ -326,11 +325,11 @@ class CDUAtcVertRequestFansA {
             if (value === FMCMainDisplay.clrValue) {
                 data.descend = null;
             } else if (value) {
-                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
-                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                const error = AtsuCommon.InputValidation.validateScratchpadAltitude(value);
+                if (error !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.descend = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.descend = AtsuCommon.InputValidation.formatScratchpadAltitude(value);
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
@@ -359,8 +358,8 @@ class CDUAtcVertRequestFansA {
                     data.whenSpeedRange = false;
                 }
             } else if (value) {
-                const range = Atsu.InputValidation.validateScratchpadSpeedRanges(value);
-                if (range[0] !== Atsu.AtsuStatusCodes.Ok) {
+                const range = AtsuCommon.InputValidation.validateScratchpadSpeedRanges(value);
+                if (range[0] !== AtsuCommon.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(range[0]);
                 } else {
                     if (range[1].length === 2) {
@@ -390,7 +389,7 @@ class CDUAtcVertRequestFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);
@@ -527,7 +526,7 @@ class CDUAtcVertRequestFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequestFansA.CanSendData(data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequestFansA.CreateRequests(mcdu, data);

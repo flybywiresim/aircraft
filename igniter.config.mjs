@@ -26,12 +26,34 @@ export default new TaskOfTasks("all", [
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated"
                 ]),
 
-            new ExecTask("atsu",
-                "npm run build-a32nx:atsu",
+            new TaskOfTasks('atsu', [
+                new ExecTask(
+                    'common',
+                    'npm run build-a32nx:atsu-common',
+                    [
+                        'fbw-a32nx/src/systems/atsu/common',
+                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/common.js'
+                    ]
+                ),
+                new ExecTask(
+                    'fmsclient',
+                    'npm run build-a32nx:atsu-fms-client',
+                    [
+                        'fbw-a32nx/src/systems/atsu/common',
+                        'fbw-a32nx/src/systems/atsu/fmsclient',
+                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/fmsclient.js'
+                    ]
+                ),
+            ]),
+            new ExecTask(
+                'systems-host',
+                'npm run build-a32nx:systems-host',
                 [
-                    "fbw-a32nx/src/systems/atsu",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu"
-                ]),
+                    'fbw-a32nx/src/systems/systems-host',
+                    'fbw-common/src/systems/datalink',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost'
+                ]
+            ),
             new ExecTask("failures",
                 "npm run build-a32nx:failures",
                 [
@@ -92,6 +114,14 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
                 ]),
+            new ExecTask("systems-terronnd", [
+                "fbw-common/src/wasm/terronnd/build.sh",
+                "wasm-opt -O1 -o fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
+            ], [
+                "fbw-common/src/wasm/terronnd",
+                "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm",
+                "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
+            ]),
             new ExecTask("flypad-backend",
                 "npm run build-a32nx:flypad-backend",
                 [
@@ -142,6 +172,14 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm"
                 ]),
+            new ExecTask("systems-terronnd", [
+                "fbw-common/src/wasm/terronnd/build.sh",
+                "wasm-opt -O1 -o fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
+            ], [
+                "fbw-common/src/wasm/terronnd",
+                "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm",
+                "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
+            ]),
             new ExecTask("flypad-backend",
                 "npm run build-a380x:flypad-backend",
                 [

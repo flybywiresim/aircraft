@@ -1,104 +1,104 @@
-import { DcduStatusMessage } from '@atsu/components/DcduLink';
+import { MailboxStatusMessage } from '@datalink/common';
 import React from 'react';
 
 type AtsuStatusMessageProps = {
-    visibleMessage: DcduStatusMessage;
-    systemMessage: DcduStatusMessage;
+    visibleMessage: MailboxStatusMessage;
+    systemMessage: MailboxStatusMessage;
 }
 
-const translateStatusMessage = (status: DcduStatusMessage) => {
+const translateStatusMessage = (status: MailboxStatusMessage) => {
     switch (status) {
-    case DcduStatusMessage.AnswerRequired:
+    case MailboxStatusMessage.AnswerRequired:
         return 'ANSWER MSG';
-    case DcduStatusMessage.CommunicationFault:
+    case MailboxStatusMessage.CommunicationFault:
         return 'COM FAULT';
-    case DcduStatusMessage.CommunicationNotAvailable:
+    case MailboxStatusMessage.CommunicationNotAvailable:
         return 'COM NOT AVAIL';
-    case DcduStatusMessage.CommunicationNotInitialized:
+    case MailboxStatusMessage.CommunicationNotInitialized:
         return 'COM NOT INIT';
-    case DcduStatusMessage.MaximumDownlinkMessages:
+    case MailboxStatusMessage.MaximumDownlinkMessages:
         return 'FILE FULL';
-    case DcduStatusMessage.LinkLost:
+    case MailboxStatusMessage.LinkLost:
         return 'LINK LOST';
-    case DcduStatusMessage.FlightplanLoadFailed:
+    case MailboxStatusMessage.FlightplanLoadFailed:
         return 'LOAD FAILED';
-    case DcduStatusMessage.FlightplanLoadPartial:
+    case MailboxStatusMessage.FlightplanLoadPartial:
         return 'LOAD PARTIAL';
-    case DcduStatusMessage.FlightplanLoadingUnavailable:
+    case MailboxStatusMessage.FlightplanLoadingUnavailable:
         return 'LOAD UNAVAIL';
-    case DcduStatusMessage.MonitoringFailed:
+    case MailboxStatusMessage.MonitoringFailed:
         return 'MONIT FAILED';
-    case DcduStatusMessage.MonitoringLost:
+    case MailboxStatusMessage.MonitoringLost:
         return 'MONIT LOST';
-    case DcduStatusMessage.MonitoringUnavailable:
+    case MailboxStatusMessage.MonitoringUnavailable:
         return 'MONIT UNAVAIL';
-    case DcduStatusMessage.NoAtcReply:
+    case MailboxStatusMessage.NoAtcReply:
         return 'NO ATC REPLY';
-    case DcduStatusMessage.OverflowClosed:
+    case MailboxStatusMessage.OverflowClosed:
         return 'OVERFLW CLOSED';
-    case DcduStatusMessage.PrintFailed:
+    case MailboxStatusMessage.PrintFailed:
         return 'PRINT FAILED';
-    case DcduStatusMessage.PriorityMessage:
+    case MailboxStatusMessage.PriorityMessage:
         return 'PRIORITY MSG';
-    case DcduStatusMessage.SendFailed:
+    case MailboxStatusMessage.SendFailed:
         return 'SEND FAILED';
-    case DcduStatusMessage.FlightplanLoadSecondary:
+    case MailboxStatusMessage.FlightplanLoadSecondary:
         return 'LOAD SEC OK';
-    case DcduStatusMessage.FlightplanLoadingSecondary:
+    case MailboxStatusMessage.FlightplanLoadingSecondary:
         return 'LOADING SEC';
-    case DcduStatusMessage.McduForText:
+    case MailboxStatusMessage.FmsDisplayForText:
         return 'MCDU FOR TEXT';
-    case DcduStatusMessage.McduForModification:
+    case MailboxStatusMessage.FmsDisplayForModification:
         return 'MCDU FOR MODIF';
-    case DcduStatusMessage.MonitoringCancelled:
+    case MailboxStatusMessage.MonitoringCancelled:
         return 'MONIT CNCLD';
-    case DcduStatusMessage.Monitoring:
+    case MailboxStatusMessage.Monitoring:
         return 'MONITORING';
-    case DcduStatusMessage.NoFmData:
+    case MailboxStatusMessage.NoFmData:
         return 'NO FM DATA';
-    case DcduStatusMessage.NoMoreMessages:
+    case MailboxStatusMessage.NoMoreMessages:
         return 'NO MORE MSG';
-    case DcduStatusMessage.NoMorePages:
+    case MailboxStatusMessage.NoMorePages:
         return 'NO MORE PGE';
-    case DcduStatusMessage.PartialFmgsData:
+    case MailboxStatusMessage.PartialFmgsData:
         return 'PARTIAL DATA';
-    case DcduStatusMessage.Printing:
+    case MailboxStatusMessage.Printing:
         return 'PRINTING';
-    case DcduStatusMessage.RecallMode:
+    case MailboxStatusMessage.RecallMode:
         return 'RECALL MODE';
-    case DcduStatusMessage.RecallEmpty:
+    case MailboxStatusMessage.RecallEmpty:
         return (
             <>
                 <tspan>RECALL EMPTY</tspan>
                 <tspan x="50%" dy={200}>CONSULT MSG RECORD</tspan>
             </>
         );
-    case DcduStatusMessage.Reminder:
+    case MailboxStatusMessage.Reminder:
         return 'REMINDER';
-    case DcduStatusMessage.Sending:
+    case MailboxStatusMessage.Sending:
         return 'SENDING';
-    case DcduStatusMessage.Sent:
+    case MailboxStatusMessage.Sent:
         return 'SENT';
-    case DcduStatusMessage.WaitFmData:
+    case MailboxStatusMessage.WaitFmData:
         return 'WAIT FM DATA';
-    case DcduStatusMessage.NoMessage:
+    case MailboxStatusMessage.NoMessage:
     default:
         return '';
     }
 };
 
 export const AtsuStatusMessage: React.FC<AtsuStatusMessageProps> = ({ visibleMessage, systemMessage }) => {
-    if (visibleMessage === DcduStatusMessage.NoMessage && systemMessage === DcduStatusMessage.NoMessage) {
+    if (visibleMessage === MailboxStatusMessage.NoMessage && systemMessage === MailboxStatusMessage.NoMessage) {
         return <></>;
     }
 
     let textFill = 'rgb(255,255,255)';
-    if (systemMessage !== DcduStatusMessage.NoMessage) {
-        if (systemMessage <= DcduStatusMessage.SendFailed) {
+    if (systemMessage !== MailboxStatusMessage.NoMessage) {
+        if (systemMessage <= MailboxStatusMessage.SendFailed) {
             textFill = 'rgb(255,191,0)';
         }
-    } else if (visibleMessage !== DcduStatusMessage.NoMessage) {
-        if (visibleMessage <= DcduStatusMessage.SendFailed) {
+    } else if (visibleMessage !== MailboxStatusMessage.NoMessage) {
+        if (visibleMessage <= MailboxStatusMessage.SendFailed) {
             textFill = 'rgb(255,191,0)';
         }
     }
@@ -106,7 +106,14 @@ export const AtsuStatusMessage: React.FC<AtsuStatusMessageProps> = ({ visibleMes
     return (
         <>
             <g>
-                <text className="status-atsu" fill={textFill} x="50%" y="2160">{translateStatusMessage(systemMessage !== DcduStatusMessage.NoMessage ? systemMessage : visibleMessage)}</text>
+                <text
+                    className="status-atsu"
+                    fill={textFill}
+                    x="50%"
+                    y="2160"
+                >
+                    {translateStatusMessage(systemMessage !== MailboxStatusMessage.NoMessage ? systemMessage : visibleMessage)}
+                </text>
             </g>
         </>
     );

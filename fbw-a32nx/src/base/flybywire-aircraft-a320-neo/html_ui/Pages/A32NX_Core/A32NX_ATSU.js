@@ -1,12 +1,12 @@
 function translateAtsuMessageType(type) {
     switch (type) {
-        case Atsu.AtsuMessageType.Freetext:
+        case AtsuCommon.AtsuMessageType.Freetext:
             return "FREETEXT";
-        case Atsu.AtsuMessageType.METAR:
+        case AtsuCommon.AtsuMessageType.METAR:
             return "METAR";
-        case Atsu.AtsuMessageType.TAF:
+        case AtsuCommon.AtsuMessageType.TAF:
             return "TAF";
-        case Atsu.AtsuMessageType.ATIS:
+        case AtsuCommon.AtsuMessageType.ATIS:
             return "ATIS";
         default:
             return "UNKNOWN";
@@ -127,9 +127,6 @@ const insertUplink = (mcdu) => {
      */
     mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-
             if (originTransAlt > 0) {
                 mcdu.flightPlanManager.setOriginTransitionAltitude(originTransAlt, true);
             }
@@ -241,9 +238,6 @@ const insertCoRoute = async (mcdu) => {
 
     mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-
             if (alternateIcao) {
                 await mcdu.tryUpdateAltDestination(alternateIcao);
             }

@@ -1,13 +1,27 @@
 class CDUAtcAtisAutoUpdate {
-    static ToggleAutoUpdate(mcdu, icao) {
-        if (mcdu.atsu.atc.atisAutoUpdateActive(icao)) {
-            mcdu.atsu.atc.deactivateAtisAutoUpdate(icao);
+    static ToggleAutoUpdate(mcdu, icao, reloadPage) {
+        if (mcdu.atsu.atisAutoUpdateActive(icao)) {
+            mcdu.atsu.deactivateAtisAutoUpdate(icao).then((status) => {
+                if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
+                if (reloadPage) {
+                    CDUAtcAtisAutoUpdate.ShowPage(mcdu);
+                }
+            });
         } else {
-            mcdu.atsu.atc.activateAtisAutoUpdate(icao, Atsu.AtisType.Arrival);
+            mcdu.atsu.activateAtisAutoUpdate(icao, AtsuCommon.AtisType.Arrival).then((status) => {
+                if (status !== AtsuCommon.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(status);
+                }
+                if (reloadPage) {
+                    CDUAtcAtisAutoUpdate.ShowPage(mcdu);
+                }
+            });
         }
     }
 
-    static ShowPage(mcdu) {
+    static ShowPage(mcdu, updateInProgress = false) {
         mcdu.clearDisplay();
 
         let arrAtis = "{inop}\xa0[  ]/[ ]{end}";
@@ -18,17 +32,17 @@ class CDUAtcAtisAutoUpdate {
         let altAtisButton = "{cyan}ON\xa0{end}";
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             arrAtis = `{cyan}\xa0${mcdu.flightPlanManager.getDestination().ident}/ARR{end}`;
-            if (mcdu.atsu.atc.atisAutoUpdateActive(mcdu.flightPlanManager.getDestination().ident)) {
+            if (mcdu.atsu.atisAutoUpdateActive(mcdu.flightPlanManager.getDestination().ident)) {
                 arrAtisState = "\x3a ON";
-                arrAtisButton = "{cyan}OFF*{end}";
+                arrAtisButton = `{cyan}OFF${updateInProgress ? '\xa0' : '*'}{end}`;
             } else {
                 arrAtisState = "\x3a OFF";
-                arrAtisButton = "{cyan}ON*{end}";
+                arrAtisButton = `{cyan}ON${updateInProgress ? '\xa0' : '*'}{end}`;
             }
         }
         if (mcdu.altDestination && mcdu.altDestination.ident) {
             altAtis = `{cyan}\xa0${mcdu.altDestination.ident}/ARR{end}`;
-            if (mcdu.atsu.atc.atisAutoUpdateActive(mcdu.altDestination.ident)) {
+            if (mcdu.atsu.atisAutoUpdateActive(mcdu.altDestination.ident)) {
                 altAtisState = "\x3a ON";
                 altAtisButton = "{cyan}OFF*{end}";
             } else {
@@ -64,18 +78,18 @@ class CDUAtcAtisAutoUpdate {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
-            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, mcdu.flightPlanManager.getDestination().ident);
-                CDUAtcAtisAutoUpdate.ShowPage(mcdu);
+            if (updateInProgress === false && mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, mcdu.flightPlanManager.getDestination().ident, true);
+                CDUAtcAtisAutoUpdate.ShowPage(mcdu, true);
             }
         };
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = () => {
-            if (mcdu.flightPlanManager.getDestination() && mcdu.altDestination.ident) {
-                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, mcdu.altDestination.ident);
-                CDUAtcAtisAutoUpdate.ShowPage(mcdu);
+            if (updateInProgress === false && mcdu.flightPlanManager.getDestination() && mcdu.altDestination.ident) {
+                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, mcdu.altDestination.ident, true);
+                CDUAtcAtisAutoUpdate.ShowPage(mcdu, true);
             }
         };
     }

@@ -74,7 +74,7 @@ async function switchDataBase(mcdu) {
     //    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
     // flight plan
     mcdu.resetCoroute();
-    mcdu.atsu.atc.resetAtisAutoUpdate();
+    mcdu.atsu.resetAtisAutoUpdate();
     await mcdu.flightPlanManager.clearFlightPlan();
     // stored data
     mcdu.dataManager.deleteAllStoredWaypoints();
