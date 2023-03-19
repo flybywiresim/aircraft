@@ -68,7 +68,7 @@ export class LandingSystemSelectionManager {
                 const phase = this.flightPhaseManager.phase;
                 if (phase <= FmgcFlightPhase.Takeoff) {
                     await this.selectDepartureIls();
-                } else if (phase >= FmgcFlightPhase.Climb) {
+                } else if (phase >= FmgcFlightPhase.Descent) {
                     await this.selectApproachIls();
                 } else if (this.pposValid) {
                     const destination = this.fpm.getDestination(FlightPlans.Active);
