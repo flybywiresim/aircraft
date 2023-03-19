@@ -156,6 +156,8 @@
       "DeboardConfirmationConfirm": "Débarquement",
       "DeboardConfirmationTitle": "Débarquer tous les passagers?",
       "EstimatedDurationUnit": "minutes",
+      "GW": "GW",
+      "GWCG": "Centre de gravité GW",
       "LoadingTime": "Loading Time",
       "Passengers": "Passagers",
       "Planned": "Planifié",
@@ -163,6 +165,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
+        "MaxGW": "GW maximal",
+        "MaxGWCG": "Centre de gravité GW maximal",
         "MaxPassengers": "Nombre maximum de passagers",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
@@ -449,26 +453,26 @@
     "UseControllerInput": "Utiliser l'entrée du contrôleur"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Aligner ADIRS",
+    "FinishBoarding": "Finir l'embarquement",
+    "OnScreenKeyboard": "Clavier virtuel",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Connecté",
+    "SimBridgeConnecting": "Connexion...",
+    "SimBridgeOff": "Désactivé",
+    "SimBridgeOffline": "Non disponible",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "Aligner ADIRS instantanément",
+      "AutoBrightness": "Activer/désactiver la luminosité automatique",
+      "Brightness": "Régler la luminosité du flyPad",
+      "FinishBoarding": "Terminer l'embarquement instantanément",
+      "OnScreenKeyboard": "Activer/désactiver le clavier virtuel",
+      "PowerButton": "Éteindre",
+      "Settings": "Accéder à la page des paramètres du flyPad",
+      "SimBridge": "Contrôler la connexion SimBridge",
+      "Sleep": "Veille"
     },
-    "Title": "Quick Controls"
+    "Title": "Commandes rapides"
   },
   "Settings": {
     "About": {
@@ -560,7 +564,7 @@
       "Off": "DÉSACTIVÉ",
       "Save": "Enregistrer",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Addresse d'hôte externe SimBridge",
       "SimBridgePort": "Port externe du serveur SimBridge",
       "SyncMsfsFlightPlan": "Synchroniser le plan de vol MSFS",
       "ThrottleDetents": "Encoches des manettes",
@@ -570,9 +574,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "Synchronisation du ravitaillement GSX",
+      "GsxPayloadEnabled": "Synchronisation de la charge utile GSX",
+      "Title": "Options logiciels tiers"
     },
     "ThrottleConfig": {
       "Apply": "Appliquer",
@@ -641,7 +645,7 @@
       "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Connecté à SimBridge",
       "DisconnectedFromLocalApi": "Déconnecté de SimBridge",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "Cliquez pour ouvrir les commandes rapides",
       "TurnOffOrShutdownEfb": "Éteindre ou arrêter l'EFB"
     },
     "Thu": "Jeu",
@@ -649,13 +653,13 @@
     "Wed": "Mer"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "Vous utilisez l'édition $edition avec la version :",
+    "LatestVersionText": "La dernière version \"$edition\" est",
+    "RecommendationText": "Veuillez mettre à jour votre avion à l'aide du programme d'installation FlyByWire.",
+    "StatusBarWarning": "Version d'avion obsolète",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Veuillez mettre à jour votre avion à l'aide du programme d'installation FlyByWire."
     },
-    "Title": "New Version Available"
+    "Title": "Nouvelle version disponible"
   }
 }

@@ -53,6 +53,13 @@
 1. [SYSTEM] Introduce Typescript based systems in VCockpit17 - @svengcz (Sven)
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
+1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
+1. [FWC] Add GND SPLR NOT ARMED warning - @tracernz (Mike)
+1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
+1. [PRESS] Merge pressurization and air conditioning system - @mjuhe (Miquel Juhe)
+1. [ADIRU] Add baro correction setting to ADIRS - @mjuhe (Miquel Juhe)
+1. [FMGC] Fixed various bugs with thrust reduction and acceleration altitude - @tracernz (Mike)
+1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
 
 ## 0.9.0
 

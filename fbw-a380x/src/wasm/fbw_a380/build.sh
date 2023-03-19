@@ -125,6 +125,7 @@ clang++ \
   "${COMMON_DIR}/fbw_common/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
+  "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/Arinc429Utils.cpp" \
   "${COMMON_DIR}/fbw_common/src/LocalVariable.cpp" \
   "${COMMON_DIR}/fbw_common/src/InterpolatingLookupTable.cpp" \
