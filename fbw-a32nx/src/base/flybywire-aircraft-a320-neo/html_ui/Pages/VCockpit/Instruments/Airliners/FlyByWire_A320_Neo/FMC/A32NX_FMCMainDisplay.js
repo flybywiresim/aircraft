@@ -215,8 +215,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincLandingElevation = FmArinc429OutputWord.empty("LANDING_ELEVATION");
         this.arincDestinationLatitude = FmArinc429OutputWord.empty("DEST_LAT");
         this.arincDestinationLongitude = FmArinc429OutputWord.empty("DEST_LONG");
-        this.arincMDA = FmArinc429OutputWord.apply.empty("MDA");
-        this.arincDH = FmArinc429OutputWord.apply.empty("DH");
+        this.arincMDA = FmArinc429OutputWord.empty("MDA");
+        this.arincDH = FmArinc429OutputWord.empty("DH");
         this.arincThrustReductionAltitude = FmArinc429OutputWord.empty("THR_RED_ALT");
         this.arincAccelerationAltitude = FmArinc429OutputWord.empty("ACC_ALT");
         this.arincEoAccelerationAltitude = FmArinc429OutputWord.empty("EO_ACC_ALT");
@@ -1720,10 +1720,12 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateMinimums() {
-        const ssm = this.shouldTransmitMinimums() ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+        const inRange = this.shouldTransmitMinimums();
+        const MDAssm = inRange && this.perfApprMDA ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+        const DHssm = inRange && this.perfApprDH ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData
 
-        this.arincMDA(this.perfApprMDA ? this.perfApprMDA : 0, ssm, 17, 131072, 0);
-        this.arincDH(this.perfApprDH ? this.perfApprDH : 0, ssm, 16, 8192, 0);
+        this.arincMDA(this.perfApprMDA ? this.perfApprMDA : 0, MDAssm, 17, 131072, 0);
+        this.arincDH(this.perfApprDH ? this.perfApprDH : 0, DHssm, 16, 8192, 0);
     }
 
     shouldTransmitMinimums() {
