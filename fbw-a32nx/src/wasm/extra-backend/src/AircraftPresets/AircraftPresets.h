@@ -6,9 +6,11 @@
 
 #include <cstdint>
 
-#include "AircraftProcedures.h"
 #include "DataManager.h"
 #include "Module.h"
+#include "PresetProcedures.h"
+#include "PresetProceduresDefinition.h"
+#include "ProcedureStep.h"
 
 class MsfsHandler;
 
@@ -31,7 +33,7 @@ class AircraftPresets : public Module {
   AircraftVariablePtr simOnGround{};
 
   // Procedures
-  AircraftProcedures procedures;
+  const PresetProcedures presetProcedures;
 
   // current procedure ID
   int64_t currentProcedureID = 0;
@@ -52,8 +54,10 @@ class AircraftPresets : public Module {
   /**
    * Creates a new AircraftPresets instance and takes a reference to the MsfsHandler instance.
    * @param msfsHandler The MsfsHandler instance that is used to communicate with the simulator.
+   * @param aircraftProceduresDefinitions The AircraftProceduresDefinition instance that is used to define the procedures.
    */
-  explicit AircraftPresets(MsfsHandler& msfsHandler) : Module(msfsHandler) {}
+  explicit AircraftPresets(MsfsHandler& msfsHandler, const PresetProceduresDefinition& aircraftProceduresDefinitions)
+      : Module(msfsHandler), presetProcedures(PresetProcedures(aircraftProceduresDefinitions)) {}
 
   bool initialize() override;
   bool preUpdate(sGaugeDrawData* pData) override;

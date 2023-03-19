@@ -21,20 +21,22 @@
 #include "Example/ExampleModule.h"
 #endif
 
+#include "AircraftPresets/AircraftPresetProcedures_A32NX.h"
 #include "AircraftPresets/AircraftPresets.h"
+#include "AircraftPresets/PresetProcedures.h"
 #include "LightingPresets/LightingPresets.h"
 #include "Pushback/Pushback.h"
 
 MsfsHandler msfsHandler("Gauge_Extra_Backend", "A32NX_");
 #ifdef EXAMPLES
-[[maybe_unused]] ExampleModule exampleModule(msfsHandler);
+ExampleModule exampleModule(msfsHandler);
 #endif
 
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically
-[[maybe_unused]] LightingPresets lightingPresets(msfsHandler);
-[[maybe_unused]] Pushback pushback(msfsHandler);
-[[maybe_unused]] AircraftPresets aircraftPresets(msfsHandler);
+LightingPresets lightingPresets(msfsHandler);
+Pushback pushback(msfsHandler);
+AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::aircraftProcedureDefinition);
 
 /**
  * Gauge Callback

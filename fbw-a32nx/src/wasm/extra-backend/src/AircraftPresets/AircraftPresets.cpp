@@ -5,7 +5,6 @@
 
 #include "AircraftPresets.h"
 #include "AircraftVariable.h"
-#include "MsfsHandler.h"
 #include "NamedVariable.h"
 #include "SimUnits.h"
 #include "logging.h"
@@ -89,7 +88,7 @@ bool AircraftPresets::update(sGaugeDrawData* pData) {
     // needs to be initialized
     if (!loadingIsActive) {
       // get the requested procedure
-      const std::optional<const Procedure*> requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest->getAsInt64());
+      const std::optional<const Procedure*> requestedProcedure = presetProcedures.getProcedure(loadAircraftPresetRequest->getAsInt64());
 
       // check if procedure ID exists
       if (!requestedProcedure.has_value()) {

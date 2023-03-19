@@ -1,7 +1,7 @@
 # add additional compiler definitions for the a32nx extra-backend build
 add_definitions(
 		# ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
-		-DLOG_LEVEL=4
+		-DLOG_LEVEL=5
 		# EXAMPLES | NO_EXAMPLES
 		-DEXAMPLES
 )
@@ -31,7 +31,9 @@ set(INCLUDE_FILES
 	${FBW_COMMON}/extra-backend/Pushback/InertialDampener.h
     ${FBW_COMMON}/extra-backend/Pushback/Pushback.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresets.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftProcedures.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/PresetProcedures.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/ProcedureStep.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/AircraftPresets/AircraftPresetProcedures_A32NX.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets.h
 )
 
