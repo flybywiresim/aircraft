@@ -372,7 +372,13 @@ impl BoardingTestBed {
         for ps in A320Pax::iterator() {
             let pax_num = 0;
             let pax_payload = Mass::default();
-            assert_eq!(self.pax_num(ps), pax_num, "Expected Pax: {}, current Pax: {}", pax_num, self.pax_num(ps));
+            assert_eq!(
+                self.pax_num(ps),
+                pax_num,
+                "Expected Pax: {}, current Pax: {}",
+                pax_num,
+                self.pax_num(ps)
+            );
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
                 pax_payload.get::<pound>().floor()

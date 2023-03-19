@@ -261,7 +261,7 @@ impl Cargo {
 
     pub fn load_cargo_percent(&mut self, percent: f64) {
         if self.cargo_loaded.get::<kilogram>() > 0. {
-            self.cargo = self.cargo_loaded * (percent/100.)
+            self.cargo = self.cargo_loaded * (percent / 100.)
         } else {
             self.cargo = (percent / 100.) * self.cargo_target;
         }
