@@ -44,22 +44,14 @@ export class PlanModePage extends NDPage<PlanModePageProps> {
     private readonly mapParams = new MapParameters();
 
     onShow() {
-        super.onShow();
-
-        this.controlPublisher.pub('set_show_plane', true);
+        this.handleSelectedWaypointPos();
+        this.handleMovePlane();
+        this.handleRotatePlane();
+        this.handleScaleMap();
     }
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
-
-        this.isVisible.sub((visible) => {
-            if (visible) {
-                this.handleSelectedWaypointPos();
-                this.handleMovePlane();
-                this.handleRotatePlane();
-                this.handleScaleMap();
-            }
-        });
 
         this.props.aircraftTrueHeading.sub(() => this.handleRotatePlane());
 
@@ -102,8 +94,11 @@ export class PlanModePage extends NDPage<PlanModePageProps> {
 
                 const [x, y] = this.mapParams.coordinatesToXYy({ lat, long });
 
+                this.controlPublisher.pub('set_show_plane', true);
                 this.controlPublisher.pub('set_plane_x', 768 / 2 + x);
                 this.controlPublisher.pub('set_plane_y', 768 / 2 + y);
+            } else {
+                this.controlPublisher.pub('set_show_plane', false);
             }
         }
     }
@@ -140,6 +135,7 @@ export class PlanModePage extends NDPage<PlanModePageProps> {
         const long = this.selectedWaypointLongSub.get();
 
         if (this.isVisible.get()) {
+            this.controlPublisher.pub('set_show_map', true);
             this.controlPublisher.pub('set_map_center_lat', lat);
             this.controlPublisher.pub('set_map_center_lon', long);
             this.controlPublisher.pub('set_map_up_course', 0);

@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, VNode, Subject, EventBus } from 'msfssdk';
+import { FSComponent, DisplayComponent, VNode, Subject, EventBus, MappedSubject } from 'msfssdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { NDControlEvents } from '../NDControlEvents';
@@ -10,7 +10,13 @@ const PLANE_Y_OFFSET = 0;
 export class Airplane extends DisplayComponent<{ bus: EventBus }> {
     private readonly headingWord = Arinc429RegisterSubject.createEmpty();
 
+    private readonly headingWordValid = this.headingWord.map((it) => it.isNormalOperation());
+
     private readonly showPlane = Subject.create(false);
+
+    private readonly planeVisibility = MappedSubject.create(([headingValid, showPlane]) => headingValid && showPlane, this.headingWordValid, this.showPlane);
+
+    private readonly circleVisibility = MappedSubject.create(([headingValid, showPlane]) => !headingValid && showPlane, this.headingWordValid, this.showPlane);
 
     private readonly x = Subject.create(0);
 
@@ -49,7 +55,7 @@ export class Airplane extends DisplayComponent<{ bus: EventBus }> {
                 x={this.x.map((x) => x + PLANE_X_OFFSET)}
                 y={this.y.map((y) => y + PLANE_Y_OFFSET)}
             >
-                <g visibility={this.headingWord.map((it) => (it.isNormalOperation() ? 'inherit' : 'hidden'))} transform={this.rotation.map((rotation) => `rotate(${rotation} ${-PLANE_X_OFFSET} 0)`)}>
+                <g visibility={this.planeVisibility.map((it) => (it ? 'inherit' : 'hidden'))} transform={this.rotation.map((rotation) => `rotate(${rotation} ${-PLANE_X_OFFSET} 0)`)}>
                     <path
                         class="shadow"
                         stroke-width={8}
@@ -67,7 +73,7 @@ export class Airplane extends DisplayComponent<{ bus: EventBus }> {
                 <circle
                     class="Red"
                     stroke-width={2}
-                    visibility={this.headingWord.map((it) => (it.isNormalOperation() ? 'hidden' : 'inherit'))}
+                    visibility={this.circleVisibility.map((it) => (it ? 'inherit' : 'hidden'))}
                     cx={-PLANE_X_OFFSET}
                     cy={-PLANE_Y_OFFSET}
                     r={9}

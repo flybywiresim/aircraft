@@ -57,35 +57,20 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
         return 0;
     }, this.props.isUsingTrackUpMode, this.props.headingWord, this.props.trackWord);
 
-    private readonly trkFlagShown = MappedSubject.create(([isUsingTrackUpMode, trackWord]) => {
-        if (isUsingTrackUpMode) {
-            return !trackWord.isNormalOperation();
-        }
-
-        return false;
-    }, this.props.isUsingTrackUpMode, this.props.trackWord);
-
-    private readonly hdgFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.props.headingWord);
-
     private readonly mapFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.props.headingWord);
 
     onShow() {
         super.onShow();
 
         this.handleMovePlane();
+        this.handleRotatePlane();
+        this.handleMoveMap();
+        this.handleMapRotation();
+        this.handleScaleMap();
     }
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
-
-        this.isVisible.sub((visible) => {
-            if (visible) {
-                this.handleRotatePlane();
-                this.handleMoveMap();
-                this.handleMapRotation();
-                this.handleScaleMap();
-            }
-        });
 
         const sub = this.props.bus.getSubscriber<AdirsSimVars & EcpSimVars>();
 
@@ -254,8 +239,6 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                     rotation={this.planeRotation}
                 />
 
-                <Flag shown={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
-                <Flag shown={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
                 <Flag shown={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
 
                 <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} />

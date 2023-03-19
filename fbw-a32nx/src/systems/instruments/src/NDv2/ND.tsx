@@ -84,6 +84,26 @@ export class NDComponent extends DisplayComponent<NDProps> {
         return pageChange || rangeChange;
     }, this.pageChangeInProgress, this.rangeChangeInProgress);
 
+    private readonly trkFlagShown = MappedSubject.create(([isUsingTrackUpMode, trackWord, currentPageMode]) => {
+        if (currentPageMode === EfisNdMode.PLAN) {
+            return false;
+        }
+
+        if (isUsingTrackUpMode) {
+            return !trackWord.isNormalOperation();
+        }
+
+        return false;
+    }, this.isUsingTrackUpMode, this.magneticTrackWord, this.currentPageMode);
+
+    private readonly hdgFlagShown = MappedSubject.create(([headingWord, currentPageMode]) => {
+        if (currentPageMode === EfisNdMode.PLAN) {
+            return false;
+        }
+
+        return !headingWord.isNormalOperation();
+    }, this.magneticHeadingWord, this.currentPageMode);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -248,6 +268,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <Flag shown={Subject.create(false)} x={384} y={54} class="Cyan FontSmallest">TRUE</Flag>
                     <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
                     <Flag shown={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
+                    <Flag shown={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
+                    <Flag shown={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
 
                     <Flag shown={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
                         RANGE CHANGE
