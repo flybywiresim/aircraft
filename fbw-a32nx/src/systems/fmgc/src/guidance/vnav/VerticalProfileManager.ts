@@ -197,6 +197,10 @@ export class VerticalProfileManager {
             );
         }
 
+        if (this.fcuModes.isInSelectedVerticalMode()) {
+            ndProfile.resetAltitudeConstraints();
+        }
+
         // TODO: Handle Takeoff and Go arounds
 
         ndProfile.addPresentPositionCheckpoint(presentPosition, fuelOnBoard, this.getManagedMachTarget(), this.getVman(approachSpeed));
@@ -533,6 +537,8 @@ class FcuModeObserver {
 
     private VERT_LEVEL_MODES: VerticalMode[] = [VerticalMode.ALT, VerticalMode.ALT_CPT, VerticalMode.ALT_CST, VerticalMode.ALT_CST_CPT];
 
+    private VERT_SELECTED_MODES: VerticalMode[] = [VerticalMode.OP_CLB, VerticalMode.OP_DES, VerticalMode.VS, VerticalMode.FPA];
+
     constructor(private readonly observer: VerticalProfileComputationParametersObserver) {
 
     }
@@ -579,5 +585,11 @@ class FcuModeObserver {
         const { fcuVerticalMode } = this.observer.get();
 
         return fcuVerticalMode === VerticalMode.SRS_GA;
+    }
+
+    public isInSelectedVerticalMode(): boolean {
+        const { fcuVerticalMode } = this.observer.get();
+
+        return this.VERT_SELECTED_MODES.includes(fcuVerticalMode);
     }
 }
