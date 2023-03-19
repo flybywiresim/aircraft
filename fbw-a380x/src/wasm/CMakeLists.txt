@@ -4,7 +4,7 @@ set(OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../out/flybywire-aircraft-a3
 # add compiler definitions
 add_definitions(-DA380X)
 
-#add_subdirectory(extra-backend)
+add_subdirectory(extra-backend-a380x)
 
 # FIXME: remove the if-clause as soon as all components are using CMake
 if (WIN32)

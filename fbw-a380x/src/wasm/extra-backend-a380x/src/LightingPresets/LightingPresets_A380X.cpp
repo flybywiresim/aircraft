@@ -4,18 +4,14 @@
 #include <MSFS/Legacy/gauges.h>
 #include <iostream>
 
-#include "AircraftVariable.h"
-#include "LightingPresets.h"
-#include "MsfsHandler.h"
-#include "NamedVariable.h"
+#include "LightingPresets_A380X.h"
 #include "logging.h"
-#include "math_utils.hpp"
 
 ///
 // DataManager Howto Note:
 // =======================
 
-// The LightingPresets module uses the DataManager to get and set variables.
+// The LightingPresets_A32NX module uses the DataManager to get and set variables.
 // Looking at the make_xxx_var functions, you can see that they are updated
 // with different update cycles.
 //
@@ -29,11 +25,11 @@
 // The rest are read on demand after the state of the above variables have been checked.
 //
 // This makes sure variables are only read or written to when really needed. And as
-// LightingPresets will be dormant most of the time, this is saving a lot of
+// LightingPresets_A32NX will be dormant most of the time, this is saving a lot of
 // unnecessary reads/writes.
 ///
 
-bool LightingPresets::initialize() {
+bool LightingPresets_A380X::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // Events for setting the aircraft variables
@@ -78,49 +74,7 @@ bool LightingPresets::initialize() {
   saveLightingPresetRequest->setAsInt64(0);
 
   _isInitialized = true;
-  LOG_INFO("LightingPresets initialized");
-  return true;
-}
-
-bool LightingPresets::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
-  //  std::cout << "LightingPresets::preUpdate()" << std::endl;
-  return true;
-}
-
-bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
-  if (!_isInitialized) {
-    LOG_ERROR("LightingPresets::update() - not initialized");
-    return false;
-  }
-
-  // only run when aircraft is powered
-  if (!msfsHandler.getAircraftIsReadyVar() || !elecAC1Powered->getAsBool()) {
-    return true;
-  }
-
-  // load becomes priority in case both vars are set.
-  if (loadLightingPresetRequest->getAsBool()) {
-    const INT64 presetRequest = loadLightingPresetRequest->getAsInt64();
-    if (loadLightingPreset(presetRequest)) {
-      loadLightingPresetRequest->setAsInt64(0);
-      LOG_INFO("LightingPresets: Lighting Preset: " + std::to_string(presetRequest) + " successfully loaded.");
-    }
-  } else if (saveLightingPresetRequest->getAsBool()) {
-    saveLightingPreset(saveLightingPresetRequest->getAsInt64());
-    saveLightingPresetRequest->setAsInt64(0);
-  }
-
-  return true;
-}
-
-bool LightingPresets::postUpdate([[maybe_unused]] sGaugeDrawData* pData) {
-  // empty
-  return true;
-}
-
-bool LightingPresets::shutdown() {
-  _isInitialized = false;
-  LOG_INFO("LightingPresets::shutdown()");
+  LOG_INFO("LightingPresets_A32NX initialized");
   return true;
 }
 
@@ -128,30 +82,7 @@ bool LightingPresets::shutdown() {
 // PRIVATE METHODS
 // =================================================================================================
 
-bool LightingPresets::loadLightingPreset(int64_t loadPresetRequest) {
-  // Read current values to be able to calculate intermediate values which are then applied to the aircraft
-  // Once the intermediate values are identical to the target values then the load is finished
-  readFromAircraft();
-  if (readFromStore(loadPresetRequest)) {
-    bool finished = calculateIntermediateValues();
-    applyToAircraft();
-    return finished;
-  }
-  LOG_WARN("LightingPresets: Loading Lighting Preset: " + std::to_string(loadPresetRequest) + " failed.");
-  return true;
-}
-
-void LightingPresets::saveLightingPreset(int64_t savePresetRequest) {
-  std::cout << "LightingPresets: Save to Lighting Preset: " << savePresetRequest << std::endl;
-  readFromAircraft();
-  if (saveToStore(savePresetRequest)) {
-    LOG_INFO("LightingPresets: Lighting Preset: " + std::to_string(savePresetRequest) + " successfully saved.");
-    return;
-  }
-  LOG_WARN("LightingPresets: Saving Lighting Preset: " + std::to_string(savePresetRequest) + " failed.");
-}
-
-void LightingPresets::readFromAircraft() {
+void LightingPresets_A380X::readFromAircraft() {
   currentLightValues.efbBrightness = efbBrightness->readFromSim();
   currentLightValues.cabinLightLevel = lightCabinLevel->readFromSim();
   currentLightValues.ovhdIntegralLightLevel = ovhdIntegralLightLevel->readFromSim();
@@ -178,7 +109,7 @@ void LightingPresets::readFromAircraft() {
   currentLightValues.floodPedLightLevel = floodPedLightLevel->readFromSim();
 }
 
-void LightingPresets::applyToAircraft() {
+void LightingPresets_A380X::applyToAircraft() {
   efbBrightness->setAndWriteToSim(intermediateLightValues.efbBrightness);
   setValidCabinLightValue(intermediateLightValues.cabinLightLevel);
   ovhdIntegralLightLevel->setAndWriteToSim(intermediateLightValues.ovhdIntegralLightLevel);
@@ -205,21 +136,13 @@ void LightingPresets::applyToAircraft() {
   floodPedLightLevel->setAndWriteToSim(intermediateLightValues.floodPedLightLevel);
 }
 
-bool LightingPresets::readFromStore(int64_t presetNr) {
-  // create ini file and data structure
-  mINI::INIStructure ini;
-  mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
-
-  // load file
-  bool result = iniFile.read(ini);
-
-  const std::string iniSectionName = "iniSectionName " + std::to_string(presetNr);
-
+void LightingPresets_A380X::loadFromIni(const mINI::INIStructure& ini,
+                                          const std::string& iniSectionName) {
   // check if iniSectionName is available
   // if not use a 50% default iniSectionName
   if (!ini.has(iniSectionName)) {
-    loadFromData(DEFAULT_50);
-    return true;
+    intermediateLightValues = DEFAULT_50;
+    return;
   }
 
   // reading data structure from ini
@@ -247,20 +170,9 @@ bool LightingPresets::readFromStore(int64_t presetNr) {
   loadedLightValues.floodPnlLightLevel = iniGetOrDefault(ini, iniSectionName, "flood_pnl_lt", 50.0);
   loadedLightValues.pedestalIntegralLightLevel = iniGetOrDefault(ini, iniSectionName, "pedestal_int_lt", 50.0);
   loadedLightValues.floodPedLightLevel = iniGetOrDefault(ini, iniSectionName, "flood_ped_lvl", 50.0);
-
-  return result;
 }
 
-bool LightingPresets::saveToStore(int64_t presetNr) {
-  // create ini file and data structure
-  mINI::INIStructure ini;
-  mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
-
-  // load file
-  bool result = iniFile.read(ini);
-
-  // add/update iniSectionName
-  const std::string iniSectionName = "iniSectionName " + std::to_string(presetNr);
+void LightingPresets_A380X::saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const {
   ini[iniSectionName]["efb_brightness"] = std::to_string(currentLightValues.efbBrightness);
   ini[iniSectionName]["cabin_light"] = std::to_string(currentLightValues.cabinLightLevel);
   ini[iniSectionName]["ovhd_int_lt"] = std::to_string(currentLightValues.ovhdIntegralLightLevel);
@@ -285,17 +197,9 @@ bool LightingPresets::saveToStore(int64_t presetNr) {
   ini[iniSectionName]["flood_pnl_lt"] = std::to_string(currentLightValues.floodPnlLightLevel);
   ini[iniSectionName]["pedestal_int_lt"] = std::to_string(currentLightValues.pedestalIntegralLightLevel);
   ini[iniSectionName]["flood_ped_lvl"] = std::to_string(currentLightValues.floodPedLightLevel);
-
-  result &= iniFile.write(ini, true);
-
-  return result;
 }
 
-void LightingPresets::loadFromData(LightingValues lv) {
-  intermediateLightValues = lv;
-}
-
-[[maybe_unused]] std::string LightingPresets::sprint() const {
+[[maybe_unused]] std::string LightingPresets_A380X::str() const {
   std::ostringstream os;
   os << "EFB Brightness: " << intermediateLightValues.efbBrightness << std::endl;
   os << "Cabin Light: " << intermediateLightValues.cabinLightLevel << std::endl;
@@ -324,29 +228,7 @@ void LightingPresets::loadFromData(LightingValues lv) {
   return os.str();
 }
 
-double LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
-                                        const std::string& section,
-                                        const std::string& key,
-                                        const double defaultValue) {
-  if (ini.get(section).has(key)) {
-    // As MSFS wasm does not support exceptions (try/catch) we can't use
-    // std::stof here. Workaround with std::stringstreams.
-    std::stringstream input(ini.get(section).get(key));
-    double value = defaultValue;
-    if (input >> value) {
-      return value;
-    } else {
-      LOG_WARN("LightingPresets: reading ini value for [" + section + "] " + key + " = " + ini.get(section).get(key) + " failed.");
-    }
-  }
-  return defaultValue;
-}
-
-std::shared_ptr<AircraftVariable> LightingPresets::getLightPotentiometerVar(int index) const {
-  return dataManager->make_aircraft_var("LIGHT POTENTIOMETER", index, "", lightPotentiometerSetEvent, UNITS.Percent, false, false, 0.0, 0);
-}
-
-void LightingPresets::setValidCabinLightValue(FLOAT64 level) {
+void LightingPresets_A380X::setValidCabinLightValue(FLOAT64 level) {
   // cabin light level needs to either be 0, 50 or 100 for the switch position
   // in the aircraft to work.
   if (level <= 0.0) {
@@ -362,7 +244,7 @@ void LightingPresets::setValidCabinLightValue(FLOAT64 level) {
   lightCabin->setAndWriteToSim(level > 0 ? 1 : 0);
 }
 
-bool LightingPresets::calculateIntermediateValues() {
+bool LightingPresets_A380X::calculateIntermediateValues() {
   // clang-format off
   intermediateLightValues.efbBrightness = convergeValue(loadedLightValues.efbBrightness, currentLightValues.efbBrightness);
   intermediateLightValues.cabinLightLevel = loadedLightValues.cabinLightLevel;
@@ -390,19 +272,4 @@ bool LightingPresets::calculateIntermediateValues() {
   intermediateLightValues.floodPedLightLevel = convergeValue(loadedLightValues.floodPedLightLevel, currentLightValues.floodPedLightLevel);
   // clang-format on
   return intermediateLightValues == loadedLightValues;
-}
-
-FLOAT64 LightingPresets::convergeValue(FLOAT64 target, FLOAT64 momentary) {
-  if (target > momentary) {
-    momentary += STEP_SIZE;
-    if (momentary > target) {
-      momentary = target;
-    }
-  } else if (target < momentary) {
-    momentary -= STEP_SIZE;
-    if (momentary < target) {
-      momentary = target;
-    }
-  }
-  return momentary;
 }
