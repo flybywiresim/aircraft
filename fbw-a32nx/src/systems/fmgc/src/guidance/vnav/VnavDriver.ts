@@ -350,7 +350,7 @@ export class VnavDriver implements GuidanceComponent {
     public findNextSpeedChange(): NauticalMiles | null {
         const { presentPosition, flightPhase, fcuAltitude, fcuSpeedManaged, fcuExpediteModeActive } = this.computationParametersObserver.get();
 
-        if (!fcuSpeedManaged || fcuExpediteModeActive || flightPhase === FmgcFlightPhase.Approach) {
+        if (!this.ndProfile || !fcuSpeedManaged || fcuExpediteModeActive || flightPhase === FmgcFlightPhase.Approach) {
             return null;
         }
 
@@ -361,7 +361,7 @@ export class VnavDriver implements GuidanceComponent {
             speedTargetType = ManagedSpeedType.Descent;
         }
 
-        const distanceToPresentPosition = this.constraintReader.distanceToPresentPosition;
+        const distanceToPresentPosition = this.ndProfile.distanceToPresentPosition;
         const decelPointSpeed = this.decelPoint?.speed;
 
         // We don't want to show the speed change dot at acceleration altiude, so we have to make sure the speed target is econ speed, not SRS speed.
