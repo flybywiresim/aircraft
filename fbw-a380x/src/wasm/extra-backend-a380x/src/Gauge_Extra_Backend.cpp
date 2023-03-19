@@ -26,12 +26,16 @@
 #include "LightingPresets/LightingPresets_A380X.h"
 #include "Pushback/Pushback.h"
 
+
 // FIXME: Using the A32NX_ prefix is a workaround until the A380X_ prefix is used
 //  in the A380X EFB
-MsfsHandler msfsHandler("Gauge_Extra_Backend", "A32NX_");
+MsfsHandler msfsHandler("Gauge_Extra_Backend_A380X", "A32NX_");
 #ifdef EXAMPLES
 ExampleModule exampleModule(msfsHandler);
 #endif
+
+// FIXME: As the A380X does not yet provide the "A...._IS_READY" LVAR the modules will
+//  not be working as expected. They will return from their update() method immediately.
 
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically

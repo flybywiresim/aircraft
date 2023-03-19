@@ -26,7 +26,7 @@
 #include "LightingPresets/LightingPresets_A32NX.h"
 #include "Pushback/Pushback.h"
 
-MsfsHandler msfsHandler("Gauge_Extra_Backend", "A32NX_");
+MsfsHandler msfsHandler("Gauge_Extra_Backend_A32NX", "A32NX_");
 #ifdef EXAMPLES
 ExampleModule exampleModule(msfsHandler);
 #endif
