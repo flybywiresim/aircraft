@@ -24,23 +24,23 @@ message("MSFS SDK: " ${MSFS_SDK})
 
 # add the include paths
 include_directories(
-        "${MSFS_SDK}/WASM/include"
-        "${MSFS_SDK}/WASM/wasi-sysroot/include"
-        "${MSFS_SDK}/WASM/wasi-sysroot/include/c++/v1"
-        "${MSFS_SDK}/SimConnect SDK/include"
-        "${FBW_COMMON}/cpp-msfs-framework/lib"
-        "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler"
-        "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler/DataTypes"
+    "${MSFS_SDK}/WASM/include"
+    "${MSFS_SDK}/WASM/wasi-sysroot/include"
+    "${MSFS_SDK}/WASM/wasi-sysroot/include/c++/v1"
+    "${MSFS_SDK}/SimConnect SDK/include"
+    "${FBW_COMMON}/cpp-msfs-framework/lib"
+    "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler"
+    "${FBW_COMMON}/cpp-msfs-framework/MsfsHandler/DataTypes"
 )
 
 # add compiler definitions
 add_definitions(
-        -D_MSFS_WASM=1
-        -D__wasi__
-        -D_LIBC_NO_EXCEPTIONS
-        -D_LIBCPP_HAS_NO_THREADS
-        -D_WINDLL
-        -D_MBCS
+    -D_MSFS_WASM=1
+    -D__wasi__
+    -D_LIBC_NO_EXCEPTIONS
+    -D_LIBCPP_HAS_NO_THREADS
+    -D_WINDLL
+    -D_MBCS
 )
 
 # add the common components
