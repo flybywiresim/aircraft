@@ -23,7 +23,7 @@
 
 #include "AircraftPresets/AircraftPresetProcedures_A32NX.h"
 #include "AircraftPresets/AircraftPresets.h"
-#include "LightingPresets/LightingPresets.h"
+#include "LightingPresets/LightingPresets_A32NX.h"
 #include "Pushback/Pushback.h"
 
 MsfsHandler msfsHandler("Gauge_Extra_Backend", "A32NX_");
@@ -33,7 +33,7 @@ ExampleModule exampleModule(msfsHandler);
 
 // ADD ADDITIONAL MODULES HERE
 // This is the only place these have to be added - everything else is handled automatically
-LightingPresets lightingPresets(msfsHandler);
+LightingPresets_A32NX lightingPresets(msfsHandler);
 Pushback pushback(msfsHandler);
 AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::aircraftProcedureDefinition);
 

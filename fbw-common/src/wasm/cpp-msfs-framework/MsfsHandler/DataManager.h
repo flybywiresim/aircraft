@@ -18,18 +18,13 @@
 #include "logging.h"
 
 #include "NamedVariable.h"
-
+#include "AircraftVariable.h"
 #include "ClientDataAreaVariable.hpp"
 #include "DataDefinitionVariable.hpp"
 #include "StreamingClientDataAreaVariable.hpp"
 
 // Forward declarations
 class MsfsHandler;
-class CacheableVariable;
-class AircraftVariable;
-class SimObjectBase;
-struct DataDefinition;
-class ClientEvent;
 
 // convenience typedefs
 typedef std::shared_ptr<CacheableVariable> CacheableVariablePtr;
