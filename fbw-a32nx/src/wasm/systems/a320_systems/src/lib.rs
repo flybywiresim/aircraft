@@ -22,7 +22,9 @@ use electrical::{
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
+use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
+use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
     apu::{
@@ -66,6 +68,7 @@ pub struct A320 {
     landing_gear: LandingGear,
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
+    egpwc: EnhancedGroundProximityWarningComputer,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
@@ -105,6 +108,19 @@ impl A320 {
             landing_gear: LandingGear::new(context),
             pneumatic: A320Pneumatic::new(context),
             radio_altimeters: A320RadioAltimeters::new(context),
+            egpwc: EnhancedGroundProximityWarningComputer::new(
+                context,
+                ElectricalBusType::DirectCurrent(1),
+                vec![
+                    Length::new::<nautical_mile>(10.0),
+                    Length::new::<nautical_mile>(20.0),
+                    Length::new::<nautical_mile>(40.0),
+                    Length::new::<nautical_mile>(80.0),
+                    Length::new::<nautical_mile>(160.0),
+                    Length::new::<nautical_mile>(320.0),
+                ],
+                0,
+            ),
         }
     }
 }
@@ -212,6 +228,8 @@ impl Aircraft for A320 {
             &self.pressurization_overhead,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
+
+        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
     }
 }
 impl SimulationElement for A320 {
@@ -241,6 +259,7 @@ impl SimulationElement for A320 {
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
+        self.egpwc.accept(visitor);
 
         visitor.visit(self);
     }
