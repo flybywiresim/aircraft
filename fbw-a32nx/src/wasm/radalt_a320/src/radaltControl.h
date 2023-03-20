@@ -129,7 +129,7 @@ ProbeStruct probePosition;
 ProbeInfo	probeIndexnfo[MAX_AI];
 
 double probeSNR(double beamActual) {
-	return 10 * std::log10(K / std::pow(beamActual, 4));
+	return (10 * std::log10(K / std::pow(beamActual, 4))) - NOISE_FLOOR;
 }
 
 // Returns new lat/ long probe coordinates for each probe
