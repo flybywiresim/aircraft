@@ -1,8 +1,12 @@
 import React from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
-import { AtsuTimestamp } from '@atsu/messages/AtsuTimestamp';
-import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from '@atsu/messages/CpdlcMessageElements';
-import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
+import {
+    AtsuMessageComStatus,
+    AtsuMessageDirection,
+    CpdlcMessageExpectedResponseType,
+    CpdlcMessagesDownlink,
+    CpdlcMessage,
+    CpdlcMessageMonitoringState,
+} from '@datalink/common';
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {
@@ -119,13 +123,15 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
     let title = '';
     if (message.MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
         if (message.SemanticResponseRequired) {
-            title = `${message.Response?.Timestamp?.dcduTimestamp()} TO ${message.Response?.Station}`;
-        } else {
-            title = (new AtsuTimestamp()).dcduTimestamp();
+            title = `${message.Response?.Timestamp?.mailboxTimestamp()} TO ${message.Response?.Station}`;
+        } else if (message.ReminderTimestamp !== null) {
+            title = message.ReminderTimestamp.mailboxTimestamp();
             text = '';
+        } else {
+            title = '----Z';
         }
     } else {
-        title = `${message.Timestamp?.dcduTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;
+        title = `${message.Timestamp?.mailboxTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;
     }
 
     return (

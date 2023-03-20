@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useUpdate } from '@instruments/common/hooks';
+import { PressureIndicator } from 'instruments/src/ISIS/PressureIndicator';
 
 enum DisplayUnitState {
     On,
@@ -84,6 +85,7 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
                             s
                         </text>
                     </g>
+                    <PressureIndicator />
                 </svg>
             </>
         );

@@ -1,7 +1,5 @@
 import React from 'react';
-import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { UplinkMonitor } from '@atsu/components/UplinkMessageMonitoring';
+import { AtsuMessageComStatus, CpdlcMessage, UplinkMonitor } from '@datalink/common';
 import { Button } from './Button';
 
 type RogerButtonsProps = {

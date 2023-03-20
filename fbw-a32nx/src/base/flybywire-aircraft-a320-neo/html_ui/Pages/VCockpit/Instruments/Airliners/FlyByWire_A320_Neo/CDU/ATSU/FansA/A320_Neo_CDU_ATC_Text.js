@@ -34,10 +34,10 @@ class CDUAtcTextFansA {
 
         // create the freetext elements
         if (freetextLines.length !== 0) {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
-                freetextElement = Atsu.CpdlcMessagesDownlink["DM98"][1].deepCopy();
+            if (mcdu.atsu.fansMode() === AtsuCommon.FansMode.FansB) {
+                freetextElement = AtsuCommon.CpdlcMessagesDownlink["DM98"][1].deepCopy();
             } else {
-                freetextElement = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+                freetextElement = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             }
             freetextElement.Content[0].Value = freetextLines.join("\n");
         }
@@ -45,24 +45,24 @@ class CDUAtcTextFansA {
         // create the extensions
         let extension = null;
         if (data.performance) {
-            extension = Atsu.CpdlcMessagesDownlink["DM66"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM66"][1].deepCopy();
         } else if (data.weather) {
-            extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         } else if (data.turbulence) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = 'DUE TO TURBULENCE';
         } else if (data.discretion) {
-            extension = Atsu.CpdlcMessagesDownlink["DM75"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM75"][1].deepCopy();
         } else if (data.icing) {
-            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension = AtsuCommon.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = 'DUE TO ICING';
         }
 
         if (messages.length === 0) {
             // the freetext is set (guaranteed due to CanSendData)
-            messages.push(new Atsu.CpdlcMessage());
+            messages.push(new AtsuCommon.CpdlcMessage());
             messages[0].Content.push(freetextElement);
-            messages[0].Station = mcdu.atsu.atc.currentStation();
+            messages[0].Station = mcdu.atsu.currentStation();
             updateFreetext = false;
         }
 
@@ -254,12 +254,12 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
-                        mcdu.atsu.atc.updateMessage(prepMessages[0]);
+                        mcdu.atsu.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
                     }
@@ -388,12 +388,12 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
-                if (mcdu.atsu.atc.currentStation() === "") {
+                if (mcdu.atsu.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
-                        mcdu.atsu.atc.updateMessage(prepMessages[0]);
+                        mcdu.atsu.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
                     }

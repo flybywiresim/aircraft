@@ -7,8 +7,8 @@ export * from './utils/Subscribable';
 export * from './utils/Subject';
 export * from './utils/ArraySubject';
 export * from './utils/ComputedSubject';
-
 export * from './utils/SubEvent';
+export * from './utils/DebounceTimer';
 
 export * from './data';
 export * from './instruments';

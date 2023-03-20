@@ -19,8 +19,8 @@ scripts                                         <flybywire monorepo - will be re
 ├── build_a380x.sh                              Only builds A380X (only wasm for now)
 ├── cdn.sh                                      Upload to CDN (bunny - deprecated)
 ├── cf-cdn.sh                                   Upload to CloudFlare CDN
-├── fragment.js                                 Splits up downloadable files into fragments
-├── install-source.js                           Creates install.json
+├── fragment_a32nx.js                           Splits up A32NX downloadable files into fragments
+├── install-source_a32nx.js                     Creates A32NX install.json
 ├── lint-rust.js                                Start the rust linter
 ├── metadata.js                                 Creates A3xxx_build_info.json
 ├── pretty-realease-name.js                     Helper to get a better release name

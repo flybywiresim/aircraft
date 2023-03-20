@@ -436,25 +436,19 @@
     - Bool
     - If the ILS is tuned via the RMP
 
-- A32NX_TO_CONFIG_FLAPS_ENTERED
-    - Bool
-    - True if the pilot has entered a FLAPS value in the PERF TAKE OFF takeoff
-
 - A32NX_TO_CONFIG_FLAPS
     - Enum
-    - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry.
+    - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry, -1 if not entered
 
 - A32NX_TO_CONFIG_THS_ENTERED
+    - ** Deprecated, see `A32NX_FM{number}_TO_PITCH_TRIM`
     - Bool
     - True if the pilot has entered a THS value in the PERF TAKEO FF takeoff
 
 - A32NX_TO_CONFIG_THS
+    - ** Deprecated, see `A32NX_FM{number}_TO_PITCH_TRIM`
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
-
-- A32NX_ENG_OUT_ACC_ALT
-    - feet
-    - The engine out acceleration altitude, set in the PERF TAKE OFF page.
 
 - A32NX_SLIDES_ARMED
     - Boolean
@@ -1510,9 +1504,33 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<hPa>
     - The corrected average static pressure.
 
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the first officer side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the first officer side.
+
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
-    - The altitude.
+    - The pressure altitude in feet.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTED_ALTITUDE_{side}
+    - Arinc429Word<Feet>
+    - The baro corrected altitude in feet.
+    - TODO currently returns pressure altitude when STD mode is selected
+    - {side}
+        - 1: Captain
+        - 2: First Officer
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
     - Arinc429Word<Knots>
@@ -1537,10 +1555,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
     - Arinc429Word<Celsius>
     - The total air temperature (TAT).
-
-- A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
-    - Arinc429Word<Celsius>
-    - The delta (deviation) from international standard atmosphere temperature.
 
 - A32NX_ADIRS_ADR_{number}_ANGLE_OF_ATTACK
     - Arinc429Word<Degrees>
@@ -1738,10 +1752,95 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
+- L:A32NX_FM{number}_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_DEST_LAT
+    - Destination latitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_DEST_LONG
+    - Destination longitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_DISCRETE_WORD_2
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 13  | Takeoff flap conf 0               |
+      | 14  | Takeoff flap conf 1               |
+      | 15  | Takeoff flap conf 2               |
+      | 16  | Takeoff flap conf 3               |
+
+- A32NX_FM{number}_DISCRETE_WORD_3
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 16  | V1/Vr/V2 disagree                 |
+      | 17  | Takeoff speeds too low            |
+      | 18  | Takeoff speeds not inserted       |
+
+- L:A32NX_FM{number}_EO_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 - L:A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
-    - **Temporary:** there are also simvars with _SSM suffix to carry the SSM until JS is able to write ARINC simvars
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_EO_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_THR_RED_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach thrust reduction altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_THR_RED_ALT
+    - ARINC429<number> (feet MSL)
+    - The thrust reduction altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_TO_PITCH_TRIM
+    - Takeoff pitch trim set by the pilot on the PERF TO MCDU page
+    - Arinc429<Angle>
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -2485,7 +2584,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent open of the cabin pressure safety valves
 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
-    - **Deprecated**
+    - **Deprecated**, - ** Deprecated, see `A32NX_FM{number}_LANDING_ELEVATION`
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
 
@@ -3469,15 +3568,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
-
 ## Radio Altimeter (ATA 34)
 
 - A32NX_RA_{number}_RADIO_ALTITUDE
     - `Arinc429Word<Feet>`
     - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
     - {number}
-        - 0
         - 1
+        - 2
 
 ## Electronic Flight Bag (ATA 46)
 
