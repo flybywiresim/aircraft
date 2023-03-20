@@ -134,7 +134,7 @@
       "LeftInnerTank": "Serbatoio Interno Sinistro",
       "LeftOuterTank": "Serbatoio Esterno Sinistro",
       "ReadyToStart": "Pronto per Iniziare",
-      "Refuel": "Rifornimento",
+      "Refuel": "Rifornisci",
       "RefuelTime": "Durata Rifornimento",
       "Refueling": "Rifornendo",
       "RightInnerTank": "Serbatoio Interno Destro",
@@ -663,5 +663,6 @@
     "Title": "Nuova Versione Disponibile"
   }
 }
+
 
 
