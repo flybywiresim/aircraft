@@ -81,7 +81,8 @@ pub trait PressurizationOverheadShared {
 /// 1X is main deck, 2X is upper deck
 pub enum ZoneType {
     Cockpit,
-    Cabin(usize),
+    Cabin(u8),
+    Cargo(u8),
 }
 
 impl ZoneType {
@@ -90,13 +91,14 @@ impl ZoneType {
             ZoneType::Cockpit => 0,
             ZoneType::Cabin(number) => {
                 if number < &10 {
-                    *number
+                    *number as usize
                 } else if number < &20 {
                     *number as usize - 10
                 } else {
                     *number as usize - 13
                 }
             }
+            ZoneType::Cargo(number) => *number as usize + 15,
         }
     }
 }
@@ -123,6 +125,11 @@ impl Display for ZoneType {
                 25 => write!(f, "UPPER_DECK_5"),
                 26 => write!(f, "UPPER_DECK_6"),
                 27 => write!(f, "UPPER_DECK_7"),
+                _ => panic!("Not implemented for this aircraft."),
+            },
+            ZoneType::Cargo(number) => match number {
+                1 => write!(f, "CARGO_FWD"),
+                2 => write!(f, "CARGO_BULK"),
                 _ => panic!("Not implemented for this aircraft."),
             },
         }

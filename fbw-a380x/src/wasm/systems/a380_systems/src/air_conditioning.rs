@@ -33,7 +33,7 @@ use uom::si::{
 };
 
 pub(super) struct A380AirConditioning {
-    a320_cabin: A320Cabin,
+    a380_cabin: A380Cabin,
     a380_air_conditioning_system: A380AirConditioningSystem,
     a320_pressurization_system: A320PressurizationSystem,
 
@@ -44,7 +44,7 @@ impl A380AirConditioning {
     const PRESSURIZATION_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(50);
 
     pub fn new(context: &mut InitContext) -> Self {
-        let cabin_zones: [ZoneType; 16] = [
+        let cabin_zones: [ZoneType; 18] = [
             ZoneType::Cockpit,
             ZoneType::Cabin(11), // MAIN_DECK_1
             ZoneType::Cabin(12), // MAIN_DECK_2
@@ -61,10 +61,12 @@ impl A380AirConditioning {
             ZoneType::Cabin(25), // UPPER_DECK_5
             ZoneType::Cabin(26), // UPPER_DECK_6
             ZoneType::Cabin(27), // UPPER_DECK_7
+            ZoneType::Cargo(1),  // FWD
+            ZoneType::Cargo(2),  // BULK
         ];
 
         Self {
-            a320_cabin: A320Cabin::new(context, &cabin_zones),
+            a380_cabin: A380Cabin::new(context, &cabin_zones),
             a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
             a320_pressurization_system: A320PressurizationSystem::new(context),
 
@@ -88,7 +90,7 @@ impl A380AirConditioning {
         self.a380_air_conditioning_system.update(
             context,
             adirs,
-            &self.a320_cabin,
+            &self.a380_cabin,
             engines,
             engine_fire_push_buttons,
             pneumatic,
@@ -102,7 +104,7 @@ impl A380AirConditioning {
         self.update_pressurization_ambient_conditions(context, adirs);
 
         for cur_time_step in self.pressurization_updater {
-            self.a320_cabin.update(
+            self.a380_cabin.update(
                 &context.with_delta(cur_time_step),
                 &self.a380_air_conditioning_system,
                 lgciu,
@@ -118,7 +120,7 @@ impl A380AirConditioning {
                 pressurization_overhead,
                 temp_engines,
                 lgciu,
-                &self.a320_cabin,
+                &self.a380_cabin,
             );
         }
     }
@@ -147,7 +149,7 @@ impl PackFlowControllers<4> for A380AirConditioning {
 
 impl SimulationElement for A380AirConditioning {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.a320_cabin.accept(visitor);
+        self.a380_cabin.accept(visitor);
         self.a380_air_conditioning_system.accept(visitor);
         self.a320_pressurization_system.accept(visitor);
 
@@ -155,22 +157,22 @@ impl SimulationElement for A380AirConditioning {
     }
 }
 
-struct A320Cabin {
+struct A380Cabin {
     passenger_rows_id: [Option<Vec<VariableIdentifier>>; 3],
     fwd_door_id: VariableIdentifier,
     rear_door_id: VariableIdentifier,
 
     fwd_door_is_open: bool,
     rear_door_is_open: bool,
-    number_of_passengers: [u8; 16],
-    cabin_air_simulation: CabinAirSimulation<A320PressurizationConstants, 16>,
+    number_of_passengers: [u8; 18],
+    cabin_air_simulation: CabinAirSimulation<A320PressurizationConstants, 18>,
 }
 
-impl A320Cabin {
+impl A380Cabin {
     const FWD_DOOR: &'static str = "INTERACTIVE POINT OPEN:0";
     const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
 
-    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 16]) -> Self {
+    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         let passenger_rows_id = [
             None,
             Some(vec![
@@ -182,7 +184,7 @@ impl A320Cabin {
                 context.get_identifier("PAX_TOTAL_ROWS_22_29".to_owned()),
             ]),
         ];
-        let mut number_of_passengers: [u8; 16] = [0; 16];
+        let mut number_of_passengers: [u8; 18] = [0; 18];
         number_of_passengers[0] = 2;
 
         Self {
@@ -221,7 +223,7 @@ impl A320Cabin {
     }
 }
 
-impl CabinSimulation for A320Cabin {
+impl CabinSimulation for A380Cabin {
     fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
         self.cabin_air_simulation.cabin_temperature()
     }
@@ -235,7 +237,7 @@ impl CabinSimulation for A320Cabin {
     }
 }
 
-impl SimulationElement for A320Cabin {
+impl SimulationElement for A380Cabin {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let rear_door_read: Ratio = reader.read(&self.rear_door_id);
         self.rear_door_is_open = rear_door_read > Ratio::default();
@@ -261,12 +263,12 @@ impl SimulationElement for A320Cabin {
 }
 
 pub struct A380AirConditioningSystem {
-    air_conditioning_system: AirConditioningSystem<16, 2, 4>,
+    air_conditioning_system: AirConditioningSystem<18, 2, 4>,
     air_conditioning_overhead: A380AirConditioningSystemOverhead,
 }
 
 impl A380AirConditioningSystem {
-    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 16]) -> Self {
+    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         Self {
             air_conditioning_system: AirConditioningSystem::new(
                 context,
@@ -400,8 +402,8 @@ impl A380AirConditioningSystemOverhead {
                 OnOffFaultPushButton::new_on(context, "CARGO_AIR_ISOL_VALVES_BULK"),
             ],
             cargo_temperature_regulators: [
-                ValueKnob::new_with_value(context, "CARGO_AIR_TEMP_REGUL_FWD", 15.),
-                ValueKnob::new_with_value(context, "CARGO_AIR_TEMP_REGUL_BULK", 15.),
+                ValueKnob::new_with_value(context, "CARGO_AIR_FWD_SELECTOR", 15.),
+                ValueKnob::new_with_value(context, "CARGO_AIR_BULK_SELECTOR", 15.),
             ],
             cargo_heater_pb: OnOffFaultPushButton::new_on(context, "CARGO_AIR_HEATER"),
         }
@@ -1647,7 +1649,7 @@ mod tests {
         fn cabin_pressure(&self) -> Pressure {
             self.query(|a| {
                 a.a380_cabin_air
-                    .a320_cabin
+                    .a380_cabin
                     .cabin_air_simulation
                     .cabin_pressure()
             })
@@ -1656,7 +1658,7 @@ mod tests {
         fn cabin_temperature(&self) -> ThermodynamicTemperature {
             self.query(|a| {
                 a.a380_cabin_air
-                    .a320_cabin
+                    .a380_cabin
                     .cabin_air_simulation
                     .cabin_temperature()[1]
             })

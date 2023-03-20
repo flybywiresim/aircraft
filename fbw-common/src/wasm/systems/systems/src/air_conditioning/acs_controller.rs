@@ -488,7 +488,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
                     1., // Output gain
                 )
             }
-            ZoneType::Cabin(_) => PidController::new(
+            ZoneType::Cabin(_) | &ZoneType::Cargo(_) => PidController::new(
                 Self::KP_DUCT_DEMAND_CABIN,
                 Self::KI_DUCT_DEMAND_CABIN,
                 0.,
