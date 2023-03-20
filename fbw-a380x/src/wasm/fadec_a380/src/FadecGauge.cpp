@@ -16,7 +16,7 @@ __attribute__((export_name("FadecGauge_gauge_callback"))) extern "C" bool FadecG
       /* Start updating the engines only if all needed data was fetched */
       /* Due to the data fetching feature from the sim being available at this stage only (from what I have observed) */
       /* Event SIMCONNECT_RECV_ID_OPEN received after the first PANEL_SERVICE_POST_INSTALL */
-      if(FADEC_GAUGE.isReady()) {
+      if (FADEC_GAUGE.isReady()) {
         sGaugeDrawData* drawData = static_cast<sGaugeDrawData*>(pData);
         return FADEC_GAUGE.onUpdate(drawData->dt);
       } else {

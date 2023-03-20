@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { getSimBridgeUrl } from '../common';
+import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 
 /**
  * Class responsible for retrieving data related to company routes from SimBridge
@@ -13,7 +13,7 @@ export class Health {
      * @returns true if service is available, false otherwise
      */
     public static async getHealth(serviceName?: 'api'|'mcdu'): Promise<boolean> {
-        const response = await fetch(`${getSimBridgeUrl()}/health`);
+        const response = await fetchWithTimeout(`${getSimBridgeUrl()}/health`, undefined, 5000);
         if (!response.ok) {
             throw new Error(`SimBridge Error: ${response.status}`);
         }

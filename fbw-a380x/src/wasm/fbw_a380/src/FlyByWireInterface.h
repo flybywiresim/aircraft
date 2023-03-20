@@ -4,6 +4,7 @@
 #include <SimConnect.h>
 
 #include "AdditionalData.h"
+#include "Arinc429.h"
 #include "CalculatedRadioReceiver.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
@@ -96,6 +97,13 @@ class FlyByWireInterface {
 
   bool last_ls1_active = false;
   bool last_ls2_active = false;
+
+  std::unique_ptr<Arinc429NumericWord> fmThrustReductionAltitude = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmThrustReductionAltitudeGoAround = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitude = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeEngineOut = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeGoAround = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeGoAroundEngineOut = std::make_unique<Arinc429NumericWord>();
 
   FlightDataRecorder flightDataRecorder;
 

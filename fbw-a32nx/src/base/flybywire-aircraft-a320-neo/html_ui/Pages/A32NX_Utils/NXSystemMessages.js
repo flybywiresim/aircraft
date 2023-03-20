@@ -75,8 +75,10 @@ const NXSystemMessages = {
     keyNotActive:           new TypeIMessage("KEY NOT ACTIVE"),
     latLonAbreviated:       new TypeIMessage("LAT/LON DISPL ABREVIATED"),
     listOf99InUse:          new TypeIMessage("LIST OF 99 IN USE"),
+    newAccAlt:              new TypeIIMessage("NEW ACC ALT-HHHH", false, "HHHH"),
     newAtisReceived:        new TypeIMessage("NEW ATIS: READ AGAIN"),
     newCrzAlt:              new TypeIIMessage("NEW CRZ ALT - HHHHH", false, "HHHHH"),
+    newThrRedAlt:           new TypeIIMessage("NEW THR RED ALT-HHHH", false, "HHHH"),
     noAtc:                  new TypeIMessage("NO ACTIVE ATC"),
     noAtisReceived:         new TypeIMessage("NO ATIS REPORT RECEIVED"),
     noIntersectionFound:    new TypeIMessage("NO INTERSECTION FOUND"),
@@ -89,6 +91,7 @@ const NXSystemMessages = {
     setHoldSpeed:           new TypeIIMessage("SET HOLD SPEED"),
     spdLimExceeded:         new TypeIIMessage("SPD LIM EXCEEDED", true),
     systemBusy:             new TypeIMessage("SYSTEM BUSY-TRY LATER"),
+    toSpeedTooLow:          new TypeIIMessage("TO SPEEDS TOO LOW", true),
     uplinkInsertInProg:     new TypeIIMessage("UPLINK INSERT IN PROG"),
     vToDisagree:            new TypeIIMessage("V1/VR/V2 DISAGREE", true),
     waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE")

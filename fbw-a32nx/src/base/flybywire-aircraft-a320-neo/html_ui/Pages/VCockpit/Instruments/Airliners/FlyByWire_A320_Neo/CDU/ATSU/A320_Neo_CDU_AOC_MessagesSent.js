@@ -1,7 +1,7 @@
 class CDUAocMessagesSent {
     static ShowPage(mcdu, messages = null, page = 0) {
         if (!messages) {
-            messages = mcdu.atsu.aoc.outputMessages();
+            messages = mcdu.atsu.aocOutputMessages();
         }
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCSentMsgs;
@@ -22,7 +22,7 @@ class CDUAocMessagesSent {
         for (let i = 5; i > 0; i--) {
             let header = "";
             if (messages.length > (offset - i) && messages[offset - i]) {
-                header += `${messages[offset - i].Timestamp.mcduTimestamp()} TO ${messages[offset - i].Station}[color]green`;
+                header += `${messages[offset - i].Timestamp.fmsTimestamp()} TO ${messages[offset - i].Station}[color]green`;
             }
             msgTimeHeaders[i] = header;
         }
@@ -66,7 +66,7 @@ class CDUAocMessagesSent {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID, true);
                         CDUAocMessagesSent.ShowPage(mcdu);
                     } else {
                         CDUAocMessageSentDetail.ShowPage(mcdu, messages, offset - 5 + i);

@@ -191,9 +191,6 @@ class CDUInitPage {
             if (value !== "") {
                 mcdu.tryUpdateFromTo(value, (result) => {
                     if (result) {
-                        CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     } else {
                         scratchpadCallback();

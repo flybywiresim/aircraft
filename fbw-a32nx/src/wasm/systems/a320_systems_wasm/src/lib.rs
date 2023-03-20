@@ -215,7 +215,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GPS GROUND TRUE TRACK", "Degrees", 0)?
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
-    .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 3)?
+    .provides_aircraft_variable("KOHLSMAN SETTING MB", "Millibars", 1)?
     .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?
     .provides_aircraft_variable("LIGHT BEACON ON", "Bool", 0)?
     .provides_aircraft_variable("PLANE ALT ABOVE GROUND", "Feet", 0)?
@@ -225,6 +226,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PLANE HEADING DEGREES TRUE", "Degrees", 0)?
     .provides_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?
     .provides_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?
+    .provides_aircraft_variable("PRESSURE ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("PUSHBACK STATE", "Enum", 0)?
     .provides_aircraft_variable("PUSHBACK ANGLE", "Radians", 0)?
     .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
