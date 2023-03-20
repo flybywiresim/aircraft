@@ -534,7 +534,7 @@ class CDUInitPage {
         }
 
         if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
-            fuelPageTitle = new Column(1, "INIT FUEL PREDICTION");
+            fuelPageTitle = new Column(1, "INIT FUEL PRED");
             fuelPlanTopTitle.text = "";
             fuelPlanBottomTitle.text = "";
 
