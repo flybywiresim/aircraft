@@ -43,16 +43,16 @@ public:
 		RadAlt = register_named_variable("A32NX_RA_RAW");
 
 		//this->setDeveloperState(0);
-		this->setRadAlt(99999);
+		this->setRadarAltitude(99999);
 
 
 		m_Units = new Units();
 	}
 	// Collection of LVar 'set' Functions
 	void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
-	void setRadAlt(FLOAT64 value) { set_named_variable_value(RadAlt, value); }
+	void setRadarAltitude(FLOAT64 value) { set_named_variable_value(RadAlt, value); }
 
 	// Collection of SimVar/LVar 'get' Functions
 	FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
-	FLOAT64 getRadAlt() { return get_named_variable_value(RadAlt); }
+	FLOAT64 getRadarAltitude() { return get_named_variable_value(RadAlt); }
 };
