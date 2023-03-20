@@ -100,9 +100,12 @@ export function FailureGeneratorCardTemplateUI(
         <div className="flex flex-col flex-1 px-2 pt-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
             <div className="flex flex-row justify-between">
                 <div className="mr-4 w-1/3 text-left align-left">
-                    <h2>
-                        {`${generatorUniqueID} : ${generatorSettings.alias()}`}
-                    </h2>
+                    <div className="pb-2">
+                        <h2>
+                            {`${generatorUniqueID} : ${generatorSettings.alias()}`}
+                        </h2>
+
+                    </div>
 
                     <Link to="/failures/failuregenerators/generatorFailureSelect" className="inline-block">
                         <div
@@ -154,7 +157,7 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
     setNewSetting : (newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) => void) {
     return (
         <div className="flex flex-col text-center">
-            <h2>{t('Failures.Generators.Rearming')}</h2>
+            <div className="pb-2"><h2>{t('Failures.Generators.Rearming')}</h2></div>
             <div className="flex flex-row">
                 <SelectGroup>
                     {rearmButtons.map((button) => {
@@ -189,8 +192,8 @@ export function FailureGeneratorSingleSetting(title:string, width : number,
         <div
             className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
         >
-            <div className="flex-none break-keep">{title}</div>
-            <div className="flex flex-row items-center">
+            <div className="flex-1 align-top break-keep">{title}</div>
+            <div className="flex flex-row items-center ">
                 <div
                     className={`my-2 w-${width} font-mono text-2xl px-3 pt-1.5 rounded-md border-2 transition duration-100
                     focus-within:outline-none focus-within:border-theme-highlight
@@ -211,10 +214,10 @@ export function FailureGeneratorSingleSetting(title:string, width : number,
 export function FailureGeneratorText(title:string, text: string, last : boolean) {
     return (
         <div
-            className={`flex flex-col justify-between p-2 text-left my-2 ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
+            className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
         >
-            <div className="flex-none break-keep">{title}</div>
-            <div className="flex-none pt-6 pb-1.5 break-keep">
+            <div className="flex-1 align-top break-keep ">{title}</div>
+            <div className="pt-1.5 pb-3.5 align-top break-keep">
                 {text}
             </div>
         </div>
