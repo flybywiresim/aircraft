@@ -128,7 +128,9 @@
       "All": "All",
       "AltitudeAboveSea": "Altitude above sea",
       "Close": "Close",
+      "days": "days",
       "DelayAfterArming": "Delay after arming",
+      "Disabled": "Disabled",
       "FailureChancePerTakeOff": "Failure chance per take-off",
       "FailurePerHour": "Failure per hour",
       "FailuresAssigned": "Failures assigned",
@@ -144,13 +146,17 @@
       "GenSpeedDecel": "Speed threshold (deceleration)",
       "GroundSpeed": "Ground speed",
       "hour": "hour",
+      "hours": "hours",
       "knots": "knots",
       "LowSpeedChance": "Low Speed chance",
       "MaxAltAboveRunway": "Max altitude above runway",
       "MaximumSpeed": "Max speed",
       "MaxSimultaneous": "Max number of simultaneous failures",
+      "MeanTimeToFailure": "Mean Time To Failure",
       "MedSpeedChance": "Medium Speed chance",
       "MinimumSpeed": "Minimum speed",
+      "minutes": "minutes",
+      "months": "months",
       "NewSetting": "New Setting",
       "None": "None",
       "Off": "Off",
@@ -161,7 +167,8 @@
       "Select": "Select Failure Generator",
       "SpeedTransLowMed": "Speed transition low-med",
       "TakeOff": "Take-Off",
-      "Title": "Failure Generator"
+      "Title": "Failure Generator",
+      "years": "years"
     }
   },
   "Ground": {

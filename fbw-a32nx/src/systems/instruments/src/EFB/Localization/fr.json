@@ -128,7 +128,9 @@
       "All": "Tous",
       "AltitudeAboveSea": "Altitude au dessus de la mer",
       "Close": "Fermer",
+      "days": "jours",
       "DelayAfterArming": "Delai avant réarmement",
+      "Disabled": "Désactivé",
       "FailureChancePerTakeOff": "Chance de panne au décollage",
       "FailurePerHour": "Panne par heure",
       "FailuresAssigned": "Pannes assignées",
@@ -144,13 +146,17 @@
       "GenSpeedDecel": "Seuil de Vitesse (décélération)",
       "GroundSpeed": "Vitesse au sol",
       "hour": "heure",
+      "hours": "heures",
       "knots": "noeuds",
       "LowSpeedChance": "Chance à basse vitesse",
       "MaxAltAboveRunway": "Altitude max au dessus de la piste",
       "MaximumSpeed": "Vitesse max",
       "MaxSimultaneous": "Nombre maximum de pannes simultanées",
+      "MeanTimeToFailure": "Temps moyen avant panne",
       "MedSpeedChance": "Chance à vitesse moyenne",
       "MinimumSpeed": "Vitesse mini",
+      "minutes": "minutes",
+      "months": "mois",
       "NewSetting": "Nouvelle valeur",
       "None": "Aucun",
       "Off": "Off",
@@ -161,7 +167,8 @@
       "Select": "Selectionne le générateur de panne",
       "SpeedTransLowMed": "Vitesse de transition lent-moyen",
       "TakeOff": "Décollage",
-      "Title": "Générateur de panne"
+      "Title": "Générateur de panne",
+      "years": "années"
     }
   },
   "Ground": {

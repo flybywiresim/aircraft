@@ -37,7 +37,7 @@ export const FailureGeneratorsUI = () => {
                             maxHeight={32}
                         />
                         <div
-                            onClick={() => failureGeneratorAdd(settings.allGenSettings.get(chosenGen))}
+                            onClick={() => failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings)}
                             className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                         >
                             <h2>{t('Failures.Generators.Add')}</h2>
@@ -132,7 +132,7 @@ export function FailureGeneratorCardTemplateUI(
                     <div />
                 </div>
             </div>
-            <div className="flex flex-row justify-between mt-1">
+            <div className="flex flex-row justify-start items-stretch mt-1">
                 { settingTable }
             </div>
         </div>
@@ -179,7 +179,7 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
     );
 }
 
-export function FailureGeneratorFailureSetting(title:string, width : number,
+export function FailureGeneratorSingleSetting(title:string, width : number,
     unit : string, min:number, max:number,
     value: number, mult : number,
     last : boolean, setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
@@ -189,7 +189,7 @@ export function FailureGeneratorFailureSetting(title:string, width : number,
         <div
             className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
         >
-            <div className="break-keep">{title}</div>
+            <div className="flex-none break-keep">{title}</div>
             <div className="flex flex-row items-center">
                 <div
                     className={`my-2 w-${width} font-mono text-2xl px-3 pt-1.5 rounded-md border-2 transition duration-100
@@ -203,6 +203,19 @@ export function FailureGeneratorFailureSetting(title:string, width : number,
                     {value * multCheck}
                 </div>
                 <div className="ml-2">{unit}</div>
+            </div>
+        </div>
+    );
+}
+
+export function FailureGeneratorText(title:string, text: string, last : boolean) {
+    return (
+        <div
+            className={`flex flex-col justify-between p-2 text-left my-2 ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
+        >
+            <div className="flex-none break-keep">{title}</div>
+            <div className="flex-none pt-6 pb-1.5 break-keep">
+                {text}
             </div>
         </div>
     );

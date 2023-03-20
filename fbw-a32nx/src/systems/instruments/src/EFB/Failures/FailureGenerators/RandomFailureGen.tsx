@@ -16,7 +16,7 @@ import { failureGenConfigTakeOff, failureGeneratorTakeOff }
 import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { AtaChapterNumber } from '@shared/ata';
-import { deleteGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { deleteGeneratorFailures, selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
@@ -159,10 +159,18 @@ export const randomFailureGenerator = () => {
     }
 };
 
-export const failureGeneratorAdd = (generatorsSettings : FailureGenData) => {
-    if (generatorsSettings.settings === undefined || generatorsSettings.settings.length % generatorsSettings.numberOfSettingsPerGenerator !== 0 || generatorsSettings.settings.length === 0) {
-        generatorsSettings.setSetting(flatten(generatorsSettings.additionalSetting));
-    } else generatorsSettings.setSetting(flatten(generatorsSettings.settings.concat(generatorsSettings.additionalSetting)));
+export const failureGeneratorAdd = (generatorSettings : FailureGenData, failureGenContext: FailureGenContext) => {
+    let genNumber : number;
+    if (generatorSettings.settings === undefined || generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
+        generatorSettings.setSetting(flatten(generatorSettings.additionalSetting));
+        genNumber = 0;
+    } else {
+        generatorSettings.setSetting(flatten(generatorSettings.settings.concat(generatorSettings.additionalSetting)));
+        genNumber = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
+    }
+
+    const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
+    selectAllFailures(failureGenContext, genID, true);
 };
 
 export function setNewSetting(newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) {

@@ -31,12 +31,17 @@ export const setSelectedFailure = (failure : Failure, genIDToChange : string, fa
         if (generatorsForFailure.length > 0) {
             let first = true;
             generatorsForFailure.forEach((generatorID) => {
-                if (genIDToChange !== generatorID) {
-                    if (first) {
-                        newSetting = newSetting.concat(generatorID);
-                    } else {
-                        first = false;
-                        newSetting = newSetting.concat(`,${generatorID}`);
+                const letterTable = generatorID.match(regexLetter);
+                const numberTable = generatorID.match(regexNumber);
+                if (letterTable && letterTable.length > 0 && numberTable && numberTable.length > 0 && generatorID === `${letterTable[0]}${numberTable[0]}`) {
+                    // only keeps the well formated settings in case older formats are present
+                    if (genIDToChange !== generatorID) {
+                        if (first) {
+                            newSetting = newSetting.concat(generatorID);
+                            first = false;
+                        } else {
+                            newSetting = newSetting.concat(`,${generatorID}`);
+                        }
                     }
                 }
             });
