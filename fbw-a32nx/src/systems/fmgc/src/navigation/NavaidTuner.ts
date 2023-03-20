@@ -45,6 +45,119 @@ export interface AdfRadioTuningStatus extends NavRadioTuningStatus {
 export class NavaidTuner {
     private static readonly DELAY_AFTER_RMP_TUNING = 1000; // ms
 
+    private static readonly TUNING_EVENT_INTERCEPTS = [
+        'ADF_1_DEC',
+        'ADF2_1_DEC',
+        'ADF_10_DEC',
+        'ADF2_10_DEC',
+        'ADF_100_DEC',
+        'ADF2_100_DEC',
+        'ADF_1_INC',
+        'ADF2_1_INC',
+        'ADF_10_INC',
+        'ADF2_10_INC',
+        'ADF_100_INC',
+        'ADF2_100_INC',
+        'ADF_ACTIVE_SET',
+        'ADF2_ACTIVE_SET',
+        'ADF_COMPLETE_SET',
+        'ADF2_COMPLETE_SET',
+        'ADF_EXTENDED_SET',
+        'ADF2_EXTENDED_SET',
+        'ADF_FRACT_DEC_CARRY',
+        'ADF2_FRACT_DEC_CARRY',
+        'ADF_FRACT_INC_CARRY',
+        'ADF2_FRACT_INC_CARRY',
+        'ADF_HIGHRANGE_SET',
+        'ADF2_HIGHRANGE_SET',
+        'ADF_LOWRANGE_SET',
+        'ADF2_LOWRANGE_SET',
+        'ADF1_RADIO_SWAP',
+        'ADF2_RADIO_SWAP',
+        'ADF1_RADIO_TENTHS_DEC',
+        'ADF2_RADIO_TENTHS_DEC',
+        'ADF1_RADIO_TENTHS_INC',
+        'ADF2_RADIO_TENTHS_INC',
+        'ADF_SET',
+        'ADF2_SET',
+        'ADF1_WHOLE_DEC',
+        'ADF2_WHOLE_DEC',
+        'ADF1_WHOLE_INC',
+        'ADF2_WHOLE_INC',
+        'NAV1_RADIO_FRACT_DEC',
+        'NAV2_RADIO_FRACT_DEC',
+        'NAV3_RADIO_FRACT_DEC',
+        'NAV4_RADIO_FRACT_DEC',
+        'NAV1_RADIO_FRACT_DEC_CARRY',
+        'NAV2_RADIO_FRACT_DEC_CARRY',
+        'NAV3_RADIO_FRACT_DEC_CARRY',
+        'NAV4_RADIO_FRACT_DEC_CARRY',
+        'NAV1_RADIO_FRACT_INC',
+        'NAV2_RADIO_FRACT_INC',
+        'NAV3_RADIO_FRACT_INC',
+        'NAV4_RADIO_FRACT_INC',
+        'NAV1_RADIO_FRACT_INC_CARRY',
+        'NAV2_RADIO_FRACT_INC_CARRY',
+        'NAV3_RADIO_FRACT_INC_CARRY',
+        'NAV4_RADIO_FRACT_INC_CARRY',
+        'NAV1_RADIO_SET',
+        'NAV2_RADIO_SET',
+        'NAV3_RADIO_SET',
+        'NAV4_RADIO_SET',
+        'NAV1_RADIO_SET_HZ',
+        'NAV2_RADIO_SET_HZ',
+        'NAV3_RADIO_SET_HZ',
+        'NAV4_RADIO_SET_HZ',
+        'NAV1_RADIO_SWAP',
+        'NAV2_RADIO_SWAP',
+        'NAV3_RADIO_SWAP',
+        'NAV4_RADIO_SWAP',
+        'NAV1_RADIO_WHOLE_DEC',
+        'NAV2_RADIO_WHOLE_DEC',
+        'NAV3_RADIO_WHOLE_DEC',
+        'NAV4_RADIO_WHOLE_DEC',
+        'NAV1_RADIO_WHOLE_INC',
+        'NAV2_RADIO_WHOLE_INC',
+        'NAV3_RADIO_WHOLE_INC',
+        'NAV4_RADIO_WHOLE_INC',
+        'TACAN1_ACTIVE_CHANNEL_SET',
+        'TACAN2_ACTIVE_CHANNEL_SET',
+        'TACAN1_ACTIVE_MODE_SET',
+        'TACAN2_ACTIVE_MODE_SET',
+        'TACAN1_SWAP',
+        'TACAN2_SWAP',
+        'TACAN1_SET',
+        'TACAN2_SET',
+        'TACAN1_OBI_DEC',
+        'TACAN2_OBI_DEC',
+        'TACAN1_OBI_INC',
+        'TACAN2_OBI_INC',
+        'TACAN1_OBI_FAST_DEC',
+        'TACAN2_OBI_FAST_DEC',
+        'TACAN1_OBI_FAST_INC',
+        'TACAN2_OBI_FAST_INC',
+        'VOR1_OBI_DEC',
+        'VOR2_OBI_DEC',
+        'VOR3_OBI_DEC',
+        'VOR4_OBI_DEC',
+        'VOR1_OBI_FAST_DEC',
+        'VOR2_OBI_FAST_DEC',
+        'VOR3_OBI_FAST_DEC',
+        'VOR4_OBI_FAST_DEC',
+        'VOR1_OBI_FAST_INC',
+        'VOR2_OBI_FAST_INC',
+        'VOR3_OBI_FAST_INC',
+        'VOR4_OBI_FAST_INC',
+        'VOR1_OBI_INC',
+        'VOR2_OBI_INC',
+        'VOR3_OBI_INC',
+        'VOR4_OBI_INC',
+        'VOR1_SET',
+        'VOR2_SET',
+        'VOR3_SET',
+        'VOR4_SET',
+    ];
+
     private vorTuningStatus: VorRadioTuningStatus[] = [
         { // VOR 1
             frequency: null,
@@ -129,6 +242,11 @@ export class NavaidTuner {
 
     private readonly flightPhaseManager: FlightPhaseManager;
 
+    private lastBlockEventMessageTime: number | null = null;
+
+    // eslint-disable-next-line camelcase
+    private tipsManager?: A32NX_TipsManager;
+
     constructor(
         private readonly navigationProvider: NavigationProvider,
         private readonly navaidSelectionManager: NavaidSelectionManager,
@@ -139,6 +257,12 @@ export class NavaidTuner {
 
     init(): void {
         this.resetAllReceivers();
+
+        // FIXME move this to the RMP when it's rewritten in msfs-avionics-framework
+        // FIXME use the framework manager when the framework is updated
+        this.tipsManager = A32NX_TipsManager.instance;
+        Coherent.on('keyIntercepted', this.handleKeyEvent.bind(this));
+        NavaidTuner.TUNING_EVENT_INTERCEPTS.forEach((key) => Coherent.call('INTERCEPT_KEY_EVENT', key, 1));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -176,6 +300,22 @@ export class NavaidTuner {
         }
 
         this.updateArincBus();
+    }
+
+    private handleKeyEvent(key: string, value1?: number, value0?: number, value2?: number): void {
+        if (NavaidTuner.TUNING_EVENT_INTERCEPTS.includes(key)) {
+            if (this.rmpTuningActive) {
+                // pass the tuning event through to the sim
+                Coherent.call('TRIGGER_KEY_EVENT', key, true, value0 ?? 0, value1 ?? 0, value2 ?? 0);
+            } else {
+                const time = SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds');
+                if (this.lastBlockEventMessageTime === null || (time - this.lastBlockEventMessageTime) > 60) {
+                    this.lastBlockEventMessageTime = time;
+                    this.tipsManager?.showNavRadioTuningTip();
+                }
+                console.log('Blocked nav radio tuning event', key);
+            }
+        }
     }
 
     private resetAllReceivers(): void {
@@ -287,7 +427,7 @@ export class NavaidTuner {
         if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastVorFrequencies[index - 1], frequency)) {
             this.lastVorFrequencies[index - 1] = frequency;
             this.navaidVersion++;
-            return SimVar.SetSimVarValue(`K:NAV${index}_RADIO_SET_HZ`, 'hz', (frequency ?? 0) * 1_000_000);
+            return Coherent.call('TRIGGER_KEY_EVENT', `NAV${index}_RADIO_SET_HZ`, true, (frequency ?? 0) * 1_000_000, 0, 0);
         }
         return false;
     }
@@ -302,7 +442,7 @@ export class NavaidTuner {
         // FIXME tune through RMP (or direct for off-side)
         if (Math.round(this.lastVorCourses[index - 1]) !== Math.round(course)) {
             this.lastVorCourses[index - 1] = course;
-            return SimVar.SetSimVarValue(`K:VOR${index}_SET`, 'degree', course ?? 0);
+            return Coherent.call('TRIGGER_KEY_EVENT', `VOR${index}_SET`, true, course ?? 0, 0, 0);
         }
         return false;
     }
@@ -322,7 +462,7 @@ export class NavaidTuner {
         if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastMmrFrequencies[index - 1], frequency)) {
             this.lastMmrFrequencies[index - 1] = frequency;
             this.navaidVersion++;
-            return SimVar.SetSimVarValue(`K:NAV${index + 2}_RADIO_SET_HZ`, 'hz', (frequency ?? 0) * 1_000_000);
+            return Coherent.call('TRIGGER_KEY_EVENT', `NAV${index + 2}_RADIO_SET_HZ`, true, (frequency ?? 0) * 1_000_000, 0, 0);
         }
         return false;
     }
@@ -341,7 +481,7 @@ export class NavaidTuner {
         // FIXME tune through RMP (or direct for off-side)
         if (Math.round(this.lastMmrCourses[index - 1]) !== Math.round(course)) {
             this.lastMmrCourses[index - 1] = course;
-            return SimVar.SetSimVarValue(`K:VOR${index + 2}_SET`, 'degree', course ?? 0);
+            return Coherent.call('TRIGGER_KEY_EVENT', `VOR${index + 2}_SET`, true, course ?? 0, 0, 0);
         }
         return false;
     }
@@ -357,7 +497,7 @@ export class NavaidTuner {
         if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastAdfFrequencies[index - 1], frequency)) {
             this.lastAdfFrequencies[index - 1] = frequency;
             this.navaidVersion++;
-            return SimVar.SetSimVarValue(`K:ADF${index}_COMPLETE_SET`, 'frequency adf bcd32', Avionics.Utils.make_adf_bcd32((frequency ?? 0) * 1_000));
+            return Coherent.call('TRIGGER_KEY_EVENT', `ADF${index}_COMPLETE_SET`, true, Avionics.Utils.make_adf_bcd32((frequency ?? 0) * 1_000), 0, 0);
         }
         return false;
     }

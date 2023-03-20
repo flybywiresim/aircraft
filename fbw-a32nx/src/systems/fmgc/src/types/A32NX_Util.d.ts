@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 export type Spherical = [number, number, number]
 
 declare global {
@@ -59,6 +60,11 @@ declare global {
              */
             canUpdate(deltaTime: number, forceUpdate?: boolean): number;
         }
+    }
+
+    class A32NX_TipsManager {
+        static instance: A32NX_TipsManager;
+        showNavRadioTuningTip(): void;
     }
 }
 

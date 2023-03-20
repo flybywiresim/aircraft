@@ -1,9 +1,16 @@
 class A32NX_TipsManager {
-    constructor() {
+    /* private */constructor() {
         this.notif = new NXNotifManager();
         this.checkThrottleCalibration();
         this.updateThrottler = new UpdateThrottler(15000);
         this.wasAnyAssistanceActive = false;
+    }
+
+    static get instance() {
+        if (!__tipsManager) {
+            __tipsManager = new A32NX_TipsManager();
+        }
+        return __tipsManager;
     }
 
     update(deltaTime) {
@@ -66,4 +73,9 @@ class A32NX_TipsManager {
         this.wasAnyAssistanceActive = isAnyAssistanceActive;
     }
 
+    showNavRadioTuningTip() {
+        this.notif.showNotification({message: "Navigation radio tuning is not possible while the FMGC controls the radios:\n\n• tune via the MCDU RADIO NAV page, or\n• press the NAV button on the RMP to enable manual tuning.", timeout: 15000});
+    }
 }
+
+let __tipsManager;

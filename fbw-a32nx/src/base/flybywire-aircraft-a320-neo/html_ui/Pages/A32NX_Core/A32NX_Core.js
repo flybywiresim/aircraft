@@ -70,7 +70,7 @@ class A32NX_Core {
         }
 
         this.soundManager = new A32NX_SoundManager();
-        this.tipsManager = new A32NX_TipsManager();
+        this.tipsManager = A32NX_TipsManager.instance;
     }
 
     init(startTime) {
