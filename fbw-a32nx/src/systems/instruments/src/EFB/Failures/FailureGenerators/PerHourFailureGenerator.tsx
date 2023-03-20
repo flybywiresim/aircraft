@@ -44,8 +44,8 @@ export const failureGenConfigPerHour : ()=>FailureGenData = () => {
 const onErase = (_genID : number) => {
 };
 
-const daysPerMonth = 30.4368;
-const daysPerYear = 365.24219;
+const daysPerMonth = 30.4368 * 24;
+const daysPerYear = 365.24219 * 24;
 
 const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext)
 => JSX.Element = (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
@@ -53,8 +53,8 @@ const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData
     const MTTFDisplay = () => {
         if (settings[genID * numberOfSettingsPerGenerator + 1] <= 0) return t('Failures.Generators.Disabled');
         const meanTimeToFailure = 1 / settings[genID * numberOfSettingsPerGenerator + 1];
-        if (meanTimeToFailure >= 24 * daysPerYear * 2) return `${Math.round(meanTimeToFailure / 24 / daysPerYear)} ${t('Failures.Generators.years')}`;
-        if (meanTimeToFailure >= 24 * daysPerMonth * 2) return `${Math.round(meanTimeToFailure / 24 / daysPerMonth)} ${t('Failures.Generators.months')}`;
+        if (meanTimeToFailure >= daysPerYear * 2) return `${Math.round(meanTimeToFailure / daysPerYear)} ${t('Failures.Generators.years')}`;
+        if (meanTimeToFailure >= daysPerMonth * 2) return `${Math.round(meanTimeToFailure / daysPerMonth)} ${t('Failures.Generators.months')}`;
         if (meanTimeToFailure >= 24 * 3) return `${Math.round(meanTimeToFailure / 24)} ${t('Failures.Generators.days')}`;
         if (meanTimeToFailure >= 5) return `${Math.round(meanTimeToFailure)} ${t('Failures.Generators.hours')}`;
         if (meanTimeToFailure > 5 / 60) return `${Math.round(meanTimeToFailure * 60)} ${t('Failures.Generators.minutes')}`;
