@@ -47,7 +47,7 @@ const onErase = (_genID : number) => {
 const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext)
 => JSX.Element = (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
-    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.GroundSpeed')}:`, 32, t('Failures.Generators.knots'), 0, 400,
+    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.GroundSpeed')}:`, 20, t('Failures.Generators.knots'), 0, 400,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
         setNewSetting, generatorSettings, genID, 1, failureGenContext.modals),
     ];
