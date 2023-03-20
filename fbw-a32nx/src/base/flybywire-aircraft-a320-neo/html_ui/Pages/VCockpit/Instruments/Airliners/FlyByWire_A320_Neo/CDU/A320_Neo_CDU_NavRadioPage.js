@@ -280,11 +280,18 @@ class CDUNavRadioPage {
         });
     }
 
+    static showSlope(mcdu, mmr) {
+        const takeoff = mcdu.flightPhaseManager.phase <= FmgcFlightPhases.TAKEOFF;
+        const ilsAppr = mcdu.flightPlanManager.getApproachType(FlightPlans.Active) === ApproachType.APPROACH_TYPE_ILS;
+        return mmr.manual || (!takeoff && ilsAppr);
+    }
+
     static renderMmrCrs(mcdu) {
         const mmr = mcdu.getMmrTuningData(1);
+        const showSlope = CDUNavRadioPage.showSlope(mcdu, mmr);
         const slope = mmr.slope !== null ? `\xa0\xa0{small}{green}${mmr.slope.toFixed(1)}{end}{end}` : '{white}\xa0\xa0\xa0-.-{end}';
         if (mmr.course !== null) {
-            return `{${mmr.courseManual ? 'big' : 'small'}}{cyan}${mmr.backcourse ? 'B' : 'F'}${mmr.course.toFixed(0).padStart(3, "0")}{end}{end}${slope}`;
+            return `{${mmr.courseManual ? 'big' : 'small'}}{cyan}${mmr.backcourse ? 'B' : 'F'}${mmr.course.toFixed(0).padStart(3, "0")}{end}{end}${showSlope ? slope : ''}`;
         }
         if (mmr.frequency !== null) {
             return `{amber}____{end}${slope}`;
@@ -294,7 +301,8 @@ class CDUNavRadioPage {
 
     static renderMmrCrsTitle(mcdu) {
         const mmr = mcdu.getMmrTuningData(1);
-        if (mmr.frequency !== null) {
+        const showSlope = CDUNavRadioPage.showSlope(mcdu, mmr);
+        if (showSlope && mmr.frequency !== null) {
             return "CRS\xa0\xa0\xa0SLOPE";
         }
         return "CRS";
