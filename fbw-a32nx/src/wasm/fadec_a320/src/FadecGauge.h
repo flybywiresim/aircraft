@@ -103,8 +103,7 @@ class FadecGauge {
     }
 
     isConnected = true;
-    // start requesting simulation data from simconnect
-    simConnectRequestData();
+
     return true;
   }
 
@@ -114,6 +113,8 @@ class FadecGauge {
   /// <returns>True if successful, false otherwise.</returns>
   bool onUpdate(double deltaTime) {
     if (isConnected == true) {
+      // read simulation data from simconnect
+      simConnectRequestData();
       simConnectReadData();
       // detect pause
       if ((simulationData.simulationTime == previousSimulationTime) || (simulationData.simulationTime < 0.2)) {
@@ -150,7 +151,7 @@ class FadecGauge {
 
     // request data
     HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataTypesID::SimulationDataTypeId, SIMCONNECT_OBJECT_ID_USER,
-                                                       SIMCONNECT_PERIOD_VISUAL_FRAME);
+                                                       SIMCONNECT_PERIOD_ONCE);
 
     // check result of data request
     if (result != S_OK) {
@@ -369,10 +370,12 @@ class FadecGauge {
   }
 
   /*
-   * This function is to call if some data are needed before initialization of the engine (such as aircraft registration).
-   * This has to be done here due to data fetch feature being available after the first PANEL_SERVICE_PRE_DRAW (from what I have observed)
-   * This problem was observed when engine configuration file was under development
-   * Reach Julian Sebline on Discord if information needed
+   * This function is to call if some data are needed before initialization of
+   * the engine (such as aircraft registration). This has to be done here due to
+   * data fetch feature being available after the first PANEL_SERVICE_PRE_DRAW
+   * (from what I have observed) This problem was observed when engine
+   * configuration file was under development Reach Julian Sebline on Discord if
+   * information needed
    *
    * Modify this function as needed
    *
