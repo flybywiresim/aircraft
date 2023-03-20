@@ -76,8 +76,6 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
     private tenThousandsPosition = Subject.create(0);
 
-    private altReadoutOutline = Subject.create('NormalStroke Yellow');
-
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -195,7 +193,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                     </svg>
                 </g>
                 <path id="AltReadoutReducedAccurMarks" class="NormalStroke Amber" style="display: none" d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345" />
-                <path id="AltReadoutOutline" class={this.altReadoutOutline} d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
+                <path id="AltReadoutOutline" class="NormalStroke Yellow" d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096" />
 
                 <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
                     <text class="White" x="121.51714" y="77.956947">N</text>
