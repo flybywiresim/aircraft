@@ -413,7 +413,7 @@ class CDUInitPage {
 
         };
 
-        let fuelPageTitle = new Column(10, "INIT FUEL PRED");
+        let fuelPageTitle = new Column(5, "INIT FUEL PRED");
         const fuelPlanTopTitle = new Column(23, "", Column.amber, Column.right);
         const fuelPlanBottomTitle = new Column(23, "", Column.amber, Column.right);
         if (mcdu._zeroFuelWeightZFWCGEntered && !mcdu._blockFuelEntered) {
@@ -534,7 +534,7 @@ class CDUInitPage {
         }
 
         if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
-            fuelPageTitle = new Column(1, "INIT FUEL PRED");
+            fuelPageTitle = new Column(5, "INIT FUEL PRED");
             fuelPlanTopTitle.text = "";
             fuelPlanBottomTitle.text = "";
 
