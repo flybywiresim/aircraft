@@ -1,33 +1,50 @@
-import React from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { PitchScale } from './PitchScale';
+import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { ISISSimvars } from './shared/ISISSimvarPublisher';
+/* import { PitchScale } from './PitchScale';
 import { RollScale } from './RollScale';
 import { RollIndex } from './RollIndex';
-import { Att10sFlag } from './Att10sFlag';
+import { Att10sFlag } from './Att10sFlag'; */
 
-export const ArtificialHorizon: React.FC = () => {
-    const [pitch] = useSimVar('PLANE PITCH DEGREES', 'degrees', 200);
-    const [roll] = useSimVar('PLANE BANK DEGREES', 'degrees', 200);
+export class ArtificialHorizon extends DisplayComponent<{bus: EventBus}> {
+    private pitchRef = FSComponent.createRef<SVGGElement>();
 
-    const pitchDegPixels = 7.4;
+    private rollRef = FSComponent.createRef<SVGGElement>();
 
-    const pitchShift = -pitch * pitchDegPixels;
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
 
-    return (
-        <Att10sFlag>
+        const sub = this.props.bus.getSubscriber<ISISSimvars>();
+
+        const pitchDegPixels = 7.4;
+
+        sub.on('pitch').atFrequency(10).handle((pitch) => {
+            const pitchShift = -pitch * pitchDegPixels;
+
+            this.pitchRef.instance.style.transform = `translate3d(0px, ${pitchShift}px, 0px)`;
+        });
+
+        sub.on('roll').atFrequency(10).handle((roll) => {
+            this.rollRef.instance.setAttribute('transform', `rotate(${roll} 256 256)`);
+        });
+    }
+
+    render(): VNode {
+        return (
+        /*        <Att10sFlag> */
             <g id="ArtificialHorizon">
-                <g id="RollGroup" transform={`rotate(${roll.toFixed(2)} 256 256)`}>
-                    <g id="PitchGroup" transform={`translate(0 ${pitchShift.toFixed(2)})`}>
-                        <rect id="Sky" x={-256} y={-498} width={1024} height={768} className="sky" />
-                        <rect id="Earth" x={-256} y={270} width={1024} height={768} className="earth" />
-                        <PitchScale pitchDegPixels={pitchDegPixels} />
+                <g id="RollGroup" ref={this.rollRef}>
+                    <g id="PitchGroup" ref={this.pitchRef}>
+                        <rect id="Sky" x={-256} y={-498} width={1024} height={768} class="sky" />
+                        <rect id="Earth" x={-256} y={270} width={1024} height={768} class="earth" />
+                        {/*     <PitchScale pitchDegPixels={pitchDegPixels} /> */}
                     </g>
-                    <RollIndex />
-                    <rect x={-256} y={400} width={1024} height={396} className="earth" />
+                    {/*  <RollIndex /> */}
+                    <rect x={-256} y={400} width={1024} height={396} class="earth" />
                 </g>
-                <RollScale />
-                <path id="Mask" className="mask" d="M 0 0 h 512 v 512 h -512 z M 108 120.5 c 50 -30 246 -30 296 0 v 271 c -50 30 -246 30 -296 0 z" />
+                {/* <RollScale /> */}
+                <path id="Mask" class="mask" d="M 0 0 h 512 v 512 h -512 z M 108 120.5 c 50 -30 246 -30 296 0 v 271 c -50 30 -246 30 -296 0 z" />
             </g>
-        </Att10sFlag>
-    );
-};
+        /*   </Att10sFlag> */
+        );
+    }
+}

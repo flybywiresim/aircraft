@@ -1,33 +1,29 @@
-import React from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-
-import { AltitudeIndicator } from './AltitudeIndicator';
-import { LandingSystem } from './LandingSystem';
-import { MachIndicator } from './MachIndicator';
-import { PressureIndicator } from './PressureIndicator';
+import { DisplayComponent, EventBus, FSComponent } from 'msfssdk';
 import { ArtificialHorizon } from './ArtificialHorizon';
-import { AirspeedIndicator } from './AirspeedIndicator';
-import { AirplaneSymbol } from './AirplaneSymbol';
-import { Bug, BugType } from './Bug';
 
 type ArtificialHorizonDisplayProps = {
-    indicatedAirspeed: number,
-    bugs: Bug[]
+    bus: EventBus,
+   // bugs: Bug[]
 }
 
-export const ArtificialHorizonDisplay: React.FC<ArtificialHorizonDisplayProps> = ({ indicatedAirspeed, bugs }) => {
-    const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
-    const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+export class ArtificialHorizonDisplay extends DisplayComponent<ArtificialHorizonDisplayProps> {
+/*     const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
 
-    return (
-        <g id="ArtificialHorizonDisplay">
-            <ArtificialHorizon />
-            <AirspeedIndicator indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
+    const [mda] = useSimVar('L:A32NX_MINIMUM_DESCENT_ALTITUDE', 'feet'); */
+
+    render() {
+        return (
+            <svg id="ISIS" class="ISIS" version="1.1" viewBox="0 0 512 512">
+                <g id="ArtificialHorizonDisplay">
+                    <ArtificialHorizon bus={this.props.bus} />
+                    {/*   <AirspeedIndicator indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
             <AltitudeIndicator altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />
             <AirplaneSymbol />
             <LandingSystem />
             <PressureIndicator />
-            <MachIndicator />
-        </g>
-    );
-};
+            <MachIndicator /> */}
+                </g>
+            </svg>
+        );
+    }
+}

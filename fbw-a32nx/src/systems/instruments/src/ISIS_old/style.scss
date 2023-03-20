@@ -1,0 +1,147 @@
+@import "../Common/definitions";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/ISISFontTemporary.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.ISIS {
+  position: absolute;
+  width: 512px;
+  height: 512px;
+  stroke-width: 3px;
+
+  background: $display-background;
+
+  font-family: "Ecam", monospace !important;
+}
+
+.sky {
+  fill: #0698ff;
+}
+
+.earth {
+  fill: #9c480c;
+}
+
+.white-line {
+  stroke: white;
+  stroke-width: 3;
+  fill: none
+}
+
+.mask {
+  fill: $display-background;
+  fill-rule: "evenodd";
+  stroke: none;
+}
+
+.FontMedium {
+  font-size: 30px;
+}
+
+.FontLarge {
+  font-size: 32px;
+}
+
+.FontLargest {
+  font-size: 36px;
+}
+
+.MiddleAlign {
+  text-align: center;
+  text-anchor: middle;
+}
+
+.Green {
+  stroke: $display-green;
+  fill: none;
+}
+
+.FillMagenta {
+  fill: $display-magenta
+}
+
+.FillYellow {
+  fill: $display-yellow;
+}
+
+.StrokeWhite {
+  stroke: $display-white;
+}
+
+.StrokeYellow {
+  stroke: $display-yellow;
+}
+
+.StrokeCyan {
+  stroke: $display-cyan;
+}
+
+.StrokeRed {
+  stroke: $display-red
+}
+
+.TextGreen {
+  fill: $display-green;
+  stroke: none;
+}
+
+.TextAmber {
+  fill: $display-amber;
+  stroke: none;
+}
+
+.TextCyan {
+  stroke: none;
+  fill: $display-cyan
+}
+
+.TextBackground {
+  fill: $display-background;
+    stroke: none;
+}
+
+.TextWhite {
+  fill: $display-white;
+    stroke: none;
+}
+
+.FillBackground {
+  fill: $display-background;
+}
+
+.NoFill {
+  fill: none;
+}
+
+.StrokeBackground {
+  stroke: $display-background;
+}
+
+.SelfTest {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  font-size: 36px;
+}
+
+@keyframes blinking {
+  0% {stroke: $display-background;}
+  50% {stroke: $display-background;}
+  51% {stroke: white;}
+  100% {stroke: white;}
+}
+
+.BlinkInfinite {
+  animation-name: blinking;
+  animation-duration: 0.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
