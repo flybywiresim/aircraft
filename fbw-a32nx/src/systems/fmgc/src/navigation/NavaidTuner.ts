@@ -6,6 +6,7 @@ import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSel
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NavRadioUtils } from '@fmgc/navigation/NavRadioUtils';
+import { VorType } from '@fmgc/types/fstypes/FSEnums';
 import { Arinc429SignStatusMatrix, Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
@@ -19,6 +20,7 @@ interface NavRadioTuningStatus {
 export interface VorRadioTuningStatus extends NavRadioTuningStatus {
     facility?: RawVor,
     course: number | null,
+    dmeOnly: boolean,
 }
 
 export interface MmrRadioTuningStatus extends NavRadioTuningStatus {
@@ -164,12 +166,14 @@ export class NavaidTuner {
             ident: null,
             manual: false,
             course: null,
+            dmeOnly: false,
         },
         { // VOR 2
             frequency: null,
             ident: null,
             manual: false,
             course: null,
+            dmeOnly: false,
         },
     ];
 
@@ -374,6 +378,7 @@ export class NavaidTuner {
                 vor.facility = autoFacility;
                 vor.frequency = autoFacility?.freqMHz ?? null;
                 vor.ident = autoFacility?.icao ? WayPoint.formatIdentFromIcao(autoFacility.icao) : null;
+                vor.dmeOnly = this.isDmeOnly(autoFacility);
             }
             // TODO if a proc VOR is tuned, make sure it is received
 
@@ -518,6 +523,16 @@ export class NavaidTuner {
         return false;
     }
 
+    private isDmeOnly(facility?: RawVor | null): boolean {
+        switch (facility?.type) {
+        case VorType.DME:
+        case VorType.TACAN:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     /** check if MMR tuning is locked during final approach */
     public isMmrTuningLocked() {
         return this.flightPhaseManager.phase === FmgcFlightPhase.Approach && (this.navigationProvider.getRadioHeight() ?? Infinity) < 700;
@@ -564,6 +579,7 @@ export class NavaidTuner {
             vorStatus.ident = WayPoint.formatIdentFromIcao(vor.icao);
             vorStatus.frequency = vor.freqMHz;
         }
+        vorStatus.dmeOnly = this.isDmeOnly(vorStatus.facility);
     }
 
     /**
