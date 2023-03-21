@@ -137,46 +137,4 @@ class CDUSelectedNavaids {
             CDUPositionMonitorPage.ShowPage(mcdu);
         };
     }
-
-    /**
-     * Returns the label for a given navaid
-     * @param {RawVor} facility VHF Navaid facility
-     * @returns {string} label
-     */
-    static navaidTypeLabel(facility) {
-        switch (facility.type) {
-            case VorType.VOR:
-                return 'VOR';
-            case VorType.VORDME:
-                return 'VOR/DME';
-            case VorType.DME:
-                return 'DME';
-            case VorType.TACAN:
-                return 'TACAN';
-            case VorType.VORTAC:
-                return 'VOR/TAC';
-            case VorType.ILS:
-                return 'ILS';
-            default:
-                return '';
-        }
-    }
-
-    /**
-     * Returns the label for a given navaid tuning mode
-     * @param {NavaidTuningMode} mode Navaid tuning mode
-     * @returns {string} label
-     */
-    static navaidModeLabel(mode) {
-        switch (mode) {
-            case NavaidTuningMode.Auto:
-                return 'AUTO';
-            case NavaidTuningMode.Manual:
-                return 'MAN';
-            case NavaidTuningMode.Remote:
-                return 'RMP';
-            default:
-                return '';
-        }
-    }
 }
