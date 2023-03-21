@@ -91,7 +91,7 @@ class CDUSelectedNavaids {
                     mcdu.reselectNavaid(icao);
                     mcdu.requestUpdate();
                 } else if (text.match(/^[A-Z0-9]{1,4}$/) !== null) {
-                    mcdu.getOrSelectVORsByIdent(text, (navaid) => {
+                    mcdu.getOrSelectNavaidsByIdent(text, (navaid) => {
                         if (navaid) {
                             mcdu.reselectNavaid(icao);
                             mcdu.deselectNavaid(navaid.infos.icao);
@@ -112,7 +112,7 @@ class CDUSelectedNavaids {
 
             mcdu.onRightInput[deselected.length] = (text, scratchpadCallback) => {
                 if (text.match(/^[A-Z0-9]{1,4}$/) !== null) {
-                    mcdu.getOrSelectVORsByIdent(text, (navaid) => {
+                    mcdu.getOrSelectNavaidsByIdent(text, (navaid) => {
                         if (navaid) {
                             mcdu.deselectNavaid(navaid.infos.icao);
                             CDUSelectedNavaids.ShowPage(mcdu);
