@@ -70,6 +70,8 @@ export class NavaidSelectionManager {
 
     private specifiedNdbDeselected = false;
 
+    private filteredHeight = null;
+
     constructor(
         private readonly navigationProvider: NavigationProvider,
         private readonly fpm: FlightPlanManager,
@@ -119,9 +121,18 @@ export class NavaidSelectionManager {
     }
 
     private updateAltitude(): void {
-        const altitude = this.navigationProvider.getBaroCorrectedAltitude() ?? this.navigationProvider.getPressureAltitude();
-        if (altitude !== null) {
-            this.altitude = altitude;
+        // the MSFS navaids no not give any elevation data for our LoS/cone of confusion checks...
+        // so we do a bit of a hack and assume all navaids are at ground level
+        const baroAltitude = this.navigationProvider.getBaroCorrectedAltitude() ?? this.navigationProvider.getPressureAltitude();
+        if (baroAltitude !== null) {
+            // FIXME use baroAltitude when we have elevation data for navaids
+            const height = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
+            if (this.filteredHeight === null) {
+                this.filteredHeight = height;
+            } else {
+                this.filteredHeight = 0.01 * height + 0.99 * this.filteredHeight;
+            }
+            this.altitude = this.filteredHeight;
 
             const planeAltNm = this.altitude / 6076.12;
             this.horizonDistance = Math.sqrt(planeAltNm * (2 * EARTH_RADIUS + planeAltNm));
