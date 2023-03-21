@@ -54,6 +54,7 @@ export class KeyInterceptor {
                 this.engineAutoStartAction();
                 break;
             case 'ENGINE_AUTO_SHUTDOWN':
+                console.log('KeyInterceptor: ENGINE_AUTO_SHUTDOWN');
                 this.engineAutoStopAction();
                 break;
             default:
@@ -69,16 +70,17 @@ export class KeyInterceptor {
             // Show a dialog to ask user to load a preset or cancel
             this.dialogVisible = true;
             const dialog = new PopUpDialog();
+            const presetID = 4; // "Ready for Taxi"
             dialog.showPopUp(
                 'Ctrl+E Not supported',
                 `<div style="font-size: 120%; text-align: left;">
                            Engine Auto Start is not supported by the A32NX.<br/>
                            <br/>                        
                            Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
-                           <strong>"Ready for Taxi"</strong>?
+                           <strong>"${AircraftPresetsList.getPresetName(presetID)}"</strong>?
                          </div>`,
                 'small',
-                () => this.loadPreset(4),
+                () => this.loadPreset(presetID),
                 () => this.dialogVisible = false,
             );
         }
@@ -90,16 +92,17 @@ export class KeyInterceptor {
         if (!this.dialogVisible && this.isOneEngineRunning()) {
             this.dialogVisible = true;
             const dialog = new PopUpDialog();
+            const presetID = 2;
             dialog.showPopUp(
                 'Shift+Ctrl+E Not supported',
                 `<div style="font-size: 120%; text-align: left;">
                                Engine Auto Shutdown is not supported by the A32NX.<br/>
                                <br/>
                                Do you want to you use the flyPad's Aircraft Presets to set the aircraft to
-                               <strong>"Powered"</strong>?
+                               <strong>"${AircraftPresetsList.getPresetName(presetID)}"</strong>?
                              </div>`,
                 'small',
-                () => this.loadPreset(2),
+                () => this.loadPreset(presetID),
                 () => this.dialogVisible = false,
             );
         }
