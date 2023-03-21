@@ -134,7 +134,7 @@ class CDUSelectedNavaids {
         };
 
         mcdu.onRightInput[5] = () => {
-            CDUDataIndexPage.ShowPage1(mcdu);
+            CDUPositionMonitorPage.ShowPage(mcdu);
         };
     }
 
