@@ -263,6 +263,7 @@ trait A380DirectCurrentElectricalSystem {
 
 trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem {
     fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool;
+    fn ac_ess_bus_powered(&self, electricity: &Electricity) -> bool;
     fn tr_1(&self) -> &TransformerRectifier;
     fn tr_2(&self) -> &TransformerRectifier;
     fn tr_ess(&self) -> &TransformerRectifier;

@@ -243,8 +243,11 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.apu_bat_bus, &self.apu_start_contactors);
         electricity.flow(&self.apu_start_contactors, &self.apu_start_motor_bus);
 
-        self.static_inverter_contactor
-            .close_when(is_emergency_config);
+        self.static_inverter_contactor.close_when(
+            !ac_state.ac_ess_bus_powered(electricity)
+                && self.battery_1_emergency_contactor.is_closed()
+                && self.battery_ess_contactor.is_closed(),
+        );
         electricity.flow(
             &self.battery_1_emergency_contactor,
             &self.static_inverter_contactor,

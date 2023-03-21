@@ -217,6 +217,10 @@ impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical
         electricity.is_powered(&self.ac_buses[number - 1])
     }
 
+    fn ac_ess_bus_powered(&self, electricity: &Electricity) -> bool {
+        electricity.is_powered(&self.ac_ess_bus)
+    }
+
     fn tr_1(&self) -> &TransformerRectifier {
         &self.tr_1
     }
