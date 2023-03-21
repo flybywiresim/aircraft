@@ -219,7 +219,7 @@ export class NavaidSelectionManager {
     /** Checks if the navaid is able to be received over the horizon */
     private isInLineOfSight(distance: number): boolean {
         // FIXME should also consider navaid elevation but we don't have that from MSFS
-        return distance <= Math.max(40, 7 / 6 * this.horizonDistance);
+        return distance <= Math.max(10, 7 / 6 * this.horizonDistance);
     }
 
     /** Checks if the navaid is within it's figure of merit limits */
