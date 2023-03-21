@@ -9,7 +9,7 @@ use self::{
 };
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 
-use uom::si::{angular_velocity::revolution_per_minute, f64::*};
+use uom::si::{angular_velocity::revolution_per_minute, f64::*, velocity::knot};
 
 #[cfg(test)]
 use systems::electrical::Battery;
@@ -141,15 +141,25 @@ impl A380Electrical {
 
         self.emergency_gen.update(&self.gcu);
 
+        // TEFO(total engine failure) = all engines not running and in flight
+        // TODO: check if engines are running and ADIRS for speed
+        // TODO: this condition should be latched until bat1 and bat ess are turned off or ess bus is not powered
+        let flt_condition = !lgciu1.left_and_right_gear_compressed(false)
+            && context.indicated_airspeed().get::<knot>() > 100.;
+        let tefo_condition = !self
+            .alternating_current
+            .any_non_essential_bus_powered(electricity)
+            && flt_condition;
+
         self.alternating_current.update(
             context,
             electricity,
             ext_pwrs,
             overhead,
             &self.emergency_gen,
+            tefo_condition,
         );
 
-        // Elec using LGCIU1 L&R compressed (14A output  ASM 32_62_00)
         self.direct_current.update(
             context,
             electricity,
@@ -160,6 +170,7 @@ impl A380Electrical {
             apu,
             apu_overhead,
             lgciu1,
+            tefo_condition,
         );
 
         self.alternating_current.update_after_direct_current(

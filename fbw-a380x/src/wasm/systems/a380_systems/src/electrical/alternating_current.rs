@@ -95,6 +95,7 @@ impl A380AlternatingCurrentElectrical {
         ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         emergency_generator: &EmergencyGenerator,
+        tefo_condition: bool,
     ) {
         self.ac_ess_feed_contactors.update(
             context,
@@ -128,8 +129,8 @@ impl A380AlternatingCurrentElectrical {
 
         electricity.transform_in(&self.tr_ess);
 
-        self.eha_contactors[0].close_when(!emergency_configuration);
-        self.eha_contactors[1].close_when(emergency_configuration);
+        self.eha_contactors[0].close_when(self.ac_bus_powered(electricity, 3));
+        self.eha_contactors[1].close_when(tefo_condition);
         electricity.flow(&self.ac_buses[2], &self.eha_contactors[0]);
         electricity.flow(&self.ac_ess_bus, &self.eha_contactors[1]);
         for contactor in &self.eha_contactors {

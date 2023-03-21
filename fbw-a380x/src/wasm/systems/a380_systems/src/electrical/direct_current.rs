@@ -116,6 +116,7 @@ impl A380DirectCurrentElectrical {
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
         lgciu1: &impl LgciuWeightOnWheels,
+        tefo_condition: bool,
     ) {
         self.tr_1_contactor
             .close_when(electricity.is_powered(ac_state.tr_1()));
@@ -171,8 +172,10 @@ impl A380DirectCurrentElectrical {
             && !electricity.is_powered(emergency_generator);
 
         electricity.supplied_by(&self.battery_1);
-        let should_close_elc = lgciu1.left_and_right_gear_extended(false) && is_emergency_config
-            || !lgciu1.left_and_right_gear_extended(false) && overhead.bat_is_auto(1);
+        let should_close_elc = !lgciu1.left_and_right_gear_compressed(false) && is_emergency_config
+            || lgciu1.left_and_right_gear_compressed(false)
+                && !ac_state.any_non_essential_bus_powered(electricity)
+                && overhead.bat_is_auto(1);
         self.battery_1_contactor
             .close_when(overhead.bat_is_auto(1) && !should_close_elc);
         self.battery_1_emergency_contactor
@@ -220,7 +223,7 @@ impl A380DirectCurrentElectrical {
         self.inter_bus_line_contactors[0].close_when(
             self.inter_bus_line_contactors[1].is_open()
                 && self.tr_ess_contactor.is_open()
-                && electricity.is_powered(ac_state.tr_ess()),
+                && electricity.is_powered(&self.dc_bus_1),
         );
         self.inter_bus_line_contactors[1].close_when(
             overhead.bus_tie_is_auto()
@@ -252,9 +255,8 @@ impl A380DirectCurrentElectrical {
         electricity.transform_in(&self.static_inverter);
 
         self.dc_bus_2_to_dc_eha_contactor
-            .close_when(!is_emergency_config && electricity.is_powered(&self.dc_bus_2));
-        self.inter_bus_line_ess_contactor
-            .close_when(is_emergency_config);
+            .close_when(electricity.is_powered(&self.dc_bus_2));
+        self.inter_bus_line_ess_contactor.close_when(tefo_condition);
         electricity.flow(&self.dc_bus_2, &self.dc_bus_2_to_dc_eha_contactor);
         electricity.flow(&self.dc_ess_bus, &self.inter_bus_line_ess_contactor);
         electricity.flow(&self.dc_bus_2_to_dc_eha_contactor, &self.dc_eha_bus);
