@@ -34,7 +34,6 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     safety_valve_open_percentage_id: VariableIdentifier,
 
     auto_landing_elevation_id: VariableIdentifier,
-    departure_elevation_id: VariableIdentifier,
     destination_qnh_id: VariableIdentifier,
 
     pressure_schedule_manager: Option<PressureScheduleManager>,
@@ -43,6 +42,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     exterior_flight_altitude: Length,
     exterior_vertical_speed: LowPassFilter<Velocity>,
     reference_pressure: Pressure,
+    previous_reference_pressure: Pressure,
     cabin_pressure: Pressure,
     cabin_alt: Length,
     cabin_vertical_speed: Velocity,
@@ -91,7 +91,6 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
 
             auto_landing_elevation_id: context.get_identifier("FM1_LANDING_ELEVATION".to_owned()),
-            departure_elevation_id: context.get_identifier("DEPARTURE_ELEVATION".to_owned()),
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
 
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
@@ -106,6 +105,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 Velocity::default(),
             ),
             reference_pressure: Pressure::new::<hectopascal>(Self::P_0),
+            previous_reference_pressure: Pressure::new::<hectopascal>(Self::P_0),
             cabin_pressure: Pressure::new::<hectopascal>(Self::P_0),
             cabin_alt: Length::default(),
             cabin_vertical_speed: Velocity::default(),
@@ -169,6 +169,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             .update(context.delta(), self.cabin_vertical_speed);
         self.cabin_alt = new_cabin_alt;
         self.reference_pressure = new_reference_pressure;
+        self.departure_elevation = self.calculate_departure_elevation();
 
         self.outflow_valve_controller.update(
             context,
@@ -222,13 +223,18 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
             new_exterior_altitude =
                 self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
-            self.exterior_vertical_speed.update(
-                context.delta(),
-                self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
-            );
+            // When the reference pressure changes, we skip the update to the external
+            // V/S to avoid a jump
+            if self.previous_reference_pressure == self.reference_pressure {
+                self.exterior_vertical_speed.update(
+                    context.delta(),
+                    self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
+                );
+            }
         }
 
         self.exterior_flight_altitude = new_exterior_altitude;
+        self.previous_reference_pressure = self.reference_pressure;
     }
 
     fn adirs_values_calculation(
@@ -420,6 +426,14 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         Length::new::<meter>(altitude)
     }
 
+    fn calculate_departure_elevation(&self) -> Length {
+        if self.is_ground() {
+            self.cabin_alt
+        } else {
+            self.departure_elevation
+        }
+    }
+
     pub fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure.output()
     }
@@ -492,6 +506,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
 
     pub fn landing_elevation(&self) -> Length {
         self.landing_elevation
+    }
+
+    pub fn reference_pressure(&self) -> Pressure {
+        self.reference_pressure
     }
 }
 
@@ -567,7 +585,6 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
         let landing_elevation_word: Arinc429Word<Length> =
             reader.read_arinc429(&self.auto_landing_elevation_id);
         self.landing_elevation = landing_elevation_word.normal_value().unwrap_or_default();
-        self.departure_elevation = reader.read(&self.departure_elevation_id);
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
     }
 }
