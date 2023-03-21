@@ -497,7 +497,7 @@ export class NavaidTuner {
         if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastAdfFrequencies[index - 1], frequency)) {
             this.lastAdfFrequencies[index - 1] = frequency;
             this.navaidVersion++;
-            return Coherent.call('TRIGGER_KEY_EVENT', `ADF${index}_COMPLETE_SET`, true, Avionics.Utils.make_adf_bcd32((frequency ?? 0) * 1_000), 0, 0);
+            return Coherent.call('TRIGGER_KEY_EVENT', `ADF${index > 1 ? index : ''}_COMPLETE_SET`, true, Avionics.Utils.make_adf_bcd32((frequency ?? 0) * 1_000), 0, 0);
         }
         return false;
     }
