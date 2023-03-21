@@ -445,6 +445,7 @@ export class NavaidSelectionManager {
     }
 
     private selectDisplayNdb(): void {
+        this.specifiedNdbDeselected = false;
         if (this.fpm.isActiveApproach(FlightPlans.Active)) {
             const specified = this.getSpecifiedNdb();
             if (specified !== null) {
