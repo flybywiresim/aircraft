@@ -915,6 +915,11 @@ class EngineControl {
       }
 
       //--------------------------------------------
+      // Fuel used accumulators
+      fuelUsedLeft += fuelBurn1;
+      fuelUsedRight += fuelBurn2;
+
+      //--------------------------------------------
       // Cross-feed fuel burn routine
       // If fuel pumps for a given tank are closed,
       // all fuel will be burnt on the other tank
@@ -934,11 +939,6 @@ class EngineControl {
         default:
           break;
       }
-
-      //--------------------------------------------
-      // Fuel used accumulators
-      fuelUsedLeft += fuelBurn1;
-      fuelUsedRight += fuelBurn2;
 
       //--------------------------------------------
       // Center Tank transfer routine
