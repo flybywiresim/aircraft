@@ -18,6 +18,7 @@ import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory'
 import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
+import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import {
@@ -421,7 +422,7 @@ export class VnavDriver implements GuidanceComponent {
         let distanceFromAircraft = this.guidanceController.activeLegCompleteLegPathDtg;
         const tacticalDistanceFromStart = this.constraintReader.distanceToPresentPosition;
 
-        for (let i = activeLegIndex; i < activeLegIndex + 3; i++) {
+        for (let i = activeLegIndex; geometry.legs.get(i) || geometry.legs.get(i + 1); i++) {
             const leg = geometry.legs.get(i);
 
             if (!leg) {
@@ -429,18 +430,25 @@ export class VnavDriver implements GuidanceComponent {
             }
 
             if (i > activeLegIndex) {
-                const inboundTransition = geometry.transitions.get(i - 1);
-                const outboundTransition = geometry.transitions.get(i);
+                if (leg instanceof IFLeg) {
+                    const previousTermination = geometry.legs.get(i - 1).getPathEndPoint();
+                    if (previousTermination && leg?.fix?.infos?.coordinates) {
+                        distanceFromAircraft += Avionics.Utils.computeGreatCircleDistance(previousTermination, leg.fix.infos.coordinates);
+                    }
+                } else {
+                    const inboundTransition = geometry.transitions.get(i - 1);
+                    const outboundTransition = geometry.transitions.get(i);
 
-                const [inboundLength, legDistance, outboundLength] = Geometry.completeLegPathLengths(
-                    leg,
-                    (inboundTransition?.isNull || !inboundTransition?.isComputed) ? null : inboundTransition,
-                    (outboundTransition?.isNull || !outboundTransition?.isComputed) ? null : outboundTransition,
-                );
+                    const [inboundLength, legDistance, outboundLength] = Geometry.completeLegPathLengths(
+                        leg,
+                        (inboundTransition?.isNull || !inboundTransition?.isComputed) ? null : inboundTransition,
+                        (outboundTransition?.isNull || !outboundTransition?.isComputed) ? null : outboundTransition,
+                    );
 
-                const correctedInboundLength = Number.isNaN(inboundLength) ? 0 : inboundLength;
-                const totalLegLength = legDistance + correctedInboundLength + outboundLength;
-                distanceFromAircraft += totalLegLength;
+                    const correctedInboundLength = Number.isNaN(inboundLength) ? 0 : inboundLength;
+                    const totalLegLength = legDistance + correctedInboundLength + outboundLength;
+                    distanceFromAircraft += totalLegLength;
+                }
             }
 
             const prediction = this.profileManager.mcduProfile.interpolateEverythingFromStart(tacticalDistanceFromStart + distanceFromAircraft);
