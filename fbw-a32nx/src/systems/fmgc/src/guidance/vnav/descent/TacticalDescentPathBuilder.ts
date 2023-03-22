@@ -2,19 +2,49 @@ import { AltitudeConstraint, AltitudeConstraintType } from '@fmgc/guidance/lnav/
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
+import { AircraftConfiguration, AircraftConfigurationProfile } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
-import { MaxSpeedConstraint, NavGeometryProfile, VerticalCheckpoint, VerticalCheckpointForDeceleration, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import {
+    ApproachCheckpoint,
+    MaxSpeedConstraint,
+    NavGeometryProfile,
+    VerticalCheckpoint,
+    VerticalCheckpointForDeceleration,
+    VerticalCheckpointReason,
+} from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
-import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
+import { VerticalProfileComputationParameters, VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 
 type MinimumDescentAltitudeConstraint = {
     distanceFromStart: NauticalMiles,
     minimumAltitude: Feet,
+}
+
+/**
+ * The deceleration schedule describes the speed profile computed for the managed descent path.
+ * The tactical path builder should know about this schedule because - while we might not be following the managed vertical profile -
+ * we might still be in managed speed mode.
+ */
+export type DecelerationSchedule = {
+    /**
+     * The tactical path builder should predict decelerations at or before these points.
+     * A speed change is a point at which the plane should start deceleration to meet a speed constraint or limit.
+     * Speed changes are computed when the managed descent path is computed. When not following the managed profile, but managed speed,
+     * the aircraft should start decelerating at these points or earlier as well, because we don't want the aircraft to intercept the managed profile
+     * at the wrong speed.
+     * A speed change used to be called "forcedDeceleration". If that name is still used in the code, it should be replaced with "speedChange".
+     */
+    speedChanges: VerticalCheckpointForDeceleration[],
+    /**
+     * The tactical path builder should predict decelerations at exactly these points.
+     * Approach points are the checkpoints of the managed profile characterizing the approach path.
+     */
+    approachPoints: ApproachCheckpoint[],
 }
 
 export class TacticalDescentPathBuilder {
@@ -31,14 +61,14 @@ export class TacticalDescentPathBuilder {
      * @param speedProfile
      * @param windProfile
      * @param finalDistance
-     * @param forcedDecelerations Points at which the plane must decelerate
+     * @param schedule Schedule describing the managed descent path
      */
     buildMcduPredictionPath(
         profile: NavGeometryProfile,
         descentStrategy: DescentStrategy,
         speedProfile: SpeedProfile,
         windProfile: HeadwindProfile,
-        forcedDecelerations: VerticalCheckpointForDeceleration[],
+        schedule: DecelerationSchedule,
     ) {
         const start = profile.lastCheckpoint;
 
@@ -51,7 +81,10 @@ export class TacticalDescentPathBuilder {
             } as MinimumDescentAltitudeConstraint;
         });
 
-        const phaseTable = new PhaseTable(windProfile);
+        const decelPointDistance = schedule.approachPoints[0]?.distanceFromStart ?? Infinity;
+        const speedConstraintsToUse = profile.descentSpeedConstraints.filter(({ distanceFromStart }) => distanceFromStart < decelPointDistance);
+
+        const phaseTable = new PhaseTable(this.observer.get(), windProfile);
         phaseTable.start = start;
         phaseTable.phases = [
             new DescendToAltitude(profile.finalAltitude).withReasonAfter(VerticalCheckpointReason.Landing),
@@ -62,7 +95,7 @@ export class TacticalDescentPathBuilder {
         let sequence: TemporaryCheckpointSequence | null = null;
         while (!isPathValid && numRecomputations++ < 100) {
             sequence = phaseTable.execute(descentStrategy, this.levelFlightStrategy);
-            isPathValid = this.checkForViolations(phaseTable, profile, altConstraintsToUse, speedProfile, forcedDecelerations);
+            isPathValid = this.checkForViolations(phaseTable, altConstraintsToUse, speedConstraintsToUse, speedProfile, schedule);
         }
 
         if (sequence != null) {
@@ -84,7 +117,7 @@ export class TacticalDescentPathBuilder {
         speedProfile: SpeedProfile,
         windProfile: HeadwindProfile,
         finalAltitude: Feet,
-        forcedDecelerations: VerticalCheckpointForDeceleration[],
+        schedule: DecelerationSchedule,
     ) {
         const start = profile.lastCheckpoint;
 
@@ -97,7 +130,10 @@ export class TacticalDescentPathBuilder {
             } as MinimumDescentAltitudeConstraint;
         });
 
-        const phaseTable = new PhaseTable(windProfile);
+        const decelPointDistance = schedule.approachPoints[0]?.distanceFromStart ?? Infinity;
+        const speedConstraintsToUse = profile.descentSpeedConstraints.filter(({ distanceFromStart }) => distanceFromStart < decelPointDistance);
+
+        const phaseTable = new PhaseTable(this.observer.get(), windProfile);
         phaseTable.start = start;
         phaseTable.phases = [
             new DescendToAltitude(finalAltitude).withReasonAfter(VerticalCheckpointReason.CrossingFcuAltitudeDescent),
@@ -108,7 +144,7 @@ export class TacticalDescentPathBuilder {
         let sequence: TemporaryCheckpointSequence | null = null;
         while (!isPathValid && numRecomputations++ < 100) {
             sequence = phaseTable.execute(descentStrategy, this.levelFlightStrategy);
-            isPathValid = this.checkForViolations(phaseTable, profile, altConstraintsToUse, speedProfile, forcedDecelerations);
+            isPathValid = this.checkForViolations(phaseTable, altConstraintsToUse, speedConstraintsToUse, speedProfile, schedule);
         }
 
         // It's possible that the last phase (which is the one that the phase table is initialized with) is not executed because we've already got below
@@ -130,15 +166,15 @@ export class TacticalDescentPathBuilder {
      * @param profile
      * @param altitudeConstraints
      * @param speedProfile
-     * @param forcedDecelerations
+     * @param schedule The speed schedule describing the managed profile
      * @returns
      */
     private checkForViolations(
         phaseTable: PhaseTable,
-        profile: BaseGeometryProfile,
         altitudeConstraints: MinimumDescentAltitudeConstraint[],
+        speedConstraints: MaxSpeedConstraint[],
         speedProfile: SpeedProfile,
-        forcedDecelerations: VerticalCheckpointForDeceleration[],
+        schedule: DecelerationSchedule,
     ): boolean {
         const { descentSpeedLimit } = this.observer.get();
 
@@ -149,19 +185,27 @@ export class TacticalDescentPathBuilder {
                 continue;
             }
 
-            for (const forcedDeceleration of forcedDecelerations) {
-                if (this.doesPhaseViolateForcedConstraintDeceleration(phase, forcedDeceleration)) {
-                    if (forcedDeceleration.reason === VerticalCheckpointReason.StartDecelerationToConstraint) {
-                        this.handleForcedConstraintDecelerationViolation(phaseTable, i, forcedDeceleration);
-                    } else if (forcedDeceleration.reason === VerticalCheckpointReason.StartDecelerationToLimit) {
-                        this.handleForcedSpeedLimitDecelerationViolation(phaseTable, i, forcedDeceleration);
+            for (const approachPoint of schedule.approachPoints) {
+                if (this.doesPhaseViolateApproachPoint(phase, approachPoint)) {
+                    this.handleApproachPointViolation(phaseTable, i, approachPoint);
+
+                    return false;
+                }
+            }
+
+            for (const speedChange of schedule.speedChanges) {
+                if (this.doesPhaseViolateSpeedChange(phase, speedChange)) {
+                    if (speedChange.reason === VerticalCheckpointReason.StartDecelerationToConstraint) {
+                        this.handleConstraintSpeedChangeViolation(phaseTable, i, speedChange);
+                    } else if (speedChange.reason === VerticalCheckpointReason.StartDecelerationToLimit) {
+                        this.handleLimitSpeedChangeViolation(phaseTable, i, speedChange);
                     }
 
                     return false;
                 }
             }
 
-            for (const speedConstraint of profile.descentSpeedConstraints) {
+            for (const speedConstraint of speedConstraints) {
                 if (this.doesPhaseViolateSpeedConstraint(previousResult, phase, speedConstraint)) {
                     this.handleSpeedConstraintViolation(phaseTable, i, speedConstraint);
 
@@ -191,28 +235,28 @@ export class TacticalDescentPathBuilder {
         return true;
     }
 
-    private handleForcedConstraintDecelerationViolation(phaseTable: PhaseTable, violatingPhaseIndex: number, forcedDeceleration: VerticalCheckpointForDeceleration) {
+    private handleConstraintSpeedChangeViolation(phaseTable: PhaseTable, violatingPhaseIndex: number, speedChange: VerticalCheckpointForDeceleration) {
         const violatingPhase = phaseTable.phases[violatingPhaseIndex];
 
         if (violatingPhase instanceof DescendingDeceleration) {
             // If we are already decelerating, make sure we decelerate to the correct speed
-            violatingPhase.toSpeed = Math.min(forcedDeceleration.targetSpeed, violatingPhase.toSpeed);
+            violatingPhase.toSpeed = Math.min(speedChange.targetSpeed, violatingPhase.toSpeed);
         } else {
             phaseTable.phases.splice(violatingPhaseIndex, 0,
-                new DescendToDistance(forcedDeceleration.distanceFromStart),
+                new DescendToDistance(speedChange.distanceFromStart),
                 // Use deceleration reason as before
-                new DescendingDeceleration(forcedDeceleration.targetSpeed).withReasonBefore(forcedDeceleration.reason));
+                new DescendingDeceleration(speedChange.targetSpeed).withReasonBefore(speedChange.reason));
         }
     }
 
-    private handleForcedSpeedLimitDecelerationViolation(phaseTable: PhaseTable, violatingPhaseIndex: number, forcedDeceleration: VerticalCheckpointForDeceleration) {
+    private handleLimitSpeedChangeViolation(phaseTable: PhaseTable, violatingPhaseIndex: number, speedChange: VerticalCheckpointForDeceleration) {
         const violatingPhase = phaseTable.phases[violatingPhaseIndex];
 
         if (violatingPhase instanceof DescendingDeceleration) {
             // If we are already decelerating, make sure we decelerate to the correct speed
-            violatingPhase.toSpeed = Math.min(forcedDeceleration.targetSpeed, violatingPhase.toSpeed);
+            violatingPhase.toSpeed = Math.min(speedChange.targetSpeed, violatingPhase.toSpeed);
 
-            const overshoot = violatingPhase.lastResult.altitude - forcedDeceleration.altitude;
+            const overshoot = violatingPhase.lastResult.altitude - speedChange.altitude;
 
             // Try to find a previous phase that we can shorten to allow more deceleration
             for (let i = violatingPhaseIndex - 1; i >= 0; i--) {
@@ -228,8 +272,8 @@ export class TacticalDescentPathBuilder {
             }
         } else {
             phaseTable.phases.splice(violatingPhaseIndex, 0,
-                new DescendToAltitude(forcedDeceleration.altitude),
-                new DescendingDeceleration(forcedDeceleration.targetSpeed).withReasonBefore(VerticalCheckpointReason.StartDecelerationToLimit));
+                new DescendToAltitude(speedChange.altitude),
+                new DescendingDeceleration(speedChange.targetSpeed).withReasonBefore(VerticalCheckpointReason.StartDecelerationToLimit));
         }
     }
 
@@ -334,20 +378,46 @@ export class TacticalDescentPathBuilder {
         }
     }
 
-    private doesPhaseViolateForcedConstraintDeceleration(phase: SubPhase, forcedDeceleration: VerticalCheckpointForDeceleration) {
-        if (forcedDeceleration.reason === VerticalCheckpointReason.StartDecelerationToLimit) {
-            if (phase.lastResult.altitude >= forcedDeceleration.altitude) {
-                return false;
-            }
-        } else if (phase.lastResult.distanceFromStart <= forcedDeceleration.distanceFromStart) {
+    private handleApproachPointViolation(phaseTable: PhaseTable, violatingPhaseIndex: number, approachPoint: ApproachCheckpoint) {
+        const violatingPhase = phaseTable.phases[violatingPhaseIndex];
+
+        if (violatingPhase instanceof DescendingDeceleration) {
+            // If we are already decelerating, make sure we decelerate to the correct speed
+            violatingPhase.toSpeed = Math.min(approachPoint.targetSpeed, violatingPhase.toSpeed);
+        } else {
+            phaseTable.phases.splice(violatingPhaseIndex, 0,
+                new DescendToDistance(approachPoint.distanceFromStart),
+                new DescendingDeceleration(approachPoint.targetSpeed));
+        }
+    }
+
+    private doesPhaseViolateApproachPoint(phase: SubPhase, approachPoint: ApproachCheckpoint) {
+        // We're still before the point
+        if (phase.lastResult.distanceFromStart <= approachPoint.distanceFromStart) {
             return false;
         }
 
         if (phase instanceof DescendingDeceleration) {
-            return phase.toSpeed > forcedDeceleration.targetSpeed;
+            return phase.toSpeed > approachPoint.targetSpeed;
         }
 
-        return phase.lastResult.speed > forcedDeceleration.targetSpeed;
+        return phase.lastResult.speed > approachPoint.targetSpeed;
+    }
+
+    private doesPhaseViolateSpeedChange(phase: SubPhase, speedChange: VerticalCheckpointForDeceleration) {
+        if (speedChange.reason === VerticalCheckpointReason.StartDecelerationToLimit) {
+            if (phase.lastResult.altitude >= speedChange.altitude) {
+                return false;
+            }
+        } else if (phase.lastResult.distanceFromStart <= speedChange.distanceFromStart) {
+            return false;
+        }
+
+        if (phase instanceof DescendingDeceleration) {
+            return phase.toSpeed > speedChange.targetSpeed;
+        }
+
+        return phase.lastResult.speed > speedChange.targetSpeed;
     }
 
     private doesPhaseViolateSpeedConstraint(previousResult: VerticalCheckpoint, phase: SubPhase, speedConstraint: MaxSpeedConstraint) {
@@ -424,7 +494,7 @@ class PhaseTable {
 
     phases: SubPhase[] = [];
 
-    constructor(private readonly winds: HeadwindProfile) { }
+    constructor(private readonly parameters: VerticalProfileComputationParameters, private readonly winds: HeadwindProfile) { }
 
     execute(descentStrategy: DescentStrategy, levelFlightStrategy: DescentStrategy): TemporaryCheckpointSequence {
         const sequence = new TemporaryCheckpointSequence(this.start);
@@ -440,7 +510,9 @@ class PhaseTable {
 
             if (phase.shouldExecute(sequence.lastCheckpoint)) {
                 const headwind = this.winds.getHeadwindComponent(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude);
-                const phaseResult = phase.execute(phase.shouldFlyAsLevelSegment ? levelFlightStrategy : descentStrategy)(sequence.lastCheckpoint, headwind);
+                const configuration = AircraftConfigurationProfile.getBySpeed(sequence.lastCheckpoint.speed, this.parameters);
+
+                const phaseResult = phase.execute(phase.shouldFlyAsLevelSegment ? levelFlightStrategy : descentStrategy)(sequence.lastCheckpoint, headwind, configuration);
 
                 if (phase instanceof DescendingDeceleration) {
                     (sequence.lastCheckpoint as VerticalCheckpointForDeceleration).targetSpeed = phase.toSpeed;
@@ -473,7 +545,7 @@ abstract class SubPhase {
 
     abstract shouldExecute(start: VerticalCheckpoint): boolean;
 
-    abstract execute(strategy: DescentStrategy): (start: VerticalCheckpoint, headwind: WindComponent) => StepResults;
+    abstract execute(strategy: DescentStrategy): (start: VerticalCheckpoint, headwind: WindComponent, configuration?: AircraftConfiguration) => StepResults;
 
     protected scaleStepBasedOnLastCheckpoint(lastCheckpoint: VerticalCheckpoint, step: StepResults, scaling: number) {
         step.distanceTraveled *= scaling;
@@ -528,8 +600,8 @@ class DescendingDeceleration extends SubPhase {
     }
 
     override execute(strategy: DescentStrategy) {
-        return (start: VerticalCheckpoint, headwind: WindComponent) => {
-            const step = strategy.predictToSpeed(start.altitude, this.toSpeed, start.speed, start.mach, start.remainingFuelOnBoard, headwind);
+        return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
+            const step = strategy.predictToSpeed(start.altitude, this.toSpeed, start.speed, start.mach, start.remainingFuelOnBoard, headwind, configuration);
 
             if (step.finalAltitude < this.minAltitude || start.distanceFromStart + step.distanceTraveled > this.maxDistance) {
                 const scaling = Math.max(0, Math.min(
@@ -577,9 +649,9 @@ class DescendToDistance extends SubPhase {
     }
 
     override execute(strategy: DescentStrategy) {
-        return (start: VerticalCheckpoint, headwind: WindComponent) => {
+        return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
             const step = strategy.predictToDistance(
-                start.altitude, this.toDistance - start.distanceFromStart, start.speed, start.mach, start.remainingFuelOnBoard, headwind,
+                start.altitude, this.toDistance - start.distanceFromStart, start.speed, start.mach, start.remainingFuelOnBoard, headwind, configuration,
             );
 
             if (step.finalAltitude < this.minAltitude) {

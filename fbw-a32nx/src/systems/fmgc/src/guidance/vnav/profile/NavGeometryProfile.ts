@@ -91,9 +91,21 @@ export interface VerticalCheckpointForDeceleration extends VerticalCheckpoint {
     targetSpeed: Knots
 }
 
+export interface ApproachCheckpoint extends VerticalCheckpointForDeceleration {
+    reason: (VerticalCheckpointReason.Decel | VerticalCheckpointReason.Flaps1 | VerticalCheckpointReason.Flaps2 | VerticalCheckpointReason.Flaps3 | VerticalCheckpointReason.FlapsFull)
+}
+
 // I'm sure there's a better way to handle the distinction between `VerticalCheckpoint` and `VerticalCheckpointForDeceleration`
 export function isSpeedChangePoint(checkpoint: VerticalCheckpoint): checkpoint is VerticalCheckpointForDeceleration {
     return checkpoint.reason === VerticalCheckpointReason.StartDecelerationToConstraint || checkpoint.reason === VerticalCheckpointReason.StartDecelerationToLimit;
+}
+
+export function isApproachCheckpoint(checkpoint: VerticalCheckpoint): checkpoint is ApproachCheckpoint {
+    return checkpoint.reason === VerticalCheckpointReason.Decel
+        || checkpoint.reason === VerticalCheckpointReason.Flaps1
+        || checkpoint.reason === VerticalCheckpointReason.Flaps2
+        || checkpoint.reason === VerticalCheckpointReason.Flaps3
+        || checkpoint.reason === VerticalCheckpointReason.FlapsFull;
 }
 
 export interface MaxAltitudeConstraint {

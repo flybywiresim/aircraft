@@ -44,6 +44,39 @@ class FlapConfigurationProfile {
 
         return Infinity;
     }
+
+    static getApproachPhaseTargetSpeed(flapConfig: FlapConf, parameters: VerticalProfileComputationParameters): Knots {
+        switch (flapConfig) {
+        case FlapConf.CONF_FULL:
+            return parameters.approachSpeed;
+        case FlapConf.CONF_3:
+        case FlapConf.CONF_2:
+            return parameters.flapRetractionSpeed;
+        case FlapConf.CONF_1:
+            return parameters.slatRetractionSpeed;
+        case FlapConf.CLEAN:
+            return parameters.cleanSpeed;
+        default:
+            throw new Error(`[FMS/VNAV] Unknown flap config: ${flapConfig}`);
+        }
+    }
+
+    static getFlapCheckpointReasonByFlapConf(flapConfig: FlapConf) {
+        switch (flapConfig) {
+        case FlapConf.CONF_FULL:
+            return VerticalCheckpointReason.FlapsFull;
+        case FlapConf.CONF_3:
+            return VerticalCheckpointReason.Flaps3;
+        case FlapConf.CONF_2:
+            return VerticalCheckpointReason.Flaps2;
+        case FlapConf.CONF_1:
+            return VerticalCheckpointReason.Flaps1;
+        case FlapConf.CLEAN:
+            return VerticalCheckpointReason.Decel;
+        default:
+            throw new Error(`[FMS/VNAV] Unknown flap config: ${flapConfig}`);
+        }
+    }
 }
 
 export interface AircraftConfiguration {
@@ -329,6 +362,7 @@ export class ApproachPathBuilder {
 
                 // We don't care about any speed constraint limitations here, because that's what the if block above is for.
                 const targetSpeed = Math.min(flapTargetSpeed, limitingSpeed);
+                const config = AircraftConfigurationProfile.getBySpeed(speed, parameters);
 
                 // TODO: Handle case where we need speedbrakes
                 const decelerationStep = this.fpaStrategy.predictToSpeed(
@@ -338,7 +372,7 @@ export class ApproachPathBuilder {
                     managedDescentSpeedMach,
                     remainingFuelOnBoard,
                     windProfile.getHeadwindComponent(distanceFromStart, altitude),
-                    AircraftConfigurationProfile.getBySpeed(speed, parameters),
+                    config,
                 );
 
                 if (decelerationStep.distanceTraveled < remainingDistance) {
@@ -349,27 +383,14 @@ export class ApproachPathBuilder {
                     return decelerationSequence;
                 }
 
-                decelerationSequence.addCheckpointFromStep(decelerationStep, this.getFlapCheckpointReasonByFlapConf(FlapConfigurationProfile.getBySpeed(speed, parameters)));
+                decelerationSequence.addDecelerationCheckpointFromStep(
+                    decelerationStep,
+                    FlapConfigurationProfile.getFlapCheckpointReasonByFlapConf(config.flapConfig),
+                    FlapConfigurationProfile.getApproachPhaseTargetSpeed(config.flapConfig, parameters),
+                );
             }
         }
 
         return decelerationSequence;
-    }
-
-    private getFlapCheckpointReasonByFlapConf(flapConfig: FlapConf) {
-        switch (flapConfig) {
-        case FlapConf.CONF_FULL:
-            return VerticalCheckpointReason.FlapsFull;
-        case FlapConf.CONF_3:
-            return VerticalCheckpointReason.Flaps3;
-        case FlapConf.CONF_2:
-            return VerticalCheckpointReason.Flaps2;
-        case FlapConf.CONF_1:
-            return VerticalCheckpointReason.Flaps1;
-        case FlapConf.CLEAN:
-            return VerticalCheckpointReason.Decel;
-        default:
-            throw new Error(`[FMS/VNAV] Unknown flap config: ${flapConfig}`);
-        }
     }
 }

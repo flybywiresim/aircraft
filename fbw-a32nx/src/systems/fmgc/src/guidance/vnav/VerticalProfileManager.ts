@@ -11,7 +11,7 @@ import { TakeoffPathBuilder } from '@fmgc/guidance/vnav/takeoff/TakeoffPathBuild
 import { ClimbStrategy, ClimbThrustClimbStrategy, FlightPathAngleStrategy, VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { ConstraintReader } from '@fmgc/guidance/vnav/ConstraintReader';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { TacticalDescentPathBuilder } from '@fmgc/guidance/vnav/descent/TacticalDescentPathBuilder';
+import { DecelerationSchedule, TacticalDescentPathBuilder } from '@fmgc/guidance/vnav/descent/TacticalDescentPathBuilder';
 import { DescentStrategy, DesModeStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ApproachPathBuilder } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
@@ -21,8 +21,9 @@ import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileI
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
 import {
+    isApproachCheckpoint,
+    isSpeedChangePoint,
     NavGeometryProfile,
-    VerticalCheckpointForDeceleration,
     VerticalCheckpointReason,
 } from './profile/NavGeometryProfile';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
@@ -109,9 +110,9 @@ export class VerticalProfileManager {
             && (flightPhase >= FmgcFlightPhase.Descent && flightPhase <= FmgcFlightPhase.Approach || this.aircraftToDescentProfileRelation.isPastTopOfDescent())
         ) {
             const offset = this.computeTacticalToGuidanceProfileOffset();
-            const forcedDecelerations = this.getForcedDecelerationsFromDescentPath(offset);
+            const schedule = this.getDecelerationScheduleFromDescentPath(offset);
 
-            this.tacticalDescentPathBuilder.buildMcduPredictionPath(mcduProfile, this.getDesModeStrategy(), speedProfile, descentWinds, forcedDecelerations);
+            this.tacticalDescentPathBuilder.buildMcduPredictionPath(mcduProfile, this.getDesModeStrategy(), speedProfile, descentWinds, schedule);
             this.mergeMcduWithGuidanceProfile(mcduProfile, offset);
         } else {
             this.cruiseToDescentCoordinator.buildCruiseAndDescentPath(mcduProfile, speedProfile, cruiseWinds, descentWinds, managedClimbStrategy, stepDescentStrategy);
@@ -215,9 +216,9 @@ export class VerticalProfileManager {
             const descentStrategy = this.getDescentStrategyForVerticalMode();
             const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
             const offset = this.computeTacticalToGuidanceProfileOffset();
-            const forcedDecelerations = this.getForcedDecelerationsFromDescentPath(offset);
+            const schedule = this.getDecelerationScheduleFromDescentPath(offset);
 
-            this.tacticalDescentPathBuilder.buildTacticalDescentPathToAltitude(ndProfile, descentStrategy, speedProfile, descentWinds, fcuAltitude, forcedDecelerations);
+            this.tacticalDescentPathBuilder.buildTacticalDescentPathToAltitude(ndProfile, descentStrategy, speedProfile, descentWinds, fcuAltitude, schedule);
 
             this.interceptNdWithGuidanceProfile(ndProfile);
             this.insertLevelSegmentPwp(ndProfile);
@@ -494,14 +495,25 @@ export class VerticalProfileManager {
         }
     }
 
-    private getForcedDecelerationsFromDescentPath(offset: NauticalMiles): VerticalCheckpointForDeceleration[] {
+    private getDecelerationScheduleFromDescentPath(offset: NauticalMiles): DecelerationSchedule {
+        const schedule: DecelerationSchedule = {
+            speedChanges: [],
+            approachPoints: [],
+        };
+
         if (!this.descentProfile) {
-            return [];
+            return schedule;
         }
 
-        return this.descentProfile.checkpoints.filter(
-            (c) => c.reason === VerticalCheckpointReason.StartDecelerationToConstraint || c.reason === VerticalCheckpointReason.StartDecelerationToLimit,
-        ).map((c: VerticalCheckpointForDeceleration) => ({ ...c, distanceFromStart: c.distanceFromStart + offset }));
+        this.descentProfile.checkpoints.forEach((checkpoint) => {
+            if (isSpeedChangePoint(checkpoint)) {
+                schedule.speedChanges.push({ ...checkpoint, distanceFromStart: checkpoint.distanceFromStart + offset });
+            } else if (isApproachCheckpoint(checkpoint)) {
+                schedule.approachPoints.push({ ...checkpoint, distanceFromStart: checkpoint.distanceFromStart + offset });
+            }
+        });
+
+        return schedule;
     }
 
     private computeTacticalToGuidanceProfileOffset(): NauticalMiles {
