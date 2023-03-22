@@ -60,6 +60,7 @@
 1. [ADIRU] Add baro correction setting to ADIRS - @mjuhe (Miquel Juhe)
 1. [FMGC] Fixed various bugs with thrust reduction and acceleration altitude - @tracernz (Mike)
 1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
+1. [FMS] Fix display of lat/lon close to zero on DUPLICATE NAMES page - @tracernz (Mike)
 
 ## 0.9.0
 
