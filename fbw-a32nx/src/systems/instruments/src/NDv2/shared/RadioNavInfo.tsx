@@ -120,7 +120,6 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         return (
             <g visibility={this.props.visible.map((v) => (v ? 'visible' : 'hidden'))}>
                 <path
-                    visibility={this.availableSub.map((v) => (v ? 'visible' : 'hidden'))}
                     d={this.props.index === 1 ? this.VOR_1_NEEDLE : this.VOR_2_NEEDLE}
                     stroke-width={2}
                     class={this.stationCorrected.map((c) => (c ? 'Magenta' : 'White'))}
