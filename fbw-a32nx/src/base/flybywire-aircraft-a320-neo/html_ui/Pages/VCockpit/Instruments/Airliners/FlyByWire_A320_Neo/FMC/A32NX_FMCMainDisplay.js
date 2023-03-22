@@ -1731,7 +1731,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     shouldTransmitMinimums() {
         const phase = getFlightPhaseManager().phase;
-        //Only transmit when in Cruise or later phase and within 250NM of destination
         return (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250));
     }
 
