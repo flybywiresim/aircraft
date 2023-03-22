@@ -120,6 +120,14 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
                 ]),
+            new ExecTask("systems-terronnd", [
+                "fbw-common/src/wasm/terronnd/build.sh",
+                "wasm-opt -O1 -o fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
+            ], [
+                "fbw-common/src/wasm/terronnd",
+                "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm",
+                "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
+            ]),
             new ExecTask("flypad-backend",
                 "npm run build-a32nx:flypad-backend",
                 [
@@ -170,6 +178,14 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm"
                 ]),
+            new ExecTask("systems-terronnd", [
+                "fbw-common/src/wasm/terronnd/build.sh",
+                "wasm-opt -O1 -o fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
+            ], [
+                "fbw-common/src/wasm/terronnd",
+                "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm",
+                "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
+            ]),
             new ExecTask("flypad-backend",
                 "npm run build-a380x:flypad-backend",
                 [
