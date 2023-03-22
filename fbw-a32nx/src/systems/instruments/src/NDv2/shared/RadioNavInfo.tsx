@@ -1,10 +1,11 @@
 import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
 import { TuningMode } from '@fmgc/radionav';
 import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusPublisher';
-import { NavAidMode } from '@shared/NavigationDisplay';
+import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { EcpSimVars } from '../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 
-export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2 }> {
+export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, mode: Subscribable<EfisNdMode> }> {
     private readonly isVor = Subject.create(true);
 
     private readonly isAdf = Subject.create(true);
@@ -30,12 +31,13 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2
 
     render(): VNode | null {
         return (
-            <VorInfo bus={this.props.bus} index={this.props.index} visible={this.isVor} />
+            // TODO ADF
+            <VorInfo bus={this.props.bus} index={this.props.index} visible={this.isVor} mode={this.props.mode} />
         );
     }
 }
 
-class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: Subscribable<boolean> }> {
+class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: Subscribable<boolean>, mode: Subscribable<EfisNdMode> }> {
     private readonly VOR_1_NEEDLE = 'M25,675 L25,680 L37,696 L13,696 L25,680 M25,696 L25,719';
 
     private readonly VOR_2_NEEDLE = 'M25,675 L25,680 L37,696 L13,696 L25,680 M25,696 L25,719';
@@ -52,25 +54,66 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     private readonly tuningModeSub = Subject.create<TuningMode>(TuningMode.Manual);
 
+    private readonly stationDeclination = Subject.create(0);
+
+    private readonly stationLocation = Subject.create(new LatLongAlt());
+
+    private readonly trueRefActive = Subject.create(false);
+
     private readonly dmeVisible = MappedSubject.create(([available, hasDme, frequency]) => (available || hasDme) && frequency > 1, this.availableSub, this.hasDmeSub, this.frequencySub);
 
     private readonly dashedDme = MappedSubject.create(([hasDme, dmeDistance]) => !hasDme || dmeDistance <= 0, this.hasDmeSub, this.dmeDistanceSub);
 
     private readonly frequencyVisible = MappedSubject.create(([available, hasDme, frequency]) => !(available || hasDme) && frequency > 1, this.availableSub, this.hasDmeSub, this.frequencySub);
 
+    private readonly stationTrueRef = MappedSubject.create(
+        ([location, declination]) => Math.abs(location.lat) > 75 && declination < Number.EPSILON,
+        this.stationLocation,
+        this.stationDeclination,
+    );
+
+    private readonly stationCorrected = MappedSubject.create(
+        ([trueRef, stationTrueRef, available, mode]) => trueRef !== stationTrueRef && available && mode !== EfisNdMode.ROSE_VOR && mode !== EfisNdMode.ROSE_ILS,
+        this.trueRefActive,
+        this.stationTrueRef,
+        this.availableSub,
+        this.props.mode,
+    );
+
+    private readonly magWarning = MappedSubject.create(
+        ([trueRef, stationTrueRef, available, mode]) => trueRef && !stationTrueRef && available && (mode === EfisNdMode.ROSE_VOR || mode === EfisNdMode.ROSE_ILS),
+        this.trueRefActive,
+        this.stationTrueRef,
+        this.availableSub,
+        this.props.mode,
+    );
+
+    private readonly trueWarning = MappedSubject.create(
+        ([trueRef, stationTrueRef, available, mode]) => !trueRef && stationTrueRef && available && (mode === EfisNdMode.ROSE_VOR || mode === EfisNdMode.ROSE_ILS),
+        this.trueRefActive,
+        this.stationTrueRef,
+        this.availableSub,
+        this.props.mode,
+    );
+
     private readonly x = this.props.index === 1 ? 37 : 668
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<VorSimVars>();
+        const sub = this.props.bus.getSubscriber<DmcEvents & VorSimVars>();
 
         sub.on(`nav${this.props.index}Ident`).whenChanged().handle((v) => this.identSub.set(v));
         sub.on(`nav${this.props.index}Frequency`).whenChanged().handle((v) => this.frequencySub.set(v));
         sub.on(`nav${this.props.index}HasDme`).whenChanged().handle((v) => this.hasDmeSub.set(v));
         sub.on(`nav${this.props.index}DmeDistance`).whenChanged().handle((v) => this.dmeDistanceSub.set(v));
         sub.on(`nav${this.props.index}Available`).whenChanged().handle((v) => this.availableSub.set(v));
+        // FIXME this doesn't work
         sub.on(`nav${this.props.index}TuningMode`).whenChanged().handle((v) => this.tuningModeSub.set(v));
+        sub.on(`nav${this.props.index}StationDeclination`).whenChanged().handle((v) => this.stationDeclination.set(v));
+        sub.on(`nav${this.props.index}Location`).whenChanged().handle((v) => this.stationLocation.set(v));
+
+        sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
     }
 
     render(): VNode | null {
@@ -80,7 +123,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                     visibility={this.availableSub.map((v) => (v ? 'visible' : 'hidden'))}
                     d={this.props.index === 1 ? this.VOR_1_NEEDLE : this.VOR_2_NEEDLE}
                     stroke-width={2}
-                    class="White"
+                    class={this.stationCorrected.map((c) => (c ? 'Magenta' : 'White'))}
                     strokeLinejoin="round"
                     strokeLinecap="round"
                 />
@@ -88,6 +131,10 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                 <text x={this.x} y={692} font-size={24} class="White">
                     {`VOR${this.props.index}`}
                 </text>
+
+                <text x={this.x + (this.props.index === 1 ? 61 : -54)} y={722} class="FontTiny Magenta" visibility={this.stationCorrected.map((c) => (c ? 'visible' : 'hidden'))}>CORR</text>
+                <text x={this.x + (this.props.index === 1 ? 73 : -54)} y={722} class="FontTiny Amber" visibility={this.magWarning.map((c) => (c ? 'visible' : 'hidden'))}>MAG</text>
+                <text x={this.x + (this.props.index === 1 ? 61 : -54)} y={722} class="FontTiny Amber" visibility={this.trueWarning.map((c) => (c ? 'visible' : 'hidden'))}>TRUE</text>
 
                 <text
                     visibility={this.dmeVisible.map((v) => (v ? 'visible' : 'hidden'))}

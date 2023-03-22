@@ -1,6 +1,7 @@
 import { FSComponent, DisplayComponent, EventBus, VNode, MappedSubject, Subscribable, ConsumerSubject } from 'msfssdk';
 import { MathUtils } from '@shared/MathUtils';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { NDSimvars } from '../NDSimvarPublisher';
 import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
@@ -19,7 +20,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
 
     private trackWord =Arinc429RegisterSubject.createEmpty();
 
-    private readonly sub = this.props.bus.getSubscriber<FGVars & NDSimvars>();
+    private readonly sub = this.props.bus.getSubscriber<DmcEvents & FGVars & NDSimvars>();
 
     private lateralModeSub = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode').whenChanged(), null);
 
@@ -40,8 +41,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        // TODO use DMC data
-        this.sub.on('magHeadingRaw').whenChanged().handle((v) => {
+        this.sub.on('heading').whenChanged().handle((v) => {
             const oldSsm = this.headingWord.get().ssm;
 
             this.headingWord.setWord(v);
@@ -52,8 +52,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
             }
         });
 
-        // TODO use DMC data
-        this.sub.on('magTrackRaw').whenChanged().handle((v) => {
+        this.sub.on('track').whenChanged().handle((v) => {
             const oldSsm = this.trackWord.get().ssm;
 
             this.trackWord.setWord(v);

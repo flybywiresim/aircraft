@@ -1,4 +1,5 @@
 import { FSComponent, DisplayComponent, VNode, Subject, EventBus, MappedSubject } from 'msfssdk';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { NDControlEvents } from '../NDControlEvents';
@@ -27,10 +28,9 @@ export class Airplane extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & NDControlEvents>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcEvents & NDControlEvents>();
 
-        // TODO use DMC data
-        sub.on('magHeadingRaw').whenChanged().handle((v) => this.headingWord.setWord(v));
+        sub.on('heading').whenChanged().handle((v) => this.headingWord.setWord(v));
 
         sub.on('set_show_plane').handle((show) => {
             this.showPlane.set(show);

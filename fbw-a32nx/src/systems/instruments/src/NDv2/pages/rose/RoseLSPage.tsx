@@ -34,6 +34,10 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
                     visible={this.isVisible}
                 />
 
+                {/* FIXME radio needles */}
+
+                {/* FIXME LOC indications */}
+
                 <TrackBug
                     bus={this.props.bus}
                     isUsingTrackUpMode={this.props.isUsingTrackUpMode}

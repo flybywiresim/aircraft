@@ -2,6 +2,7 @@ import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode, 
 import { EfisNdMode, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
 import { Arinc429WordData } from '@shared/arinc429';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { EcpSimVars } from '../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { VorSimVars } from '../../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
@@ -100,6 +101,12 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
 
     private readonly radioAvailable = Subject.create(false);
 
+    private readonly stationDeclination = Subject.create(0);
+
+    private readonly stationLocation = Subject.create(new LatLongAlt());
+
+    private readonly trueRefActive = Subject.create(false);
+
     // eslint-disable-next-line arrow-body-style
     private readonly availableSub = MappedSubject.create(([radioAvailable, heading, track]) => {
         // TODO in the future we will get the radio values via ARINC429 so this will no longer be needed
@@ -113,15 +120,33 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
 
     private readonly needlePaths = Subject.create(['', '']);
 
+    private readonly stationTrueRef = MappedSubject.create(
+        ([location, declination]) => Math.abs(location.lat) > 75 && declination < Number.EPSILON,
+        this.stationLocation,
+        this.stationDeclination,
+    );
+
+    private readonly stationCorrected = MappedSubject.create(
+        ([trueRef, stationTrueRef, available]) => trueRef !== stationTrueRef && available && this.props.mode !== EfisNdMode.ROSE_VOR && this.props.mode !== EfisNdMode.ROSE_ILS,
+        this.trueRefActive,
+        this.stationTrueRef,
+        this.availableSub,
+    );
+
     private centreHeight = 0;
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & VorSimVars & EcpSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcEvents & EcpSimVars & VorSimVars>();
 
         sub.on(`nav${this.props.index}RelativeBearing`).whenChanged().handle((value) => this.relativeBearing.set(value));
         sub.on(`nav${this.props.index}Available`).whenChanged().handle((value) => this.radioAvailable.set(value));
+
+        sub.on(`nav${this.props.index}StationDeclination`).whenChanged().handle((v) => this.stationDeclination.set(v));
+        sub.on(`nav${this.props.index}Location`).whenChanged().handle((v) => this.stationLocation.set(v));
+
+        sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
         switch (this.props.mode) {
         case EfisNdMode.ARC:
@@ -153,7 +178,7 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
                 <path
                     d={this.needlePaths.map((arr) => arr[this.props.index - 1])}
                     stroke-width={3.2}
-                    class="rounded White"
+                    class={this.stationCorrected.map((c) => (c ? 'Magenta rounded' : 'White rounded'))}
                 />
             </g>
         );

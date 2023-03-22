@@ -1,10 +1,10 @@
 import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
 
 export interface FlagProps {
-    x: number,
-    y: number,
+    x: Subscribable<number> | number,
+    y: Subscribable<number> | number,
     class: string,
-    shown: Subscribable<boolean>,
+    visible: Subscribable<boolean>,
 }
 
 export class Flag extends DisplayComponent<FlagProps> {
@@ -13,8 +13,8 @@ export class Flag extends DisplayComponent<FlagProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        this.props.shown.sub((shown) => {
-            this.flagRef.instance.style.visibility = shown ? 'inherit' : 'hidden';
+        this.props.visible.sub((visible) => {
+            this.flagRef.instance.style.visibility = visible ? 'inherit' : 'hidden';
         }, true);
     }
 

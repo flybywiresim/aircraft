@@ -1,4 +1,5 @@
 import { Clock, FSComponent, EventBus, HEventPublisher, Subject } from 'msfssdk';
+import { EfisSide } from '@shared/NavigationDisplay';
 import { NDComponent } from './ND';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
@@ -10,10 +11,10 @@ import { TcasBusPublisher } from '../MsfsAvionicsCommon/providers/TcasBusPublish
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { NDControlEvents } from './NDControlEvents';
 import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
+import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 
 import './style.scss';
-import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
-import { EfisSide } from '@shared/NavigationDisplay';
 
 class A32NX_ND extends BaseInstrument {
     private readonly bus: EventBus;
@@ -31,6 +32,8 @@ class A32NX_ND extends BaseInstrument {
     private readonly vorBusPublisher: VorBusPublisher;
 
     private readonly tcasBusPublisher: TcasBusPublisher;
+
+    private readonly dmcPublisher: DmcPublisher;
 
     private readonly hEventPublisher;
 
@@ -58,6 +61,7 @@ class A32NX_ND extends BaseInstrument {
         this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus);
         this.vorBusPublisher = new VorBusPublisher(this.bus);
         this.tcasBusPublisher = new TcasBusPublisher(this.bus);
+        this.dmcPublisher = new DmcPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.clock = new Clock(this.bus);
     }
@@ -88,6 +92,7 @@ class A32NX_ND extends BaseInstrument {
         this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
 
         this.clock.init();
+        this.dmcPublisher.init();
 
         this.simVarPublisher.subscribe('attHdgKnob');
         this.simVarPublisher.subscribe('airKnob');
@@ -141,6 +146,8 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav1Obs');
         this.vorBusPublisher.subscribe('nav1Available');
         this.vorBusPublisher.subscribe('nav1TuningMode');
+        this.vorBusPublisher.subscribe('nav1StationDeclination');
+        this.vorBusPublisher.subscribe('nav1Location');
 
         this.vorBusPublisher.subscribe('nav2Ident');
         this.vorBusPublisher.subscribe('nav2Frequency');
@@ -150,6 +157,8 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav2Obs');
         this.vorBusPublisher.subscribe('nav2Available');
         this.vorBusPublisher.subscribe('nav2TuningMode');
+        this.vorBusPublisher.subscribe('nav2StationDeclination');
+        this.vorBusPublisher.subscribe('nav2Location');
 
         this.vorBusPublisher.subscribe('nav3Ident');
         this.vorBusPublisher.subscribe('nav3Frequency');
@@ -160,6 +169,20 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav3Available');
         this.vorBusPublisher.subscribe('nav3TuningMode');
         this.vorBusPublisher.subscribe('nav3Localizer');
+        this.vorBusPublisher.subscribe('nav3StationDeclination');
+        this.vorBusPublisher.subscribe('nav3Location');
+
+        this.vorBusPublisher.subscribe('nav4Ident');
+        this.vorBusPublisher.subscribe('nav4Frequency');
+        this.vorBusPublisher.subscribe('nav4HasDme');
+        this.vorBusPublisher.subscribe('nav4DmeDistance');
+        this.vorBusPublisher.subscribe('nav4RelativeBearing');
+        this.vorBusPublisher.subscribe('nav4Obs');
+        this.vorBusPublisher.subscribe('nav4Available');
+        this.vorBusPublisher.subscribe('nav4TuningMode');
+        this.vorBusPublisher.subscribe('nav4Localizer');
+        this.vorBusPublisher.subscribe('nav4StationDeclination');
+        this.vorBusPublisher.subscribe('nav4Location');
 
         this.vorBusPublisher.subscribe('localizerValid');
 
@@ -171,6 +194,8 @@ class A32NX_ND extends BaseInstrument {
         this.egpwcBusPublisher.subscribe('egpwc.minElevationMode');
         this.egpwcBusPublisher.subscribe('egpwc.maxElevation');
         this.egpwcBusPublisher.subscribe('egpwc.maxElevationMode');
+
+        this.dmcPublisher.subscribe('trueRefPushButton');
 
         FSComponent.render(<NDComponent bus={this.bus} side={side} />, document.getElementById('ND_CONTENT'));
 
@@ -201,6 +226,7 @@ class A32NX_ND extends BaseInstrument {
                 this.egpwcBusPublisher.startPublish();
                 this.hEventPublisher.startPublish();
                 this.adirsValueProvider.start();
+                this.dmcPublisher.startPublish();
             }
             this.gameState = gamestate;
         } else {
@@ -213,6 +239,7 @@ class A32NX_ND extends BaseInstrument {
             this.tcasBusPublisher.onUpdate();
             this.egpwcBusPublisher.onUpdate();
             this.clock.onUpdate();
+            this.dmcPublisher.onUpdate();
         }
     }
 }

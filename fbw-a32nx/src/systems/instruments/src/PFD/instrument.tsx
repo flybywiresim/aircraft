@@ -1,5 +1,5 @@
-import { DisplayManagementComputer } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { Clock, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
+import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -24,7 +24,7 @@ class A32NX_PFD extends BaseInstrument {
 
     private adirsValueProvider: AdirsValueProvider<PFDSimvars>;
 
-    private readonly displayManagementComputer: DisplayManagementComputer;
+    private readonly dmcPublisher: DmcPublisher;
 
     /**
      * "mainmenu" = 0
@@ -42,7 +42,7 @@ class A32NX_PFD extends BaseInstrument {
         this.arincProvider = new ArincValueProvider(this.bus);
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
-        this.displayManagementComputer = new DisplayManagementComputer(this.bus);
+        this.dmcPublisher = new DmcPublisher(this.bus);
     }
 
     get templateID(): string {
@@ -64,7 +64,7 @@ class A32NX_PFD extends BaseInstrument {
 
         this.arincProvider.init();
         this.clock.init();
-        this.displayManagementComputer.init();
+        this.dmcPublisher.init();
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 
@@ -84,12 +84,14 @@ class A32NX_PFD extends BaseInstrument {
                 this.simVarPublisher.startPublish();
                 this.hEventPublisher.startPublish();
                 this.adirsValueProvider.start();
+                this.dmcPublisher.startPublish();
             }
             this.gameState = gamestate;
         } else {
             this.simVarPublisher.onUpdate();
             this.simplaneValueProvider.onUpdate();
             this.clock.onUpdate();
+            this.dmcPublisher.onUpdate();
         }
     }
 }

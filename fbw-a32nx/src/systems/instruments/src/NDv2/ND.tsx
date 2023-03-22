@@ -1,14 +1,16 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
 import { SimVarString } from '@shared/simvar';
 import { EfisNdMode, EfisNdRangeValue, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { clampAngle } from 'msfs-geo';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
 import { ArcModePage } from './pages/arc';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmMessages } from './FmMessages';
-import { Flag } from './shared/Flag';
+import { Flag, FlagProps } from './shared/Flag';
 import { CanvasMap } from './shared/map/CanvasMap';
 import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { NDPage } from './pages/NDPage';
@@ -48,13 +50,17 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private readonly isUsingTrackUpMode = Subject.create(true);
 
-    private readonly magneticHeadingWord = Arinc429RegisterSubject.createEmpty();
-
     private readonly trueHeadingWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly magneticTrackWord = Arinc429RegisterSubject.createEmpty();
-
     private readonly trueTrackWord = Arinc429RegisterSubject.createEmpty();
+
+    /** either magnetic or true heading depending on true ref mode */
+    private readonly headingWord = Arinc429RegisterSubject.createEmpty();
+
+    /** either magnetic or true track depending on true ref mode */
+    private readonly trackWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly trueRefActive = Subject.create(false);
 
     private readonly mapRangeRadius = Subject.create(0);
 
@@ -94,7 +100,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         return false;
-    }, this.isUsingTrackUpMode, this.magneticTrackWord, this.currentPageMode);
+    }, this.isUsingTrackUpMode, this.trackWord, this.currentPageMode);
 
     private readonly hdgFlagShown = MappedSubject.create(([headingWord, currentPageMode]) => {
         if (currentPageMode === EfisNdMode.PLAN) {
@@ -102,7 +108,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         return !headingWord.isNormalOperation();
-    }, this.magneticHeadingWord, this.currentPageMode);
+    }, this.headingWord, this.currentPageMode);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -114,7 +120,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         this.currentPageInstance.isVisible.set(true);
         this.currentPageInstance.onShow();
 
-        const sub = this.props.bus.getSubscriber<NDSimvars & NDControlEvents & EcpSimVars & ClockEvents>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & EcpSimVars & NDControlEvents & NDSimvars>();
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
@@ -124,25 +130,19 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.displayPowered.set(value === 1);
         });
 
-        // TODO use DMC data
-        sub.on('magHeadingRaw').whenChanged().handle((value) => {
-            this.magneticHeadingWord.setWord(value);
-        });
-
-        // TODO use DMC data
         sub.on('trueHeadingRaw').whenChanged().handle((value) => {
             this.trueHeadingWord.setWord(value);
         });
 
-        // TODO use DMC data
-        sub.on('magTrackRaw').whenChanged().handle((value) => {
-            this.magneticTrackWord.setWord(value);
-        });
-
-        // TODO use DMC data
         sub.on('trueTrackRaw').whenChanged().handle((value) => {
             this.trueTrackWord.setWord(value);
         });
+
+        sub.on('heading').whenChanged().handle((value) => this.headingWord.setWord(value));
+
+        sub.on('track').whenChanged().handle((value) => this.trackWord.setWord(value));
+
+        sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
             this.mapRangeRadius.set(rangeSettings[value]);
@@ -225,7 +225,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <RoseLSPage
                         bus={this.props.bus}
                         ref={this.roseLSPage}
-                        heading={this.magneticHeadingWord}
+                        heading={this.headingWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'L' ? 2 : 1}
@@ -233,7 +233,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <RoseVorPage
                         bus={this.props.bus}
                         ref={this.roseVorPage}
-                        heading={this.magneticHeadingWord}
+                        heading={this.headingWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'R' ? 2 : 1}
@@ -241,16 +241,16 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <RoseNavPage
                         bus={this.props.bus}
                         ref={this.roseNavPage}
-                        heading={this.magneticHeadingWord}
+                        heading={this.headingWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <ArcModePage
                         ref={this.arcPage}
                         bus={this.props.bus}
-                        headingWord={this.magneticHeadingWord}
+                        headingWord={this.headingWord}
                         trueHeadingWord={this.trueHeadingWord}
-                        trackWord={this.magneticTrackWord}
+                        trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
@@ -263,19 +263,18 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
                     <ToWaypointIndicator bus={this.props.bus} />
-                    <ApproachIndicator bus={this.props.bus} />
+                    <TopMessages bus={this.props.bus} />
 
-                    <Flag shown={Subject.create(false)} x={384} y={54} class="Cyan FontSmallest">TRUE</Flag>
-                    <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
-                    <Flag shown={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
-                    <Flag shown={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
-                    <Flag shown={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
+                    <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
+                    <Flag visible={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
+                    <Flag visible={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
+                    <Flag visible={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
 
-                    <Flag shown={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
+                    <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
                         RANGE CHANGE
                     </Flag>
                     <Flag
-                        shown={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
+                        visible={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
                         x={384}
                         y={320}
                         class="Green FontIntermediate"
@@ -285,8 +284,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                     <TerrainMapThresholds bus={this.props.bus} />
 
-                    <RadioNavInfo bus={this.props.bus} index={1} />
-                    <RadioNavInfo bus={this.props.bus} index={2} />
+                    {/* FIXME Should not be on PLAN mode */}
+                    <RadioNavInfo bus={this.props.bus} index={1} mode={this.currentPageMode} />
+                    <RadioNavInfo bus={this.props.bus} index={2} mode={this.currentPageMode} />
                 </svg>
 
                 {/* ND Raster map - middle layer */}
@@ -353,47 +353,193 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
     }
 }
 
-class ApproachIndicator extends DisplayComponent<{ bus: EventBus }> {
+interface TrueFlagProps extends FlagProps {
+    x: Subscribable<number>,
+    y: Subscribable<number>,
+    boxed: Subscribable<boolean>,
+}
+
+// FIXME add a generic box to Flag
+class TrueFlag extends DisplayComponent<TrueFlagProps> {
+    private readonly boxRef = FSComponent.createRef<SVGTextElement>();
+
+    private readonly boxVisible = MappedSubject.create(
+        ([visible, boxed]) => visible && boxed,
+        this.props.visible,
+        this.props.boxed,
+    )
+
+    private readonly boxX = MappedSubject.create(
+        ([x]) => x - 26,
+        this.props.x,
+    );
+
+    private readonly boxY = MappedSubject.create(
+        ([y]) => y - 20,
+        this.props.x,
+    );
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        this.boxVisible.sub((visible) => {
+            this.boxRef.instance.style.visibility = visible ? 'inherit' : 'hidden';
+        }, true);
+    }
+
+    render(): VNode | null {
+        return (
+            <>
+                <Flag x={this.props.x} y={this.props.y} class={this.props.class} visible={this.props.visible}>TRUE</Flag>
+                <rect
+                    x={this.boxX}
+                    y={this.boxY}
+                    width={68}
+                    height={23}
+                    class={this.props.class}
+                    stroke-width={1.5}
+                    ref={this.boxRef}
+                />
+            </>
+        );
+    }
+}
+
+interface GridTrackProps {
+    x: Subscribable<number>,
+    y: Subscribable<number>,
+    gridTrack: Subscribable<number>,
+    visible: Subscribable<boolean>,
+}
+
+class GridTrack extends DisplayComponent<GridTrackProps> {
+    private gridTrackText = MappedSubject.create(
+        ([gridTrack]) => gridTrack.toFixed(0).padStart(3, '0'),
+        this.props.gridTrack,
+    )
+
+    render(): VNode | null {
+        return (
+            <Layer x={this.props.x} y={this.props.y} visible={this.props.visible}>
+                <rect x={0} width={94} y={-20} height={23} className="White" strokeWidth={1.5} />
+                <text x={45} fontSize={22} textAnchor="middle">
+                    <tspan className="Green">
+                        ◇
+                        {this.gridTrackText}
+                    </tspan>
+                    <tspan className="Cyan">
+                        <tspan dx="-5" dy="8" fontSize={28}>°</tspan>
+                        <tspan dy="-8">G</tspan>
+                    </tspan>
+                </text>
+            </Layer>
+        );
+    }
+}
+
+class TopMessages extends DisplayComponent<{ bus: EventBus }> {
+    private readonly sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & NDSimvars>();
+
+    private readonly trueRefActive = Subject.create(false);
+
+    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly trueTrackWord = Arinc429RegisterSubject.createEmpty();
+
+    private needApprMessageUpdate = true;
+
     private apprMessage0: number;
 
     private apprMessage1: number;
 
     private readonly approachMessageValue = Subject.create('');
 
+    private readonly gridTrack = MappedSubject.create(
+        ([lat, lon, trueTrack]) => clampAngle(Math.round(trueTrack.value - Math.sign(lat.value) * lon.value)),
+        this.pposLatWord,
+        this.pposLonWord,
+        this.trueTrackWord,
+    )
+
+    private gridTrackVisible = MappedSubject.create(
+        ([lat, lon, trueTrack]) => lat.isNormalOperation() && lon.isNormalOperation() && trueTrack.isNormalOperation() && Math.abs(lat.valueOr(0)) > 65,
+        this.pposLatWord,
+        this.pposLonWord,
+        this.trueTrackWord,
+    )
+
+    private readonly trueFlagX = MappedSubject.create(
+        ([apprMsg, gridTrack]) => (apprMsg === null && gridTrack ? -50 : 4),
+        this.approachMessageValue,
+        this.gridTrackVisible,
+    );
+
+    private readonly trueFlagY = MappedSubject.create(
+        ([apprMsg]) => (apprMsg === null ? 36 : 56),
+        this.approachMessageValue,
+    );
+
+    private readonly trueFlagBoxed = MappedSubject.create(
+        ([apprMsg]) => apprMsg === null,
+        this.approachMessageValue,
+    )
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDSimvars & ClockEvents>();
-
-        sub.on('apprMessage0Captain').whenChanged().handle((value) => {
+        this.sub.on('apprMessage0Captain').whenChanged().handle((value) => {
             this.apprMessage0 = value;
+            this.needApprMessageUpdate = true;
         });
 
-        sub.on('toWptIdent1Captain').whenChanged().handle((value) => {
+        this.sub.on('toWptIdent1Captain').whenChanged().handle((value) => {
             this.apprMessage1 = value;
+            this.needApprMessageUpdate = true;
         });
 
-        sub.on('realTime').whenChangedBy(100).handle(() => {
-            this.refreshToWptIdent();
-        });
+        this.sub.on('realTime').whenChangedBy(100).handle(() => this.refreshToWptIdent.bind(this));
+
+        this.sub.on('trueTrackRaw').whenChanged().handle((v) => this.trueTrackWord.setWord(v));
+
+        this.sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.setWord(v));
+
+        this.sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.setWord(v));
+
+        this.sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
     }
 
     private refreshToWptIdent(): void {
-        const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
+        if (this.needApprMessageUpdate) {
+            const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
 
-        this.approachMessageValue.set(ident);
+            this.approachMessageValue.set(ident);
+        }
     }
 
     render(): VNode | null {
         return (
-            <Layer x={384} y={26}>
-                <text class="Green FontMedium MiddleAlign">{this.approachMessageValue}</text>
-            </Layer>
+            <>
+                <Layer x={384} y={28}>
+                    <text class="Green FontMedium MiddleAlign">{this.approachMessageValue}</text>
+                </Layer>
+                <TrueFlag x={this.trueFlagX} y={this.trueFlagY} class="Cyan FontSmallest" boxed={this.trueFlagBoxed} visible={this.trueRefActive} />
+                <GridTrack x={Subject.create(384)} y={this.trueFlagY} visible={this.gridTrackVisible} gridTrack={this.gridTrack} />
+            </>
         );
     }
 }
 
 class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private readonly sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & EcpSimVars & NDSimvars>();
+
+    private readonly trueRefActive = Subject.create(false);
+
+    private readonly bearing = Subject.create(NaN);
+
+    private readonly trueBearing = Subject.create(NaN);
+
     private efisMode: EfisNdMode = EfisNdMode.ARC;
 
     private topWptIdent0: number;
@@ -408,9 +554,19 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly visibleSub = Subject.create(false);
 
-    private readonly bearingContainerVisible = Subject.create(false);
+    private readonly bearingContainerVisible = MappedSubject.create(
+        ([trueRef, bearing, trueBearing]) => Number.isFinite(trueRef ? trueBearing : bearing),
+        this.trueRefActive,
+        this.bearing,
+        this.trueBearing,
+    );
 
-    private readonly bearingRwf = FSComponent.createRef<SVGTextElement>();
+    private readonly bearingText = MappedSubject.create(
+        ([trueRef, bearing, trueBearing]) => (Number.isFinite(trueRef ? trueBearing : bearing) ? Math.round(trueRef ? trueBearing : bearing).toString().padStart(3, '0') : ''),
+        this.trueRefActive,
+        this.bearing,
+        this.trueBearing,
+    )
 
     private readonly toWptIdentValue = Subject.create('');
 
@@ -425,42 +581,37 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDSimvars & EcpSimVars & ClockEvents>();
-
-        sub.on('ndMode').whenChanged().handle((value) => {
+        this.sub.on('ndMode').whenChanged().handle((value) => {
             this.efisMode = value;
 
             this.handleVisibility();
         });
 
-        sub.on('toWptIdent0Captain').whenChanged().handle((value) => {
+        this.sub.on('toWptIdent0Captain').whenChanged().handle((value) => {
             this.topWptIdent0 = value;
         });
 
-        sub.on('toWptIdent1Captain').whenChanged().handle((value) => {
+        this.sub.on('toWptIdent1Captain').whenChanged().handle((value) => {
             this.topWptIdent1 = value;
         });
 
-        sub.on('toWptBearingCaptain').whenChanged().handle((value) => {
-            if (value && Number.isFinite(value)) {
-                this.bearingContainerVisible.set(true);
-                this.bearingRwf.instance.textContent = (Math.round(value)).toString().padStart(3, '0');
-            } else {
-                this.bearingContainerVisible.set(false);
-            }
-        });
-
-        sub.on('toWptDistanceCaptain').whenChanged().handle((value) => {
+        this.sub.on('toWptDistanceCaptain').whenChanged().handle((value) => {
             this.handleToWptDistance(value);
         });
 
-        sub.on('toWptEtaCaptain').whenChanged().handle((value) => {
+        this.sub.on('toWptEtaCaptain').whenChanged().handle((value) => {
             this.handleToWptEta(value);
         });
 
-        sub.on('realTime').whenChangedBy(100).handle(() => {
+        this.sub.on('toWptBearingCaptain').whenChanged().handle((v) => this.bearing.set(v));
+
+        this.sub.on('toWptTrueBearingCaptain').whenChanged().handle((v) => this.trueBearing.set(v));
+
+        this.sub.on('realTime').whenChangedBy(100).handle(() => {
             this.refreshToWptIdent();
         });
+
+        this.sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
     }
 
     private handleVisibility() {
@@ -516,7 +667,9 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
         this.toWptIdentValue.set(ident);
     }
 
-    private readonly visibilityFn = (v) => (v ? 'inherit' : 'hidden');
+    private readonly visibilityFn = (v: boolean) => (v ? 'inherit' : 'hidden');
+
+    private readonly inverseVisibilityFn = (v: boolean) => (v ? 'inherit' : 'hidden');
 
     render(): VNode | null {
         return (
@@ -524,8 +677,9 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
                 <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
 
                 <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
-                    <text ref={this.bearingRwf} x={54} y={0} class="Green FontIntermediate EndAlign" />
-                    <text x={73} y={2} class="Cyan FontIntermediate EndAlign">&deg;</text>
+                    <text x={54} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
+                    <text x={73} y={2} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.inverseVisibilityFn)}>&deg;</text>
+                    <text x={73} y={-3} class="Cyan FontTiny EndAlign" visibility={this.trueRefActive.map(this.visibilityFn)}>T</text>
                 </g>
 
                 <g visibility={this.distanceLargeContainerVisible.map(this.visibilityFn)}>

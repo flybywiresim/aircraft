@@ -1,5 +1,6 @@
 import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Register } from '@shared/arinc429';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { NDSimvars } from '../NDSimvarPublisher';
 import { getSmallestAngle } from '../../PFD/PFDUtils';
 
@@ -20,16 +21,14 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDSimvars>();
+        const sub = this.props.bus.getSubscriber<DmcEvents & NDSimvars>();
 
-        // TODO use DMC heading
-        sub.on('magHeadingRaw').whenChanged().handle((v) => {
+        sub.on('heading').whenChanged().handle((v) => {
             this.headingWord.set(v);
             this.handleDisplay();
         });
 
-        // TODO use DMC track
-        sub.on('magTrackRaw').whenChanged().handle((v) => {
+        sub.on('track').whenChanged().handle((v) => {
             this.trackWord.set(v);
             this.handleDisplay();
         });

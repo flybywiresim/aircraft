@@ -1,4 +1,5 @@
 import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
@@ -44,15 +45,14 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDSimvars>();
+        const sub = this.props.bus.getSubscriber<DmcEvents & NDSimvars>();
 
         sub.on('selectedHeading').whenChanged().handle((v) => {
             this.selected.set(v);
             this.handleDisplay();
         });
 
-        // TODO use DMC data
-        sub.on('magHeadingRaw').whenChanged().handle((v) => {
+        sub.on('heading').whenChanged().handle((v) => {
             this.headingWord.setWord(v);
             this.handleDisplay();
         });

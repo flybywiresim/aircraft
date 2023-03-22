@@ -14,6 +14,7 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     toWptIdent0Captain: number;
     toWptIdent1Captain: number;
     toWptBearingCaptain: Degrees;
+    toWptTrueBearingCaptain: Degrees,
     toWptDistanceCaptain: Degrees;
     toWptEtaCaptain: Seconds;
     apprMessage0Captain: number;
@@ -35,6 +36,7 @@ export enum NDVars {
     toWptIdent0Captain = 'L:A32NX_EFIS_L_TO_WPT_IDENT_0',
     toWptIdent1Captain = 'L:A32NX_EFIS_L_TO_WPT_IDENT_1',
     toWptBearingCaptain = 'L:A32NX_EFIS_L_TO_WPT_BEARING',
+    toWptTrueBearingCaptain = 'L:A32NX_EFIS_L_TO_WPT_TRUE_BEARING',
     toWptDistanceCaptain = 'L:A32NX_EFIS_L_TO_WPT_DISTANCE',
     toWptEtaCaptain = 'L:A32NX_EFIS_L_TO_WPT_ETA',
     apprMessage0Captain = 'L:A32NX_EFIS_L_APPR_MSG_0',
@@ -42,7 +44,7 @@ export enum NDVars {
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
     selectedWaypointLat = 'L:A32NX_SELECTED_WAYPOINT_LAT',
     selectedWaypointLong = 'L:A32NX_SELECTED_WAYPOINT_LONG',
-    selectedHeading = 'L:A32NX_AUTOPILOT_HEADING_SELECTED',
+    selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
     pposLat = 'PLANE LATITUDE', // TODO replace with fm position
     pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
     absoluteTime = 'E:ABSOLUTE TIME',
@@ -60,6 +62,7 @@ export class NDSimvarPublisher extends SimVarPublisher<NDSimvars> {
         ['toWptIdent0Captain', { name: NDVars.toWptIdent0Captain, type: SimVarValueType.Number }],
         ['toWptIdent1Captain', { name: NDVars.toWptIdent1Captain, type: SimVarValueType.Number }],
         ['toWptBearingCaptain', { name: NDVars.toWptBearingCaptain, type: SimVarValueType.Degree }],
+        ['toWptTrueBearingCaptain', { name: NDVars.toWptTrueBearingCaptain, type: SimVarValueType.Degree }],
         ['toWptDistanceCaptain', { name: NDVars.toWptDistanceCaptain, type: SimVarValueType.Number }],
         ['toWptEtaCaptain', { name: NDVars.toWptEtaCaptain, type: SimVarValueType.Seconds }],
         ['apprMessage0Captain', { name: NDVars.apprMessage0Captain, type: SimVarValueType.Number }],

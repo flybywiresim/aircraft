@@ -88,6 +88,8 @@ export class RoseNavPage extends RoseMode {
                     visible={this.isVisible}
                 />
 
+                {/* FIXME radio needles */}
+
                 <TrackLine
                     bus={this.props.bus}
                     x={384}

@@ -1,5 +1,6 @@
 import { FSComponent, DisplayComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429WordData } from '@shared/arinc429';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { TrackBug } from '../../shared/TrackBug';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
@@ -36,12 +37,11 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & VorSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcEvents & VorSimVars>();
 
         const index = this.props.index;
 
-        // TODO use DMC data
-        sub.on('magHeadingRaw').whenChanged().handle((v) => this.headingWord.setWord(v));
+        sub.on('heading').whenChanged().handle((v) => this.headingWord.setWord(v));
 
         sub.on(`nav${index}Obs`).whenChanged().handle((v) => this.courseSub.set(v));
 
@@ -63,6 +63,8 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
                     visible={this.isVisible}
                 />
 
+                {/* FIXME radio needles */}
+
                 <VorCaptureOverlay
                     index={this.props.index}
                     heading={this.headingWord}
@@ -76,7 +78,7 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
                     isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                 />
 
-                <Flag shown={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
+                <Flag visible={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
             </g>
         );
     }
