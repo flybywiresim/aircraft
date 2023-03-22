@@ -12,7 +12,6 @@ class CDUNavRadioPage {
         };
 
         const lsk1Row = [];
-        const lsk2Title = [];
         const lsk2Row = [];
         const lsk3Row = [];
         const lsk4Title = ["CRS"];
@@ -25,7 +24,7 @@ class CDUNavRadioPage {
             ["RADIO NAV"],
             ["VOR1/FREQ", "FREQ/VOR2"],
             lsk1Row,
-            lsk2Title,
+            ["CRS", "CRS"],
             lsk2Row,
             ["\xa0LS\xa0/FREQ"],
             lsk3Row,
@@ -45,14 +44,12 @@ class CDUNavRadioPage {
         // VOR 1
         lsk1Row[0] = CDUNavRadioPage.renderVor(mcdu, 1);
         mcdu.onLeftInput[0] = CDUNavRadioPage.handleVorLsk.bind(this, mcdu, 1);
-        lsk2Title[0] = CDUNavRadioPage.renderVorCrsTitle(mcdu, 1);
         lsk2Row[0] = CDUNavRadioPage.renderVorCrs(mcdu, 1);
         mcdu.onLeftInput[1] = CDUNavRadioPage.handleVorCrsLsk.bind(this, mcdu, 1);
 
         // VOR 2
         lsk1Row[1] = CDUNavRadioPage.renderVor(mcdu, 2);
         mcdu.onRightInput[0] = CDUNavRadioPage.handleVorLsk.bind(this, mcdu, 2);
-        lsk2Title[1] = CDUNavRadioPage.renderVorCrsTitle(mcdu, 2);
         lsk2Row[1] = CDUNavRadioPage.renderVorCrs(mcdu, 2);
         mcdu.onRightInput[1] = CDUNavRadioPage.handleVorCrsLsk.bind(this, mcdu, 2);
 
@@ -163,14 +160,6 @@ class CDUNavRadioPage {
         mcdu.requestCall(() => {
             CDUNavRadioPage.ShowPage(mcdu);
         });
-    }
-
-    static renderVorCrsTitle(mcdu, receiverIndex) {
-        const vor = mcdu.getVorTuningData(receiverIndex);
-        if (vor.dmeOnly) {
-            return "";
-        }
-        return "CRS";
     }
 
     static renderVorCrs(mcdu, receiverIndex) {
