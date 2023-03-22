@@ -147,7 +147,8 @@ export class VerticalProfileComputationParametersObserver {
             && this.parameters.approachSpeed > 100;
 
         const hasZeroFuelWeight = Number.isFinite(this.parameters.zeroFuelWeight);
+        const hasTakeoffParameters = this.parameters.v2Speed > 0 && this.parameters.thrustReductionAltitude > 0 && this.parameters.accelerationAltitude > 0;
 
-        return (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || this.parameters.v2Speed > 0) && areApproachSpeedsValid && hasZeroFuelWeight;
+        return (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) && areApproachSpeedsValid && hasZeroFuelWeight;
     }
 }

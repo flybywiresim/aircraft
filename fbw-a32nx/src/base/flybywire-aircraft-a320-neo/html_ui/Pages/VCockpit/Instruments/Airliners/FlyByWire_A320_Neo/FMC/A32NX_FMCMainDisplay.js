@@ -4897,11 +4897,21 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getAccelerationAltitude() {
-        return this.accelerationAltitude;
+        const plan = this.flightPlanManager.activeFlightPlan;
+        if (plan) {
+            return plan.accelerationAltitude;
+        }
+
+        return undefined;
     }
 
     getThrustReductionAltitude() {
-        return this.thrustReductionAltitude;
+        const plan = this.flightPlanManager.activeFlightPlan;
+        if (plan) {
+            return plan.thrustReductionAltitude;
+        }
+
+        return undefined;
     }
 
     getOriginTransitionAltitude() {
