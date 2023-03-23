@@ -9,11 +9,11 @@
     "SetActive": "Aseta aktiiviseksi",
     "SetStandby": "Aseta valmiustilaan",
     "ShowAll": "Kaikki",
-    "ShowApproach": "Saapuminen",
+    "ShowApproach": "Lähestyminen",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Selvitys",
     "ShowDeparture": "Lähtö",
-    "ShowGround": "Maa",
+    "ShowGround": "Rullaus",
     "ShowRadar": "Tutka",
     "ShowTower": "Torni",
     "Standby": "Valmiustila",
@@ -457,10 +457,10 @@
     "FinishBoarding": "Finish Boarding",
     "OnScreenKeyboard": "OnScreen Keyboard",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Yhdistetty",
+    "SimBridgeConnecting": "Yhdistetään...",
+    "SimBridgeOff": "Pois päältä",
+    "SimBridgeOffline": "Ei saatavilla",
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
@@ -472,7 +472,7 @@
       "SimBridge": "Control SimBridge Connection",
       "Sleep": "Standby"
     },
-    "Title": "Quick Controls"
+    "Title": "Pika-asetukset"
   },
   "Settings": {
     "About": {
@@ -549,7 +549,7 @@
       "Both": "Synkronoitu",
       "Calibrate": "Kalibroi",
       "Captain": "Kapteeni",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "CockpitSeatUsedToControl": "Ohjaamon istuin, jota käytetään ohjaamiseen",
       "ConesEnabled": "Varoituskartiot",
       "Copilot": "Lentoperämies",
       "DefaultBarometerUnit": "Paineen oletusyksikkö",
@@ -645,7 +645,7 @@
       "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Yhdistetty SimBridgeen",
       "DisconnectedFromLocalApi": "Yhteys katkaistu SimBridgeen",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "Avaa pika-asetukset klikkaamalla",
       "TurnOffOrShutdownEfb": "Sammuta tai sulje EFB"
     },
     "Thu": "to",
