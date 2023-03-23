@@ -352,7 +352,7 @@ export class N1 extends DisplayComponent<N1Props> {
                             useCentralAlignmentBaseline={false}
                             showValue
                             textNudgeY={17}
-                            textNudgeX={13}
+                            textNudgeX={8}
                             multiplierInner={0.9}
                         />
                         <GaugeMarkerComponent
@@ -416,8 +416,8 @@ export class N1 extends DisplayComponent<N1Props> {
                             textClass="Standard"
                             useCentralAlignmentBaseline={false}
                             showValue
-                            textNudgeY={16}
-                            textNudgeX={-14}
+                            textNudgeY={15}
+                            textNudgeX={-28}
                             multiplierInner={0.9}
                         />
                         <GaugeMarkerComponent
