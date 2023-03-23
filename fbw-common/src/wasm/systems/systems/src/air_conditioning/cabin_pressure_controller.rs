@@ -58,6 +58,7 @@ pub struct CabinPressureController<C: PressurizationConstants> {
     man_mode_duration: Duration,
     manual_to_auto_switch: bool,
 
+    is_initialised: bool,
     constants: PhantomData<C>,
 }
 
@@ -122,6 +123,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             man_mode_duration: Duration::from_secs(0),
             manual_to_auto_switch: false,
 
+            is_initialised: false,
             constants: PhantomData,
         }
     }
@@ -203,19 +205,28 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         adirs: &impl AdirsToAirCondInterface,
     ) {
         let (_, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
+        let new_exterior_altitude: Length;
 
-        self.exterior_pressure.update(
-            context.delta(),
-            adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
-        );
+        if !self.is_initialised {
+            self.exterior_pressure.reset(
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
+            );
+            new_exterior_altitude =
+                self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
+            self.is_initialised = true;
+        } else {
+            self.exterior_pressure.update(
+                context.delta(),
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Self::P_0)),
+            );
 
-        let new_exterior_altitude =
-            self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
-
-        self.exterior_vertical_speed.update(
-            context.delta(),
-            self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
-        );
+            new_exterior_altitude =
+                self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
+            self.exterior_vertical_speed.update(
+                context.delta(),
+                self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
+            );
+        }
 
         self.exterior_flight_altitude = new_exterior_altitude;
     }
