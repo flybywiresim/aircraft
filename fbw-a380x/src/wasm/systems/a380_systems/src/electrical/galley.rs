@@ -18,16 +18,12 @@ impl MainGalley {
 
     pub fn update(
         &mut self,
-        context: &UpdateContext,
         electricity: &Electricity,
         alternating_current: &A380AlternatingCurrentElectrical,
         overhead: &A380ElectricalOverheadPanel,
     ) {
         self.is_shed = !alternating_current.any_non_essential_bus_powered(electricity)
-            || alternating_current
-                .main_ac_buses_powered_by_single_engine_generator_only(electricity)
-            || (alternating_current.main_ac_buses_powered_by_apu_generator_only(electricity)
-                && context.is_in_flight())
+            || alternating_current.main_ac_buses_powered_by_two_generators_only(electricity)
             || overhead.commercial_is_off()
             || overhead.galy_and_cab_is_off();
     }

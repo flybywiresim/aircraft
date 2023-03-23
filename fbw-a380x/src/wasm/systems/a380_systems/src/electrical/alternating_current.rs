@@ -171,37 +171,20 @@ impl A380AlternatingCurrentElectrical {
         electricity.flow(&self.ac_emer_contactor[0], &self.ac_emer_bus);
     }
 
-    /// Whether or not AC BUS 1 and AC BUS 2 are powered by a single engine
-    /// generator exclusively. Also returns true when one of the buses is
-    /// unpowered and the other bus is powered by an engine generator.
-    pub fn main_ac_buses_powered_by_single_engine_generator_only(
-        &self,
-        electricity: &Electricity,
-    ) -> bool {
-        /*let ac_bus_1_potential = electricity.output_of(&self.ac_bus_1);
-        let ac_bus_2_potential = electricity.output_of(&self.ac_bus_2);
-
-        (ac_bus_1_potential.is_unpowered()
-            && ac_bus_2_potential.is_only_powered_by_single_engine_generator())
-            || (ac_bus_2_potential.is_unpowered()
-                && ac_bus_1_potential.is_only_powered_by_single_engine_generator())
-            || (ac_bus_1_potential.is_only_powered_by_single_engine_generator()
-                && ac_bus_1_potential.is_powered_by_same_single_source(ac_bus_2_potential))*/
-        false
-    }
-
-    /// Whether or not AC BUS 1 and AC BUS 2 are powered by the APU generator
-    /// exclusively. Also returns true when one of the buses is unpowered and
-    /// the other bus is powered by the APU generator.
-    pub fn main_ac_buses_powered_by_apu_generator_only(&self, electricity: &Electricity) -> bool {
-        /*let ac_bus_1_potential = electricity.output_of(&self.ac_bus_1);
-        let ac_bus_2_potential = electricity.output_of(&self.ac_bus_2);
-
-        (ac_bus_1_potential.is_unpowered() && ac_bus_2_potential.is_only_powered_by_apu())
-            || (ac_bus_2_potential.is_unpowered() && ac_bus_1_potential.is_only_powered_by_apu())
-            || (ac_bus_1_potential.is_only_powered_by_apu()
-                && ac_bus_2_potential.is_only_powered_by_apu())*/
-        false
+    pub fn main_ac_buses_powered_by_two_generators_only(&self, electricity: &Electricity) -> bool {
+        (0..4)
+            .map(|i| {
+                let ac_output = electricity.output_of(&self.ac_buses[i]);
+                let bus_not_powered_by_own_gen =
+                    self.ac_buses.iter().enumerate().any(|(j, bus)| {
+                        j != i
+                            && ac_output
+                                .is_powered_by_same_single_source(electricity.output_of(bus))
+                    });
+                bus_not_powered_by_own_gen as u32
+            })
+            .sum::<u32>()
+            <= 2
     }
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {
