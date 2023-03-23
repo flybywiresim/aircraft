@@ -1,10 +1,11 @@
+use crate::air_conditioning::AdirsToAirCondInterface;
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
-        AdirsDiscreteOutputs, GroundSpeed, MachNumber,
+        AdirsDiscreteOutputs, AdirsMeasurementOutputs, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -15,6 +16,7 @@ use bitflags::bitflags;
 use nalgebra::{Rotation2, Vector2};
 use std::{fmt::Display, time::Duration};
 use uom::si::acceleration::meter_per_second_squared;
+use uom::si::pressure::inch_of_mercury;
 use uom::si::{
     angle::degree,
     angle::radian,
@@ -237,6 +239,9 @@ struct AdirsSimulatorData {
 
     angle_of_attack_id: VariableIdentifier,
     angle_of_attack: Angle,
+
+    baro_correction_1_id: VariableIdentifier,
+    baro_correction_1: Pressure,
 }
 impl AdirsSimulatorData {
     const MACH: &'static str = "AIRSPEED MACH";
@@ -256,6 +261,7 @@ impl AdirsSimulatorData {
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
+    const BARO_CORRECTION_1_HPA: &'static str = "KOHLSMAN SETTING MB:1";
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -310,6 +316,9 @@ impl AdirsSimulatorData {
 
             angle_of_attack_id: context.get_identifier(Self::ANGLE_OF_ATTACK.to_owned()),
             angle_of_attack: Default::default(),
+
+            baro_correction_1_id: context.get_identifier(Self::BARO_CORRECTION_1_HPA.to_owned()),
+            baro_correction_1: Default::default(),
         }
     }
 }
@@ -337,6 +346,8 @@ impl SimulationElement for AdirsSimulatorData {
         self.ground_speed = reader.read(&self.ground_speed_id);
         self.total_air_temperature = reader.read(&self.total_air_temperature_id);
         self.angle_of_attack = reader.read(&self.angle_of_attack_id);
+        self.baro_correction_1 =
+            Pressure::new::<hectopascal>(reader.read(&self.baro_correction_1_id));
     }
 }
 
@@ -431,9 +442,18 @@ impl SimulationElement for AirDataInertialReferenceSystem {
         )
     }
 }
-impl GroundSpeed for AirDataInertialReferenceSystem {
-    fn ground_speed(&self) -> Velocity {
-        self.adirus[0].ground_speed()
+impl AdirsToAirCondInterface for AirDataInertialReferenceSystem {
+    fn ground_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].ground_speed()
+    }
+    fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].true_airspeed()
+    }
+    fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
+        self.adirus[adiru_number - 1].baro_correction_1()
+    }
+    fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
+        self.adirus[adiru_number - 1].ambient_static_pressure()
     }
 }
 impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
@@ -451,6 +471,35 @@ impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
 
     fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool {
         self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
+    }
+}
+impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
+    fn is_fully_aligned(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].is_fully_aligned()
+    }
+
+    fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].latitude()
+    }
+
+    fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].longitude()
+    }
+
+    fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].heading()
+    }
+
+    fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].true_heading()
+    }
+
+    fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].vertical_speed()
+    }
+
+    fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length> {
+        self.adirus[adiru_number - 1].altitude()
     }
 }
 
@@ -579,6 +628,46 @@ impl AirDataInertialReferenceUnit {
     fn low_speed_warning_4_260kts(&self) -> bool {
         self.low_speed_warning_4_260kts
     }
+
+    fn latitude(&self) -> Arinc429Word<Angle> {
+        self.ir.latitude()
+    }
+
+    fn longitude(&self) -> Arinc429Word<Angle> {
+        self.ir.longitude()
+    }
+
+    fn heading(&self) -> Arinc429Word<Angle> {
+        self.ir.heading()
+    }
+
+    fn true_heading(&self) -> Arinc429Word<Angle> {
+        self.ir.true_heading()
+    }
+
+    fn vertical_speed(&self) -> Arinc429Word<Velocity> {
+        self.ir.vertical_speed()
+    }
+
+    fn altitude(&self) -> Arinc429Word<Length> {
+        self.adr.altitude()
+    }
+
+    fn ground_speed(&self) -> Arinc429Word<Velocity> {
+        self.ir.ground_speed()
+    }
+
+    fn true_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.adr.true_airspeed()
+    }
+
+    fn baro_correction_1(&self) -> Arinc429Word<Pressure> {
+        self.adr.baro_correction_1()
+    }
+
+    fn ambient_static_pressure(&self) -> Arinc429Word<Pressure> {
+        self.adr.corrected_average_static_pressure()
+    }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -590,11 +679,6 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.state_id, self.state())
-    }
-}
-impl GroundSpeed for AirDataInertialReferenceUnit {
-    fn ground_speed(&self) -> Velocity {
-        self.ir.ground_speed()
     }
 }
 
@@ -709,6 +793,14 @@ struct AirDataReference {
     number: usize,
     is_on: bool,
 
+    /// label 234
+    baro_correction_1_hpa: AdirsData<Pressure>,
+    /// label 235
+    baro_correction_1_inhg: AdirsData<Pressure>,
+    /// label 236
+    baro_correction_2_hpa: AdirsData<Pressure>,
+    /// label 237
+    baro_correction_2_inhg: AdirsData<Pressure>,
     corrected_average_static_pressure: AdirsData<Pressure>,
     /// pressure altitude
     altitude: AdirsData<Length>,
@@ -728,6 +820,10 @@ struct AirDataReference {
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
+    const BARO_CORRECTION_1_HPA: &'static str = "BARO_CORRECTION_1_HPA";
+    const BARO_CORRECTION_1_INHG: &'static str = "BARO_CORRECTION_1_INHG";
+    const BARO_CORRECTION_2_HPA: &'static str = "BARO_CORRECTION_2_HPA";
+    const BARO_CORRECTION_2_INHG: &'static str = "BARO_CORRECTION_2_INHG";
     const CORRECTED_AVERAGE_STATIC_PRESSURE: &'static str = "CORRECTED_AVERAGE_STATIC_PRESSURE";
     const ALTITUDE: &'static str = "ALTITUDE";
     const BARO_CORRECTED_ALTITUDE_1: &'static str = "BARO_CORRECTED_ALTITUDE_1";
@@ -749,6 +845,18 @@ impl AirDataReference {
             number,
             is_on: true,
 
+            baro_correction_1_hpa: AdirsData::new_adr(context, number, Self::BARO_CORRECTION_1_HPA),
+            baro_correction_1_inhg: AdirsData::new_adr(
+                context,
+                number,
+                Self::BARO_CORRECTION_1_INHG,
+            ),
+            baro_correction_2_hpa: AdirsData::new_adr(context, number, Self::BARO_CORRECTION_2_HPA),
+            baro_correction_2_inhg: AdirsData::new_adr(
+                context,
+                number,
+                Self::BARO_CORRECTION_2_INHG,
+            ),
             corrected_average_static_pressure: AdirsData::new_adr(
                 context,
                 number,
@@ -816,6 +924,10 @@ impl AirDataReference {
 
         // If the ADR is off or not initialized, output all labels as FW with value 0.
         if !self.is_valid() {
+            self.baro_correction_1_hpa.set_failure_warning();
+            self.baro_correction_1_inhg.set_failure_warning();
+            self.baro_correction_2_hpa.set_failure_warning();
+            self.baro_correction_2_inhg.set_failure_warning();
             self.corrected_average_static_pressure.set_failure_warning();
             self.altitude.set_failure_warning();
             self.baro_corrected_altitude_1.set_failure_warning();
@@ -829,6 +941,15 @@ impl AirDataReference {
             self.angle_of_attack.set_failure_warning();
         } else {
             // If it is on and initialized, output normal values.
+            self.baro_correction_1_hpa
+                .set_normal_operation_value(simulator_data.baro_correction_1);
+            self.baro_correction_1_inhg
+                .set_normal_operation_value(simulator_data.baro_correction_1);
+            // Fixme: Get data from F/O altimeter when available
+            self.baro_correction_2_hpa
+                .set_normal_operation_value(simulator_data.baro_correction_1);
+            self.baro_correction_2_inhg
+                .set_normal_operation_value(simulator_data.baro_correction_1);
 
             let pressure_alt = Length::new::<foot>(
                 ((context.pressure_altitude().get::<foot>() * 2.).round() / 2.)
@@ -898,6 +1019,24 @@ impl AirDataReference {
     fn computed_airspeed_raw(&self) -> Velocity {
         self.computed_airspeed.value()
     }
+
+    fn altitude(&self) -> Arinc429Word<Length> {
+        Arinc429Word::new(self.altitude.value(), self.altitude.ssm())
+    }
+
+    fn baro_correction_1(&self) -> Arinc429Word<Pressure> {
+        Arinc429Word::new(
+            self.baro_correction_1_hpa.value(),
+            self.baro_correction_1_hpa.ssm(),
+        )
+    }
+
+    fn corrected_average_static_pressure(&self) -> Arinc429Word<Pressure> {
+        Arinc429Word::new(
+            self.corrected_average_static_pressure.value(),
+            self.corrected_average_static_pressure.ssm(),
+        )
+    }
 }
 impl TrueAirspeedSource for AirDataReference {
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
@@ -906,6 +1045,14 @@ impl TrueAirspeedSource for AirDataReference {
 }
 impl SimulationElement for AirDataReference {
     fn write(&self, writer: &mut SimulatorWriter) {
+        self.baro_correction_1_hpa
+            .write_to_converted(writer, |value| value.get::<hectopascal>());
+        self.baro_correction_1_inhg
+            .write_to_converted(writer, |value| value.get::<inch_of_mercury>());
+        self.baro_correction_2_hpa
+            .write_to_converted(writer, |value| value.get::<hectopascal>());
+        self.baro_correction_2_inhg
+            .write_to_converted(writer, |value| value.get::<inch_of_mercury>());
         self.corrected_average_static_pressure
             .write_to_converted(writer, |value| value.get::<hectopascal>());
         self.altitude.write_to(writer);
@@ -1570,6 +1717,33 @@ impl InertialReference {
     fn has_magnetic_data(&self) -> bool {
         !self.extreme_latitude
     }
+
+    fn latitude(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.latitude.value(), self.latitude.ssm())
+    }
+
+    fn longitude(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.longitude.value(), self.longitude.ssm())
+    }
+
+    fn heading(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.heading.value(), self.heading.ssm())
+    }
+
+    fn true_heading(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.true_heading.value(), self.true_heading.ssm())
+    }
+
+    fn vertical_speed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(
+            Velocity::new::<foot_per_minute>(self.vertical_speed.value()),
+            self.vertical_speed.ssm(),
+        )
+    }
+
+    fn ground_speed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(self.ground_speed.value(), self.ground_speed.ssm())
+    }
 }
 impl SimulationElement for InertialReference {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -1609,11 +1783,6 @@ impl SimulationElement for InertialReference {
         self.latitude.write_to(writer);
         self.longitude.write_to(writer);
         self.maint_word.write_to(writer);
-    }
-}
-impl GroundSpeed for InertialReference {
-    fn ground_speed(&self) -> Velocity {
-        self.ground_speed.value()
     }
 }
 
@@ -1877,6 +2046,14 @@ mod tests {
             self
         }
 
+        fn altimeter_setting_of(mut self, altimeter: Pressure) -> Self {
+            self.write_by_name(
+                AdirsSimulatorData::BARO_CORRECTION_1_HPA,
+                altimeter.get::<hectopascal>(),
+            );
+            self
+        }
+
         fn align_time_configured_as(mut self, align_time: AlignTime) -> Self {
             WriteByName::<AdirsTestBed, f64>::write_by_name(
                 &mut self,
@@ -1959,6 +2136,38 @@ mod tests {
                 OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::CORRECTED_AVERAGE_STATIC_PRESSURE,
+            ))
+        }
+
+        fn baro_correction_1_hpa(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::BARO_CORRECTION_1_HPA,
+            ))
+        }
+
+        fn baro_correction_1_inhg(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::BARO_CORRECTION_1_INHG,
+            ))
+        }
+
+        fn baro_correction_2_hpa(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::BARO_CORRECTION_2_HPA,
+            ))
+        }
+
+        fn baro_correction_2_inhg(&mut self, adiru_number: usize) -> Arinc429Word<f64> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::BARO_CORRECTION_2_INHG,
             ))
         }
 
@@ -2844,6 +3053,52 @@ mod tests {
                     .normal_value()
                     .unwrap(),
                 1013.
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn baro_correction_is_supplied_by_adr(#[case] adiru_number: usize) {
+            let mut test_bed =
+                all_adirus_aligned_test_bed()
+                    .altimeter_setting_of(Pressure::new::<hectopascal>(1020.));
+
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed
+                    .baro_correction_1_hpa(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                1020.
+            );
+            assert_about_eq!(
+                test_bed
+                    .baro_correction_2_hpa(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                1020.
+            );
+
+            test_bed = test_bed.altimeter_setting_of(Pressure::new::<inch_of_mercury>(29.80));
+
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed
+                    .baro_correction_1_inhg(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                29.80
+            );
+            assert_about_eq!(
+                test_bed
+                    .baro_correction_2_inhg(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                29.80
             );
         }
 

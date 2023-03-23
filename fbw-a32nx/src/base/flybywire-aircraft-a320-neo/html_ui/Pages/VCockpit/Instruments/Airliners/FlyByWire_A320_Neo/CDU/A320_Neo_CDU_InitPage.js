@@ -191,9 +191,6 @@ class CDUInitPage {
             if (value !== "") {
                 mcdu.tryUpdateFromTo(value, (result) => {
                     if (result) {
-                        CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     } else {
                         scratchpadCallback();
@@ -335,7 +332,6 @@ class CDUInitPage {
         return isFinite(mcdu.blockFuel) &&
             isFinite(mcdu.zeroFuelWeightMassCenter) &&
             isFinite(mcdu.zeroFuelWeight) &&
-            mcdu.cruiseFlightLevel &&
             mcdu.flightPlanManager.getWaypointsCount() > 0 &&
             mcdu._zeroFuelWeightZFWCGEntered &&
             mcdu._blockFuelEntered;
