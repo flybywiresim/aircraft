@@ -9,7 +9,7 @@ use self::{
 };
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 
-use uom::si::{angular_velocity::revolution_per_minute, f64::*, velocity::knot};
+use uom::si::{angular_velocity::revolution_per_minute, f64::*};
 
 #[cfg(test)]
 use systems::electrical::Battery;
@@ -27,10 +27,10 @@ use systems::{
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
     shared::{
-        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, ApuMaster, ApuStart,
-        AuxiliaryPowerUnitElectrical, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineCorrectedN2,
-        EngineFirePushButtons, LgciuWeightOnWheels, RamAirTurbineController,
+        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AuxiliaryPowerUnitElectrical,
+        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
+        RamAirTurbineController,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
