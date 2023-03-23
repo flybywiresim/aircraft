@@ -39,8 +39,8 @@ class A320_Neo_CDU_SelectWptPage {
                     freq = " ";
                 }
 
-                const latString = (w.infos.coordinates.lat.toFixed(0) >= 0) ? `${w.infos.coordinates.lat.toFixed(0).toString().padStart(2, "0")}N` : `${Math.abs(w.infos.coordinates.lat.toFixed(0)).toString().padStart(2, "0")}S`;
-                const longString = (w.infos.coordinates.long.toFixed(0) >= 0) ? `${w.infos.coordinates.long.toFixed(0).toString().padStart(3, "0")}E` : `${Math.abs(w.infos.coordinates.long.toFixed(0)).toString().padStart(3, "0")}W`;
+                const latString = `${Math.abs(w.infos.coordinates.lat).toFixed(0).padStart(2, "0")}${w.infos.coordinates.lat >= 0 ? 'N' : 'S'}`;
+                const longString = `${Math.abs(w.infos.coordinates.long).toFixed(0).padStart(3, "0")}${w.infos.coordinates.long >= 0 ? 'E' : 'W'}`;
 
                 const dist = Math.min(calculateDistance(w), 9999);
 
