@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent, Subscribable, Subject, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, Subscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './gauges.scss';
 

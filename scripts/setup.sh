@@ -15,4 +15,4 @@ npm pack
 
 cd /external
 rm -rf node_modules
-npm ci
+npm i
