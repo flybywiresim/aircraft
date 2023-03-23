@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useInterval } from '@flybywiresim/react-components';
 import { toast } from 'react-toastify';
-import NavigraphClient, { useNavigraph } from '../../../ChartsApi/Navigraph';
+import NavigraphClient, { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
 import { NavigraphAuthUI } from './NavigraphAuthUI';
 import { NavigraphChartUI } from './NavigraphChartUI';
 

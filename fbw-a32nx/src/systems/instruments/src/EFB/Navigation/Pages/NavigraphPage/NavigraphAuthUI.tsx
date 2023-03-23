@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
-import { useNavigraph } from '../../../ChartsApi/Navigraph';
+import { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
 
 const Loading = () => {
     const navigraph = useNavigraph();
