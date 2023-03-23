@@ -103,7 +103,7 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
 
     private readonly stationDeclination = Subject.create(0);
 
-    private readonly stationLocation = Subject.create(new LatLongAlt());
+    private readonly stationLatitude = Subject.create(0);
 
     private readonly trueRefActive = Subject.create(false);
 
@@ -121,8 +121,8 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
     private readonly needlePaths = Subject.create(['', '']);
 
     private readonly stationTrueRef = MappedSubject.create(
-        ([location, declination]) => Math.abs(location.lat) > 75 && declination < Number.EPSILON,
-        this.stationLocation,
+        ([latitude, declination]) => Math.abs(latitude) > 75 && declination < Number.EPSILON,
+        this.stationLatitude,
         this.stationDeclination,
     );
 
@@ -141,12 +141,12 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
         const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcEvents & EcpSimVars & VorSimVars>();
 
         sub.on(`nav${this.props.index}RelativeBearing`).whenChanged().handle((value) => this.relativeBearing.set(value));
-        sub.on(`nav${this.props.index}Available`).whenChanged().handle((value) => this.radioAvailable.set(value));
+        sub.on(`nav${this.props.index}Available`).whenChanged().handle((value) => this.radioAvailable.set(!!value));
 
-        sub.on(`nav${this.props.index}StationDeclination`).whenChanged().handle((v) => this.stationDeclination.set(v));
-        sub.on(`nav${this.props.index}Location`).whenChanged().handle((v) => this.stationLocation.set(v));
+        sub.on(`nav${this.props.index}StationDeclination`).handle((v) => this.stationDeclination.set(v));
+        sub.on(`nav${this.props.index}Location`).handle((v) => this.stationLatitude.set(v.lat));
 
-        sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
 
         switch (this.props.mode) {
         case EfisNdMode.ARC:

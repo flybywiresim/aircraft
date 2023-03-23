@@ -40,7 +40,7 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2
 class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: Subscribable<boolean>, mode: Subscribable<EfisNdMode> }> {
     private readonly VOR_1_NEEDLE = 'M25,675 L25,680 L37,696 L13,696 L25,680 M25,696 L25,719';
 
-    private readonly VOR_2_NEEDLE = 'M25,675 L25,680 L37,696 L13,696 L25,680 M25,696 L25,719';
+    private readonly VOR_2_NEEDLE = 'M749,719 L749,696 L755,696 L743,680 L731,696 L737,696 L737,719 M743,680 L743,675';
 
     private readonly identSub = Subject.create('');
 
@@ -56,7 +56,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     private readonly stationDeclination = Subject.create(0);
 
-    private readonly stationLocation = Subject.create(new LatLongAlt());
+    private readonly stationLatitude = Subject.create(0);
 
     private readonly trueRefActive = Subject.create(false);
 
@@ -67,8 +67,8 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
     private readonly frequencyVisible = MappedSubject.create(([available, hasDme, frequency]) => !(available || hasDme) && frequency > 1, this.availableSub, this.hasDmeSub, this.frequencySub);
 
     private readonly stationTrueRef = MappedSubject.create(
-        ([location, declination]) => Math.abs(location.lat) > 75 && declination < Number.EPSILON,
-        this.stationLocation,
+        ([latitude, declination]) => Math.abs(latitude) > 75 && declination < Number.EPSILON,
+        this.stationLatitude,
         this.stationDeclination,
     );
 
@@ -105,20 +105,20 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
         sub.on(`nav${this.props.index}Ident`).whenChanged().handle((v) => this.identSub.set(v));
         sub.on(`nav${this.props.index}Frequency`).whenChanged().handle((v) => this.frequencySub.set(v));
-        sub.on(`nav${this.props.index}HasDme`).whenChanged().handle((v) => this.hasDmeSub.set(v));
+        sub.on(`nav${this.props.index}HasDme`).whenChanged().handle((v) => this.hasDmeSub.set(!!v));
         sub.on(`nav${this.props.index}DmeDistance`).whenChanged().handle((v) => this.dmeDistanceSub.set(v));
-        sub.on(`nav${this.props.index}Available`).whenChanged().handle((v) => this.availableSub.set(v));
+        sub.on(`nav${this.props.index}Available`).whenChanged().handle((v) => this.availableSub.set(!!v));
         // FIXME this doesn't work
         sub.on(`nav${this.props.index}TuningMode`).whenChanged().handle((v) => this.tuningModeSub.set(v));
-        sub.on(`nav${this.props.index}StationDeclination`).whenChanged().handle((v) => this.stationDeclination.set(v));
-        sub.on(`nav${this.props.index}Location`).whenChanged().handle((v) => this.stationLocation.set(v));
+        sub.on(`nav${this.props.index}StationDeclination`).handle((v) => this.stationDeclination.set(v));
+        sub.on(`nav${this.props.index}Location`).handle((v) => this.stationLatitude.set(v.lat));
 
-        sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
     }
 
     render(): VNode | null {
         return (
-            <g visibility={this.props.visible.map((v) => (v ? 'visible' : 'hidden'))}>
+            <g visibility={this.props.visible.map((v) => (v ? 'inherit' : 'hidden'))}>
                 <path
                     d={this.props.index === 1 ? this.VOR_1_NEEDLE : this.VOR_2_NEEDLE}
                     stroke-width={2}
@@ -131,12 +131,12 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                     {`VOR${this.props.index}`}
                 </text>
 
-                <text x={this.x + (this.props.index === 1 ? 61 : -54)} y={722} class="FontTiny Magenta" visibility={this.stationCorrected.map((c) => (c ? 'visible' : 'hidden'))}>CORR</text>
-                <text x={this.x + (this.props.index === 1 ? 73 : -54)} y={722} class="FontTiny Amber" visibility={this.magWarning.map((c) => (c ? 'visible' : 'hidden'))}>MAG</text>
-                <text x={this.x + (this.props.index === 1 ? 61 : -54)} y={722} class="FontTiny Amber" visibility={this.trueWarning.map((c) => (c ? 'visible' : 'hidden'))}>TRUE</text>
+                <text x={this.x + (this.props.index === 1 ? 61 : -54)} y={692} class="FontTiny Magenta" visibility={this.stationCorrected.map((c) => (c ? 'inherit' : 'hidden'))}>CORR</text>
+                <text x={this.x + (this.props.index === 1 ? 73 : -54)} y={692} class="FontTiny Amber" visibility={this.magWarning.map((c) => (c ? 'inherit' : 'hidden'))}>MAG</text>
+                <text x={this.x + (this.props.index === 1 ? 61 : -54)} y={692} class="FontTiny Amber" visibility={this.trueWarning.map((c) => (c ? 'inherit' : 'hidden'))}>TRUE</text>
 
                 <text
-                    visibility={this.dmeVisible.map((v) => (v ? 'visible' : 'hidden'))}
+                    visibility={this.dmeVisible.map((v) => (v ? 'inherit' : 'hidden'))}
                     x={this.x}
                     y={722}
                     font-size={24}
@@ -151,7 +151,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                     font-size={24}
                     class="White"
                 >
-                    <BigLittle visible={this.frequencyVisible} value={this.frequencySub} digits={2} />
+                    <BigLittle visible={this.frequencyVisible} value={this.frequencySub} digits={2} class="White" />
                 </text>
 
                 <g transform={`translate(${this.props.index === 1 ? -16 : 0})`}>
@@ -159,18 +159,18 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                         x={this.dmeDistanceSub.map((v) => (v > 20 ? this.x + 46 : this.x + 58))}
                         y={759}
                         font-size={24}
-                        fill="#00ff00"
                         text-anchor="end"
                     >
                         <tspan
-                            visibility={MappedSubject.create(([visible, dashedDme]) => visible && dashedDme, this.props.visible, this.dashedDme).map((v) => (v ? 'visible' : 'hidden'))}
+                            visibility={MappedSubject.create(([visible, dashedDme]) => visible && dashedDme, this.props.visible, this.dashedDme).map((v) => (v ? 'inherit' : 'hidden'))}
+                            class="Green"
                         >
                             ---
                         </tspan>
-                        <BigLittle visible={this.dashedDme.map((v) => !v)} value={this.dmeDistanceSub} digits={1} roundedThreshold={20} />
+                        <BigLittle visible={this.dashedDme.map((v) => !v)} value={this.dmeDistanceSub} digits={1} roundedThreshold={20} class="Green" />
                     </text>
 
-                    <text x={this.x + 66} y={759} font-size={20} fill="#00ffff">NM</text>
+                    <text x={this.x + 66} y={759} font-size={20} class="Cyan">NM</text>
                 </g>
 
                 <TuningModeIndicator
@@ -189,6 +189,7 @@ export interface BigLittleProps {
     value: Subscribable<number>,
     digits: number,
     roundedThreshold?: number,
+    class: string,
 }
 
 export class BigLittle extends DisplayComponent<BigLittleProps> {
@@ -229,12 +230,13 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
     render(): VNode | null {
         return (
             <>
-                <tspan visibility={this.props.visible.map((v) => (v ? 'visible' : 'hidden'))}>
+                <tspan visibility={this.props.visible.map((v) => (v ? 'visible' : 'hidden'))} class={this.props.class}>
                     {this.intPartText}
                 </tspan>
                 <tspan
                     font-size={20}
                     visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'visible' : 'hidden'))}
+                    class={this.props.class}
                 >
                     {this.decimalPartText}
                 </tspan>

@@ -48,7 +48,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private displayPowered = Subject.create(false);
 
-    private readonly isUsingTrackUpMode = Subject.create(true);
+    private readonly isUsingTrackUpMode = Subject.create(false);
 
     private readonly trueHeadingWord = Arinc429RegisterSubject.createEmpty();
 
@@ -370,13 +370,13 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
     )
 
     private readonly boxX = MappedSubject.create(
-        ([x]) => x - 26,
+        ([x]) => x - 34,
         this.props.x,
     );
 
     private readonly boxY = MappedSubject.create(
         ([y]) => y - 20,
-        this.props.x,
+        this.props.y,
     );
 
     onAfterRender(node: VNode) {
@@ -421,14 +421,14 @@ class GridTrack extends DisplayComponent<GridTrackProps> {
     render(): VNode | null {
         return (
             <Layer x={this.props.x} y={this.props.y} visible={this.props.visible}>
-                <rect x={0} width={94} y={-20} height={23} className="White" strokeWidth={1.5} />
-                <text x={45} fontSize={22} textAnchor="middle">
-                    <tspan className="Green">
+                <rect x={0} width={94} y={-20} height={23} class="White" stroke-width={1.5} />
+                <text x={45} class="FontSmallest MiddleAlign">
+                    <tspan class="Green">
                         ◇
                         {this.gridTrackText}
                     </tspan>
-                    <tspan className="Cyan">
-                        <tspan dx="-5" dy="8" fontSize={28}>°</tspan>
+                    <tspan class="Cyan">
+                        <tspan dx="-5" dy="8" class="FontIntermediate">°</tspan>
                         <tspan dy="-8">G</tspan>
                     </tspan>
                 </text>
@@ -464,15 +464,15 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
     )
 
     private gridTrackVisible = MappedSubject.create(
-        ([lat, lon, trueTrack]) => lat.isNormalOperation() && lon.isNormalOperation() && trueTrack.isNormalOperation() && Math.abs(lat.valueOr(0)) > 65,
+        ([lat, lon, trueTrack, apprMsg]) => apprMsg.length === 0 && lon.isNormalOperation() && trueTrack.isNormalOperation() && Math.abs(lat.valueOr(0)) > 65,
         this.pposLatWord,
         this.pposLonWord,
         this.trueTrackWord,
+        this.approachMessageValue,
     )
 
     private readonly trueFlagX = MappedSubject.create(
-        ([apprMsg, gridTrack]) => (apprMsg === null && gridTrack ? -50 : 4),
-        this.approachMessageValue,
+        ([gridTrack]) => 384 + (gridTrack ? -50 : 4),
         this.gridTrackVisible,
     );
 
@@ -482,7 +482,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
     );
 
     private readonly trueFlagBoxed = MappedSubject.create(
-        ([apprMsg]) => apprMsg === null,
+        ([apprMsg]) => apprMsg.length === 0,
         this.approachMessageValue,
     )
 
@@ -507,7 +507,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
 
         this.sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.setWord(v));
 
-        this.sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        this.sub.on('trueRefActive').handle((v) => this.trueRefActive.set(!!v));
     }
 
     private refreshToWptIdent(): void {
@@ -603,15 +603,15 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
             this.handleToWptEta(value);
         });
 
-        this.sub.on('toWptBearingCaptain').whenChanged().handle((v) => this.bearing.set(v));
+        this.sub.on('toWptBearingCaptain').handle((v) => this.bearing.set(v));
 
-        this.sub.on('toWptTrueBearingCaptain').whenChanged().handle((v) => this.trueBearing.set(v));
+        this.sub.on('toWptTrueBearingCaptain').handle((v) => this.trueBearing.set(v));
 
         this.sub.on('realTime').whenChangedBy(100).handle(() => {
             this.refreshToWptIdent();
         });
 
-        this.sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        this.sub.on('trueRefActive').handle((v) => this.trueRefActive.set(!!v));
     }
 
     private handleVisibility() {
@@ -669,7 +669,7 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly visibilityFn = (v: boolean) => (v ? 'inherit' : 'hidden');
 
-    private readonly inverseVisibilityFn = (v: boolean) => (v ? 'inherit' : 'hidden');
+    private readonly inverseVisibilityFn = (v: boolean) => (v ? 'hidden' : 'inherit');
 
     render(): VNode | null {
         return (

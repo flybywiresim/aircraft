@@ -115,6 +115,7 @@ class A32NX_ND extends BaseInstrument {
         this.simVarPublisher.subscribe('toWptIdent0Captain');
         this.simVarPublisher.subscribe('toWptIdent1Captain');
         this.simVarPublisher.subscribe('toWptBearingCaptain');
+        this.simVarPublisher.subscribe('toWptTrueBearingCaptain');
         this.simVarPublisher.subscribe('toWptDistanceCaptain');
         this.simVarPublisher.subscribe('toWptEtaCaptain');
         this.simVarPublisher.subscribe('apprMessage0Captain');
@@ -125,6 +126,7 @@ class A32NX_ND extends BaseInstrument {
         this.simVarPublisher.subscribe('selectedHeading');
         this.simVarPublisher.subscribe('latitude');
         this.simVarPublisher.subscribe('longitude');
+        this.simVarPublisher.subscribe('irMaintWordRaw');
         this.simVarPublisher.subscribe('absoluteTime');
 
         this.ecpBusSimVarPublisher.subscribe('ndRangeSetting');

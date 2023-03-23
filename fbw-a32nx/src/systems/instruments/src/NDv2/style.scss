@@ -4,7 +4,7 @@
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -12,7 +12,7 @@
 @font-face {
   font-family: "NDChrono";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/NDChrono.ttf") format("truetype");
+  src: url("/Fonts/fbw-a32nx/NDChrono.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -162,7 +162,10 @@ $font-factor: 5;
   fill: none;
   stroke: $display-magenta;
 }
-text.Magenta {
+text.Magenta,
+tspan.Magenta,
+.Magenta text,
+.Magenta tspan {
   fill: $display-magenta;
   stroke: none;
 }
@@ -171,11 +174,10 @@ text.Magenta {
   fill: none;
   stroke: $display-cyan;
 }
-text.Cyan {
-  fill: $display-cyan;
-  stroke: none;
-}
-tspan.Cyan {
+text.Cyan,
+tspan.Cyan,
+.Cyan text,
+.Cyan tspan {
   fill: $display-cyan;
   stroke: none;
 }
@@ -193,7 +195,10 @@ tspan.Cyan {
   fill: $display-white;
   stroke: none;
 }
-text.White {
+text.White,
+tspan.White,
+.White text,
+.White tspan {
   fill: $display-white;
   stroke: none;
 }
@@ -208,7 +213,10 @@ text.White {
   stroke: none;
 }
 
-text.Green {
+text.Green,
+tspan.Green,
+.Green text,
+.Green tspan {
   fill: $display-green;
   stroke: none;
 }
@@ -217,7 +225,10 @@ text.Green {
   stroke: $display-amber;
   fill: none;
 }
-text.Amber {
+text.Amber,
+tspan.Amber,
+.Amber text,
+.Amber tspan {
   fill: $display-amber;
   stroke: none;
 }
@@ -230,7 +241,10 @@ text.Amber {
   fill: $display-yellow;
   stroke: none;
 }
-text.Yellow {
+text.Yellow,
+tspan.Yellow,
+.Yellow text,
+.Yellow tspan {
   fill: $display-yellow;
   stroke: none;
 }
@@ -243,7 +257,10 @@ text.Yellow {
   fill: $display-red;
   stroke: none;
 }
-text.Red {
+text.Red,
+tspan.Red,
+.Red text,
+.Red tspan {
   fill: $display-red;
   stroke: none;
 }
