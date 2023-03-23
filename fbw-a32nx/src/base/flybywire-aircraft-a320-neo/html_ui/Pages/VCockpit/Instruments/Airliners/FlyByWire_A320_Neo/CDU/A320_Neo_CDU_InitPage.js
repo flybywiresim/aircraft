@@ -335,7 +335,7 @@ class CDUInitPage {
             mcdu.cruiseFlightLevel &&
             mcdu.flightPlanManager.getWaypointsCount() > 0 &&
             mcdu._zeroFuelWeightZFWCGEntered &&
-            mcdu._blockFuelEntered;
+            (mcdu._blockFuelEntered || mcdu.isAnEngineOn());
     }
     static trySetFuelPred(mcdu) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
