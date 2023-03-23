@@ -7,11 +7,8 @@ import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/
 import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, EfisNdRangeValue, rangeSettings } from '@shared/NavigationDisplay';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/wtsdk';
-import { distanceTo } from 'msfs-geo';
 import { FlowEventSync } from '@shared/FlowEventSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
@@ -359,7 +356,7 @@ export class EfisSymbols {
 
                     if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !isFromWp) {
                         // TODO vnav to predict
-                        type |= NdSymbolTypeFlags.ConstraintUnknown;
+                        type |= NdSymbolTypeFlags.Constraint;
                     }
 
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
@@ -400,7 +397,7 @@ export class EfisSymbols {
 
             // we can only send 2 constraint predictions, so filter out any past the 2 close to the AC
             let constraintPredictions = 0;
-            const constraintFlags = NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed;
+            const constraintFlags = NdSymbolTypeFlags.Constraint | NdSymbolTypeFlags.MagentaColor | NdSymbolTypeFlags.AmberColor;
             for (let i = symbols.length - 1; i >= 0; i--) {
                 if ((symbols[i].type & constraintFlags) === 0) {
                     continue;
@@ -471,39 +468,6 @@ export class EfisSymbols {
         }
     }
 
-    private generatePathVectorSymbol(vector: PathVector): NdSymbol {
-        let typeVectorPart: number;
-        if (vector.type === PathVectorType.Line) {
-            typeVectorPart = NdSymbolTypeFlags.FlightPlanVectorLine;
-        } else if (vector.type === PathVectorType.Arc) {
-            typeVectorPart = NdSymbolTypeFlags.FlightPlanVectorArc;
-        } else if (vector.type === PathVectorType.DebugPoint) {
-            typeVectorPart = NdSymbolTypeFlags.FlightPlanVectorDebugPoint;
-        }
-
-        // FIXME https://cdn.discordapp.com/attachments/845070631644430359/911876826169741342/brabs.gif
-        const id = Math.round(Math.random() * 10_000).toString();
-
-        const symbol: NdSymbol = {
-            databaseId: id,
-            ident: vector.type === PathVectorType.DebugPoint ? vector.annotation : id,
-            type: NdSymbolTypeFlags.ActiveFlightPlanVector | typeVectorPart,
-            location: vector.startPoint,
-        };
-
-        if (vector.type === PathVectorType.Line) {
-            symbol.lineEnd = vector.endPoint;
-        }
-
-        if (vector.type === PathVectorType.Arc) {
-            symbol.arcEnd = vector.endPoint;
-            symbol.arcRadius = distanceTo(vector.startPoint, vector.centrePoint);
-            symbol.arcSweepAngle = vector.sweepAngle;
-        }
-
-        return symbol;
-    }
-
     private vorDmeTypeFlag(type: VorType): NdSymbolTypeFlags {
         switch (type) {
         case VorType.VORDME:
@@ -517,25 +481,6 @@ export class EfisSymbols {
         default:
             return 0;
         }
-    }
-
-    private findPointFromEndOfPath(path: Geometry, distanceFromEnd: NauticalMiles): Coordinates | undefined {
-        let accumulator = 0;
-
-        // FIXME take transitions into account on newer FMSs
-        for (const [, leg] of path.legs) {
-            accumulator += leg.distance;
-
-            if (accumulator > distanceFromEnd) {
-                const distanceFromEndOfLeg = distanceFromEnd - (accumulator - leg.distance);
-
-                return leg.getPseudoWaypointLocation(distanceFromEndOfLeg);
-            }
-        }
-
-        // console.error(`[VNAV/findPointFromEndOfPath] ${distanceFromEnd.toFixed(2)}nm is larger than the total lateral path.`);
-
-        return undefined;
     }
 
     private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
