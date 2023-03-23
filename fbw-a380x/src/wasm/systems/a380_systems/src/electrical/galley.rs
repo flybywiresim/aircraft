@@ -1,8 +1,5 @@
 use super::{alternating_current::A380AlternatingCurrentElectrical, A380ElectricalOverheadPanel};
-use systems::{
-    electrical::{AlternatingCurrentElectricalSystem, Electricity},
-    simulation::UpdateContext,
-};
+use systems::electrical::{AlternatingCurrentElectricalSystem, Electricity};
 
 pub(super) struct MainGalley {
     is_shed: bool,

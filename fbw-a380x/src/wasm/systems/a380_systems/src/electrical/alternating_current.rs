@@ -92,7 +92,6 @@ impl A380AlternatingCurrentElectrical {
         &mut self,
         context: &UpdateContext,
         electricity: &mut Electricity,
-        ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         emergency_generator: &EmergencyGenerator,
     ) {

@@ -7,17 +7,10 @@ use systems::electrical::BatteryPushButtons;
 use systems::shared::RamAirTurbineController;
 use systems::simulation::InitContext;
 use systems::{
-    electrical::{
-        Battery, BatteryChargeLimiter, Contactor, ElectricalBus, Electricity, EmergencyElectrical,
-        EmergencyGenerator, StaticInverter,
-    },
-    shared::{
-        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
-        LgciuWeightOnWheels,
-    },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    electrical::{Battery, Contactor, ElectricalBus, Electricity, StaticInverter},
+    shared::{AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType},
+    simulation::{SimulationElement, SimulationElementVisitor},
 };
-use uom::si::{f64::*, velocity::knot};
 
 pub(crate) const APU_START_MOTOR_BUS_TYPE: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
 
@@ -108,16 +101,11 @@ impl A380DirectCurrentElectrical {
 
     pub fn update(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
         overhead: &A380ElectricalOverheadPanel,
         ac_state: &impl A380AlternatingCurrentElectricalSystem,
-        emergency_elec: &EmergencyElectrical,
-        emergency_generator: &EmergencyGenerator,
         rat: &impl RamAirTurbineController,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
-        apu_overhead: &(impl ApuMaster + ApuStart),
-        lgciu1: &impl LgciuWeightOnWheels,
         tefo_condition: bool,
     ) {
         self.tr_1_contactor

@@ -144,25 +144,15 @@ impl A380Electrical {
 
         self.emergency_gen.update(&self.gcu);
 
-        self.alternating_current.update(
-            context,
-            electricity,
-            ext_pwrs,
-            overhead,
-            &self.emergency_gen,
-        );
+        self.alternating_current
+            .update(context, electricity, overhead, &self.emergency_gen);
 
         self.direct_current.update(
-            context,
             electricity,
             overhead,
             &self.alternating_current,
-            &self.emergency_elec,
-            &self.emergency_gen,
             &self.rat_controller,
             apu,
-            apu_overhead,
-            lgciu1,
             self.tefo_condition.output(),
         );
 
