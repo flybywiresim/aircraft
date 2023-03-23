@@ -199,13 +199,6 @@ impl HydraulicGeneratorMotor {
         self.update_virtual_displacement();
         self.update_speed(context, emergency_generator, section_pressure.pressure());
         self.update_flow(context);
-
-        println!(
-            "HYD GENERATOR POWER {:.2}, RPM={:.0}, Flowgpm {:.3}",
-            emergency_generator.generated_power().get::<watt>(),
-            self.speed().get::<revolution_per_minute>(),
-            self.flow().get::<gallon_per_minute>()
-        );
     }
 
     fn update_valve_position(
