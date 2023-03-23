@@ -15,7 +15,6 @@ use uom::si::{angular_velocity::revolution_per_minute, f64::*, velocity::knot};
 use systems::electrical::Battery;
 
 use std::time::Duration;
-use systems::simulation::VariableIdentifier;
 use systems::{
     accept_iterable,
     electrical::{
@@ -28,16 +27,17 @@ use systems::{
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
     shared::{
-        update_iterator::MaxStepLoop, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
-        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LgciuWeightOnWheels,
-        RamAirTurbineController,
+        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, ApuMaster, ApuStart,
+        AuxiliaryPowerUnitElectrical, ElectricalBusType, ElectricalBuses,
+        EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineCorrectedN2,
+        EngineFirePushButtons, LgciuWeightOnWheels, RamAirTurbineController,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         Write,
     },
 };
+use systems::{shared::LatchedTrueLogicGate, simulation::VariableIdentifier};
 
 pub(super) struct A380Electrical {
     galley_is_shed_id: VariableIdentifier,
@@ -53,6 +53,7 @@ pub(super) struct A380Electrical {
     gcu: GeneratorControlUnit<9>,
     ram_air_turbine: RamAirTurbine,
     rat_controller: A380RamAirTurbineController,
+    tefo_condition: LatchedTrueLogicGate,
 }
 impl A380Electrical {
     const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 2000.;
@@ -91,6 +92,7 @@ impl A380Electrical {
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
             ),
+            tefo_condition: LatchedTrueLogicGate::default(),
         }
     }
 
@@ -106,6 +108,7 @@ impl A380Electrical {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 4],
         lgciu1: &impl LgciuWeightOnWheels,
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
@@ -141,23 +144,12 @@ impl A380Electrical {
 
         self.emergency_gen.update(&self.gcu);
 
-        // TEFO(total engine failure) = all engines not running and in flight
-        // TODO: check if engines are running and ADIRS for speed
-        // TODO: this condition should be latched until bat1 and bat ess are turned off or ess bus is not powered
-        let flt_condition = !lgciu1.left_and_right_gear_compressed(false)
-            && context.indicated_airspeed().get::<knot>() > 100.;
-        let tefo_condition = !self
-            .alternating_current
-            .any_non_essential_bus_powered(electricity)
-            && flt_condition;
-
         self.alternating_current.update(
             context,
             electricity,
             ext_pwrs,
             overhead,
             &self.emergency_gen,
-            tefo_condition,
         );
 
         self.direct_current.update(
@@ -170,19 +162,47 @@ impl A380Electrical {
             apu,
             apu_overhead,
             lgciu1,
-            tefo_condition,
+            self.tefo_condition.output(),
         );
 
         self.alternating_current.update_after_direct_current(
             context,
             electricity,
             &self.direct_current,
+            self.tefo_condition.output(),
         );
 
         self.main_galley
-            .update(context, electricity, &self.alternating_current, overhead);
+            .update(electricity, &self.alternating_current, overhead);
         self.secondary_galley
             .update(electricity, &self.alternating_current, overhead);
+
+        // Update relay states
+        let dc_ess_powered =
+            electricity.any_is_powered(&[ElectricalBusType::DirectCurrentEssential]);
+
+        // Represents the value of relay 6PH (powered by DC ESS)
+        let emer_evac = !overhead.bat_is_auto(1) && !overhead.bat_is_auto(3) && dc_ess_powered;
+
+        // TODO: take LGRDC latching relay output (the current LGCIU don't provide the latching behavior)
+        // Represents the value of the corresponding relay 14XR (one relay is powered by DC ESS)
+        let flt_condition = (!context.is_on_ground() && dc_ess_powered)
+            && (adirs.low_speed_warning_1_104kts(1) || adirs.low_speed_warning_1_104kts(3));
+
+        // TEFO(total engine failure) = all engines not running and in flight
+        // TODO: check if engines are running instead of bus powered
+        // Represents the value of relay 16XR1 and 16XR2
+        if emer_evac {
+            self.tefo_condition.reset();
+        }
+        self.tefo_condition.update(
+            (!self
+                .alternating_current
+                .any_non_essential_bus_powered(electricity)
+                || !dc_ess_powered
+                    && !electricity.any_is_powered(&[ElectricalBusType::DirectCurrent(2)]))
+                && flt_condition,
+        );
     }
 
     fn emergency_generator_contactor_is_closed(&self) -> bool {
@@ -259,6 +279,7 @@ impl SimulationElement for A380Electrical {
 
 trait A380DirectCurrentElectricalSystem {
     fn static_inverter(&self) -> &StaticInverter;
+    fn dc_ess_powered(&self, electricity: &Electricity) -> bool;
 }
 
 trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem {

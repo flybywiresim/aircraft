@@ -95,7 +95,6 @@ impl A380AlternatingCurrentElectrical {
         ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         emergency_generator: &EmergencyGenerator,
-        tefo_condition: bool,
     ) {
         self.ac_ess_feed_contactors.update(
             context,
@@ -130,12 +129,7 @@ impl A380AlternatingCurrentElectrical {
         electricity.transform_in(&self.tr_ess);
 
         self.eha_contactors[0].close_when(self.ac_bus_powered(electricity, 3));
-        self.eha_contactors[1].close_when(tefo_condition);
         electricity.flow(&self.ac_buses[2], &self.eha_contactors[0]);
-        electricity.flow(&self.ac_ess_bus, &self.eha_contactors[1]);
-        for contactor in &self.eha_contactors {
-            electricity.flow(contactor, &self.ac_eha_bus);
-        }
 
         self.update_shedding(emergency_generator, electricity);
     }
@@ -145,9 +139,19 @@ impl A380AlternatingCurrentElectrical {
         context: &UpdateContext,
         electricity: &mut Electricity,
         dc_state: &impl A380DirectCurrentElectricalSystem,
+        tefo_condition: bool,
     ) {
         electricity.flow(dc_state.static_inverter(), &self.ac_emer_contactor[1]);
         electricity.flow(&self.ac_emer_contactor[1], &self.ac_emer_bus);
+
+        self.eha_contactors[1].close_when(
+            tefo_condition && self.ac_ess_bus_is_powered(electricity)
+                || !self.ac_bus_powered(electricity, 3) && dc_state.dc_ess_powered(electricity),
+        );
+        electricity.flow(&self.ac_ess_bus, &self.eha_contactors[1]);
+        for contactor in &self.eha_contactors {
+            electricity.flow(contactor, &self.ac_eha_bus);
+        }
     }
 
     fn update_shedding(

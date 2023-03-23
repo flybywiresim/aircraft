@@ -584,6 +584,26 @@ impl DelayedFalseLogicGate {
     }
 }
 
+/// The latched logic gate latches the true result of a given expression.
+/// As soon as the output is true it stays true until it is reset.
+#[derive(Default)]
+pub struct LatchedTrueLogicGate {
+    expression_result: bool,
+}
+impl LatchedTrueLogicGate {
+    pub fn update(&mut self, expression_result: bool) {
+        self.expression_result = self.expression_result || expression_result;
+    }
+
+    pub fn reset(&mut self) {
+        self.expression_result = false;
+    }
+
+    pub fn output(&self) -> bool {
+        self.expression_result
+    }
+}
+
 /// Given a current and target temperature, takes a coefficient and delta to
 /// determine the new temperature after a certain duration has passed.
 pub(crate) fn calculate_towards_target_temperature(

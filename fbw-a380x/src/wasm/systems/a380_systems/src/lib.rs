@@ -160,6 +160,7 @@ impl Aircraft for A380 {
                 &self.engine_4,
             ],
             self.lgcius.lgciu1(),
+            &self.adirs,
         );
 
         self.electrical_overhead

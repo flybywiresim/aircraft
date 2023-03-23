@@ -290,6 +290,10 @@ impl A380DirectCurrentElectricalSystem for A380DirectCurrentElectrical {
     fn static_inverter(&self) -> &StaticInverter {
         &self.static_inverter
     }
+
+    fn dc_ess_powered(&self, electricity: &Electricity) -> bool {
+        electricity.is_powered(&self.dc_ess_bus)
+    }
 }
 impl SimulationElement for A380DirectCurrentElectrical {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
