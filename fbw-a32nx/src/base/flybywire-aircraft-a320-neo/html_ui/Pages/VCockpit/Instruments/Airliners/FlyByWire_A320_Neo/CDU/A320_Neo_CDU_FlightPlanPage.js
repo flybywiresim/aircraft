@@ -685,6 +685,10 @@ class CDUFlightPlanPage {
             let destEFOBCell = "---";
 
             if (fpm.getDestination()) {
+                if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
+                    mcdu.tryUpdateRouteTrip(isFlying);
+                }
+
                 const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
                 if (destStats) {
                     destDistCell = destStats.distanceFromPpos.toFixed(0);
@@ -695,9 +699,6 @@ class CDUFlightPlanPage {
                         destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
                     }
                 }
-            }
-            if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
-                destEFOBCell = "---";
             }
 
             destText[0] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}"];

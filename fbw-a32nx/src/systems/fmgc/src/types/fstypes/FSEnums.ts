@@ -46,16 +46,26 @@ export enum AirspaceType {
 
 export enum AltitudeDescriptor {
     Empty = 0,
-    At = 1, // @, At in Alt1
-    AtOrAbove = 2, // +, at or above in Alt1
-    AtOrBelow = 3, // -, at or below in Alt1
-    Between = 4, // B, range between Alt1 and Alt2
-    C = 5, // C, at or above in Alt2
-    G = 6, // G, Alt1 At for FAF, Alt2 is glideslope MSL
-    H = 7, // H, Alt1 is At or above for FAF, Alt2 is glideslope MSL
-    I = 8, // I, Alt1 is at for FACF, Alt2 is glidelope intercept
-    J = 9, // J, Alt1 is at or above for FACF, Alt2 is glideslope intercept
-    V = 10, // V, Alt1 is procedure alt for step-down, Alt2 is at alt for vertical path angle
+    /** @, At in Alt1 */
+    At = 1,
+    /** +, at or above in Alt1 */
+    AtOrAbove = 2,
+    /** -, at or below in Alt1 */
+    AtOrBelow = 3,
+    /** B, range between Alt1 (lower) and Alt2 (higher) */
+    Between = 4,
+    /** C, at or above in Alt2 */
+    C = 5,
+    /** G, Alt1 At for FAF, Alt2 is glideslope MSL */
+    G = 6,
+    /** H, Alt1 is At or above for FAF, Alt2 is glideslope MSL */
+    H = 7,
+    /** I, Alt1 is at for FACF, Alt2 is glidelope intercept */
+    I = 8,
+    /** J, Alt1 is at or above for FACF, Alt2 is glideslope intercept */
+    J = 9,
+    /** V, Alt1 is procedure alt for step-down, Alt2 is at alt for vertical path angle */
+    V = 10,
     // X, not supported
     // Y, not supported
 }
