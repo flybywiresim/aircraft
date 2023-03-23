@@ -73,7 +73,7 @@ enum KeyboardButton {
  * @tparam EventNumber The overal number of events for the single event
  */
 template <bool ControlKey, std::size_t EventNumber>
-class KeyboardEventMetadata : public InputEventBase {
+class KeyboardEventMetadata {
   static_assert(EventNumber != 0 && ((ControlKey && EventNumber == 1) || (!ControlKey && EventNumber <= 2)), "Invalid event definition");
 
  public:
@@ -260,12 +260,7 @@ class KeyboardInputEvent : public InputEventBase {
   };
 
  public:
-  /**
-   * @brief Returns the SimConnect specific message for the event
-   *
-   * @return constexpr std::string_view The view on the SimConnect message
-   */
-  static constexpr auto simconnectMessage() { return CreateMessage<Events...>::message; }
+  KeyboardInputEvent() : InputEventBase(CreateMessage<Events...>::message) {}
 };
 
 }  // namespace simconnect

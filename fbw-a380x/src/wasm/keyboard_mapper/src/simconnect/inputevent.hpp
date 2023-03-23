@@ -20,10 +20,11 @@ class Connection;
  * A user of a single event needs to implement the onEventTriggered function.
  */
 class InputEventBase {
- protected:
-  InputEventBase() {}
+ private:
+  std::string_view _simconnectMessage;
 
-  virtual bool onEventTriggered() = 0;
+ protected:
+  InputEventBase(const std::string_view& message) : _simconnectMessage(message) {}
 
  public:
   InputEventBase(const InputEventBase&) = delete;
@@ -31,16 +32,60 @@ class InputEventBase {
   virtual ~InputEventBase() {}
 
   /**
+   * @brief This function is called as soon as the event is occured
+   *
+   * @return true The event is processed
+   * @return false The event failed
+   */
+  virtual bool onEventTriggered() = 0;
+  /**
    * @brief Returns the SimConnect specific message for the event
    *
    * @return constexpr std::string_view The view on the SimConnect message
    */
-  static constexpr std::string_view simconnectMessage() { return ""; }
+  const std::string_view& simconnectMessage() { return this->_simconnectMessage; }
 };
 
 class InputEventGroupBase {
+  friend Connection;
+
  protected:
-  InputEventGroupBase() {}
+  HANDLE* _connection;
+  std::vector<std::shared_ptr<InputEventBase>> _events;
+  std::uint32_t _inputId;
+
+  InputEventGroupBase(HANDLE* connection, std::uint32_t inputId) : _connection(connection), _events{}, _inputId(inputId) {}
+
+  bool addEvent(const std::shared_ptr<InputEventBase>& event) {
+    // create a global UID for the event
+    const std::uint32_t eventId = ((this->_inputId & 0xffff) << 16) | this->_events.size();
+    const std::string simconnectMessage(event->simconnectMessage());
+
+    // https://www.fsdeveloper.com/forum/threads/simconnect-mapinputeventtoclientevent-do-not-work.446750/
+    auto result = SimConnect_MapClientEventToSimEvent(*this->_connection, eventId, nullptr);
+    result |= SimConnect_AddClientEventToNotificationGroup(*this->_connection, this->_inputId, eventId, 0);
+
+    if (SUCCEEDED(result)) {
+      std::cout << "TERR ON ND: MAP INPUT" << std::endl;
+      result = SimConnect_MapInputEventToClientEvent(*this->_connection, this->_inputId, simconnectMessage.c_str(), eventId);
+      if (SUCCEEDED(result)) {
+        this->_events.push_back(event);
+      }
+    }
+
+    return SUCCEEDED(result);
+  }
+
+  bool processEvent(std::uint32_t eventId) {
+    const auto groupIdx = (eventId >> 16) & 0xffff;
+    const auto eventIdx = eventId & 0xffff;
+
+    if (groupIdx == this->_inputId && eventIdx < this->_events.size()) {
+      return this->_events[eventIdx]->onEventTriggered();
+    }
+
+    return false;
+  }
 
  public:
   InputEventGroupBase(const InputEventGroupBase&) = delete;
@@ -56,34 +101,24 @@ class InputEventGroup : public InputEventGroupBase {
   friend Connection;
 
  private:
-  HANDLE* _connection;
-  std::vector<std::shared_ptr<InputEventBase>> _events;
-  std::uint32_t _inputId;
-
-  InputEventGroup(HANDLE* connection, std::uint32_t inputId) : _connection(connection), _events{}, _inputId(inputId) {}
+  InputEventGroup(HANDLE* connection, std::uint32_t inputId) : InputEventGroupBase(connection, inputId) {}
 
  public:
-  virtual ~InputEventGroup() {
-    this->_connection = nullptr;
-    this->_events.clear();
-  }
+  virtual ~InputEventGroup() { this->_connection = nullptr; }
 
   bool addEvent(const std::shared_ptr<InputEventBase>& event) {
+    bool retval = false;
+
     if (this->_events.size() < EventCount) {
-      auto result = SimConnect_MapInputEventToClientEvent(*this->_connection, this->_inputId,
-                                                          std::string(event->simconnectMessage()).c_str(), this->_events.size());
-
-      if (S_OK == result) {
-        this->_events.push_back(event);
-        if (this->_events.size() == EventCount) {
-          result = SimConnect_SetInputGroupPriority(*this->_connection, this->_inputId, Priority);
-        }
+      retval = InputEventGroupBase::addEvent(event);
+      if (this->_events.size() == EventCount) {
+        auto result = SimConnect_SetNotificationGroupPriority(*this->_connection, this->_inputId, Priority);
+        result |= SimConnect_SetInputGroupState(*this->_connection, this->_inputId, SIMCONNECT_STATE_ON);
+        retval = SUCCEEDED(result);
       }
-
-      return S_OK == result;
     }
 
-    return false;
+    return retval;
   }
 };
 
