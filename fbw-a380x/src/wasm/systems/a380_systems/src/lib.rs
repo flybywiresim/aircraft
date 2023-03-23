@@ -151,7 +151,6 @@ impl Aircraft for A380 {
             &self.electrical_overhead,
             &self.emergency_electrical_overhead,
             &mut self.apu,
-            &self.apu_overhead,
             &self.engine_fire_overhead,
             [
                 &self.engine_1,

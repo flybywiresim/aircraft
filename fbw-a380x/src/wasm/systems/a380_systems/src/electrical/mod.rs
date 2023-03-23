@@ -104,7 +104,6 @@ impl A380Electrical {
         overhead: &A380ElectricalOverheadPanel,
         emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
-        apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 4],
         lgciu1: &impl LgciuWeightOnWheels,
@@ -157,7 +156,6 @@ impl A380Electrical {
         );
 
         self.alternating_current.update_after_direct_current(
-            context,
             electricity,
             &self.direct_current,
             self.tefo_condition.output(),

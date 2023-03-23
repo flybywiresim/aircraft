@@ -135,7 +135,6 @@ impl A380AlternatingCurrentElectrical {
 
     pub fn update_after_direct_current(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
         dc_state: &impl A380DirectCurrentElectricalSystem,
         tefo_condition: bool,
