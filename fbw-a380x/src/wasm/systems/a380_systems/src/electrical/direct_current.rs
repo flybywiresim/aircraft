@@ -158,14 +158,31 @@ impl A380DirectCurrentElectrical {
             &self.dc_gnd_flt_service_bus,
         );
 
+        self.inter_bus_line_contactors[0].close_when(
+            self.inter_bus_line_contactors[1].is_open()
+                && self.tr_ess_contactor.is_open()
+                && electricity.is_powered(&self.dc_bus_1),
+        );
+        self.inter_bus_line_contactors[1].close_when(
+            overhead.bus_tie_is_auto()
+                && self.inter_bus_line_contactors[0].is_open()
+                && (self.tr_1_contactor.is_open() && self.tr_2_contactor.is_closed()
+                    || self.tr_1_contactor.is_closed() && self.tr_2_contactor.is_open()),
+        );
+        electricity.flow(&self.inter_bus_line_contactors[0], &self.dc_bus_1);
+        electricity.flow(&self.inter_bus_line_contactors[0], &self.dc_ess_bus);
+        electricity.flow(&self.inter_bus_line_contactors[1], &self.dc_bus_1);
+        electricity.flow(&self.inter_bus_line_contactors[1], &self.dc_bus_2);
+
         electricity.supplied_by(&self.battery_1);
         // TODO: elc-1 should not close when bat1 fault or state of charge < 20% (relay 20PB) (but still with rat deployed)
         let should_close_elc = overhead.bat_is_auto(1)
             && overhead.bat_is_auto(3)
                 && !ac_state.any_non_essential_bus_powered(electricity)
             || rat.should_deploy();
-        self.battery_1_contactor
-            .close_when(overhead.bat_is_auto(1) && !should_close_elc);
+        self.battery_1_contactor.close_when(
+            overhead.bat_is_auto(1) && electricity.is_powered(&self.dc_bus_1) && !should_close_elc,
+        );
         self.battery_1_emergency_contactor
             .close_when(should_close_elc);
         electricity.flow(&self.battery_1_contactor, &self.battery_1);
@@ -207,22 +224,6 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.battery_apu_contactor, &self.battery_apu);
         electricity.flow(&self.hot_bus_apu, &self.battery_apu);
         electricity.flow(&self.battery_apu_contactor, &self.apu_bat_bus);
-
-        self.inter_bus_line_contactors[0].close_when(
-            self.inter_bus_line_contactors[1].is_open()
-                && self.tr_ess_contactor.is_open()
-                && electricity.is_powered(&self.dc_bus_1),
-        );
-        self.inter_bus_line_contactors[1].close_when(
-            overhead.bus_tie_is_auto()
-                && self.inter_bus_line_contactors[0].is_open()
-                && (self.tr_1_contactor.is_open() && self.tr_2_contactor.is_closed()
-                    || self.tr_1_contactor.is_closed() && self.tr_2_contactor.is_open()),
-        );
-        electricity.flow(&self.inter_bus_line_contactors[0], &self.dc_bus_1);
-        electricity.flow(&self.inter_bus_line_contactors[0], &self.dc_ess_bus);
-        electricity.flow(&self.inter_bus_line_contactors[1], &self.dc_bus_1);
-        electricity.flow(&self.inter_bus_line_contactors[1], &self.dc_bus_2);
 
         self.apu_start_contactors.close_when(
             electricity.is_powered(&self.apu_bat_bus)
