@@ -159,6 +159,7 @@ impl A380Electrical {
             &self.alternating_current,
             &self.emergency_elec,
             &self.emergency_gen,
+            &self.rat_controller,
             apu,
             apu_overhead,
             lgciu1,

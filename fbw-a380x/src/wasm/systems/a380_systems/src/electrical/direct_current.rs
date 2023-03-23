@@ -4,6 +4,7 @@ use super::{
 };
 use systems::accept_iterable;
 use systems::electrical::BatteryPushButtons;
+use systems::shared::RamAirTurbineController;
 use systems::simulation::InitContext;
 use systems::{
     electrical::{
@@ -113,6 +114,7 @@ impl A380DirectCurrentElectrical {
         ac_state: &impl A380AlternatingCurrentElectricalSystem,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &EmergencyGenerator,
+        rat: &impl RamAirTurbineController,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
         lgciu1: &impl LgciuWeightOnWheels,
@@ -168,14 +170,12 @@ impl A380DirectCurrentElectrical {
             &self.dc_gnd_flt_service_bus,
         );
 
-        let is_emergency_config = !ac_state.any_non_essential_bus_powered(electricity)
-            && !electricity.is_powered(emergency_generator);
-
         electricity.supplied_by(&self.battery_1);
-        let should_close_elc = !lgciu1.left_and_right_gear_compressed(false) && is_emergency_config
-            || lgciu1.left_and_right_gear_compressed(false)
+        // TODO: elc-1 should not close when bat1 fault or state of charge < 20% (relay 20PB) (but still with rat deployed)
+        let should_close_elc = overhead.bat_is_auto(1)
+            && overhead.bat_is_auto(3)
                 && !ac_state.any_non_essential_bus_powered(electricity)
-                && overhead.bat_is_auto(1);
+            || rat.should_deploy();
         self.battery_1_contactor
             .close_when(overhead.bat_is_auto(1) && !should_close_elc);
         self.battery_1_emergency_contactor
