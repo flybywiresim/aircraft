@@ -47,7 +47,7 @@ impl ElectricalElement for StaticInverter {
 }
 impl ElectricityTransformer for StaticInverter {
     fn transform(&self, input: Ref<Potential>) -> super::Potential {
-        if input.is_powered() {
+        if input.is_powered() && input.raw().get::<volt>() >= 16. {
             Potential::new(PotentialOrigin::StaticInverter, self.output_potential)
         } else {
             Potential::none()
