@@ -311,9 +311,7 @@ const Efb = () => {
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
-                {' '}
                 <ModalContainer />
-                {' '}
                 <PowerContext.Provider value={{ powerState, setPowerState }}>
                     <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
                         <Tooltip posX={posX} posY={posY} shown={shown} text={text} />
@@ -323,69 +321,33 @@ const Efb = () => {
                             draggableDirection="y"
                             limit={2}
                         />
-                        {' '}
                         <StatusBar
                             batteryLevel={batteryLevel.level}
                             isCharging={dc2BusIsPowered === 1}
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="pt-14 pr-6 w-screen min-w-0 h-screen">
+                            <div className="pt-14 pr-6 w-screen h-screen">
                                 <Switch>
-                                    {' '}
                                     <Route exact path="/">
-                                        {' '}
                                         <Redirect to="/dashboard" />
-                                        {' '}
                                     </Route>
-                                    {' '}
-                                    <Route
-                                        path="/dashboard"
-                                        component={Dashboard}
-                                    />
-                                    {' '}
-                                    <Route
-                                        path="/dispatch"
-                                        component={Dispatch}
-                                    />
-                                    {' '}
+                                    <Route path="/dashboard" component={Dashboard} />
+                                    <Route path="/dispatch" component={Dispatch} />
                                     <Route path="/ground" component={Ground} />
-                                    {' '}
-                                    <Route
-                                        path="/performance"
-                                        component={Performance}
-                                    />
-                                    {' '}
+                                    <Route path="/performance" component={Performance} />
                                     <Route path="/navigation" component={Navigation} />
-                                    {' '}
-                                    <Route
-                                        path="/atc"
-                                        component={ATC}
-                                    />
-                                    {' '}
+                                    <Route path="/atc" component={ATC} />
                                     <Route path="/failures" component={Failures} />
-                                    {' '}
-                                    <Route
-                                        path="/checklists"
-                                        component={Checklists}
-                                    />
+                                    <Route path="/checklists" component={Checklists} />
                                     <Route path="/presets" component={Presets} />
-                                    {' '}
                                     <Route path="/settings" component={Settings} />
-                                    {' '}
-                                    <Route
-                                        path="/settings/flypad"
-                                        component={FlyPadPage}
-                                    />
-                                    {' '}
-
+                                    <Route path="/settings/flypad" component={FlyPadPage} />
                                 </Switch>
                             </div>
                         </div>
                     </div>
                 </PowerContext.Provider>
-                {' '}
-
             </NavigraphContext.Provider>
         );
     default:
