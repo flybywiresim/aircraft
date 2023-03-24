@@ -50,8 +50,8 @@
 /fbw-a32nx/src/base/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf
 /fbw-a32nx/src/systems/instruments/aceBundles
 
-/fbw-a32nx/src/localisation/flypad/downloaded/*.json
-/fbw-a32nx/src/localisation/msfs/downloaded/*.locPak
+/fbw-a32nx/src/localization/flypad/downloaded/*.json
+/fbw-a32nx/src/localization/msfs/downloaded/*.locPak
 /fbw-a32nx/src/systems/instruments/src/EFB/dist
 /fbw-a32nx/src/systems/instruments/src/EFB/web/
 

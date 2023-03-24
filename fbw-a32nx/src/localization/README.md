@@ -10,9 +10,9 @@ TOC:
 
 ## Development Process
 
-- To add something to the localization files simply add the key to the source anguage files:
-  - For flyPad: `fbw-a32nx/src/localisation/flypad/en.json`
-  - For MSFS locPak: `fbw-a32nx/src/localisation/msfs/en-US.locPak`
+- To add something to the localization files simply add the key to the source language files:
+  - For flyPad: `fbw-a32nx/src/localization/flypad/en.json`
+  - For MSFS locPak: `fbw-a32nx/src/localization/msfs/en-US.locPak`
 - Only change the source language file. The other language files are generated automatically from 
   Localazy and any changes will be overwritten.
 - Ping in the Discord channel `#localisation` to have someone with write permission to Localazy to 
@@ -69,8 +69,8 @@ folder of the flyPad or locPak folder.
 
 It checks the JSON syntax and writes new JSON files for each language to their respective target folder:
 
-flyPad: `sfbw-a32nx/src/localisation/flypad`
-msfs locPak: `fbw-a32nx/src/localisation/msfs` and `out/flybywire-aircraft-a320-neo/`
+flyPad: `sfbw-a32nx/src/localization/flypad`
+msfs locPak: `fbw-a32nx/src/localization/msfs` and `out/flybywire-aircraft-a320-neo/`
 
 ## Update Source File
 
@@ -91,12 +91,12 @@ The `deprecate` version of the configuration files will deprecate keys which are
 with caution.
 
 flyPad:
-localazy upload -w <writeKey> -c localazy-flypad-upload-config.json -d flypad
-localazy upload -w <writeKey> -c localazy-flypad-upload-deprecate-config.json -d flypad
+`localazy upload -w <writeKey> -c localazy-flypad-upload-config.json -d flypad`
+`localazy upload -w <writeKey> -c localazy-flypad-upload-deprecate-config.json -d flypad`
 
 MSFS locPak:
-localazy upload -w <writeKey> -c localazy-flypad-upload-config.json -d flypad
-localazy upload -w <writeKey> -c localazy-flypad-upload-deprecate-config.json -d flypad
+`localazy upload -w <writeKey> -c localazy-flypad-upload-config.json -d flypad`
+`localazy upload -w <writeKey> -c localazy-flypad-upload-deprecate-config.json -d flypad`
 
 The writeKey can be found in the Localazy project settings which are accessible by the Owners/Managers of the project.
 
@@ -115,7 +115,7 @@ The writeKey can be found in the Localazy project settings which are accessible 
 - Uncheck all the other checkboxes
 - Review the changes in the source file - removed keys should show a red and deprecated, new keys should be available
 - These changes now apply to all languages
-    - removed keys are deprecated and not visible to translators any more and should also not be included in any
+    - removed keys are deprecated and not visible to translators anymore and should also not be included in any
       downloads
     - new keys are ready to be translated in all other languages
 

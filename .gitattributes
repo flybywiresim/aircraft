@@ -6,5 +6,5 @@
 
 # Ensure the language files update during build are not marked as changed due to different
 # line endings.
-/fbw-a32nx/src/localisation/flypad/*.json text eol=lf
-/fbw-a32nx/src/localisation/msfs/*.locPak text eol=lf
+/fbw-a32nx/src/localization/flypad/*.json text eol=lf
+/fbw-a32nx/src/localization/msfs/*.locPak text eol=lf

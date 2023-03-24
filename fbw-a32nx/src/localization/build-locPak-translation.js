@@ -69,7 +69,7 @@ function processFile(fileName) {
 
     // Write json file to filesystem
     try {
-        // write to the localisation/locPak folder
+        // write to the localization/locPak folder
         fs.writeFileSync(path.join(workingDir, convertedFilesPath, `${fileName}`), JSON.stringify(json, null, 2));
     } catch (e) {
         console.error(`Error while writing file "${fileName}": ${e}`);
