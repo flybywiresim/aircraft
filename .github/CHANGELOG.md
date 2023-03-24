@@ -62,6 +62,7 @@
 1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
 1. [FMS] Fix display of lat/lon close to zero on DUPLICATE NAMES page - @tracernz (Mike)
 1. [EWD] Fix placement of "5" and "10" scale on EWD N1 gauges - @flogross89 (Flo)
+1. [DMC] Add DMC maintenance and engineering test modes (including DMC switching) - @flogross89 (Flo)
 
 ## 0.9.0
 
