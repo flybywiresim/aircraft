@@ -27,7 +27,6 @@ export class EwdComponent extends DisplayComponent<EwdProps> {
 
         sub.on('ewdPotentiometer').whenChanged().handle((pot) => {
             this.ewdPotentiometer.set(pot);
-            console.log(`1a. ${pot}`);
         });
     }
 
