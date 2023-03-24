@@ -95,6 +95,7 @@ obj/
 target/
 *.tgz
 *.wasm
+cmake-build*
 
 # ======== OLD =============
 

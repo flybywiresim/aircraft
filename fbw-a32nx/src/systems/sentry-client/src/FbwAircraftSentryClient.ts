@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 import { NXDataStore } from '@shared/persistence';
-import { PopUp } from '@shared/popup';
+import { PopUpDialog } from '@shared/popup';
 import * as Sentry from '@sentry/browser';
 import { BrowserTracing } from '@sentry/tracing';
 import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integrations';
@@ -149,7 +149,7 @@ export class FbwAircraftSentryClient {
      * @returns a `Promise<boolean` indicating the consent state
      */
     static async requestConsent() {
-        const popup = new PopUp();
+        const popup = new PopUpDialog();
 
         return new Promise<boolean>((resolve) => {
             popup.showPopUp(
