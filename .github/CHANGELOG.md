@@ -65,6 +65,7 @@
 1. [MCDU] Fix negative EFOB on FLIGHT PLAN page - @Revyn112 (Revyn112#1010)
 1. [MCDU] Fix EFOB and FUEL PRED get dashed out at TOD - @Revyn112 (Revyn112#1010)
 1. [ELEC] A more accurate simulation of the transformer rectifiers - @Gurgel100 (Pascal)
+1. [MISC] Added extras-host for non aircraft systems like version-check, key interceptor, etc. - @frankkopp (Frank Kopp)
 1. [HYD] New aerodynamic model for RAT turbine / Added A320 RAT anti stall valve system - @Crocket63 (crocket)
 
 ## 0.9.0
