@@ -19,3 +19,29 @@
   text-anchor: middle;
   font-family: "Ecam", monospace;
 }
+
+.MaintenanceMode {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.EngineeringTestMode {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 999;
+  background-image: url('./thalesTest.svg');
+  background-size: cover;
+}
+
+.EngineeringTestMode text {
+  font-size: 21px;
+  color: black;
+}

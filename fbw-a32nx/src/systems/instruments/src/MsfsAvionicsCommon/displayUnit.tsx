@@ -1,5 +1,6 @@
 import { FSComponent, ClockEvents, DisplayComponent, EventBus, Subscribable, VNode } from 'msfssdk';
 import { NXDataStore } from '@shared/persistence';
+import { getSupplier } from '@instruments/common/utils';
 import { DisplayVars } from './SimVarTypes';
 
 import './common.scss';
@@ -12,16 +13,19 @@ export const getDisplayIndex = () => {
 
 type DisplayUnitProps = {
     bus: EventBus,
+    normDmc: number,
     failed?: Subscribable<boolean>,
     powered?: Subscribable<boolean>,
-    brightness?: Subscribable<number>;
+    brightness?: Subscribable<number>,
 }
 
 enum DisplayUnitState {
     On,
     Off,
     Selftest,
-    Standby
+    Standby,
+    MaintenanceMode,
+    EngineeringTest
 }
 
 export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
@@ -31,11 +35,17 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
     private selfTestRef = FSComponent.createRef<SVGElement>();
 
+    private maintenanceModeRef = FSComponent.createRef<SVGElement>();
+
+    private engineeringTestModeRef = FSComponent.createRef<SVGElement>();
+
     private pfdRef = FSComponent.createRef<HTMLDivElement>();
 
     private backLightBleedRef = FSComponent.createRef<HTMLDivElement>();
 
     private isHomeCockpitMode = false;
+
+    private supplyingDmc: number = 3;
 
     private brightness: number = 0;
 
@@ -53,6 +63,21 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             if (!document.documentElement.classList.contains('animationsEnabled')) {
                 document.documentElement.classList.add('animationsEnabled');
             }
+
+            const dmcKnob = SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'Enum');
+            this.supplyingDmc = getSupplier(this.props.normDmc, dmcKnob);
+            const dmcDisplayTestMode = SimVar.GetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${this.supplyingDmc}`, 'Enum');
+            switch (dmcDisplayTestMode) {
+            case 1:
+                this.state = DisplayUnitState.MaintenanceMode;
+                break;
+            case 2:
+                this.state = DisplayUnitState.EngineeringTest;
+                break;
+            default:
+                this.state = DisplayUnitState.On;
+            }
+            this.updateState();
         });
 
         this.props.brightness?.sub((f) => {
@@ -107,14 +132,32 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
         if (this.state === DisplayUnitState.Selftest) {
             this.selfTestRef.instance.style.display = 'block';
+            this.maintenanceModeRef.instance.style.display = 'none';
+            this.engineeringTestModeRef.instance.style.display = 'none';
             this.pfdRef.instance.style.display = 'none';
             this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
         } else if (this.state === DisplayUnitState.On) {
             this.selfTestRef.instance.style.display = 'none';
+            this.maintenanceModeRef.instance.style.display = 'none';
+            this.engineeringTestModeRef.instance.style.display = 'none';
             this.pfdRef.instance.style.display = 'block';
+            this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
+        } else if (this.state === DisplayUnitState.MaintenanceMode) {
+            this.selfTestRef.instance.style.display = 'none';
+            this.maintenanceModeRef.instance.style.display = 'block';
+            this.engineeringTestModeRef.instance.style.display = 'none';
+            this.pfdRef.instance.style.display = 'none';
+            this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
+        } else if (this.state === DisplayUnitState.EngineeringTest) {
+            this.selfTestRef.instance.style.display = 'none';
+            this.maintenanceModeRef.instance.style.display = 'none';
+            this.engineeringTestModeRef.instance.style.display = 'block';
+            this.pfdRef.instance.style.display = 'none';
             this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
         } else {
             this.selfTestRef.instance.style.display = 'none';
+            this.maintenanceModeRef.instance.style.display = 'none';
+            this.engineeringTestModeRef.instance.style.display = 'none';
             this.pfdRef.instance.style.display = 'none';
             this.backLightBleedRef.instance.style.display = 'none';
         }
@@ -141,6 +184,25 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
                     >
                         (MAX 40 SECONDS)
                     </text>
+                </svg>
+
+                <svg ref={this.maintenanceModeRef} class="MaintenanceMode" viewBox="0 0 600 600">
+                    <text
+                        class="SelfTestText"
+                        x="50%"
+                        y="50%"
+                    >
+                        MAINTENANCE MODE
+                    </text>
+                </svg>
+
+                <svg ref={this.engineeringTestModeRef} class="EngineeringTestMode" viewBox="0 0 600 600">
+                    <text class="EngineeringTestModeText" x={9} y={250}>P/N : C19755BA01</text>
+                    <text class="EngineeringTestModeText" x={10} y={270}>S/N : C1975517334</text>
+                    <text class="EngineeringTestModeText" x={10} y={344}>EIS SW</text>
+                    <text class="EngineeringTestModeText" x={10} y={366}>P/N : C1975517332</text>
+                    <text class="EngineeringTestModeText" text-anchor="end" x="98%" y={250}>THALES AVIONICS</text>
+                    <text class="EngineeringTestModeText" text-anchor="end" x="98%" y={366}>LCDU 725</text>
                 </svg>
 
                 <div style="display:none" ref={this.pfdRef}>{this.props.children}</div>

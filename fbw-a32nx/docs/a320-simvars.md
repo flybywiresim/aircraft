@@ -189,6 +189,15 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
+- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+    - Enum
+    - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
+      Value | Meaning
+      --- | ---
+      0 | Inactive
+      1 | Maintenance Mode active
+      2 | Engineering display test in progress
+
 - A32NX_ECAM_ND_XFR_SWITCHING_KNOB
     - ECAM/ND XFR
     - Position (0-2)
