@@ -4,7 +4,7 @@ export class LubberLine extends DisplayComponent<{ available: Subscribable<boole
     render(): VNode | null {
         return (
             <g
-                visibility={this.props.available.map((it) => (it ? 'visible' : 'hidden'))}
+                visibility={this.props.available.map((it) => (it ? 'inherit' : 'hidden'))}
                 transform={this.props.rotation.map(((rotation) => `rotate(${rotation} 384 626)`))}
             >
                 <line
