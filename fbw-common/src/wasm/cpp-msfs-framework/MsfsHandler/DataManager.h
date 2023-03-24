@@ -17,10 +17,10 @@
 #include "SimUnits.h"
 #include "logging.h"
 
-#include "NamedVariable.h"
 #include "AircraftVariable.h"
 #include "ClientDataAreaVariable.hpp"
 #include "DataDefinitionVariable.hpp"
+#include "NamedVariable.h"
 #include "StreamingClientDataAreaVariable.hpp"
 
 // Forward declarations

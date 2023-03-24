@@ -9,8 +9,10 @@
                 "${workspaceFolder}/fbw-common/src/wasm/fbw_common/src/**",
                 "${workspaceFolder}/fbw-a32nx/src/wasm/fbw_a320/src/**",
                 "${workspaceFolder}/fbw-a380x/src/wasm/fbw_a380/src/**",
-                "${workspaceFolder}/fbw-a32nx/src/wasm/extra-backend/src/**",
-                "${workspaceFolder}/fbw-a380x/src/wasm/extra-backend/src/**",
+                "${workspaceFolder}/fbw-common/src/wasm/cpp-msfs-framework/**",
+                "${workspaceFolder}/fbw-common/src/wasm/extra-backend/**",
+                "${workspaceFolder}/fbw-a32nx/src/wasm/extra-backend-a32nx/src/**",
+                "${workspaceFolder}/fbw-a380x/src/wasm/extra-backend-a380x/src/**",
                 "${workspaceFolder}/fbw-a32nx/src/wasm/fadec_a320/src/**",
                 "${workspaceFolder}/fbw-a380x/src/wasm/fadec_a380/src/**"           ],
             "defines": [

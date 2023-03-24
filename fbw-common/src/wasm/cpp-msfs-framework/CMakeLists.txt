@@ -22,9 +22,9 @@ set(INCLUDE_FILES
     MsfsHandler/Module.h
     MsfsHandler/MsfsHandler.h
     MsfsHandler/SimconnectExceptionStrings.h
+    MsfsHandler/SimUnits.h
     lib/Callback.h
     lib/IDGenerator.h
-    lib/SimUnits.h
     lib/fingerprint.hpp
     lib/inih/ini.h
     lib/inih/ini_type_conversion.h

@@ -246,8 +246,7 @@ ClientEventPtr DataManager::make_client_event(const std::string& clientEventName
     }
   }
   // create a new event instance
-  ClientEventPtr clientEvent =
-      std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), clientEventName));
+  ClientEventPtr clientEvent = std::shared_ptr<ClientEvent>(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), clientEventName));
   if (registerToSim) {
     clientEvent->mapToSimEvent();
   }

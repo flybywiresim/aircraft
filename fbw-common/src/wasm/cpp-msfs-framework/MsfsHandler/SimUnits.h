@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include <MSFS/Legacy/gauges.h>
+
 #include "logging.h"
 
 /**
