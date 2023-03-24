@@ -59,13 +59,13 @@ export class Airplane extends DisplayComponent<{ bus: EventBus }> {
                     <path
                         class="shadow"
                         stroke-width={8}
-                        strokeLinecap="round"
+                        stroke-linecap="round"
                         d="M 0, 0 h 82 m -41, -29.5 v 70.25 m -11.5, -9.75 h 23.5"
                     />
                     <path
                         class="Yellow"
                         stroke-width={5}
-                        strokeLinecap="round"
+                        stroke-linecap="round"
                         d="M 0, 0 h 82 m -41, -29.5 v 70.25 m -11.5, -9.75 h 23.5"
                     />
                 </g>

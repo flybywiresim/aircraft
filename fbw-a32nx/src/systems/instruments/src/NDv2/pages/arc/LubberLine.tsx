@@ -14,8 +14,8 @@ export class LubberLine extends DisplayComponent<{ available: Subscribable<boole
                     y2={152}
                     class="shadow"
                     stroke-width={5.5}
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
                 />
                 <line
                     x1={384}
@@ -24,8 +24,8 @@ export class LubberLine extends DisplayComponent<{ available: Subscribable<boole
                     y2={152}
                     class="Yellow"
                     stroke-width={5}
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
                 />
             </g>
         );

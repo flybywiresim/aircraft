@@ -123,8 +123,8 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                     d={this.props.index === 1 ? this.VOR_1_NEEDLE : this.VOR_2_NEEDLE}
                     stroke-width={2}
                     class={this.stationCorrected.map((c) => (c ? 'Magenta' : 'White'))}
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
                 />
 
                 <text x={this.x} y={692} font-size={24} class="White">

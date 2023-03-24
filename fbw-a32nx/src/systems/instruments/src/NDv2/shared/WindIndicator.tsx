@@ -117,7 +117,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
                     <path
                         class="Green"
                         stroke-width={2.5}
-                        strokeLinecap="round"
+                        stroke-linecap="round"
                         d="M 0 30 v -30 m -6.5 12 l 6.5 -12 l 6.5 12"
                         transform={this.windArrowRotation.map((rotation) => `rotate(${rotation} 0 15)`)}
                         visibility={this.windArrowVisible.map((visible) => (visible ? 'visible' : 'hidden'))}
