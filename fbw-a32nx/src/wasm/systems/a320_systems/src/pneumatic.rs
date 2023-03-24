@@ -1356,7 +1356,7 @@ mod tests {
     use systems::{
         air_conditioning::{
             acs_controller::{Pack, PackFlowController},
-            AirConditioningSystem, PackFlowControllers, ZoneType,
+            AdirsToAirCondInterface, AirConditioningSystem, PackFlowControllers, ZoneType,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
@@ -1366,13 +1366,13 @@ mod tests {
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
             TargetPressureTemperatureSignal, WingAntiIcePushButtonMode,
         },
-        pressurization::PressurizationOverheadPanel,
         shared::{
-            ApuBleedAirValveSignal, CabinAir, CabinTemperature, ControllerSignal,
+            arinc429::{Arinc429Word, SignStatus},
+            ApuBleedAirValveSignal, CabinAltitude, CabinSimulation, ControllerSignal,
             ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
-            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, GroundSpeed,
-            HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
-            PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
+            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, HydraulicColor,
+            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
+            PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -1383,14 +1383,11 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*,
-        length::foot,
-        mass_rate::kilogram_per_second,
-        pressure::{pascal, psi},
-        ratio::ratio,
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
+        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
+
+    use crate::air_conditioning::A320PressurizationOverheadPanel;
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
@@ -1400,7 +1397,7 @@ mod tests {
 
         adirs: TestAdirs,
         pressurization: TestPressurization,
-        pressurization_overhead: PressurizationOverheadPanel,
+        pressurization_overhead: A320PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
         fn new(context: &mut InitContext) -> Self {
@@ -1419,7 +1416,7 @@ mod tests {
 
                 adirs: TestAdirs::new(),
                 pressurization: TestPressurization::new(),
-                pressurization_overhead: PressurizationOverheadPanel::new(context),
+                pressurization_overhead: A320PressurizationOverheadPanel::new(context),
             }
         }
         fn update(
@@ -1459,13 +1456,13 @@ mod tests {
         }
     }
 
-    struct TestCabin {}
+    struct TestCabin;
     impl TestCabin {
         fn new() -> Self {
             Self {}
         }
     }
-    impl CabinTemperature for TestCabin {
+    impl CabinSimulation for TestCabin {
         fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
             vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 3]
         }
@@ -1477,33 +1474,34 @@ mod tests {
     impl TestAdirs {
         fn new() -> Self {
             Self {
-                ground_speed: Velocity::new::<knot>(0.),
+                ground_speed: Velocity::default(),
             }
         }
     }
-    impl GroundSpeed for TestAdirs {
-        fn ground_speed(&self) -> Velocity {
-            self.ground_speed
+    impl AdirsToAirCondInterface for TestAdirs {
+        fn ground_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            Arinc429Word::new(self.ground_speed, SignStatus::NormalOperation)
+        }
+        fn true_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            Arinc429Word::new(Velocity::default(), SignStatus::NoComputedData)
+        }
+        fn baro_correction(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
+        }
+        fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
+            Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
         }
     }
 
-    struct TestPressurization {
-        cabin_pressure: Pressure,
-    }
+    struct TestPressurization;
     impl TestPressurization {
         fn new() -> Self {
-            Self {
-                cabin_pressure: Pressure::new::<pascal>(101315.),
-            }
+            Self {}
         }
     }
-    impl CabinAir for TestPressurization {
+    impl CabinAltitude for TestPressurization {
         fn altitude(&self) -> Length {
-            Length::new::<foot>(0.)
-        }
-
-        fn pressure(&self) -> Pressure {
-            self.cabin_pressure
+            Length::default()
         }
     }
 

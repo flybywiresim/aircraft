@@ -54,6 +54,18 @@
 1. [ATSU] ATSU as single instrument according to A20N architecture - @svengcz (Sven)
 1. [DATALINK] Splitted up ATC/AOC/Router to single components @svengcz (Sven)
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
+1. [FWC] Add GND SPLR NOT ARMED warning - @tracernz (Mike)
+1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
+1. [PRESS] Merge pressurization and air conditioning system - @mjuhe (Miquel Juhe)
+1. [ADIRU] Add baro correction setting to ADIRS - @mjuhe (Miquel Juhe)
+1. [FMGC] Fixed various bugs with thrust reduction and acceleration altitude - @tracernz (Mike)
+1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
+1. [FMS] Fix display of lat/lon close to zero on DUPLICATE NAMES page - @tracernz (Mike)
+1. [EWD] Fix placement of "5" and "10" scale on EWD N1 gauges - @flogross89 (Flo)
+1. [MCDU] Fix negative EFOB on FLIGHT PLAN page - @Revyn112 (Revyn112#1010)
+1. [MCDU] Fix EFOB and FUEL PRED get dashed out at TOD - @Revyn112 (Revyn112#1010)
+1. [ELEC] A more accurate simulation of the transformer rectifiers - @Gurgel100 (Pascal)
+1. [MISC] Added extras-host for non aircraft systems like version-check, key interceptor, etc. - @frankkopp (Frank Kopp)
 
 ## 0.9.0
 

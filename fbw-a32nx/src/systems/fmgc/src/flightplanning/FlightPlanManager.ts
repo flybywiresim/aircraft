@@ -1141,7 +1141,7 @@ export class FlightPlanManager {
     public getOriginRunway(): OneWayRunway {
         const runwayIndex = this.getOriginRunwayIndex();
         if (runwayIndex >= 0) {
-            return this.getOrigin().infos.oneWayRunways[runwayIndex];
+            return (this.getOrigin()?.infos as AirportInfo | undefined)?.oneWayRunways[runwayIndex];
         }
         return undefined;
     }

@@ -13,7 +13,7 @@ export class Health {
      * @returns true if service is available, false otherwise
      */
     public static async getHealth(serviceName?: 'api'|'mcdu'): Promise<boolean> {
-        const response = await fetchWithTimeout(`${getSimBridgeUrl()}/health`);
+        const response = await fetchWithTimeout(`${getSimBridgeUrl()}/health`, undefined, 5000);
         if (!response.ok) {
             throw new Error(`SimBridge Error: ${response.status}`);
         }

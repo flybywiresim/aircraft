@@ -56,9 +56,8 @@ export class RawDataMapper {
             info.approaches = facility.approaches;
 
             info.approaches.forEach((approach) => {
-                const apprName = ApproachUtils.parseApproachName(approach.name);
-                approach.name = ApproachUtils.shortApproachName(apprName);
-                approach.longName = ApproachUtils.longApproachName(apprName)
+                approach.name = ApproachUtils.shortApproachName(approach);
+                approach.longName = ApproachUtils.longApproachName(approach)
             });
 
             info.approaches.forEach(
