@@ -24,9 +24,9 @@ use electrical::{
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
-use systems::simulation::InitContext;
-use systems::{accept_iterable, simulation::InitContext};
+use systems::{
+    accept_iterable, enhanced_gpwc::EnhancedGroundProximityWarningComputer, simulation::InitContext,
+};
 use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
