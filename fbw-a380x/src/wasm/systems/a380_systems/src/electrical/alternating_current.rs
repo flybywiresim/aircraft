@@ -142,9 +142,10 @@ impl A380AlternatingCurrentElectrical {
         electricity.flow(dc_state.static_inverter(), &self.ac_emer_contactor[1]);
         electricity.flow(&self.ac_emer_contactor[1], &self.ac_emer_bus);
 
+        // TODO: check what engine burst reconfiguration (relay 34CD) means -> only then it should close when AC 3 is lost
         self.eha_contactors[1].close_when(
-            tefo_condition && self.ac_ess_bus_is_powered(electricity)
-                || !self.ac_bus_powered(electricity, 3) && dc_state.dc_ess_powered(electricity),
+            dc_state.dc_ess_powered(electricity)
+                && (tefo_condition || !self.ac_bus_powered(electricity, 3)),
         );
         electricity.flow(&self.ac_ess_bus, &self.eha_contactors[1]);
         for contactor in &self.eha_contactors {
