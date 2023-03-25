@@ -140,10 +140,19 @@ declare global {
     class VORInfo extends WayPointInfo {
         constructor(_instrument: BaseInstrument);
         type: VorType;
+
+        frequencyMHz: number;
+
+        frequencyBcd16: number;
+
+        vorClass: VorClass;
     }
 
     class NDBInfo extends WayPointInfo {
         constructor(_instrument: BaseInstrument);
+        type: NdbType;
+
+        frequencyMHz: number;
     }
 
     interface OneWayRunway {
@@ -159,6 +168,8 @@ declare global {
         thresholdCoordinates: LatLongAlt;
         thresholdLength: number;
         thresholdElevation: number;
+        primaryILSFrequency: RawIlsFrequency;
+        secondaryILSFrequency: RawIlsFrequency;
     }
 
     interface RawProcedureLeg {
@@ -341,8 +352,17 @@ declare global {
         freqBCD16: number;
         freqMHz: number;
         name: string;
+        icao: string;
         type: FrequencyType;
-        __Type: 'JS_Frequency';
+        __Type: 'JS_Frequency' | 'JS_FrequencyILS';
+    }
+
+    interface RawIlsFrequency extends RawFrequency {
+        hasGlideslope: boolean;
+        glideslopeAngle: number;
+        localizerCourse: number;
+        magvar: number;
+        __Type: 'JS_FrequencyILS';
     }
 
     interface RawRunway {

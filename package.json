@@ -4,17 +4,36 @@
   "edition": "development",
   "scripts": {
     "====== A320 =================": "==========================================",
+
     "build-a32nx:copy-base-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/)",
     "build-a32nx:copy-base-lock-highlight-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo-lock-highlight && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/)",
     "build-a32nx:copy-base-files": "npm run build-a32nx:copy-base-package && npm run build-a32nx:copy-base-lock-highlight-package",
     "build-a32nx:efb-translation": "cd fbw-a32nx/src/systems/instruments/src/EFB/Localization && node build-translation.js",
+
     "build-a32nx:model": "node fbw-a32nx/src/model/build.js",
     "build-a32nx:behavior": "node fbw-a32nx/src/behavior/build.js",
+
+    "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",
+    "build-a32nx:atsu-fms-client": "node fbw-a32nx/src/systems/atsu/fmsclient/build.js",
+    "build-a32nx:extras-host": "cd fbw-a32nx/src/systems/extras-host && rollup -c",
     "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
     "build-a32nx:fmgc": "rollup -c fbw-a32nx/src/systems/fmgc/rollup.config.js",
+    "build-a32nx:instruments": "mach build --config fbw-a32nx/mach.config.js --work-in-config-dir",
     "build-a32nx:sentry-client": "rollup -c fbw-a32nx/src/systems/sentry-client/rollup.config.js",
     "build-a32nx:simbridge-client": "rollup -c fbw-a32nx/src/systems/simbridge-client/rollup.config.js",
+    "build-a32nx:systems-host": "cd fbw-a32nx/src/systems/systems-host && rollup -c",
     "build-a32nx:tcas": "rollup -c fbw-a32nx/src/systems/tcas/rollup.config.js",
+
+    "build-a32nx:fadec": "cd fbw-a32nx/src/wasm/fadec_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm",
+    "build-a32nx:fbw": "cd fbw-a32nx/src/wasm/fbw_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm",
+    "build-a32nx:flypad-backend": "cd fbw-a32nx/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm",
+    "build-a32nx:systems": "cargo build -p a320_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm /external/target/wasm32-wasi/release/a320_systems_wasm.wasm",
+
+    "build-a32nx:metadata": "node scripts/metadata.js fbw-a32nx/out/flybywire-aircraft-a320-neo a32nx",
+    "build-a32nx:manifest": "node scripts/build_a32nx.js",
+
+    "build-a32nx:all": "npm run build-a32nx:copy-base-files && npm run build-a32nx:efb-translation && npm run build-a32nx:model && npm run build-a32nx:behavior && npm run build-a32nx:atsu-common && npm run build-a32nx:atsu-fms-client && npm run build-a32nx:systems-host && npm run build-a32nx:failures && npm run build-a32nx:fmgc && npm run build-a32nx:sentry-client && npm run build-a32nx:simbridge-client && npm run build-a32nx:tcas && npm run build-a32nx:pfd && npm run build-a32nx:systems && npm run build-a32nx:fadec && npm run build-a32nx:fbw && npm run build-a32nx:flypad-backend && npm run build-a32nx:metadata && npm run build-a32nx:manifest",
+
     "=======deprecated=========": "===========================",
     "build-a32nx:pfd": "cd fbw-a32nx/src/systems/instruments/src/PFD && rollup -c",
     "build-a32nx:clock": "cd fbw-a32nx/src/systems/instruments/src/Clock && rollup -c",
@@ -33,22 +52,26 @@
     "build-a32nx:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -c .\\fbw-a32nx\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
     "watch-a32nx:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\fbw-a32nx\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
 
+
+    "prettier": "prettier --write **/*.json **/*.yml fbw-a32nx/src/systems/instruments/**/*.css",
     "serve:efb": "cd fbw-a32nx/src/systems/instruments/src/EFB/ && vite --port 9696",
     "build:instruments": "rollup --max-old-space-size=8192 -c src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
-    "prettier": "prettier --write **/*.json **/*.yml fbw-a32nx/src/systems/instruments/**/*.css",
-    "build-a32nx:all": "npm run build-a32nx:copy-base-files && npm run build-a32nx:efb-translation && npm run build-a32nx:model && npm run build-a32nx:behavior && npm run build-a32nx:atsu-common && npm run build-a32nx:atsu-fms-client && npm run build-a32nx:systems-host && npm run build-a32nx:failures && npm run build-a32nx:fmgc && npm run build-a32nx:sentry-client && npm run build-a32nx:simbridge-client && npm run build-a32nx:tcas && npm run build-a32nx:pfd && npm run build-a32nx:systems && npm run build-a32nx:fadec && npm run build-a32nx:fbw && npm run build-a32nx:flypad-backend && npm run build-a32nx:metadata && npm run build-a32nx:manifest",
+
     "====== A380 =================": "==========================================",
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
     "build-a380x:systems": "cargo build -p a380_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm /external/target/wasm32-wasi/release/a380_systems_wasm.wasm",
     "build-a380x:fadec": "cd fbw-a380x/src/wasm/fadec_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm",
     "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm",
     "build-a380x:flypad-backend": "cd fbw-a380x/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm",
+
     "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend",
+
     "====== INGAMEPANELS CHECKLIST FIX ====": "==========================================",
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
     "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",
     "build-ingamepanels-checklist-fix:manifest": "node scripts/build_ingamepanels_checklist_fix.js",
+
     "====== COMMON ================": "==========================================",
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",

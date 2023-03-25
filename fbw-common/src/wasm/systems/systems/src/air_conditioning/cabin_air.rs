@@ -83,6 +83,9 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             let initial_cabin_pressure =
                 self.initialize_cabin_pressure(context, lgciu_gear_compressed);
             self.internal_air.set_pressure(initial_cabin_pressure);
+            let initial_cabin_temperature =
+                self.initialize_cabin_temperature(context, lgciu_gear_compressed);
+            self.internal_air.set_temperature(initial_cabin_temperature);
             self.is_initialised = true;
         }
         self.filtered_flow_in =
@@ -153,6 +156,26 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             Pressure::new::<hectopascal>(
                 -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
             )
+        }
+    }
+
+    fn initialize_cabin_temperature(
+        &mut self,
+        context: &UpdateContext,
+        lgciu_gear_compressed: bool,
+    ) -> ThermodynamicTemperature {
+        if lgciu_gear_compressed {
+            // If the aircraft is on the ground the cabin starts at the same temperature as ambient
+            self.cabin_zones
+                .iter_mut()
+                .for_each(|zone| zone.set_zone_air_temperature(context.ambient_temperature()));
+            context.ambient_temperature()
+        } else {
+            // If the aircraft is flying we assume the temperature has been stabilized at 24 degrees
+            self.cabin_zones.iter_mut().for_each(|zone| {
+                zone.set_zone_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.))
+            });
+            ThermodynamicTemperature::new::<degree_celsius>(24.)
         }
     }
 
@@ -372,6 +395,10 @@ impl<C: PressurizationConstants> CabinZone<C> {
         self.zone_id
     }
 
+    fn set_zone_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
+        self.zone_air.set_zone_air_temperature(temperature);
+    }
+
     pub fn zone_air_temperature(&self) -> ThermodynamicTemperature {
         self.zone_air.zone_air_temperature()
     }
@@ -392,7 +419,6 @@ impl<C: PressurizationConstants> SimulationElement for CabinZone<C> {
 struct ZoneAir {
     flow_out: Air,
     internal_air: Air,
-    is_initialised: bool,
 }
 
 impl ZoneAir {
@@ -413,7 +439,6 @@ impl ZoneAir {
         Self {
             flow_out: Air::new(),
             internal_air: Air::new(),
-            is_initialised: false,
         }
     }
 
@@ -426,12 +451,6 @@ impl ZoneAir {
         number_of_open_doors: u8,
         cabin_pressure: Pressure,
     ) {
-        if !self.is_initialised {
-            self.internal_air
-                .set_temperature(context.ambient_temperature());
-            self.flow_out.set_temperature(context.ambient_temperature());
-            self.is_initialised = true;
-        }
         self.internal_air.set_pressure(cabin_pressure);
 
         let new_equilibrium_temperature = self.equilibrium_temperature_calculation(
@@ -596,6 +615,10 @@ impl ZoneAir {
         }
     }
 
+    fn set_zone_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
+        self.internal_air.set_temperature(temperature);
+    }
+
     fn zone_air_temperature(&self) -> ThermodynamicTemperature {
         self.internal_air.temperature()
     }
@@ -628,13 +651,18 @@ mod cabin_air_tests {
     use super::*;
     use crate::{
         air_conditioning::PackFlow,
+        shared::InternationalStandardAtmosphere,
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
             Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
     use std::time::Duration;
-    use uom::si::{pressure::psi, thermodynamic_temperature::degree_celsius};
+    use uom::si::{
+        length::foot,
+        pressure::{hectopascal, psi},
+        thermodynamic_temperature::degree_celsius,
+    };
 
     struct TestAirConditioningSystem {
         duct_demand_temperature: ThermodynamicTemperature,
@@ -718,6 +746,7 @@ mod cabin_air_tests {
 
         number_of_passengers: u8,
         cabin_air_simulation: CabinAirSimulation<TestConstants, 2>,
+        lgciu_gears_compressed: bool,
     }
 
     impl TestAircraft {
@@ -730,6 +759,7 @@ mod cabin_air_tests {
                     context,
                     &[ZoneType::Cockpit, ZoneType::Cabin(1)],
                 ),
+                lgciu_gears_compressed: true,
             }
         }
 
@@ -745,6 +775,10 @@ mod cabin_air_tests {
         fn set_passengers(&mut self, passengers: u8) {
             self.number_of_passengers = passengers;
         }
+
+        fn set_in_the_air(&mut self, in_the_air: bool) {
+            self.lgciu_gears_compressed = !in_the_air;
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -753,7 +787,7 @@ mod cabin_air_tests {
                 &self.air_conditioning_system,
                 Ratio::default(),
                 Ratio::default(),
-                true,
+                self.lgciu_gears_compressed,
                 [2, self.number_of_passengers],
                 0u8,
             );
@@ -826,6 +860,20 @@ mod cabin_air_tests {
             self
         }
 
+        fn ambient_pressure_of(mut self, pressure: Pressure) -> Self {
+            self.set_ambient_pressure(pressure);
+            self
+        }
+
+        fn flying(mut self, is_flying: bool) -> Self {
+            self.command(|a| a.set_in_the_air(is_flying));
+            self
+        }
+
+        fn cabin_pressure(&self) -> Pressure {
+            self.query(|a| a.cabin_air_simulation.cabin_pressure())
+        }
+
         fn cabin_temperature(&self) -> ThermodynamicTemperature {
             self.query(|a| a.cabin_air_simulation.cabin_temperature()[1])
         }
@@ -880,6 +928,27 @@ mod cabin_air_tests {
             .iterate(1);
 
         assert!((test_bed.cabin_temperature().get::<degree_celsius>() - 10.) < 1.);
+    }
+
+    #[test]
+    fn cabin_pressure_initialises_correctly() {
+        let test_bed = test_bed_with()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(-50.))
+            .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                Length::new::<foot>(39000.),
+            ))
+            .flying(true)
+            .iterate(1);
+
+        assert!(
+            (test_bed.cabin_pressure()
+                - InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                    8000.
+                )))
+            .get::<hectopascal>()
+            .abs()
+                < 50.
+        );
     }
 
     #[test]
