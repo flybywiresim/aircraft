@@ -12,8 +12,6 @@ import { AircraftPresetsList } from '../common/AircraftPresetsList';
  * Additional key events can be added in the registerIntercepts() method.
  */
 export class KeyInterceptor {
-    private eventBus: EventBus;
-
     private keyInterceptManager: KeyInterceptManager;
 
     private notification: NotificationManager;
@@ -21,8 +19,7 @@ export class KeyInterceptor {
     private dialogVisible = false;
 
     constructor(private readonly bus: EventBus) {
-        this.eventBus = bus;
-        KeyInterceptManager.getManager(this.eventBus).then((manager) => {
+        KeyInterceptManager.getManager(this.bus).then((manager) => {
             this.keyInterceptManager = manager;
             this.registerIntercepts();
         });
@@ -46,7 +43,7 @@ export class KeyInterceptor {
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
 
-        const subscriber = this.eventBus.getSubscriber<KeyEvents>();
+        const subscriber = this.bus.getSubscriber<KeyEvents>();
         subscriber.on('key_intercept').handle((keyData) => {
             switch (keyData.key) {
             case 'ENGINE_AUTO_START':
@@ -76,7 +73,7 @@ export class KeyInterceptor {
                 `<div style="font-size: 120%; text-align: left;">
                            Engine Auto Start is not supported by the A32NX.<br/>
                            <br/>                        
-                           Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
+                           Do you want to you use the flyPad's Aircraft Presets to set the aircraft to
                            <strong>"${AircraftPresetsList.getPresetName(presetID)}"</strong>?
                          </div>`,
                 'small',
