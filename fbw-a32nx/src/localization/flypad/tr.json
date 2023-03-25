@@ -158,8 +158,6 @@
       "EstimatedDurationUnit": "dakika",
       "GW": "GW",
       "GWCG": "GW CG",
-      "GW": "GW",
-      "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
       "Passengers": "Passengers",
       "Planned": "Planned",
@@ -665,3 +663,4 @@
     "Title": "Yeni Sürüm Mevcut"
   }
 }
+
