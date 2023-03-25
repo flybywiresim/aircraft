@@ -93,14 +93,24 @@ export class RawDataMapper {
         }
             break;
         case 'V':
-            waypoint.infos = new VORInfo(instrument);
+            const vorInfo = new VORInfo(instrument);
+            waypoint.infos = vorInfo;
+            vorInfo.frequencyMHz = facility.freqMHz;
+            vorInfo.frequencyBcd16 = facility.freqBCD16;
+            vorInfo.magneticVariation = facility.magneticVariation;
+            vorInfo.type = facility.type;
+            vorInfo.vorClass = facility.vorClass;
             break;
         case 'N':
-            waypoint.infos = new NDBInfo(instrument);
+            const ndbInfo = new NDBInfo(instrument);
+            waypoint.infos = ndbInfo;
+            ndbInfo.type = facility.type;
+            ndbInfo.frequencyMHz = facility.freqMHz;
             break;
         case 'W':
             waypoint.infos = new IntersectionInfo(instrument);
             break;
+        case 'R':
         default:
             waypoint.infos = new WayPointInfo(instrument);
             break;
@@ -111,7 +121,7 @@ export class RawDataMapper {
         }
 
         waypoint.infos.coordinates = new LatLongAlt(facility.lat, facility.lon, alt);
-        waypoint.additionalData = {};
+        waypoint.additionalData = { facility };
         return waypoint;
     }
 

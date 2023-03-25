@@ -11,8 +11,9 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
 import { FlowEventSync } from '@shared/FlowEventSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
+import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
-import { NearbyFacilities } from './NearbyFacilities';
 
 export class EfisSymbols {
     /** these types of legs are current not integrated into the normal symbol drawing routines */
@@ -48,20 +49,21 @@ export class EfisSymbols {
 
     private lastFpVersion;
 
-    constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController) {
+    private lastNavaidVersion = -1;
+
+    constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController, private readonly navaidTuner: NavaidTuner) {
         this.flightPlanManager = flightPlanManager;
         this.guidanceController = guidanceController;
         this.guidanceManager = guidanceController.guidanceManager;
-        this.nearby = new NearbyFacilities();
+        this.nearby = NearbyFacilities.getInstance();
     }
 
     init(): void {
         this.nearby.init();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async update(deltaTime: number): Promise<void> {
-        this.nearby.update(deltaTime);
-
         if (this.blockUpdate) {
             return;
         }
@@ -91,6 +93,8 @@ export class EfisSymbols {
         const planCentre = this.flightPlanManager.getWaypoint(planCentreIndex)?.infos.coordinates;
         const planCentreChanged = planCentre?.lat !== this.lastPlanCentre?.lat || planCentre?.long !== this.lastPlanCentre?.long;
         this.lastPlanCentre = planCentre;
+        const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
+        this.lastNavaidVersion = this.navaidTuner.navaidVersion;
 
         const activeFp = this.flightPlanManager.getCurrentFlightPlan();
         // TODO temp f-pln
@@ -126,7 +130,7 @@ export class EfisSymbols {
             this.lastEfisOption[side] = efisOption;
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
-            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
+            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged && !navaidsChanged) {
                 continue;
             }
 
@@ -187,7 +191,7 @@ export class EfisSymbols {
 
             // TODO ADIRs aligned (except in plan mode...?)
             if (efisOption === EfisOption.VorDmes) {
-                for (const vor of this.nearby.nearbyVhfNavaids.values()) {
+                for (const vor of this.nearby.getVhfNavaids()) {
                     if (vor.type !== VorType.VORDME && vor.type !== VorType.VOR && vor.type !== VorType.DME && vor.type !== VorType.VORTAC && vor.type !== VorType.TACAN) {
                         continue;
                     }
@@ -202,7 +206,7 @@ export class EfisSymbols {
                     }
                 }
             } else if (efisOption === EfisOption.Ndbs) {
-                for (const ndb of this.nearby.nearbyNdbNavaids.values()) {
+                for (const ndb of this.nearby.getNdbNavaids()) {
                     const ll = { lat: ndb.lat, long: ndb.lon };
                     if (withinEditArea(ll)) {
                         upsertSymbol({
@@ -214,7 +218,7 @@ export class EfisSymbols {
                     }
                 }
             } else if (efisOption === EfisOption.Airports) {
-                for (const ap of this.nearby.nearbyAirports.values()) {
+                for (const ap of this.nearby.getAirports()) {
                     const ll = { lat: ap.lat, long: ap.lon };
                     if (withinEditArea(ll) && hasSuitableRunway(ap)) {
                         upsertSymbol({
@@ -226,7 +230,7 @@ export class EfisSymbols {
                     }
                 }
             } else if (efisOption === EfisOption.Waypoints) {
-                for (const wp of this.nearby.nearbyWaypoints.values()) {
+                for (const wp of this.nearby.getWaypoints()) {
                     const ll = { lat: wp.lat, long: wp.lon };
                     if (withinEditArea(ll)) {
                         upsertSymbol({
@@ -446,6 +450,15 @@ export class EfisSymbols {
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
                     type: pwp.efisSymbolFlag,
+                });
+            }
+
+            for (const vor of this.navaidTuner.tunedVors) {
+                upsertSymbol({
+                    databaseId: vor.icao,
+                    ident: WayPoint.formatIdentFromIcao(vor.icao),
+                    location: { lat: vor.lat, long: vor.lon },
+                    type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.Tuned,
                 });
             }
 

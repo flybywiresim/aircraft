@@ -1,6 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
@@ -119,7 +119,9 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
     private dme = 0;
 
-    private rmpTuned = false;
+    private fm1NavDiscrete = Arinc429Register.empty();
+
+    private dmeAvailable = false;
 
     private dmeVisibilitySub = Subject.create('hidden');
 
@@ -161,8 +163,11 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
             this.updateContents();
         });
 
-        sub.on('ilsRMPTuned').whenChanged().handle((rmpTuned) => {
-            this.rmpTuned = rmpTuned;
+        // FIXME major hack: when the FM is not tuning the VORs and MMRs, the DME receiver is not tuned (goes into standby)
+        // Since we use the sim radios at the moment we can't tell that... instead we look at the FM tuning state
+        sub.on('fm1NavDiscrete').whenChanged().handle((fm1NavDiscrete) => {
+            this.fm1NavDiscrete.set(fm1NavDiscrete);
+            this.dmeAvailable = this.fm1NavDiscrete.isNormalOperation();
             this.updateContents();
         });
     }
@@ -178,7 +183,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
         let distLeading = '';
         let distTrailing = '';
-        if (this.hasDme && !this.rmpTuned) {
+        if (this.hasDme && this.dmeAvailable) {
             this.dmeVisibilitySub.set('display: inline');
             const dist = Math.round(this.dme * 10) / 10;
 
