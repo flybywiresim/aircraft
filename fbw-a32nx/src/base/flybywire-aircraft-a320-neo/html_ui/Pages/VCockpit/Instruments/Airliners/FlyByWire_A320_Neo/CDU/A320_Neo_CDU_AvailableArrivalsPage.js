@@ -319,7 +319,7 @@ class CDUAvailableArrivalsPage {
                 if (selectedApproach && availableTransitions[index]) {
                     const [approachTransition, planIndex] = availableTransitions[index];
                     if (approachTransition) {
-                        rows[2 * i + 1][0] = `${planIndex === mcdu.flightPlanManager.getApproachTransitionIndex() ? " " : "{"}${approachTransition.name}[color]cyan`;
+                        rows[2 * i + 1][0] = `${planIndex === mcdu.flightPlanManager.getApproachTransitionIndex() ? "{green} " : "{cyan}{"}${approachTransition.name}{end}`;
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachTransitionIndex(planIndex, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
