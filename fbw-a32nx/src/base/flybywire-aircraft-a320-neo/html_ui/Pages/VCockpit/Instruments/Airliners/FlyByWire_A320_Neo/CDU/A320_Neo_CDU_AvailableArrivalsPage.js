@@ -305,15 +305,23 @@ class CDUAvailableArrivalsPage {
                 selectedStarCell = selectedArrival.name;
                 selectedStarCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
             }
+
+            // we need to sort the transitions alphabetically for display, but keep track of their original index for the flightplan
+            const availableTransitions = [];
+            if (selectedApproach) {
+                availableTransitions.push(...selectedApproach.transitions.map((transition, index) => [transition, index]));
+                availableTransitions.sort(([a], [b]) => a.name.localeCompare(b.name));
+            }
+
             const rows = [[""], [""], [""], [""], [""], [""]];
             for (let i = 0; i < appr_page; i++) {
                 const index = i + pageCurrent * appr_page;
-                if (selectedApproach) {
-                    const approachTransition = selectedApproach.transitions[index];
+                if (selectedApproach && availableTransitions[index]) {
+                    const [approachTransition, planIndex] = availableTransitions[index];
                     if (approachTransition) {
-                        rows[2 * i + 1][0] = `${index === mcdu.flightPlanManager.getApproachTransitionIndex() ? " " : "{"}${approachTransition.name}[color]cyan`;
+                        rows[2 * i + 1][0] = `${planIndex === mcdu.flightPlanManager.getApproachTransitionIndex() ? " " : "{"}${approachTransition.name}[color]cyan`;
                         mcdu.onLeftInput[i + 2] = () => {
-                            mcdu.setApproachTransitionIndex(index, () => {
+                            mcdu.setApproachTransitionIndex(planIndex, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
                             });
                         };
