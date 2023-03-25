@@ -5,7 +5,7 @@ import {
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FailureGeneratorCardTemplateUI, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
@@ -37,7 +37,7 @@ export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
         onErase,
         failureGeneratorArmed,
         genName,
-        FailureGeneratorCard,
+        generatorSettingComponents,
         alias,
         disableTakeOffRearm,
     };
@@ -48,37 +48,36 @@ const onErase = (genID : number) => {
     failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
-const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext: FailureGenContext)
-=> JSX.Element = (genID : number, generatorSettings : FailureGenData, failureGenContext: FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailureChancePerTakeOff')}:`, 20, '%', 0, 100,
-        settings[genID * numberOfSettingsPerGenerator + 1], 100, false,
-        setNewSetting, generatorSettings, genID, 1, failureGenContext),
+        settings[genNumber * numberOfSettingsPerGenerator + 1], 100, false,
+        setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.LowSpeedChance')}:`, 20, '%', 0,
-        100 - settings[genID * numberOfSettingsPerGenerator + 3] * 100,
-        settings[genID * numberOfSettingsPerGenerator + 2], 100, false,
-        setNewSetting, generatorSettings, genID, 2, failureGenContext),
+        100 - settings[genNumber * numberOfSettingsPerGenerator + 3] * 100,
+        settings[genNumber * numberOfSettingsPerGenerator + 2], 100, false,
+        setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.MedSpeedChance')}:`, 20, '%', 0,
-        100 - settings[genID * numberOfSettingsPerGenerator + 2] * 100,
-        settings[genID * numberOfSettingsPerGenerator + 3], 100, false,
-        setNewSetting, generatorSettings, genID, 3, failureGenContext),
+        100 - settings[genNumber * numberOfSettingsPerGenerator + 2] * 100,
+        settings[genNumber * numberOfSettingsPerGenerator + 3], 100, false,
+        setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.MinimumSpeed')}:`, 20, t('Failures.Generators.knots'),
-        0, settings[genID * numberOfSettingsPerGenerator + 5],
-        settings[genID * numberOfSettingsPerGenerator + 4], 1, false,
-        setNewSetting, generatorSettings, genID, 4, failureGenContext),
+        0, settings[genNumber * numberOfSettingsPerGenerator + 5],
+        settings[genNumber * numberOfSettingsPerGenerator + 4], 1, false,
+        setNewSetting, generatorSettings, genNumber, 4, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.SpeedTransLowMed')}:`, 20, t('Failures.Generators.knots'),
-        settings[genID * numberOfSettingsPerGenerator + 4],
-        settings[genID * numberOfSettingsPerGenerator + 6],
-        settings[genID * numberOfSettingsPerGenerator + 5], 1, false,
-        setNewSetting, generatorSettings, genID, 5, failureGenContext),
+        settings[genNumber * numberOfSettingsPerGenerator + 4],
+        settings[genNumber * numberOfSettingsPerGenerator + 6],
+        settings[genNumber * numberOfSettingsPerGenerator + 5], 1, false,
+        setNewSetting, generatorSettings, genNumber, 5, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.MaximumSpeed')}:`, 20, t('Failures.Generators.knots'),
-        settings[genID * numberOfSettingsPerGenerator + 4], 300,
-        settings[genID * numberOfSettingsPerGenerator + 6], 1, false,
-        setNewSetting, generatorSettings, genID, 6, failureGenContext),
+        settings[genNumber * numberOfSettingsPerGenerator + 4], 300,
+        settings[genNumber * numberOfSettingsPerGenerator + 6], 1, false,
+        setNewSetting, generatorSettings, genNumber, 6, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.MaxAltAboveRunway')}:`, 24, t('Failures.Generators.feet'), 0, 10000,
-        settings[genID * numberOfSettingsPerGenerator + 7], 100, true,
-        setNewSetting, generatorSettings, genID, 7, failureGenContext)];
-    return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable, failureGenContext);
+        settings[genNumber * numberOfSettingsPerGenerator + 7], 100, true,
+        setNewSetting, generatorSettings, genNumber, 7, failureGenContext)];
+    return settingTable;
 };
 
 export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, string>) => {

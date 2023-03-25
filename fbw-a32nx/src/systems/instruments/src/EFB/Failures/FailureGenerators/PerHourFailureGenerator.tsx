@@ -5,7 +5,7 @@ import {
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FailureGeneratorCardTemplateUI, FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
@@ -35,9 +35,9 @@ export const failureGenConfigPerHour : ()=>FailureGenData = () => {
         onErase,
         failureGeneratorArmed,
         genName,
-        FailureGeneratorCard,
         alias,
         disableTakeOffRearm,
+        generatorSettingComponents,
     };
 };
 
@@ -47,12 +47,11 @@ const onErase = (_genID : number) => {
 const daysPerMonth = 30.4368 * 24;
 const daysPerYear = 365.24219 * 24;
 
-const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext)
-=> JSX.Element = (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const MTTFDisplay = () => {
-        if (settings[genID * numberOfSettingsPerGenerator + 1] <= 0) return t('Failures.Generators.Disabled');
-        const meanTimeToFailure = 1 / settings[genID * numberOfSettingsPerGenerator + 1];
+        if (settings[genNumber * numberOfSettingsPerGenerator + 1] <= 0) return t('Failures.Generators.Disabled');
+        const meanTimeToFailure = 1 / settings[genNumber * numberOfSettingsPerGenerator + 1];
         if (meanTimeToFailure >= daysPerYear * 2) return `${Math.round(meanTimeToFailure / daysPerYear)} ${t('Failures.Generators.years')}`;
         if (meanTimeToFailure >= daysPerMonth * 2) return `${Math.round(meanTimeToFailure / daysPerMonth)} ${t('Failures.Generators.months')}`;
         if (meanTimeToFailure >= 24 * 3) return `${Math.round(meanTimeToFailure / 24)} ${t('Failures.Generators.days')}`;
@@ -61,11 +60,11 @@ const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData
         return `${Math.round(meanTimeToFailure * 60 * 60)} ${t('Failures.Generators.seconds')}`;
     };
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 40, `/${t('Failures.Generators.hour')}`, 0, 60,
-        settings[genID * numberOfSettingsPerGenerator + 1], 1, false,
-        setNewSetting, generatorSettings, genID, 1, failureGenContext),
+        settings[genNumber * numberOfSettingsPerGenerator + 1], 1, false,
+        setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
     FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay(), true),
     ];
-    return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable, failureGenContext);
+    return settingTable;
 };
 
 export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, string>) => {

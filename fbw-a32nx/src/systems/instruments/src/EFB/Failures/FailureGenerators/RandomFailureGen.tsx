@@ -37,7 +37,7 @@ export type FailureGenData = {setting: string,
     onErase : (genID : number) => void,
     failureGeneratorArmed:boolean[],
     genName : string,
-    FailureGeneratorCard : (genID: number, generatorSettings: FailureGenData, failureGenContext : FailureGenContext) => JSX.Element,
+    generatorSettingComponents : (genNumber: number, generatorSettings: FailureGenData, failureGenContext : FailureGenContext) => JSX.Element[],
     alias : ()=>string,
     disableTakeOffRearm : boolean
 }
@@ -50,12 +50,20 @@ export type FailureGenContext = {
     generatorFailuresGetters : Map<number, string>,
     generatorFailuresSetters : Map<number, (value: string) => void>,
     allFailures: readonly Readonly<Failure>[],
-    generatorNameArgument : string,
-    setGeneratorNameArgument : (name : string)=>void,
     chapters : AtaChapterNumber[],
-    failureGenModalType : number,
-    setFailureGenModalType : (state : number)=>void,
+    modalContext : ModalContext,
+    setModalContext : (modalContext : ModalContext)=>void,
+    failureGenModalType : ModalGenType
+    setFailureGenModalType : (type : ModalGenType) => void,
 }
+
+export type ModalContext = {
+    failureGenData : FailureGenData,
+    genNumber : number,
+    genUniqueID : string,
+}
+
+export enum ModalGenType {None, Settings, Failures}
 
 export const flatten = (settings : number[]) => {
     let settingString = '';
@@ -117,9 +125,9 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
     const { maxFailuresAtOnce, setMaxFailuresAtOnce, allFailures } = failureGeneratorCommonFunction();
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings : Map<string, FailureGenData> = new Map();
-    const [generatorNameArgument, setGeneratorNameArgument] = useState<string>('');
     const chapters = useMemo(() => Array.from(new Set<AtaChapterNumber>(allFailures.map((it : Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b), [allFailures]);
-    const [failureGenModalType, setFailureGenModalType] = useState<number>(0);
+    const [failureGenModalType, setFailureGenModalType] = useState<ModalGenType>(ModalGenType.None);
+    const [modalContext, setModalContext] = useState<ModalContext | undefined >(undefined);
 
     allGenSettings.set(failureGenConfigAltClimb().genName, failureGenConfigAltClimb());
     allGenSettings.set(failureGenConfigAltDesc().genName, failureGenConfigAltDesc());
@@ -137,11 +145,11 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
         generatorFailuresGetters,
         generatorFailuresSetters,
         allFailures,
-        generatorNameArgument,
-        setGeneratorNameArgument,
         chapters,
         failureGenModalType,
         setFailureGenModalType,
+        modalContext,
+        setModalContext,
     };
 };
 

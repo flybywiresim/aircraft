@@ -5,7 +5,7 @@ import {
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FailureGeneratorCardTemplateUI, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
@@ -35,23 +35,22 @@ export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
         onErase,
         failureGeneratorArmed,
         genName,
-        FailureGeneratorCard,
         alias,
         disableTakeOffRearm,
+        generatorSettingComponents,
     };
 };
 
 const onErase = (_genID : number) => {
 };
 
-const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext)
-=> JSX.Element = (genID : number, generatorSettings : any, failureGenContext : FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeAboveSea')}:`, 24, t('Failures.Generators.feet'), 0, 40000,
-        settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
-        setNewSetting, generatorSettings, genID, 1, failureGenContext),
+        settings[genNumber * numberOfSettingsPerGenerator + 1], 1, true,
+        setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
     ];
-    return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable, failureGenContext);
+    return settingTable;
 };
 
 export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, string>) => {

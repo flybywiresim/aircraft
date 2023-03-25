@@ -3,7 +3,7 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import {
     eraseGenerator, FailureGenContext, FailureGenData,
-    failureGeneratorAdd, failureGeneratorsSettings, setNewSetting,
+    failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { Trash } from 'react-bootstrap-icons';
@@ -16,6 +16,13 @@ import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
     const settings = failureGeneratorsSettings();
+
+    if (settings.failureGenModalType === ModalGenType.Failures) {
+        settings.modals.showModal(GeneratorFailureSelection(settings));
+    }
+    if (settings.failureGenModalType === ModalGenType.Settings) {
+        settings.modals.showModal(FailureGeneratorDetailsUI(settings));
+    }
     return (
         <>
             <div className="flex flex-col">
@@ -75,20 +82,17 @@ export const generatorsCardList : (settings : FailureGenContext)
     settings.allGenSettings.forEach((generatorSetting) => {
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            temp.push(generatorSetting.FailureGeneratorCard(i, generatorSetting, settings));
+            temp.push(FailureGeneratorCardTemplateUI(i, generatorSetting, settings));
         }
     });
     return temp;
 };
 
 export function FailureGeneratorDetailsUI(
-    genUniqueID : string,
     failureGenContext : FailureGenContext,
-    failureGenSettings : FailureGenData,
-    settingTable : JSX.Element[],
 ) {
-    const genNumber = ExtractFirstNumber(genUniqueID);
-    failureGenContext.setFailureGenModalType(0);
+    const genNumber = ExtractFirstNumber(failureGenContext.modalContext.genUniqueID);
+    failureGenContext.setFailureGenModalType(ModalGenType.None);
     return (
         <div className="flex flex-col flex-1 px-2 pt-2 my-2 w-full text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent mx-x">
             <div
@@ -102,13 +106,13 @@ export function FailureGeneratorDetailsUI(
             <div className="flex flex-row justify-between">
                 <div className="pb-2 mr-4 w-1/3 text-left align-left">
                     <h2>
-                        {`${genUniqueID} : ${failureGenSettings.alias()}`}
+                        {`${failureGenContext.modalContext.genUniqueID} : ${failureGenContext.modalContext.failureGenData.alias()}`}
                     </h2>
                 </div>
-                {RearmSettingsUI(failureGenSettings, genNumber, setNewSetting, failureGenContext)}
+                {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
             </div>
             <div className="flex flex-row justify-start items-stretch mt-1">
-                { settingTable }
+                { failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext.failureGenData, failureGenContext) }
             </div>
         </div>
     );
@@ -117,9 +121,9 @@ export function FailureGeneratorDetailsUI(
 function ArmedState(generatorSettings : FailureGenData, genNumber : number) {
     switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber]) {
     case 0: return (<div className="bg-theme-body">Disarmed</div>);
-    case 1: return (<div className="bg-colors-yellow-400 text-theme-body">Armed (once)</div>);
-    case 2: return (<div className="bg-colors-yellow-400 text-theme-body">Armed at Take-Off</div>);
-    case 3: return (<div className="bg-colors-yellow-400 text-theme-body">Armed</div>);
+    case 1: return (<div className="text-black bg-colors-yellow">Armed (once)</div>);
+    case 2: return (<div className="text-black bg-colors-yellow">Armed at Take-Off</div>);
+    case 3: return (<div className="text-black bg-colors-yellow">Armed</div>);
     default: return (<></>);
     }
 }
@@ -142,32 +146,25 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID : strin
 }
 
 export function FailureGeneratorCardTemplateUI(
-    genID : number,
-    generatorSettings : FailureGenData,
-    settingTable : JSX.Element[],
+    genNumber : number,
+    failureGenData : FailureGenData,
     failureGenContext: FailureGenContext,
 ) {
-    const generatorUniqueID = `${generatorSettings.uniqueGenPrefix}${genID.toString()}`;
-    if (failureGenContext.failureGenModalType === 1) {
-        failureGenContext.modals.showModal(GeneratorFailureSelection(generatorUniqueID, failureGenContext));
-    }
-    if (failureGenContext.failureGenModalType === 2) {
-        failureGenContext.modals.showModal(FailureGeneratorDetailsUI(generatorUniqueID, failureGenContext, generatorSettings, settingTable));
-    }
+    const genUniqueID = `${failureGenData.uniqueGenPrefix}${genNumber.toString()}`;
     return (
         <div className="flex flex-row flex-1 justify-between px-2 pt-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
             <div className="mr-4 w-1/3 text-left align-left">
                 <div className="pb-2">
                     <h2>
-                        {`${generatorUniqueID} : ${generatorSettings.alias()}`}
+                        {`${genUniqueID} : ${failureGenData.alias()}`}
                     </h2>
                 </div>
-                {FailureShortList(failureGenContext, generatorUniqueID)}
+                {FailureShortList(failureGenContext, genUniqueID)}
             </div>
-            {ArmedState(generatorSettings, genID)}
+            {ArmedState(failureGenData, genNumber)}
             <div className="flex flex-col justify-between">
                 <div
-                    onClick={() => eraseGenerator(genID, generatorSettings, failureGenContext)}
+                    onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
                     className="flex-none p-2 rounded-md text-utility-red bg-theme-accent hover:text-theme-body hover:bg-utility-red"
                 >
                     <Trash size={26} />
@@ -177,7 +174,9 @@ export function FailureGeneratorCardTemplateUI(
                     className="flex-1 px-8 py-1 ml-2 align-baseline rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                     onClick={() => {
-                        failureGenContext.setFailureGenModalType(2);
+                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                        const test : ModalContext = { failureGenData, genNumber, genUniqueID };
+                        failureGenContext.setModalContext(test);
                     }}
                 >
                     Change settings
@@ -186,7 +185,9 @@ export function FailureGeneratorCardTemplateUI(
                     className="flex-1 px-8 py-1 ml-2 align-baseline rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                     onClick={() => {
-                        failureGenContext.setFailureGenModalType(1);
+                        failureGenContext.setFailureGenModalType(ModalGenType.Failures);
+                        const test : ModalContext = { failureGenData, genNumber, genUniqueID };
+                        failureGenContext.setModalContext(test);
                     }}
                 >
                     Assign failures
@@ -223,7 +224,7 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
                                     key={button.setting}
                                     onSelect={() => {
                                         setNewSetting(button.settingVar, generatorSettings, genID, 0);
-                                        failureGenContext.setFailureGenModalType(2);
+                                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
                                     }}
                                     selected={generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + 0] === button.settingVar}
                                 >
@@ -261,7 +262,7 @@ export function FailureGeneratorSingleSetting(title:string, width : number,
                     onBlur={(x: string) => {
                         if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
                             setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                            failureGenContext.setFailureGenModalType(2);
+                            failureGenContext.setFailureGenModalType(ModalGenType.Settings);
                         }
                     }}
                 />
