@@ -37,15 +37,6 @@
             <ANIMREF_ID>-1</ANIMREF_ID>
             <ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
             <ANIM_NAME_PUSH>AUTOPILOT_Knob_Baro_#ID#_push#SUFFIX_ID#</ANIM_NAME_PUSH>
-            <MODE_QNH>0</MODE_QNH>
-            <MODE_STD>1</MODE_STD>
-            <!-- this can't be represented in RNP (yet...?), so we use this escape hatch -->
-            <SET_QNH_CODE>
-                2 (O:A32NX_ISIS_BARO_SAVED, number) (&gt;K:2:KOHLSMAN_SET)
-            </SET_QNH_CODE>
-            <SET_STD_CODE>
-                2 16211 (&gt;K:2:KOHLSMAN_SET)
-            </SET_STD_CODE>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
@@ -54,12 +45,10 @@
                     (L:A32NX_ISIS_BUGS_ACTIVE, enum) 1 == if{
                         0 (&gt;H:A32NX_ISIS_KNOB_ANTI_CLOCKWISE)
                     } els{
-                        (L:A32NX_ISIS_BARO_MODE, enum) #MODE_STD# != if{
-                            (L:A32NX_ISIS_BARO_UNIT_INHG, enum) if{
-                                2 (&gt;K:KOHLSMAN_DEC)
-                            } els{
-                                2 (A:KOHLSMAN SETTING MB:2, millibars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
-                            }
+                        (L:A32NX_ISIS_BARO_UNIT_INHG, enum) if{
+                            2 (&gt;K:KOHLSMAN_DEC)
+                        } els{
+                            2 (A:KOHLSMAN SETTING MB:2, millibars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
                         }
                     }
                 </ANTICLOCKWISE_CODE>
@@ -68,30 +57,23 @@
                     (L:A32NX_ISIS_BUGS_ACTIVE, enum) 1 == if{
                         0 (&gt;H:A32NX_ISIS_KNOB_CLOCKWISE)
                     } els{
-                        (L:A32NX_ISIS_BARO_MODE, enum) #MODE_STD# != if{
-                            (L:A32NX_ISIS_BARO_UNIT_INHG, enum) if{
-                                2 (&gt;K:KOHLSMAN_INC)
-                            } els{
-                                2 (A:KOHLSMAN SETTING MB:2, millibars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
-                            }
+                        (L:A32NX_ISIS_BARO_UNIT_INHG, enum) if{
+                            2 (&gt;K:KOHLSMAN_INC)
+                        } els{
+                            2 (A:KOHLSMAN SETTING MB:2, millibars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
                         }
                     }
                 </CLOCKWISE_CODE>
                 <LEFT_SINGLE_CODE type="rnp">
                     alias bugsActive = (L:A32NX_ISIS_BUGS_ACTIVE, bool);
-                    alias baroMode = (L:A32NX_ISIS_BARO_MODE, enum);
-                    alias baroSetting = (A:KOHLSMAN SETTING MB:2, bars);
-                    alias baroSaved = (O:A32NX_ISIS_BARO_SAVED, number);
+                    alias stdAltMode = (A:KOHLSMAN SETTING STD:2, bool);
 
                     if bugsActive {
                         (H:A32NX_ISIS_KNOB_PRESSED, number) = 0;
-                    } else if baroMode == #MODE_QNH, number# {
-                        baroMode = #MODE_STD, number#;
-                        baroSaved = baroSetting * 16000;
-                        #SET_STD_CODE#;
+                    } else if !stdAltMode {
+                        stdAltMode = true;
                     } else {
-                        baroMode = #MODE_QNH, number#;
-                        #SET_QNH_CODE#;
+                        stdAltMode = false;
                     }
                 </LEFT_SINGLE_CODE>
                 <WWISE_EVENT>rmpknob</WWISE_EVENT>

@@ -1,6 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { BaroHandler } from 'extras-host/modules/baro_handler/BaroHandler';
 import { EventBus, HEventPublisher } from 'msfssdk';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
@@ -32,6 +33,8 @@ class ExtrasHost extends BaseInstrument {
 
     private readonly keyInterceptor: KeyInterceptor;
 
+    private readonly baroHandler: BaroHandler;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -48,6 +51,7 @@ class ExtrasHost extends BaseInstrument {
 
         this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus);
+        this.baroHandler = new BaroHandler(this.bus);
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -69,6 +73,7 @@ class ExtrasHost extends BaseInstrument {
 
         this.versionCheck.connectedCallback();
         this.keyInterceptor.connectedCallback();
+        this.baroHandler.connectedCallback();
     }
 
     public Update(): void {

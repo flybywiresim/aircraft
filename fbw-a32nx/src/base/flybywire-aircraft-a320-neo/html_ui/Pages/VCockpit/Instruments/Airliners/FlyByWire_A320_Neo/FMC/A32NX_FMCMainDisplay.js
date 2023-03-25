@@ -183,6 +183,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincMissedThrustReductionAltitude = FmArinc429OutputWord.empty("MISSED_THR_RED_ALT");
         this.arincMissedAccelerationAltitude = FmArinc429OutputWord.empty("MISSED_ACC_ALT");
         this.arincMissedEoAccelerationAltitude = FmArinc429OutputWord.empty("MISSED_EO_ACC_ALT");
+        this.arincTransitionAltitude = FmArinc429OutputWord.empty("TRANS_ALT");
+        this.arincTransitionLevel = FmArinc429OutputWord.empty("TRANS_LEVEL");
 
         /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
         this.arincBusOutputs = [
@@ -198,6 +200,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.arincMissedThrustReductionAltitude,
             this.arincMissedAccelerationAltitude,
             this.arincMissedEoAccelerationAltitude,
+            this.arincTransitionAltitude,
+            this.arincTransitionLevel,
         ];
     }
 
@@ -508,11 +512,14 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
         SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
 
+        SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", 0);
+
         SimVar.SetSimVarValue(
             "L:A32NX_FG_ALTITUDE_CONSTRAINT",
             "feet",
             this.constraintAlt
         );
+        // FIXME these don't belong in FM
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", 0);
@@ -589,6 +596,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.toSpeedsChecks();
             this.thrustReductionAccelerationChecks();
             this.updateThrustReductionAcceleration();
+            this.updateTransitionAltitudes();
 
             this.updateIlsCourse();
         }
@@ -2865,6 +2873,19 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.flightPlanManager.setOriginTransitionAltitude(value);
         return true;
+    }
+
+    updateTransitionAltitudes() {
+        this.arincTransitionAltitude.setBnrValue(
+            this.flightPlanManager.originTransitionAltitude !== undefined ? this.flightPlanManager.originTransitionAltitude : 0,
+            this.flightPlanManager.originTransitionAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            17, 131072, 0,
+        );
+        this.arincTransitionLevel.setBnrValue(
+            (this.flightPlanManager.destinationTransitionLevel !== undefined ? this.flightPlanManager.destinationTransitionLevel : 0) * 100,
+            this.flightPlanManager.destinationTransitionLevel !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            17, 131072, 0,
+        );
     }
 
     /**

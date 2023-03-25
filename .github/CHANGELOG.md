@@ -76,6 +76,7 @@
 1. [MCDU] Implemented NAVAID page - @tracernz (Mike)
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
+1. [MISC] Handle the BAROMETRIC (B) key event and set QNH/STD depending on FMS data - @tracernz (Mike)
 
 ## 0.9.0
 

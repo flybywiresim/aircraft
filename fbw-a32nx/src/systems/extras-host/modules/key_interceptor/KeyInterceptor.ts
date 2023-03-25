@@ -42,6 +42,8 @@ export class KeyInterceptor {
     private registerIntercepts() {
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
         this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
+        // block the sim from handling the B key event, and instead it will be published on the bus for BaroHandler
+        this.keyInterceptManager.interceptKey('BAROMETRIC', false);
 
         const subscriber = this.bus.getSubscriber<KeyEvents>();
         subscriber.on('key_intercept').handle((keyData) => {
