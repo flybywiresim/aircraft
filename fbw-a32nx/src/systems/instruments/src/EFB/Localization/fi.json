@@ -9,11 +9,11 @@
     "SetActive": "Aseta aktiiviseksi",
     "SetStandby": "Aseta valmiustilaan",
     "ShowAll": "Kaikki",
-    "ShowApproach": "Saapuminen",
+    "ShowApproach": "Lähestyminen",
     "ShowAtis": "ATIS",
-    "ShowDelivery": "Kuljetus",
+    "ShowDelivery": "Selvitys",
     "ShowDeparture": "Lähtö",
-    "ShowGround": "Maa",
+    "ShowGround": "Rullaus",
     "ShowRadar": "Tutka",
     "ShowTower": "Torni",
     "Standby": "Valmiustila",
@@ -66,7 +66,7 @@
         "Raw": "Raakalukema",
         "TT": {
           "SwitchToIconView": "Vaihda kuvakenäkymään",
-          "SwitchToRawMetarView": "Vaihda Raw METAR -näkymään"
+          "SwitchToRawMetarView": "Vaihda raakalukema METAR-näkymään"
         },
         "Temperature": "Lämpötila",
         "Title": "Sää",
@@ -98,7 +98,7 @@
       "YouHaveNotYetImportedAnySimBriefData": "Et ole vielä tuonut dataa SimBriefistä."
     },
     "Overview": {
-      "ActualGW": "Actual GW",
+      "ActualGW": "Todellinen GW",
       "Engines": "Moottorit",
       "MMO": "Suurin lentonopeus (mach)",
       "MRW": "Suurin sallittu paino maassa (MRW)",
@@ -148,7 +148,7 @@
       "Unavailable": "Ei saatavilla"
     },
     "Payload": {
-      "BoardingTime": "Koneeseen nousun kesto",
+      "BoardingTime": "Koneeseennousun kesto",
       "Cargo": "Cargo",
       "Current": "Current",
       "DeboardConfirmationBody": "Vahvista kaikkien matkustajien poisto",
@@ -372,7 +372,7 @@
       "PleaseConfirmLoadingOfPreset": "Vahvista esiasetuksen lataaminen.",
       "Powered": "Kytketty virtaan",
       "ReadyPushback": "Valmiina työntöön",
-      "ReadyTakeoff": "Selvä lentoonlähtöön",
+      "ReadyTakeoff": "Valmis lentoonlähtöön",
       "ReadyTaxi": "Valmis rullaamaan",
       "SelectAPresetToLoad": "Valitse ladattava esiasetus",
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "Lentokoneen on oltava maassa esiasetuksen lataamiseksi.",
@@ -457,10 +457,10 @@
     "FinishBoarding": "Finish Boarding",
     "OnScreenKeyboard": "OnScreen Keyboard",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Yhdistetty",
+    "SimBridgeConnecting": "Yhdistetään...",
+    "SimBridgeOff": "Pois päältä",
+    "SimBridgeOffline": "Ei saatavilla",
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
@@ -472,7 +472,7 @@
       "SimBridge": "Control SimBridge Connection",
       "Sleep": "Standby"
     },
-    "Title": "Quick Controls"
+    "Title": "Pika-asetukset"
   },
   "Settings": {
     "About": {
@@ -516,21 +516,21 @@
     },
     "Audio": {
       "Announcements": "Ilmoitukset",
-      "BoardingMusic": "Koneeseen nousemismusiikki",
+      "BoardingMusic": "Koneeseennousumusiikki",
       "EngineInteriorVolume": "Koneen sisällä kuuluva moottorin ääni",
       "ExteriorMasterVolume": "Ulkoiset äänet",
       "PassengerAmbience": "Matkustajien äänet",
       "PtuAudibleInCockpit": "PTU-ääni kuultavissa ohjaamossa",
       "Title": "Äänet",
-      "WindInteriorVolume": "Tuulen ääni sisällä"
+      "WindInteriorVolume": "Tuulen äänenvoimakkuus sisällä"
     },
     "Fast": "Nopea",
     "Instant": "Välitön",
     "Real": "Todellinen",
     "Realism": {
-      "AdirsAlignTime": "ADIRS:in käynnistymisen kesto",
+      "AdirsAlignTime": "ADIRS:in kohdistuksen kesto",
       "AutofillChecklists": "Tarkistuslistan täyttö automaattisesti",
-      "BoardingTime": "Boarding-aika",
+      "BoardingTime": "Koneeseennousuaika",
       "DmcSelfTestTime": "DMC itsenäisen testauksen aika",
       "FirstOfficerAvatar": "Näytä perämiehen hahmo",
       "HomeCockpitMode": "Kotiohjaamo-tila",
@@ -549,7 +549,7 @@
       "Both": "Synkronoitu",
       "Calibrate": "Kalibroi",
       "Captain": "Kapteeni",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "CockpitSeatUsedToControl": "Ohjaamon istuin, jota käytetään ohjaamiseen",
       "ConesEnabled": "Varoituskartiot",
       "Copilot": "Lentoperämies",
       "DefaultBarometerUnit": "Paineen oletusyksikkö",
@@ -568,7 +568,7 @@
       "SimBridgePort": "Ulkoinen SimBridge palvelinyhteys",
       "SyncMsfsFlightPlan": "Synkronoi MSFS lentosuunnitelma",
       "ThrottleDetents": "Kaasupykälät",
-      "Title": "Sim -asetukset",
+      "Title": "Simulaattorin asetukset",
       "UseCalculatedIlsSignals": "Käytä laskettuja ILS-signaaleja",
       "WheelChocksEnabled": "Pyöräkiilat",
       "inHg": "inHg"
@@ -583,8 +583,8 @@
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Haluatko varmasti palauttaa nykyiset kaasuasetukset niiden vakiotilaan? Palautusta ei voi peruuttaa.",
       "Axis": "Akseli",
       "Back": "Takaisin",
-      "ConfigureEnd": "Määritä end",
-      "ConfigureStart": "Konfiguroi Start",
+      "ConfigureEnd": "Määritä loppu",
+      "ConfigureStart": "Määritä alku",
       "CurrentValue": "Nykyinen arvo",
       "Deadband": "Neutraali alue",
       "ErrorOverlapMsg": "on päällekkäin",
@@ -597,7 +597,7 @@
       "ReverserOnAxis": "Moottorijarrutus akselilla",
       "SaveAndApply": "Tallenna ja käytä",
       "SetFromThrottle": "Aseta kaasukahvasta",
-      "ThrottleConfigurationReset": "Nollaa kaasun konfigurointi"
+      "ThrottleConfigurationReset": "Nollaa kaasun määritys"
     },
     "Title": "Asetukset",
     "Unrealistic": "Epärealistinen",
@@ -631,7 +631,7 @@
     "Feb": "Helmi",
     "Fri": "pe",
     "Jan": "Tammi",
-    "Jul": "Hei",
+    "Jul": "Heinä",
     "Jun": "Kesä",
     "Mar": "Maalis",
     "May": "Touko",
@@ -645,7 +645,7 @@
       "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Yhdistetty SimBridgeen",
       "DisconnectedFromLocalApi": "Yhteys katkaistu SimBridgeen",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "Avaa pika-asetukset klikkaamalla",
       "TurnOffOrShutdownEfb": "Sammuta tai sulje EFB"
     },
     "Thu": "to",
