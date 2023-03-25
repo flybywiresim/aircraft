@@ -7,12 +7,11 @@ import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, rangeSettings, Efi
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { FlowEventSync } from '@shared/FlowEventSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { Airport, AltitudeDescriptor, LegType, Runway, WaypointDescriptor } from 'msfs-navdata';
+import { Airport, AltitudeDescriptor, LegType, Runway, RunwaySurfaceType, VhfNavaidType, WaypointDescriptor } from 'msfs-navdata';
 import { MathUtils } from '@shared/MathUtils';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
@@ -20,8 +19,7 @@ import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { RunwaySurface, VorType } from '../types/fstypes/FSEnums';
-import { NearbyFacilities } from './NearbyFacilities';
+import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -52,7 +50,7 @@ export class EfisSymbols {
 
     constructor(guidanceController: GuidanceController) {
         this.guidanceController = guidanceController;
-        this.nearby = new NearbyFacilities();
+        this.nearby = NearbyFacilities.getInstance();
     }
 
     init(): void {
@@ -137,22 +135,8 @@ export class EfisSymbols {
 
         const planCentreChanged = termination?.lat !== this.lastPlanCentre?.lat || termination?.long !== this.lastPlanCentre?.long;
 
-        const hasSuitableRunway = (airport: RawAirport): boolean => {
-            for (const runway of airport.runways) {
-                switch (runway.surface) {
-                case RunwaySurface.Asphalt:
-                case RunwaySurface.Bituminous:
-                case RunwaySurface.Concrete:
-                case RunwaySurface.Tarmac:
-                    if (runway.length >= 1500 && runway.width >= 30) {
-                        return true;
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-            return false;
+        const hasSuitableRunway = (airport: Airport): boolean => {
+            return airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
         };
 
         for (const side of EfisSymbols.sides) {
@@ -234,52 +218,49 @@ export class EfisSymbols {
 
             // TODO ADIRs aligned (except in plan mode...?)
             if (efisOption === EfisOption.VorDmes) {
-                for (const vor of this.nearby.nearbyVhfNavaids.values()) {
-                    if (vor.type !== VorType.VORDME && vor.type !== VorType.VOR && vor.type !== VorType.DME && vor.type !== VorType.VORTAC && vor.type !== VorType.TACAN) {
+                for (const vor of this.nearby.getVhfNavaids()) {
+                    const symbolType = this.vorDmeTypeFlag(vor.type);
+                    if (symbolType === 0) {
                         continue;
                     }
-                    const ll = { lat: vor.lat, long: vor.lon };
-                    if (withinEditArea(ll)) {
+                    if (withinEditArea(vor.location)) {
                         upsertSymbol({
-                            databaseId: vor.icao,
-                            ident: vor.icao.substring(7, 12),
-                            location: ll,
+                            databaseId: vor.databaseId,
+                            ident: vor.ident,
+                            location: vor.location,
                             type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.EfisOption,
                         });
                     }
                 }
             } else if (efisOption === EfisOption.Ndbs) {
-                for (const ndb of this.nearby.nearbyNdbNavaids.values()) {
-                    const ll = { lat: ndb.lat, long: ndb.lon };
-                    if (withinEditArea(ll)) {
+                for (const ndb of this.nearby.getNdbNavaids()) {
+                    if (withinEditArea(ndb.location)) {
                         upsertSymbol({
-                            databaseId: ndb.icao,
-                            ident: ndb.icao.substring(7, 12),
-                            location: ll,
+                            databaseId: ndb.databaseId,
+                            ident: ndb.ident,
+                            location: ndb.location,
                             type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.EfisOption,
                         });
                     }
                 }
             } else if (efisOption === EfisOption.Airports) {
-                for (const ap of this.nearby.nearbyAirports.values()) {
-                    const ll = { lat: ap.lat, long: ap.lon };
-                    if (withinEditArea(ll) && hasSuitableRunway(ap)) {
+                for (const ap of this.nearby.getAirports()) {
+                    if (withinEditArea(ap.location) && hasSuitableRunway(ap)) {
                         upsertSymbol({
-                            databaseId: ap.icao,
-                            ident: ap.icao.substring(7, 12),
-                            location: ll,
+                            databaseId: ap.databaseId,
+                            ident: ap.ident,
+                            location: ap.location,
                             type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.EfisOption,
                         });
                     }
                 }
             } else if (efisOption === EfisOption.Waypoints) {
-                for (const wp of this.nearby.nearbyWaypoints.values()) {
-                    const ll = { lat: wp.lat, long: wp.lon };
-                    if (withinEditArea(ll)) {
+                for (const wp of this.nearby.getWaypoints()) {
+                    if (withinEditArea(wp.location)) {
                         upsertSymbol({
-                            databaseId: wp.icao,
-                            ident: wp.icao.substring(7, 12),
-                            location: ll,
+                            databaseId: wp.databaseId,
+                            ident: wp.ident,
+                            location: wp.location,
                             type: NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.EfisOption,
                         });
                     }
@@ -526,7 +507,7 @@ export class EfisSymbols {
 
             if (leg.definition.altitudeDescriptor > 0 && leg.definition.altitudeDescriptor < 6) {
                 // TODO vnav to predict
-                type |= NdSymbolTypeFlags.ConstraintUnknown;
+                type |= NdSymbolTypeFlags.Constraint;
             }
 
             if (efisOption === EfisOption.Constraints) {
@@ -627,71 +608,19 @@ export class EfisSymbols {
         return ret;
     }
 
-    private generatePathVectorSymbol(vector: PathVector): NdSymbol {
-        let typeVectorPart: number;
-        if (vector.type === PathVectorType.Line) {
-            typeVectorPart = NdSymbolTypeFlags.FlightPlanVectorLine;
-        } else if (vector.type === PathVectorType.Arc) {
-            typeVectorPart = NdSymbolTypeFlags.FlightPlanVectorArc;
-        } else if (vector.type === PathVectorType.DebugPoint) {
-            typeVectorPart = NdSymbolTypeFlags.FlightPlanVectorDebugPoint;
-        }
-
-        // FIXME https://cdn.discordapp.com/attachments/845070631644430359/911876826169741342/brabs.gif
-        const id = Math.round(Math.random() * 10_000).toString();
-
-        const symbol: NdSymbol = {
-            databaseId: id,
-            ident: vector.type === PathVectorType.DebugPoint ? vector.annotation : id,
-            type: NdSymbolTypeFlags.ActiveFlightPlanVector | typeVectorPart,
-            location: vector.startPoint,
-        };
-
-        if (vector.type === PathVectorType.Line) {
-            symbol.lineEnd = vector.endPoint;
-        }
-
-        if (vector.type === PathVectorType.Arc) {
-            symbol.arcEnd = vector.endPoint;
-            symbol.arcRadius = distanceTo(vector.startPoint, vector.centrePoint);
-            symbol.arcSweepAngle = vector.sweepAngle;
-        }
-
-        return symbol;
-    }
-
-    private vorDmeTypeFlag(type: VorType): NdSymbolTypeFlags {
+    private vorDmeTypeFlag(type: VhfNavaidType): NdSymbolTypeFlags {
         switch (type) {
-        case VorType.VORDME:
-        case VorType.VORTAC:
+        case VhfNavaidType.VorDme:
+        case VhfNavaidType.Vortac:
             return NdSymbolTypeFlags.VorDme;
-        case VorType.VOR:
+        case VhfNavaidType.Vor:
             return NdSymbolTypeFlags.Vor;
-        case VorType.DME:
-        case VorType.TACAN:
+        case VhfNavaidType.Dme:
+        case VhfNavaidType.Tacan:
             return NdSymbolTypeFlags.Dme;
         default:
             return 0;
         }
-    }
-
-    private findPointFromEndOfPath(path: Geometry, distanceFromEnd: NauticalMiles): Coordinates | undefined {
-        let accumulator = 0;
-
-        // FIXME take transitions into account on newer FMSs
-        for (const [, leg] of path.legs) {
-            accumulator += leg.distance;
-
-            if (accumulator > distanceFromEnd) {
-                const distanceFromEndOfLeg = distanceFromEnd - (accumulator - leg.distance);
-
-                return leg.getPseudoWaypointLocation(distanceFromEndOfLeg);
-            }
-        }
-
-        // console.error(`[VNAV/findPointFromEndOfPath] ${distanceFromEnd.toFixed(2)}nm is larger than the total lateral path.`);
-
-        return undefined;
     }
 
     private calculateEditArea(range: EfisNdRangeValue, mode: EfisNdMode): [number, number, number] {
