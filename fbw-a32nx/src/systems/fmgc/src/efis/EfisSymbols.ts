@@ -20,6 +20,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
+import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -48,7 +49,9 @@ export class EfisSymbols {
 
     private lastFpVersions: Record<number, number> = {};
 
-    constructor(guidanceController: GuidanceController) {
+    private lastNavaidVersion = -1;
+
+    constructor(guidanceController: GuidanceController, private readonly navaidTuner: NavaidTuner) {
         this.guidanceController = guidanceController;
         this.nearby = NearbyFacilities.getInstance();
     }
@@ -107,12 +110,14 @@ export class EfisSymbols {
         const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
         const planCentreInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
 
+        // FIXME can't have these early returns as it breaks non-fpln stuff
         if (!FlightPlanService.has(planCentreFpIndex)) {
             return;
         }
 
         const plan = planCentreInAlternate ? FlightPlanService.get(planCentreFpIndex).alternateFlightPlan : FlightPlanService.get(planCentreFpIndex);
 
+        // FIXME as above
         if (!plan.hasElement(planCentreIndex)) {
             return;
         }
@@ -135,6 +140,9 @@ export class EfisSymbols {
 
         const planCentreChanged = termination?.lat !== this.lastPlanCentre?.lat || termination?.long !== this.lastPlanCentre?.long;
 
+        const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
+        this.lastNavaidVersion = this.navaidTuner.navaidVersion;
+
         const hasSuitableRunway = (airport: Airport): boolean => {
             return airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
         };
@@ -152,7 +160,7 @@ export class EfisSymbols {
             this.lastEfisOption[side] = efisOption;
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
-            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
+            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged && !navaidsChanged) {
                 continue;
             }
 
@@ -388,6 +396,24 @@ export class EfisSymbols {
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
                     type: pwp.efisSymbolFlag,
+                });
+            }
+
+            for (const ndb of this.navaidTuner.tunedNdbs) {
+                upsertSymbol({
+                    databaseId: ndb.databaseId,
+                    ident: ndb.ident,
+                    location: ndb.location,
+                    type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.Tuned,
+                });
+            }
+
+            for (const vor of this.navaidTuner.tunedVors) {
+                upsertSymbol({
+                    databaseId: vor.databaseId,
+                    ident: vor.ident,
+                    location: vor.location,
+                    type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.Tuned,
                 });
             }
 
