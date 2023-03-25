@@ -62,7 +62,7 @@ const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData
     };
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 40, `/${t('Failures.Generators.hour')}`, 0, 60,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, false,
-        setNewSetting, generatorSettings, genID, 1, failureGenContext.modals),
+        setNewSetting, generatorSettings, genID, 1, failureGenContext),
     FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay(), true),
     ];
     return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable, failureGenContext);

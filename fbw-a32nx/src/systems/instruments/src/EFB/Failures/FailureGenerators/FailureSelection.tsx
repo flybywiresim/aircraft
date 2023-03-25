@@ -53,6 +53,18 @@ export const setSelectedFailure = (failure : Failure, genIDToChange : string, fa
 const regexLetter = /\D{1,2}/;
 const regexNumber = /\d{1,2}/;
 
+export function ExtractFirstLetter(generatorUniqueID : string) {
+    const letterTable = generatorUniqueID.match(regexLetter);
+    if (letterTable && letterTable.length > 0) return letterTable[0];
+    return '';
+}
+
+export function ExtractFirstNumber(generatorUniqueID : string) {
+    const numberTable = generatorUniqueID.match(regexNumber);
+    if (numberTable && numberTable.length > 0) return parseInt(numberTable[0]);
+    return undefined;
+}
+
 export const deleteGeneratorFailures = (generatorSettings : FailureGenData, failureGenContext:FailureGenContext, generatorUniqueIDRemoved: string) => {
     const letterTable = generatorUniqueIDRemoved.match(regexLetter);
     const numberTable = generatorUniqueIDRemoved.match(regexNumber);

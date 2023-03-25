@@ -53,6 +53,8 @@ export type FailureGenContext = {
     generatorNameArgument : string,
     setGeneratorNameArgument : (name : string)=>void,
     chapters : AtaChapterNumber[],
+    failureGenModalType : number,
+    setFailureGenModalType : (state : number)=>void,
 }
 
 export const flatten = (settings : number[]) => {
@@ -117,6 +119,7 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
     const allGenSettings : Map<string, FailureGenData> = new Map();
     const [generatorNameArgument, setGeneratorNameArgument] = useState<string>('');
     const chapters = useMemo(() => Array.from(new Set<AtaChapterNumber>(allFailures.map((it : Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b), [allFailures]);
+    const [failureGenModalType, setFailureGenModalType] = useState<number>(0);
 
     allGenSettings.set(failureGenConfigAltClimb().genName, failureGenConfigAltClimb());
     allGenSettings.set(failureGenConfigAltDesc().genName, failureGenConfigAltDesc());
@@ -137,6 +140,8 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
         generatorNameArgument,
         setGeneratorNameArgument,
         chapters,
+        failureGenModalType,
+        setFailureGenModalType,
     };
 };
 

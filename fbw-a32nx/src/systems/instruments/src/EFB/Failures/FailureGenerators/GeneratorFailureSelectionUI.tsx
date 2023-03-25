@@ -1,9 +1,7 @@
 import React from 'react';
 import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { findGeneratorFailures, selectAllFailureChapter, selectAllFailures, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { ArrowLeft } from 'react-bootstrap-icons';
 import { Failure } from 'failures/src/failures-orchestrator';
-import { Link } from 'react-router-dom';
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import { t } from 'instruments/src/EFB/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
@@ -11,17 +9,24 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 export function GeneratorFailureSelection(genID: string, failureGenContext: FailureGenContext): JSX.Element {
     const generatorFailureTable: Failure[] = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, genID);
-
+    failureGenContext.setFailureGenModalType(0);
     return (
-        <div className="flex flex-col justify-center items-start py-2 px-8 w-full border-2 bg-theme-body border-theme-accent">
-            <Link to="/failures/failuregenerators/" className="inline-block w-full">
-                <div className="flex flex-row items-start space-x-3 text-left transition duration-100 hover:text-theme-highlight">
-                    <ArrowLeft size={30} />
-                    <h1 className="font-bold text-current">
-                        {t('Failures.Generators.FailureSelection')}
-                    </h1>
-                </div>
-            </Link>
+        <div className="flex flex-col justify-center items-start py-2 px-8 w-3/4 border-2 bg-theme-body border-theme-accent">
+            <div className="flex flex-row items-start space-x-3 text-left transition duration-100 hover:text-theme-highlight">
+                <h1 className="font-bold text-current">
+                    {t('Failures.Generators.FailureSelection')}
+                </h1>
+            </div>
+            <div
+                className="flex justify-center items-center py-2 px-8 w-full text-center rounded-md border-2
+                    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
+                    border-theme-accent hover:border-theme-highlight"
+                onClick={() => {
+                    failureGenContext.modals.popModal();
+                }}
+            >
+                {t('Failures.Generators.Close')}
+            </div>
             <div className="flex flex-row justify-between ml-10 w-full">
                 <div className="text-left">{t('Failures.Generators.FailureSelectionText')}</div>
                 <div
@@ -30,14 +35,20 @@ export function GeneratorFailureSelection(genID: string, failureGenContext: Fail
                     <div className="ml-2"><h2>(</h2></div>
                     <div
                         className="mx-2"
-                        onClick={() => selectAllFailures(failureGenContext, genID, true)}
+                        onClick={() => {
+                            selectAllFailures(failureGenContext, genID, true);
+                            failureGenContext.setFailureGenModalType(1);
+                        }}
                     >
                         <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
                     </div>
                     <div><h2>/</h2></div>
                     <div
                         className="mx-2 hover:text-theme-highlight"
-                        onClick={() => selectAllFailures(failureGenContext, genID, false)}
+                        onClick={() => {
+                            selectAllFailures(failureGenContext, genID, false);
+                            failureGenContext.setFailureGenModalType(1);
+                        }}
                     >
                         <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
                     </div>
@@ -55,14 +66,20 @@ export function GeneratorFailureSelection(genID: string, failureGenContext: Fail
                                 <div className="ml-2"><h2>(</h2></div>
                                 <div
                                     className="mx-2 hover:text-theme-highlight"
-                                    onClick={() => selectAllFailureChapter(chapter, failureGenContext, genID, true)}
+                                    onClick={() => {
+                                        selectAllFailureChapter(chapter, failureGenContext, genID, true);
+                                        failureGenContext.setFailureGenModalType(1);
+                                    }}
                                 >
                                     <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
                                 </div>
                                 <div><h2>/</h2></div>
                                 <div
                                     className="mx-2 hover:text-theme-highlight"
-                                    onClick={() => selectAllFailureChapter(chapter, failureGenContext, genID, false)}
+                                    onClick={() => {
+                                        selectAllFailureChapter(chapter, failureGenContext, genID, false);
+                                        failureGenContext.setFailureGenModalType(1);
+                                    }}
                                 >
                                     <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
                                 </div>
@@ -88,6 +105,7 @@ function FailureATAList(failureGenContext: FailureGenContext, generatorFailureTa
                         value={active}
                         onToggle={() => {
                             setSelectedFailure(failure, genID, failureGenContext, !active);
+                            failureGenContext.setFailureGenModalType(1);
                         }}
                     />
                     <div className="pl-8">{failure.name}</div>

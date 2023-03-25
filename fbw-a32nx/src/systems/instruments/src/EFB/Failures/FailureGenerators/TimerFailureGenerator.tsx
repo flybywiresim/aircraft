@@ -51,7 +51,7 @@ const FailureGeneratorCard : (genID : number, generatorSettings : FailureGenData
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.DelayAfterArming')}:`, 40, t('Failures.Generators.seconds'), 0, 10000,
         settings[genID * numberOfSettingsPerGenerator + 1], 1, true,
-        setNewSetting, generatorSettings, genID, 1, failureGenContext.modals),
+        setNewSetting, generatorSettings, genID, 1, failureGenContext),
     ];
     return FailureGeneratorCardTemplateUI(genID, generatorSettings, settingTable, failureGenContext);
 };
