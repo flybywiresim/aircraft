@@ -6,7 +6,7 @@ import {
     failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { Airplane, ArrowBarUp, ExclamationDiamond, Repeat, Repeat1, Sliders2Vertical, ToggleOff, Trash } from 'react-bootstrap-icons';
+import { Airplane, ArrowBarUp, ExclamationDiamond, PlusLg, Repeat, Repeat1, Sliders2Vertical, ToggleOff, Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
@@ -45,7 +45,7 @@ export const FailureGeneratorsUI = () => {
                         onClick={() => failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings)}
                         className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                     >
-                        <h2>{t('Failures.Generators.Add')}</h2>
+                        <PlusLg />
                     </div>
                 </div>
                 <div className="flex items-center">

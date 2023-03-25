@@ -68,33 +68,43 @@ export function ExtractFirstNumber(generatorUniqueID : string) {
 export const deleteGeneratorFailures = (generatorSettings : FailureGenData, failureGenContext:FailureGenContext, generatorUniqueIDRemoved: string) => {
     const letterTable = generatorUniqueIDRemoved.match(regexLetter);
     const numberTable = generatorUniqueIDRemoved.match(regexNumber);
+    console.info(letterTable);
+    console.info(numberTable);
     if (letterTable && letterTable.length > 0 && numberTable && numberTable.length > 0) {
         const removedLetter = letterTable[0];
         const removedNumber = parseInt(numberTable[0]);
         if (failureGenContext.allFailures.length > 0) {
             failureGenContext.allFailures.forEach((failure) => {
                 let first = true;
-                const generatorSetting = failureGenContext.generatorFailuresGetters.get(failure.identifier);
+                const generatorListString = failureGenContext.generatorFailuresGetters.get(failure.identifier);
+                console.info(generatorListString);
                 let newString = '';
-                if (generatorSetting) {
-                    const failureGeneratorsTable = generatorSetting.split(',');
+                if (generatorListString) {
+                    const failureGeneratorsTable = generatorListString.split(',');
                     if (failureGeneratorsTable.length > 0) {
                         failureGeneratorsTable.forEach((generator) => {
+                            console.info(generator);
                             const genLetterTable = generator.match(regexLetter);
                             const genNumberTable = generator.match(regexNumber);
-                            if (genLetterTable && genLetterTable.length > 0 && genNumberTable && genNumberTable.length > 0) {
+                            console.info(genLetterTable);
+                            console.info(genNumberTable);
+                            if (genLetterTable && genLetterTable.length === 1 && genNumberTable && genNumberTable.length === 1) {
+                                const formatIsValid = `${genLetterTable[0]}${genNumberTable[0]}` === generator;
                                 const generatorNumber = parseInt(genNumberTable[0]);
                                 const generatorLetter = genLetterTable[0];
-                                if (generatorLetter !== removedLetter || generatorNumber < removedNumber) {
-                                    newString = newString.concat(first ? `${generator}` : generator);
-                                    first = false;
-                                } else if (generatorNumber > removedNumber) {
-                                    const offset = `${generatorLetter}${(generatorNumber - 1).toString()}`;
-                                    newString = newString.concat(first ? `${offset}` : offset);
-                                    first = false;
+                                if (formatIsValid) {
+                                    if (generatorLetter !== removedLetter || generatorNumber < removedNumber) {
+                                        newString = newString.concat(first ? `${generator}` : `,${generator}`);
+                                        first = false;
+                                    } else if (generatorNumber > removedNumber) {
+                                        const offset = `${generatorLetter}${(generatorNumber - 1).toString()}`;
+                                        newString = newString.concat(first ? `${offset}` : `,${offset}`);
+                                        first = false;
+                                    }
                                 }
                             }
                         });
+                        console.info(newString);
                         failureGenContext.generatorFailuresSetters.get(failure.identifier)(newString);
                     }
                 }
