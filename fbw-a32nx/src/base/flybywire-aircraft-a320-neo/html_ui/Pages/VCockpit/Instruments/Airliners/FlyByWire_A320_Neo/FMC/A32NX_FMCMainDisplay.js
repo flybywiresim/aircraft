@@ -1730,8 +1730,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     shouldTransmitMinimums() {
-        const phase = getFlightPhaseManager().phase;
-        return (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250));
+        const phase = this.flightPhaseManager.phase;
+        return (phase > FmgcFlightPhases.CRUISE || (phase === FmgcFlightPhases.CRUISE && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250));
     }
 
     getClbManagedSpeedFromCostIndex() {

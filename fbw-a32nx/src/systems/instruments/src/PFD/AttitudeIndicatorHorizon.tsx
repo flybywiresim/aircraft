@@ -321,7 +321,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
 
     private roll = new Arinc429Word(0);
 
-    private dh = 0;
+    private dh = new Arinc429Word(0);
 
     private filteredRadioAltitude = 0;
 
@@ -352,7 +352,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
             this.roll = roll;
         });
 
-        sub.on('dh').whenChanged().handle((dh) => {
+        sub.on('dhAr').withArinc429Precision(0).handle((dh) => {
             this.dh = dh;
         });
 
@@ -382,7 +382,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
                 const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
                 let size = 'FontLarge';
-                const DHValid = this.dh >= 0;
+                const DHValid = this.dh.value >= 0 && !this.dh.isNoComputedData();
 
                 let text = '';
                 let color = 'Amber';
@@ -390,7 +390,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 if (raHasData) {
                     if (raFailed) {
                         if (raValue < 2500) {
-                            if (raValue > 400 || (raValue > this.dh + 100 && DHValid)) {
+                            if (raValue > 400 || (raValue > this.dh.value + 100 && DHValid)) {
                                 color = 'Green';
                             }
                             if (raValue < 400) {
@@ -400,7 +400,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                                 text = Math.round(raValue).toString();
                             } else if (raValue <= 50) {
                                 text = (Math.round(raValue / 5) * 5).toString();
-                            } else if (raValue > 50 || (raValue > this.dh + 100 && DHValid)) {
+                            } else if (raValue > 50 || (raValue > this.dh.value + 100 && DHValid)) {
                                 text = (Math.round(raValue / 10) * 10).toString();
                             }
                         }
@@ -411,7 +411,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 }
 
                 this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
-                if (raFailed && DHValid && raValue <= this.dh) {
+                if (raFailed && DHValid && raValue <= this.dh.value) {
                     this.attDhText.instance.style.visibility = 'visible';
                 } else {
                     this.attDhText.instance.style.visibility = 'hidden';

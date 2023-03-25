@@ -1415,11 +1415,11 @@ class D3Cell extends DisplayComponent<{bus: EventBus}> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('mda').whenChanged().handle((mda) => {
-            if (mda !== 0) {
-                const MDAText = Math.round(mda).toString().padStart(6, ' ');
+        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
+            if (!mda.isNoComputedData() && mda.value !== 0) {
+                const MDAText = Math.round(mda.value).toString().padStart(6, ' ');
 
                 this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
             } else {
@@ -1427,16 +1427,16 @@ class D3Cell extends DisplayComponent<{bus: EventBus}> {
             }
         });
 
-        sub.on('dh').whenChanged().handle((dh) => {
+        sub.on('dhAr').withArinc429Precision(0).handle((dh) => {
             let fontSize = 'FontSmallest';
-
-            if (dh !== -1 && dh !== -2) {
-                const DHText = Math.round(dh).toString().padStart(4, ' ');
+            const dhValue = dh.value;
+            if (!dh.isNoComputedData() && dhValue !== -1 && dhValue !== -2) {
+                const DHText = Math.round(dhValue).toString().padStart(4, ' ');
 
                 this.textRef.instance.innerHTML = `
                         <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
                     `;
-            } else if (dh === -2) {
+            } else if (!dh.isNoComputedData() && dhValue === -2) {
                 this.textRef.instance.innerHTML = '<tspan>NO DH</tspan>';
                 fontSize = 'FontMedium';
             } else {
