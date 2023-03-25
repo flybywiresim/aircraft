@@ -59,10 +59,10 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
         if (meanTimeToFailure > 5 / 60) return `${Math.round(meanTimeToFailure * 60)} ${t('Failures.Generators.minutes')}`;
         return `${Math.round(meanTimeToFailure * 60 * 60)} ${t('Failures.Generators.seconds')}`;
     };
-    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 40, `/${t('Failures.Generators.hour')}`, 0, 60,
+    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 32, `/${t('Failures.Generators.hour')}`, 0, 60,
         settings[genNumber * numberOfSettingsPerGenerator + 1], 1,
         setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
-    FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay(), true),
+    FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay()),
     ];
     return settingTable;
 };

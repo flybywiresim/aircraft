@@ -9,6 +9,7 @@ import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/F
 import { Airplane, ArrowBarUp, ExclamationDiamond, Repeat, Repeat1, Sliders2Vertical, ToggleOff, Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
+import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
@@ -96,13 +97,14 @@ export function FailureGeneratorDetailsModalUI(
     const genNumber = ExtractFirstNumber(failureGenContext.modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
     return (
-        <div className="flex flex-col items-center px-2 pt-2 my-2 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
+        <div className="flex flex-col items-stretch px-2 pt-2 my-2 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
             <div className="flex flex-row flex-1 justify-between items-stretch pb-2">
                 <div className="mr-4 text-left grow align-left">
                     <h2>
                         {`${failureGenContext.modalContext.genUniqueID} : ${failureGenContext.modalContext.failureGenData.alias()}`}
                     </h2>
                 </div>
+                <div />
                 <div
                     className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
                     transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
@@ -137,21 +139,44 @@ function ArmedState(generatorSettings : FailureGenData, genNumber : number) {
 
 function FailureShortList(failureGenContext: FailureGenContext, uniqueID : string) {
     const maxNumberOfFailureToDisplay = 4;
-    const listOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
+    let listOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
+
     if (listOfSelectedFailures.length === failureGenContext.allFailures.length) {
         return <div className="p-1 mb-1 rounded-md bg-theme-accent">All failures</div>;
     }
     if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md text-theme-body bg-utility-red">No failure</div>;
-    const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay, listOfSelectedFailures.length));
-    const listToDisplay = subSetOfSelectedFailures.map((failure) => (
+
+    const chaptersFullySelected : AtaChapterNumber[] = [];
+    failureGenContext.chapters.forEach((chapter) => {
+        const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
+        if (failuresActiveInChapter.length === failureGenContext.allFailures.filter((failure) => failure.ata === chapter).length) {
+            chaptersFullySelected.push(chapter);
+            listOfSelectedFailures = listOfSelectedFailures.filter((failure) => failure.ata !== chapter);
+        }
+    });
+
+    const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
+    const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
+    const chaptersToDisplay = subSetOfChapters.map((chapter) => (
+        <div className="p-1 mb-1 rounded-md grow bg-theme-accent">
+            {AtaChaptersTitle[chapter]}
+        </div>
+    ));
+    const singleFailuresToDisplay = subSetOfSelectedFailures.map((failure) => (
         <div className="p-1 mb-1 rounded-md grow bg-theme-accent">
             {failure.name}
         </div>
     ));
     return (
         <div className="flex flex-col">
-            {listToDisplay}
-            {listOfSelectedFailures.length >= maxNumberOfFailureToDisplay ? (<div className="p-1 mb-1 grow">...</div>) : <></>}
+            {chaptersToDisplay}
+            {singleFailuresToDisplay}
+            {listOfSelectedFailures.length + chaptersFullySelected.length > maxNumberOfFailureToDisplay ? (
+                <div className="p-1 mb-1 grow">
+                    ...+
+                    {Math.max(0, listOfSelectedFailures.length + chaptersFullySelected.length - maxNumberOfFailureToDisplay)}
+                </div>
+            ) : <></>}
         </div>
     );
 }
@@ -163,7 +188,7 @@ export function FailureGeneratorCardTemplateUI(
 ) {
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${genNumber.toString()}`;
     return (
-        <div className="flex flex-row justify-between px-2 pt-2 my-1 text-center rounded-md border-2 border-solid border-theme-accent">
+        <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
             <div className="flex flex-col mr-4 text-left grow align-left">
                 <div className="pb-2">
                     <h2>
@@ -225,9 +250,9 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
     setNewSetting : (newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) => void,
     failureGenContext : FailureGenContext) {
     return (
-        <div className="flex flex-col text-center">
+        <div className="flex flex-col items-center text-center">
             <div className="pb-2"><h2>{t('Failures.Generators.Rearming')}</h2></div>
-            <div className="flex flex-row">
+            <div className="flex flex-row justify-center">
                 <SelectGroup>
                     {rearmButtons.map((button) => {
                         if (button.setting !== 'Take-Off' || generatorSettings.disableTakeOffRearm === false) {
@@ -282,13 +307,13 @@ export function FailureGeneratorSingleSetting(title:string, width : number,
     );
 }
 
-export function FailureGeneratorText(title:string, text: string, last : boolean) {
+export function FailureGeneratorText(title:string, text: string) {
     return (
         <div
-            className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
+            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
         >
-            <div className="flex-1 align-top break-keep ">{title}</div>
-            <div className="pt-1.5 pb-3.5 align-top break-keep">
+            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
+            <div className="flex-1 mx-2 text-left break-keep">
                 {text}
             </div>
         </div>
