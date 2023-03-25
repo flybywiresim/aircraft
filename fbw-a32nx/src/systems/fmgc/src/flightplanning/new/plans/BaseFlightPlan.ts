@@ -106,10 +106,18 @@ export abstract class BaseFlightPlan {
         return this.allLegs.length - this.missedApproachSegment.allLegs.length;
     }
 
+    get firstApproachLegIndex() {
+        return this.firstMissedApproachLegIndex - this.approachSegment.allLegs.length;
+    }
+
     activeLegIndex = 0;
 
     get activeLeg(): FlightPlanElement {
         return this.allLegs[this.activeLegIndex];
+    }
+
+    get isApproachActive(): boolean {
+        return this.activeLegIndex >= this.firstApproachLegIndex && this.activeLegIndex < this.firstMissedApproachLegIndex;
     }
 
     sequence() {
