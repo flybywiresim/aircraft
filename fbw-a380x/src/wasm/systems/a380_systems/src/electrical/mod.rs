@@ -9,7 +9,7 @@ use self::{
 };
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 
-use uom::si::{angular_velocity::revolution_per_minute, f64::*};
+use uom::si::{angular_velocity::revolution_per_minute, f64::*, ratio::percent};
 
 #[cfg(test)]
 use systems::electrical::Battery;
@@ -178,16 +178,15 @@ impl A380Electrical {
         let flt_condition = (!context.is_on_ground() && dc_ess_powered)
             && (adirs.low_speed_warning_1_104kts(1) || adirs.low_speed_warning_1_104kts(3));
 
-        // TEFO(total engine failure) = all engines not running and in flight
-        // TODO: check if engines are running instead of bus powered
+        // TEFO(total engine failure) = all engines not running and in flight. Discrete signal from EEC
         // Represents the value of relay 16XR1 and 16XR2
         if emer_evac {
             self.tefo_condition.reset();
         }
         self.tefo_condition.update(
-            (!self
-                .alternating_current
-                .any_non_essential_bus_powered(electricity)
+            (!engines
+                .iter()
+                .any(|e| e.corrected_n2().get::<percent>() > 50.)
                 || !dc_ess_powered
                     && !electricity.any_is_powered(&[ElectricalBusType::DirectCurrent(2)]))
                 && flt_condition,
