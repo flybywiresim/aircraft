@@ -10,7 +10,7 @@ import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
-const additionalSetting = [0, 300];
+const additionalSetting = [2, 300];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'F';
 const failureGeneratorArmed :boolean[] = [];

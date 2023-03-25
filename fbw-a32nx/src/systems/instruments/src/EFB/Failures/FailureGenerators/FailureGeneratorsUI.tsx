@@ -6,7 +6,7 @@ import {
     failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { Trash } from 'react-bootstrap-icons';
+import { Airplane, ArrowBarUp, ExclamationDiamond, Repeat, Repeat1, Sliders2Vertical, ToggleOff, Trash } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -21,7 +21,7 @@ export const FailureGeneratorsUI = () => {
         settings.modals.showModal(GeneratorFailureSelection(settings));
     }
     if (settings.failureGenModalType === ModalGenType.Settings) {
-        settings.modals.showModal(FailureGeneratorDetailsUI(settings));
+        settings.modals.showModal(FailureGeneratorDetailsModalUI(settings));
     }
     return (
         <>
@@ -69,7 +69,9 @@ export const FailureGeneratorsUI = () => {
                     />
                 </div>
                 <ScrollableContainer height={48}>
-                    {generatorsCardList(settings)}
+                    <div className="grid grid-cols-3 grid-flow-row">
+                        {generatorsCardList(settings)}
+                    </div>
                 </ScrollableContainer>
             </div>
         </>
@@ -88,30 +90,30 @@ export const generatorsCardList : (settings : FailureGenContext)
     return temp;
 };
 
-export function FailureGeneratorDetailsUI(
+export function FailureGeneratorDetailsModalUI(
     failureGenContext : FailureGenContext,
 ) {
     const genNumber = ExtractFirstNumber(failureGenContext.modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
     return (
-        <div className="flex flex-col flex-1 px-2 pt-2 my-2 w-full text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent mx-x">
-            <div
-                className="flex justify-center items-center py-2 px-8 w-full text-center rounded-md border-2
-                    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
-                    border-theme-accent hover:border-theme-highlight"
-                onClick={() => failureGenContext.modals.popModal()}
-            >
-                {t('Failures.Generators.Close')}
-            </div>
-            <div className="flex flex-row justify-between">
-                <div className="pb-2 mr-4 w-1/3 text-left align-left">
+        <div className="flex flex-col items-center px-2 pt-2 my-2 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
+            <div className="flex flex-row flex-1 justify-between items-stretch pb-2">
+                <div className="mr-4 text-left grow align-left">
                     <h2>
                         {`${failureGenContext.modalContext.genUniqueID} : ${failureGenContext.modalContext.failureGenData.alias()}`}
                     </h2>
                 </div>
-                {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
+                <div
+                    className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
+                    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
+                    border-theme-accent hover:border-theme-highlight"
+                    onClick={() => failureGenContext.modals.popModal()}
+                >
+                    X
+                </div>
             </div>
-            <div className="flex flex-row justify-start items-stretch mt-1">
+            {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
+            <div className="flex flex-col justify-start items-stretch mt-1">
                 { failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext.failureGenData, failureGenContext) }
             </div>
         </div>
@@ -120,10 +122,15 @@ export function FailureGeneratorDetailsUI(
 
 function ArmedState(generatorSettings : FailureGenData, genNumber : number) {
     switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber]) {
-    case 0: return (<div className="bg-theme-body">Disarmed</div>);
-    case 1: return (<div className="text-black bg-colors-yellow">Armed (once)</div>);
-    case 2: return (<div className="text-black bg-colors-yellow">Armed at Take-Off</div>);
-    case 3: return (<div className="text-black bg-colors-yellow">Armed</div>);
+    case 0: return (<div className="text-utility-red"><ToggleOff size={20} /></div>);
+    case 1: return (<Repeat1 size={20} />);
+    case 2: return (
+        <>
+            <Airplane size={20} />
+            <ArrowBarUp size={20} />
+        </>
+    );
+    case 3: return (<Repeat size={20} />);
     default: return (<></>);
     }
 }
@@ -132,16 +139,20 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID : strin
     const maxNumberOfFailureToDisplay = 4;
     const listOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
     if (listOfSelectedFailures.length === failureGenContext.allFailures.length) {
-        return <div>All failures assigned</div>;
+        return <div className="p-1 mb-1 rounded-md bg-theme-accent">All failures</div>;
     }
-    if (listOfSelectedFailures.length === 0) return <div>No failure assigned</div>;
-    const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - 1, listOfSelectedFailures.length));
-    const listToDisplay = subSetOfSelectedFailures.map((failure) => <div>{failure.name}</div>);
+    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md text-theme-body bg-utility-red">No failure</div>;
+    const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay, listOfSelectedFailures.length));
+    const listToDisplay = subSetOfSelectedFailures.map((failure) => (
+        <div className="p-1 mb-1 rounded-md grow bg-theme-accent">
+            {failure.name}
+        </div>
+    ));
     return (
-        <>
+        <div className="flex flex-col">
             {listToDisplay}
-            {listOfSelectedFailures.length >= maxNumberOfFailureToDisplay ? (<div>...</div>) : <></>}
-        </>
+            {listOfSelectedFailures.length >= maxNumberOfFailureToDisplay ? (<div className="p-1 mb-1 grow">...</div>) : <></>}
+        </div>
     );
 }
 
@@ -152,8 +163,8 @@ export function FailureGeneratorCardTemplateUI(
 ) {
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${genNumber.toString()}`;
     return (
-        <div className="flex flex-row flex-1 justify-between px-2 pt-2 my-2 text-center rounded-md border-2 border-solid border-theme-accent mx-x">
-            <div className="mr-4 w-1/3 text-left align-left">
+        <div className="flex flex-row justify-between px-2 pt-2 my-1 text-center rounded-md border-2 border-solid border-theme-accent">
+            <div className="flex flex-col mr-4 text-left grow align-left">
                 <div className="pb-2">
                     <h2>
                         {`${genUniqueID} : ${failureGenData.alias()}`}
@@ -161,17 +172,12 @@ export function FailureGeneratorCardTemplateUI(
                 </div>
                 {FailureShortList(failureGenContext, genUniqueID)}
             </div>
-            {ArmedState(failureGenData, genNumber)}
-            <div className="flex flex-col justify-between">
-                <div
-                    onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
-                    className="flex-none p-2 rounded-md text-utility-red bg-theme-accent hover:text-theme-body hover:bg-utility-red"
-                >
-                    <Trash size={26} />
+            <div className="flex flex-col justify-end items-center">
+                <div className="flex-none p-2 mt-2 text-theme-text bg-theme-body">
+                    {ArmedState(failureGenData, genNumber)}
                 </div>
-                <div />
                 <div
-                    className="flex-1 px-8 py-1 ml-2 align-baseline rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                    className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                     onClick={() => {
                         failureGenContext.setFailureGenModalType(ModalGenType.Settings);
@@ -179,10 +185,10 @@ export function FailureGeneratorCardTemplateUI(
                         failureGenContext.setModalContext(test);
                     }}
                 >
-                    Change settings
+                    <Sliders2Vertical size={20} />
                 </div>
                 <div
-                    className="flex-1 px-8 py-1 ml-2 align-baseline rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                    className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                     onClick={() => {
                         failureGenContext.setFailureGenModalType(ModalGenType.Failures);
@@ -190,7 +196,13 @@ export function FailureGeneratorCardTemplateUI(
                         failureGenContext.setModalContext(test);
                     }}
                 >
-                    Assign failures
+                    <ExclamationDiamond size={20} />
+                </div>
+                <div
+                    onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
+                    className="flex-none p-2 my-2 rounded-md transition duration-100 text-utility-red bg-theme-accent hover:text-theme-body hover:bg-utility-red"
+                >
+                    <Trash size={20} />
                 </div>
             </div>
         </div>
@@ -243,31 +255,29 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
 export function FailureGeneratorSingleSetting(title:string, width : number,
     unit : string, min:number, max:number,
     value: number, mult : number,
-    last : boolean, setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
     generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
     const multCheck = mult === 0 ? 1 : mult;
     return (
         <div
-            className={`flex flex-col justify-between p-2 text-left ${last ? '' : 'border-r-2 border-r-theme-accent'}`}
+            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
         >
-            <div className="flex-1 align-top break-keep">{title}</div>
-            <div className="flex flex-row items-center ">
-                <SimpleInput
-                    className={`my-2 w-${width} font-mono`}
-                    fontSizeClassName="text-2xl"
-                    number
-                    min={min}
-                    max={max}
-                    value={value * multCheck}
-                    onBlur={(x: string) => {
-                        if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                            setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                            failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                        }
-                    }}
-                />
-                <div className="ml-2">{unit}</div>
-            </div>
+            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
+            <SimpleInput
+                className={`w-${width} font-mono`}
+                fontSizeClassName="text-2xl"
+                number
+                min={min}
+                max={max}
+                value={value * multCheck}
+                onBlur={(x: string) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
+                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                    }
+                }}
+            />
+            <div className="ml-2">{unit}</div>
         </div>
     );
 }

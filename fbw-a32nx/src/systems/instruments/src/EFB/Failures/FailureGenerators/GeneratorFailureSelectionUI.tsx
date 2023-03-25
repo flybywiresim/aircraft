@@ -11,21 +11,19 @@ export function GeneratorFailureSelection(failureGenContext: FailureGenContext):
     const generatorFailureTable: Failure[] = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, failureGenContext.modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
     return (
-        <div className="flex flex-col justify-center items-start py-2 px-8 w-3/4 border-2 bg-theme-body border-theme-accent">
-            <div className="flex flex-row items-start space-x-3 text-left transition duration-100 hover:text-theme-highlight">
+        <div className="flex flex-row justify-between items-start py-2 px-8 w-3/4 border-2 bg-theme-body border-theme-accent">
+            <div className="flex flex-row items-start space-x-3 text-left transition duration-100">
                 <h1 className="font-bold text-current">
                     {t('Failures.Generators.FailureSelection')}
                 </h1>
             </div>
             <div
-                className="flex justify-center items-center py-2 px-8 w-full text-center rounded-md border-2
+                className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
                     transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
                     border-theme-accent hover:border-theme-highlight"
-                onClick={() => {
-                    failureGenContext.modals.popModal();
-                }}
+                onClick={() => failureGenContext.modals.popModal()}
             >
-                {t('Failures.Generators.Close')}
+                X
             </div>
             <div className="flex flex-row justify-between ml-10 w-full">
                 <div className="text-left">{t('Failures.Generators.FailureSelectionText')}</div>

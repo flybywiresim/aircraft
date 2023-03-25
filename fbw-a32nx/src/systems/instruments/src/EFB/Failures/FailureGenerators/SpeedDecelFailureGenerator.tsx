@@ -10,7 +10,7 @@ import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEEDDECEL';
-const additionalSetting = [0, 200];
+const additionalSetting = [3, 200];
 const numberOfSettingsPerGenerator = 2;
 const uniqueGenPrefix = 'D';
 const failureGeneratorArmed :boolean[] = [];
@@ -47,7 +47,7 @@ const onErase = (_genID : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.GroundSpeed')}:`, 20, t('Failures.Generators.knots'), 0, 400,
-        settings[genNumber * numberOfSettingsPerGenerator + 1], 1, true,
+        settings[genNumber * numberOfSettingsPerGenerator + 1], 1,
         setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
     ];
     return settingTable;
