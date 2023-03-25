@@ -76,6 +76,7 @@
 1. [MCDU] Implemented NAVAID page - @tracernz (Mike)
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
+1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
 
 ## 0.9.0
 
