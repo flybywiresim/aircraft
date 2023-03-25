@@ -21,8 +21,15 @@ export const VnavConfig = {
      */
     VNAV_EMIT_CDA_FLAP_PWP: false,
 
+    /**
+     * Whether to pring debug information and errors during the VNAV computation.
+     */
     DEBUG_PROFILE: false,
 
+    /**
+     * Whether to use debug simvars (VNAV_DEBUG_*) to determine aircraft position and state
+     * This is useful for testing VNAV without having to fly the aircraft. This lets you put the aircraft some distance before destination at a given altitude and speed.
+     */
     ALLOW_DEBUG_PARAMETER_INJECTION: false,
 
     VNAV_USE_LATCHED_DESCENT_MODE: false,
