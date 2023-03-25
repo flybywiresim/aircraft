@@ -185,4 +185,19 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         text: 'TURN AREA EXCEEDANCE',
         color: 'Amber',
     },
+    TuneNavaid: {
+        id: 17,
+        text: 'TUNE BBB FFF.FF',
+        color: 'Amber',
+    },
+    SpecifiedNdbUnavailble: {
+        id: 18,
+        text: 'SPECIF NDB UNAVAIL',
+        color: 'Amber',
+    },
+    RwyLsMismatch: {
+        id: 18,
+        text: 'RWY/LS MISMATCH',
+        color: 'Amber',
+    },
 };
