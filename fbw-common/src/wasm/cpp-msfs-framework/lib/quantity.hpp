@@ -33,18 +33,18 @@ class Quantity {
     return *this;
   }
 
-  constexpr float value() const { return this->m_value; }
+  [[nodiscard]] constexpr float value() const { return this->m_value; }
   constexpr void setValue(float value) { this->m_value = value; }
-  constexpr float convert(const Quantity& rhs) const { return this->m_value / rhs.m_value; }
-  constexpr Quantity<std::ratio_divide<M, std::ratio<2>>,
-                     std::ratio_divide<L, std::ratio<2>>,
-                     std::ratio_divide<T, std::ratio<2>>,
-                     std::ratio_divide<A, std::ratio<2>>>
+  [[nodiscard]] constexpr float convert(const Quantity& rhs) const { return this->m_value / rhs.m_value; }
+  [[nodiscard]] constexpr Quantity<std::ratio_divide<M, std::ratio<2>>,
+                                   std::ratio_divide<L, std::ratio<2>>,
+                                   std::ratio_divide<T, std::ratio<2>>,
+                                   std::ratio_divide<A, std::ratio<2>>>
   sqrt() const {
     return Quantity<std::ratio_divide<M, std::ratio<2>>, std::ratio_divide<L, std::ratio<2>>, std::ratio_divide<T, std::ratio<2>>,
                     std::ratio_divide<A, std::ratio<2>>>(std::sqrtf(this->m_value));
   }
-  constexpr Quantity<M, L, T, A> abs() const { return Quantity<M, L, T, A>(std::abs(this->m_value)); }
+  [[nodiscard]] constexpr Quantity<M, L, T, A> abs() const { return Quantity<M, L, T, A>(std::abs(this->m_value)); }
 };
 
 /** The mass specialization [kg] */
@@ -75,7 +75,7 @@ constexpr Quantity<M, L, T, A> operator+(const Quantity<M, L, T, A>& lhs, const 
   return Quantity<M, L, T, A>(lhs.value() + rhs.value());
 }
 /**
- * @brief Substracts rhs to lhs and returns a new instance
+ * @brief Subtracts rhs to lhs and returns a new instance
  * @param[in] lhs The left-hand-side component
  * @param[in] rhs The right-hand-side component
  * @return The resulting quantity with the updated value
@@ -346,3 +346,5 @@ constexpr AngularAcceleration operator"" _degps2(long double value) {
 constexpr AngularAcceleration operator"" _degps2(unsigned long long int value) {
   return static_cast<float>(value) * degree / (second * second);
 }
+
+#pragma clang diagnostic pop
