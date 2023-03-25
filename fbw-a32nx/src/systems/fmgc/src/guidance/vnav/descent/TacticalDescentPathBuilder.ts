@@ -17,6 +17,7 @@ import {
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { VerticalProfileComputationParameters, VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
+import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 
@@ -98,6 +99,10 @@ export class TacticalDescentPathBuilder {
             isPathValid = this.checkForViolations(phaseTable, altConstraintsToUse, speedConstraintsToUse, speedProfile, schedule);
         }
 
+        if (VnavConfig.DEBUG_PROFILE && numRecomputations >= 100) {
+            console.warn('[FMS/VNAV] Tactical path iteration terminated after 100 iterations. This indicates a logic error.');
+        }
+
         if (sequence != null) {
             profile.checkpoints.push(...sequence.get());
         }
@@ -153,6 +158,10 @@ export class TacticalDescentPathBuilder {
         // slightly below the speed limit alt (= final alt), and the phase table will not execute the last phase because we're already below the final alt.
         if (sequence.lastCheckpoint.reason === VerticalCheckpointReason.AtmosphericConditions) {
             sequence.lastCheckpoint.reason = VerticalCheckpointReason.CrossingFcuAltitudeDescent;
+        }
+
+        if (VnavConfig.DEBUG_PROFILE && numRecomputations >= 100) {
+            console.warn('[FMS/VNAV] Tactical path iteration terminated after 100 iterations. This is a bug.');
         }
 
         if (sequence != null) {
@@ -442,7 +451,7 @@ export class TacticalDescentPathBuilder {
     private doesPhaseViolateAltitudeConstraint(previousResult: VerticalCheckpoint, phase: SubPhase, altitudeConstraint: MinimumDescentAltitudeConstraint) {
         if (phase.lastResult.altitude - altitudeConstraint.minimumAltitude >= -1 // We're still above the constraint
             || previousResult.altitude - altitudeConstraint.minimumAltitude < -100 // We were already more than 100 ft below the constraint before this subphase
-            || previousResult.distanceFromStart > altitudeConstraint.distanceFromStart // We're already behind the constraint
+            || previousResult.distanceFromStart >= altitudeConstraint.distanceFromStart // We're already behind the constraint
             || phase.shouldFlyAsLevelSegment // A level segment already tries its best at not violating the constraint
         ) {
             return false;
@@ -606,7 +615,7 @@ class DescendingDeceleration extends SubPhase {
             if (step.finalAltitude < this.minAltitude || start.distanceFromStart + step.distanceTraveled > this.maxDistance) {
                 const scaling = Math.max(0, Math.min(
                     (this.maxDistance - start.distanceFromStart) / step.distanceTraveled,
-                    (this.minAltitude - start.altitude) / (step.finalAltitude - start.altitude),
+                    (start.altitude - this.minAltitude) / (start.altitude - step.finalAltitude),
                     1,
                 ));
                 this.scaleStepBasedOnLastCheckpoint(start, step, scaling);
