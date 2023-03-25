@@ -353,7 +353,7 @@ class CDUAvailableArrivalsPage {
                 ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
                 [selectedApproachCell + "[color]" + selectedApproachCellColor , selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
                 ["APPR VIAS"],
-                ["{NO VIAS[color]cyan"],
+                ["{NO VIA[color]cyan"],
                 rows[0],
                 rows[1],
                 rows[2],
