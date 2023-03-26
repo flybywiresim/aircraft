@@ -607,8 +607,8 @@ declare global {
             unregister: () => void;
             onEventToAllSubscribers: (eventName: string, ...args: any[]) => void;
             onGlobalEvent(eventName: string, ...args: any[]): void;
-            off(name: string, callback: (...args: any[]) => void, context: any): void;
-            on(name: string, callback: (...args: any[]) => void, context: any): void;
+            off(name: string, callback: (...args: any[]) => void, context?: any): void;
+            on(name: string, callback: (...args: any[]) => void, context?: any): void;
             trigger(name: string, ...args: any[]): void;
             triggerToAllSubscribers(event: any, ...args: any[]): void;
         }

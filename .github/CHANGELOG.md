@@ -67,6 +67,17 @@
 1. [MCDU] Fix EFOB and FUEL PRED get dashed out at TOD - @Revyn112 (Revyn112#1010)
 1. [ELEC] A more accurate simulation of the transformer rectifiers - @Gurgel100 (Pascal)
 1. [MISC] Added extras-host for non aircraft systems like version-check, key interceptor, etc. - @frankkopp (Frank Kopp)
+1. [FMS] Implemented FMS navaid selection for navigation and display - @tracernz (Mike)
+1. [FMS] Implemented FMS LS tuning lock below 700 feet on approach - @tracernz (Mike)
+1. [FMS] Implemented navaid tuning state discretes and integrate with EFIS - @tracernz (Mike)
+1. [FMS] Send tuned navaids to the EFIS - @tracernz (Mike)
+1. [FMS] Make ILS course and slope available for database navaids - @tracernz (Mike)
+1. [MCDU] Re-implemented RADIO NAV page - @tracernz (Mike)
+1. [MCDU] Implemented SELECTED NAVAIDS page - @tracernz (Mike)
+1. [MCDU] Implemented NAVAID page - @tracernz (Mike)
+1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
+1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
+1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
 
 ## 0.9.0
 
