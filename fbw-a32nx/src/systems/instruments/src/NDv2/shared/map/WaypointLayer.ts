@@ -7,6 +7,7 @@ import { CanvasMap } from './CanvasMap';
 
 const VOR_DME_PATH = new Path2D('M -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0 M 0,-15 L 0,-7 M 0,15 L 0,7 M -15,0 L -7,0 M 15,0 L 7,0');
 const DME_PATH = new Path2D('M -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0');
+const NDB_PATH = new Path2D('M -10,10 L 0,-10 L 10,10 L -10,10');
 
 export class WaypointLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
@@ -78,6 +79,8 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             this.paintVorShape(context, x, y, mainColor, isColorLayer ? 1.75 : 3.25);
         } else if (symbol.type & NdSymbolTypeFlags.Dme) {
             this.paintDmeShape(context, x, y, mainColor, isColorLayer ? 1.75 : 3.25);
+        } else if (symbol.type & NdSymbolTypeFlags.Ndb) {
+            this.paintNdbShape(context, x, y, mainColor, isColorLayer ? 1.75 : 3.25);
         }
 
         context.font = '21px Ecam';
@@ -164,6 +167,15 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
 
         context.translate(x, y);
         context.stroke(DME_PATH);
+        context.resetTransform();
+    }
+
+    private paintNdbShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {
+        context.strokeStyle = color;
+        context.lineWidth = lineWidth;
+
+        context.translate(x, y);
+        context.stroke(NDB_PATH);
         context.resetTransform();
     }
 
