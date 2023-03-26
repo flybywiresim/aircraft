@@ -4,7 +4,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXDataStore } from '@shared/persistence';
-import { PopUp } from '@shared/popup';
+import { PopUpDialog } from '@shared/popup';
 
 const TIMEOUT = 10_000;
 
@@ -31,7 +31,7 @@ export class TodGuidance {
     showPausePopup(title: string, message: string) {
         this.cooldown = TIMEOUT;
         SimVar.SetSimVarValue('K:PAUSE_SET', 'number', 1);
-        let popup = new PopUp();
+        let popup = new PopUpDialog();
         popup.showInformation(title, message, 'small',
             () => {
                 SimVar.SetSimVarValue('K:PAUSE_SET', 'number', 0);
