@@ -2998,22 +2998,23 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
     }
 
     async trySetThrustReductionAccelerationAltitude(s) {
-        const plan = this.flightPlanManager.getCurrentFlightPlan();
-        if (!plan) {
-            return false;
-        }
+        const plan = this.flightPlanService.active;
 
-        if (this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF || !this.flightPlanManager.getPersistentOrigin()) {
+        if (this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF || !plan.originAirport) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
 
         if (s === FMCMainDisplay.clrValue) {
-            if (plan.hasThrustReductionAltitudeDefault && plan.hasAccelerationAltitudeDefault) {
-                plan.thrustReductionAltitudePilot = undefined;
-                plan.accelerationAltitudePilot = undefined;
+            const hasDefaultThrRed = plan.performanceData.defaultThrustReductionAltitude.get() !== undefined;
+            const hasDefaultAcc = plan.performanceData.defaultAccelerationAltitude.get() !== undefined;
+
+            if (hasDefaultThrRed && hasDefaultAcc) {
+                plan.performanceData.pilotThrustReductionAltitude.set(undefined);
+                plan.performanceData.pilotAccelerationAltitude.set(undefined);
                 return true;
             }
+
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
@@ -3036,8 +3037,8 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
 
         const minimumAltitude = elevation + 400;
 
-        const newThrRed = thrRed !== undefined ? thrRed : plan.thrustReductionAltitude;
-        const newAccAlt = accAlt !== undefined ? accAlt : plan.accelerationAltitude;
+        const newThrRed = thrRed !== undefined ? thrRed : plan.performanceData.thrustReductionAltitude.get();
+        const newAccAlt = accAlt !== undefined ? accAlt : plan.performanceData.accelerationAltitude.get();
 
         if (
             (thrRed !== undefined && (thrRed < minimumAltitude || thrRed > 45000))
@@ -3049,134 +3050,32 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
         }
 
         if (thrRed !== undefined) {
-            plan.thrustReductionAltitudePilot = thrRed;
+            plan.performanceData.pilotThrustReductionAltitude.set(thrRed);
         }
 
         if (accAlt !== undefined) {
-            plan.accelerationAltitudePilot = accAlt;
+            plan.performanceData.pilotAccelerationAltitude.set(accAlt);
         }
 
         return true;
     }
 
     async trySetEngineOutAcceleration(s) {
-        const plan = this.flightPlanManager.getCurrentFlightPlan();
-        if (!plan) {
-            return false;
-        }
+        const plan = this.flightPlanService.active;
 
-        if (this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF || !this.flightPlanManager.getPersistentOrigin()) {
+        if (this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF || !plan.originAirport) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
 
         if (s === FMCMainDisplay.clrValue) {
-            if (plan.hasEngineOutAccelerationAltitudeDefault) {
-                plan.engineOutAccelerationAltitudePilot = undefined;
+            const hasDefaultEngineOutAcc = plan.performanceData.defaultEngineOutAccelerationAltitude.get() !== undefined;
+
+            if (hasDefaultEngineOutAcc) {
+                plan.performanceData.pilotEngineOutAccelerationAltitude.set(undefined);
                 return true;
             }
-            this.setScratchpadMessage(NXSystemMessages.notAllowed);
-            return false;
-        }
 
-        const match = s.match(/^([0-9]{4,5})$/);
-        if (match === null) {
-            this.setScratchpadMessage(NXSystemMessages.formatError);
-            return false;
-        }
-
-        const origin = this.flightPlanService.active.originAirport;
-
-        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
-        if (origin) {
-            elevation = origin.location.alt;
-        }
-
-        const minimumAltitude = elevation + 400;
-
-        if (accAlt < minimumAltitude || accAlt > 45000) {
-            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-            return false;
-        }
-
-        plan.engineOutAccelerationAltitudePilot = accAlt;
-
-        return true;
-    }
-
-    async trySetThrustReductionAccelerationAltitudeGoaround(s) {
-        const plan = this.flightPlanManager.getCurrentFlightPlan();
-        if (!plan) {
-            return false;
-        }
-
-        if (this.flightPhaseManager.phase >= FmgcFlightPhases.GOAROUND || !this.flightPlanManager.getDestination()) {
-            this.setScratchpadMessage(NXSystemMessages.notAllowed);
-            return false;
-        }
-
-        if (s === FMCMainDisplay.clrValue) {
-            if (plan.hasMissedThrustReductionAltitudeDefault && plan.hasMissedAccelerationAltitudeDefault) {
-                plan.missedThrustReductionAltitudePilot = undefined;
-                plan.missedAccelerationAltitudePilot = undefined;
-                return true;
-            }
-            this.setScratchpadMessage(NXSystemMessages.notAllowed);
-            return false;
-        }
-
-        const match = s.match(/^(([0-9]{4,5})\/?)?(\/([0-9]{4,5}))?$/);
-        if (match === null || (match[2] === undefined && match[4] === undefined) || s.split('/').length > 2) {
-            this.setScratchpadMessage(NXSystemMessages.formatError);
-            return false;
-        }
-
-        const thrRed = match[2] !== undefined ? FMCMainDisplay.round(parseInt(match[2]), 10) : undefined;
-        const accAlt = match[4] !== undefined ? FMCMainDisplay.round(parseInt(match[4]), 10) : undefined;
-
-        const destination = this.flightPlanManager.getDestination();
-        let elevation = destination.infos.elevation !== undefined ? destination.infos.elevation : 0;
-        const minimumAltitude = elevation + 400;
-
-        const newThrRed = thrRed !== undefined ? thrRed : plan.missedThrustReductionAltitude;
-        const newAccAlt = accAlt !== undefined ? accAlt : plan.missedAccelerationAltitude;
-
-        if (
-            (thrRed !== undefined && (thrRed < minimumAltitude || thrRed > 45000))
-            || (accAlt !== undefined && (accAlt < minimumAltitude || accAlt > 45000))
-            || (newThrRed !== undefined && newAccAlt !== undefined && thrRed > accAlt)
-        ) {
-            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-            return false;
-        }
-
-        if (thrRed !== undefined) {
-            plan.missedThrustReductionAltitudePilot = thrRed;
-        }
-
-        if (accAlt !== undefined) {
-            plan.missedAccelerationAltitudePilot = accAlt;
-        }
-
-        return true;
-    }
-
-    async trySetEngineOutAccelerationAltitudeGoaround(s) {
-        const plan = this.flightPlanManager.getCurrentFlightPlan();
-        if (!plan) {
-            return false;
-        }
-
-        if (this.flightPhaseManager.phase >= FmgcFlightPhases.GOAROUND || !this.flightPlanManager.getDestination()) {
-            this.setScratchpadMessage(NXSystemMessages.notAllowed);
-            return false;
-        }
-
-        if (s === FMCMainDisplay.clrValue) {
-            if (plan.hasMissedEngineOutAccelerationAltitudeDefault) {
-                plan.missedEngineOutAccelerationAltitudePilot = undefined;
-                return true;
-            }
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
@@ -3189,8 +3088,8 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
 
         const accAlt = parseInt(match[1]);
 
-        const destination = this.flightPlanManager.getDestination();
-        let elevation = destination.infos.elevation !== undefined ? destination.infos.elevation : 0;
+        const origin = plan.originAirport;
+        const elevation = origin.location.alt !== undefined ? origin.location.alt : 0;
         const minimumAltitude = elevation + 400;
 
         if (accAlt < minimumAltitude || accAlt > 45000) {
@@ -3198,53 +3097,156 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
             return false;
         }
 
-        plan.missedEngineOutAccelerationAltitudePilot = accAlt;
+        plan.performanceData.pilotEngineOutAccelerationAltitude.set(accAlt);
+
+        return true;
+    }
+
+    async trySetThrustReductionAccelerationAltitudeGoaround(s) {
+        const plan = this.flightPlanService.active;
+
+        if (this.flightPhaseManager.phase >= FmgcFlightPhases.GOAROUND || !plan.destinationAirport) {
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
+        if (s === FMCMainDisplay.clrValue) {
+            const hasDefaultMissedThrRed = plan.performanceData.defaultMissedThrustReductionAltitude.get() !== undefined;
+            const hasDefaultMissedAcc = plan.performanceData.defaultMissedAccelerationAltitude.get() !== undefined;
+
+            if (hasDefaultMissedThrRed && hasDefaultMissedAcc) {
+                plan.performanceData.pilotMissedThrustReductionAltitude.set(undefined);
+                plan.performanceData.pilotMissedAccelerationAltitude.set(undefined);
+                return true;
+            }
+
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
+        const match = s.match(/^(([0-9]{4,5})\/?)?(\/([0-9]{4,5}))?$/);
+        if (match === null || (match[2] === undefined && match[4] === undefined) || s.split('/').length > 2) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const thrRed = match[2] !== undefined ? FMCMainDisplay.round(parseInt(match[2]), 10) : undefined;
+        const accAlt = match[4] !== undefined ? FMCMainDisplay.round(parseInt(match[4]), 10) : undefined;
+
+        const destination = plan.destinationAirport;
+        const elevation = destination.location.alt !== undefined ? destination.location.alt : 0;
+        const minimumAltitude = elevation + 400;
+
+        const newThrRed = thrRed !== undefined ? thrRed : plan.performanceData.missedThrustReductionAltitude;
+        const newAccAlt = accAlt !== undefined ? accAlt : plan.performanceData.missedAccelerationAltitude;
+
+        if (
+            (thrRed !== undefined && (thrRed < minimumAltitude || thrRed > 45000))
+            || (accAlt !== undefined && (accAlt < minimumAltitude || accAlt > 45000))
+            || (newThrRed !== undefined && newAccAlt !== undefined && thrRed > accAlt)
+        ) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        if (thrRed !== undefined) {
+            plan.performanceData.pilotMissedThrustReductionAltitude.set(thrRed);
+        }
+
+        if (accAlt !== undefined) {
+            plan.performanceData.pilotMissedAccelerationAltitude.set(accAlt);
+        }
+
+        return true;
+    }
+
+    async trySetEngineOutAccelerationAltitudeGoaround(s) {
+        const plan = this.flightPlanService.active;
+
+        if (this.flightPhaseManager.phase >= FmgcFlightPhases.GOAROUND || !plan.destinationAirport) {
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
+        if (s === FMCMainDisplay.clrValue) {
+            const hasDefaultMissedEOAcc = plan.performanceData.defaultMissedEngineOutAccelerationAltitude.get() !== undefined;
+
+            if (hasDefaultMissedEOAcc) {
+                plan.performanceData.pilotMissedEngineOutAccelerationAltitude.set(undefined);
+                return true;
+            }
+
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
+        const match = s.match(/^([0-9]{4,5})$/);
+        if (match === null) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const accAlt = parseInt(match[1]);
+
+        const destination = plan.destinationAirport;
+        const elevation = destination.location.alt !== undefined ? destination.location.alt : 0;
+        const minimumAltitude = elevation + 400;
+
+        if (accAlt < minimumAltitude || accAlt > 45000) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        plan.performanceData.pilotMissedEngineOutAccelerationAltitude.set(accAlt);
 
         return true;
     }
 
     thrustReductionAccelerationChecks() {
-        const activePlan = this.flightPlanManager.activeFlightPlan;
-        if (activePlan.reconcileAccelerationWithConstraints()) {
-            this.setScratchpadMessage(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
-        }
-        if (activePlan.reconcileThrustReductionWithConstraints()) {
-            this.setScratchpadMessage(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
-        }
+        // TODO port over (fms-v2)
+        // const activePlan = this.flightPlanService.active;
+
+        // if (activePlan.reconcileAccelerationWithConstraints()) {
+        //     this.setScratchpadMessage(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
+        // }
+
+        // if (activePlan.reconcileThrustReductionWithConstraints()) {
+        //     this.setScratchpadMessage(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
+        // }
     }
 
     updateThrustReductionAcceleration() {
-        const activePlan = this.flightPlanManager.activeFlightPlan;
+        const activePerformanceData = this.flightPlanService.active.performanceData;
 
         this.arincThrustReductionAltitude.setBnrValue(
-            activePlan.thrustReductionAltitude !== undefined ? activePlan.thrustReductionAltitude : 0,
-            activePlan.thrustReductionAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            activePerformanceData.thrustReductionAltitude.get() !== undefined ? activePerformanceData.thrustReductionAltitude.get() : 0,
+            activePerformanceData.thrustReductionAltitude.get() !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincAccelerationAltitude.setBnrValue(
-            activePlan.accelerationAltitude !== undefined ? activePlan.accelerationAltitude : 0,
-            activePlan.accelerationAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            activePerformanceData.accelerationAltitude.get() !== undefined ? activePerformanceData.accelerationAltitude.get() : 0,
+            activePerformanceData.accelerationAltitude.get() !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincEoAccelerationAltitude.setBnrValue(
-            activePlan.engineOutAccelerationAltitude !== undefined ? activePlan.engineOutAccelerationAltitude : 0,
-            activePlan.engineOutAccelerationAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            activePerformanceData.engineOutAccelerationAltitude.get() !== undefined ? activePerformanceData.engineOutAccelerationAltitude.get() : 0,
+            activePerformanceData.engineOutAccelerationAltitude.get() !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
 
         this.arincMissedThrustReductionAltitude.setBnrValue(
-            activePlan.missedThrustReductionAltitude !== undefined ? activePlan.missedThrustReductionAltitude : 0,
-            activePlan.missedThrustReductionAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedThrustReductionAltitude.get() !== undefined ? activePerformanceData.missedThrustReductionAltitude.get() : 0,
+            activePerformanceData.missedThrustReductionAltitude.get() !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincMissedAccelerationAltitude.setBnrValue(
-            activePlan.missedAccelerationAltitude !== undefined ? activePlan.missedAccelerationAltitude : 0,
-            activePlan.missedAccelerationAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedAccelerationAltitude.get() !== undefined ? activePerformanceData.missedAccelerationAltitude.get() : 0,
+            activePerformanceData.missedAccelerationAltitude.get() !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincMissedEoAccelerationAltitude.setBnrValue(
-            activePlan.missedEngineOutAccelerationAltitude !== undefined ? activePlan.missedEngineOutAccelerationAltitude : 0,
-            activePlan.missedEngineOutAccelerationAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedEngineOutAccelerationAltitude.get() !== undefined ? activePerformanceData.missedEngineOutAccelerationAltitude.get() : 0,
+            activePerformanceData.missedEngineOutAccelerationAltitude.get() !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
     }
