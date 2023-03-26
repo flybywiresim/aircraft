@@ -1,7 +1,5 @@
 # Localization HowTo
 
-[//]: # (TODO - Rewrite this after new process is in place 12-03-2023)
-
 TOC:
 
 - [Development Process](#development-process)
@@ -25,15 +23,9 @@ TOC:
 **Remark:**
 
 The update could be automated via GitHub actions (as the download is - it's basically one command) but this would
-require the write key to be part of env and is very risky. If a dev removes required keys or even removes everything
-from the en.json then this change will immediately be sent to Localazy by everybody who can trigger the GitHub
-action.<br/>                   
-Of course, we can include measures to only do this for merges to master etc. but at some point the upload will have to
-happen and then potentially overwrite stuff at Localazy which might impact others.
-
-As Localazy does not do versioning and also does not allow to undo these uploads this process is risky. Any issues will
-need to be fixed by uploading a previous version of the source file (or a specific language file) which is why I like
-them to be versioned and persisted in GitHub. We can at any time even role back changes to translation this way.
+require the write key to be available in the GitHub action. As forks have no access to GitHub secrets automating
+this would not work for forks without making the write key public which is of course a no-go.
+Alternate solutions are still investigated. 
 
 ## Build Process
 
