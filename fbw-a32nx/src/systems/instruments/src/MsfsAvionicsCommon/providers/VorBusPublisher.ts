@@ -1,5 +1,4 @@
 import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { TuningMode } from '@fmgc/radionav';
 
 export interface VorSimVars {
     nav1Ident: string,
@@ -11,7 +10,6 @@ export interface VorSimVars {
     nav1Localizer: Degrees,
     nav1RadialError: Degrees,
     nav1Available: boolean,
-    nav1TuningMode: TuningMode,
     nav1StationDeclination: Degrees,
     nav1Location: LatLongAlt,
 
@@ -24,7 +22,6 @@ export interface VorSimVars {
     nav2Localizer: Degrees,
     nav2RadialError: Degrees,
     nav2Available: boolean,
-    nav2TuningMode: TuningMode,
     nav2StationDeclination: Degrees,
     nav2Location: LatLongAlt,
 
@@ -37,7 +34,6 @@ export interface VorSimVars {
     nav3Localizer: Degrees,
     nav3RadialError: Degrees,
     nav3Available: boolean,
-    nav3TuningMode: TuningMode,
     nav3StationDeclination: Degrees,
     nav3Location: LatLongAlt,
 
@@ -50,7 +46,6 @@ export interface VorSimVars {
     nav4Localizer: Degrees,
     nav4RadialError: Degrees,
     nav4Available: boolean,
-    nav4TuningMode: TuningMode,
     nav4StationDeclination: Degrees,
     nav4Location: LatLongAlt,
 
@@ -71,7 +66,6 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['nav1Localizer', { name: 'NAV LOCALIZER:1', type: SimVarValueType.Degree }],
             ['nav1RadialError', { name: 'NAV RADIAL ERROR:1', type: SimVarValueType.Degree }],
             ['nav1Available', { name: 'NAV HAS NAV:1', type: SimVarValueType.Bool }],
-            ['nav1TuningMode', { name: 'L:A32NX_FMGC_RADIONAV_1_TUNING_MODE', type: SimVarValueType.Enum }],
             ['nav1StationDeclination', { name: 'NAV MAGVAR:1', type: SimVarValueType.Degree }],
             ['nav1Location', { name: 'NAV VOR LATLONALT:1', type: SimVarValueType.LLA }],
 
@@ -84,7 +78,6 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['nav2Localizer', { name: 'NAV LOCALIZER:2', type: SimVarValueType.Degree }],
             ['nav2RadialError', { name: 'NAV RADIAL ERROR:2', type: SimVarValueType.Degree }],
             ['nav2Available', { name: 'NAV HAS NAV:2', type: SimVarValueType.Bool }],
-            ['nav2TuningMode', { name: 'L:A32NX_FMGC_RADIONAV_2_TUNING_MODE', type: SimVarValueType.Enum }],
             ['nav2StationDeclination', { name: 'NAV MAGVAR:2', type: SimVarValueType.Degree }],
             ['nav2Location', { name: 'NAV VOR LATLONALT:2', type: SimVarValueType.LLA }],
 
@@ -96,7 +89,6 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['nav3Localizer', { name: 'NAV LOCALIZER:3', type: SimVarValueType.Degree }],
             ['nav3RadialError', { name: 'NAV RADIAL ERROR:3', type: SimVarValueType.Degree }],
             ['nav3Available', { name: 'NAV HAS NAV:3', type: SimVarValueType.Bool }],
-            ['nav3TuningMode', { name: 'L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', type: SimVarValueType.Enum }],
             ['nav3StationDeclination', { name: 'NAV MAGVAR:3', type: SimVarValueType.Degree }],
             ['nav3Location', { name: 'NAV VOR LATLONALT:3', type: SimVarValueType.LLA }],
 
@@ -108,7 +100,6 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['nav4Localizer', { name: 'NAV LOCALIZER:4', type: SimVarValueType.Degree }],
             ['nav4RadialError', { name: 'NAV RADIAL ERROR:4', type: SimVarValueType.Degree }],
             ['nav4Available', { name: 'NAV HAS NAV:4', type: SimVarValueType.Bool }],
-            ['nav4TuningMode', { name: 'L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', type: SimVarValueType.Enum }],
             ['nav4StationDeclination', { name: 'NAV MAGVAR:4', type: SimVarValueType.Degree }],
             ['nav4Location', { name: 'NAV VOR LATLONALT:4', type: SimVarValueType.LLA }],
 

@@ -13,6 +13,7 @@ import { NDControlEvents } from './NDControlEvents';
 import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 
 import './style.scss';
 
@@ -26,6 +27,8 @@ class A32NX_ND extends BaseInstrument {
     private readonly fmsDataPublisher: FmsDataPublisher;
 
     private readonly fgDataPublisher: FGDataPublisher;
+
+    private readonly fmBusPublisher: FMBusPublisher;
 
     private readonly fmsSymbolsPublisher: FmsSymbolsPublisher;
 
@@ -58,6 +61,7 @@ class A32NX_ND extends BaseInstrument {
         this.ecpBusSimVarPublisher = new EcpBusSimVarPublisher(this.bus, Subject.create('L'));
         this.fmsDataPublisher = new FmsDataPublisher(this.bus, Subject.create('L'));
         this.fgDataPublisher = new FGDataPublisher(this.bus, Subject.create('L'));
+        this.fmBusPublisher = new FMBusPublisher(this.bus);
         this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus);
         this.vorBusPublisher = new VorBusPublisher(this.bus);
         this.tcasBusPublisher = new TcasBusPublisher(this.bus);
@@ -140,6 +144,11 @@ class A32NX_ND extends BaseInstrument {
         this.fgDataPublisher.subscribe('fg.fma.lateralMode');
         this.fgDataPublisher.subscribe('fg.fma.lateralArmedBitmask');
 
+        this.fmBusPublisher.subscribe('fm.1.healthy_discrete');
+        this.fmBusPublisher.subscribe('fm.2.healthy_discrete');
+        this.fmBusPublisher.subscribe('fm.1.tuning_discrete_word');
+        this.fmBusPublisher.subscribe('fm.2.tuning_discrete_word');
+
         this.vorBusPublisher.subscribe('nav1Ident');
         this.vorBusPublisher.subscribe('nav1Frequency');
         this.vorBusPublisher.subscribe('nav1HasDme');
@@ -147,7 +156,6 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav1RelativeBearing');
         this.vorBusPublisher.subscribe('nav1Obs');
         this.vorBusPublisher.subscribe('nav1Available');
-        this.vorBusPublisher.subscribe('nav1TuningMode');
         this.vorBusPublisher.subscribe('nav1StationDeclination');
         this.vorBusPublisher.subscribe('nav1Location');
 
@@ -158,7 +166,6 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav2RelativeBearing');
         this.vorBusPublisher.subscribe('nav2Obs');
         this.vorBusPublisher.subscribe('nav2Available');
-        this.vorBusPublisher.subscribe('nav2TuningMode');
         this.vorBusPublisher.subscribe('nav2StationDeclination');
         this.vorBusPublisher.subscribe('nav2Location');
 
@@ -169,7 +176,6 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav3RelativeBearing');
         this.vorBusPublisher.subscribe('nav3Obs');
         this.vorBusPublisher.subscribe('nav3Available');
-        this.vorBusPublisher.subscribe('nav3TuningMode');
         this.vorBusPublisher.subscribe('nav3Localizer');
         this.vorBusPublisher.subscribe('nav3StationDeclination');
         this.vorBusPublisher.subscribe('nav3Location');
@@ -181,7 +187,6 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav4RelativeBearing');
         this.vorBusPublisher.subscribe('nav4Obs');
         this.vorBusPublisher.subscribe('nav4Available');
-        this.vorBusPublisher.subscribe('nav4TuningMode');
         this.vorBusPublisher.subscribe('nav4Localizer');
         this.vorBusPublisher.subscribe('nav4StationDeclination');
         this.vorBusPublisher.subscribe('nav4Location');
@@ -222,6 +227,7 @@ class A32NX_ND extends BaseInstrument {
                 this.ecpBusSimVarPublisher.startPublish();
                 this.fmsDataPublisher.startPublish();
                 this.fgDataPublisher.startPublish();
+                this.fmBusPublisher.startPublish();
                 this.fmsSymbolsPublisher.startPublish();
                 this.vorBusPublisher.startPublish();
                 this.tcasBusPublisher.startPublish();
@@ -236,6 +242,7 @@ class A32NX_ND extends BaseInstrument {
             this.ecpBusSimVarPublisher.onUpdate();
             this.fmsDataPublisher.onUpdate();
             this.fgDataPublisher.onUpdate();
+            this.fmBusPublisher.onUpdate();
             this.fmsSymbolsPublisher.onUpdate();
             this.vorBusPublisher.onUpdate();
             this.tcasBusPublisher.onUpdate();

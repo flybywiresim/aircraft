@@ -1,5 +1,4 @@
 import { FSComponent, DisplayComponent, VNode, Subject, EventBus } from 'msfssdk';
-import { TuningMode } from '@fmgc/radionav';
 import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
 
@@ -14,8 +13,6 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
     private readonly ilsFrequency = Subject.create(-1);
 
     private readonly locCourse = Subject.create(-1);
-
-    private readonly vorTuningMode = Subject.create<TuningMode>(TuningMode.Manual);
 
     private readonly locAvailable = Subject.create(false);
 
@@ -44,10 +41,6 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
 
         subs.on('nav3Localizer').whenChanged().handle((value) => {
             this.locCourse.set(value);
-        });
-
-        subs.on('nav3TuningMode').whenChanged().handle((value) => {
-            this.vorTuningMode.set(value);
         });
 
         subs.on('localizerValid').whenChanged().handle((value) => {
@@ -93,7 +86,7 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
                 </text>
 
                 <g visibility={this.ilsFrequency.map((v) => v > 0).map(this.visibilityFn)}>
-                    <text x={-80} y={58} font-size={20} class="Magenta" text-anchor="end" textDecoration="underline">
+                    <text x={-80} y={58} font-size={20} class="Magenta" text-anchor="end" text-decoration="underline">
                         {this.tuningModeTextSub}
                     </text>
                 </g>

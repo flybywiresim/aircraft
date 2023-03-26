@@ -1,9 +1,10 @@
 import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
-import { TuningMode } from '@fmgc/radionav';
 import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusPublisher';
 import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { EcpSimVars } from '../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { FMBusEvents } from '../../MsfsAvionicsCommon/providers/FMBusPublisher';
 
 export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, mode: Subscribable<EfisNdMode> }> {
     private readonly isVor = Subject.create(true);
@@ -51,8 +52,6 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
     private readonly dmeDistanceSub = Subject.create(0);
 
     private readonly availableSub = Subject.create(false);
-
-    private readonly tuningModeSub = Subject.create<TuningMode>(TuningMode.Manual);
 
     private readonly stationDeclination = Subject.create(0);
 
@@ -108,8 +107,6 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         sub.on(`nav${this.props.index}HasDme`).whenChanged().handle((v) => this.hasDmeSub.set(!!v));
         sub.on(`nav${this.props.index}DmeDistance`).whenChanged().handle((v) => this.dmeDistanceSub.set(v));
         sub.on(`nav${this.props.index}Available`).whenChanged().handle((v) => this.availableSub.set(!!v));
-        // FIXME this doesn't work
-        sub.on(`nav${this.props.index}TuningMode`).whenChanged().handle((v) => this.tuningModeSub.set(v));
         sub.on(`nav${this.props.index}StationDeclination`).handle((v) => this.stationDeclination.set(v));
         sub.on(`nav${this.props.index}Location`).handle((v) => this.stationLatitude.set(v.lat));
 
@@ -173,12 +170,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                     <text x={this.x + 66} y={759} font-size={20} class="Cyan">NM</text>
                 </g>
 
-                <TuningModeIndicator
-                    index={this.props.index}
-                    visible={this.props.visible}
-                    frequency={this.frequencySub}
-                    tuningMode={this.tuningModeSub}
-                />
+                <TuningModeIndicator bus={this.props.bus} index={this.props.index} frequency={this.frequencySub} />
             </g>
         );
     }
@@ -246,29 +238,64 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
 }
 
 interface TuningModeIndicatorProps {
+    bus: EventBus,
     index: number,
-    visible: Subscribable<boolean>,
     frequency: Subscribable<number>,
-    tuningMode: Subscribable<TuningMode>
 }
 
 class TuningModeIndicator extends DisplayComponent<TuningModeIndicatorProps> {
+    private readonly fm1Healthy = Subject.create(false);
+
+    private readonly fm2Healthy = Subject.create(false);
+
+    private readonly fm1NavTuningWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly fm2NavTuningWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly tuningMode = MappedSubject.create(([fm1Healthy, fm2Healthy, fm1NavTuningWord, fm2NavTuningWord]) => {
+        const bitIndex = 10 + this.props.index;
+
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavTuningWord.isNormalOperation() && !fm2NavTuningWord.isNormalOperation())) {
+            return 'R';
+        }
+
+        if (fm1NavTuningWord.bitValueOr(bitIndex, false) || fm2NavTuningWord.bitValueOr(bitIndex, false)) {
+            return 'M';
+        }
+
+        return '';
+    }, this.fm1Healthy, this.fm2Healthy, this.fm1NavTuningWord, this.fm2NavTuningWord);
+
     // eslint-disable-next-line arrow-body-style
-    private readonly indicatorVisible = MappedSubject.create(([visible, frequency, tuningMode]) => {
-        return visible && frequency > 1 && tuningMode !== TuningMode.Auto;
-    }, this.props.visible, this.props.frequency, this.props.tuningMode);
+    private readonly indicatorVisible = MappedSubject.create(([frequency, tuningMode]) => {
+        return frequency > 1 && tuningMode !== 'R';
+    }, this.props.frequency, this.tuningMode);
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        const subs = this.props.bus.getSubscriber<FMBusEvents>();
+
+        subs.on('fm.1.healthy_discrete').whenChanged().handle((healthy) => this.fm1Healthy.set(healthy));
+
+        subs.on('fm.2.healthy_discrete').whenChanged().handle((healthy) => this.fm2Healthy.set(healthy));
+
+        subs.on('fm.1.tuning_discrete_word').whenChanged().handle((word) => this.fm1NavTuningWord.setWord(word));
+
+        subs.on('fm.2.tuning_discrete_word').whenChanged().handle((word) => this.fm2NavTuningWord.setWord(word));
+    }
 
     render(): VNode | null {
         return (
             <text
-                visibility={this.indicatorVisible.map((v) => (v ? 'visible' : 'hidden'))}
+                visibility={this.indicatorVisible.map((v) => (v ? 'inherit' : 'hidden'))}
                 x={this.props.index === 1 ? 138 : 616}
                 y={720}
                 font-size={20}
-                textDecoration="underline"
+                text-decoration="underline"
                 fill="#ffffff"
             >
-                {this.props.tuningMode.map((v) => (v === TuningMode.Manual ? 'M' : 'R'))}
+                {this.tuningMode}
             </text>
         );
     }

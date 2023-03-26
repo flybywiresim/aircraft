@@ -1,7 +1,8 @@
-import { FSComponent, ComponentProps, DisplayComponent, EventBus, Subject, VNode } from 'msfssdk';
-import { TuningMode } from '@fmgc/radionav';
+import { FSComponent, ComponentProps, DisplayComponent, EventBus, Subject, VNode, MappedSubject } from 'msfssdk';
 import { Layer } from 'instruments/src/MsfsAvionicsCommon/Layer';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
+import { FMBusEvents } from '../../../MsfsAvionicsCommon/providers/FMBusPublisher';
+import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 
 export interface VorInfoIndicatorProps extends ComponentProps {
     bus: EventBus,
@@ -9,15 +10,37 @@ export interface VorInfoIndicatorProps extends ComponentProps {
 }
 
 export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
+    private readonly adf = Subject.create(false);
+
     private readonly vorIdent = Subject.create('');
 
     private readonly vorFrequency = Subject.create(-1);
 
     private readonly vorCourse = Subject.create(-1);
 
-    private readonly vorTuningMode = Subject.create<TuningMode>(TuningMode.Manual);
-
     private readonly vorAvailable = Subject.create(false);
+
+    private readonly fm1Healthy = Subject.create(false);
+
+    private readonly fm2Healthy = Subject.create(false);
+
+    private readonly fm1NavTuningWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly fm2NavTuningWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly tuningMode = MappedSubject.create(([adf, fm1Healthy, fm2Healthy, fm1NavTuningWord, fm2NavTuningWord]) => {
+        const bitIndex = 10 + this.props.index + (adf ? 2 : 0);
+
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavTuningWord.isNormalOperation() && !fm2NavTuningWord.isNormalOperation())) {
+            return 'R';
+        }
+
+        if (fm1NavTuningWord.bitValueOr(bitIndex, false) || fm2NavTuningWord.bitValueOr(bitIndex, false)) {
+            return 'M';
+        }
+
+        return '';
+    }, this.adf, this.fm1Healthy, this.fm2Healthy, this.fm1NavTuningWord, this.fm2NavTuningWord);
 
     private readonly frequencyIntTextSub = Subject.create('');
 
@@ -25,12 +48,10 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
 
     private readonly courseTextSub = Subject.create('');
 
-    private readonly tuningModeTextSub = Subject.create('');
-
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const subs = this.props.bus.getSubscriber<VorSimVars>();
+        const subs = this.props.bus.getSubscriber<VorSimVars & FMBusEvents>();
 
         subs.on(`nav${this.props.index}Ident`).whenChanged().handle((value) => {
             this.vorIdent.set(value);
@@ -44,13 +65,17 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
             this.vorCourse.set(value);
         });
 
-        subs.on(`nav${this.props.index}TuningMode`).whenChanged().handle((value) => {
-            this.vorTuningMode.set(value);
-        });
-
         subs.on(`nav${this.props.index}Available`).whenChanged().handle((value) => {
             this.vorAvailable.set(value);
         });
+
+        subs.on('fm.1.healthy_discrete').whenChanged().handle((healthy) => this.fm1Healthy.set(healthy));
+
+        subs.on('fm.2.healthy_discrete').whenChanged().handle((healthy) => this.fm2Healthy.set(healthy));
+
+        subs.on('fm.1.tuning_discrete_word').whenChanged().handle((word) => this.fm1NavTuningWord.setWord(word));
+
+        subs.on('fm.2.tuning_discrete_word').whenChanged().handle((word) => this.fm2NavTuningWord.setWord(word));
 
         this.vorFrequency.sub((frequency) => {
             const [int, dec] = frequency.toFixed(2).split('.', 2);
@@ -91,8 +116,8 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
                 </text>
 
                 <g visibility={this.vorFrequency.map((v) => v > 0).map(this.visibilityFn)}>
-                    <text x={-80} y={58} font-size={20} class="White" text-anchor="end" textDecoration="underline">
-                        {this.tuningModeTextSub}
+                    <text x={-80} y={58} font-size={20} class="White" text-anchor="end" text-decoration="underline">
+                        {this.tuningMode}
                     </text>
                 </g>
 
