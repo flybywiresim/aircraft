@@ -225,7 +225,11 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
             // When the reference pressure changes, we skip the update to the external
             // V/S to avoid a jump
-            if self.previous_reference_pressure == self.reference_pressure {
+            if (self.previous_reference_pressure.get::<hectopascal>()
+                - self.reference_pressure.get::<hectopascal>())
+            .abs()
+                < f64::EPSILON
+            {
                 self.exterior_vertical_speed.update(
                     context.delta(),
                     self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
@@ -403,7 +407,11 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         new_reference_pressure: Pressure,
     ) -> Velocity {
         // When the reference pressure changes, V/S is the same as previous to avoid a jump
-        if new_reference_pressure != self.reference_pressure {
+        if (new_reference_pressure.get::<hectopascal>()
+            - self.reference_pressure.get::<hectopascal>())
+        .abs()
+            > f64::EPSILON
+        {
             self.cabin_vertical_speed
         } else {
             // Distance over time :)
