@@ -1256,6 +1256,11 @@ export abstract class BaseFlightPlan {
             await this.arrivalEnrouteTransitionSegment.setArrivalEnrouteTransition(this.arrivalEnrouteTransition.ident);
         }
 
+        const previousSegmentToArrival = this.previousSegment(this.arrivalEnrouteTransitionSegment);
+        if (previousSegmentToArrival.allLegs[previousSegmentToArrival.legCount - 1].isDiscontinuity === true) {
+            previousSegmentToArrival.strung = false;
+        }
+
         await this.destinationSegment.refresh(false);
     }
 
