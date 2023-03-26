@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airway, AirwayDirection, Waypoint } from 'msfs-navdata';
+import { Airway, AirwayDirection, Fix, Waypoint } from 'msfs-navdata';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
@@ -11,7 +11,7 @@ import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment
 export interface PendingAirwayEntry {
     fromIndex?: number,
     airway?: Airway,
-    to?: Waypoint,
+    to?: Fix,
     isDct?: true,
     isAutoConnected?: true,
 }
@@ -122,7 +122,7 @@ export class PendingAirways {
         return true;
     }
 
-    thenTo(waypoint: Waypoint) {
+    thenTo(waypoint: Fix) {
         const taiLElement = this.tailElement;
 
         if (taiLElement.to) {

@@ -68,7 +68,14 @@ export class NavigationDatabase {
         return this.backendDatabase.getNDBs([ident]);
     }
 
-    async searchAirway(ident: string): Promise<Airway[]> {
+    async searchAirway(ident: string, fromFix: Fix): Promise<Airway[]> {
+        if (fromFix) {
+            const airways = await this.backendDatabase.getAirwaysByFix(fromFix);
+
+            return airways.filter((it) => it.ident === ident);
+        }
+
+        // This does not work in the MSFS backend
         return this.backendDatabase.getAirways([ident]);
     }
 
