@@ -76,6 +76,7 @@
 1. [MCDU] Implemented NAVAID page - @tracernz (Mike)
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
+1. [FLIGHT MODEL] Updated CG for ELAC 103 - @donstim (donbikes#4084)
 
 ## 0.9.0
 
