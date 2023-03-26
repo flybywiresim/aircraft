@@ -288,7 +288,7 @@
             ],
             "index": 0,
             "stationIndex": 1,
-            "position": 20.0,
+            "position": 20.5,
             "fill": 0.19,
             "simVar": "A32NX_PAX_TOTAL_ROWS_1_6"
         },
@@ -606,7 +606,7 @@
             ],
             "index": 1,
             "stationIndex": 2,
-            "position": 0.9,
+            "position": 1.5,
             "fill": 0.25,
             "simVar": "A32NX_PAX_TOTAL_ROWS_7_13"
         },
@@ -968,7 +968,7 @@
             ],
             "index": 2,
             "stationIndex": 3,
-            "position": -17.3,
+            "position": -16.6,
             "fill": 0.28,
             "simVar": "A32NX_PAX_TOTAL_ROWS_14_21"
         },
@@ -1331,7 +1331,7 @@
             "fill": 0.28,
             "index": 3,
             "stationIndex": 4,
-            "position": -36.3,
+            "position": -35.6,
             "simVar": "A32NX_PAX_TOTAL_ROWS_22_29"
         }
     ],
@@ -1341,7 +1341,7 @@
             "weight": 3402,
             "index": 0,
             "stationIndex": 5,
-            "position": 16.3,
+            "position": 17.3,
             "progressBarWidth": 160,
             "simVar": "A32NX_CARGO_FWD_BAGGAGE_CONTAINER"
         },
@@ -1350,7 +1350,7 @@
             "weight": 2426,
             "index": 1,
             "stationIndex": 6,
-            "position": -25.1,
+            "position": -24.1,
             "progressBarWidth": 100,
             "simVar": "A32NX_CARGO_AFT_CONTAINER"
         },
@@ -1359,7 +1359,7 @@
             "weight": 2110,
             "index": 2,
             "stationIndex": 7,
-            "position": -35.1,
+            "position": -34.1,
             "progressBarWidth": 100,
             "simVar": "A32NX_CARGO_AFT_BAGGAGE"
         },
@@ -1368,7 +1368,7 @@
             "weight": 1497,
             "index": 3,
             "stationIndex": 8,
-            "position": -44.4,
+            "position": -42.4,
             "progressBarWidth": 100,
             "simVar": "A32NX_CARGO_AFT_BULK_LOOSE"
         }
