@@ -94,7 +94,7 @@ export const failureGeneratorAltDesc = (generatorFailuresGetters : Map<number, s
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
             if (!failureGeneratorArmed[i]
-                && altitude > settings[i * numberOfSettingsPerGenerator + 1] * 100 + 100
+                && altitude > settings[i * numberOfSettingsPerGenerator + 2] * 100 + 100
                 && (settings[i * numberOfSettingsPerGenerator + 0] === 1
                 || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
                 || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
