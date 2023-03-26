@@ -6,9 +6,10 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { Airway, Waypoint } from 'msfs-navdata';
+import { Airway, Fix } from 'msfs-navdata';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/SimbriefApi';
+import { DataInterface } from '../interface/DataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
@@ -90,7 +91,7 @@ export interface SimBriefUplinkOptions {
 }
 
 export class SimBriefUplinkAdapter {
-    static async uplinkFlightPlanFromSimbrief(ofp: ISimbriefData, options: SimBriefUplinkOptions) {
+    static async uplinkFlightPlanFromSimbrief(fms: DataInterface, ofp: ISimbriefData, options: SimBriefUplinkOptions) {
         const doUplinkProcedures = options.doUplinkProcedures ?? false;
 
         const route = await this.getRouteFromOfp(ofp);
@@ -128,13 +129,11 @@ export class SimBriefUplinkAdapter {
                 FlightPlanService.uplink.pendingAirways.finalize();
                 FlightPlanService.uplink.pendingAirways = undefined;
 
-                debugger;
-
                 setInsertHeadToEndOfEnroute();
             }
         };
 
-        const pickFix = (fixes: Waypoint[], locationHint: Coordinates): Waypoint => {
+        const pickFix = (fixes: Fix[], locationHint: Coordinates): Fix => {
             let minDistance = Number.MAX_SAFE_INTEGER;
             let minDistanceIndex = -1;
 
@@ -170,12 +169,10 @@ export class SimBriefUplinkAdapter {
             return airways[minDistanceIndex];
         };
 
-        const pickAirwayFix = (airway: Airway, fixes: Waypoint[]): Waypoint => fixes.find((it) => airway.fixes.some((fix) => fix.ident === it.ident && fix.icaoCode === it.icaoCode));
+        const pickAirwayFix = (airway: Airway, fixes: Fix[]): Fix => fixes.find((it) => airway.fixes.some((fix) => fix.ident === it.ident && fix.icaoCode === it.icaoCode));
 
         for (let i = 0; i < route.chunks.length; i++) {
             const chunk = route.chunks[i];
-
-            debugger;
 
             switch (chunk.instruction) {
             case 'procedure': {
@@ -184,7 +181,7 @@ export class SimBriefUplinkAdapter {
                 }
 
                 if (i !== 0 && i !== route.chunks.length - 1) {
-                    throw new Error('Cannot handle \'procedure\' instruction not located at the start or end of the route');
+                    throw new Error('[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Cannot handle "procedure" instruction not located at the start or end of the route');
                 }
 
                 const isDeparture = i === 0;
@@ -194,8 +191,6 @@ export class SimBriefUplinkAdapter {
 
                     setInsertHeadToEndOfEnroute();
                 } else {
-                    ensureAirwaysFinalized();
-
                     await FlightPlanService.setArrival(chunk.ident, FlightPlanIndex.Uplink);
                 }
 
@@ -208,6 +203,8 @@ export class SimBriefUplinkAdapter {
                     if (fixes.length > 0) {
                         await FlightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
                         insertHead++;
+                    } else {
+                        throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`);
                     }
 
                     continue;
@@ -224,28 +221,56 @@ export class SimBriefUplinkAdapter {
                     setInsertHeadToEndOfEnroute();
                 }
 
-                ensureAirwaysFinalized();
-
                 const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
 
                 if (fixes.length > 0) {
                     await FlightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
                     insertHead++;
+                } else {
+                    throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "waypoint" chunk: ${chunk.ident}`);
                 }
 
+                break;
+            }
+            case 'latlong': {
+                if (insertHead === -1) {
+                    setInsertHeadToEndOfEnroute();
+                }
+
+                const fix = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
+
+                await FlightPlanService.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink);
+                insertHead++;
                 break;
             }
             case 'airway': {
                 const plan = FlightPlanService.uplink;
 
+                let airwaySearchFix: Fix;
                 if (!plan.pendingAirways) {
                     plan.startAirwayEntry(insertHead);
+
+                    const legAtInsertHead = plan.elementAt(insertHead);
+
+                    if (legAtInsertHead.isDiscontinuity === false) {
+                        airwaySearchFix = legAtInsertHead.terminationWaypoint();
+                    }
+                } else {
+                    const tailElement = plan.pendingAirways.elements[plan.pendingAirways.elements.length - 1];
+
+                    airwaySearchFix = tailElement.to ?? tailElement.airway?.fixes[tailElement.airway.fixes.length - 1];
                 }
 
-                const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident);
+                if (airwaySearchFix) {
+                    const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
-                if (airways.length > 0) {
-                    plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+                    if (airways.length > 0) {
+                        plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+                    } else {
+                        throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no airways at fix "${airwaySearchFix.ident}" for "airway" chunk: ${chunk.ident}`);
+                    }
+                } else {
+                    throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no search fix for "airway" chunk: ${chunk.ident}`);
                 }
 
                 break;
@@ -263,6 +288,10 @@ export class SimBriefUplinkAdapter {
 
                 if (fixes.length > 0) {
                     plan.pendingAirways.thenTo(pickAirwayFix(tailAirway, fixes));
+
+                    ensureAirwaysFinalized();
+                } else {
+                    throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "airwayTermination" chunk: ${chunk.ident}`);
                 }
 
                 break;
@@ -300,6 +329,7 @@ export class SimBriefUplinkAdapter {
         const instructions: OfpRouteChunk[] = [];
 
         for (let i = 0; i < ofp.navlog.length; i++) {
+            const lastFix = ofp.navlog[i - 1];
             const fix = ofp.navlog[i];
 
             if (fix.ident === 'TOC' || fix.ident === 'TOD') {
@@ -320,9 +350,18 @@ export class SimBriefUplinkAdapter {
                 // SID TRANS
                 instructions.push({ instruction: 'sidEnrouteTransition', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
             } else if (fix.via_airway === 'DCT') {
-                // DCT Waypoint
-                instructions.push({ instruction: 'waypoint', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
+                if (fix.type === 'ltlg') {
+                    // LAT/LONG Waypoint
+                    instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) });
+                } else {
+                    // DCT Waypoint
+                    instructions.push({ instruction: 'waypoint', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
+                }
             } else if (!(lastInstruction && lastInstruction.instruction === 'airway' && lastInstruction.ident === fix.via_airway)) {
+                if (lastFix && lastInstruction && lastInstruction.instruction === 'airway' && fix.via_airway !== lastFix.via_airway) {
+                    instructions.push({ instruction: 'airwayTermination', ident: lastFix.ident });
+                }
+
                 // Airway
                 instructions.push({ instruction: 'airway', ident: fix.via_airway, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
             } else if (ofp.navlog[i + 1] && ofp.navlog[i + 1].via_airway !== fix.via_airway) {
@@ -333,38 +372,4 @@ export class SimBriefUplinkAdapter {
 
         return instructions;
     }
-
-    // static parseRouteChunks(routeString: string): OfpRouteChunk[] {
-    //     const segments = routeString.split(' ');
-    //
-    //     const chunks: OfpRouteChunk[] = [];
-    //     for (let i = 0; i < segments.length; i++) {
-    //         const segment = segments[i];
-    //
-    //         const lastChunk = chunks[chunks.length - 1];
-    //
-    //         if ((i === 0 || i === segments.length - 1) && segment !== 'DCT') {
-    //             chunks.push({ instruction: 'procedure', ident: segment });
-    //         } else if (segment.length > 5 && (lastChunk && segment[0].match(/\d/))) {
-    //             const parsed = segment.match(/(\d+)[NS](\d+)[EW]/);
-    //
-    //             const lat = parseInt(parsed[1]);
-    //             const long = parseInt(parsed[2]);
-    //
-    //             chunks.push({ instruction: 'latlong', lat, long });
-    //         } else if (lastChunk && lastChunk.instruction === 'dct') {
-    //             chunks.push({ instruction: 'waypoint', ident: segment });
-    //         } else if (segment === 'DCT') {
-    //             chunks.push({ instruction: 'dct' });
-    //         } else if (lastChunk && lastChunk.instruction === 'procedure') {
-    //             chunks.push({ instruction: 'waypoint', ident: segment });
-    //         } else if (lastChunk && lastChunk.instruction !== 'airway') {
-    //             chunks.push({ instruction: 'airway', ident: segment });
-    //         } else {
-    //             chunks.push({ instruction: 'waypoint', ident: segment });
-    //         }
-    //     }
-    //
-    //     return chunks;
-    // }
 }

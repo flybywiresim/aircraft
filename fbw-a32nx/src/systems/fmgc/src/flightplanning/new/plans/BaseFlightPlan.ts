@@ -717,7 +717,9 @@ export abstract class BaseFlightPlan {
      * @param waypoint the waypoint to insert
      */
     async nextWaypoint(index: number, waypoint: Fix) {
-        const truncateDirection = this.redistributeLegsAt(index + 1); // NEXT WPT revises the leg that comes after the target leg
+        const redistributeIndex = index + 1 < (this.legCount - 1) ? index + 1 : index;
+
+        const truncateDirection = this.redistributeLegsAt(redistributeIndex); // NEXT WPT revises the leg that comes after the target leg
 
         const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint, undefined, LegType.DF);
 
@@ -726,7 +728,7 @@ export abstract class BaseFlightPlan {
         const [newSegment] = this.segmentPositionForIndex(index + 1);
 
         if (truncateDirection === 1 && newSegment instanceof EnrouteSegment) {
-            // redistributeLegsAt cause the leg at (index + 1) to now be in the enroute segment, and this change applied forwards.
+            // redistributeLegsAt caused the leg at (index + 1) to now be in the enroute segment, and this change applied forwards.
             // We need to do insertElementBefore on the next segment instead
 
             await this.insertElementBefore(index + 1, leg, !waypointExists);
@@ -787,7 +789,7 @@ export abstract class BaseFlightPlan {
 
             const elementAfterInserted = startSegment.allLegs[index + 2];
 
-            if (elementAfterInserted.isDiscontinuity === false) {
+            if (elementAfterInserted && elementAfterInserted.isDiscontinuity === false) {
                 startSegment.insertAfter(indexInStartSegment + 1, { isDiscontinuity: true });
                 this.incrementVersion();
             }
@@ -1253,9 +1255,6 @@ export abstract class BaseFlightPlan {
         if (this.arrivalEnrouteTransition) {
             await this.arrivalEnrouteTransitionSegment.setArrivalEnrouteTransition(this.arrivalEnrouteTransition.ident);
         }
-
-        const previousSegmentToArrival = this.previousSegment(this.arrivalEnrouteTransitionSegment);
-        previousSegmentToArrival.strung = false;
 
         await this.destinationSegment.refresh(false);
     }
