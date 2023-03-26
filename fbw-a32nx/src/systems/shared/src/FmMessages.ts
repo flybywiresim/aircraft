@@ -196,7 +196,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         color: 'Amber',
     },
     RwyLsMismatch: {
-        id: 18,
+        id: 19,
         text: 'RWY/LS MISMATCH',
         color: 'Amber',
     },
