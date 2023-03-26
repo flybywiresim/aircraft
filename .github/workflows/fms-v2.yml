@@ -33,7 +33,7 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
       - name: Build ZIP files
         run: |
-          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+          ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
