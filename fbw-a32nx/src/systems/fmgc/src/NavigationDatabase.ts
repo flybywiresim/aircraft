@@ -68,6 +68,13 @@ export class NavigationDatabase {
         return this.backendDatabase.getNDBs([ident]);
     }
 
+    async searchAllNavaid(ident: string): Promise<(VhfNavaid | NdbNavaid)[]> {
+        return [
+            ...(await this.backendDatabase.getNavaids([ident])),
+            ...(await this.backendDatabase.getNDBs([ident])),
+        ];
+    }
+
     async searchAirway(ident: string, fromFix: Fix): Promise<Airway[]> {
         if (fromFix) {
             const airways = await this.backendDatabase.getAirwaysByFix(fromFix);
