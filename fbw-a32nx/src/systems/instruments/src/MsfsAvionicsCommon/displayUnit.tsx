@@ -201,7 +201,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
                     <text class="EngineeringTestModeText" x={10} y={270}>S/N : C1975517334</text>
                     <text class="EngineeringTestModeText" x={10} y={344}>EIS SW</text>
                     <text class="EngineeringTestModeText" x={10} y={366}>P/N : C1975517332</text>
-                    <text class="EngineeringTestModeText" text-anchor="end" x="98%" y={250}>THALES AVIONICS</text>
+                    <text class="EngineeringTestModeText" text-anchor="end" x="90%" y={250}>THALES AVIONICS</text>
                     <text class="EngineeringTestModeText" text-anchor="end" x="98%" y={366}>LCDU 725</text>
                 </svg>
 

@@ -136,7 +136,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                 <text x={10} y={270}>{`S/N : C197551733${supplyingDmc}`}</text>
                 <text x={10} y={344}>EIS SW</text>
                 <text x={10} y={366}>P/N : C1975517332</text>
-                <text textAnchor="end" x="98%" y={250}>THALES AVIONICS</text>
+                <text textAnchor="end" x="90%" y={250}>THALES AVIONICS</text>
                 <text textAnchor="end" x="98%" y={366}>LCDU 725</text>
             </svg>
         );

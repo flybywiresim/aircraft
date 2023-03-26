@@ -27,6 +27,7 @@
   width: 100%;
   height: 100%;
   border: none;
+  font-family: "Ecam", monospace;
 }
 
 .EngineeringTestMode {
@@ -39,9 +40,11 @@
   z-index: 999;
   background-image: url('./thalesTest.svg');
   background-size: cover;
+  font-family: "Ecam", monospace;
 }
 
 .EngineeringTestMode text {
   font-size: 21px;
   color: black;
+  font-family: "Ecam", monospace;
 }
