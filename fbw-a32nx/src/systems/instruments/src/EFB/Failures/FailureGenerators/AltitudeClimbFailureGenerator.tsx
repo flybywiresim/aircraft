@@ -10,13 +10,14 @@ import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTCLIMB';
-const additionalSetting = [3, 15000];
-const numberOfSettingsPerGenerator = 2;
+const additionalSetting = [3, 80, 250];
+const numberOfSettingsPerGenerator = 3;
 const uniqueGenPrefix = 'A';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'AltClimb';
 const alias = () => t('Failures.Generators.GenAltClimb');
 const disableTakeOffRearm = false;
+const rolledDice:number[] = [];
 
 export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -41,14 +42,20 @@ export const failureGenConfigAltClimb : ()=>FailureGenData = () => {
     };
 };
 
-const onErase = (_genID : number) => {
+const onErase = (genID : number) => {
+    rolledDice.splice(genID, 1);
 };
 
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
-    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeAboveSea')}:`, 24, t('Failures.Generators.feet'), 0, 40000,
-        settings[genNumber * numberOfSettingsPerGenerator + 1], 1,
+    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeAboveSeaMin')}:`, 24,
+        t('Failures.Generators.feet'), 0, settings[genNumber * numberOfSettingsPerGenerator + 2] * 100,
+        settings[genNumber * numberOfSettingsPerGenerator + 1], 100,
         setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
+    FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeAboveSeaMax')}:`, 24,
+        t('Failures.Generators.feet'), settings[genNumber * numberOfSettingsPerGenerator + 1] * 100, 40000,
+        settings[genNumber * numberOfSettingsPerGenerator + 2], 100,
+        setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
     ];
     return settingTable;
 };
@@ -69,7 +76,8 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
             const tempSettings : number[] = Array.from(settings);
             let change = false;
             for (let i = 0; i < nbGenerator; i++) {
-                if (failureGeneratorArmed[i] && altitude > settings[i * numberOfSettingsPerGenerator + 1]) {
+                if (failureGeneratorArmed[i] && altitude > 100 * (settings[i * numberOfSettingsPerGenerator + 1]
+                    + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + 2] - settings[i * numberOfSettingsPerGenerator + 1]))) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                         activate, activeFailures, uniqueGenPrefix + i.toString());
                     failureGeneratorArmed[i] = false;
@@ -86,11 +94,12 @@ export const failureGeneratorAltClimb = (generatorFailuresGetters : Map<number, 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
             if (!failureGeneratorArmed[i]
-                && altitude < settings[i * numberOfSettingsPerGenerator + 1] - 100
+                && altitude < settings[i * numberOfSettingsPerGenerator + 1] * 100 - 100
                 && (settings[i * numberOfSettingsPerGenerator + 0] === 1
                 || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
                 || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
+                rolledDice[i] = Math.random();
             }
             if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }

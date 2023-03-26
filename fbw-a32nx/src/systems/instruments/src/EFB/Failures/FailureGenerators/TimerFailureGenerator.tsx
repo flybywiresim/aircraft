@@ -49,7 +49,7 @@ const onErase = (genID : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.DelayAfterArming')}:`, 40, t('Failures.Generators.seconds'), 0, 10000,
-        settings[genNumber * numberOfSettingsPerGenerator + 1], 1, true,
+        settings[genNumber * numberOfSettingsPerGenerator + 1], 1,
         setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
     ];
     return settingTable;

@@ -124,7 +124,7 @@ export function FailureGeneratorDetailsModalUI(
 
 function ArmedState(generatorSettings : FailureGenData, genNumber : number) {
     switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber]) {
-    case 0: return (<div className="text-utility-red"><ToggleOff size={20} /></div>);
+    case 0: return (<ToggleOff size={20} />);
     case 1: return (<Repeat1 size={20} />);
     case 2: return (
         <>
@@ -144,7 +144,7 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID : strin
     if (listOfSelectedFailures.length === failureGenContext.allFailures.length) {
         return <div className="p-1 mb-1 rounded-md bg-theme-accent">All failures</div>;
     }
-    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md text-theme-body bg-utility-red">No failure</div>;
+    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">No failure</div>;
 
     const chaptersFullySelected : AtaChapterNumber[] = [];
     failureGenContext.chapters.forEach((chapter) => {
@@ -197,37 +197,40 @@ export function FailureGeneratorCardTemplateUI(
                 </div>
                 {FailureShortList(failureGenContext, genUniqueID)}
             </div>
-            <div className="flex flex-col justify-end items-center">
-                <div className="flex-none p-2 mt-2 text-theme-text bg-theme-body">
-                    {ArmedState(failureGenData, genNumber)}
-                </div>
-                <div
-                    className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
-                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
-                    onClick={() => {
-                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                        const test : ModalContext = { failureGenData, genNumber, genUniqueID };
-                        failureGenContext.setModalContext(test);
-                    }}
-                >
-                    <Sliders2Vertical size={20} />
-                </div>
-                <div
-                    className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
-                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
-                    onClick={() => {
-                        failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                        const test : ModalContext = { failureGenData, genNumber, genUniqueID };
-                        failureGenContext.setModalContext(test);
-                    }}
-                >
-                    <ExclamationDiamond size={20} />
-                </div>
+            <div className="flex flex-col justify-between items-center">
                 <div
                     onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
-                    className="flex-none p-2 my-2 rounded-md transition duration-100 text-utility-red bg-theme-accent hover:text-theme-body hover:bg-utility-red"
+                    className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                    border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                 >
                     <Trash size={20} />
+                </div>
+                <div className="flex flex-col justify-end items-center">
+                    <div className="flex-none p-2 mt-2 text-theme-text bg-theme-body">
+                        {ArmedState(failureGenData, genNumber)}
+                    </div>
+                    <div
+                        className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                        onClick={() => {
+                            failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                            const test : ModalContext = { failureGenData, genNumber, genUniqueID };
+                            failureGenContext.setModalContext(test);
+                        }}
+                    >
+                        <Sliders2Vertical size={20} />
+                    </div>
+                    <div
+                        className="flex-none p-2 my-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                        onClick={() => {
+                            failureGenContext.setFailureGenModalType(ModalGenType.Failures);
+                            const test : ModalContext = { failureGenData, genNumber, genUniqueID };
+                            failureGenContext.setModalContext(test);
+                        }}
+                    >
+                        <ExclamationDiamond size={20} />
+                    </div>
                 </div>
             </div>
         </div>
