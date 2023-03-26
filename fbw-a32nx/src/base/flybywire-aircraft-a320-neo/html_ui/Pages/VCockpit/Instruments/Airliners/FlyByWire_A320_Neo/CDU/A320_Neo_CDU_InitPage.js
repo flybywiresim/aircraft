@@ -215,12 +215,15 @@ class CDUInitPage {
                     }
                 })
                     .then((data) => {
-                        Fmgc.SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(data, { doUplinkProcedures: false }).then(() => {
+                        Fmgc.SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(mcdu, data, { doUplinkProcedures: false }).then(() => {
                             console.log('SimBrief data uplinked.');
 
                             Fmgc.FlightPlanService.uplinkInsert();
+
+                            if (mcdu.page.Current === mcdu.page.InitPageA) {
+                                CDUInitPage.ShowPage1(mcdu);
+                            }
                         });
-                        // insertUplink(mcdu);
                     });
             }
         };
