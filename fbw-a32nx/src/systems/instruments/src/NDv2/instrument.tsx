@@ -192,6 +192,18 @@ class A32NX_ND extends BaseInstrument {
         this.vorBusPublisher.subscribe('nav4Location');
 
         this.vorBusPublisher.subscribe('localizerValid');
+        this.vorBusPublisher.subscribe('glideSlopeValid');
+        this.vorBusPublisher.subscribe('glideSlopeDeviation');
+
+        this.vorBusPublisher.subscribe('adf1Ident');
+        this.vorBusPublisher.subscribe('adf1ActiveFrequency');
+        this.vorBusPublisher.subscribe('adf1Valid');
+        this.vorBusPublisher.subscribe('adf1Radial');
+
+        this.vorBusPublisher.subscribe('adf2Ident');
+        this.vorBusPublisher.subscribe('adf2ActiveFrequency');
+        this.vorBusPublisher.subscribe('adf2Valid');
+        this.vorBusPublisher.subscribe('adf2Radial');
 
         this.tcasBusPublisher.subscribe('tcasTaOnly');
         this.tcasBusPublisher.subscribe('tcasFault');

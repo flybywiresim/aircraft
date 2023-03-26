@@ -2,6 +2,7 @@ import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscr
 import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusPublisher';
 import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { Layer } from 'instruments/src/MsfsAvionicsCommon/Layer';
 import { EcpSimVars } from '../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { FMBusEvents } from '../../MsfsAvionicsCommon/providers/FMBusPublisher';
@@ -22,7 +23,7 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2
                 this.isAdf.set(false);
             } else if (value === NavAidMode.ADF) {
                 this.isVor.set(false);
-                this.isAdf.set(false);
+                this.isAdf.set(true);
             } else {
                 this.isVor.set(false);
                 this.isAdf.set(false);
@@ -32,8 +33,10 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2
 
     render(): VNode | null {
         return (
-            // TODO ADF
-            <VorInfo bus={this.props.bus} index={this.props.index} visible={this.isVor} mode={this.props.mode} />
+            <>
+                <VorInfo bus={this.props.bus} index={this.props.index} visible={this.isVor} mode={this.props.mode} />
+                <AdfInfo bus={this.props.bus} index={this.props.index} visible={this.isAdf} mode={this.props.mode} />
+            </>
         );
     }
 }
@@ -170,8 +173,60 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                     <text x={this.x + 66} y={759} font-size={20} class="Cyan">NM</text>
                 </g>
 
-                <TuningModeIndicator bus={this.props.bus} index={this.props.index} frequency={this.frequencySub} />
+                <TuningModeIndicator bus={this.props.bus} index={this.props.index} />
             </g>
+        );
+    }
+}
+
+class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: Subscribable<boolean>, mode: Subscribable<EfisNdMode> }> {
+    private readonly x = this.props.index === 1 ? 37 : 668
+
+    private readonly path = this.props.index === 1
+        ? 'M31,686 L25,680 L19,686 M25,680 L25,719'
+        : 'M749,719 L749,696 L743,690 L737,696 L737,719 M743,690 L743,675';
+
+    private readonly adfIdent = Subject.create('');
+
+    private readonly adfFrequency = Subject.create(-1);
+
+    private readonly adfAvailable = Subject.create(true);
+
+    private readonly identVisibility = this.adfAvailable.map((it) => (it ? 'inherit' : 'hidden'));
+
+    private readonly frequencyVisibility = MappedSubject.create(([adfAvailable, adfFrequency]) => ((!adfAvailable && adfFrequency > 0) ? 'inherit' : 'hidden'), this.adfAvailable, this.adfFrequency)
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        const subs = this.props.bus.getSubscriber<VorSimVars>();
+
+        subs.on(`adf${this.props.index}Ident`).whenChanged().handle((value) => this.adfIdent.set(value));
+        subs.on(`adf${this.props.index}ActiveFrequency`).whenChanged().handle((value) => this.adfFrequency.set(value));
+        subs.on(`adf${this.props.index}Valid`).whenChanged().handle((value) => this.adfAvailable.set(value));
+    }
+
+    render(): VNode | null {
+        return (
+            <Layer x={0} y={0} visible={this.props.visible}>
+                <path
+                    d={this.path}
+                    strokw-width={2}
+                    class="Green"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
+                />
+                <text x={this.x} y={692} font-size={24} class="Green">
+                    ADF
+                    {this.props.index}
+                </text>
+
+                <text visibility={this.identVisibility} x={this.x} y={722} font-size={24} class="Green">{this.adfIdent}</text>
+
+                <text visibility={this.frequencyVisibility} x={this.x} y={722} font-size={24} class="Green">{this.adfFrequency.map((it) => Math.floor(it).toFixed(0))}</text>
+
+                <TuningModeIndicator bus={this.props.bus} index={this.props.index} adf />
+            </Layer>
         );
     }
 }
@@ -222,12 +277,12 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
     render(): VNode | null {
         return (
             <>
-                <tspan visibility={this.props.visible.map((v) => (v ? 'visible' : 'hidden'))} class={this.props.class}>
+                <tspan visibility={this.props.visible.map((v) => (v ? 'inherit' : 'hidden'))} class={this.props.class}>
                     {this.intPartText}
                 </tspan>
                 <tspan
                     font-size={20}
-                    visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'visible' : 'hidden'))}
+                    visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'inherit' : 'hidden'))}
                     class={this.props.class}
                 >
                     {this.decimalPartText}
@@ -240,7 +295,7 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
 interface TuningModeIndicatorProps {
     bus: EventBus,
     index: number,
-    frequency: Subscribable<number>,
+    adf?: boolean,
 }
 
 class TuningModeIndicator extends DisplayComponent<TuningModeIndicatorProps> {
@@ -266,10 +321,7 @@ class TuningModeIndicator extends DisplayComponent<TuningModeIndicatorProps> {
         return '';
     }, this.fm1Healthy, this.fm2Healthy, this.fm1NavTuningWord, this.fm2NavTuningWord);
 
-    // eslint-disable-next-line arrow-body-style
-    private readonly indicatorVisible = MappedSubject.create(([frequency, tuningMode]) => {
-        return frequency > 1 && tuningMode !== 'R';
-    }, this.props.frequency, this.tuningMode);
+    private readonly x = this.props.index === 1 ? 138 : 616;
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -288,8 +340,7 @@ class TuningModeIndicator extends DisplayComponent<TuningModeIndicatorProps> {
     render(): VNode | null {
         return (
             <text
-                visibility={this.indicatorVisible.map((v) => (v ? 'inherit' : 'hidden'))}
-                x={this.props.index === 1 ? 138 : 616}
+                x={this.x}
                 y={720}
                 font-size={20}
                 text-decoration="underline"

@@ -225,7 +225,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <RoseLSPage
                         bus={this.props.bus}
                         ref={this.roseLSPage}
-                        heading={this.headingWord}
+                        headingWord={this.headingWord}
+                        trackWord={this.trackWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'L' ? 2 : 1}
@@ -233,7 +234,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <RoseVorPage
                         bus={this.props.bus}
                         ref={this.roseVorPage}
-                        heading={this.headingWord}
+                        headingWord={this.headingWord}
+                        trackWord={this.trackWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'R' ? 2 : 1}
@@ -241,7 +243,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <RoseNavPage
                         bus={this.props.bus}
                         ref={this.roseNavPage}
-                        heading={this.headingWord}
+                        headingWord={this.headingWord}
+                        trackWord={this.trackWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />

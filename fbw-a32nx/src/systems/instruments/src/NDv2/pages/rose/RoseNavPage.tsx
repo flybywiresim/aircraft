@@ -8,6 +8,7 @@ import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429Reg
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { NDControlEvents } from '../../NDControlEvents';
+import { RadioNeedle } from '../../shared/RadioNeedle';
 
 export class RoseNavPage extends RoseMode {
     private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
@@ -84,11 +85,28 @@ export class RoseNavPage extends RoseMode {
 
                 <RoseModeUnderlay
                     bus={this.props.bus}
-                    heading={this.props.heading}
+                    heading={this.props.headingWord}
                     visible={this.isVisible}
                 />
 
-                {/* FIXME radio needles */}
+                <RadioNeedle
+                    bus={this.props.bus}
+                    headingWord={this.props.headingWord}
+                    trackWord={this.props.trackWord}
+                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
+                    index={1}
+                    mode={EfisNdMode.ROSE_NAV}
+                    centreHeight={384}
+                />
+                <RadioNeedle
+                    bus={this.props.bus}
+                    headingWord={this.props.headingWord}
+                    trackWord={this.props.trackWord}
+                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
+                    index={2}
+                    mode={EfisNdMode.ROSE_NAV}
+                    centreHeight={384}
+                />
 
                 <TrackLine
                     bus={this.props.bus}

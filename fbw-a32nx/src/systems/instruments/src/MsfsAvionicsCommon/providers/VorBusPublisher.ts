@@ -52,6 +52,16 @@ export interface VorSimVars {
     localizerValid: boolean,
     glideSlopeValid: boolean,
     glideSlopeDeviation: number,
+
+    adf1Ident: string,
+    adf1ActiveFrequency: number,
+    adf1Valid: boolean,
+    adf1Radial: number
+
+    adf2Ident: string,
+    adf2ActiveFrequency: number,
+    adf2Valid: boolean,
+    adf2Radial: number,
 }
 
 export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
@@ -106,6 +116,16 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['localizerValid', { name: 'L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', type: SimVarValueType.Bool }],
             ['glideSlopeValid', { name: 'L:A32NX_RADIO_RECEIVER_GS_IS_VALID', type: SimVarValueType.Bool }],
             ['glideSlopeDeviation', { name: 'L:A32NX_RADIO_RECEIVER_GS_DEVIATION', type: SimVarValueType.Number }],
+
+            ['adf1Ident', { name: 'ADF IDENT:1', type: SimVarValueType.String }],
+            ['adf1ActiveFrequency', { name: 'ADF ACTIVE FREQUENCY:1', type: SimVarValueType.KHz }],
+            ['adf1Valid', { name: 'ADF SIGNAL:1', type: SimVarValueType.Bool }],
+            ['adf1Radial', { name: 'ADF RADIAL:1', type: SimVarValueType.Degree }],
+
+            ['adf2Ident', { name: 'ADF IDENT:2', type: SimVarValueType.String }],
+            ['adf2ActiveFrequency', { name: 'ADF ACTIVE FREQUENCY:2', type: SimVarValueType.KHz }],
+            ['adf2Valid', { name: 'ADF SIGNAL:2', type: SimVarValueType.Bool }],
+            ['adf2Radial', { name: 'ADF RADIAL:2', type: SimVarValueType.Degree }],
         ]), bus);
     }
 }

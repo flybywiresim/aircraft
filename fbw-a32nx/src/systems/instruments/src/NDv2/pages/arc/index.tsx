@@ -199,8 +199,8 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                         trackWord={this.props.trackWord}
                         isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                         index={1}
-                        side="L"
                         mode={EfisNdMode.ARC}
+                        centreHeight={620}
                     />
                     <RadioNeedle
                         bus={this.props.bus}
@@ -208,8 +208,8 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                         trackWord={this.props.trackWord}
                         isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                         index={2}
-                        side="L"
                         mode={EfisNdMode.ARC}
+                        centreHeight={620}
                     />
                 </g>
 
