@@ -2549,7 +2549,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._getOrSelectWaypoints(this.navigationDatabase.searchNdb.bind(this.navigationDatabase), ident, callback);
     }
     getOrSelectNavaidsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetNavaidsByIdent.bind(this.dataManager), ident, callback);
+        this._getOrSelectWaypoints(this.navigationDatabase.searchAllNavaid.bind(this.navigationDatabase), ident, callback);
     }
 
     getOrSelectWaypointByIdent(ident, callback) {
