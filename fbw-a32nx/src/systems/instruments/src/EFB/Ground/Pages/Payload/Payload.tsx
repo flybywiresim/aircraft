@@ -604,7 +604,7 @@ export const Payload = () => {
     useEffect(() => {
         const centerTankMoment = -4.5;
         const innerTankMoment = -8;
-        const outerTankMoment = -17.6;
+        const outerTankMoment = -16.9;
         // Adjust ZFW CG Values based on payload
         const newZfw = emptyWeight + totalPax * paxWeight + totalCargo;
         const newZfwDesired = emptyWeight + totalPaxDesired * paxWeight + totalCargoDesired;
