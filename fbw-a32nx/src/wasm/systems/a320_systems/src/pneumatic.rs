@@ -1356,7 +1356,7 @@ mod tests {
     use systems::{
         air_conditioning::{
             acs_controller::{Pack, PackFlowController},
-            AdirsToAirCondInterface, AirConditioningSystem, PackFlowControllers, ZoneType,
+            AdirsToAirCondInterface, PackFlowControllers, ZoneType,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
@@ -1387,15 +1387,12 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
-    use crate::air_conditioning::{
-        A320AirConditioningSystemOverhead, A320PressurizationOverheadPanel,
-    };
+    use crate::air_conditioning::{A320AirConditioningSystem, A320PressurizationOverheadPanel};
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
-        air_conditioning_overhead: A320AirConditioningSystemOverhead<3>,
+        a320_air_conditioning_system: A320AirConditioningSystem,
         test_cabin: TestCabin,
 
         adirs: TestAdirs,
@@ -1408,17 +1405,7 @@ mod tests {
                 [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
 
             Self {
-                a320_air_conditioning_system: AirConditioningSystem::new(
-                    context,
-                    &cabin_zones,
-                    vec![ElectricalBusType::DirectCurrent(1)],
-                    vec![ElectricalBusType::DirectCurrent(2)],
-                    ElectricalBusType::AlternatingCurrent(1),
-                ),
-                air_conditioning_overhead: A320AirConditioningSystemOverhead::new(
-                    context,
-                    &cabin_zones,
-                ),
+                a320_air_conditioning_system: A320AirConditioningSystem::new(context, &cabin_zones),
                 test_cabin: TestCabin::new(),
 
                 adirs: TestAdirs::new(),
@@ -1437,7 +1424,6 @@ mod tests {
         ) {
             self.a320_air_conditioning_system.update(
                 context,
-                &self.air_conditioning_overhead,
                 &self.adirs,
                 &self.test_cabin,
                 engines,
@@ -1459,7 +1445,6 @@ mod tests {
     impl SimulationElement for TestAirConditioning {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.a320_air_conditioning_system.accept(visitor);
-            self.air_conditioning_overhead.accept(visitor);
 
             visitor.visit(self);
         }
@@ -1660,11 +1645,13 @@ mod tests {
         dc_2_bus: ElectricalBus,
         dc_ess_bus: ElectricalBus,
         dc_ess_shed_bus: ElectricalBus,
+        ac_1_bus: ElectricalBus,
         // Electric buses states to be able to kill them dynamically
         is_dc_1_powered: bool,
         is_dc_2_powered: bool,
         is_dc_ess_powered: bool,
         is_dc_ess_shed_powered: bool,
+        is_ac_1_powered: bool,
     }
     impl PneumaticTestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -1689,10 +1676,12 @@ mod tests {
                     context,
                     ElectricalBusType::DirectCurrentEssentialShed,
                 ),
+                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 is_dc_1_powered: true,
                 is_dc_2_powered: true,
                 is_dc_ess_powered: true,
                 is_dc_ess_shed_powered: true,
+                is_ac_1_powered: true,
             }
         }
 
@@ -1726,6 +1715,10 @@ mod tests {
 
             if self.is_dc_ess_shed_powered {
                 electricity.flow(&self.powered_source, &self.dc_ess_shed_bus);
+            }
+
+            if self.is_ac_1_powered {
+                electricity.flow(&self.powered_source, &self.ac_1_bus);
             }
         }
 

@@ -9,10 +9,8 @@ use crate::{
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe,
     },
     shared::{
-        arinc429::Arinc429Word, AverageExt, CabinAltitude, CabinSimulation, ConsumePower,
-        ControllerSignal, ElectricalBusType, ElectricalBuses, EngineBleedPushbutton,
-        EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
-        PackFlowValveState, PneumaticBleed,
+        arinc429::Arinc429Word, AverageExt, CabinSimulation, ConsumePower, ControllerSignal,
+        ElectricalBusType, ElectricalBuses,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorWriter,
@@ -217,152 +215,9 @@ pub trait PressurizationConstants {
     const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64;
 }
 
-pub struct AirConditioningSystem<const ZONES: usize, const FANS: usize, const ENGINES: usize> {
-    acsc: AirConditioningSystemController<ZONES, ENGINES>,
-    cabin_fans: [CabinFan; FANS],
-    mixer_unit: MixerUnit<ZONES>,
-    // Temporary structure until packs are simulated
-    packs: [AirConditioningPack; 2],
-    trim_air_system: TrimAirSystem<ZONES, ENGINES>,
-}
-
-impl<const ZONES: usize, const FANS: usize, const ENGINES: usize>
-    AirConditioningSystem<ZONES, FANS, ENGINES>
-{
-    pub fn new(
-        context: &mut InitContext,
-        cabin_zones: &[ZoneType; ZONES],
-        acsc_primary_powered_by: Vec<ElectricalBusType>,
-        acsc_secondary_powered_by: Vec<ElectricalBusType>,
-        fans_powered_by: ElectricalBusType,
-    ) -> Self {
-        Self {
-            acsc: AirConditioningSystemController::new(
-                context,
-                cabin_zones,
-                acsc_primary_powered_by,
-                acsc_secondary_powered_by,
-            ),
-            cabin_fans: [CabinFan::new(fans_powered_by); FANS],
-            mixer_unit: MixerUnit::new(cabin_zones),
-            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
-            trim_air_system: TrimAirSystem::new(context, cabin_zones),
-        }
-    }
-
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        acs_overhead: &impl AirConditioningOverheadShared,
-        adirs: &impl AdirsToAirCondInterface,
-        cabin_simulation: &impl CabinSimulation,
-        engines: [&impl EngineCorrectedN1; ENGINES],
-        engine_fire_push_buttons: &impl EngineFirePushButtons,
-        pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
-        pressurization: &impl CabinAltitude,
-        pressurization_overhead: &impl PressurizationOverheadShared,
-        lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) {
-        self.acsc.update(
-            context,
-            adirs,
-            acs_overhead,
-            cabin_simulation,
-            engines,
-            engine_fire_push_buttons,
-            pneumatic,
-            pneumatic_overhead,
-            pressurization,
-            pressurization_overhead,
-            lgciu,
-            &self.trim_air_system,
-        );
-
-        for fan in self.cabin_fans.iter_mut() {
-            fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
-        }
-
-        let pack_flow: [MassRate; 2] = [
-            self.acsc.individual_pack_flow(Pack(1)),
-            self.acsc.individual_pack_flow(Pack(2)),
-        ];
-        let duct_demand_temperature = self.acsc.duct_demand_temperature();
-        for (id, pack) in self.packs.iter_mut().enumerate() {
-            pack.update(pack_flow[id], &duct_demand_temperature)
-        }
-
-        let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
-        for fan in self.cabin_fans.iter() {
-            mixer_intakes.push(fan)
-        }
-        self.mixer_unit.update(mixer_intakes);
-
-        self.trim_air_system
-            .update(context, &self.mixer_unit, &self.acsc);
-    }
-
-    pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
-        self.acsc.pack_fault_determination(pneumatic)
-    }
-
-    pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
-        self.trim_air_system.mix_packs_air_update(pack_container);
-    }
-}
-
-impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> DuctTemperature
-    for AirConditioningSystem<ZONES, FANS, ENGINES>
-{
-    fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        self.trim_air_system.duct_temperature()
-    }
-}
-
-impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> PackFlow
-    for AirConditioningSystem<ZONES, FANS, ENGINES>
-{
-    fn pack_flow(&self) -> MassRate {
-        self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2))
-    }
-}
-
-impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> PackFlowControllers<ENGINES>
-    for AirConditioningSystem<ZONES, FANS, ENGINES>
-{
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ENGINES> {
-        self.acsc.pack_flow_controller(pack_id)
-    }
-}
-
-impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> OutletAir
-    for AirConditioningSystem<ZONES, FANS, ENGINES>
-{
-    fn outlet_air(&self) -> Air {
-        let mut outlet_air = Air::new();
-        outlet_air.set_flow_rate(self.pack_flow());
-        outlet_air.set_pressure(self.trim_air_system.trim_air_outlet_pressure());
-        outlet_air.set_temperature(self.duct_temperature().iter().average());
-
-        outlet_air
-    }
-}
-
-impl<const ZONES: usize, const FANS: usize, const ENGINES: usize> SimulationElement
-    for AirConditioningSystem<ZONES, FANS, ENGINES>
-{
-    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        self.acsc.accept(visitor);
-        self.trim_air_system.accept(visitor);
-        accept_iterable!(self.cabin_fans, visitor);
-
-        visitor.visit(self);
-    }
-}
-
 #[derive(Clone, Copy)]
 /// A320neo fan part number: VD3900-03
-struct CabinFan {
+pub struct CabinFan {
     is_on: bool,
     outlet_air: Air,
 
@@ -375,7 +230,7 @@ impl CabinFan {
     const PRESSURE_RISE_HPA: f64 = 22.; // hPa
     const FAN_EFFICIENCY: f64 = 0.75; // Ratio - so output matches AMM numbers
 
-    fn new(powered_by: ElectricalBusType) -> Self {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             is_on: false,
             outlet_air: Air::new(),
@@ -385,7 +240,7 @@ impl CabinFan {
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         cabin_simulation: &impl CabinSimulation,
         controller: &impl ControllerSignal<CabinFansSignal>,
@@ -439,13 +294,13 @@ impl SimulationElement for CabinFan {
 }
 
 #[derive(Clone, Copy)]
-struct MixerUnit<const ZONES: usize> {
+pub struct MixerUnit<const ZONES: usize> {
     outlet_air: Air,
     individual_outlets: [MixerUnitOutlet<ZONES>; ZONES],
 }
 
 impl<const ZONES: usize> MixerUnit<ZONES> {
-    fn new(cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+    pub fn new(cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
         Self {
             outlet_air: Air::new(),
             individual_outlets: cabin_zone_ids
@@ -459,7 +314,7 @@ impl<const ZONES: usize> MixerUnit<ZONES> {
         }
     }
 
-    fn update(&mut self, inlets: Vec<&dyn OutletAir>) {
+    pub fn update(&mut self, inlets: Vec<&dyn OutletAir>) {
         if inlets.is_empty() {
             panic!("Something went wrong when getting outlet air from Packs and Cabin");
         } else {
@@ -541,12 +396,12 @@ impl<const ZONES: usize> OutletAir for MixerUnitOutlet<ZONES> {
 }
 
 /// Temporary struct until packs are fully simulated
-struct AirConditioningPack {
+pub struct AirConditioningPack {
     outlet_air: Air,
 }
 
 impl AirConditioningPack {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             outlet_air: Air::new(),
         }
@@ -554,7 +409,7 @@ impl AirConditioningPack {
 
     /// Takes the minimum duct demand temperature as the pack outlet temperature. This is accurate to real world behaviour but
     /// this is a placeholder until the packs are modelled
-    fn update(&mut self, pack_flow: MassRate, duct_demand: &[ThermodynamicTemperature]) {
+    pub fn update(&mut self, pack_flow: MassRate, duct_demand: &[ThermodynamicTemperature]) {
         self.outlet_air.set_flow_rate(pack_flow);
 
         let min_temp = duct_demand
@@ -571,7 +426,13 @@ impl OutletAir for AirConditioningPack {
     }
 }
 
-struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
+impl Default for AirConditioningPack {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
     duct_temperature_id: [VariableIdentifier; ZONES],
     trim_air_valves: [TrimAirValve; ZONES],
     // These are not a real components of the system, but a tool to simulate the mixing of air
@@ -581,7 +442,7 @@ struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
-    fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+    pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
         let duct_temperature_id = cabin_zone_ids
             .iter()
             .map(|id| context.get_identifier(format!("COND_{}_DUCT_TEMP", id)))
@@ -613,7 +474,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         mixer_air: &MixerUnit<ZONES>,
@@ -639,7 +500,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             .set_pressure(self.trim_air_outlet_pressure());
     }
 
-    fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
+    pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
         let combined_temperature: f64 = (pack_container[0].mass().get::<kilogram>()
             * pack_container[0].temperature().get::<kelvin>()
             + pack_container[1].mass().get::<kilogram>()
@@ -659,7 +520,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         );
     }
 
-    fn trim_air_outlet_pressure(&self) -> Pressure {
+    pub fn trim_air_outlet_pressure(&self) -> Pressure {
         self.trim_air_mixers
             .iter()
             .map(|tam| tam.outlet_air.pressure())

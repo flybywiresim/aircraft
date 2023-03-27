@@ -34,7 +34,7 @@ enum ACSCActiveComputer {
     None,
 }
 
-pub(super) struct AirConditioningSystemController<const ZONES: usize, const ENGINES: usize> {
+pub struct AirConditioningSystemController<const ZONES: usize, const ENGINES: usize> {
     aircraft_state: AirConditioningStateManager,
     zone_controller: Vec<ZoneController<ZONES>>,
     pack_flow_controller: [PackFlowController<ENGINES>; 2],
@@ -153,10 +153,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
             .find_map(|&adiru_number| adirs.ground_speed(adiru_number).normal_value())
     }
 
-    pub(super) fn pack_fault_determination(
-        &self,
-        pneumatic: &impl PackFlowValveState,
-    ) -> [bool; 2] {
+    pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
         [
             self.pack_flow_controller[Pack(1).to_index()].fcv_status_determination(pneumatic),
             self.pack_flow_controller[Pack(2).to_index()].fcv_status_determination(pneumatic),
@@ -168,15 +165,15 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
             .trim_air_valve_controllers(zone_id)
     }
 
-    pub(super) fn cabin_fans_controller(&self) -> CabinFanController<ZONES> {
+    pub fn cabin_fans_controller(&self) -> CabinFanController<ZONES> {
         self.cabin_fans_controller
     }
 
-    pub(super) fn individual_pack_flow(&self, pack_id: Pack) -> MassRate {
+    pub fn individual_pack_flow(&self, pack_id: Pack) -> MassRate {
         self.pack_flow_controller[pack_id.to_index()].pack_flow()
     }
 
-    pub(super) fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+    pub fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
         self.zone_controller
             .iter()
             .map(|zone| zone.duct_demand_temperature())
@@ -1063,13 +1060,13 @@ impl ControllerSignal<TrimAirValveSignal> for TrimAirValveController {
     }
 }
 
-pub(super) enum CabinFansSignal {
+pub enum CabinFansSignal {
     On,
     Off,
 }
 
 #[derive(Clone, Copy)]
-pub(super) struct CabinFanController<const ZONES: usize> {
+pub struct CabinFanController<const ZONES: usize> {
     is_enabled: bool,
 }
 

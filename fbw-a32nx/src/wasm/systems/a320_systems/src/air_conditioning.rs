@@ -1,13 +1,14 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{Pack, PackFlowController},
+        acs_controller::{AirConditioningSystemController, Pack, PackFlowController},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
-        AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningSystem,
-        DuctTemperature, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlowControllers,
-        PressurizationConstants, PressurizationOverheadShared, ZoneType,
+        AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
+        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
+        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
+        ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -15,7 +16,7 @@ use systems::{
     },
     pneumatic::PneumaticContainer,
     shared::{
-        random_number, update_iterator::MaxStepLoop, CabinAltitude, CabinSimulation,
+        random_number, update_iterator::MaxStepLoop, AverageExt, CabinAltitude, CabinSimulation,
         ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
         EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
         PneumaticBleed,
@@ -44,9 +45,12 @@ impl A320AirConditioning {
     const PRESSURIZATION_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(50);
 
     pub fn new(context: &mut InitContext) -> Self {
+        let cabin_zones: [ZoneType; 3] =
+            [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
+
         Self {
             a320_cabin: A320Cabin::new(context),
-            a320_air_conditioning_system: A320AirConditioningSystem::new(context),
+            a320_air_conditioning_system: A320AirConditioningSystem::new(context, &cabin_zones),
             a320_pressurization_system: A320PressurizationSystem::new(context),
 
             pressurization_updater: MaxStepLoop::new(Self::PRESSURIZATION_SIM_MAX_TIME_STEP),
@@ -240,19 +244,22 @@ impl SimulationElement for A320Cabin {
 }
 
 pub struct A320AirConditioningSystem {
-    air_conditioning_system: AirConditioningSystem<3, 2, 2>,
+    acsc: AirConditioningSystemController<3, 2>,
+    cabin_fans: [CabinFan; 2],
+    mixer_unit: MixerUnit<3>,
+    // Temporary structure until packs are simulated
+    packs: [AirConditioningPack; 2],
+    trim_air_system: TrimAirSystem<3, 2>,
+
     air_conditioning_overhead: A320AirConditioningSystemOverhead<3>,
 }
 
 impl A320AirConditioningSystem {
-    fn new(context: &mut InitContext) -> Self {
-        let cabin_zones: [ZoneType; 3] =
-            [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
-
+    pub(crate) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 3]) -> Self {
         Self {
-            air_conditioning_system: AirConditioningSystem::new(
+            acsc: AirConditioningSystemController::new(
                 context,
-                &cabin_zones,
+                cabin_zones,
                 vec![
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::AlternatingCurrent(1),
@@ -261,16 +268,17 @@ impl A320AirConditioningSystem {
                     ElectricalBusType::DirectCurrent(2),
                     ElectricalBusType::AlternatingCurrent(2),
                 ],
-                ElectricalBusType::AlternatingCurrent(1),
             ),
-            air_conditioning_overhead: A320AirConditioningSystemOverhead::new(
-                context,
-                &cabin_zones,
-            ),
+            cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+            mixer_unit: MixerUnit::new(cabin_zones),
+            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
+            trim_air_system: TrimAirSystem::new(context, cabin_zones),
+
+            air_conditioning_overhead: A320AirConditioningSystemOverhead::new(context, cabin_zones),
         }
     }
 
-    fn update(
+    pub(crate) fn update(
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
@@ -283,10 +291,10 @@ impl A320AirConditioningSystem {
         pressurization_overhead: &A320PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.air_conditioning_system.update(
+        self.acsc.update(
             context,
-            &self.air_conditioning_overhead,
             adirs,
+            &self.air_conditioning_overhead,
             cabin_simulation,
             engines,
             engine_fire_push_buttons,
@@ -295,40 +303,75 @@ impl A320AirConditioningSystem {
             pressurization,
             pressurization_overhead,
             lgciu,
+            &self.trim_air_system,
         );
-        self.air_conditioning_overhead.set_pack_pushbutton_fault(
-            self.air_conditioning_system
-                .pack_fault_determination(pneumatic),
-        );
+
+        for fan in self.cabin_fans.iter_mut() {
+            fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
+        }
+
+        let pack_flow: [MassRate; 2] = [
+            self.acsc.individual_pack_flow(Pack(1)),
+            self.acsc.individual_pack_flow(Pack(2)),
+        ];
+        let duct_demand_temperature = self.acsc.duct_demand_temperature();
+        for (id, pack) in self.packs.iter_mut().enumerate() {
+            pack.update(pack_flow[id], &duct_demand_temperature)
+        }
+
+        let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
+        for fan in self.cabin_fans.iter() {
+            mixer_intakes.push(fan)
+        }
+        self.mixer_unit.update(mixer_intakes);
+
+        self.trim_air_system
+            .update(context, &self.mixer_unit, &self.acsc);
+
+        self.air_conditioning_overhead
+            .set_pack_pushbutton_fault(self.pack_fault_determination(pneumatic));
+    }
+
+    pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
+        self.acsc.pack_fault_determination(pneumatic)
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
-        self.air_conditioning_system
-            .mix_packs_air_update(pack_container);
+        self.trim_air_system.mix_packs_air_update(pack_container);
     }
 }
 
 impl PackFlowControllers<2> for A320AirConditioningSystem {
     fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
-        self.air_conditioning_system.pack_flow_controller(pack_id)
+        self.acsc.pack_flow_controller(pack_id)
     }
 }
 
 impl DuctTemperature for A320AirConditioningSystem {
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        self.air_conditioning_system.duct_temperature()
+        self.trim_air_system.duct_temperature()
     }
 }
 
 impl OutletAir for A320AirConditioningSystem {
     fn outlet_air(&self) -> Air {
-        self.air_conditioning_system.outlet_air()
+        let mut outlet_air = Air::new();
+        outlet_air.set_flow_rate(
+            self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2)),
+        );
+        outlet_air.set_pressure(self.trim_air_system.trim_air_outlet_pressure());
+        outlet_air.set_temperature(self.duct_temperature().iter().average());
+
+        outlet_air
     }
 }
 
 impl SimulationElement for A320AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        self.air_conditioning_system.accept(visitor);
+        self.acsc.accept(visitor);
+        self.trim_air_system.accept(visitor);
+        accept_iterable!(self.cabin_fans, visitor);
+
         self.air_conditioning_overhead.accept(visitor);
 
         visitor.visit(self);
@@ -1652,7 +1695,6 @@ mod tests {
             self.query(|a| {
                 a.a320_cabin_air
                     .a320_air_conditioning_system
-                    .air_conditioning_system
                     .outlet_air()
                     .flow_rate()
             })
