@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode, DebounceTimer } from 'msfssdk';
 import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusPublisher';
 import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
@@ -62,11 +62,20 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     private readonly trueRefActive = Subject.create(false);
 
-    private readonly dmeVisible = MappedSubject.create(([available, hasDme, frequency]) => (available || hasDme) && frequency > 1, this.availableSub, this.hasDmeSub, this.frequencySub);
-
     private readonly dashedDme = MappedSubject.create(([hasDme, dmeDistance]) => !hasDme || dmeDistance <= 0, this.hasDmeSub, this.dmeDistanceSub);
 
-    private readonly frequencyVisible = MappedSubject.create(([available, hasDme, frequency]) => !(available || hasDme) && frequency > 1, this.availableSub, this.hasDmeSub, this.frequencySub);
+    private readonly identReceived = MappedSubject.create(
+        ([dmeDist, hasNav, ident]) => (dmeDist > 0 || hasNav) && ident,
+        this.dmeDistanceSub,
+        this.availableSub,
+        this.identSub,
+    );
+
+    private readonly identVisible = Subject.create(false);
+
+    private readonly identTimer = new DebounceTimer();
+
+    private readonly frequencyVisible = MappedSubject.create(([identVisible, frequency]) => !identVisible && frequency > 1, this.identVisible, this.frequencySub);
 
     private readonly stationTrueRef = MappedSubject.create(
         ([latitude, declination]) => Math.abs(latitude) > 75 && declination < Number.EPSILON,
@@ -114,6 +123,16 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         sub.on(`nav${this.props.index}Location`).handle((v) => this.stationLatitude.set(v.lat));
 
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
+
+        this.identReceived.sub((v) => {
+            if (v) {
+                // the morse code is sent 3 times in a 30 second period, depending on when you pick up the signal you could be lucky or unlucky
+                this.identTimer.schedule(() => this.identVisible.set(true), 5000 + Math.random() * 10000);
+            } else {
+                this.identTimer.clear();
+                this.identVisible.set(false);
+            }
+        });
     }
 
     render(): VNode | null {
@@ -136,7 +155,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                 <text x={this.x + (this.props.index === 1 ? 61 : -54)} y={692} class="FontTiny Amber" visibility={this.trueWarning.map((c) => (c ? 'inherit' : 'hidden'))}>TRUE</text>
 
                 <text
-                    visibility={this.dmeVisible.map((v) => (v ? 'inherit' : 'hidden'))}
+                    visibility={this.identVisible.map((v) => (v ? 'inherit' : 'hidden'))}
                     x={this.x}
                     y={722}
                     font-size={24}
@@ -194,7 +213,11 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     private readonly identVisibility = this.adfAvailable.map((it) => (it ? 'inherit' : 'hidden'));
 
-    private readonly frequencyVisibility = MappedSubject.create(([adfAvailable, adfFrequency]) => ((!adfAvailable && adfFrequency > 0) ? 'inherit' : 'hidden'), this.adfAvailable, this.adfFrequency)
+    private readonly frequencyVisibility = MappedSubject.create(
+        ([adfAvailable, adfFrequency]) => ((!adfAvailable && adfFrequency > 0) ? 'inherit' : 'hidden'),
+        this.adfAvailable,
+        this.adfFrequency,
+    );
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
