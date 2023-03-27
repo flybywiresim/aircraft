@@ -158,7 +158,6 @@ impl SimulationElement for A380AirConditioning {
 }
 
 struct A380Cabin {
-    passenger_rows_id: [Option<Vec<VariableIdentifier>>; 3],
     fwd_door_id: VariableIdentifier,
     rear_door_id: VariableIdentifier,
 
@@ -173,22 +172,10 @@ impl A380Cabin {
     const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
 
     fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
-        let passenger_rows_id = [
-            None,
-            Some(vec![
-                context.get_identifier("PAX_TOTAL_ROWS_1_6".to_owned()),
-                context.get_identifier("PAX_TOTAL_ROWS_7_13".to_owned()),
-            ]),
-            Some(vec![
-                context.get_identifier("PAX_TOTAL_ROWS_14_21".to_owned()),
-                context.get_identifier("PAX_TOTAL_ROWS_22_29".to_owned()),
-            ]),
-        ];
         let mut number_of_passengers: [u8; 18] = [0; 18];
         number_of_passengers[0] = 2;
 
         Self {
-            passenger_rows_id,
             fwd_door_id: context.get_identifier(Self::FWD_DOOR.to_owned()),
             rear_door_id: context.get_identifier(Self::REAR_DOOR.to_owned()),
 
@@ -243,16 +230,6 @@ impl SimulationElement for A380Cabin {
         self.rear_door_is_open = rear_door_read > Ratio::default();
         let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
         self.fwd_door_is_open = fwd_door_read > Ratio::default();
-
-        for (zone_sum_passengers, variable) in self
-            .number_of_passengers
-            .iter_mut()
-            .zip(&self.passenger_rows_id)
-        {
-            if let Some(var) = variable {
-                *zone_sum_passengers = var.iter().map(|v| Read::<u8>::read(reader, v)).sum();
-            }
-        }
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1697,6 +1674,14 @@ mod tests {
             self.query(|a| a.a380_cabin_air.a320_pressurization_system.cpc[0].landing_elevation())
         }
 
+        fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .duct_temperature()
+            })
+        }
+
         fn is_mode_sel_pb_auto(&mut self) -> bool {
             self.read_by_name("OVHD_PRESS_MODE_SEL_PB_IS_AUTO")
         }
@@ -2490,6 +2475,43 @@ mod tests {
                     test_bed.cabin_altitude().get::<foot>(),
                     initial_altitude.get::<foot>(),
                     20.
+                );
+            }
+        }
+    }
+
+    mod a380_air_conditioning_tests {
+        use super::*;
+
+        const A380_ZONE_IDS: [&str; 18] = [
+            "CKPT",
+            "MAIN_DECK_1",
+            "MAIN_DECK_2",
+            "MAIN_DECK_3",
+            "MAIN_DECK_4",
+            "MAIN_DECK_5",
+            "MAIN_DECK_6",
+            "MAIN_DECK_7",
+            "MAIN_DECK_8",
+            "UPPER_DECK_1",
+            "UPPER_DECK_2",
+            "UPPER_DECK_3",
+            "UPPER_DECK_4",
+            "UPPER_DECK_5",
+            "UPPER_DECK_6",
+            "UPPER_DECK_7",
+            "CARGO_FWD",
+            "CARGO_BULK",
+        ];
+
+        #[test]
+        fn duct_temperature_starts_at_24_c_in_all_zones() {
+            let test_bed = test_bed();
+
+            for id in 0..A380_ZONE_IDS.len() {
+                assert_eq!(
+                    test_bed.duct_temperature()[id],
+                    ThermodynamicTemperature::new::<degree_celsius>(24.)
                 );
             }
         }
