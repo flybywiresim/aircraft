@@ -1,5 +1,5 @@
 import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, ConsumerSubject } from 'msfssdk';
-import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@shared/arinc429';
+import { Arinc429Register, Arinc429WordData } from '@shared/arinc429';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../../ND/utils/MapParameters';
