@@ -1,8 +1,9 @@
-import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode, MappedSubject } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode, MappedSubject, ClockEvents } from 'msfssdk';
 import { EfisNdMode, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
 import { Arinc429WordData } from '@shared/arinc429';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { diffAngle } from 'msfs-geo';
 import { EcpSimVars } from '../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { VorSimVars } from '../../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
@@ -101,7 +102,11 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
         'M377,257 L377,225 L370,225 L384,201 L398,225 L391,225 L391,256 M384,201 L384,134 M384,634 L384,567 M377,511 L377,567 L391,567 L391,511',
     ];
 
-    private readonly relativeBearing = Subject.create(0);
+    private readonly rawRelativeBearing = Subject.create(0);
+
+    private readonly filteredRelativeBearing = Subject.create(0);
+
+    private lastFilterTime = 0;
 
     private readonly radioAvailable = Subject.create(false);
 
@@ -120,7 +125,7 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
     // eslint-disable-next-line arrow-body-style
     private readonly rotationSub = MappedSubject.create(([relativeBearing, trackCorrection]) => {
         return `rotate(${relativeBearing + trackCorrection} 384 ${this.props.centreHeight})`;
-    }, this.relativeBearing, this.props.trackCorrection);
+    }, this.filteredRelativeBearing, this.props.trackCorrection);
 
     private readonly needlePaths = Subject.create(['', '']);
 
@@ -140,15 +145,28 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcEvents & EcpSimVars & VorSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & ClockEvents & DmcEvents & EcpSimVars & VorSimVars>();
 
-        sub.on(`nav${this.props.index}RelativeBearing`).whenChanged().handle((value) => this.relativeBearing.set(value));
+        sub.on(`nav${this.props.index}RelativeBearing`).whenChanged().handle((value) => this.rawRelativeBearing.set(value));
         sub.on(`nav${this.props.index}Available`).whenChanged().handle((value) => this.radioAvailable.set(!!value));
 
         sub.on(`nav${this.props.index}StationDeclination`).handle((v) => this.stationDeclination.set(v));
         sub.on(`nav${this.props.index}Location`).handle((v) => this.stationLatitude.set(v.lat));
 
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
+
+        sub.on('simTime').handle((simTime) => {
+            const dt = Math.min(simTime - this.lastFilterTime, 100);
+            this.lastFilterTime = simTime;
+
+            const diff = diffAngle(this.filteredRelativeBearing.get(), this.rawRelativeBearing.get());
+            if (!this.availableSub.get() || Math.abs(diff) < 0.1) {
+                return;
+            }
+
+            const bearing = this.filteredRelativeBearing.get() + dt / 800 * diff;
+            this.filteredRelativeBearing.set(bearing % 360);
+        });
 
         switch (this.props.mode) {
         case EfisNdMode.ARC:
