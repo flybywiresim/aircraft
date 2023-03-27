@@ -1,4 +1,4 @@
-import { EventBus, Publisher } from 'msfssdk';
+import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 
 export interface SimplaneValues {
     units: string;
@@ -14,7 +14,7 @@ export interface SimplaneValues {
 export class SimplaneValueProvider {
     private publisher: Publisher<SimplaneValues>;
 
-    constructor(private readonly bus: EventBus) {
+    constructor(private readonly bus: ArincEventBus) {
         this.publisher = this.bus.getPublisher<SimplaneValues>();
     }
 

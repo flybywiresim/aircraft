@@ -1,4 +1,4 @@
-import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 interface PowerSupplySimvars {
     msfsAcBus1: number,

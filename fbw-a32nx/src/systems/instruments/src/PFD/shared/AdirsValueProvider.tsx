@@ -1,9 +1,9 @@
-import { EventBus, SimVarValueType } from 'msfssdk';
+import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from '../PFD';
 import { PFDSimvarPublisher, PFDSimvars } from './PFDSimvarPublisher';
 
 export class AdirsValueProvider {
-    constructor(private readonly bus: EventBus, private readonly pfdSimvar: PFDSimvarPublisher) {
+    constructor(private readonly bus: ArincEventBus, private readonly pfdSimvar: PFDSimvarPublisher) {
 
     }
 

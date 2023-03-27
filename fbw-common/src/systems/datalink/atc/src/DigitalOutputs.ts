@@ -1,6 +1,6 @@
 import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, AtsuStatusCodes, CpdlcMessage, DclMessage, FansMode, OclMessage, SimVarSources, WeatherMessage } from '@datalink/common';
 import { AtcAocRouterMessages } from '@datalink/router';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AtcAocMessages } from './databus/AtcAocBus';
 import { AtcFmsMessages } from './databus/FmsBus';
 

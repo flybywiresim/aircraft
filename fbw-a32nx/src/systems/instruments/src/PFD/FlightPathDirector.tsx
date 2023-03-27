@@ -1,9 +1,10 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { getDisplayIndex } from './PFD';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
@@ -20,7 +21,7 @@ interface FlightPathVectorData {
     fdActive: boolean;
 }
 
-export class FlightPathDirector extends DisplayComponent<{bus: EventBus, isAttExcessive: Subscribable<boolean>}> {
+export class FlightPathDirector extends DisplayComponent<{bus: ArincEventBus, isAttExcessive: Subscribable<boolean>}> {
     private data: FlightPathVectorData = {
         roll: new Arinc429Word(0),
         pitch: new Arinc429Word(0),

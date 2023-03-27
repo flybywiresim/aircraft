@@ -12,7 +12,7 @@ import {
     DclMessage,
     OclMessage,
 } from '@datalink/common';
-import { EventSubscriber } from 'msfssdk';
+import { EventSubscriber } from '@microsoft/msfs-sdk';
 
 export class MessageStorage {
     public atisReports: Map<string, AtisMessage[]> = new Map();

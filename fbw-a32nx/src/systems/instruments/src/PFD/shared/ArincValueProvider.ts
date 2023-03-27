@@ -1,7 +1,8 @@
-import { EventBus, Publisher } from 'msfssdk';
+import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from './PFDSimvarPublisher';
+import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
 
 export interface Arinc429Values {
     pitchAr: Arinc429Word;
@@ -99,7 +100,7 @@ export class ArincValueProvider {
 
     private facToUse = 0;
 
-    constructor(private readonly bus: EventBus) {
+    constructor(private readonly bus: ArincEventBus) {
 
     }
 
