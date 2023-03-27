@@ -72,7 +72,7 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
             for (let i = 0; i < nbGenerator; i++) {
                 if (failureGeneratorArmed[i] && absoluteTime5s > failureStartTime[i] + settings[i * numberOfSettingsPerGenerator + 1]) {
                     activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                        activate, activeFailures, uniqueGenPrefix + i.toString());
+                        activate, activeFailures, 1);
                     failureGeneratorArmed[i] = false;
                     change = true;
                     if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;

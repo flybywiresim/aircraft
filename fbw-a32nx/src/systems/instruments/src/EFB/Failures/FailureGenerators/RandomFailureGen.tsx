@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { failureGenConfigAltClimb, failureGeneratorAltClimb }
-    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeClimbFailureGenerator';
-import { failureGenConfigAltDesc, failureGeneratorAltDesc }
-    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeDescentFailureGenerator';
+import { failureGenConfigAltitude, failureGeneratorAltitude }
+    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerator';
 import { failureGenConfigPerHour, failureGeneratorPerHour }
     from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
 import { failureGenConfigSpeedAccel, failureGeneratorSpeedAccel }
@@ -94,13 +92,19 @@ export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[])
     return { generatorFailuresGetters, generatorFailuresSetters };
 };
 
-export const activateRandomFailure = (failureList : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>), activeFailures : Set<number>, _generatorID : string) => {
-    const failuresOffMap = failureList.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
-    if (failuresOffMap.length > 0) {
-        const pick = Math.floor(Math.random() * failuresOffMap.length);
-        const pickedFailure = failureList.find((failure) => failure.identifier === failuresOffMap[pick]);
-        if (pickedFailure) {
-            activate(failuresOffMap[pick]);
+export const activateRandomFailure = (failureList : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>),
+    activeFailures : Set<number>, failuresAtOnce : number) => {
+    let failuresOffMap = failureList.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
+    const maxNumber = Math.min(failuresAtOnce, failuresOffMap.length);
+    for (let i = 0; i < maxNumber; i++) {
+        if (failuresOffMap.length > 0) {
+            const pick = Math.floor(Math.random() * failuresOffMap.length);
+            const failureIdentifierPicked = failuresOffMap[pick];
+            const pickedFailure = failureList.find((failure) => failure.identifier === failureIdentifierPicked);
+            if (pickedFailure) {
+                activate(failureIdentifierPicked);
+                failuresOffMap = failuresOffMap.filter((identifier) => identifier !== failureIdentifierPicked);
+            }
         }
     }
 };
@@ -129,8 +133,7 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
     const [failureGenModalType, setFailureGenModalType] = useState<ModalGenType>(ModalGenType.None);
     const [modalContext, setModalContext] = useState<ModalContext | undefined >(undefined);
 
-    allGenSettings.set(failureGenConfigAltClimb().genName, failureGenConfigAltClimb());
-    allGenSettings.set(failureGenConfigAltDesc().genName, failureGenConfigAltDesc());
+    allGenSettings.set(failureGenConfigAltitude().genName, failureGenConfigAltitude());
     allGenSettings.set(failureGenConfigSpeedAccel().genName, failureGenConfigSpeedAccel());
     allGenSettings.set(failureGenConfigSpeedDecel().genName, failureGenConfigSpeedDecel());
     allGenSettings.set(failureGenConfigPerHour().genName, failureGenConfigPerHour());
@@ -154,8 +157,7 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
 };
 
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
-    failureGeneratorAltClimb,
-    failureGeneratorAltDesc,
+    failureGeneratorAltitude,
     failureGeneratorSpeedAccel,
     failureGeneratorSpeedDecel,
     failureGeneratorPerHour,

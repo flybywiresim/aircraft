@@ -72,7 +72,7 @@ export function GeneratorFailureSelection(failureGenContext: FailureGenContext):
                                         failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                                     }}
                                 >
-                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
+                                    <h2><u>{t('Failures.Generators.All')}</u></h2>
                                 </div>
                                 <div><h2>/</h2></div>
                                 <div
@@ -82,7 +82,7 @@ export function GeneratorFailureSelection(failureGenContext: FailureGenContext):
                                         failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                                     }}
                                 >
-                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
+                                    <h2><u>{t('Failures.Generators.None')}</u></h2>
                                 </div>
                                 <div className="mr-2"><h2>)</h2></div>
                             </div>

@@ -189,12 +189,10 @@ export function FailureGeneratorCardTemplateUI(
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${genNumber.toString()}`;
     return (
         <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
-            <div className="flex flex-col mr-4 text-left grow align-left">
-                <div className="pb-2">
-                    <h2>
-                        {`${genUniqueID} : ${failureGenData.alias()}`}
-                    </h2>
-                </div>
+            <div className="flex flex-col mr-4 text-left grow max-w-[86%] align-left">
+                <h2 className="pb-2 truncate break-words max-w-[100%]">
+                    {`${genUniqueID} : ${failureGenData.alias()}`}
+                </h2>
                 {FailureShortList(failureGenContext, genUniqueID)}
             </div>
             <div className="flex flex-col justify-between items-center">
@@ -238,7 +236,7 @@ export function FailureGeneratorCardTemplateUI(
     );
 }
 
-type SettingVar = {
+export type SettingVar = {
     settingVar: number,
 }
 
@@ -247,6 +245,11 @@ const rearmButtons: (ButtonType & SettingVar)[] = [
     { name: t('Failures.Generators.Once'), setting: 'Once', settingVar: 1 },
     { name: t('Failures.Generators.TakeOff'), setting: 'Take-Off', settingVar: 2 },
     { name: t('Failures.Generators.Repeat'), setting: 'Repeat', settingVar: 3 },
+];
+
+export const failureActivationMode: (ButtonType & SettingVar)[] = [
+    { name: 'One', setting: 'One', settingVar: 0 },
+    { name: 'All', setting: 'All', settingVar: 1 },
 ];
 
 export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number,
@@ -276,6 +279,82 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
                     })}
                 </SelectGroup>
             </div>
+        </div>
+    );
+}
+
+export type ButtonIcon = {
+    settingVar : number,
+    icon : JSX.Element,
+    setting : string,
+}
+
+export function FailureGeneratorChoiceSetting(title:string, value: number, multiChoice : (ButtonIcon)[],
+    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
+    return (
+        <div
+            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
+        >
+            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
+            <SelectGroup>
+                {multiChoice.map((button) => (
+                    <SelectItem
+                        key={button.setting}
+                        onSelect={() => {
+                            setNewSetting(button.settingVar, generatorSettings, genIndex, settingIndex);
+                            failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                        }}
+                        selected={value === button.settingVar}
+                    >
+                        {button.icon}
+                    </SelectItem>
+                ))}
+            </SelectGroup>
+        </div>
+    );
+}
+
+export function FailureGeneratorSingleSettingShortcut(title:string, width : number,
+    unit : string, shortCutText : string, shortCutValue : number, min:number, max:number,
+    value: number, mult : number,
+    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
+    const multCheck = mult === 0 ? 1 : mult;
+    return (
+        <div
+            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
+        >
+            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
+            <SimpleInput
+                className={`w-${width} font-mono`}
+                fontSizeClassName="text-2xl"
+                number
+                min={min}
+                max={max}
+                value={value * multCheck}
+                onBlur={(x: string) => {
+                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                        setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
+                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                    }
+                }}
+            />
+            <div className="ml-2">
+                {unit}
+                {' ( '}
+                <span
+                    className="hover:text-theme-highlight"
+                    onClick={() => {
+                        setNewSetting(shortCutValue, generatorSettings, genIndex, settingIndex);
+                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                    }}
+                >
+                    {shortCutText}
+                </span>
+                {' )'}
+            </div>
+
         </div>
     );
 }
