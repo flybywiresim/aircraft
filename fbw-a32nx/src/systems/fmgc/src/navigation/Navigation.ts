@@ -232,6 +232,7 @@ export class Navigation implements NavigationProvider {
             } else {
                 // copy the selected VOR/DME in VOR/DME position mode
                 Object.assign(this.selectedNavaids[1], this.selectedNavaids[0]);
+                this.selectedNavaids[1].mode = SelectedNavaidMode.Auto;
                 this.resetSelectedNavaid(2);
             }
             const mmrStatus = this.navaidTuner.getMmrRadioTuningStatus(1);
