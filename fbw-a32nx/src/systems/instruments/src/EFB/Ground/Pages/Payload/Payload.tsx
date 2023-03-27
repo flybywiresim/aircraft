@@ -110,6 +110,7 @@ export const Payload = () => {
 
     // Units
     // Weight/CG
+    // TODO FIXME: Move all ZFW and GW calculations to rust - Will be refactored in phase 2
     const [zfw, setZfw] = useState(0);
     const [zfwCg, setZfwCg] = useState(0);
     const [zfwDesired, setZfwDesired] = useState(0);
@@ -155,17 +156,15 @@ export const Payload = () => {
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
-            const perBagWeight = simbriefBagWeight;
-            setPaxBagWeight(perBagWeight);
+            setPaxBagWeight(simbriefBagWeight);
             setPaxWeight(simbriefPaxWeight);
             setTargetPax(simbriefPax > maxPax ? maxPax : simbriefPax);
-            setTargetCargo(simbriefBag, simbriefFreight, perBagWeight);
+            setTargetCargo(simbriefBag, simbriefFreight, simbriefBagWeight);
         } else {
-            const perBagWeight = Units.poundToKilogram(simbriefBagWeight);
-            setPaxBagWeight(perBagWeight);
+            setPaxBagWeight(Units.poundToKilogram(simbriefBagWeight));
             setPaxWeight(Units.poundToKilogram(simbriefPaxWeight));
             setTargetPax(simbriefPax);
-            setTargetCargo(simbriefBag, Units.poundToKilogram(simbriefFreight), perBagWeight);
+            setTargetCargo(simbriefBag, Units.poundToKilogram(simbriefFreight), Units.poundToKilogram(simbriefBagWeight));
         }
     };
 
@@ -310,6 +309,10 @@ export const Payload = () => {
             return;
         }
 
+        // TODO FIXME: This calculation does not work correctly if user clicks on many seats in rapid succession
+        const oldPaxBag = totalPaxDesired * paxBagWeight;
+        const freight = Math.max(totalCargoDesired - oldPaxBag, 0);
+
         const seatFlags: SeatFlags = desiredFlags[stationIndex];
         seatFlags.toggleSeatId(seatId);
         setDesiredFlags[stationIndex](seatFlags);
@@ -318,10 +321,6 @@ export const Payload = () => {
         desiredFlags.forEach((flag) => {
             newPaxDesired += flag.getTotalFilledSeats();
         });
-        // TODO FIXME: This calculation does not work correctly if user clicks on many seats in rapid succession
-        const newPaxBag = newPaxDesired * paxBagWeight;
-        const paxDelta = newPaxDesired - totalPaxDesired;
-        const freight = Math.max(totalCargoDesired - newPaxBag + paxDelta * paxBagWeight, 0);
 
         setTargetCargo(newPaxDesired, freight);
     }, [
@@ -469,14 +468,26 @@ export const Payload = () => {
     }, [gsxDeBoardingState]);
 
     useEffect(() => {
-        const simbriefStatus = (simbriefDataLoaded
-            && (
-                simbriefPax !== totalPaxDesired
-                || simbriefFreight + simbriefBag * simbriefBagWeight !== totalCargoDesired
-                || simbriefPaxWeight !== paxWeight
-                || simbriefBagWeight !== paxBagWeight
-            )
-        );
+        let simbriefStatus = false;
+        if (simbriefUnits === 'kgs') {
+            simbriefStatus = (simbriefDataLoaded
+                && (
+                    simbriefPax !== totalPaxDesired
+                    || Math.abs(simbriefFreight + simbriefBag * simbriefBagWeight - totalCargoDesired) > 3.0
+                    || Math.abs(simbriefPaxWeight - paxWeight) > 3.0
+                    || Math.abs(simbriefBagWeight - paxBagWeight) > 3.0
+                )
+            );
+        } else {
+            simbriefStatus = (simbriefDataLoaded
+                && (
+                    simbriefPax !== totalPaxDesired
+                    || Math.abs(Units.poundToKilogram(simbriefFreight + simbriefBag * simbriefBagWeight) - totalCargoDesired) > 3.0
+                    || Math.abs(Units.poundToKilogram(simbriefPaxWeight) - paxWeight) > 3.0
+                    || Math.abs(Units.poundToKilogram(simbriefBagWeight) - paxBagWeight) > 3.0
+                )
+            );
+        }
 
         if (gsxPayloadSyncEnabled === 1) {
             if (boardingStarted) {
@@ -488,9 +499,21 @@ export const Payload = () => {
             return;
         }
         setShowSimbriefButton(simbriefStatus);
-    }, [simbriefDataLoaded, boardingStarted, gsxPayloadSyncEnabled]);
+    }, [
+        simbriefUnits,
+        simbriefFreight,
+        simbriefBag,
+        simbriefBagWeight,
+        paxWeight, paxBagWeight,
+        totalPaxDesired, totalCargoDesired,
+        simbriefDataLoaded,
+        boardingStarted,
+        gsxPayloadSyncEnabled,
+    ]);
 
     useEffect(() => {
+        // TODO FIXME: Move all this logic into rust
+        // Note: Looks messy after phase 1 refactor, will be fixed by deprecating this and moving all calculations into rust
         const centerTankMoment = -4.5;
         const innerTankMoment = -8;
         const outerTankMoment = -17.6;
@@ -604,15 +627,15 @@ export const Payload = () => {
                                                 {t('Ground.Payload.Cargo')}
                                             </td>
                                             <td>
-                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${usingMetric ? maxCargo.toFixed(0) : Units.kilogramToPound(maxCargo).toFixed(0)} ${massUnitForDisplay}`}>
+                                                <TooltipWrapper text={`${t('Ground.Payload.TT.MaxCargo')} ${Units.kilogramToUser(maxCargo).toFixed(0)} ${massUnitForDisplay}`}>
                                                     <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                         <PayloadValueInput
                                                             min={0}
-                                                            max={maxCargo > 0 ? Math.round(usingMetric ? maxCargo : Units.kilogramToPound(maxCargo)) : 99999}
-                                                            value={usingMetric ? totalCargoDesired : Units.kilogramToPound(totalCargoDesired)}
+                                                            max={maxCargo > 0 ? Math.round(Units.kilogramToUser(maxCargo)) : 99999}
+                                                            value={Units.kilogramToUser(totalCargoDesired)}
                                                             onBlur={(x) => {
                                                                 if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) {
-                                                                    setTargetCargo(0, usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
+                                                                    setTargetCargo(0, Units.userToKilogram(parseInt(x)));
                                                                 }
                                                             }}
                                                             unit={massUnitForDisplay}
@@ -622,7 +645,7 @@ export const Payload = () => {
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 w-20 font-mono font-light whitespace-nowrap text-md">
-                                                <PayloadValueUnitDisplay value={totalCargo} padTo={5} unit={massUnitForDisplay} />
+                                                <PayloadValueUnitDisplay value={Units.kilogramToUser(totalCargo)} padTo={5} unit={massUnitForDisplay} />
                                             </td>
                                         </tr>
 
@@ -633,14 +656,14 @@ export const Payload = () => {
                                             <td>
                                                 {(displayZfw
                                                     ? (
-                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${usingMetric ? Loadsheet.specs.weights.maxZfw.toFixed(0) : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxZFW')} ${Units.kilogramToUser(Loadsheet.specs.weights.maxZfw).toFixed(0)} ${massUnitForDisplay}`}>
                                                             <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                                 <PayloadValueInput
-                                                                    min={Math.round(usingMetric ? emptyWeight : Units.kilogramToPound(emptyWeight))}
-                                                                    max={Math.round(usingMetric ? Loadsheet.specs.weights.maxZfw : Units.kilogramToPound(Loadsheet.specs.weights.maxZfw))}
-                                                                    value={usingMetric ? zfwDesired : Units.kilogramToPound(zfwDesired)}
+                                                                    min={Math.round(Units.kilogramToUser(emptyWeight))}
+                                                                    max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxZfw))}
+                                                                    value={Units.kilogramToUser(zfwDesired)}
                                                                     onBlur={(x) => {
-                                                                        if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
+                                                                        if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processZfw(Units.userToKilogram(parseInt(x)));
                                                                     }}
                                                                     unit={massUnitForDisplay}
                                                                     disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
@@ -649,14 +672,14 @@ export const Payload = () => {
                                                         </TooltipWrapper>
                                                     )
                                                     : (
-                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxGW')} ${usingMetric ? Loadsheet.specs.weights.maxGw.toFixed(0) : Units.kilogramToPound(Loadsheet.specs.weights.maxGw).toFixed(0)} ${usingMetric ? 'kg' : 'lb'}`}>
+                                                        <TooltipWrapper text={`${t('Ground.Payload.TT.MaxGW')} ${Units.kilogramToUser(Loadsheet.specs.weights.maxGw).toFixed(0)} ${massUnitForDisplay}`}>
                                                             <div className={`px-4 font-light whitespace-nowrap text-md ${(gsxPayloadSyncEnabled === 1 && boardingStarted) ? 'pointer-events-none' : ''}`}>
                                                                 <PayloadValueInput
-                                                                    min={Math.round(usingMetric ? emptyWeight : Units.kilogramToPound(emptyWeight))}
-                                                                    max={Math.round(usingMetric ? Loadsheet.specs.weights.maxGw : Units.kilogramToPound(Loadsheet.specs.weights.maxGw))}
-                                                                    value={usingMetric ? gwDesired : Units.kilogramToPound(gwDesired)}
+                                                                    min={Math.round(Units.kilogramToUser(emptyWeight))}
+                                                                    max={Math.round(Units.kilogramToUser(Loadsheet.specs.weights.maxGw))}
+                                                                    value={Units.kilogramToUser(gwDesired)}
                                                                     onBlur={(x) => {
-                                                                        if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
+                                                                        if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) processGw(Units.userToKilogram(parseInt(x)));
                                                                     }}
                                                                     unit={massUnitForDisplay}
                                                                     disabled={gsxPayloadSyncEnabled === 1 && boardingStarted}
@@ -667,7 +690,11 @@ export const Payload = () => {
                                                 )}
                                             </td>
                                             <td className="px-4 w-20 font-mono whitespace-nowrap text-md">
-                                                <PayloadValueUnitDisplay value={displayZfw ? zfw : gw} padTo={5} unit={massUnitForDisplay} />
+                                                <PayloadValueUnitDisplay
+                                                    value={displayZfw ? Units.kilogramToUser(zfw) : Units.kilogramToUser(gw)}
+                                                    padTo={5}
+                                                    unit={massUnitForDisplay}
+                                                />
                                             </td>
                                         </tr>
                                         <tr>
@@ -691,7 +718,7 @@ export const Payload = () => {
                                                 </div>
                                             </td>
                                             <td>
-                                                <TooltipWrapper text={displayZfw ? `${t('Ground.Payload.TT.MaxZFWCG')} ${Loadsheet.specs.weights.maxZfwCg}%` : `${t('Ground.Payload.TT.MaxZFWCG')} ${Loadsheet.specs.weights.maxGwCg}%`}>
+                                                <TooltipWrapper text={displayZfw ? `${t('Ground.Payload.TT.MaxZFWCG')} ${Loadsheet.specs.weights.maxZfwCg}%` : `${t('Ground.Payload.TT.MaxGWCG')} ${Loadsheet.specs.weights.maxGwCg}%`}>
                                                     <div className="px-4 font-mono whitespace-nowrap text-md">
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
@@ -730,12 +757,12 @@ export const Payload = () => {
                                                 min={Math.round(Loadsheet.specs.pax.minPaxWeight)}
                                                 max={Math.round(Loadsheet.specs.pax.maxPaxWeight)}
                                                 placeholder={Math.round(Loadsheet.specs.pax.defaultPaxWeight).toString()}
-                                                value={usingMetric ? paxWeight.toFixed(0) : Units.kilogramToPound(paxWeight).toFixed(0)}
+                                                value={Units.kilogramToUser(paxWeight).toFixed(0)}
                                                 onBlur={(x) => {
-                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxWeight(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
+                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxWeight(Units.userToKilogram(parseInt(x)));
                                                 }}
                                             />
-                                            <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
+                                            <div className="absolute top-2 right-3 text-lg text-gray-400">{massUnitForDisplay}</div>
                                         </div>
                                     </TooltipWrapper>
 
@@ -748,12 +775,12 @@ export const Payload = () => {
                                                 min={Math.round(Loadsheet.specs.pax.minBagWeight)}
                                                 max={Math.round(Loadsheet.specs.pax.maxBagWeight)}
                                                 placeholder={Math.round(Loadsheet.specs.pax.defaultBagWeight).toString()}
-                                                value={usingMetric ? paxBagWeight.toFixed(0) : Units.kilogramToPound(paxBagWeight).toFixed(0)}
+                                                value={Units.kilogramToUser(paxBagWeight).toFixed(0)}
                                                 onBlur={(x) => {
-                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxBagWeight(usingMetric ? parseInt(x) : Units.poundToKilogram(parseInt(x)));
+                                                    if (!Number.isNaN(parseInt(x)) || parseInt(x) === 0) setPaxBagWeight(Units.userToKilogram(parseInt(x)));
                                                 }}
                                             />
-                                            <div className="absolute top-2 right-3 text-lg text-gray-400">{usingMetric ? 'KG' : 'LB'}</div>
+                                            <div className="absolute top-2 right-3 text-lg text-gray-400">{massUnitForDisplay}</div>
                                         </div>
                                     </TooltipWrapper>
                                     {gsxPayloadSyncEnabled !== 1 && (
