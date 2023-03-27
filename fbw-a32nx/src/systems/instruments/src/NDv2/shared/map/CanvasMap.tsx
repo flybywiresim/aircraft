@@ -151,13 +151,18 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             this.vectors[EfisVectorsGroup.ACTIVE].push(...data);
         });
 
-        sub.on('traffic').handle((data: NdTraffic[]) => {
-            this.handleNewTraffic(data);
+        sub.on('vectorsDashed').handle((data: PathVector[]) => {
+            this.vectors[EfisVectorsGroup.DASHED].length = 0;
+            this.vectors[EfisVectorsGroup.DASHED].push(...data);
         });
 
         sub.on('vectorsTemporary').handle((data: PathVector[]) => {
             this.vectors[EfisVectorsGroup.TEMPORARY].length = 0;
             this.vectors[EfisVectorsGroup.TEMPORARY].push(...data);
+        });
+
+        sub.on('traffic').handle((data: NdTraffic[]) => {
+            this.handleNewTraffic(data);
         });
 
         sub.on('realTime').whenChangedBy(8).handle((value) => {
@@ -198,7 +203,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.fixInfoLayer.data = fixInfoSymbols;
 
-        const constraints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed);
+        const constraints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Constraint);
 
         this.constraintsLayer.data = constraints;
 
@@ -316,6 +321,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         case EfisVectorsGroup.ACTIVE:
             context.strokeStyle = '#0f0';
             context.setLineDash(NO_DASHES);
+            break;
+        case EfisVectorsGroup.DASHED:
+            context.strokeStyle = '#0f0';
+            context.setLineDash(DASHES);
             break;
         case EfisVectorsGroup.TEMPORARY:
             context.strokeStyle = '#ffff00';

@@ -14,11 +14,11 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
             const ry = y + mapHeight / 2;
 
             if (symbol.type & NdSymbolTypeFlags.Runway) {
-                if ((mapParameters.nmRadius / 2) < 80) {
+                if (mapParameters.nmRadius < 80) {
                     this.paintScaledRunway(false, context, rx, ry, symbol, mapParameters);
+                } else {
+                    this.paintUnscaledRunway(false, context, rx, ry, symbol, mapParameters);
                 }
-
-                // TODO paint unscaled runway
             }
         }
     }
