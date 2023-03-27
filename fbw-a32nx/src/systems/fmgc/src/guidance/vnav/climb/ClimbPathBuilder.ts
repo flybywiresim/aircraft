@@ -50,9 +50,6 @@ export class ClimbPathBuilder {
                 break;
             }
 
-            // Code is WIP. Idea is to make ClimbPathBuilder more aware of speed constraints,
-            // so we can properly integrate acceleration segments
-
             if (constraintAltitude > profile.lastCheckpoint.altitude) {
                 // Continue climb
                 if (profile.lastCheckpoint.reason === VerticalCheckpointReason.AltitudeConstraint) {
@@ -295,7 +292,7 @@ export class ClimbPathBuilder {
     }
 
     private computeLevelFlightSegmentPrediction(stepSize: Feet, altitude: Feet, initialSpeed: Knots, fuelWeight: number): StepResults {
-        const { zeroFuelWeight, managedClimbSpeedMach } = this.computationParametersObserver.get();
+        const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
 
         return Predictions.levelFlightStep(
             altitude,
@@ -306,6 +303,7 @@ export class ClimbPathBuilder {
             fuelWeight,
             0,
             this.atmosphericConditions.isaDeviation,
+            tropoPause,
         );
     }
 
