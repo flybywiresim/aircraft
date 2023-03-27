@@ -1,14 +1,14 @@
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
+import { DEFAULT_AIRCRAFT_CONFIG, DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { AircraftConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { MathUtils } from '@shared/MathUtils';
 import { EngineModel } from '../EngineModel';
-import { FlapConf } from '../common';
 import { Predictions, StepResults } from '../Predictions';
 import { AtmosphericConditions } from '../AtmosphericConditions';
 
+// TODO: Consider encapsulating arguments in an object to avoid having to guess parameter order.
 export interface ClimbStrategy {
     /**
      * Computes predictions for a single segment using the atmospheric conditions in the middle.
@@ -19,18 +19,26 @@ export interface ClimbStrategy {
      * @param fuelOnBoard Remainging fuel on board at the start of the climb
      * @returns `StepResults`
      */
-    predictToAltitude(initialAltitude: number, finalAltitude: number, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults;
+    predictToAltitude(
+        initialAltitude: number, finalAltitude: number, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration
+    ): StepResults;
 
-    predictToDistance(initialAltitude: number, distance: NauticalMiles, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults;
+    predictToDistance(
+        initialAltitude: number, distance: NauticalMiles, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration
+    ): StepResults;
 
-    predictToSpeed(initialAltitude: number, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults;
+    predictToSpeed(
+        initialAltitude: number, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration
+    ): StepResults;
 }
 
 export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     constructor(private observer: VerticalProfileComputationParametersObserver, private atmosphericConditions: AtmosphericConditions, private verticalSpeed: FeetPerMinute) { }
 
-    predictToAltitude(initialAltitude: Feet, finalAltitude: Feet, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults {
-        const { zeroFuelWeight, perfFactor } = this.observer.get();
+    predictToAltitude(
+        initialAltitude: Feet, finalAltitude: Feet, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
+    ): StepResults {
+        const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
         return Predictions.verticalSpeedStep(
             initialAltitude,
@@ -42,12 +50,24 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
             fuelOnBoard,
             this.atmosphericConditions.isaDeviation,
             headwindComponent.value,
+            tropoPause,
+            config.gearExtended,
+            config.flapConfig,
+            config.gearExtended,
             perfFactor,
         );
     }
 
-    predictToDistance(initialAltitude: Feet, distance: NauticalMiles, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults {
-        const { zeroFuelWeight, perfFactor } = this.observer.get();
+    predictToDistance(
+        initialAltitude: Feet,
+        distance: NauticalMiles,
+        speed: Knots,
+        mach: Mach,
+        fuelOnBoard: number,
+        headwindComponent: WindComponent,
+        config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
+    ): StepResults {
+        const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
         return Predictions.verticalSpeedDistanceStep(
             initialAltitude,
@@ -59,18 +79,24 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
             fuelOnBoard,
             this.atmosphericConditions.isaDeviation,
             headwindComponent.value,
+            tropoPause,
+            config.speedbrakesExtended,
+            config.flapConfig,
+            config.gearExtended,
             perfFactor,
         );
     }
 
-    predictToSpeed(initialAltitude: Feet, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults {
+    predictToSpeed(
+        initialAltitude: Feet, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
+    ): StepResults {
         const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
 
         const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
 
         const n1 = this.verticalSpeed > 0
             ? getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, speed, managedClimbSpeedMach)
-            : EngineModel.getIdleN1(initialAltitude, computedMach) + VnavConfig.IDLE_N1_MARGIN;
+            : EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
 
         return Predictions.verticalSpeedStepWithSpeedChange(
             initialAltitude,
@@ -84,8 +110,9 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            false,
-            FlapConf.CLEAN,
+            config.speedbrakesExtended,
+            config.flapConfig,
+            config.gearExtended,
             perfFactor,
         );
     }
@@ -95,9 +122,9 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     constructor(private observer: VerticalProfileComputationParametersObserver, private atmosphericConditions: AtmosphericConditions, public flightPathAngle: Radians) { }
 
     predictToAltitude(
-        initialAltitude: Feet, finalAltitude: Feet, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration,
+        initialAltitude: Feet, finalAltitude: Feet, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
     ): StepResults {
-        const { zeroFuelWeight, perfFactor } = this.observer.get();
+        const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
         const distance = (finalAltitude - initialAltitude) / (6076.12 * Math.tan(this.flightPathAngle * MathUtils.DEGREES_TO_RADIANS));
 
@@ -111,17 +138,24 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
             fuelOnBoard,
             this.atmosphericConditions.isaDeviation,
             headwindComponent.value,
+            tropoPause,
+            config.gearExtended,
+            config.flapConfig,
+            config.speedbrakesExtended,
             perfFactor,
-            config?.gearExtended ?? false,
-            config?.flapConfig ?? FlapConf.CLEAN,
-            config?.speedbrakesExtended ?? false,
         );
     }
 
     predictToDistance(
-        initialAltitude: Feet, distance: NauticalMiles, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration,
+        initialAltitude: Feet,
+        distance: NauticalMiles,
+        speed: Knots,
+        mach: Mach,
+        fuelOnBoard: number,
+        headwindComponent: WindComponent,
+        config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
     ): StepResults {
-        const { zeroFuelWeight, perfFactor } = this.observer.get();
+        const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
         const finalAltitude = initialAltitude + 6076.12 * distance * Math.tan(this.flightPathAngle * MathUtils.DEGREES_TO_RADIANS);
 
@@ -135,10 +169,11 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
             fuelOnBoard,
             this.atmosphericConditions.isaDeviation,
             headwindComponent.value,
+            tropoPause,
+            config.gearExtended,
+            config.flapConfig,
+            config.speedbrakesExtended,
             perfFactor,
-            config?.gearExtended ?? false,
-            config?.flapConfig ?? FlapConf.CLEAN,
-            config?.speedbrakesExtended ?? false,
         );
     }
 
@@ -146,13 +181,15 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
      * If the path is being built backwards and we are trying to calculate a deceleration segment, `finalSpeed` should be greater than `speed`.
      * In this case, this predicts a segment where the aircraft decelerates to `finalSpeed` from `speed`.
      */
-    predictToSpeed(initialAltitude: Feet, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration): StepResults {
+    predictToSpeed(
+        initialAltitude: Feet, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
+    ): StepResults {
         const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
 
         const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
         const predictedN1 = this.flightPathAngle > 0
             ? getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, speed, managedClimbSpeedMach)
-            : EngineModel.getIdleN1(initialAltitude, computedMach) + VnavConfig.IDLE_N1_MARGIN;
+            : EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
 
         return Predictions.speedChangeStep(
             this.flightPathAngle,
@@ -167,9 +204,10 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            config?.gearExtended ?? false,
-            config?.flapConfig ?? FlapConf.CLEAN,
-            config?.speedbrakesExtended ?? false,
+            config.gearExtended,
+            config.flapConfig,
+            config.speedbrakesExtended,
+            0,
             perfFactor,
         );
     }
@@ -178,7 +216,9 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
 export class ClimbThrustClimbStrategy implements ClimbStrategy {
     constructor(private observer: VerticalProfileComputationParametersObserver, private atmosphericConditions: AtmosphericConditions) { }
 
-    predictToAltitude(initialAltitude: Feet, finalAltitude: Feet, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults {
+    predictToAltitude(
+        initialAltitude: Feet, finalAltitude: Feet, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
+    ): StepResults {
         const { zeroFuelWeight, tropoPause, perfFactor, managedClimbSpeedMach } = this.observer.get();
 
         return Predictions.altitudeStep(
@@ -192,13 +232,22 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            false,
-            FlapConf.CLEAN,
+            config.speedbrakesExtended,
+            config.flapConfig,
+            config.speedbrakesExtended,
             perfFactor,
         );
     }
 
-    predictToDistance(initialAltitude: Feet, distance: NauticalMiles, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults {
+    predictToDistance(
+        initialAltitude: Feet,
+        distance: NauticalMiles,
+        speed: Knots,
+        mach: Mach,
+        fuelOnBoard: number,
+        headwindComponent: WindComponent,
+        config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
+    ): StepResults {
         const { zeroFuelWeight, tropoPause, perfFactor, managedClimbSpeedMach } = this.observer.get();
 
         return Predictions.distanceStep(
@@ -212,13 +261,16 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            false,
-            FlapConf.CLEAN,
+            config.speedbrakesExtended,
+            config.flapConfig,
+            config.gearExtended,
             perfFactor,
         );
     }
 
-    predictToSpeed(initialAltitude: Feet, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent): StepResults {
+    predictToSpeed(
+        initialAltitude: Feet, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG,
+    ): StepResults {
         const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
 
         return Predictions.altitudeStepWithSpeedChange(
@@ -232,8 +284,9 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            false,
-            FlapConf.CLEAN,
+            config.speedbrakesExtended,
+            config.flapConfig,
+            config.gearExtended,
             perfFactor,
         );
     }

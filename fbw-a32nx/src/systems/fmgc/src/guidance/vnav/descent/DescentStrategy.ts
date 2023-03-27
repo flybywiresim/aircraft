@@ -8,7 +8,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 
-const DEFAULT_CONFIG: AircraftConfiguration = {
+export const DEFAULT_AIRCRAFT_CONFIG: AircraftConfiguration = {
     flapConfig: FlapConf.CLEAN,
     speedbrakesExtended: false,
     gearExtended: false,
@@ -101,16 +101,23 @@ export class DesModeStrategy implements DescentStrategy {
 export class IdleDescentStrategy implements DescentStrategy {
     constructor(private observer: VerticalProfileComputationParametersObserver,
         private atmosphericConditions: AtmosphericConditions,
-        private defaultConfig: AircraftConfiguration = DEFAULT_CONFIG) { }
+        private defaultConfig: AircraftConfiguration = DEFAULT_AIRCRAFT_CONFIG) { }
 
     predictToAltitude(
-        initialAltitude: number, finalAltitude: number, speed: number, mach: number, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = this.defaultConfig,
+        initialAltitude: number,
+        finalAltitude: number,
+        speed: number,
+        mach: number,
+        fuelOnBoard: number,
+        headwindComponent: WindComponent,
+        config: Partial<AircraftConfiguration> = this.defaultConfig,
     ): StepResults {
         const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
+        const { flapConfig, gearExtended, speedbrakesExtended } = { ...this.defaultConfig, ...config };
 
         const midwayAltitude = (initialAltitude + finalAltitude) / 2;
         const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(midwayAltitude, speed), mach);
-        const predictedN1 = EngineModel.getIdleN1(midwayAltitude, computedMach) + VnavConfig.IDLE_N1_MARGIN;
+        const predictedN1 = EngineModel.getIdleN1(midwayAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
 
         return Predictions.altitudeStep(
             initialAltitude,
@@ -123,19 +130,27 @@ export class IdleDescentStrategy implements DescentStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            config.speedbrakesExtended,
-            config.flapConfig,
+            speedbrakesExtended,
+            flapConfig,
+            gearExtended,
             perfFactor,
         );
     }
 
     predictToDistance(
-        initialAltitude: number, distance: number, speed: number, mach: number, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = this.defaultConfig,
+        initialAltitude: number,
+        distance: number,
+        speed: number,
+        mach: number,
+        fuelOnBoard: number,
+        headwindComponent: WindComponent,
+        config: Partial<AircraftConfiguration> = this.defaultConfig,
     ): StepResults {
         const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
+        const { flapConfig, gearExtended, speedbrakesExtended } = { ...this.defaultConfig, ...config };
 
         const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
-        const predictedN1 = EngineModel.getIdleN1(initialAltitude, computedMach) + VnavConfig.IDLE_N1_MARGIN;
+        const predictedN1 = EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
 
         return Predictions.distanceStep(
             initialAltitude,
@@ -148,19 +163,27 @@ export class IdleDescentStrategy implements DescentStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            config.speedbrakesExtended,
-            config.flapConfig,
+            speedbrakesExtended,
+            flapConfig,
+            gearExtended,
             perfFactor,
         );
     }
 
     predictToSpeed(
-        initialAltitude: number, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config: AircraftConfiguration = this.defaultConfig,
+        initialAltitude: number,
+        finalSpeed: Knots,
+        speed: Knots,
+        mach: Mach,
+        fuelOnBoard: number,
+        headwindComponent: WindComponent,
+        config: Partial<AircraftConfiguration> = this.defaultConfig,
     ): StepResults {
         const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
+        const { flapConfig, gearExtended, speedbrakesExtended } = { ...this.defaultConfig, ...config };
 
         const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
-        const predictedN1 = EngineModel.getIdleN1(initialAltitude, computedMach) + VnavConfig.IDLE_N1_MARGIN;
+        const predictedN1 = EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
 
         const initialMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
         const finalMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, finalSpeed), mach);
@@ -178,9 +201,9 @@ export class IdleDescentStrategy implements DescentStrategy {
             headwindComponent.value,
             this.atmosphericConditions.isaDeviation,
             tropoPause,
-            config.gearExtended,
-            config.flapConfig,
-            config.speedbrakesExtended,
+            gearExtended,
+            flapConfig,
+            speedbrakesExtended,
             perfFactor,
         );
     }

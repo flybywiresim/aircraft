@@ -51,6 +51,7 @@ export class TakeoffPathBuilder {
             tropoPause,
             false,
             takeoffFlapsSetting,
+            false,
             perfFactor,
         );
 
@@ -90,6 +91,7 @@ export class TakeoffPathBuilder {
             tropoPause,
             false,
             FlapConf.CLEAN,
+            false,
             perfFactor,
         );
 

@@ -31,7 +31,6 @@ export interface StepResults {
 
 export class Predictions {
     /**
-     * THIS IS DONE.
      * @param initialAltitude altitude at beginning of step, in feet
      * @param stepSize the size of the altitude step, in feet
      * @param econCAS airspeed during climb (taking SPD LIM & restrictions into account)
@@ -42,7 +41,10 @@ export class Predictions {
      * @param headwindAtMidStepAlt headwind component (in knots) at initialAltitude + (stepSize / 2); tailwind is negative
      * @param isaDev ISA deviation (in celsius)
      * @param tropoAltitude tropopause altitude (feet)
-     * @param speedbrakesExtended whether or not speedbrakes are extended at half (for geometric segment path test only)
+     * @param speedbrakesExtended whether or not speedbrakes are extended at half
+     * @param flapsConfig flaps configuration to use for drag calculation
+     * @param gearExtended whether or not gear is extended
+     * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static altitudeStep(
         initialAltitude: number,
@@ -57,6 +59,7 @@ export class Predictions {
         tropoAltitude: number,
         speedbrakesExtended = false,
         flapsConfig: FlapConf = FlapConf.CLEAN,
+        gearExtended: boolean = false,
         perfFactorPercent: number = 0,
     ): StepResults {
         const midStepAltitude = initialAltitude + (stepSize / 2);
@@ -96,7 +99,7 @@ export class Predictions {
         let previousMidStepWeight = midStepWeight;
         let iterations = 0;
         do {
-            const drag = FlightModel.getDrag(midStepWeight, mach, delta, speedbrakesExtended, false, flapsConfig);
+            const drag = FlightModel.getDrag(midStepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const accelerationFactor = Common.getAccelerationFactor(mach, midStepAltitude, isaDev, midStepAltitude > tropoAltitude, accelFactorMode);
             pathAngle = FlightModel.getConstantThrustPathAngle(thrust, midStepWeight, drag, accelerationFactor);
@@ -126,18 +129,20 @@ export class Predictions {
     }
 
     /**
-     * THIS IS DONE.
      * @param initialAltitude altitude at beginning of step, in feet
-     * @param stepSize the size of the altitude step, in feet
-     * @param econCAS airspeed during climb (taking SPD LIM & restrictions into account)
+     * @param distance distance to travel during step, in nautical miles
+     * @param econCAS corrected airspeed at the start of the step, in knots
      * @param econMach mach during climb, after passing crossover altitude
      * @param commandedN1 N1% at CLB (or idle) setting, depending on flight phase
-     * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT B)
+     * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT FUEL PRED)
      * @param initialFuelWeight weight of fuel at the end of last step
      * @param headwindAtMidStepAlt headwind component (in knots) at initialAltitude + (stepSize / 2); tailwind is negative
      * @param isaDev ISA deviation (in celsius)
      * @param tropoAltitude tropopause altitude (feet)
-     * @param speedbrakesExtended whether or not speedbrakes are extended at half (for geometric segment path test only)
+     * @param speedbrakesExtended whether or not speedbrakes are extended at half
+     * @param flapsConfig flaps configuration to use for drag calculation
+     * @param gearExtended whether or not gear is extended
+     * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static distanceStep(
         initialAltitude: number,
@@ -152,6 +157,7 @@ export class Predictions {
         tropoAltitude: number,
         speedbrakesExtended = false,
         flapsConfig: FlapConf = FlapConf.CLEAN,
+        gearExtended: boolean = false,
         perfFactorPercent: number = 0,
     ): StepResults {
         const weightEstimate = zeroFuelWeight + initialFuelWeight;
@@ -194,7 +200,7 @@ export class Predictions {
             const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
-            const drag = FlightModel.getDrag(midStepWeight, mach, delta, speedbrakesExtended, false, flapsConfig);
+            const drag = FlightModel.getDrag(midStepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const accelerationFactor = Common.getAccelerationFactor(mach, midStepAltitude, isaDev, midStepAltitude > tropoAltitude, accelFactorMode);
             pathAngle = FlightModel.getConstantThrustPathAngle(thrust, midStepWeight, drag, accelerationFactor);
@@ -225,7 +231,6 @@ export class Predictions {
     }
 
     /**
-     * THIS IS DONE.
      * @param altitude altitude of this level segment
      * @param stepSize the distance of the step, in NM
      * @param econCAS airspeed during level segment
@@ -234,6 +239,11 @@ export class Predictions {
      * @param initialFuelWeight weight of fuel at the end of last step
      * @param headwind headwind component (in knots) at altitude; tailwind is negative
      * @param isaDev ISA deviation (in celsius)
+     * @param tropoAltitude tropopause altitude (feet)
+     * @param speedbrakesExtended whether or not speedbrakes are extended at half
+     * @param flapsConfig flaps configuration to use for drag calculation
+     * @param gearExtended whether or not gear is extended
+     * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static levelFlightStep(
         altitude: number,
@@ -244,9 +254,14 @@ export class Predictions {
         initialFuelWeight: number,
         headwind: number,
         isaDev: number,
+        tropoAltitude: number,
+        speedbrakesExtended = false,
+        flapsConfig: FlapConf = FlapConf.CLEAN,
+        gearExtended: boolean = false,
+        perfFactorPercent: number = 0,
     ): StepResults {
-        const theta = Common.getTheta(altitude, isaDev);
-        const delta = Common.getDelta(altitude);
+        const theta = Common.getTheta(altitude, isaDev, altitude > tropoAltitude);
+        const delta = Common.getDelta(altitude, altitude > tropoAltitude);
         let mach = Common.CAStoMach(econCAS, delta);
 
         let tas: Knots;
@@ -259,7 +274,7 @@ export class Predictions {
         }
 
         const initialWeight = zeroFuelWeight + initialFuelWeight;
-        const thrust = FlightModel.getDrag(initialWeight, mach, delta, false, false, FlapConf.CLEAN);
+        const thrust = FlightModel.getDrag(initialWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
         // Engine model calculations
         const theta2 = Common.getTheta2(theta, mach);
@@ -269,7 +284,7 @@ export class Predictions {
         // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
         const correctedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
         const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, altitude) * 2;
-        const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2); // in lbs/hour
+        const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
         const stepTime = (stepSize / (tas - headwind)) * 3600; // in seconds
         const fuelBurned = (fuelFlow / 3600) * stepTime;
@@ -287,7 +302,6 @@ export class Predictions {
     }
 
     /**
-     * THIS IS DONE.
      * @param flightPathAngle flight path angle (in degrees) to fly the speed change step at
      * @param initialAltitude altitude at beginning of step, in feet
      * @param initialCAS airspeed at beginning of step
@@ -302,7 +316,9 @@ export class Predictions {
      * @param tropoAltitude tropopause altitude (feet)
      * @param gearExtended whether the gear is extended
      * @param flapConfig the flaps configuration
+     * @param speedbrakesExtended whether or not speedbrakes are extended at half
      * @param minimumAbsoluteAcceleration the minimum absolute acceleration before emitting TOO_LOW_DECELERATION (kts/s)
+     * @param perfFactorPercent performance factor (in percent) entered in the MCDU to apply to fuel calculations
      */
     static speedChangeStep(
         flightPathAngle: number,
@@ -356,7 +372,7 @@ export class Predictions {
         const correctedThrust = EngineModel.tableInterpolation(EngineModel.table1506, correctedN1, averageMach) * 2 * EngineModel.maxThrust;
         const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, averageMach, initialAltitude) * 2;
         const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
-        const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100); // in lbs/hour
+        const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
         const weightEstimate = zeroFuelWeight + initialFuelWeight;
 
@@ -420,7 +436,6 @@ export class Predictions {
     }
 
     /**
-     * THIS IS DONE.
      * @param initialAltitude altitude at beginning of step, in feet
      * @param finalAltitude altitude at end of step, in feet
      * @param distance distance of step, in NM
@@ -429,9 +444,12 @@ export class Predictions {
      * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT B)
      * @param initialFuelWeight weight of fuel at the end of last step
      * @param isaDev ISA deviation (in celsius)
+     * @param headwind headwind component (in knots)
      * @param tropoAltitude tropopause altitude (feet)
      * @param gearExtended whether or not the landing gear is extended
-     * @param flapConfig the current flap configuration
+     * @param flapConfig flap configuration to use for drag calculation
+     * @param speedbrakesExtended whether or not the speedbrakes are extended at half
+     * @param perfFactorPercent performance factor (in percent)
      */
     static geometricStep(
         initialAltitude: number,
@@ -444,17 +462,18 @@ export class Predictions {
         isaDev: number,
         headwind: number,
         tropoAltitude: number,
-        gearExtended: boolean,
-        flapConfig: FlapConf,
-        speedbrakesExtended: boolean,
+        gearExtended: boolean = false,
+        flapConfig: FlapConf = FlapConf.CLEAN,
+        speedbrakesExtended: boolean = false,
+        perfFactorPercent: number = 0,
     ): StepResults {
         const distanceInFeet = distance * 6076.12;
         const fpaRadians = Math.atan((finalAltitude - initialAltitude) / distanceInFeet);
         const fpaDegrees = fpaRadians * MathUtils.RADIANS_TO_DEGREES;
         const midStepAltitude = (initialAltitude + finalAltitude) / 2;
 
-        const theta = Common.getTheta(midStepAltitude, isaDev);
-        const delta = Common.getDelta(midStepAltitude);
+        const theta = Common.getTheta(midStepAltitude, isaDev, midStepAltitude > tropoAltitude);
+        const delta = Common.getDelta(midStepAltitude, midStepAltitude > tropoAltitude);
         let mach = Common.CAStoMach(econCAS, delta);
 
         let eas;
@@ -504,7 +523,7 @@ export class Predictions {
             // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
             const correctedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
             const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(correctedN1, mach, midStepAltitude) * 2;
-            const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2); // in lbs/hour
+            const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
             fuelBurned = (fuelFlow / 3600) * stepTime;
 
@@ -527,6 +546,22 @@ export class Predictions {
         };
     }
 
+    /**
+     * @param initialAltitude altitude at beginning of step, in feet
+     * @param finalAltitude altitude at end of step, in feet
+     * @param verticalSpeed vertical speed during step, in feet per minute
+     * @param econCAS airspeed during step
+     * @param econMach mach during step
+     * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT B)
+     * @param initialFuelWeight weight of fuel at the end of last step
+     * @param isaDev ISA deviation (in celsius)
+     * @param headwind headwind component (in knots)
+     * @param tropoAltitude tropopause altitude (feet)
+     * @param speedbrakesExtended whether or not the speedbrakes are extended at half
+     * @param flapsConfig flap configuration to use for drag calculation
+     * @param gearExtended whether or not the landing gear is extended
+     * @param perfFactorPercent performance factor (in percent)
+     */
     static verticalSpeedStep(
         initialAltitude: number,
         finalAltitude: number,
@@ -537,12 +572,16 @@ export class Predictions {
         initialFuelWeight: number,
         isaDev: number,
         headwind: number,
-        perfFactorPercent: number,
+        tropoAltitude: number,
+        speedbrakesExtended = false,
+        flapsConfig: FlapConf = FlapConf.CLEAN,
+        gearExtended: boolean = false,
+        perfFactorPercent: number = 0,
     ): StepResults & { predictedN1: number } {
         const midStepAltitude = (initialAltitude + finalAltitude) / 2;
 
-        const theta = Common.getTheta(midStepAltitude, isaDev);
-        const delta = Common.getDelta(midStepAltitude);
+        const theta = Common.getTheta(midStepAltitude, isaDev, midStepAltitude > tropoAltitude);
+        const delta = Common.getDelta(midStepAltitude, midStepAltitude > tropoAltitude);
 
         let mach = Common.CAStoMach(econCAS, delta);
         const delta2 = Common.getDelta2(delta, mach);
@@ -569,7 +608,7 @@ export class Predictions {
         let previousMidstepWeight = midstepWeight;
         let predictedN1 = 0;
         do {
-            const drag = FlightModel.getDrag(midstepWeight, mach, delta, false, false, FlapConf.CLEAN);
+            const drag = FlightModel.getDrag(midstepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
             const thrust = FlightModel.getThrustFromConstantPathAngle(pathAngle * MathUtils.RADIANS_TO_DEGREES, midstepWeight, drag, accelFactorMode);
 
             const correctedThrust = (thrust / delta2) / 2;
@@ -577,7 +616,7 @@ export class Predictions {
             predictedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
 
             const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(predictedN1, mach, midStepAltitude) * 2;
-            const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100); // in lbs/hour
+            const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
             fuelBurned = fuelFlow / 3600 * stepTime;
             previousMidstepWeight = midstepWeight;
@@ -596,6 +635,22 @@ export class Predictions {
         };
     }
 
+    /**
+     * @param initialAltitude altitude at beginning of step, in feet
+     * @param distance distance traveled during step, in nautical miles
+     * @param verticalSpeed vertical speed during step, in feet per minute
+     * @param econCAS airspeed during step
+     * @param econMach mach during step
+     * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT B)
+     * @param initialFuelWeight weight of fuel at the end of last step
+     * @param isaDev ISA deviation (in celsius)
+     * @param headwind headwind component (in knots)
+     * @param tropoAltitude tropopause altitude (feet)
+     * @param speedbrakesExtended whether or not the speedbrakes are extended at half
+     * @param flapsConfig flap configuration to use for drag calculation
+     * @param gearExtended whether or not the landing gear is extended
+     * @param perfFactorPercent performance factor (in percent)
+     */
     static verticalSpeedDistanceStep(
         initialAltitude: number,
         distance: NauticalMiles,
@@ -606,6 +661,10 @@ export class Predictions {
         initialFuelWeight: number,
         isaDev: number,
         headwind: number,
+        tropoAltitude: number,
+        speedbrakesExtended = false,
+        flapsConfig: FlapConf = FlapConf.CLEAN,
+        gearExtended: boolean = false,
         perfFactorPercent: number,
     ): StepResults & { predictedN1: number } {
         let finalAltitude = initialAltitude;
@@ -620,8 +679,8 @@ export class Predictions {
         do {
             const midStepAltitude = (initialAltitude + finalAltitude) / 2;
 
-            const theta = Common.getTheta(midStepAltitude, isaDev);
-            const delta = Common.getDelta(midStepAltitude);
+            const theta = Common.getTheta(midStepAltitude, isaDev, midStepAltitude > tropoAltitude);
+            const delta = Common.getDelta(midStepAltitude, midStepAltitude > tropoAltitude);
 
             let mach = Common.CAStoMach(econCAS, delta);
             const delta2 = Common.getDelta2(delta, mach);
@@ -642,7 +701,7 @@ export class Predictions {
             pathAngle = Math.atan2(verticalSpeed, tas * 101.269); // radians
             stepTime = (tas - headwind) !== 0 ? 3600 * distance / (tas - headwind) : 0;
 
-            const drag = FlightModel.getDrag(midstepWeight, mach, delta, false, false, FlapConf.CLEAN);
+            const drag = FlightModel.getDrag(midstepWeight, mach, delta, speedbrakesExtended, gearExtended, flapsConfig);
             const thrust = FlightModel.getThrustFromConstantPathAngle(pathAngle * MathUtils.RADIANS_TO_DEGREES, midstepWeight, drag, accelFactorMode);
 
             const correctedThrust = (thrust / delta2) / 2;
@@ -650,7 +709,7 @@ export class Predictions {
             predictedN1 = EngineModel.reverseTableInterpolation(EngineModel.table1506, mach, (correctedThrust / EngineModel.maxThrust));
 
             const correctedFuelFlow = EngineModel.getCorrectedFuelFlow(predictedN1, mach, midStepAltitude) * 2;
-            const fuelFlow = EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100); // in lbs/hour
+            const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
             previousFinalAltitude = finalAltitude;
             finalAltitude = initialAltitude + verticalSpeed * stepTime / 60;
@@ -671,6 +730,23 @@ export class Predictions {
         };
     }
 
+    /**
+     * @param initialAltitude altitude at beginning of step, in feet
+     * @param initialCAS airspeed at beginning of step
+     * @param finalCAS airspeed at end of step
+     * @param verticalSpeed vertical speed during step, in feet per minute
+     * @param econMach mach during step
+     * @param commandedN1 N1% at CLB (or idle) setting, depending on flight phase
+     * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT B)
+     * @param initialFuelWeight weight of fuel at the end of last step
+     * @param headwindAtMidStepAlt headwind component (in knots)
+     * @param isaDev ISA deviation (in celsius)
+     * @param tropoAltitude tropopause altitude (feet)
+     * @param speedbrakesExtended whether or not the speedbrakes are extended at half
+     * @param flapsConfig flap configuration to use for drag calculation
+     * @param gearExtended whether or not the landing gear is extended
+     * @param perfFactorPercent performance factor (in percent)
+     */
     static verticalSpeedStepWithSpeedChange(
         initialAltitude: number,
         initialCAS: number,
@@ -685,6 +761,7 @@ export class Predictions {
         tropoAltitude: number,
         speedbrakesExtended = false,
         flapsConfig: FlapConf = FlapConf.CLEAN,
+        gearExtended: boolean = false,
         perfFactorPercent: number = 0,
     ): StepResults {
         const weightEstimate = zeroFuelWeight + initialFuelWeight;
@@ -737,7 +814,7 @@ export class Predictions {
             const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
-            const drag = FlightModel.getDrag(midStepWeight, midwayMach, delta, speedbrakesExtended, false, flapsConfig);
+            const drag = FlightModel.getDrag(midStepWeight, midwayMach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const availableGradient = FlightModel.getAvailableGradient(thrust, drag, midStepWeight);
             pathAngle = Math.atan2(verticalSpeed, midwayTas * 101.269); // radians
@@ -768,6 +845,22 @@ export class Predictions {
         };
     }
 
+    /**
+     * @param initialAltitude altitude at beginning of step, in feet
+     * @param initialCAS airspeed at beginning of step
+     * @param finalCAS airspeed at end of step
+     * @param econMach mach during step
+     * @param commandedN1 N1% at CLB (or idle) setting, depending on flight phase
+     * @param zeroFuelWeight zero fuel weight of the aircraft (from INIT B)
+     * @param initialFuelWeight weight of fuel at the end of last step
+     * @param headwindAtMidStepAlt headwind component (in knots)
+     * @param isaDev ISA deviation (in celsius)
+     * @param tropoAltitude tropopause altitude (feet)
+     * @param speedbrakesExtended whether or not the speedbrakes are extended at half
+     * @param flapsConfig flap configuration to use for drag calculation
+     * @param gearExtended whether or not the landing gear is extended
+     * @param perfFactorPercent performance factor (in percent)
+     */
     static altitudeStepWithSpeedChange(
         initialAltitude: number,
         initialCAS: number,
@@ -781,6 +874,7 @@ export class Predictions {
         tropoAltitude: number,
         speedbrakesExtended = false,
         flapsConfig: FlapConf = FlapConf.CLEAN,
+        gearExtended: boolean = false,
         perfFactorPercent: number = 0,
     ): StepResults {
         const weightEstimate = zeroFuelWeight + initialFuelWeight;
@@ -835,7 +929,7 @@ export class Predictions {
             const thrust = EngineModel.getUncorrectedThrust(correctedThrust, delta2); // in lbf
             const fuelFlow = Math.max(0, EngineModel.getUncorrectedFuelFlow(correctedFuelFlow, delta2, theta2) * (1 + perfFactorPercent / 100)); // in lbs/hour
 
-            const drag = FlightModel.getDrag(midStepWeight, midwayMach, delta, speedbrakesExtended, false, flapsConfig);
+            const drag = FlightModel.getDrag(midStepWeight, midwayMach, delta, speedbrakesExtended, gearExtended, flapsConfig);
 
             const availableGradient = FlightModel.getAvailableGradient(thrust, drag, midStepWeight);
             pathAngle = FlightModel.getSpeedChangePathAngle(thrust, midStepWeight, drag); // radians

@@ -147,7 +147,7 @@ export class CruisePathBuilder {
     }
 
     private computeCruiseSegment(altitude: Feet, distance: NauticalMiles, remainingFuelOnBoard: number, speed: Knots, headwind: WindComponent): StepResults {
-        const { zeroFuelWeight, managedCruiseSpeedMach } = this.computationParametersObserver.get();
+        const { zeroFuelWeight, managedCruiseSpeedMach, tropoPause } = this.computationParametersObserver.get();
 
         return Predictions.levelFlightStep(
             altitude,
@@ -158,6 +158,7 @@ export class CruisePathBuilder {
             remainingFuelOnBoard,
             headwind.value,
             this.atmosphericConditions.isaDeviation,
+            tropoPause,
         );
     }
 

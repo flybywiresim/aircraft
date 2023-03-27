@@ -267,11 +267,11 @@ export class EngineModel {
         return uncorrectedThrust / delta2;
     }
 
-    static getIdleN1(altitude: Feet, mach: Mach) {
-        const delta = Common.getDelta(altitude);
+    static getIdleN1(altitude: Feet, mach: Mach, tropoAltitude: Feet): number {
+        const delta = Common.getDelta(altitude, altitude > tropoAltitude);
         const iap = 1 / delta;
 
-        const theta = Common.getTheta(altitude, 0);
+        const theta = Common.getTheta(altitude, 0, altitude > tropoAltitude);
         const theta2 = Common.getTheta2(theta, mach);
 
         const lowMachCn2 = EngineModel.tableInterpolation(EngineModel.table1503, 0, iap);
