@@ -6,7 +6,6 @@ import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ApproachPathBuilder } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
