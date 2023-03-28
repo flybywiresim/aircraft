@@ -62,7 +62,7 @@ impl A380Electrical {
 
     //TODO second solenoid should be HOT BUS ESSENTIAL
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentEssential;
+        ElectricalBusType::DirectCurrentHot(3);
 
     const RAT_SIM_TIME_STEP: Duration = Duration::from_millis(33);
 
