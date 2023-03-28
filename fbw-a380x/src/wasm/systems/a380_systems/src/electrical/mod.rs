@@ -2545,9 +2545,9 @@ mod a380_electrical_circuit_tests {
         }
 
         fn flight_conditions_for_a_spinning_rat(mut self) -> Self {
-            self.write_by_name("AIRSPEED TRUE", 340.);
-            self.write_by_name("AMBIENT DENSITY", 0.002367190);
-            self.write_by_name("AMBIENT TEMPERATURE", 20.);
+            test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+            test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+            test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
             self
         }
 
