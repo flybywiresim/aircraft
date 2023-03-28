@@ -533,7 +533,8 @@ mod a380_electrical_circuit_tests {
 
     use uom::si::{
         angular_velocity::revolution_per_minute, electric_potential::volt, length::foot,
-        ratio::percent, velocity::knot,
+        mass_density::slug_per_cubic_foot, ratio::percent,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     #[test]
@@ -2545,9 +2546,9 @@ mod a380_electrical_circuit_tests {
         }
 
         fn flight_conditions_for_a_spinning_rat(mut self) -> Self {
-            test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
-            test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
-            test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
+            self.set_true_airspeed(Velocity::new::<knot>(340.));
+            self.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+            self.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
             self
         }
 
