@@ -58,7 +58,7 @@ impl A380Electrical {
     const MIN_EMERGENCY_GENERATOR_RPM_TO_ALLOW_CURRENT_SUPPLY: f64 = 2000.;
 
     const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentEssential;
+        ElectricalBusType::DirectCurrentHot(1);
 
     //TODO second solenoid should be HOT BUS ESSENTIAL
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
