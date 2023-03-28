@@ -76,6 +76,7 @@
 1. [MCDU] Implemented NAVAID page - @tracernz (Mike)
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
+1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
 1. [W/B] Phase 1 of refactoring payload (passenger and cargo) logic into rust systems (2Cas#1022)
 1. [EFB] Allow payload page passenger seating to be manipulated via LocalVars - @2hwk (2Cas#1022)
 1. [EFB] GW and GWCG display on payload page - @2hwk (2Cas#1022)
