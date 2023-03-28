@@ -225,16 +225,15 @@ class Connection {
 
   /**
    * @brief Creates an input event group
-   * @tparam EventCount The event count number
    * @tparam Priority The priority of the event group
    * @return std::shared_ptr<InputEventGroup<T...>> Shared pointer to the new input container
    */
-  template <std::size_t EventCount, std::uint32_t Priority>
-  std::shared_ptr<InputEventGroup<EventCount, Priority>> inputEventGroup() {
+  template <std::uint32_t Priority>
+  std::shared_ptr<InputEventGroup<Priority>> inputEventGroup() {
     const auto eventGroupId = this->_lastInputEventGroupId++;
-    auto newEventGroup = std::shared_ptr<InputEventGroupBase>(new InputEventGroup<EventCount, Priority>(&this->_connection, eventGroupId));
+    auto newEventGroup = std::shared_ptr<InputEventGroupBase>(new InputEventGroup<Priority>(&this->_connection, eventGroupId));
     this->_inputEventGroups.insert({eventGroupId, newEventGroup});
-    return std::dynamic_pointer_cast<InputEventGroup<EventCount, Priority>>(newEventGroup);
+    return std::dynamic_pointer_cast<InputEventGroup<Priority>>(newEventGroup);
   }
 
   /**

@@ -41,30 +41,38 @@ enum KeyboardButton {
   KeyX = 23,
   KeyY = 24,
   KeyZ = 25,
-  KeyAlphabeticalEnd = 26,
   // numeric keys
-  Key0 = 30,
-  Key1 = 31,
-  Key2 = 32,
-  Key3 = 33,
-  Key4 = 34,
-  Key5 = 35,
-  Key6 = 36,
-  Key7 = 37,
-  Key8 = 38,
-  Key9 = 39,
-  KeyNumericalEnd = 40,
+  Key0 = 26,
+  Key1 = 27,
+  Key2 = 28,
+  Key3 = 29,
+  Key4 = 30,
+  Key5 = 31,
+  Key6 = 32,
+  Key7 = 33,
+  Key8 = 34,
+  Key9 = 35,
+  KeyNumpad0 = 36,
+  KeyNumpad1 = 37,
+  KeyNumpad2 = 38,
+  KeyNumpad3 = 39,
+  KeyNumpad4 = 40,
+  KeyNumpad5 = 41,
+  KeyNumpad6 = 42,
+  KeyNumpad7 = 43,
+  KeyNumpad8 = 44,
+  KeyNumpad9 = 45,
   // special characters
-  KeySlash = 50,
-  KeyDivide = 51,
-  KeyPlus = 52,
-  KeyMinus = 53,
-  KeySeparator = 54,
-  KeyDecimal = 55,
-  KeySpace = 56,
-  KeyReturn = 57,
-  KeyBackspace = 58,
-  KeySpecialCharacterEnd = 59,
+  KeySlash = 46,
+  KeyDivide = 47,
+  KeyPlus = 48,
+  KeyMinus = 49,
+  KeySeparator = 50,
+  KeyDecimal = 51,
+  KeySpace = 52,
+  KeyReturn = 53,
+  KeyBackspace = 54,
+  KeyStandardButtonEnd = 55,
 };
 
 /**
@@ -81,138 +89,45 @@ class KeyboardEventMetadata {
   static constexpr std::size_t EventCount = EventNumber;
 };
 
-/**
- * @brief Helper structure to estimate the number of event counts for upper and lower cases
- * @tparam Lower Lower case button is used
- * @tparam Upper Upper case button is used
- */
-template <bool Lower, bool Upper>
-struct KeyboardAlphabeticalEventCount {};
-template <>
-struct KeyboardAlphabeticalEventCount<false, false> {
-  static constexpr std::size_t count = 0;
-};
-template <>
-struct KeyboardAlphabeticalEventCount<true, false> {
-  static constexpr std::size_t count = 1;
-};
-template <>
-struct KeyboardAlphabeticalEventCount<false, true> {
-  static constexpr std::size_t count = 1;
-};
-template <>
-struct KeyboardAlphabeticalEventCount<true, true> {
-  static constexpr std::size_t count = 2;
-};
 static constexpr std::string_view MessageConcatinator = "+";
 
 /**
- * @brief Defines the alphabetic keys of the keyboard
+ * @brief Defines the standard keys of the keyboard
  *
  * @tparam Button The button that is used to define the event
  * @tparam LowerCase Indicates if the lower case is used
  * @tparam UpperCase Indicates if the upper case is used
  */
-template <KeyboardButton Button, bool LowerCase, bool UpperCase>
-class KeyboardAlphabeticalEvent : public KeyboardEventMetadata<false, KeyboardAlphabeticalEventCount<LowerCase, UpperCase>::count> {
- private:
-  static constexpr std::array<std::tuple<std::string_view, std::string_view>, KeyboardButton::KeyAlphabeticalEnd> _simconnectTranslation = {
-      {
-          {"A", "a"}, {"B", "b"}, {"C", "c"}, {"D", "d"}, {"E", "e"}, {"F", "f"}, {"G", "g"}, {"H", "h"}, {"I", "i"},
-          {"J", "j"}, {"K", "k"}, {"L", "l"}, {"M", "m"}, {"N", "n"}, {"O", "o"}, {"P", "p"}, {"Q", "q"}, {"R", "r"},
-          {"S", "s"}, {"T", "t"}, {"U", "u"}, {"V", "v"}, {"W", "w"}, {"X", "x"}, {"Y", "y"}, {"Z", "z"},
-      }};
-
-  template <bool Lower, bool Upper>
-  struct EventTranslator {};
-  template <>
-  struct EventTranslator<true, false> {
-    static constexpr auto message = std::get<1>(_simconnectTranslation[Button]);
-  };
-  template <>
-  struct EventTranslator<false, true> {
-    static constexpr auto message = std::get<0>(_simconnectTranslation[Button]);
-  };
-  template <>
-  struct EventTranslator<true, true> {
-    static constexpr auto message =
-        helper::concat<EventTranslator<true, false>::message, MessageConcatinator, EventTranslator<false, true>::message>;
-  };
-
- public:
-  /**
-   * @brief Contains the view to the SimConnect specific message to use the button in the event
-   */
-  static constexpr std::string_view simconnectMessage = EventTranslator<LowerCase, UpperCase>::message;
-};
-
-/**
- * @brief Defines the numerical keys of the keyboard
- *
- * @tparam Button The button that is used to define the event
- * @tparam Numpad Indicates if the numpad number is used
- */
-template <KeyboardButton Button, bool Numpad>
-class KeyboardNumericalEvent : public KeyboardEventMetadata<false, 1> {
- private:
-  static constexpr std::array<std::tuple<std::string_view, std::string_view>, KeyboardButton::KeyNumericalEnd - KeyboardButton::Key0>
-      _simconnectTranslation = {{
-          {"0", "VK_NUMPAD0"},
-          {"1", "VK_NUMPAD1"},
-          {"2", "VK_NUMPAD2"},
-          {"3", "VK_NUMPAD3"},
-          {"4", "VK_NUMPAD4"},
-          {"5", "VK_NUMPAD5"},
-          {"6", "VK_NUMPAD6"},
-          {"7", "VK_NUMPAD7"},
-          {"8", "VK_NUMPAD8"},
-          {"9", "VK_NUMPAD9"},
-      }};
-
-  template <bool IsNumpad>
-  struct EventTranslator {};
-  template <>
-  struct EventTranslator<true> {
-    static constexpr auto message = std::get<1>(_simconnectTranslation[Button - KeyboardButton::Key0]);
-  };
-  template <>
-  struct EventTranslator<false> {
-    static constexpr auto message = std::get<0>(_simconnectTranslation[Button - KeyboardButton::Key0]);
-  };
-
- public:
-  /**
-   * @brief Contains the view to the SimConnect specific message to use the button in the event
-   */
-  static constexpr std::string_view simconnectMessage = EventTranslator<Numpad>::message;
-};
-
-/**
- * @brief Defines the special keys of the keyboard
- *
- * @tparam Button The button that is used to define the event
- */
 template <KeyboardButton Button>
-class KeyboardSpecialCharacterEvent : public KeyboardEventMetadata<false, 1> {
+class KeyboardStandardEvent : public KeyboardEventMetadata<false, 1> {
  private:
-  static constexpr std::array<std::string_view, KeyboardButton::KeySpecialCharacterEnd - KeyboardButton::KeySlash> _simconnectTranslation =
-      {{
-          "VK_SLASH",
-          "VK_DIVIDE",
-          "VK_PLUS",
-          "VK_MINUS",
-          "VK_SEPARATOR",
-          "VK_DECIMAL",
-          "Space",
-          "VK_Enter",
-          "Backspace",
-      }};
+  static constexpr std::array<std::string_view, KeyboardButton::KeyStandardButtonEnd> _simconnectTranslation = {{
+      "a",          "b",          "c",
+      "d",          "e",          "f",
+      "g",          "h",          "i",
+      "j",          "k",          "l",
+      "m",          "n",          "o",
+      "p",          "q",          "r",
+      "s",          "t",          "u",
+      "v",          "w",          "x",
+      "y",          "z",          "0",
+      "1",          "2",          "3",
+      "4",          "5",          "6",
+      "7",          "8",          "9",
+      "VK_NUMPAD0", "VK_NUMPAD1", "VK_NUMPAD2",
+      "VK_NUMPAD3", "VK_NUMPAD4", "VK_NUMPAD5",
+      "VK_NUMPAD6", "VK_NUMPAD7", "VK_NUMPAD8",
+      "VK_NUMPAD9", "VK_SLASH",   "VK_DIVIDE",
+      "VK_PLUS",    "VK_MINUS",   "VK_SEPARATOR",
+      "VK_DECIMAL", "Space",      "VK_Enter",
+      "Backspace",
+  }};
 
  public:
   /**
    * @brief Contains the view to the SimConnect specific message to use the button in the event
    */
-  static constexpr auto simconnectMessage = _simconnectTranslation[Button - KeyboardButton::KeySlash];
+  static constexpr std::string_view simconnectMessage = _simconnectTranslation[Button];
 };
 
 /**

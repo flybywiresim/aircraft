@@ -56,6 +56,29 @@ class InputEventGroupBase {
 
   InputEventGroupBase(HANDLE* connection, std::uint32_t inputId) : _connection(connection), _events{}, _inputId(inputId) {}
 
+  bool processEvent(std::uint32_t eventId) {
+    const auto groupIdx = (eventId >> 16) & 0xffff;
+    const auto eventIdx = eventId & 0xffff;
+
+    if (groupIdx == this->_inputId && eventIdx < this->_events.size()) {
+      return this->_events[eventIdx]->onEventTriggered();
+    }
+
+    return false;
+  }
+
+ public:
+  InputEventGroupBase(const InputEventGroupBase&) = delete;
+  InputEventGroupBase(InputEventGroupBase&&) = delete;
+  virtual ~InputEventGroupBase() {
+    this->_connection = nullptr;
+    this->_events.clear();
+    this->_inputId = 0;
+  }
+
+  InputEventGroupBase& operator=(const InputEventGroupBase&) = delete;
+  InputEventGroupBase& operator=(InputEventGroupBase&&) = delete;
+
   bool addEvent(const std::shared_ptr<InputEventBase>& event) {
     // create a global UID for the event
     const std::uint32_t eventId = ((this->_inputId & 0xffff) << 16) | this->_events.size();
@@ -76,50 +99,28 @@ class InputEventGroupBase {
     return SUCCEEDED(result);
   }
 
-  bool processEvent(std::uint32_t eventId) {
-    const auto groupIdx = (eventId >> 16) & 0xffff;
-    const auto eventIdx = eventId & 0xffff;
-
-    if (groupIdx == this->_inputId && eventIdx < this->_events.size()) {
-      return this->_events[eventIdx]->onEventTriggered();
-    }
-
-    return false;
+  bool activate() {
+    const auto result = SimConnect_SetInputGroupState(*this->_connection, this->_inputId, SIMCONNECT_STATE_ON);
+    return SUCCEEDED(result);
   }
 
- public:
-  InputEventGroupBase(const InputEventGroupBase&) = delete;
-  InputEventGroupBase(InputEventGroupBase&&) = delete;
-  virtual ~InputEventGroupBase() {}
-
-  InputEventGroupBase& operator=(const InputEventGroupBase&) = delete;
-  InputEventGroupBase& operator=(InputEventGroupBase&&) = delete;
+  bool deactivate() {
+    const auto result = SimConnect_SetInputGroupState(*this->_connection, this->_inputId, SIMCONNECT_STATE_OFF);
+    return SUCCEEDED(result);
+  }
 };
 
-template <std::size_t EventCount, std::size_t Priority>
+template <std::size_t Priority>
 class InputEventGroup : public InputEventGroupBase {
   friend Connection;
 
  private:
-  InputEventGroup(HANDLE* connection, std::uint32_t inputId) : InputEventGroupBase(connection, inputId) {}
+  InputEventGroup(HANDLE* connection, std::uint32_t inputId) : InputEventGroupBase(connection, inputId) {
+    SimConnect_SetNotificationGroupPriority(*this->_connection, this->_inputId, Priority);
+  }
 
  public:
-  virtual ~InputEventGroup() { this->_connection = nullptr; }
-
-  bool addEvent(const std::shared_ptr<InputEventBase>& event) {
-    bool retval = false;
-
-    if (this->_events.size() < EventCount) {
-      retval = InputEventGroupBase::addEvent(event);
-      if (this->_events.size() == EventCount) {
-        auto result = SimConnect_SetNotificationGroupPriority(*this->_connection, this->_inputId, Priority);
-        result |= SimConnect_SetInputGroupState(*this->_connection, this->_inputId, SIMCONNECT_STATE_ON);
-        retval = SUCCEEDED(result);
-      }
-    }
-
-    return retval;
-  }
+  virtual ~InputEventGroup() {}
 };
 
 }  // namespace simconnect
