@@ -63,6 +63,9 @@ impl WindTurbine {
 
     const CUT_OUT_WIND_SPEED_KTS: f64 = 45.;
 
+    const SPECIFIC_HEAT_RATIO_FOR_AIR: f64 = 1.4;
+    const GAS_CONSTANT_FOR_AIR: f64 = 287.;
+
     pub fn new(
         context: &mut InitContext,
         propeller_radius: Length,
@@ -113,7 +116,10 @@ impl WindTurbine {
 
     fn mach_effect_ratio(&self, context: &UpdateContext) -> Ratio {
         let speed_of_sound = Velocity::new::<meter_per_second>(
-            (1.4 * 287. * context.ambient_temperature().get::<kelvin>()).sqrt(),
+            (Self::SPECIFIC_HEAT_RATIO_FOR_AIR
+                * Self::GAS_CONSTANT_FOR_AIR
+                * context.ambient_temperature().get::<kelvin>())
+            .sqrt(),
         );
 
         let blade_tip_mach_number = self.tip_speed / speed_of_sound;
