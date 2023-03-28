@@ -471,10 +471,10 @@ impl A380RamAirTurbineController {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
-        let solenoid_1_should_trigger_deployment_if_powered = rat_and_emer_gen_man_on.is_pressed();
-
-        let solenoid_2_should_trigger_deployment_if_powered =
+        let solenoid_1_should_trigger_deployment_if_powered =
             emergency_elec_state.is_in_emergency_elec();
+
+        let solenoid_2_should_trigger_deployment_if_powered = rat_and_emer_gen_man_on.is_pressed();
 
         // due to initialization issues the RAT will not deployed in any case when simulation has just started
         self.should_deploy = context.is_sim_ready()
