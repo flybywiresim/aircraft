@@ -51,8 +51,7 @@ clang++ \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   "${DIR}/src/main.cpp" \
-  "${DIR}/src/userinputs/Keyboard.cpp" \
-  "${DIR}/src/simconnect/connection.cpp" \
+  "${DIR}/src/userinputs/Keyboard.cpp"
 
 # restore directory
 popd
