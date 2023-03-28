@@ -10,9 +10,9 @@ import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
-const numberOfSettingsPerGenerator = 8;
-const uniqueGenPrefix = 'G';
-const additionalSetting = [3, 1, 0.33, 0.33, 30, 95, 140, 40];
+const numberOfSettingsPerGenerator = 9;
+const uniqueGenPrefix = 'E';
+const additionalSetting = [3, 1, 1, 0.33, 0.33, 30, 95, 140, 40];
 const failureGeneratorArmed :boolean[] = [];
 const failureTakeOffSpeedThreshold :number[] = [];
 const failureTakeOffAltitudeThreshold :number[] = [];
@@ -51,32 +51,32 @@ const onErase = (genID : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailureChancePerTakeOff')}:`, 20, '%', 0, 100,
-        settings[genNumber * numberOfSettingsPerGenerator + 1], 100,
-        setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
-    FailureGeneratorSingleSetting(`${t('Failures.Generators.LowSpeedChance')}:`, 20, '%', 0,
-        100 - settings[genNumber * numberOfSettingsPerGenerator + 3] * 100,
         settings[genNumber * numberOfSettingsPerGenerator + 2], 100,
         setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-    FailureGeneratorSingleSetting(`${t('Failures.Generators.MedSpeedChance')}:`, 20, '%', 0,
-        100 - settings[genNumber * numberOfSettingsPerGenerator + 2] * 100,
+    FailureGeneratorSingleSetting(`${t('Failures.Generators.LowSpeedChance')}:`, 20, '%', 0,
+        100 - settings[genNumber * numberOfSettingsPerGenerator + 4] * 100,
         settings[genNumber * numberOfSettingsPerGenerator + 3], 100,
         setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
-    FailureGeneratorSingleSetting(`${t('Failures.Generators.MinimumSpeed')}:`, 20, t('Failures.Generators.knots'),
-        0, settings[genNumber * numberOfSettingsPerGenerator + 5],
-        settings[genNumber * numberOfSettingsPerGenerator + 4], 1,
+    FailureGeneratorSingleSetting(`${t('Failures.Generators.MedSpeedChance')}:`, 20, '%', 0,
+        100 - settings[genNumber * numberOfSettingsPerGenerator + 3] * 100,
+        settings[genNumber * numberOfSettingsPerGenerator + 4], 100,
         setNewSetting, generatorSettings, genNumber, 4, failureGenContext),
-    FailureGeneratorSingleSetting(`${t('Failures.Generators.SpeedTransLowMed')}:`, 20, t('Failures.Generators.knots'),
-        settings[genNumber * numberOfSettingsPerGenerator + 4],
-        settings[genNumber * numberOfSettingsPerGenerator + 6],
+    FailureGeneratorSingleSetting(`${t('Failures.Generators.MinimumSpeed')}:`, 20, t('Failures.Generators.knots'),
+        0, settings[genNumber * numberOfSettingsPerGenerator + 6],
         settings[genNumber * numberOfSettingsPerGenerator + 5], 1,
         setNewSetting, generatorSettings, genNumber, 5, failureGenContext),
-    FailureGeneratorSingleSetting(`${t('Failures.Generators.MaximumSpeed')}:`, 20, t('Failures.Generators.knots'),
-        settings[genNumber * numberOfSettingsPerGenerator + 4], 300,
+    FailureGeneratorSingleSetting(`${t('Failures.Generators.SpeedTransLowMed')}:`, 20, t('Failures.Generators.knots'),
+        settings[genNumber * numberOfSettingsPerGenerator + 5],
+        settings[genNumber * numberOfSettingsPerGenerator + 7],
         settings[genNumber * numberOfSettingsPerGenerator + 6], 1,
         setNewSetting, generatorSettings, genNumber, 6, failureGenContext),
-    FailureGeneratorSingleSetting(`${t('Failures.Generators.MaxAltAboveRunway')}:`, 24, t('Failures.Generators.feet'), 0, 10000,
-        settings[genNumber * numberOfSettingsPerGenerator + 7], 100,
-        setNewSetting, generatorSettings, genNumber, 7, failureGenContext)];
+    FailureGeneratorSingleSetting(`${t('Failures.Generators.MaximumSpeed')}:`, 20, t('Failures.Generators.knots'),
+        settings[genNumber * numberOfSettingsPerGenerator + 5], 300,
+        settings[genNumber * numberOfSettingsPerGenerator + 7], 1,
+        setNewSetting, generatorSettings, genNumber, 7, failureGenContext),
+    FailureGeneratorSingleSetting(`${t('Failures.Generators.MaxHeightAboveRunway')}:`, 24, t('Failures.Generators.feet'), 0, 10000,
+        settings[genNumber * numberOfSettingsPerGenerator + 8], 100,
+        setNewSetting, generatorSettings, genNumber, 8, failureGenContext)];
     return settingTable;
 };
 

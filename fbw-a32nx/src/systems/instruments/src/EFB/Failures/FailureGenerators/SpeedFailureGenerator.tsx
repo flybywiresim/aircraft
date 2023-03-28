@@ -8,19 +8,19 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
+import { FastForward, Rewind, Speedometer2 } from 'react-bootstrap-icons';
 
-const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
-const additionalSetting = [2, 1, 0, 80, 250];
-const numberOfSettingsPerGenerator = 5;
-const uniqueGenPrefix = 'A';
+const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
+const additionalSetting = [2, 1, 0, 200, 300];
+const numberOfSettingsPerGenerator = 4;
+const uniqueGenPrefix = 'B';
 const failureGeneratorArmed :boolean[] = [];
-const genName = 'Altitude';
-const alias = () => t('Failures.Generators.GenAlt');
+const genName = 'Speed';
+const alias = () => t('Failures.Generators.GenSpeed');
 const disableTakeOffRearm = false;
 const rolledDice:number[] = [];
 
-export const failureGenConfigAltitude : ()=>FailureGenData = () => {
+export const failureGenConfigSpeed : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
@@ -37,9 +37,9 @@ export const failureGenConfigAltitude : ()=>FailureGenData = () => {
         onErase,
         failureGeneratorArmed,
         genName,
+        generatorSettingComponents,
         alias,
         disableTakeOffRearm,
-        generatorSettingComponents,
     };
 };
 
@@ -50,30 +50,30 @@ const onErase = (genNumber : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
-        FailureGeneratorChoiceSetting(`${t('Failures.Generators.Direction')}:`, settings[genNumber * numberOfSettingsPerGenerator + 2], climbDescentMode,
+        FailureGeneratorChoiceSetting(`${t('Failures.Generators.Direction')}:`, settings[genNumber * numberOfSettingsPerGenerator + 2], accelDecelMode,
             setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeMin')}:`, 24,
-            t('Failures.Generators.feet'), 0, settings[genNumber * numberOfSettingsPerGenerator + 4] * 100,
-            settings[genNumber * numberOfSettingsPerGenerator + 3], 100,
+        FailureGeneratorSingleSetting(`${t('Failures.Generators.MinimumSpeed')}:`, 20, t('Failures.Generators.knots'), 0,
+            settings[genNumber * numberOfSettingsPerGenerator + 4],
+            settings[genNumber * numberOfSettingsPerGenerator + 3], 1,
             setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeMax')}:`, 24,
-            t('Failures.Generators.feet'), settings[genNumber * numberOfSettingsPerGenerator + 3] * 100, 40000,
-            settings[genNumber * numberOfSettingsPerGenerator + 4], 100,
+        FailureGeneratorSingleSetting(`${t('Failures.Generators.MaximumSpeed')}:`, 20, t('Failures.Generators.knots'),
+            settings[genNumber * numberOfSettingsPerGenerator + 3], 400,
+            settings[genNumber * numberOfSettingsPerGenerator + 4], 1,
             setNewSetting, generatorSettings, genNumber, 4, failureGenContext),
     ];
     return settingTable;
 };
 
-export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, string>) => {
+export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, string>) => {
     const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
-    const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
+    const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
     const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
     const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
-    const altitude = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+    const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
@@ -81,14 +81,13 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
             let change = false;
             for (let i = 0; i < nbGenerator; i++) {
                 if (failureGeneratorArmed[i]) {
-                    const failureAltitude = 100 * (settings[i * numberOfSettingsPerGenerator + 3]
+                    const failureSpeed = (settings[i * numberOfSettingsPerGenerator + 3]
                         + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + 4] - settings[i * numberOfSettingsPerGenerator + 3]));
-                    if ((altitude > failureAltitude && settings[i * numberOfSettingsPerGenerator + 2] === 0)
-                    || (altitude < failureAltitude && settings[i * numberOfSettingsPerGenerator + 2] === 1)
+                    if ((gs > failureSpeed && settings[i * numberOfSettingsPerGenerator + 2] === 0)
+                        || (gs < failureSpeed && settings[i * numberOfSettingsPerGenerator + 2] === 1)
                     ) {
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                             activate, activeFailures, settings[i * numberOfSettingsPerGenerator + 1]);
-
                         failureGeneratorArmed[i] = false;
                         change = true;
                         if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
@@ -103,18 +102,17 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i]
-                && ((altitude < settings[i * numberOfSettingsPerGenerator + 3] * 100 - 100 && settings[i * numberOfSettingsPerGenerator + 2] === 0)
-                || (altitude > settings[i * numberOfSettingsPerGenerator + 4] * 100 + 100 && settings[i * numberOfSettingsPerGenerator + 2] === 1))
+            if (!failureGeneratorArmed[i] && ((gs < settings[i * numberOfSettingsPerGenerator + 3] - 10 && settings[i * numberOfSettingsPerGenerator + 2] === 0)
+            || (gs > settings[i * numberOfSettingsPerGenerator + 4] + 10 && settings[i * numberOfSettingsPerGenerator + 2] === 1))
                 && (settings[i * numberOfSettingsPerGenerator + 0] === 1
-                || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
-                || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
+                    || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                    || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
                 rolledDice[i] = Math.random();
             }
             if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
         }
-    }, [absoluteTime1s]);
+    }, [absoluteTime500ms]);
 
     useEffect(() => {
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
@@ -122,21 +120,23 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
     }, []);
 };
 
-const climbDescentMode: (ButtonIcon)[] = [
+const accelDecelMode: (ButtonIcon)[] = [
     {
         icon: (
             <>
-                <ArrowUpRight />
+                <Speedometer2 className="mr-2" />
+                <FastForward />
             </>),
         settingVar: 0,
-        setting: 'Climb',
+        setting: 'Accel',
     },
     {
         icon: (
             <>
-                <ArrowDownRight />
+                <Speedometer2 className="mr-2" />
+                <Rewind />
             </>),
         settingVar: 1,
-        setting: 'Descent',
+        setting: 'Decel',
     },
 ];

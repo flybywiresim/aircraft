@@ -96,6 +96,8 @@ export function FailureGeneratorDetailsModalUI(
 ) {
     const genNumber = ExtractFirstNumber(failureGenContext.modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
+    const numberOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters,
+        failureGenContext.modalContext.genUniqueID).length;
     return (
         <div className="flex flex-col items-stretch px-2 pt-2 my-2 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
             <div className="flex flex-row flex-1 justify-between items-stretch pb-2">
@@ -116,6 +118,10 @@ export function FailureGeneratorDetailsModalUI(
             </div>
             {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
             <div className="flex flex-col justify-start items-stretch mt-1">
+                {FailureGeneratorSingleSettingShortcut(t('Failures.Generators.NumberOfFailures'), 14, '', t('Failures.Generators.All'),
+                    numberOfSelectedFailures, 0, numberOfSelectedFailures,
+                    failureGenContext.modalContext.failureGenData.settings[genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + 1], 1,
+                    setNewSetting, failureGenContext.modalContext.failureGenData, genNumber, 1, failureGenContext)}
                 { failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext.failureGenData, failureGenContext) }
             </div>
         </div>
@@ -198,7 +204,7 @@ export function FailureGeneratorCardTemplateUI(
             <div className="flex flex-col justify-between items-center">
                 <div
                     onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
-                    className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                    className="flex-none p-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
                     border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                 >
                     <Trash size={20} />
@@ -325,7 +331,7 @@ export function FailureGeneratorSingleSettingShortcut(title:string, width : numb
         <div
             className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
         >
-            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
+            <div className="flex-none mx-2 w-2/3 text-left truncate break-keep max-w-[66%]">{title}</div>
             <SimpleInput
                 className={`w-${width} font-mono`}
                 fontSizeClassName="text-2xl"
@@ -369,7 +375,7 @@ export function FailureGeneratorSingleSetting(title:string, width : number,
         <div
             className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
         >
-            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
+            <div className="flex-none mx-2 w-2/3 text-left truncate max-w-[66%] break-keep">{title}</div>
             <SimpleInput
                 className={`w-${width} font-mono`}
                 fontSizeClassName="text-2xl"
@@ -394,7 +400,7 @@ export function FailureGeneratorText(title:string, text: string) {
         <div
             className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
         >
-            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
+            <div className="flex-none mx-2 w-2/3 text-left truncate max-w-[66%] break-keep">{title}</div>
             <div className="flex-1 mx-2 text-left break-keep">
                 {text}
             </div>

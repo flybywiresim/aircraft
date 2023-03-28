@@ -10,9 +10,9 @@ import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
-const additionalSetting = [3, 0.1];
-const numberOfSettingsPerGenerator = 2;
-const uniqueGenPrefix = 'E';
+const additionalSetting = [3, 1, 0.1];
+const numberOfSettingsPerGenerator = 3;
+const uniqueGenPrefix = 'C';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'PerHour';
 const alias = () => t('Failures.Generators.GenPerHour');
@@ -59,10 +59,11 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
         if (meanTimeToFailure > 5 / 60) return `${Math.round(meanTimeToFailure * 60)} ${t('Failures.Generators.minutes')}`;
         return `${Math.round(meanTimeToFailure * 60 * 60)} ${t('Failures.Generators.seconds')}`;
     };
-    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 32, `/${t('Failures.Generators.hour')}`, 0, 60,
-        settings[genNumber * numberOfSettingsPerGenerator + 1], 1,
-        setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
-    FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay()),
+    const settingTable = [
+        FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 32, `/${t('Failures.Generators.hour')}`, 0, 60,
+            settings[genNumber * numberOfSettingsPerGenerator + 1], 1,
+            setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
+        FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay()),
     ];
     return settingTable;
 };
@@ -86,7 +87,7 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
                     const rollDice = Math.random();
                     if (rollDice < chancePerSecond * 5) {
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                            activate, activeFailures, uniqueGenPrefix + i.toString());
+                            activate, activeFailures, 1);
                         failureGeneratorArmed[i] = false;
                         change = true;
                         if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;

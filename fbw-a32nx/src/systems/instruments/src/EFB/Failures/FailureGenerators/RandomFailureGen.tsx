@@ -5,10 +5,8 @@ import { failureGenConfigAltitude, failureGeneratorAltitude }
     from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerator';
 import { failureGenConfigPerHour, failureGeneratorPerHour }
     from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
-import { failureGenConfigSpeedAccel, failureGeneratorSpeedAccel }
-    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedAccelFailureGenerator';
-import { failureGenConfigSpeedDecel, failureGeneratorSpeedDecel }
-    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedDecelFailureGenerator';
+import { failureGenConfigSpeed, failureGeneratorSpeed }
+    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerator';
 import { failureGenConfigTakeOff, failureGeneratorTakeOff }
     from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
@@ -134,8 +132,7 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
     const [modalContext, setModalContext] = useState<ModalContext | undefined >(undefined);
 
     allGenSettings.set(failureGenConfigAltitude().genName, failureGenConfigAltitude());
-    allGenSettings.set(failureGenConfigSpeedAccel().genName, failureGenConfigSpeedAccel());
-    allGenSettings.set(failureGenConfigSpeedDecel().genName, failureGenConfigSpeedDecel());
+    allGenSettings.set(failureGenConfigSpeed().genName, failureGenConfigSpeed());
     allGenSettings.set(failureGenConfigPerHour().genName, failureGenConfigPerHour());
     allGenSettings.set(failureGenConfigTimer().genName, failureGenConfigTimer());
     allGenSettings.set(failureGenConfigTakeOff().genName, failureGenConfigTakeOff());
@@ -158,8 +155,7 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
 
 const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
     failureGeneratorAltitude,
-    failureGeneratorSpeedAccel,
-    failureGeneratorSpeedDecel,
+    failureGeneratorSpeed,
     failureGeneratorPerHour,
     failureGeneratorTimer,
     failureGeneratorTakeOff,
