@@ -40,7 +40,7 @@ export class CruiseToDescentCoordinator {
     ) {
         // - Start with initial guess for fuel on board at destination
         // - Compute descent profile to get distance to T/D and burnt fuel during descent
-        // - Compute cruise profile to T/D -> guess new guess for fuel at start T/D, use fuel burn to get new estimate for fuel at destination
+        // - Compute cruise profile to T/D -> Use fuel at T/D and previously computed fuel burn to get new fuel on board at destination
         // - Repeat
         const startingPointIndex = profile.findLastVerticalCheckpointIndex(
             VerticalCheckpointReason.TopOfClimb,

@@ -516,6 +516,14 @@ export class VerticalProfileManager {
         return schedule;
     }
 
+    /**
+     * Computes the difference in distance between the aircraft's current position and the start of the descent profile.
+     * According to the the tactical profile (i.e short term prediction profile used for things like level off arrows), the aircraft's distance from start
+     * is the distance from the start of the currently active leg.
+     * According to the descent profile, it is the distance that was the current distance from start when the aircraft started its descent.
+     * This is naturally the case because the descent profile and the "starting point" is not updated during descent.
+     * @returns Offset between the aircraft's distance from start and the descent profile's distance from start
+     */
     private computeTacticalToGuidanceProfileOffset(): NauticalMiles {
         if (!this.descentProfile || !this.aircraftToDescentProfileRelation?.isValid) {
             return 0;

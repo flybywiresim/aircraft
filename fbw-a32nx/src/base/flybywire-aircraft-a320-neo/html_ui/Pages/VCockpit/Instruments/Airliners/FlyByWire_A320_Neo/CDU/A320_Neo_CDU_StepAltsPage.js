@@ -11,8 +11,7 @@ class CDUStepAltsPage {
             }
         }, mcdu.PageTimeout.Medium);
 
-        const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
-        const isFlying = flightPhase >= 5 && flightPhase <= 7;
+        const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF && mcdu.flightPhaseManager.phase < FmgcFlightPhases.DONE;
         const transitionAltitude = mcdu.flightPlanManager.originTransitionAltitude;
         const predictions = mcdu.guidanceController.vnavDriver.mcduProfile.waypointPredictions;
 

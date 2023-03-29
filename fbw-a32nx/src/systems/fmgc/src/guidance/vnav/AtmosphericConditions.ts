@@ -25,6 +25,7 @@ export class AtmosphericConditions {
         this.update();
     }
 
+    // TODO: Surely some of these things should come from the ADRs
     update() {
         this.ambientTemperatureFromSim = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
         this.altitudeFromSim = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
@@ -88,29 +89,29 @@ export class AtmosphericConditions {
     }
 
     computeMachFromCas(altitude: Feet, speed: Knots): number {
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
+        const delta = Common.getDelta(altitude, altitude > this.tropoPause);
 
-        return Common.CAStoMach(speed, deltaSrs);
+        return Common.CAStoMach(speed, delta);
     }
 
     computeCasFromMach(altitude: Feet, mach: Mach): number {
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
+        const delta = Common.getDelta(altitude, altitude > this.tropoPause);
 
-        return Common.machToCas(mach, deltaSrs);
+        return Common.machToCas(mach, delta);
     }
 
     computeCasFromTas(altitude: Feet, speed: Knots): Knots {
-        const thetaSrs = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropoPause);
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
+        const theta = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropoPause);
+        const delta = Common.getDelta(altitude, altitude > this.tropoPause);
 
-        return Common.TAStoCAS(speed, thetaSrs, deltaSrs);
+        return Common.TAStoCAS(speed, theta, delta);
     }
 
     computeTasFromCas(altitude: Feet, speed: Knots): Knots {
-        const thetaSrs = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropoPause);
-        const deltaSrs = Common.getDelta(altitude, altitude > this.tropoPause);
+        const theta = Common.getTheta(altitude, this.isaDeviation, altitude > this.tropoPause);
+        const delta = Common.getDelta(altitude, altitude > this.tropoPause);
 
-        return Common.CAStoTAS(speed, thetaSrs, deltaSrs);
+        return Common.CAStoTAS(speed, theta, delta);
     }
 
     /**

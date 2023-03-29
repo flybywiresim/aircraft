@@ -485,6 +485,7 @@ export class PathCaptureTransition extends Transition {
     }
 
     // This is for VNAV to estimate the amount of track miles left
+    // TODO: I'm not sure this is really used IRL. I think it does it through the direct distance to fix and TAE.
     getActualDistanceToGo(ppos: LatLongData, trueTrack: number): NauticalMiles {
         let dtg = 0;
 

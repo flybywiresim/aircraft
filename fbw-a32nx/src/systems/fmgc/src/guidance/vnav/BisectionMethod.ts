@@ -3,14 +3,13 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 export class BisectionMethod {
     /**
      * Use bisection method to approximate root of a function. This method works best for continuous functions.
-     * We
      * @param f Function to find root of. Should take in a number and return a number.
      * @param a, b Bounds of domain to search for root. Should be such that f(a) and f(b) have opposite signs.
      * @param errorTolerance An array [e0, e1] describing the interval in which the error is allowed to be.
      * @param maxIterations Number of iterations to perform before giving up.
      * @param nonTerminationStrategy Strategy to use if the method does not converge.
      * @link https://en.wikipedia.org/wiki/Bisection_method
-     * @returns
+     * @returns The zero of the function.
      */
     public static findZero(
         f: (c: number) => number,
@@ -69,7 +68,16 @@ export class BisectionMethod {
 }
 
 export enum NonTerminationStrategy {
+    /**
+     * If the method does not converge, return the value that results in the smallest positive error.
+     */
     PositiveErrorResult,
+    /**
+     * If the method does not converge, return the value that results in the smallest negative error.
+     */
     NegativeErrorResult,
+    /**
+     * If the method does not converge, return the value that results in the smallest absolute error.
+     */
     LowerAbsoluteErrorResult,
 }

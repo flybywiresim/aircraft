@@ -79,7 +79,6 @@ export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | 
 }
 
 export function getPathAngleConstraintFromWaypoint(wp: WayPoint): PathAngleConstraint | undefined {
-    // Check for null and undefined, we do this because 0 is falsy
     return wp.additionalData.verticalAngle;
 }
 

@@ -11,6 +11,9 @@ import { MathUtils } from '@shared/MathUtils';
 import { FixTypeFlags } from '@fmgc/types/fstypes/FSEnums';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 
+/**
+ * This entire class essentially represents an interface to the flightplan.
+ */
 export class ConstraintReader {
     public climbAlitudeConstraints: MaxAltitudeConstraint[] = [];
 

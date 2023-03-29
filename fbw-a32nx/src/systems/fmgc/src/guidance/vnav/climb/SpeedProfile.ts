@@ -11,30 +11,39 @@ export enum ManagedSpeedType {
 
 export interface SpeedProfile {
     /**
-     * This is used for predictions
-     * @param distanceFromStart - The distance at which the target should be queried
-     * @param altitude
+     * Compute speed target at some distance/altitude along the flight plan
+     * @param distanceFromStart  The distance at which the target should be queried
+     * @param altitude The altitude at which the target should be queried
+     * @param managedSpeedType Climb/Cruise/Descent
      */
     getTarget(distanceFromStart: NauticalMiles, altitude: Feet, managedSpeedType: ManagedSpeedType): Knots;
 
     /**
-     * This is used for predictions
-     * @param altitude
-     * @param managedSpeedType
+     * Get the speed target if there were no constraints
+     * @param altitude The altitude at which the target should be queried
+     * @param managedSpeedType Climb/Cruise/Descent
      */
     getTargetWithoutConstraints(altitude: NauticalMiles, managedSpeedType: ManagedSpeedType): Knots;
 
+    /**
+     * Whether the climb speed limit should be taken into account for the speed target.
+     * Mostly used to check whether a speed limit has been entered in the FMS
+     */
     shouldTakeClimbSpeedLimitIntoAccount(): boolean;
+
+    /**
+     * Whether the descent speed limit should be taken into account for the speed target.
+     */
     shouldTakeDescentSpeedLimitIntoAccount(): boolean;
 
     /**
-     * This is used for predictions
-     * @param distanceFromStart
+     * Get most constraining climb speed constraint at a given distance along the flight plan
+     * @param distanceFromStart Distance along the flight plan
      */
     getMaxClimbSpeedConstraint(distanceFromStart: NauticalMiles): MaxSpeedConstraint;
 
     /**
-     * This is used for predictions
+     * Get most constraining descent speed constraint at a given distance along the flight plan
      * @param distanceAlongTrack
      */
     getMaxDescentSpeedConstraint(distanceAlongTrack: NauticalMiles): MaxSpeedConstraint;
@@ -170,6 +179,11 @@ export class McduSpeedProfile implements SpeedProfile {
         return activeConstraint;
     }
 
+    /**
+     * This is used to figure out where predictions should assume managed speed again while being in selected.
+     * @param distanceAlongTrack
+     * @returns
+     */
     private findDistanceAlongTrackOfNextSpeedChange(distanceAlongTrack: NauticalMiles) {
         let distance = Infinity;
 
