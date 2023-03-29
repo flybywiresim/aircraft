@@ -77,6 +77,7 @@
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
 1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
+1. [FADEC] Automatic enginestarts use one igniter alternating and enabled use of FADEC GND PWR pushbuttons @Maximilian-Reuter (Maximilian Reuter)
 
 ## 0.9.0
 
