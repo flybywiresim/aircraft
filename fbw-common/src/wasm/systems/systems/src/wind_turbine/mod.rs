@@ -127,7 +127,7 @@ impl WindTurbine {
 
         let blade_tip_mach_number = self.tip_speed / speed_of_sound;
 
-        ((Ratio::new::<ratio>(1.) - blade_tip_mach_number)
+        ((Ratio::new::<ratio>(Self::MAX_TIP_SPEED_MACH_NUMBER) - blade_tip_mach_number)
             / (Ratio::new::<ratio>(Self::MAX_TIP_SPEED_MACH_NUMBER)
                 - Ratio::new::<ratio>(Self::MIN_TIP_SPEED_MACH_NUMBER)))
         .min(Ratio::new::<ratio>(1.))
