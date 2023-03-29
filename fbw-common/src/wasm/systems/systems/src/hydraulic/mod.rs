@@ -21,13 +21,13 @@ use nalgebra::Vector3;
 use std::time::Duration;
 
 use uom::si::{
-    angle::radian,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
+    length::meter,
     mass::kilogram,
     pressure::{pascal, psi},
     ratio::ratio,
-    torque::newton_meter,
+    torque::{newton_meter, pound_force_inch},
     volume::{cubic_inch, cubic_meter, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
@@ -2511,6 +2511,11 @@ impl HeatingElement for Reservoir {
 
 pub trait PumpController {
     fn should_pressurise(&self) -> bool;
+
+    // Gives a factor applied to max pump displacement to manually control displacement of the pump
+    fn max_displacement_restriction(&self) -> Ratio {
+        Ratio::new::<ratio>(1.)
+    }
 }
 
 pub struct Pump {
@@ -2563,7 +2568,9 @@ impl Pump {
 
         self.current_max_displacement.update(
             context.delta(),
-            self.cavitation_efficiency * theoretical_displacement,
+            self.cavitation_efficiency
+                * theoretical_displacement
+                * controller.max_displacement_restriction(),
         );
 
         let max_flow = Self::calculate_flow(speed, self.current_max_displacement.output())
@@ -2911,18 +2918,43 @@ impl HeatingElement for EngineDrivenPump {
 }
 impl HeatingPressureSource for EngineDrivenPump {}
 
-struct AlwaysPressurisePumpController {}
-impl AlwaysPressurisePumpController {
+struct RatAntiStallPumpController {
+    anti_stall_ratio: LowPassFilter<Ratio>,
+}
+impl RatAntiStallPumpController {
+    const LOW_SPEED_CUT_OFF_THRESHOLD_RPM: f64 = 4000.;
+    const LOW_SPEED_CUT_OFF_BANDWIDTH_RPM: f64 = 500.;
+
+    const ANTI_STALL_TIME_CONSTANT: Duration = Duration::from_millis(200);
+
+    const MIN_ANTI_STALL_RATIO: f64 = 0.15;
+
     fn new() -> Self {
-        Self {}
+        Self {
+            anti_stall_ratio: LowPassFilter::new(Self::ANTI_STALL_TIME_CONSTANT),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, speed: AngularVelocity) {
+        let cut_off_ratio = ((speed.get::<revolution_per_minute>()
+            - (Self::LOW_SPEED_CUT_OFF_THRESHOLD_RPM - Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM))
+            / Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM)
+            .clamp(Self::MIN_ANTI_STALL_RATIO, 1.);
+
+        self.anti_stall_ratio
+            .update(context.delta(), Ratio::new::<ratio>(cut_off_ratio));
     }
 }
-impl PumpController for AlwaysPressurisePumpController {
+impl PumpController for RatAntiStallPumpController {
     fn should_pressurise(&self) -> bool {
         true
     }
+
+    fn max_displacement_restriction(&self) -> Ratio {
+        self.anti_stall_ratio.output()
+    }
 }
-impl Default for AlwaysPressurisePumpController {
+impl Default for RatAntiStallPumpController {
     fn default() -> Self {
         Self::new()
     }
@@ -2933,7 +2965,7 @@ pub struct RamAirTurbine {
 
     deployment_commanded: bool,
     pump: Pump,
-    pump_controller: AlwaysPressurisePumpController,
+    pump_controller: RatAntiStallPumpController,
     wind_turbine: WindTurbine,
     position: f64,
 }
@@ -2941,14 +2973,34 @@ impl RamAirTurbine {
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
+    pub const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
+        0.0, 1000., 4700.0, 5500.0, 6250.0, 6300.0, 6450.0, 9000.0, 15000.0,
+    ];
+    pub const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+
+    pub const PROPELLER_DIAMETER_M: f64 = 1.003;
+
+    pub const PROPELLER_INERTIA: f64 = 0.10;
+    pub const DYNAMIC_FRICTION: f64 = 0.07;
+    pub const BEST_EFFICIENCY_TIP_SPEED_RATIO: f64 = 2.;
+
     pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             stow_position_id: context.get_identifier("RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
             pump: Pump::new(pump_characteristics),
-            pump_controller: AlwaysPressurisePumpController::new(),
-            wind_turbine: WindTurbine::new(context),
+            pump_controller: RatAntiStallPumpController::new(),
+
+            wind_turbine: WindTurbine::new(
+                context,
+                Length::new::<meter>(Self::PROPELLER_DIAMETER_M / 2.),
+                Self::RPM_GOVERNOR_BREAKPTS,
+                Self::PROP_ALPHA_MAP,
+                Self::DYNAMIC_FRICTION,
+                Self::BEST_EFFICIENCY_TIP_SPEED_RATIO,
+                Self::PROPELLER_INERTIA,
+            ),
             position: 0.,
         }
     }
@@ -2963,6 +3015,9 @@ impl RamAirTurbine {
         // Once commanded, stays commanded forever
         self.deployment_commanded = controller.should_deploy() || self.deployment_commanded;
 
+        self.pump_controller
+            .update(context, self.wind_turbine.speed());
+
         self.pump.update(
             context,
             section,
@@ -2972,17 +3027,11 @@ impl RamAirTurbine {
         );
     }
 
-    pub fn update_physics(
-        &mut self,
-        delta_time: &Duration,
-        indicated_airspeed: Velocity,
-        pressure: &impl SectionPressure,
-    ) {
+    pub fn update_physics(&mut self, context: &UpdateContext, pressure: &impl SectionPressure) {
         let resistant_torque = self.resistant_torque(self.delta_vol_max(), pressure.pressure());
         self.wind_turbine.update(
-            delta_time,
-            indicated_airspeed,
-            self.position,
+            context,
+            Ratio::new::<ratio>(self.position),
             resistant_torque,
         );
     }
@@ -3001,16 +3050,9 @@ impl RamAirTurbine {
     }
 
     fn resistant_torque(&mut self, displacement: Volume, pressure: Pressure) -> Torque {
-        let pump_torque = if self.wind_turbine.is_low_speed() {
-            (self.wind_turbine.position().get::<radian>() * 4.).cos()
-                * displacement.get::<gallon>().max(0.35)
-                * 2.
-        } else {
-            // TODO wrong unit here, whole rat system needs a power/torque/rotation speed tuning and check
-            -pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI)
-        };
-
-        Torque::new::<newton_meter>(pump_torque)
+        Torque::new::<pound_force_inch>(
+            -pressure.get::<psi>() * displacement.get::<cubic_inch>() / (2. * std::f64::consts::PI),
+        )
     }
 }
 impl PressureSource for RamAirTurbine {
