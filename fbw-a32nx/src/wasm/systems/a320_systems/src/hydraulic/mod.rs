@@ -1484,7 +1484,7 @@ pub(super) struct A320Hydraulic {
     slat_system: FlapSlatAssembly,
     slats_flaps_complex: SlatFlapComplex,
 
-    gcu: GeneratorControlUnit<9>,
+    gcu: GeneratorControlUnit,
     emergency_gen: HydraulicGeneratorMotor,
 
     forward_cargo_door: CargoDoor,
@@ -1726,13 +1726,7 @@ impl A320Hydraulic {
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
-            gcu: GeneratorControlUnit::new(
-                AngularVelocity::new::<revolution_per_minute>(12000.),
-                [
-                    0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,
-                ],
-                [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
-            ),
+            gcu: GeneratorControlUnit::default(),
 
             emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
 

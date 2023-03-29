@@ -132,23 +132,26 @@ impl AngularSpeedSensor for RamAirTurbine {
     }
 }
 
-pub struct GeneratorControlUnit<const N: usize> {
+pub struct GeneratorControlUnit {
     is_active: bool,
-    max_allowed_power_rpm_breakpoints: [f64; N],
-    max_allowed_power_vs_rpm: [f64; N],
+    max_allowed_power_rpm_breakpoints: [f64; 9],
+    max_allowed_power_vs_rpm: [f64; 9],
     current_speed: AngularVelocity,
 
     manual_generator_on_was_pressed: bool,
 }
-impl<const N: usize> GeneratorControlUnit<N> {
-    pub fn new(
-        max_allowed_power_rpm_breakpoints: [f64; N],
-        max_allowed_power_vs_rpm: [f64; N],
-    ) -> Self {
+impl GeneratorControlUnit {
+    const MAX_ALLOWED_POWER_RPM_BREAKPOINTS: [f64; 9] = [
+        0., 1000., 6000., 6900., 7500., 8000., 10000., 11000., 12000.,
+    ];
+
+    const MAX_ALLOWED_POWER_MAP: [f64; 9] = [0., 0., 0., 0., 50000., 70000., 70000., 0., 0.];
+
+    pub fn new() -> Self {
         Self {
             is_active: false,
-            max_allowed_power_rpm_breakpoints,
-            max_allowed_power_vs_rpm,
+            max_allowed_power_rpm_breakpoints: Self::MAX_ALLOWED_POWER_RPM_BREAKPOINTS,
+            max_allowed_power_vs_rpm: Self::MAX_ALLOWED_POWER_MAP,
             current_speed: AngularVelocity::default(),
             manual_generator_on_was_pressed: false,
         }
@@ -192,13 +195,18 @@ impl<const N: usize> GeneratorControlUnit<N> {
         }
     }
 }
-impl<const N: usize> EmergencyGeneratorControlUnit for GeneratorControlUnit<N> {
+impl EmergencyGeneratorControlUnit for GeneratorControlUnit {
     fn max_allowed_power(&self) -> Power {
         self.max_allowed_power()
     }
 
     fn motor_speed(&self) -> AngularVelocity {
         self.current_speed
+    }
+}
+impl Default for GeneratorControlUnit {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -299,7 +307,7 @@ mod tests {
         }
     }
 
-    impl EmergencyGeneratorPower for GeneratorControlUnit<9> {
+    impl EmergencyGeneratorPower for GeneratorControlUnit {
         fn generated_power(&self) -> Power {
             self.max_allowed_power()
         }
@@ -310,7 +318,7 @@ mod tests {
 
         rat_controller: TestRamAirTurbineController,
         rat: RamAirTurbine,
-        gcu: GeneratorControlUnit<9>,
+        gcu: GeneratorControlUnit,
 
         rat_man_on: TestRatManOn,
         emergency_state: TestEmergencyState,
@@ -323,7 +331,7 @@ mod tests {
 
                 rat_controller: TestRamAirTurbineController::deploying(),
                 rat: RamAirTurbine::new(context),
-                gcu: gen_control_unit(),
+                gcu: GeneratorControlUnit::new(),
 
                 rat_man_on: TestRatManOn::not_pressed(),
                 emergency_state: TestEmergencyState::in_emergency(),
@@ -400,15 +408,5 @@ mod tests {
                 .abs()
                 < 5.
         );
-    }
-
-    #[cfg(test)]
-    fn gen_control_unit() -> GeneratorControlUnit<9> {
-        GeneratorControlUnit::new(
-            [
-                0., 1000., 6000., 6900., 7500., 8000., 10000., 11000., 12000.,
-            ],
-            [0., 0., 0., 0., 50000., 70000., 70000., 0., 0.],
-        )
     }
 }

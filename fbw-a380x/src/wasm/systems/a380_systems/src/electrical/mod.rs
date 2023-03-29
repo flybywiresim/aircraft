@@ -50,7 +50,7 @@ pub(super) struct A380Electrical {
     emergency_gen: EmergencyGenerator,
 
     rat_physics_updater: MaxStepLoop,
-    gcu: GeneratorControlUnit<9>,
+    gcu: GeneratorControlUnit,
     ram_air_turbine: RamAirTurbine,
     rat_controller: A380RamAirTurbineController,
 }
@@ -81,12 +81,7 @@ impl A380Electrical {
             ),
 
             rat_physics_updater: MaxStepLoop::new(Self::RAT_SIM_TIME_STEP),
-            gcu: GeneratorControlUnit::new(
-                [
-                    0., 100., 1000., 3000., 10000., 12000., 14000., 14001., 30000.,
-                ],
-                [0., 0., 1000., 8000., 8000., 8000., 1000., 0., 0.],
-            ),
+            gcu: GeneratorControlUnit::default(),
             ram_air_turbine: RamAirTurbine::new(context),
             rat_controller: A380RamAirTurbineController::new(
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,

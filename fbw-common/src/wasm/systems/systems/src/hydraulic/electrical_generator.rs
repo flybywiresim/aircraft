@@ -24,41 +24,36 @@ use std::time::Duration;
 
 use super::linear_actuator::Actuator;
 
-pub struct GeneratorControlUnit<const N: usize> {
+pub struct GeneratorControlUnit {
     pid_controller: PidController,
     nominal_rpm: AngularVelocity,
 
     is_active: bool,
-    max_allowed_power_rpm_breakpoints: [f64; N],
-    max_allowed_power_vs_rpm: [f64; N],
+    max_allowed_power_rpm_breakpoints: [f64; 9],
+    max_allowed_power_vs_rpm: [f64; 9],
     current_speed: AngularVelocity,
 
     manual_generator_on_was_pressed: bool,
 }
-impl<const N: usize> GeneratorControlUnit<N> {
+impl GeneratorControlUnit {
     const NOMINAL_SPEED_MARGIN_RPM: f64 = 500.;
     const MIN_ACTIVATION_PRESSURE_PSI: f64 = 1000.;
 
-    pub fn new(
-        nominal_rpm: AngularVelocity,
-        max_allowed_power_rpm_breakpoints: [f64; N],
-        max_allowed_power_vs_rpm: [f64; N],
-    ) -> Self {
-        Self {
-            pid_controller: PidController::new(
-                0.003,
-                0.01,
-                0.,
-                0.,
-                1.,
-                nominal_rpm.get::<revolution_per_minute>(),
-                1.,
-            ),
+    const MAX_ALLOWED_POWER_RPM_BREAKPOINTS: [f64; 9] = [
+        0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,
+    ];
+    const MAX_ALLOWED_POWER_MAP: [f64; 9] = [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.];
 
-            nominal_rpm,
+    const NOMINAL_RPM: f64 = 12000.;
+
+    pub fn new() -> Self {
+        Self {
+            pid_controller: PidController::new(0.003, 0.01, 0., 0., 1., Self::NOMINAL_RPM, 1.),
+
+            nominal_rpm: AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_RPM),
             is_active: false,
-            max_allowed_power_rpm_breakpoints,
-            max_allowed_power_vs_rpm,
+            max_allowed_power_rpm_breakpoints: Self::MAX_ALLOWED_POWER_RPM_BREAKPOINTS,
+            max_allowed_power_vs_rpm: Self::MAX_ALLOWED_POWER_MAP,
             current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             manual_generator_on_was_pressed: false,
         }
@@ -131,7 +126,7 @@ impl<const N: usize> GeneratorControlUnit<N> {
             <= Self::NOMINAL_SPEED_MARGIN_RPM
     }
 }
-impl<const N: usize> EmergencyGeneratorControlUnit for GeneratorControlUnit<N> {
+impl EmergencyGeneratorControlUnit for GeneratorControlUnit {
     fn max_allowed_power(&self) -> Power {
         self.max_allowed_power()
     }
@@ -140,9 +135,14 @@ impl<const N: usize> EmergencyGeneratorControlUnit for GeneratorControlUnit<N> {
         self.current_speed
     }
 }
-impl<const N: usize> ControlValveCommand for GeneratorControlUnit<N> {
+impl ControlValveCommand for GeneratorControlUnit {
     fn valve_position_command(&self) -> Ratio {
         Ratio::new::<ratio>(self.pid_controller.output())
+    }
+}
+impl Default for GeneratorControlUnit {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -480,7 +480,7 @@ mod tests {
     struct TestAircraft {
         updater_max_step: MaxStepLoop,
 
-        gcu: GeneratorControlUnit<9>,
+        gcu: GeneratorControlUnit,
         lgciu: TestLgciuSensors,
         rat_man_on: TestRatManOn,
         emergency_state: TestEmergencyState,
@@ -492,7 +492,7 @@ mod tests {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 updater_max_step: MaxStepLoop::new(Duration::from_millis(10)),
-                gcu: gen_control_unit(),
+                gcu: GeneratorControlUnit::default(),
                 lgciu: TestLgciuSensors::compressed(),
                 rat_man_on: TestRatManOn::not_pressed(),
                 emergency_state: TestEmergencyState::not_in_emergency(),
@@ -684,16 +684,5 @@ mod tests {
         assert!(test_bed.query(|a| {
             a.emergency_gen.speed() <= AngularVelocity::new::<revolution_per_minute>(5.)
         }));
-    }
-
-    #[cfg(test)]
-    fn gen_control_unit() -> GeneratorControlUnit<9> {
-        GeneratorControlUnit::new(
-            AngularVelocity::new::<revolution_per_minute>(12000.),
-            [
-                0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,
-            ],
-            [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
-        )
     }
 }
