@@ -133,7 +133,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     }
 
     private updateColor() {
-        const color = (!this.mda.isNoComputedData() && this.mda.value !== 0 && this.altitude < this.mda.value) ? 'Amber' : 'Green';
+        const color = ((!this.mda.isNoComputedData() && !this.mda.isFailureWarning()) && this.mda.value !== 0 && this.altitude < this.mda.value) ? 'Amber' : 'Green';
         this.colorSub.set(color);
     }
 

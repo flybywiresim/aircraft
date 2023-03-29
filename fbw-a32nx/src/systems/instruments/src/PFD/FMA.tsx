@@ -1418,7 +1418,7 @@ class D3Cell extends DisplayComponent<{bus: EventBus}> {
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
-            if (!mda.isNoComputedData() && mda.value !== 0) {
+            if ((!mda.isNoComputedData() && !mda.isFailureWarning()) && mda.value !== 0) {
                 const MDAText = Math.round(mda.value).toString().padStart(6, ' ');
 
                 this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
@@ -1430,13 +1430,13 @@ class D3Cell extends DisplayComponent<{bus: EventBus}> {
         sub.on('dhAr').withArinc429Precision(0).handle((dh) => {
             let fontSize = 'FontSmallest';
             const dhValue = dh.value;
-            if (!dh.isNoComputedData() && dhValue !== -1 && dhValue !== -2) {
+            if ((!dh.isNoComputedData() && !dh.isFailureWarning()) && dhValue !== -1 && dhValue !== -2) {
                 const DHText = Math.round(dhValue).toString().padStart(4, ' ');
 
                 this.textRef.instance.innerHTML = `
                         <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
                     `;
-            } else if (!dh.isNoComputedData() && dhValue === -2) {
+            } else if ((!dh.isNoComputedData() && !dh.isFailureWarning()) && dhValue === -2) {
                 this.textRef.instance.innerHTML = '<tspan>NO DH</tspan>';
                 fontSize = 'FontMedium';
             } else {
