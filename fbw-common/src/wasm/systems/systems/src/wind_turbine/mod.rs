@@ -69,6 +69,11 @@ impl WindTurbine {
     const SPECIFIC_HEAT_RATIO_FOR_AIR: f64 = 1.4;
     const GAS_CONSTANT_FOR_AIR: f64 = 287.;
 
+    // Force coming from either pump plunger position or generator magnetic poles position
+    const PUMPING_TORQUE_COEFFICIENT_NM: f64 = 2.;
+    // Number of pump plungers or magnetic poles
+    const NUMBER_OF_MAX_PUMPING_POSITION_PER_REVOLUTION: f64 = 5.;
+
     pub fn new(
         context: &mut InitContext,
         propeller_radius: Length,
@@ -214,8 +219,12 @@ impl WindTurbine {
             )
         };
 
-        let pumping_torque =
-            Torque::new::<newton_meter>(2. * (5. * self.position.get::<radian>()).cos());
+        let pumping_torque = Torque::new::<newton_meter>(
+            Self::PUMPING_TORQUE_COEFFICIENT_NM
+                * (Self::NUMBER_OF_MAX_PUMPING_POSITION_PER_REVOLUTION
+                    * self.position.get::<radian>())
+                .cos(),
+        );
 
         self.torque_sum += resistant_torque + friction_torque + pumping_torque;
     }
