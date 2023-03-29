@@ -1229,19 +1229,6 @@
     - Persistent
     - Enables developer-specific options like direct payload adjustments
 
- - A32NX_FM1_DECISION_HEIGHT
-     - Number
-     - The decision height for an approach in feet, as entered on the PERF page.
-     - Value | Meaning
-       --- | ---
-       0 or greater | The decision height in feet
-       -1 | The pilot has not entered a decision height
-       -2 | The special value "NO" has been explicitly entered as the decision deight
-
- - A32NX_FM1_MINIMUM_DESCENT_ALTITUDE
-     - Number
-     - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
-
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
@@ -1842,6 +1829,25 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_FM{number}_TO_PITCH_TRIM
     - Takeoff pitch trim set by the pilot on the PERF TO MCDU page
     - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_DECISION_HEIGHT
+    - ARINC429<number> (feet)
+    - The decision height for an approach in feet, as entered on the PERF page.
+    - Value | Meaning
+       --- | ---
+       0 or greater | The decision height in feet
+       -1 | The pilot has not entered a decision height
+       -2 | The special value "NO" has been explicitly entered as the decision deight
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
+    - ARINC429<number> (feet)
+    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
