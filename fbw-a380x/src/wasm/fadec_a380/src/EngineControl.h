@@ -775,6 +775,59 @@ class EngineControl {
   }
 
   /// <summary>
+  /// FBW Payload checking and UI override function
+  /// </summary>
+  void checkPayload() {
+    double fuelWeightGallon = simVars->getFuelWeightGallon();
+    double aircraftEmptyWeight = simVars->getEmptyWeight();  // in LBS
+    double conversionFactor = simVars->getConversionFactor();
+    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;                   // in LBS
+    double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
+    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
+    double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;  // in LBS
+
+    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * perPaxWeightLbs;                 // in LBS
+    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * perPaxWeightLbs;               // in LBS
+    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * perPaxWeightLbs;             // in LBS
+    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * perPaxWeightLbs;             // in LBS
+    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * perPaxWeightLbs;               // in LBS
+    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * perPaxWeightLbs;             // in LBS
+    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * perPaxWeightLbs;           // in LBS
+    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * perPaxWeightLbs;           // in LBS
+    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;    // in LBS
+    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;    // in LBS
+    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;        // in LBS
+    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;              // in LBS
+    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() / conversionFactor;  // in LBS
+    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() / conversionFactor;  // in LBS
+    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() / conversionFactor;      // in LBS
+    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() / conversionFactor;            // in LBS
+    double paxTotalWeightActual = (paxRows1to6Actual + paxRows7to13Actual + paxRows14to21Actual + paxRows22to29Actual);
+    double paxTotalWeightDesired = (paxRows1to6Desired + paxRows7to13Desired + paxRows14to21Desired + paxRows22to29Desired);
+    double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
+    double cargoTotalWeightDesired = (cargoFwdContainerDesired + cargoAftContainerDesired + cargoAftBaggageDesired + cargoAftBulkDesired);
+
+    if (abs(payloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows1to6Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows7to13Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows14to21Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows22to29Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation5, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoFwdContainerActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation6, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoAftContainerActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation7, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoAftBaggageActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation8, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoAftBulkActual);
+    }
+  }
+
+  /// <summary>
   /// FBW Fuel Consumption and Tankering
   /// Updates Fuel Consumption with realistic values
   /// </summary>
@@ -805,10 +858,10 @@ class EngineControl {
     double engine4FF = simVars->getEngine4FF();        // KG/H
 
     double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();    // Kg
+    double fuelUsedEngine1 = simVars->getFuelUsedEngine1();  // Kg
     double fuelUsedEngine2 = simVars->getFuelUsedEngine2();  // Kg
-    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();    // Kg
-    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();    // Kg
+    double fuelUsedEngine3 = simVars->getFuelUsedEngine3();  // Kg
+    double fuelUsedEngine4 = simVars->getFuelUsedEngine4();  // Kg
 
     double fuelLeftOuterPre = simVars->getFuelLeftOuterPre();    // LBS
     double fuelFeedOnePre = simVars->getFuelFeedOnePre();        // LBS
@@ -1126,10 +1179,20 @@ class EngineControl {
 
     // Will save the current fuel quantities if on the ground AND engines being shutdown
     if (timerFuel.elapsed() >= 1000 && simVars->getSimOnGround() &&
+        (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 || engine2State == 0 || engine2State == 10 ||
          engine2State == 4 || engine2State == 14 || engine3State == 0 || engine3State == 10 || engine3State == 4 || engine3State == 14 ||
-         engine4State == 0 || engine4State == 10 || engine4State == 4 || engine4State == 14) {
+         engine4State == 0 || engine4State == 10 || engine4State == 4 || engine4State == 14)) {
       Configuration configuration;
 
+      configuration.fuelLeftOuter = simVars->getFuelLeftOuterPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedOne = simVars->getFuelFeedOnePre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeftMid = simVars->getFuelLeftMidPre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeftInner = simVars->getFuelLeftInnerPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedTwo = simVars->getFuelFeedTwoPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedThree = simVars->getFuelFeedThreePre() / simVars->getFuelWeightGallon();
+      configuration.fuelRightInner = simVars->getFuelRightInnerPre() / simVars->getFuelWeightGallon();
+      configuration.fuelRightMid = simVars->getFuelRightMidPre() / simVars->getFuelWeightGallon();
+      configuration.fuelFeedFour = simVars->getFuelFeedFourPre() / simVars->getFuelWeightGallon();
       configuration.fuelRightOuter = simVars->getFuelRightOuterPre() / simVars->getFuelWeightGallon();
       configuration.fuelTrim = simVars->getFuelTrimPre() / simVars->getFuelWeightGallon();
 
@@ -1427,7 +1490,6 @@ class EngineControl {
         timer = simVars->getEngine4Timer();
       }
 
-
       switch (int(engineState)) {
         case 2:
         case 3:
@@ -1447,6 +1509,11 @@ class EngineControl {
       // set highest N1 from either engine
       simN1highest = max(simN1highest, simN1);
     }
+
+    // If Development State is 1, UI Payload will be enabled
+    devState = simVars->getDeveloperState();
+    if (devState == 0)
+      checkPayload();
 
     updateFuel(deltaTime);
 
