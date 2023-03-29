@@ -39,7 +39,7 @@ impl RamAirTurbine {
     const TURBINE_TO_GENERATOR_RATIO: f64 = 2.4286;
 
     pub const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-        0.0, 1000., 2400.0, 2475.0, 4150.0, 4154.0, 4155.0, 4200.0, 4300.0,
+        0.0, 1000., 3400.0, 3700.0, 4150.0, 4154.0, 4155.0, 4200.0, 4300.0,
     ];
     pub const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
 
