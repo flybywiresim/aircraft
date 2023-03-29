@@ -2973,10 +2973,16 @@ impl RamAirTurbine {
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
-    const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
+    pub const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
         0.0, 1000., 4700.0, 5500.0, 6250.0, 6300.0, 6450.0, 9000.0, 15000.0,
     ];
-    const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+    pub const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+
+    pub const PROPELLER_DIAMETER_M: f64 = 1.003;
+
+    pub const PROPELLER_INERTIA: f64 = 0.10;
+    pub const DYNAMIC_FRICTION: f64 = 0.07;
+    pub const BEST_EFFICIENCY_TIP_SPEED_RATIO: f64 = 2.;
 
     pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
@@ -2988,12 +2994,12 @@ impl RamAirTurbine {
 
             wind_turbine: WindTurbine::new(
                 context,
-                Length::new::<meter>(1.003 / 2.),
+                Length::new::<meter>(Self::PROPELLER_DIAMETER_M / 2.),
                 Self::RPM_GOVERNOR_BREAKPTS,
                 Self::PROP_ALPHA_MAP,
-                0.06,
-                2.,
-                0.12,
+                Self::DYNAMIC_FRICTION,
+                Self::BEST_EFFICIENCY_TIP_SPEED_RATIO,
+                Self::PROPELLER_INERTIA,
             ),
             position: 0.,
         }

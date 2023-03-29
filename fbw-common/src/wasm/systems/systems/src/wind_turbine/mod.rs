@@ -272,8 +272,10 @@ impl SimulationElement for WindTurbine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::electrical;
+    use crate::hydraulic;
     use crate::shared::update_iterator::MaxStepLoop;
-    use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
@@ -697,36 +699,26 @@ mod tests {
     }
 
     fn a380_wind_turbine(context: &mut InitContext) -> WindTurbine {
-        const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-            0.0, 1000., 3400.0, 3700.0, 4150.0, 4154.0, 4155.0, 4200.0, 4300.0,
-        ];
-        const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
-
         WindTurbine::new(
             context,
-            Length::new::<meter>(1.6256 / 2.),
-            RPM_GOVERNOR_BREAKPTS,
-            PROP_ALPHA_MAP,
-            0.2,
-            4.,
-            0.2,
+            Length::new::<meter>(electrical::RamAirTurbine::PROPELLER_DIAMETER_M / 2.),
+            electrical::RamAirTurbine::RPM_GOVERNOR_BREAKPTS,
+            electrical::RamAirTurbine::PROP_ALPHA_MAP,
+            electrical::RamAirTurbine::DYNAMIC_FRICTION,
+            electrical::RamAirTurbine::BEST_EFFICIENCY_TIP_SPEED_RATIO,
+            electrical::RamAirTurbine::PROPELLER_INERTIA,
         )
     }
 
     fn a320_wind_turbine(context: &mut InitContext) -> WindTurbine {
-        const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-            0.0, 1000., 4700.0, 5500.0, 6250.0, 6300.0, 6450.0, 9000.0, 15000.0,
-        ];
-        const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
-
         WindTurbine::new(
             context,
-            Length::new::<meter>(1.003 / 2.),
-            RPM_GOVERNOR_BREAKPTS,
-            PROP_ALPHA_MAP,
-            0.07,
-            2.,
-            0.10,
+            Length::new::<meter>(hydraulic::RamAirTurbine::PROPELLER_DIAMETER_M / 2.),
+            hydraulic::RamAirTurbine::RPM_GOVERNOR_BREAKPTS,
+            hydraulic::RamAirTurbine::PROP_ALPHA_MAP,
+            hydraulic::RamAirTurbine::DYNAMIC_FRICTION,
+            hydraulic::RamAirTurbine::BEST_EFFICIENCY_TIP_SPEED_RATIO,
+            hydraulic::RamAirTurbine::PROPELLER_INERTIA,
         )
     }
 }

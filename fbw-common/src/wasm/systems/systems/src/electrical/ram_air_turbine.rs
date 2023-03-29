@@ -38,10 +38,16 @@ impl RamAirTurbine {
 
     const TURBINE_TO_GENERATOR_RATIO: f64 = 2.4286;
 
-    const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
+    pub const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
         0.0, 1000., 2400.0, 2475.0, 4150.0, 4154.0, 4155.0, 4200.0, 4300.0,
     ];
-    const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+    pub const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+
+    pub const PROPELLER_DIAMETER_M: f64 = 1.6256;
+
+    pub const PROPELLER_INERTIA: f64 = 0.2;
+    pub const DYNAMIC_FRICTION: f64 = 0.2;
+    pub const BEST_EFFICIENCY_TIP_SPEED_RATIO: f64 = 4.;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -51,12 +57,12 @@ impl RamAirTurbine {
 
             wind_turbine: WindTurbine::new(
                 context,
-                Length::new::<meter>(1.6256 / 2.),
+                Length::new::<meter>(Self::PROPELLER_DIAMETER_M / 2.),
                 Self::RPM_GOVERNOR_BREAKPTS,
                 Self::PROP_ALPHA_MAP,
-                0.2,
-                4.,
-                0.2,
+                Self::DYNAMIC_FRICTION,
+                Self::BEST_EFFICIENCY_TIP_SPEED_RATIO,
+                Self::PROPELLER_INERTIA,
             ),
             stow_position: 0.,
         }
@@ -200,7 +206,7 @@ impl<const N: usize> EmergencyGeneratorControlUnit for GeneratorControlUnit<N> {
 mod tests {
     use super::*;
     use crate::shared::update_iterator::MaxStepLoop;
-    use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
