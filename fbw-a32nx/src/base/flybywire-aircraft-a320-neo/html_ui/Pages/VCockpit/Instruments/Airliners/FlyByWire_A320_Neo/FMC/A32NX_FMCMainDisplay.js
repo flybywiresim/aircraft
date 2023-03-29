@@ -177,8 +177,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincLandingElevation = FmArinc429OutputWord.empty("LANDING_ELEVATION");
         this.arincDestinationLatitude = FmArinc429OutputWord.empty("DEST_LAT");
         this.arincDestinationLongitude = FmArinc429OutputWord.empty("DEST_LONG");
-        this.arincMDA = FmArinc429OutputWord.empty("MDA");
-        this.arincDH = FmArinc429OutputWord.empty("DH");
+        this.arincMDA = FmArinc429OutputWord.empty("MINIMUM_DESCENT_ALTITUDE");
+        this.arincDH = FmArinc429OutputWord.empty("DECISION_HEIGHT");
         this.arincThrustReductionAltitude = FmArinc429OutputWord.empty("THR_RED_ALT");
         this.arincAccelerationAltitude = FmArinc429OutputWord.empty("ACC_ALT");
         this.arincEoAccelerationAltitude = FmArinc429OutputWord.empty("EO_ACC_ALT");
