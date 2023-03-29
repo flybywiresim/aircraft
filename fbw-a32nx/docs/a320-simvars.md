@@ -21,7 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
-  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
+  - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
 
@@ -1228,6 +1228,19 @@
     - Bool
     - Persistent
     - Enables developer-specific options like direct payload adjustments
+
+ - A32NX_FM1_DECISION_HEIGHT
+     - Number
+     - The decision height for an approach in feet, as entered on the PERF page.
+     - Value | Meaning
+       --- | ---
+       0 or greater | The decision height in feet
+       -1 | The pilot has not entered a decision height
+       -2 | The special value "NO" has been explicitly entered as the decision deight
+
+ - A32NX_FM1_MINIMUM_DESCENT_ALTITUDE
+     - Number
+     - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
 
 ## EIS Display System
 
