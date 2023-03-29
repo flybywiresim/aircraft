@@ -204,6 +204,11 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
+    use uom::si::{
+        mass_density::slug_per_cubic_foot, thermodynamic_temperature::degree_celsius,
+        velocity::knot,
+    };
+
     struct TestEmergencyState {
         is_emergency: bool,
     }
@@ -369,9 +374,9 @@ mod tests {
     fn deployed_and_turning_rat_with_active_gcu_gives_generator_rotating_at_correct_speed() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
 
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
 

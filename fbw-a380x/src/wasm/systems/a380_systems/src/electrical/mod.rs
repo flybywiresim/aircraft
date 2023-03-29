@@ -60,7 +60,6 @@ impl A380Electrical {
     const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(1);
 
-    //TODO second solenoid should be HOT BUS ESSENTIAL
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(3);
 

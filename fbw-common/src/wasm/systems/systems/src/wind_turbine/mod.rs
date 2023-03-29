@@ -277,11 +277,13 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
-    use uom::si::power::kilowatt;
     use uom::si::{
         angular_velocity::{radian_per_second, revolution_per_minute},
         length::meter,
+        mass_density::slug_per_cubic_foot,
+        power::kilowatt,
         power::watt,
+        thermodynamic_temperature::degree_celsius,
         torque::newton_meter,
         velocity::knot,
     };
@@ -396,7 +398,7 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(0.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(70.)));
 
@@ -422,9 +424,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(70.)));
 
@@ -440,9 +442,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 200.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(200.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(70.)));
 
@@ -457,9 +459,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 120.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(120.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         // Cannot supply 70KW of power at lowest approach speed
@@ -476,9 +478,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 120.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(120.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         // 58KvA is max rated power output @ 140 kts
@@ -495,9 +497,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 50.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(50.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(70.)));
 
@@ -513,9 +515,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(40.)));
@@ -523,7 +525,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 3800.);
 
-        test_bed.write_by_name("AIRSPEED TRUE", 0.);
+        test_bed.set_true_airspeed(Velocity::default());
 
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 200.);
@@ -539,9 +541,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(40.)));
@@ -549,7 +551,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 3800.);
 
-        test_bed.write_by_name("AIRSPEED TRUE", 30.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(30.));
 
         test_bed.run_with_delta(Duration::from_secs_f64(10.));
         assert!(test_bed.query(|a| a.turbine_rpm()) < 50.);
@@ -563,9 +565,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
@@ -581,9 +583,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 200.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(200.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
@@ -598,9 +600,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 120.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(120.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
@@ -616,9 +618,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 120.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(120.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(5.)));
@@ -634,9 +636,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 50.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(50.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
 
@@ -652,9 +654,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
@@ -662,7 +664,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(3.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 5000.);
 
-        test_bed.write_by_name("AIRSPEED TRUE", 0.);
+        test_bed.set_true_airspeed(Velocity::default());
 
         test_bed.run_with_delta(Duration::from_secs_f64(2.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 200.);
@@ -678,9 +680,9 @@ mod tests {
             TestAircraft::new(turbine)
         });
 
-        test_bed.write_by_name("AIRSPEED TRUE", 340.);
-        test_bed.write_by_name("AMBIENT DENSITY", 0.002367190);
-        test_bed.write_by_name("AMBIENT TEMPERATURE", 20.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
+        test_bed.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
         test_bed.command(|a| a.set_stow_position(Ratio::new::<ratio>(1.)));
 
         test_bed.command(|a| a.set_power_load(Power::new::<kilowatt>(20.)));
@@ -688,7 +690,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(5.));
         assert!(test_bed.query(|a| a.turbine_rpm()) > 5000.);
 
-        test_bed.write_by_name("AIRSPEED TRUE", 30.);
+        test_bed.set_true_airspeed(Velocity::new::<knot>(30.));
 
         test_bed.run_with_delta(Duration::from_secs_f64(10.));
         assert!(test_bed.query(|a| a.turbine_rpm()) < 50.);
