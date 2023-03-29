@@ -79,6 +79,10 @@ pub trait TestBed {
             .set_indicated_airspeed(indicated_airspeed);
     }
 
+    fn set_true_airspeed(&mut self, true_airspeed: Velocity) {
+        self.test_bed_mut().set_true_airspeed(true_airspeed);
+    }
+
     fn indicated_airspeed(&mut self) -> Velocity {
         self.test_bed_mut().indicated_airspeed()
     }
@@ -111,6 +115,10 @@ pub trait TestBed {
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
         self.test_bed_mut()
             .set_ambient_temperature(ambient_temperature);
+    }
+
+    fn set_ambient_air_density(&mut self, ambient_density: MassDensity) {
+        self.test_bed_mut().set_ambient_air_density(ambient_density);
     }
 
     fn ambient_temperature(&mut self) -> ThermodynamicTemperature {
@@ -356,6 +364,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
         self.write_by_name(UpdateContext::INDICATED_AIRSPEED_KEY, indicated_airspeed);
     }
 
+    fn set_true_airspeed(&mut self, true_airspeed: Velocity) {
+        self.write_by_name(UpdateContext::TRUE_AIRSPEED_KEY, true_airspeed);
+    }
+
     fn indicated_airspeed(&mut self) -> Velocity {
         self.read_by_name(UpdateContext::INDICATED_AIRSPEED_KEY)
     }
@@ -370,6 +382,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
         self.write_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY, ambient_temperature);
+    }
+
+    fn set_ambient_air_density(&mut self, ambient_density: MassDensity) {
+        self.write_by_name(UpdateContext::AMBIENT_DENSITY_KEY, ambient_density);
     }
 
     fn ambient_temperature(&mut self) -> ThermodynamicTemperature {
