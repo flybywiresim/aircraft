@@ -683,7 +683,7 @@ export class PseudoFWC {
 
     constructor() {
         this.memoMessageLeft.sub((_i, _t, v) => {
-            if (v && v instanceof Array) {
+            if (v instanceof Array) {
                 if (v.length !== this.memoMessageLeftPrev.length || v.some((e, i) => e !== this.memoMessageLeftPrev[i])) {
                     this.memoMessageLeftPrev = [...v];
                     [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
@@ -697,7 +697,7 @@ export class PseudoFWC {
         });
 
         this.memoMessageRight.sub((_i, _t, v) => {
-            if (v && v instanceof Array) {
+            if (v instanceof Array) {
                 if (v.length !== this.memoMessageRightPrev.length || v.some((e, i) => e !== this.memoMessageRightPrev[i])) {
                     this.memoMessageRightPrev = [...v];
                     [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
