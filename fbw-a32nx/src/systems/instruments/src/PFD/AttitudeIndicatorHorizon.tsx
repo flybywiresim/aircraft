@@ -382,7 +382,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
                 const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
                 let size = 'FontLarge';
-                const DHValid = this.dh.value >= 0 && !this.dh.isNoComputedData();
+                const DHValid = this.dh.value >= 0 && (!this.dh.isNoComputedData() && !this.dh.isFailureWarning());
 
                 let text = '';
                 let color = 'Amber';
