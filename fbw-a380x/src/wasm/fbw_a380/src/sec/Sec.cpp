@@ -1,5 +1,6 @@
 #include "Sec.h"
 #include <iostream>
+#include "../Arinc429.h"
 #include "../Arinc429Utils.h"
 
 Sec::Sec(bool isUnit1, bool isUnit2, bool isUnit3) : isUnit1(isUnit1), isUnit2(isUnit2), isUnit3(isUnit3) {

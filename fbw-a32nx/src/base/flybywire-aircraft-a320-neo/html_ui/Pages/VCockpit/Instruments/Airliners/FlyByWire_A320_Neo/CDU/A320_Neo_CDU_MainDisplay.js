@@ -27,7 +27,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.allSelected = false;
         this.updateRequest = false;
         this.initB = false;
-        this.lastPowerState = 0;
+        this.lastPowerState = null;
         this.PageTimeout = {
             Fast: 500,
             Medium: 1000,
@@ -340,14 +340,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // There is no (known) event when power is turned on or off (e.g. Ext Pwr) and remote clients
         // would not be updated (cleared or updated). Therefore, monitoring power is necessary.
         // every 500ms
-        if (this.powerCheckUpdateThrottler.canUpdate(_deltaTime) !== -1
-            && this.mcduServerClient
-            && this.mcduServerClient.isConnected()
-        ) {
+        if (this.powerCheckUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             const isPoweredL = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number");
             if (this.lastPowerState !== isPoweredL) {
                 this.lastPowerState = isPoweredL;
-                this.sendUpdate();
+                this.onFmPowerStateChanged(isPoweredL);
+
+                if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
+                    this.sendUpdate();
+                }
             }
         }
 
@@ -721,7 +722,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onNextPage = () => {};
         this.pageUpdate = () => {};
         this.pageRedrawCallback = null;
-        this.refreshPageCallback = undefined;
         if (this.page.Current === this.page.MenuPage) {
             this.setScratchpadText("");
         }

@@ -3,8 +3,6 @@
 #include <cstdint>
 #include "model/A380PrimComputer_types.h"
 
-enum Arinc429SignStatus { FailureWarning = 0, NoComputedData, FunctionalTest, NormalOperation };
-
 namespace Arinc429Utils {
 base_arinc_429 fromSimVar(double simVar);
 

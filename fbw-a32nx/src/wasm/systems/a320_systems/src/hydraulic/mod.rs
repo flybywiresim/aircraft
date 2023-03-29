@@ -1485,7 +1485,7 @@ pub(super) struct A320Hydraulic {
     slat_system: FlapSlatAssembly,
     slats_flaps_complex: SlatFlapComplex,
 
-    gcu: GeneratorControlUnit<9>,
+    gcu: GeneratorControlUnit,
     emergency_gen: HydraulicGeneratorMotor,
 
     forward_cargo_door: CargoDoor,
@@ -1730,13 +1730,7 @@ impl A320Hydraulic {
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
-            gcu: GeneratorControlUnit::new(
-                AngularVelocity::new::<revolution_per_minute>(12000.),
-                [
-                    0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,
-                ],
-                [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
-            ),
+            gcu: GeneratorControlUnit::default(),
 
             emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
 
@@ -1963,11 +1957,8 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.ram_air_turbine.update_physics(
-            &context.delta(),
-            context.indicated_airspeed(),
-            self.blue_circuit.system_section(),
-        );
+        self.ram_air_turbine
+            .update_physics(context, self.blue_circuit.system_section());
 
         self.gcu.update(
             context,
@@ -6320,6 +6311,7 @@ mod tests {
             angle::degree,
             electric_potential::volt,
             length::foot,
+            mass_density::kilogram_per_cubic_meter,
             ratio::{percent, ratio},
             volume::liter,
         };
@@ -7138,6 +7130,8 @@ mod tests {
                 self.set_on_ground(false);
                 self.set_indicated_altitude(Length::new::<foot>(2500.));
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
+                self.set_true_airspeed(Velocity::new::<knot>(180.));
+                self.set_ambient_air_density(MassDensity::new::<kilogram_per_cubic_meter>(1.22));
                 self.start_eng1(Ratio::new::<percent>(80.))
                     .start_eng2(Ratio::new::<percent>(80.))
                     .set_gear_lever_up()
