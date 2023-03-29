@@ -13,6 +13,8 @@
     "build-a32nx:model": "node fbw-a32nx/src/model/build.js",
     "build-a32nx:behavior": "node fbw-a32nx/src/behavior/build.js",
 
+    "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",
+    "build-a32nx:atsu-fms-client": "node fbw-a32nx/src/systems/atsu/fmsclient/build.js",
     "build-a32nx:extras-host": "cd fbw-a32nx/src/systems/extras-host && rollup -c",
     "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
     "build-a32nx:fmgc": "rollup -c fbw-a32nx/src/systems/fmgc/rollup.config.js",
@@ -21,6 +23,7 @@
     "build-a32nx:simbridge-client": "rollup -c fbw-a32nx/src/systems/simbridge-client/rollup.config.js",
     "build-a32nx:systems-host": "cd fbw-a32nx/src/systems/systems-host && rollup -c",
     "build-a32nx:tcas": "rollup -c fbw-a32nx/src/systems/tcas/rollup.config.js",
+
     "build-a32nx:fadec": "cd fbw-a32nx/src/wasm/fadec_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm",
     "build-a32nx:fbw": "cd fbw-a32nx/src/wasm/fbw_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm",
     "build-a32nx:flypad-backend": "cd fbw-a32nx/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm",
