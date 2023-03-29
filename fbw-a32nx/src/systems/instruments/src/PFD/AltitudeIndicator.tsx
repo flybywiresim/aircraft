@@ -747,7 +747,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
 
                 this.updateAltitudeColor();
 
-                if (!this.state.MDA.isNoComputedData() && !this.state.MDA.isFailureWarning()  && this.state.altitude.value < this.state.MDA.value) {
+                if (!this.state.MDA.isNoComputedData() && !this.state.MDA.isFailureWarning() && this.state.altitude.value < this.state.MDA.value) {
                     this.metricAltText.instance.classList.replace('Green', 'Amber');
                 } else {
                     this.metricAltText.instance.classList.replace('Amber', 'Green');
