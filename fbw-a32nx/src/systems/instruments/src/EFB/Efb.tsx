@@ -95,7 +95,11 @@ const Efb = () => {
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
-    const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
+    const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({
+        level: 100,
+        lastChangeTimestamp: absoluteTime,
+        isCharging: dc2BusIsPowered,
+    });
 
     const [ac1BusIsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 1000);
     const [, setLoadLightingPresetVar] = useSimVar('L:A32NX_LIGHTING_PRESET_LOAD', 'number', 200);
@@ -326,7 +330,7 @@ const Efb = () => {
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="pt-14 pr-6 w-screen min-w-0 h-screen">
+                            <div className="pt-14 pr-6 w-screen h-screen">
                                 <Switch>
                                     <Route exact path="/">
                                         <Redirect to="/dashboard" />
