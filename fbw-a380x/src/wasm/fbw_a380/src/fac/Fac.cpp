@@ -1,5 +1,7 @@
 #include "Fac.h"
 
+#include "../Arinc429.h"
+
 Fac::Fac(bool isUnit1) : isUnit1(isUnit1) {
   facComputer.initialize();
 }

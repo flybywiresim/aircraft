@@ -4,22 +4,22 @@
     "ChangeATISATCSourceButton": "ATIS/ATC Kaynağını Değiştir",
     "ConnectHoppieACARS": "Hoppie ACARS'a bağlan",
     "NoInformationAvailableForThisFrequency": "BU FREKANS İÇİN MEVCUT BİLGİ YOK",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "Ara",
     "SelectCorrectATISATCSource": "Bu sayfa yalnızca ayarlar sayfasında ATIS/ATC kaynağı olarak IVAO veya VATSIM seçildiğinde kullanılabilir.",
     "SetActive": "Etkinleştir",
     "SetStandby": "Beklemede Ayarla",
     "ShowAll": "Tümü",
-    "ShowApproach": "Approach",
+    "ShowApproach": "Yaklaşma",
     "ShowAtis": "ATIS",
-    "ShowDelivery": "Delivery",
-    "ShowDeparture": "Departure",
-    "ShowGround": "Ground",
+    "ShowDelivery": "Müsade Dağıtım",
+    "ShowDeparture": "Kalkış",
+    "ShowGround": "Yer",
     "ShowRadar": "Radar",
-    "ShowTower": "Tower",
+    "ShowTower": "Kule",
     "Standby": "Beklemede",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "ATC Çağrı İşareti Arama",
+      "AtcTypeFilter": "Filtrele"
     },
     "Title": "Hava Trafik Kontrol"
   },
@@ -151,11 +151,11 @@
       "BoardingTime": "Biniş Süresi",
       "Cargo": "Cargo",
       "Current": "Current",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationBody": "Lütfen tüm yolcuların indirilmesini onaylayın ",
+      "DeboardConfirmationCancel": "İptal et",
+      "DeboardConfirmationConfirm": "Yolcuları İndir",
+      "DeboardConfirmationTitle": "Tüm yolcular indirilsin mi?",
+      "EstimatedDurationUnit": "dakika",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -173,7 +173,7 @@
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
         "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "Uçaktan indirmeye başla"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -207,10 +207,10 @@
     "Altn": "Alternatif",
     "ExitFullscreenMode": "Tam Ekran Modundan Çık",
     "From": "Kalkış",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
+    "LoadingImage": "Resim Yükleniyor",
+    "LoadingImageFailed": "Resim yüklemesi başarısız oldu",
     "LoadingPdf": "PDF Yükleniyor",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingPdfFailed": "PDF yüklemesi başarısız oldu",
     "LocalFiles": {
       "Both": "İkisi de",
       "EstablishingConnection": "Bağlantı Kuruluyor",
@@ -370,7 +370,7 @@
       "ConfirmationDialogMsg": "Lütfen hazır ayarın yüklenmesini onaylayın.",
       "CurrentProcedureStep": "Mevcut Prosedür Adımı",
       "PleaseConfirmLoadingOfPreset": "Lütfen hazır ayarın yüklenmesini onaylayın.",
-      "Powered": "Powered",
+      "Powered": "Güçlendirilmiş",
       "ReadyPushback": "Pushback için hazır",
       "ReadyTakeoff": "Kalkış için hazır",
       "ReadyTaxi": "Taksi için hazır",
@@ -385,7 +385,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "Ön Ayarları Kaydetmek için Uçağa Güç Verilmesi Gerekiyor",
       "AutoLoadDawnDusk": "Gün batımı:",
       "AutoLoadDay": "Gündüz:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
+      "AutoLoadLightingHelpTitle": "Otomatik Ön Ayar Yükleme",
       "AutoLoadLightingPreset": "Aydınlatma ön ayarlarının otomatik yüklenmesini etkinleştirin:",
       "AutoLoadNight": "Akşam:",
       "AutoLoadNoneSelection": "Boş",
@@ -442,7 +442,7 @@
       "SliderSpeed": "İstediğiniz hıza hareket ettirin",
       "SystemEnabledOff": "Pushback sistemini etkinleştirmek için tıklayın.",
       "SystemEnabledOn": "Pushback sistemini tamamen devre dışı bırakmak için tıklayın.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Rudder ve Elevator'dan gelen kontrolcü girdilerini açma/kapama",
       "ZoomIn": "Büyüt",
       "ZoomOut": "Küçült"
     },
@@ -450,29 +450,29 @@
     "TugDirection": "Römorkör Yönü",
     "TugInTransit": "Römorkör/Pin Bekleniyor",
     "TugSpeed": "Römorkör Hızı",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Kontrolcüden Gelen Girdileri Kullan"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "ADIRS'i Hizala",
+    "FinishBoarding": "Uçağa binmeyi bitir",
+    "OnScreenKeyboard": "Ekran Klavyesi",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Bağlandı",
+    "SimBridgeConnecting": "Bağlanıyor...",
+    "SimBridgeOff": "Kapalı",
+    "SimBridgeOffline": "Mevcut değil",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "ADIRS'i anında hizalayın",
+      "AutoBrightness": "Otomatik Parlaklığı Açma/Kapatma",
+      "Brightness": "flyPad parlaklığını ayarla",
+      "FinishBoarding": "Uçağa binmeyi anında bitir",
+      "OnScreenKeyboard": "Ekran Klavyesini Açma/Kapatma",
+      "PowerButton": "Gücü Kapat",
+      "Settings": "flyPad Ayarlar sayfasına git",
+      "SimBridge": "SimBridge Bağlantısını Kontrol Et",
+      "Sleep": "Beklemede"
     },
-    "Title": "Quick Controls"
+    "Title": "Hızlı Kontroller"
   },
   "Settings": {
     "About": {
@@ -532,13 +532,13 @@
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",
-      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "FirstOfficerAvatar": "Yardımcı Pilot Avatarını Göster",
       "HomeCockpitMode": "Ev Kokpit Modu",
       "McduFocusTimeout": "MCDU Focus Zaman Aşımı (saniye)",
       "McduKeyboardInput": "MCDU Klavye Girişi",
       "PauseAtTod": "T/D Noktasında Duraklat",
       "PauseAtTodDistance": "T/D Noktasında Duraklatma Mesafesi (nm)",
-      "PilotAvatar": "Show Pilot Avatar",
+      "PilotAvatar": "Pilot Avatarını Göster",
       "SeparateTillerFromRudderInputs": "Tiller'ı Rudder Girişlerinden Ayır",
       "SyncEfis": "EFIS kontrollerini Kaptan'dan FO'ya senkronize edin",
       "Title": "Gerçekçilik"
@@ -546,12 +546,12 @@
     "SimOptions": {
       "Active": "Etkin",
       "Auto": "Otomatik",
-      "Both": "Synchronized",
+      "Both": "Senkronize edilmiş",
       "Calibrate": "Kalibrasyon",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "Kaptan",
+      "CockpitSeatUsedToControl": "Kontrol için kullanılacak kokpit koltuğu",
       "ConesEnabled": "Emniyet Konileri",
-      "Copilot": "Copilot",
+      "Copilot": "Yardımcı Pilot",
       "DefaultBarometerUnit": "Varsayılan Barometre Birimi",
       "DynamicRegistrationDecal": "Dinamik Kayıt Çıkartması",
       "EnableSimBridge": "SimBridge Bağlantısını Etkinleştir (Başarılı bir bağlantı yoksa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
@@ -564,7 +564,7 @@
       "Off": "Kapalı",
       "Save": "Kaydet",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Harici SimBridge Ana Bilgisayar Adresi",
       "SimBridgePort": "Harici SimBridge Bağlantı Noktası",
       "SyncMsfsFlightPlan": "MSFS Uçuş Planını Eşitle",
       "ThrottleDetents": "Gaz Mandalları",
@@ -574,9 +574,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX Yakıt Senkronizasyonu",
+      "GsxPayloadEnabled": "GSX Yük Senkronizasyonu",
+      "Title": "3. Parti Ayarları"
     },
     "ThrottleConfig": {
       "Apply": "Uygula",
@@ -645,7 +645,7 @@
       "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "SimBridge’e Bağlandı",
       "DisconnectedFromLocalApi": "SimBridge Bağlantısı Kesildi",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "Hızlı kontrolleri açmak için tıklayın",
       "TurnOffOrShutdownEfb": "EFB'yi Kapatın"
     },
     "Thu": "Per",
@@ -653,13 +653,13 @@
     "Wed": "Çar"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "$edition sürümünü versiyonu ile kullanıyorsunuz:",
+    "LatestVersionText": "En son sürüm: $edition",
+    "RecommendationText": "Lütfen FlyByWire Yükleyicisini kullanarak hava aracınızı güncelleyin",
+    "StatusBarWarning": "Eski Uçak Sürümü",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Lütfen uçağınızı FlybyWire Yükleyici kullanarak güncelleyin."
     },
-    "Title": "New Version Available"
+    "Title": "Yeni Sürüm Mevcut"
   }
 }
