@@ -12,7 +12,7 @@
     "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
-    "ShowDeparture": "Partenza",
+    "ShowDeparture": "Departure",
     "ShowGround": "Ground",
     "ShowRadar": "Radar",
     "ShowTower": "Tower",
@@ -33,7 +33,7 @@
     "ResetAll": "Ripristina Tutto",
     "ResetChecklist": "Ripristina Checklist",
     "TheLastChecklistIsComplete": "L'ultima checklist è completa",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autocompletamento della checklist, che non sono ancora stati completati",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi dell'autocompletamento della checklist rimanenti che non sono ancora stati completati",
     "Title": "Checklist"
   },
   "Dashboard": {
@@ -76,8 +76,8 @@
     "Title": "Dashboard",
     "YourFlight": {
       "Alternate": "Alternato",
-      "AverageWind": "Velocità Vento Media",
-      "CompanyRoute": "Rotta della Compagnia",
+      "AverageWind": "Media Vento",
+      "CompanyRoute": "Rotta Compagnia",
       "CostIndex": "Cost Index",
       "CruiseAlt": "Alt. Crociera",
       "ImportSimBriefData": "Importa Dati SimBrief",
@@ -120,7 +120,7 @@
     "Compact": {
       "Title": "Compatta"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "La totale simulazione dei guasti riportati di seguito non è ancora garantita.",
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "La totale simulazione dei guasti riportati sotto non è ancora garantita.",
     "Search": "Cerca",
     "Title": "Guasti"
   },
@@ -128,20 +128,20 @@
     "Fuel": {
       "CenterTank": "Serbatoio Centrale",
       "Completed": "Completato",
-      "Defueling": "Scaricamento",
+      "Defueling": "Svuotando",
       "EstimatedDuration": "Durata stimata (minuti)",
       "EstimatedTime": "Estimated Time",
       "LeftInnerTank": "Serbatoio Interno Sinistro",
       "LeftOuterTank": "Serbatoio Esterno Sinistro",
-      "ReadyToStart": "Pronto a Iniziare",
+      "ReadyToStart": "Pronto per Iniziare",
       "Refuel": "Rifornimento",
       "RefuelTime": "Durata Rifornimento",
-      "Refueling": "Caricamento",
+      "Refueling": "Rifornendo",
       "RightInnerTank": "Serbatoio Interno Destro",
       "RightOuterTank": "Serbatoio Esterno Destro",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Cambiare la durata del rifornimento soltanto a terra con motori spenti",
-        "FillBlockFuelFromSimBrief": "Inserisci Block Fuel da SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "L'Aereo Deve Essere a Terra e Avere i Motori Spenti per Cambiare la Durata del Rifornimento",
+        "FillBlockFuelFromSimBrief": "Completa Block Fuel da SimBrief"
       },
       "Title": "Carburante",
       "TotalFuel": "Carburante Totale",
@@ -156,24 +156,24 @@
       "DeboardConfirmationConfirm": "Sbarca",
       "DeboardConfirmationTitle": "Sbarcare tutti i Passeggeri?",
       "EstimatedDurationUnit": "minuti",
-      "GW": "GW",
-      "GWCG": "GW CG",
+      "GW": "PL",
+      "GWCG": "CG PL",
       "LoadingTime": "Loading Time",
       "Passengers": "Passeggeri",
       "Planned": "Pianificato",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "L'Aeromobile Deve Essere A Terra e Avere i Motori Spenti Per Modificare la Durata dell'Imbarco",
-        "FillPayloadFromSimbrief": "Inserisci Payload da SimBrief",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "L'Aeromobile Deve Essere A Terra e Avere i Motori Spenti Per Cambiare la Durata dell'Imbarco",
+        "FillPayloadFromSimbrief": "Completa Informazioni Payload da SimBrief",
         "MaxCargo": "Carico Massimo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "GW Massimo",
+        "MaxGWCG": "GW CG Massimo",
         "MaxPassengers": "Passeggeri Massimi",
         "MaxZFW": "ZFW Massimo",
         "MaxZFWCG": "ZFWCG Massimo",
         "PerPaxBagWeight": "Peso Bagaglio per Passeggero",
         "PerPaxWeight": "Peso per Passeggero",
         "StartBoarding": "Inizia Imbarco",
-        "StartDeboarding": "Comincia Sbarco"
+        "StartDeboarding": "Inizia Sbarco"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -186,9 +186,9 @@
       "BaggageTruck": "Veicolo Bagagli",
       "CateringTruck": "Veicolo Catering",
       "Cones": "Coni di Sicurezza",
-      "DoorAft": "Porta Post.",
+      "DoorAft": "Porta Post",
       "DoorCargo": "Porta Carico",
-      "DoorFwd": "Porta Ant.",
+      "DoorFwd": "Porta Ant",
       "ExternalPower": "Ground Power Unit",
       "FuelTruck": "Veicolo Carburante",
       "JetBridge": "Ponte d'Imbarco",
@@ -223,9 +223,9 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "Aeroporto Inesistente",
-      "AuthenticateWithNavigraph": "Autenticazione con Navigraph",
+      "AuthenticateWithNavigraph": "Autenticati con Navigraph",
       "InsufficientEnv": "File .env Insufficiente",
-      "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato di seguito",
+      "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato sotto",
       "LoadingMsg": "Caricamento",
       "NoAirportSelected": "Nessun Aeroporto Selezionato",
       "ResetNavigraphAuthentication": "Rimuovi Autenticazione Navigraph",
@@ -247,14 +247,14 @@
       },
       "TT": {
         "ChangeChartProvider": "Cambia Fornitore Carte",
-        "ChangeChartSortMethod": "Cambia Modalità Disposizione Carte",
+        "ChangeChartSortMethod": "Cambia Modalità Ordinamento Carte",
         "RemoveAllPinnedCharts": "Rimuovi Tutte le Carte Fissate"
       },
       "Title": "Carte Fissate",
       "View": "Visualizza"
     },
     "PleaseWait": "Attendere Prego",
-    "ShowingAllItems": "Visualizzazione di Tutti gli Elementi",
+    "ShowingAllItems": "Visualizzando Tutti gli Elementi",
     "TT": {
       "FitChartToHeight": "Adatta Carta all'Altezza",
       "FitChartToWidth": "Adatta Carta alla Larghezza",
@@ -266,7 +266,7 @@
     },
     "ThereAreNoChartsToDisplay": "Non ci sono carte da visualizzare.",
     "ThereIsNoChartToDisplay": "Non c'è nessuna carta da visualizzare.",
-    "Title": "Navigazione e Carte",
+    "Title": "Navigazione & Carte",
     "To": "A"
   },
   "Performance": {
@@ -280,26 +280,26 @@
       "Clear": "Cancella",
       "DropDownNo": "No",
       "DropDownYes": "Sì",
-      "FillDataFrom": "Inserisci dati da",
+      "FillDataFrom": "Completa dati da",
       "FlapsConfiguration": "Configurazione Flap",
       "Low": "Low",
       "MaximumManual": "Maximum Manual",
       "Medium": "Medium",
-      "MetarErrorDialogMessage": "Non è stato possibile elaborare con successo il METAR dal tuo OFP. Desideri, invece, inserire i dati automaticamente recuperando un altro METAR?",
+      "MetarErrorDialogMessage": "Non è stato possibile elaborare con successo il METAR dal tuo OFP. Desideri, invece, autocompletare i dati recuperando un altro METAR?",
       "MetarErrorDialogTitle": "Errore Elaborazione METAR dell'OFP",
       "OverweightProcedure": "Procedura Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
       "RunwayAltitude": "Elevazione Pista",
-      "RunwayAltitudeUnit": "ASL ft",
+      "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Condizioni Pista",
       "RunwayConditions": {
-        "Dry": "Asciutta",
-        "Good": "Buone",
-        "GoodMedium": "Medio-Buone",
-        "Medium": "Medie",
-        "MediumPoor": "Medio-Scarse",
-        "Poor": "Scarse"
+        "Dry": "Asciutta (6)",
+        "Good": "Buona (5)",
+        "GoodMedium": "Medio-Buona (4)",
+        "Medium": "Media (3)",
+        "MediumPoor": "Medio-Scarsa (2)",
+        "Poor": "Scarsa (1)"
       },
       "RunwayHeading": "Orientamento Pista",
       "RunwayHeadingUnit": "°",
@@ -309,7 +309,7 @@
       "RunwaySlope": "Pendenza Pista",
       "TT": {
         "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Devi inserire un codice ICAO in modo da effettuare una richiesta METAR",
-        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare i dati SimBrief per l'inserimento automatico dei dati"
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare i dati SimBrief per autocompletare i dati"
       },
       "Temperature": "Temperatura",
       "Title": "Atterraggio",
@@ -345,7 +345,7 @@
         "MinAltitude": "Altitudine Min.",
         "RemoveLast": "Rimuovi Ultimo",
         "Sync": "SYNC",
-        "Title": "Velocità al Suolo",
+        "Title": "Ground Speed",
         "UnitKnots": "nodi",
         "UnitKt": "kt"
       },
@@ -357,8 +357,8 @@
         "Title": "Risultato"
       },
       "TT": {
-        "DesynchronizeInputWithAircraftsCurrentAltitude": "Non Sincronizzare Inserimento con Altitudine Attuale dell'Aeromobile",
-        "SynchronizeInputWithAircraftsCurrentAltitude": "Sincronizzare Inserimento con Altitudine Attuale dell'Aeromobile"
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Non Sincronizzare Inserimento con l'Altitudine Corrente dell'Aeromobile",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Sincronizzare Inserimento con l'Altitudine Corrente dell'Aeromobile"
       },
       "Title": "Top of Descent"
     }
@@ -382,7 +382,7 @@
     },
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "L'Aeromobile deve essere Alimentato per Caricare i Preset",
-      "AircraftNeedsToBePoweredToSavePresets": "L'Aeromobile deve essere Alimentato per Salvare i Preset",
+      "AircraftNeedsToBePoweredToSavePresets": "L'Aeromobile Deve Essere Alimentato per Salvare i Preset",
       "AutoLoadDawnDusk": "Alba/Crepuscolo:",
       "AutoLoadDay": "Giorno:",
       "AutoLoadLightingHelpTitle": "Caricamento Preset Automatico",
@@ -401,7 +401,7 @@
         "AircraftMustBePowered": "L'Aeromobile Deve essere Alimentato",
         "ClickTextToChangeThePresetsName": "Clicca il Testo per Cambiare Nome Preset",
         "LoadThisPreset": "Carica Questo Preset",
-        "SaveTheCurrentLightingLevels": "Salva Livelli di Illuminazione Attuali"
+        "SaveTheCurrentLightingLevels": "Salva Livelli di Illuminazione Correnti"
       },
       "TheAircraftMustBePoweredForInteriorLightingPresets": "L’aeromobile deve essere alimentato per i preset di illuminazione interna.",
       "Title": "Illuminazione Interna"
@@ -458,7 +458,7 @@
     "OnScreenKeyboard": "Tastiera su Schermo",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Connesso",
-    "SimBridgeConnecting": "Connessione in corso...",
+    "SimBridgeConnecting": "Connessione...",
     "SimBridgeOff": "Spento",
     "SimBridgeOffline": "Non Disponibile",
     "TT": {
@@ -468,7 +468,7 @@
       "FinishBoarding": "Completa l'imbarco istantaneamente",
       "OnScreenKeyboard": "Attiva/disattiva la tastiera su schermo",
       "PowerButton": "Spegni",
-      "Settings": "Vai alla pagina delle impostazioni del flyPad",
+      "Settings": "Vai alla pagina delle Impostazioni flyPad",
       "SimBridge": "Controlla la connessione SimBridge",
       "Sleep": "Pausa"
     },
@@ -580,7 +580,7 @@
     },
     "ThrottleConfig": {
       "Apply": "Applica",
-      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Sei sicuro di voler ripristinare la tua attuale configurazione della manetta a quella predefinita? Questa azione è irreversibile.",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Sei sicuro di voler ripristinare la tua configurazione corrente della manetta a quella predefinita? Questa azione è irreversibile.",
       "Axis": "Asse",
       "Back": "Indietro",
       "ConfigureEnd": "Configura Fine",

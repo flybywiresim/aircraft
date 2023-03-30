@@ -32,7 +32,7 @@ export default new TaskOfTasks("all", [
                     'npm run build-a32nx:atsu-common',
                     [
                         'fbw-a32nx/src/systems/atsu/common',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/common.js'
+                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/common.js'
                     ]
                 ),
                 new ExecTask(
@@ -41,7 +41,7 @@ export default new TaskOfTasks("all", [
                     [
                         'fbw-a32nx/src/systems/atsu/common',
                         'fbw-a32nx/src/systems/atsu/fmsclient',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/atsu/fmsclient.js'
+                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/fmsclient.js'
                     ]
                 ),
             ]),
