@@ -103,6 +103,7 @@ class WayPoint {
         }
     }
     SetFromIFacility(data, callback = EmptyCallback.Void, loadFacilitiesTransitively = false) {
+        this.additionalData.facility = data;
         this.icao = data.icao;
         if (!this.icao) {
             console.warn("FacilityData without ICAO was used to Set a Waypoint, expect the unexpected.");
@@ -124,11 +125,22 @@ class WayPoint {
         } else if (this.type === "N") {
             this.infos = new NDBInfo(this.instrument);
             this.infos.SetFromIFacilityNDB(data, callback, loadFacilitiesTransitively);
+        } else if (this.type === "R") {
+            this.infos = new WayPointInfo(this.instrument);
+            this.infos.SetFromIFacilityWaypoint(data, loadFacilitiesTransitively);
+            return callback();
         }
     }
+    /**
+     * Get the ident from an MSFS ICAO
+     * @param {string} icao MSFS ICAO
+     * @returns {string} ident
+     */
     static formatIdentFromIcao(icao) {
         if (icao.match(/^WXX[A-Z0-9]{4}CF[0-9]{2}[LCRT]?\s*$/)) {
             return 'CF';
+        } else if (icao.charAt(0) === 'R') {
+            return `${icao.substring(3, 7)}${icao.substring(9, 12).trim()}`;
         }
         return icao.substring(7, 12).trim();
     }
@@ -151,6 +163,7 @@ class WayPointInfo {
         this.icao = '';
         this.ident = '';
         this.region = '';
+        this.regionCode = '  ';
         this.name = '';
         this.city = '';
         this.routes = [];
@@ -228,6 +241,7 @@ class WayPointInfo {
         this.ident = WayPoint.formatIdentFromIcao(data.icao);
         this.name = Utils.Translate(data.name);
         this.region = Utils.Translate(data.region);
+        this.regionCode = data.icao.substring(1, 3);
         const separatedCity = data.city.split(", ");
         this.city = separatedCity.length > 1 ? Utils.Translate(separatedCity[0]) + ", " + Utils.Translate(separatedCity[1]) : Utils.Translate(data.city);
         this.lat = data.lat;
@@ -443,6 +457,14 @@ class AirportInfo extends WayPointInfo {
         const separatedCity = data.city.split(", ");
         this.city = separatedCity.length > 1 ? Utils.Translate(separatedCity[0]) + ", " + Utils.Translate(separatedCity[1]) : Utils.Translate(data.city);
         this.region = Utils.Translate(data.region);
+        // hax since MSFS doesn't give this for some reason -_-
+        for (const appr of data.approaches) {
+            const code = appr.finalLegs[appr.finalLegs.length - 1].fixIcao.substring(1, 3).trim();
+            if (code.length === 2) {
+                this.regionCode = code;
+                break;
+            }
+        }
         this.frequencies = [];
         if (data.frequencies) {
             for (let i = 0; i < data.frequencies.length; i++) {
@@ -452,7 +474,7 @@ class AirportInfo extends WayPointInfo {
         this.runways = [];
         if (data.runways) {
             for (let i = 0; i < data.runways.length; i++) {
-                const runway = new Runway();
+                const runway = new Runway(this.ident);
                 runway.latitude = data.runways[i].latitude;
                 runway.longitude = data.runways[i].longitude;
                 runway.elevation = data.runways[i].elevation;
