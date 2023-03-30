@@ -3,7 +3,7 @@
 
 import { FlightPlanManager } from '@fmgc/index';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
-import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
+import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
@@ -33,8 +33,8 @@ export enum SelectedNavaidMode {
 export interface SelectedNavaid {
     type: SelectedNavaidType,
     mode: SelectedNavaidMode,
-    ident: string,
-    frequency: number,
+    ident: string | null,
+    frequency: number | null,
     facility: RawVor | null,
 }
 
@@ -71,7 +71,7 @@ export class Navigation implements NavigationProvider {
 
     private readonly navaidTuner: NavaidTuner;
 
-    private readonly selectedNavaids = Array.from({ length: 4 }, () => ({
+    private readonly selectedNavaids: SelectedNavaid[] = Array.from({ length: 4 }, () => ({
         type: SelectedNavaidType.None,
         mode: SelectedNavaidMode.Auto,
         ident: '',
@@ -229,10 +229,17 @@ export class Navigation implements NavigationProvider {
                     selected.frequency = dme.freqMHz;
                     selected.facility = dme;
                 }
+            } else if (this.navaidSelectionManager.displayVorReason === VorSelectionReason.Navigation) {
+                const navaid = this.navaidSelectionManager.displayVor;
+                const selected = this.selectedNavaids[1];
+                selected.type = this.getSelectedNavaidType(navaid);
+                selected.mode = SelectedNavaidMode.Auto;
+                selected.ident = WayPoint.formatIdentFromIcao(navaid.icao);
+                selected.frequency = navaid.freqMHz;
+                selected.facility = navaid;
+                this.resetSelectedNavaid(2);
             } else {
-                // copy the selected VOR/DME in VOR/DME position mode
-                Object.assign(this.selectedNavaids[1], this.selectedNavaids[0]);
-                this.selectedNavaids[1].mode = SelectedNavaidMode.Auto;
+                this.resetSelectedNavaid(1);
                 this.resetSelectedNavaid(2);
             }
             const mmrStatus = this.navaidTuner.getMmrRadioTuningStatus(1);
@@ -264,8 +271,8 @@ export class Navigation implements NavigationProvider {
         return this.selectedNavaids;
     }
 
-    private getSelectedNavaidType(facility: RawVor | null): SelectedNavaidType {
-        if (facility === null) {
+    private getSelectedNavaidType(facility?: RawVor): SelectedNavaidType {
+        if (!facility) {
             return SelectedNavaidType.None;
         }
         switch (facility.type) {
