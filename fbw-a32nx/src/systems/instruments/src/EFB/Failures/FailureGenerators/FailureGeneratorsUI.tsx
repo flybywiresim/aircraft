@@ -205,7 +205,7 @@ export function FailureGeneratorCardTemplateUI(
                 <div
                     onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
                     className="flex-none p-2 rounded-md transition duration-100 border-2
-                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-2 border-utility-red"
+                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red"
                 >
                     <Trash size={20} />
                 </div>
