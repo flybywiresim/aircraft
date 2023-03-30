@@ -50,8 +50,8 @@ const daysPerYear = 365.24219 * 24;
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const MTTFDisplay = () => {
-        if (settings[genNumber * numberOfSettingsPerGenerator + 1] <= 0) return t('Failures.Generators.Disabled');
-        const meanTimeToFailure = 1 / settings[genNumber * numberOfSettingsPerGenerator + 1];
+        if (settings[genNumber * numberOfSettingsPerGenerator + 2] <= 0) return t('Failures.Generators.Disabled');
+        const meanTimeToFailure = 1 / settings[genNumber * numberOfSettingsPerGenerator + 2];
         if (meanTimeToFailure >= daysPerYear * 2) return `${Math.round(meanTimeToFailure / daysPerYear)} ${t('Failures.Generators.years')}`;
         if (meanTimeToFailure >= daysPerMonth * 2) return `${Math.round(meanTimeToFailure / daysPerMonth)} ${t('Failures.Generators.months')}`;
         if (meanTimeToFailure >= 24 * 3) return `${Math.round(meanTimeToFailure / 24)} ${t('Failures.Generators.days')}`;
@@ -63,7 +63,8 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
         FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 32, `/${t('Failures.Generators.hour')}`, 0, 60,
             settings[genNumber * numberOfSettingsPerGenerator + 2], 1,
             setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-        FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay()),
+        FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`,
+            MTTFDisplay()),
     ];
     return settingTable;
 };

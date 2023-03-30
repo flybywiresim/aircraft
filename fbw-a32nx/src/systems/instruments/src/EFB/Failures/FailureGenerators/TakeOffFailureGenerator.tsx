@@ -71,7 +71,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
         settings[genNumber * numberOfSettingsPerGenerator + 6], 1,
         setNewSetting, generatorSettings, genNumber, 6, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.MaximumSpeed')}:`, 20, t('Failures.Generators.knots'),
-        settings[genNumber * numberOfSettingsPerGenerator + 5], 300,
+        settings[genNumber * numberOfSettingsPerGenerator + 6], 300,
         settings[genNumber * numberOfSettingsPerGenerator + 7], 1,
         setNewSetting, generatorSettings, genNumber, 7, failureGenContext),
     FailureGeneratorSingleSetting(`${t('Failures.Generators.MaxHeightAboveRunway')}:`, 24, t('Failures.Generators.feet'), 0, 10000,
