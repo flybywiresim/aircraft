@@ -105,7 +105,7 @@ export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, str
             if (!failureGeneratorArmed[i] && ((gs < settings[i * numberOfSettingsPerGenerator + 3] - 10 && settings[i * numberOfSettingsPerGenerator + 2] === 0)
             || (gs > settings[i * numberOfSettingsPerGenerator + 4] + 10 && settings[i * numberOfSettingsPerGenerator + 2] === 1))
                 && (settings[i * numberOfSettingsPerGenerator + 0] === 1
-                    || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                    || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
                     || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
                 rolledDice[i] = Math.random();

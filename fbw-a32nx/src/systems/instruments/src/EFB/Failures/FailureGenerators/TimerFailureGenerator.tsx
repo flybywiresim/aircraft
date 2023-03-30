@@ -81,7 +81,7 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
                         + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + 3] - settings[i * numberOfSettingsPerGenerator + 2]));
                     if (absoluteTime5s > failureStartTime[i] + failureDelay) {
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                            activate, activeFailures, 1);
+                            activate, activeFailures, settings[i * numberOfSettingsPerGenerator + 1]);
                         failureGeneratorArmed[i] = false;
                         change = true;
                         if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;

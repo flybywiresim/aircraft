@@ -54,7 +54,7 @@ export const FailureGeneratorsUI = () => {
                         :
                     </div>
                     <SimpleInput
-                        className="my-2 w-10 font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
+                        className="my-2 w-20 font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
                     focus-within:outline-none focus-within:border-theme-highlight
                     placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text hover:bg-theme-body
                      hover:border-theme-highlight"
@@ -109,8 +109,8 @@ export function FailureGeneratorDetailsModalUI(
                 <div />
                 <div
                     className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
-                    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
-                    border-theme-accent hover:border-theme-highlight"
+                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
+                    "
                     onClick={() => failureGenContext.modals.popModal()}
                 >
                     X
@@ -204,8 +204,8 @@ export function FailureGeneratorCardTemplateUI(
             <div className="flex flex-col justify-between items-center">
                 <div
                     onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
-                    className="flex-none p-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
-                    border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                    className="flex-none p-2 rounded-md transition duration-100 border-2
+                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-2 border-utility-red"
                 >
                     <Trash size={20} />
                 </div>

@@ -107,7 +107,7 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
                 && ((altitude < settings[i * numberOfSettingsPerGenerator + 3] * 100 - 100 && settings[i * numberOfSettingsPerGenerator + 2] === 0)
                 || (altitude > settings[i * numberOfSettingsPerGenerator + 4] * 100 + 100 && settings[i * numberOfSettingsPerGenerator + 2] === 1))
                 && (settings[i * numberOfSettingsPerGenerator + 0] === 1
-                || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
+                || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
                 || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
                 failureGeneratorArmed[i] = true;
                 rolledDice[i] = Math.random();

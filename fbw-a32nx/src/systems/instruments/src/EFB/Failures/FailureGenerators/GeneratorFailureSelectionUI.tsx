@@ -21,8 +21,8 @@ export function GeneratorFailureSelection(failureGenContext: FailureGenContext):
                 <div />
                 <div
                     className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
-                    transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body
-                    border-theme-accent hover:border-theme-highlight"
+                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
+                    "
                     onClick={() => failureGenContext.modals.popModal()}
                 >
                     X

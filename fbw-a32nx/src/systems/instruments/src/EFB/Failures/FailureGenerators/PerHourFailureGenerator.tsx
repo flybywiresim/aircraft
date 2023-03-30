@@ -61,8 +61,8 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
     };
     const settingTable = [
         FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 32, `/${t('Failures.Generators.hour')}`, 0, 60,
-            settings[genNumber * numberOfSettingsPerGenerator + 1], 1,
-            setNewSetting, generatorSettings, genNumber, 1, failureGenContext),
+            settings[genNumber * numberOfSettingsPerGenerator + 2], 1,
+            setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
         FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`, MTTFDisplay()),
     ];
     return settingTable;
@@ -87,7 +87,7 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
                     const rollDice = Math.random();
                     if (rollDice < chancePerSecond * 5) {
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                            activate, activeFailures, 1);
+                            activate, activeFailures, settings[i * numberOfSettingsPerGenerator + 1]);
                         failureGeneratorArmed[i] = false;
                         change = true;
                         if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
