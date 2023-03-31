@@ -7,7 +7,6 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useSimVar } from '@instruments/common/simVars';
 import { SentryConsentState, SENTRY_CONSENT_KEY } from '@sentry/FbwAircraftSentryClient';
 import { ModalProvider } from './UtilComponents/Modals/Modals';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
@@ -20,21 +19,13 @@ import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { migrateSettings } from './Settings/Migration';
 import { store } from './Store/store';
 import { Error } from './Assets/Error';
-import { AircraftVersionChecker } from './Utils/AircraftVersionChecker';
 
 const EFBLoad = () => {
-    const [isReady] = useSimVar('L:A32NX_IS_READY', 'Bool', 1000);
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
     useEffect(
         () => () => setSessionId(''), [],
     );
-
-    useEffect(() => {
-        if (isReady) {
-            AircraftVersionChecker.checkVersion();
-        }
-    }, [isReady]);
 
     const [err, setErr] = useState(false);
 
