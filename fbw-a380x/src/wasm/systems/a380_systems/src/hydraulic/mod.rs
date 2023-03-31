@@ -2214,19 +2214,6 @@ impl A380Hydraulic {
             self.green_circuit.auxiliary_section(),
         );
 
-        println!(
-            "AFT DOOR OPEN REQ: {:?}",
-            self.aft_cargo_door_controller
-                .position_requested
-                .get::<ratio>()
-        );
-        println!(
-            "FWD DOOR OPEN REQ: {:?}",
-            self.forward_cargo_door_controller
-                .position_requested
-                .get::<ratio>()
-        );
-
         self.slats_flaps_complex
             .update(context, &self.flap_system, &self.slat_system);
 
@@ -2495,16 +2482,6 @@ impl A380Hydraulic {
             self.green_circuit.reservoir(),
             engines[0].hydraulic_pump_output_speed(),
             &self.engine_driven_pump_1a_controller,
-        );
-
-        println!(
-            "ENGINE 1A PUMP speed {:.0} flow {:.3}",
-            engines[0]
-                .hydraulic_pump_output_speed()
-                .get::<revolution_per_minute>(),
-            self.engine_driven_pump_1a
-                .get_flow()
-                .get::<gallon_per_second>()
         );
 
         self.engine_driven_pump_2a_controller.update(
