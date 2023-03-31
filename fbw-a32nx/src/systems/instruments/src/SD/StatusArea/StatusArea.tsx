@@ -31,7 +31,7 @@ export const StatusArea = () => {
     const sat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`, 6000);
     const tat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`, 6000);
     const zp = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_ALTITUDE`, 6000);
-    const isa = sat.valueOr(0) + (zp.valueOr(0) / 500) - 15;
+    const isa = sat.valueOr(0) + (Math.min(36089, zp.valueOr(0)) / 500) - 15;
     const loadFactor = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_BODY_NORMAL_ACC`, 300);
 
     const [loadFactorSet] = useState(new NXLogicConfirmNode(2));

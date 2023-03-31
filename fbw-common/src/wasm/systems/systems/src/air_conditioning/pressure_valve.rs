@@ -32,7 +32,7 @@ impl OutflowValve {
         Self {
             auto_motor: OutflowValveMotor::new(Self::AUTO_TRAVEL_TIME, auto_motor_powered_by),
             manual_motor: OutflowValveMotor::new(Self::MANUAL_TRAVEL_TIME, manual_motor_powered_by),
-            valve: PressureValve::new_open(),
+            valve: PressureValve::new_closed(),
         }
     }
 

@@ -2,7 +2,6 @@ import React, { FC, memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
-import { TuningMode } from '@fmgc/radionav';
 import { EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { useArinc429Var } from '@instruments/common/arinc429';
@@ -86,11 +85,11 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                 { mode === EfisNdMode.ROSE_VOR && <VorCaptureOverlay heading={heading} side={side} /> }
 
-                { mode === EfisNdMode.ROSE_ILS && <IlsCaptureOverlay heading={heading} _side={side} /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsCaptureOverlay heading={heading} side={side} /> }
 
                 { mode === EfisNdMode.ROSE_NAV && <ToWaypointIndicator side={side} trueRef={trueRef} /> }
                 { mode === EfisNdMode.ROSE_VOR && <VorInfo side={side} /> }
-                { mode === EfisNdMode.ROSE_ILS && <IlsInfo /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsInfo side={side} /> }
 
                 <TopMessages side={side} ppos={ppos} trueTrack={trueTrack} trueRef={trueRef} />
                 <TrackBug heading={heading} track={track} />
@@ -571,6 +570,7 @@ const VorCaptureOverlay: React.FC<{
         setCdiPx(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
     }, [courseDeviation.toFixed(2)]);
 
+    // FIXME vor bearing - heading when course invalid
     return (
         <g transform={`rotate(${course - heading} 384 384)`} stroke="white" strokeWidth={3} fill="none">
             <g id="vor-deviation-scale">
@@ -631,9 +631,11 @@ const VorCaptureOverlay: React.FC<{
 // TODO true ref
 const IlsCaptureOverlay: React.FC<{
     heading: number,
-    _side: EfisSide,
-}> = memo(({ heading, _side }) => {
-    const [course] = useSimVar('NAV LOCALIZER:3', 'degrees');
+    side: EfisSide,
+}> = memo(({ heading, side }) => {
+    const index = side === 'L' ? 2 : 1;
+    const [course] = useSimVar(`NAV LOCALIZER:${index + 2}`, 'degrees');
+    // FIXME this shit needs to be per-MMR
     const [courseDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number', 20);
     const [available] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
     const [cdiPx, setCdiPx] = useState(12);
@@ -765,32 +767,31 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
     );
 };
 
-const formatTuningMode = (tuningMode: TuningMode): string => {
-    switch (tuningMode) {
-    case TuningMode.Manual:
-        return 'M';
-    case TuningMode.Remote:
-        return 'R';
-    default:
-        return '';
-    }
-};
-
 const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const index = side === 'R' ? 2 : 1;
 
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
     const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [vorCourse] = useSimVar(`NAV OBS:${index}`, 'degrees');
-    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
     const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
+    const [fm1Healthy] = useSimVar('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean');
+    const [fm2Healthy] = useSimVar('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean');
+    const fm1NavDiscrete = useArinc429Var('L:A32NX_FM1_NAV_DISCRETE');
+    const fm2NavDiscrete = useArinc429Var('L:A32NX_FM2_NAV_DISCRETE');
+    const [tuningMode, setTuningMode] = useState('');
 
     const [freqInt, freqDecimal] = vorFrequency.toFixed(2).split('.', 2);
 
-    const [tuningModeLabel, setTuningModeLabel] = useState('');
     useEffect(() => {
-        setTuningModeLabel(formatTuningMode(tuningMode));
-    }, [tuningMode]);
+        const bitIndex = 10 + index;
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavDiscrete.isNormalOperation() && !fm2NavDiscrete.isNormalOperation())) {
+            setTuningMode('R');
+        } else if (fm1NavDiscrete.getBitValueOr(bitIndex, false) || fm2NavDiscrete.getBitValueOr(bitIndex, false)) {
+            setTuningMode('M');
+        } else {
+            setTuningMode('');
+        }
+    }, [fm1Healthy, fm1NavDiscrete.value, fm1NavDiscrete.ssm, fm2Healthy, fm2NavDiscrete.value, fm2NavDiscrete.ssm]);
 
     return (
         <Layer x={748} y={28}>
@@ -809,32 +810,48 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
             ) }
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Cyan" textAnchor="end">
-                {vorCourse >= 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
+                {vorCourse > 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode}</text>
             <text x={0} y={60} fontSize={25} className="White" textAnchor="end">{vorIdent}</text>
         </Layer>
     );
 });
 
-const IlsInfo: FC = memo(() => {
-    const [ilsIdent] = useSimVar('NAV IDENT:3', 'string');
-    const [ilsFrequency] = useSimVar('NAV ACTIVE FREQUENCY:3', 'megahertz');
-    const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
-    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
+const IlsInfo: FC<{side: EfisSide}> = memo(({ side }) => {
+    const index = side === 'R' ? 1 : 2;
+
+    const [ilsIdent] = useSimVar(`NAV IDENT:${index + 2}`, 'string');
+    const [ilsFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index + 2}`, 'megahertz');
+    const [ilsCourse] = useSimVar(`NAV LOCALIZER:${index + 2}`, 'degrees');
+    // FIXME this shit needs to be per-MMR
     const [locAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
+    const [fm1Healthy] = useSimVar('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean');
+    const [fm2Healthy] = useSimVar('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean');
+    const fm1NavDiscrete = useArinc429Var('L:A32NX_FM1_NAV_DISCRETE');
+    const fm2NavDiscrete = useArinc429Var('L:A32NX_FM2_NAV_DISCRETE');
+    const [tuningMode, setTuningMode] = useState('');
 
     const [freqInt, freqDecimal] = ilsFrequency.toFixed(2).split('.', 2);
 
-    const [tuningModeLabel, setTuningModeLabel] = useState('');
     useEffect(() => {
-        setTuningModeLabel(formatTuningMode(tuningMode));
-    }, [tuningMode]);
+        const bitIndex = 14 + index;
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavDiscrete.isNormalOperation() && !fm2NavDiscrete.isNormalOperation())) {
+            setTuningMode('R');
+        } else if (fm1NavDiscrete.getBitValueOr(bitIndex, false) || fm2NavDiscrete.getBitValueOr(bitIndex, false)) {
+            setTuningMode('M');
+        } else {
+            setTuningMode('');
+        }
+    }, [fm1Healthy, fm1NavDiscrete.value, fm1NavDiscrete.ssm, fm2Healthy, fm2NavDiscrete.value, fm2NavDiscrete.ssm]);
 
     return (
         <Layer x={748} y={28}>
-            <text x={-102} y={0} fontSize={25} className="White" textAnchor="end">ILS1</text>
+            <text x={-102} y={0} fontSize={25} className="White" textAnchor="end">
+                ILS
+                {index}
+            </text>
             { locAvailable && (
                 <text x={0} y={0} fontSize={25} className="Magenta" textAnchor="end">
                     {freqInt}
@@ -849,7 +866,7 @@ const IlsInfo: FC = memo(() => {
                 {locAvailable ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode}</text>
             <text x={0} y={60} fontSize={25} className="Magenta" textAnchor="end">{ilsIdent}</text>
         </Layer>
     );
@@ -857,6 +874,7 @@ const IlsInfo: FC = memo(() => {
 
 const GlideSlope: FC = () => {
     // TODO need some photo refs for this
+    // FIXME this shit needs to be per-MMR
     const [gsDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number');
     const [gsAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number');
 

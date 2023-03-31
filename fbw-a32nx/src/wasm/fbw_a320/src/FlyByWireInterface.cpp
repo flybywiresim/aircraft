@@ -499,6 +499,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idRadioAltimeterHeight[i] = std::make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
   }
 
+  idLgciu1NoseGearDownlocked = std::make_unique<LocalVariable>("A32NX_LGCIU_1_NOSE_GEAR_DOWNLOCKED");
+
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
     idLgciuNoseGearCompressed[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_NOSE_GEAR_COMPRESSED");
@@ -708,6 +710,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idElecDcEssShedBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
   idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
   idElecBat1HotBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
+  idElecBat2HotBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_2_BUS_IS_POWERED");
 
   idHydYellowSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
@@ -1310,9 +1313,28 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
     bool powerSupplyAvailable = false;
     if (elacIndex == 0) {
       powerSupplyAvailable =
-          idElecDcEssBusPowered->get() || (elacsDiscreteOutputs[elacIndex].batt_power_supply ? idElecBat1HotBusPowered->get() : false);
+          idElecDcEssBusPowered->get() ||
+          ((elacsDiscreteOutputs[0].batt_power_supply || secsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get() : false);
     } else {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      bool elac1OrSec1PowersupplySwitched = elacsDiscreteOutputs[0].batt_power_supply || secsDiscreteOutputs[0].batt_power_supply;
+      bool elac2NormalSupplyAvail = idElecDcBus2Powered->get();
+
+      bool elac2EmerPowersupplyRelayOutput = elac1OrSec1PowersupplySwitched && !elac2NormalSupplyAvail;
+
+      bool elac2EmerPowersupplyTimerRelayOutput = !elac2EmerPowersupplyRelayTimer.update(elac2EmerPowersupplyRelayOutput, sampleTime);
+
+      // Note: This should be NOT UPLOCKED, the uplock signal is not available as a discrete from the LGCIU right now, so we use the
+      // downlocked signal.
+      bool noseGearNotUplocked = idLgciu1NoseGearDownlocked->get();
+      bool elac2EmerPowersupplyNoseWheelCondition =
+          elac2EmerPowersupplyNoseGearConditionLatch.update(noseGearNotUplocked, !elac2EmerPowersupplyRelayOutput);
+
+      bool blueLowPressure = !idHydBluePressurised->get();
+
+      bool elac2EmerPowersupplyActive = elac2EmerPowersupplyRelayOutput &&
+                                        (elac2EmerPowersupplyTimerRelayOutput || elac2EmerPowersupplyNoseWheelCondition || blueLowPressure);
+
+      powerSupplyAvailable = elac2EmerPowersupplyActive ? idElecBat2HotBusPowered->get() : idElecDcBus2Powered->get();
     }
 
     elacs[elacIndex].update(sampleTime, simData.simulationTime,
@@ -1463,7 +1485,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     bool powerSupplyAvailable = false;
     if (secIndex == 0) {
       powerSupplyAvailable =
-          idElecDcEssBusPowered->get() || (secsDiscreteOutputs[secIndex].batt_power_supply ? idElecBat1HotBusPowered->get() : false);
+          idElecDcEssBusPowered->get() ||
+          ((secsDiscreteOutputs[0].batt_power_supply || elacsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get() : false);
     } else {
       powerSupplyAvailable = idElecDcBus2Powered->get();
     }

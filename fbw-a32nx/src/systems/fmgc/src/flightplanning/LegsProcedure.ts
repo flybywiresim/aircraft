@@ -169,7 +169,7 @@ export class LegsProcedure {
                       mappedLeg = this.mapVectors(currentLeg, this._previousFix);
                       break;
                   case LegType.IF:
-                      if (currentLeg.fixIcao[0] !== 'A') {
+                      if (currentLeg.fixIcao[0] !== 'A' && currentLeg.fixIcao[0] !== 'R') {
                           const leg = this.mapExactFix(currentLeg);
                           const prevLeg = this._previousFix;
 
@@ -243,6 +243,7 @@ export class LegsProcedure {
                   mappedLeg.additionalData.recommendedIcao = currentLeg.originIcao.trim().length > 0 ? currentLeg.originIcao : undefined;
                   mappedLeg.additionalData.recommendedFrequency = recNavaid ? recNavaid.freqMHz : undefined;
                   mappedLeg.additionalData.recommendedLocation = recNavaid ? { lat: recNavaid.lat, long: recNavaid.lon } : undefined;
+                  mappedLeg.additionalData.recommendedFacility = recNavaid ?? null;
                   mappedLeg.additionalData.rho = currentLeg.rho / 1852;
                   mappedLeg.additionalData.theta = currentLeg.theta;
                   mappedLeg.additionalData.thetaTrue = A32NX_Util.magneticToTrue(currentLeg.theta, magCorrection);
