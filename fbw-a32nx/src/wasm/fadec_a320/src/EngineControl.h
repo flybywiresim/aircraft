@@ -470,10 +470,10 @@ class EngineControl {
 
     if (engine == 1) {
       simVars->setEngine1N1(simN1);
-      simVars->setEngine1N2(simN2 - paramImbalance);
+      simVars->setEngine1N2(max(0, simN2 - paramImbalance));
     } else {
       simVars->setEngine2N1(simN1);
-      simVars->setEngine2N2(simN2 - paramImbalance);
+      simVars->setEngine2N2(max(0, simN2 - paramImbalance));
     }
   }
 
@@ -551,8 +551,8 @@ class EngineControl {
     if (correctedFuelFlow < 1) {
       outFlow = 0;
     } else {
-      outFlow = (correctedFuelFlow * LBS_TO_KGS * ratios->delta2(mach, ambientPressure) * sqrt(ratios->theta2(mach, ambientTemp))) -
-                paramImbalance;
+      outFlow = max(0, (correctedFuelFlow * LBS_TO_KGS * ratios->delta2(mach, ambientPressure) * sqrt(ratios->theta2(mach, ambientTemp))) -
+                paramImbalance);
     }
 
     if (engine == 1) {

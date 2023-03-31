@@ -1,18 +1,21 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { Coordinates } from 'msfs-geo';
 import { NearestSearchType } from '../types/fstypes/FSEnums';
 
 // WARNING: this is a temporary implementation until the new nav database is complete
 // Do not write any code which depends on it
 export class NearbyFacilities {
-    nearbyAirports: Map<string, RawAirport> = new Map();
+    private static instance: NearbyFacilities;
 
-    nearbyNdbNavaids: Map<string, RawNdb> = new Map();
+    private readonly nearbyAirports: Map<string, RawAirport> = new Map();
 
-    nearbyVhfNavaids: Map<string, RawVor> = new Map();
+    private readonly nearbyNdbNavaids: Map<string, RawNdb> = new Map();
 
-    nearbyWaypoints: Map<string, RawIntersection> = new Map();
+    private readonly nearbyVhfNavaids: Map<string, RawVor> = new Map();
+
+    private readonly nearbyWaypoints: Map<string, RawIntersection> = new Map();
 
     version: number = 0;
 
@@ -28,15 +31,17 @@ export class NearbyFacilities {
 
     private waypointSessionId: number;
 
-    private lastPpos = { lat: 0, long: 0 };
+    private ppos = { lat: 0, long: 0 };
 
-    private throttler = new UpdateThrottler(10000);
+    private pposValid = false;
+
+    private throttler = new A32NX_Util.UpdateThrottler(10000);
 
     private radius = 381 * 1852; // metres
 
     private limit = 160;
 
-    constructor() {
+    private constructor() {
         this.listener = RegisterViewListener('JS_LISTENER_FACILITY', async () => {
             this.listener.on('SendAirport', this.addAirport.bind(this));
             this.listener.on('SendIntersection', this.addWaypoint.bind(this));
@@ -52,6 +57,29 @@ export class NearbyFacilities {
         });
     }
 
+    static getInstance(): NearbyFacilities {
+        if (!NearbyFacilities.instance) {
+            NearbyFacilities.instance = new NearbyFacilities();
+        }
+        return NearbyFacilities.instance;
+    }
+
+    getAirports(): IterableIterator<RawAirport> {
+        return this.pposValid ? this.nearbyAirports.values() : [][Symbol.iterator]();
+    }
+
+    getNdbNavaids(): IterableIterator<RawNdb> {
+        return this.pposValid ? this.nearbyNdbNavaids.values() : [][Symbol.iterator]();
+    }
+
+    getVhfNavaids(): IterableIterator<RawVor> {
+        return this.pposValid ? this.nearbyVhfNavaids.values() : [][Symbol.iterator]();
+    }
+
+    getWaypoints(): IterableIterator<RawIntersection> {
+        return this.pposValid ? this.nearbyWaypoints.values() : [][Symbol.iterator]();
+    }
+
     init(): void {
         // Do nothing for now
     }
@@ -61,20 +89,25 @@ export class NearbyFacilities {
             return;
         }
 
-        const ppos = {
-            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
-            long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
-        };
-        if (Avionics.Utils.computeDistance(ppos, this.lastPpos) > 5) {
-            this.lastPpos = ppos;
+        if (this.pposValid) {
+            Coherent.call('SEARCH_NEAREST', this.airportSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
+            Coherent.call('SEARCH_NEAREST', this.vorSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
+            Coherent.call('SEARCH_NEAREST', this.ndbSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
+            Coherent.call('SEARCH_NEAREST', this.waypointSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
         }
-        Coherent.call('SEARCH_NEAREST', this.airportSessionId, this.lastPpos.lat, this.lastPpos.long, this.radius, this.limit);
-        Coherent.call('SEARCH_NEAREST', this.vorSessionId, this.lastPpos.lat, this.lastPpos.long, this.radius, this.limit);
-        Coherent.call('SEARCH_NEAREST', this.ndbSessionId, this.lastPpos.lat, this.lastPpos.long, this.radius, this.limit);
-        Coherent.call('SEARCH_NEAREST', this.waypointSessionId, this.lastPpos.lat, this.lastPpos.long, this.radius, this.limit);
     }
 
-    onSearchCompleted(result: NearestSearch): void {
+    setPpos(ppos: Coordinates | null) {
+        if (ppos === null) {
+            this.pposValid = false;
+        } else if (!this.pposValid || Avionics.Utils.computeDistance(ppos, this.ppos) > 5) {
+            this.ppos.lat = ppos.lat;
+            this.ppos.long = ppos.long;
+            this.pposValid = true;
+        }
+    }
+
+    private onSearchCompleted(result: NearestSearch): void {
         let nearestList: Map<string, RawAirport | RawNdb | RawVor | RawIntersection>;
         let loadCall;
         switch (result.sessionId) {

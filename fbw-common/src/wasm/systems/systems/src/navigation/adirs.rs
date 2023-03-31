@@ -5,7 +5,7 @@ use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
-        AdirsDiscreteOutputs, AirDataSource, MachNumber,
+        AdirsDiscreteOutputs, AdirsMeasurementOutputs, AirDataSource, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -477,6 +477,7 @@ impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
         self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
     }
 }
+
 impl AirDataSource for AirDataInertialReferenceSystem {
     fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
         self.adirus[adiru_number - 1].computed_airspeed()
@@ -484,6 +485,34 @@ impl AirDataSource for AirDataInertialReferenceSystem {
 
     fn alpha(&self, adiru_number: usize) -> Arinc429Word<Angle> {
         self.adirus[adiru_number - 1].alpha()
+
+impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
+    fn is_fully_aligned(&self, adiru_number: usize) -> bool {
+        self.adirus[adiru_number - 1].is_fully_aligned()
+    }
+
+    fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].latitude()
+    }
+
+    fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].longitude()
+    }
+
+    fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].heading()
+    }
+
+    fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].true_heading()
+    }
+
+    fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].vertical_speed()
+    }
+
+    fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length> {
+        self.adirus[adiru_number - 1].altitude()
     }
 }
 
@@ -619,6 +648,30 @@ impl AirDataInertialReferenceUnit {
 
     fn low_speed_warning_4_260kts(&self) -> bool {
         self.low_speed_warning_4_260kts
+    }
+
+    fn latitude(&self) -> Arinc429Word<Angle> {
+        self.ir.latitude()
+    }
+
+    fn longitude(&self) -> Arinc429Word<Angle> {
+        self.ir.longitude()
+    }
+
+    fn heading(&self) -> Arinc429Word<Angle> {
+        self.ir.heading()
+    }
+
+    fn true_heading(&self) -> Arinc429Word<Angle> {
+        self.ir.true_heading()
+    }
+
+    fn vertical_speed(&self) -> Arinc429Word<Velocity> {
+        self.ir.vertical_speed()
+    }
+
+    fn altitude(&self) -> Arinc429Word<Length> {
+        self.adr.altitude()
     }
 
     fn ground_speed(&self) -> Arinc429Word<Velocity> {
@@ -996,6 +1049,10 @@ impl AirDataReference {
 
     fn computed_airspeed_raw(&self) -> Velocity {
         self.computed_airspeed.value()
+    }
+
+    fn altitude(&self) -> Arinc429Word<Length> {
+        Arinc429Word::new(self.altitude.value(), self.altitude.ssm())
     }
 
     fn baro_correction_1(&self) -> Arinc429Word<Pressure> {
@@ -1705,6 +1762,29 @@ impl InertialReference {
 
     fn has_magnetic_data(&self) -> bool {
         !self.extreme_latitude
+    }
+
+    fn latitude(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.latitude.value(), self.latitude.ssm())
+    }
+
+    fn longitude(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.longitude.value(), self.longitude.ssm())
+    }
+
+    fn heading(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.heading.value(), self.heading.ssm())
+    }
+
+    fn true_heading(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(self.true_heading.value(), self.true_heading.ssm())
+    }
+
+    fn vertical_speed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(
+            Velocity::new::<foot_per_minute>(self.vertical_speed.value()),
+            self.vertical_speed.ssm(),
+        )
     }
 
     fn ground_speed(&self) -> Arinc429Word<Velocity> {

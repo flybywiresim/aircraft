@@ -5,6 +5,7 @@ use crate::{
     simulation::UpdateContext,
 };
 
+use arinc429::Arinc429Word;
 use nalgebra::Vector3;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
@@ -274,6 +275,10 @@ pub trait LgciuWeightOnWheels {
 pub trait LgciuGearExtension {
     fn all_down_and_locked(&self) -> bool;
     fn all_up_and_locked(&self) -> bool;
+    fn main_down_and_locked(&self) -> bool;
+    fn main_up_and_locked(&self) -> bool;
+    fn nose_down_and_locked(&self) -> bool;
+    fn nose_up_and_locked(&self) -> bool;
 }
 
 pub trait LgciuDoorPosition {
@@ -399,6 +404,16 @@ pub trait PackFlowValveState {
     // Pack id is 1 or 2
     fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool;
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
+}
+
+pub trait AdirsMeasurementOutputs {
+    fn is_fully_aligned(&self, adiru_number: usize) -> bool;
+    fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
+    fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length>;
 }
 
 pub trait AdirsDiscreteOutputs {

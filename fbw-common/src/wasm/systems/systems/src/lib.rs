@@ -14,6 +14,7 @@ pub mod air_conditioning;
 pub mod apu;
 pub mod electrical;
 pub mod engine;
+pub mod enhanced_gpwc;
 pub mod failures;
 pub mod hydraulic;
 pub mod indicating_recording;
