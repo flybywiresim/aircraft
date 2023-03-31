@@ -29,7 +29,7 @@ export class FF extends DisplayComponent<FFProps> {
             this.activeVisibility.set(f ? 'visible' : 'hidden');
         });
 
-        sub.on(`engine${this.props.engine}FF`).atFrequency(1).whenChanged().handle((ff) => {
+        sub.on(`engine${this.props.engine}FF`).atFrequency(1).handle((ff) => {
             const metric = this.props.metric.get();
             this.ff.set(fuelForDisplay(ff, metric ? '1' : '0'));
         });
