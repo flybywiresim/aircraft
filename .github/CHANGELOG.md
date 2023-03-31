@@ -223,7 +223,6 @@
 1. [ND] Fixed RNP <= 0.3 indications to appear more reliably and consistently - @tracernz (Mike)
 1. [EFB] Mitigated issue with flypad fuel page for very long translation strings  - @frankkopp (Frank Kopp)
 1. [ISIS] Show baro correction during power-up sequence - @tracernz (Mike)
-<<<<<<< HEAD
 1. [FWC] Add GND SPLR NOT ARMED warning - @tracernz (Mike)
 1. [FWC] Add SPD BRK STILL OUT warning - @tracernz (Mike)
 1. [EGPWS] Introduce first system for EPGWS - @svengcz (Sven)
@@ -274,9 +273,6 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
-=======
-1. [COMMS] Enabled all components of all ACPs/RMPs and AudioSwitching knob. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
->>>>>>> e1018fbe3 (Changelog)
 
 ## 0.9.0
 
