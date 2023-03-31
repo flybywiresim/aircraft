@@ -238,21 +238,31 @@ impl A380CargoDoorFactory {
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
+    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
+
     fn a380_cargo_door_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
+            VolumeRate::new::<gallon_per_second>(0.01),
+            Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
+        );
+
         LinearActuator::new(
             context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
-            VolumeRate::new::<gallon_per_second>(0.01),
+            actuator_characteristics.max_flow(),
             600000.,
             15000.,
             500.,
-            1000000.,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
