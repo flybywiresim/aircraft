@@ -2573,7 +2573,8 @@ impl Pump {
                 * controller.max_displacement_restriction(),
         );
 
-        let max_flow = Self::calculate_flow(speed, self.current_max_displacement.output())
+        let max_flow = self
+            .get_max_flow_from_max_dsiplacement()
             .max(VolumeRate::new::<gallon_per_second>(0.));
 
         let max_flow_available_from_reservoir =
@@ -2623,10 +2624,15 @@ impl Pump {
         }
     }
 
-    fn calculate_flow(speed: AngularVelocity, displacement: Volume) -> VolumeRate {
-        if speed.get::<revolution_per_minute>() > 0. {
+    fn get_max_flow_from_max_dsiplacement(&self) -> VolumeRate {
+        if self.speed
+            > self
+                .pump_characteristics
+                .min_speed_for_non_zero_efficiency()
+        {
             VolumeRate::new::<gallon_per_second>(
-                speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>()
+                self.speed.get::<revolution_per_minute>()
+                    * self.current_max_displacement.output().get::<cubic_inch>()
                     / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
                     / Self::SECONDS_PER_MINUTES,
             )
@@ -2635,8 +2641,12 @@ impl Pump {
         }
     }
 
-    fn get_max_flow(&self) -> VolumeRate {
-        if self.speed.get::<revolution_per_minute>() > 0. {
+    fn get_max_flow_from_current_dsiplacement(&self) -> VolumeRate {
+        if self.speed
+            > self
+                .pump_characteristics
+                .min_speed_for_non_zero_efficiency()
+        {
             VolumeRate::new::<gallon_per_minute>(
                 self.speed.get::<revolution_per_minute>()
                     * self.current_displacement.get::<cubic_inch>()
@@ -2665,7 +2675,7 @@ impl PressureSource for Pump {
     ) {
         let required_flow = volume_required / context.delta_as_time();
         self.current_displacement = self.calculate_displacement_from_required_flow(required_flow);
-        let max_current_flow = self.get_max_flow();
+        let max_current_flow = self.get_max_flow_from_current_dsiplacement();
 
         self.current_flow = if is_pump_connected_to_reservoir {
             reservoir.try_take_flow(context, max_current_flow)
