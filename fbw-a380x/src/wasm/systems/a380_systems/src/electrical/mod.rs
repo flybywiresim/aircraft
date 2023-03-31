@@ -18,9 +18,9 @@ use std::time::Duration;
 use systems::{
     accept_iterable,
     electrical::{
-        AlternatingCurrentElectricalSystem, BatteryPushButtons, Electricity, EmergencyElectrical,
-        EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource, GeneratorControlUnit,
-        RamAirTurbine, StaticInverter, TransformerRectifier,
+        AlternatingCurrentElectricalSystem, BatteryPushButtons, ElectricalElement, Electricity,
+        EmergencyElectrical, EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource,
+        GeneratorControlUnit, RamAirTurbine, StaticInverter, TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
@@ -147,11 +147,13 @@ impl A380Electrical {
             .update(context, electricity, overhead, &self.emergency_gen);
 
         self.direct_current.update(
+            context,
             electricity,
             overhead,
             &self.alternating_current,
             &self.rat_controller,
             apu,
+            &self.emergency_elec,
             self.tefo_condition.output(),
         );
 
@@ -273,10 +275,18 @@ trait A380DirectCurrentElectricalSystem {
 trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem {
     fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool;
     fn ac_ess_bus_powered(&self, electricity: &Electricity) -> bool;
-    fn tr_1(&self) -> &TransformerRectifier;
-    fn tr_2(&self) -> &TransformerRectifier;
-    fn tr_ess(&self) -> &TransformerRectifier;
     fn tr_apu(&self) -> &TransformerRectifier;
+    fn power_from_ac_bus(
+        &self,
+        electricity: &mut Electricity,
+        number: usize,
+        element: &impl ElectricalElement,
+    );
+    fn power_from_ac_ess_bus(
+        &self,
+        electricity: &mut Electricity,
+        element: &impl systems::electrical::ElectricalElement,
+    );
 }
 
 pub(super) struct A380ElectricalOverheadPanel {

@@ -4,6 +4,7 @@ use super::{
 };
 use std::time::Duration;
 use systems::accept_iterable;
+use systems::electrical::ElectricalElement;
 use systems::simulation::InitContext;
 use systems::{
     electrical::{
@@ -27,9 +28,6 @@ pub(super) struct A380AlternatingCurrentElectrical {
     // This is actually a 2-way switch but we simulate this with 2 contactors
     ac_emer_contactor: [Contactor; 2],
     eha_contactors: [Contactor; 2],
-    tr_1: TransformerRectifier,
-    tr_2: TransformerRectifier,
-    tr_ess: TransformerRectifier,
     tr_apu: TransformerRectifier,
     emergency_gen_contactor: Contactor,
 }
@@ -56,9 +54,6 @@ impl A380AlternatingCurrentElectrical {
             ),
             ac_emer_contactor: [1, 2].map(|i| Contactor::new(context, &format!("3XB.{i}"))),
             eha_contactors: ["911XN", "911XH"].map(|id| Contactor::new(context, id)),
-            tr_1: TransformerRectifier::new(context, 1),
-            tr_2: TransformerRectifier::new(context, 2),
-            tr_ess: TransformerRectifier::new(context, 3),
             tr_apu: TransformerRectifier::new(context, 4),
             emergency_gen_contactor: Contactor::new(context, "5XE"),
         }
@@ -106,11 +101,7 @@ impl A380AlternatingCurrentElectrical {
         self.ac_ess_feed_contactors
             .power_400xp(electricity, &self.ac_ess_bus);
 
-        electricity.flow(&self.ac_buses[1], &self.tr_1);
-        electricity.flow(&self.ac_buses[2], &self.tr_2);
         electricity.flow(&self.ac_buses[3], &self.tr_apu);
-        electricity.transform_in(&self.tr_1);
-        electricity.transform_in(&self.tr_2);
         electricity.transform_in(&self.tr_apu);
 
         let emergency_configuration = !self.any_non_essential_bus_powered(electricity)
@@ -121,11 +112,7 @@ impl A380AlternatingCurrentElectrical {
         electricity.supplied_by(emergency_generator);
         electricity.flow(emergency_generator, &self.emergency_gen_contactor);
         electricity.flow(&self.emergency_gen_contactor, &self.ac_ess_bus);
-
-        electricity.flow(&self.ac_ess_bus, &self.tr_ess);
         electricity.flow(&self.ac_ess_bus, &self.ac_emer_contactor[0]);
-
-        electricity.transform_in(&self.tr_ess);
 
         self.eha_contactors[0].close_when(self.ac_bus_powered(electricity, 3));
         electricity.flow(&self.ac_buses[2], &self.eha_contactors[0]);
@@ -207,20 +194,25 @@ impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical
         electricity.is_powered(&self.ac_ess_bus)
     }
 
-    fn tr_1(&self) -> &TransformerRectifier {
-        &self.tr_1
-    }
-
-    fn tr_2(&self) -> &TransformerRectifier {
-        &self.tr_2
-    }
-
-    fn tr_ess(&self) -> &TransformerRectifier {
-        &self.tr_ess
-    }
-
     fn tr_apu(&self) -> &TransformerRectifier {
         &self.tr_apu
+    }
+
+    fn power_from_ac_bus(
+        &self,
+        electricity: &mut Electricity,
+        number: usize,
+        element: &impl ElectricalElement,
+    ) {
+        electricity.flow(&self.ac_buses[number - 1], element);
+    }
+
+    fn power_from_ac_ess_bus(
+        &self,
+        electricity: &mut Electricity,
+        element: &impl ElectricalElement,
+    ) {
+        electricity.flow(&self.ac_ess_bus, element);
     }
 }
 impl AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
@@ -235,9 +227,6 @@ impl SimulationElement for A380AlternatingCurrentElectrical {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.main_power_sources.accept(visitor);
         self.ac_ess_feed_contactors.accept(visitor);
-        self.tr_1.accept(visitor);
-        self.tr_2.accept(visitor);
-        self.tr_ess.accept(visitor);
         self.tr_apu.accept(visitor);
 
         accept_iterable!(self.ac_emer_contactor, visitor);
