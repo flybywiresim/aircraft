@@ -1,10 +1,9 @@
 use std::error::Error;
 
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
-
-// use msfs::sim_connect;
-// use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
-use systems_wasm::Variable;
+use systems_wasm::{
+    aspects::{ExecuteOn, MsfsAspectBuilder},
+    Variable,
+};
 
 pub(super) fn cargo_doors(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.map(
