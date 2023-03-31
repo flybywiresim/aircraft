@@ -2868,6 +2868,10 @@ impl EngineDrivenPump {
 
         self.is_active = controller.should_pressurise();
     }
+
+    pub fn get_flow(&self) -> VolumeRate {
+        self.pump.flow()
+    }
 }
 impl PressureSource for EngineDrivenPump {
     fn delta_vol_max(&self) -> Volume {

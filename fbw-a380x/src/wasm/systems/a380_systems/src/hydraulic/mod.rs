@@ -2497,6 +2497,16 @@ impl A380Hydraulic {
             &self.engine_driven_pump_1a_controller,
         );
 
+        println!(
+            "ENGINE 1A PUMP speed {:.0} flow {:.3}",
+            engines[0]
+                .hydraulic_pump_output_speed()
+                .get::<revolution_per_minute>(),
+            self.engine_driven_pump_1a
+                .get_flow()
+                .get::<gallon_per_second>()
+        );
+
         self.engine_driven_pump_2a_controller.update(
             overhead_panel,
             engine_fire_push_buttons,
