@@ -340,10 +340,6 @@ impl A380ElectricalOverheadPanel {
             });
     }
 
-    fn generator_is_on(&self, number: usize) -> bool {
-        self.generators[number - 1].is_on()
-    }
-
     pub fn external_power_is_available(&self, number: usize) -> bool {
         self.ext_pwrs[number - 1].is_available()
     }
