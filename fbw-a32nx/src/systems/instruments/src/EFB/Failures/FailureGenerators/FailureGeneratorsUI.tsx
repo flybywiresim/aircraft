@@ -118,7 +118,7 @@ export function FailureGeneratorDetailsModalUI(
             </div>
             {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
             <div className="flex flex-col justify-start items-stretch mt-1">
-                {FailureGeneratorSingleSettingShortcut(t('Failures.Generators.NumberOfFailures'), 14, '', t('Failures.Generators.All'),
+                {FailureGeneratorSingleSettingShortcut(`${t('Failures.Generators.NumberOfFailures')}:`, 14, '', t('Failures.Generators.All'),
                     numberOfSelectedFailures, 0, numberOfSelectedFailures,
                     failureGenContext.modalContext.failureGenData.settings[genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + 1], 1,
                     setNewSetting, failureGenContext.modalContext.failureGenData, genNumber, 1, failureGenContext)}
