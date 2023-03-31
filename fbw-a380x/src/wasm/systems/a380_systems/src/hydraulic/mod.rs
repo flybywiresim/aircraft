@@ -48,12 +48,12 @@ use systems::{
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
-        interpolation, low_pass_filter::LowPassFilter, random_from_range,
-        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirbusElectricPumpId,
-        AirbusEngineDrivenPumpId, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons, GearWheel,
-        HydraulicColor, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
-        ReservoirAirPressure, SectionPressure,
+        interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
+        random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
+        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
+        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
+        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -278,7 +278,7 @@ impl A380CargoDoorFactory {
         let axis_direction = Vector3::new(0., 0., 1.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(200.),
             size,
             cg_offset,
             cg_offset,
@@ -2204,6 +2204,19 @@ impl A380Hydraulic {
             self.green_circuit.auxiliary_section(),
         );
 
+        println!(
+            "AFT DOOR OPEN REQ: {:?}",
+            self.aft_cargo_door_controller
+                .position_requested
+                .get::<ratio>()
+        );
+        println!(
+            "FWD DOOR OPEN REQ: {:?}",
+            self.forward_cargo_door_controller
+                .position_requested
+                .get::<ratio>()
+        );
+
         self.slats_flaps_complex
             .update(context, &self.flap_system, &self.slat_system);
 
@@ -4045,6 +4058,8 @@ struct A380DoorController {
     duration_in_no_control: Duration,
     duration_in_hyd_control: Duration,
 
+    time_for_crew_to_activate_hydraulics: Duration,
+
     should_close_valves: bool,
     control_position_request: Ratio,
     should_unlock: bool,
@@ -4055,6 +4070,7 @@ impl A380DoorController {
 
     // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
     const DELAY_UNLOCK_TO_HYDRAULIC_CONTROL: Duration = Duration::from_secs(5);
+    const STD_DEVIATION_RAND_TIME_TO_HYD_CONTROL: Duration = Duration::from_millis(800);
 
     fn new(context: &mut InitContext, id: &str) -> Self {
         Self {
@@ -4065,10 +4081,19 @@ impl A380DoorController {
             duration_in_no_control: Duration::from_secs(0),
             duration_in_hyd_control: Duration::from_secs(0),
 
+            time_for_crew_to_activate_hydraulics: Self::random_hyd_control_time(),
+
             should_close_valves: true,
             control_position_request: Ratio::new::<ratio>(0.),
             should_unlock: false,
         }
+    }
+
+    fn random_hyd_control_time() -> Duration {
+        Duration::from_secs_f64(random_from_normal_distribution(
+            Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL.as_secs_f64(),
+            Self::STD_DEVIATION_RAND_TIME_TO_HYD_CONTROL.as_secs_f64(),
+        ))
     }
 
     fn update(
@@ -4133,6 +4158,8 @@ impl A380DoorController {
                 if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
             {
                 self.should_unlock = false;
+                self.time_for_crew_to_activate_hydraulics = Self::random_hyd_control_time();
+
                 DoorControlState::HydControl
             }
             DoorControlState::HydControl if door.is_locked() => {
