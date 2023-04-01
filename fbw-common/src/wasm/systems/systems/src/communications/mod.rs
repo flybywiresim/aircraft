@@ -282,7 +282,10 @@ impl Communications {
             self.receive_vor1 = chosen_panel.get_receive_vor1();
             self.receive_vor2 = chosen_panel.get_receive_vor2();
             self.receive_ils = chosen_panel.get_receive_ils();
+            
             // FCOM compliant: ILS can be listened to only if LS is pressed
+            // FIXME: It's very likely there is not direct bus between FCU buttons and ACPs.
+            // To fix with proper simulation
             self.receive_ils &= match chosen_panel.get_name() {
                 CommunicationPanelSideName::OVHD => match self.audio_switching_knob {
                     AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::CAPTAIN => {
