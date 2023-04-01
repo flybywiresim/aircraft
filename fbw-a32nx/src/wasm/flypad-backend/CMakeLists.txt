@@ -15,6 +15,7 @@ include_directories(
         ./src/Aircraft
         ./src/Lighting
         ./src/Pushback
+        ./src/ATCServices
         ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src/inih
 )
 
@@ -24,4 +25,5 @@ add_executable(flybywire-a32nx-flypad-backend
         ./src/Lighting/LightPreset.cpp
         ./src/Pushback/Pushback.cpp
         ./src/Pushback/InertialDampener.cpp
+        ./src/ATCServices/ATCServices.cpp
 )
