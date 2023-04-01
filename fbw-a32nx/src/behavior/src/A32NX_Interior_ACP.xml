@@ -209,8 +209,8 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_MECH#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_MECH#</NODE_ID_SEQ2>
             <TRANSMIT_ID>6</TRANSMIT_ID>
-            <BLINK_ID>16</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP_CALL_MECH)</BLINK_VAR>
+            <BLINK_ID>1</BLINK_ID>
+            <BLINK_VAR>(L:A32NX_ACP_MECH_CALLING)</BLINK_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_INT</TOOLTIP>
         </UseTemplate>
 
@@ -235,8 +235,8 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_ATT#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_ATT#</NODE_ID_SEQ2>
             <TRANSMIT_ID>7</TRANSMIT_ID>
-            <BLINK_ID>32</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP_CALL_ATT)</BLINK_VAR>
+            <BLINK_ID>1</BLINK_ID>
+            <BLINK_VAR>(L:A32NX_ACP_ATT_CALLING)</BLINK_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_CAB</TOOLTIP>
         </UseTemplate>
 
@@ -291,7 +291,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <NODE_ID>#NODE_ID_RECEIVER_RESET#</NODE_ID>
             <ANIM_NAME>#ANIM_NAME_PUSH_RECEIVER_RESET#</ANIM_NAME>
-            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ACP#ID#_RESET_BUTTON_DOWN)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ACP_RESET)</LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
@@ -424,7 +424,7 @@
                 <!-- Green light -->
                 <SEQ1_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #BLINK_ID# #BLINK_VAR# == ^ (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
                     }
                 </SEQ1_EMISSIVE_CODE>
                     <!-- Button name light (for example CALL or MECH)-->

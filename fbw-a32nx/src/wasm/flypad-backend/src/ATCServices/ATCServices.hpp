@@ -12,19 +12,30 @@ class ATCServices {
   HANDLE _hSimConnect;
 
   bool _isInitialized = false;
-  bool new_data_available;
+  bool new_data_available = false;
 
-  ID _selcalLVar{};
-  ID _selcalResetLVar{};
-  ID _volumeCOM1FromATCServicesLVar{};
-  ID _volumeCOM2FromATCServicesLVar{};
+  ID _selcalLVar = register_named_variable("A32NX_ACP_SELCAL");
+  ID _acpResetLVar = register_named_variable("A32NX_ACP_RESET");
+  ID _volumeCOM1FromATCServicesLVar = register_named_variable("A32NX_VOLUME_VHF1_FROM_ATC_SERVICES");
+  ID _volumeCOM2FromATCServicesLVar = register_named_variable("A32NX_VOLUME_VHF2_FROM_ATC_SERVICES");
+  ID _updateVolumeATCServicesFromACPLvar = register_named_variable("A32NX_UPDATE_VOLUME_ATC_SERVICES_FROM_ACP");
+
+  ID _attCallingLVar = register_named_variable("A32NX_ACP_ATT_CALLING");
+  ID _mechCallingLVar = register_named_variable("A32NX_ACP_MECH_CALLING");
+
+  INT64 _previousVolumeCOM1 = 0;
+  INT64 _previousVolumeCOM2 = 0;
+  bool _previousSelcal = false;
 
   uint8_t _selcalActive = 0;  // Set to 1,2,4,8 depending on the receiver. 0 if inactive.
 
-  ATCServicesData _data;
+  ATCServicesData _data = {};
 
-  std::chrono::system_clock::time_point _baseTime = std::chrono::system_clock::now();
-  std::chrono::system_clock::time_point _previousTime = _baseTime;
+  std::chrono::system_clock::time_point _baseTimeATT = {};
+  std::chrono::system_clock::time_point _baseTimeMECH = {};
+  std::chrono::system_clock::time_point _previousTimeSELCAL = {};
+  std::chrono::system_clock::time_point _previousTimeATT = {};
+  std::chrono::system_clock::time_point _previousTimeMECH = {};
 
   inline bool setATCServicesDataVPILOT(bool loaded, bool selcalActive) const {
     ATCServicesDataVPILOT output{loaded, selcalActive};
@@ -45,7 +56,7 @@ class ATCServices {
   void initialize();
   void updateData(ATCServicesDataIVAO*);
   void updateData(ATCServicesDataVPILOT*);
-  void onUpdate(/*INT64, INT64*/);
+  void onUpdate(INT64, INT64);
   void shutdown();
 
   void notifyATCServicesShutdown();
