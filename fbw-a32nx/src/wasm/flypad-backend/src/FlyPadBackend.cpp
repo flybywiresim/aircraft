@@ -58,12 +58,10 @@ bool FlyPadBackend::initialize() {
   // Simulation data to local data structure mapping
   HRESULT result = S_OK;
   result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::SimulationDataID, "SIMULATION TIME", "NUMBER");
-  // result &=
-  //     SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::SimulationDataID, "COM VOLUME:1", "PERCENT",
-  //     SIMCONNECT_DATATYPE_INT64);
-  // result &=
-  //     SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::SimulationDataID, "COM VOLUME:2", "PERCENT",
-  //     SIMCONNECT_DATATYPE_INT64);
+  result &=
+      SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::SimulationDataID, "COM VOLUME:1", "PERCENT", SIMCONNECT_DATATYPE_INT64);
+  result &=
+      SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::SimulationDataID, "COM VOLUME:2", "PERCENT", SIMCONNECT_DATATYPE_INT64);
 
   result &=
       SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "Pushback Wait", "BOOLEAN", SIMCONNECT_DATATYPE_INT64);
@@ -149,7 +147,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
     lightPresetPtr->onUpdate(deltaTime);
     aircraftPresetPtr->onUpdate(deltaTime);
     pushbackPtr->onUpdate(deltaTime);
-    ATCServicesPtr->onUpdate(/*simulationData.volumeCOM1, simulationData.volumeCOM2*/);
+    ATCServicesPtr->onUpdate(simulationData.volumeCOM1, simulationData.volumeCOM2);
 
     return true;
   }
