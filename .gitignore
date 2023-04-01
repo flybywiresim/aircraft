@@ -49,6 +49,7 @@
 /fbw-a32nx/src/base/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.bin
 /fbw-a32nx/src/base/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf
 /fbw-a32nx/src/systems/instruments/aceBundles
+/fbw-a32nx/src/systems/instruments/buildSrc/custom/*
 
 /fbw-a32nx/src/localization/flypad/downloaded/*.json
 /fbw-a32nx/src/localization/msfs/downloaded/*.locPak
@@ -97,4 +98,5 @@ target/
 *.tgz
 *.wasm
 cmake-build*
+
 localazy.keys.json
