@@ -36,6 +36,10 @@
         "bin": "./fire-button/fire-button.bin"
       },
       {
+        "gltf": "./trim-decals/trim-decals.gltf",
+        "bin": "./trim-decals/trim-decals.bin"
+      },
+      {
         "gltf": "./onbat/onbat.gltf",
         "bin": "./onbat/onbat.bin"
       },
