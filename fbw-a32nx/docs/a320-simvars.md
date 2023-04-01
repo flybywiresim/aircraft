@@ -1517,32 +1517,54 @@
         - 2
         - 3
 
-- A32NX_PAX_TOTAL_ROWS_{rows}
-    - Number
-    - Indicates the current number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_BOARDING_STARTED_BY_USR
+    - Bool
+    - Indicates current pax/cargo loading state
 
-- A32NX_PAX_TOTAL_ROWS_{rows}_DESIRED
-    - Number
-    - Indicates the target number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_PAX_{station}
+    - Bitwise Field
+    - Indicates the current pax in the selected rows (max 53 bits)
+    - {station}
+        - A
+        - B
+        - C
+        - D
 
-- PAYLOAD STATION WEIGHT:{stationIndex}
+- A32NX_PAX_{station}_DESIRED
+    - Bitwise Field
+    - Indicates the target layout of passengers in the station (max 53)
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_PAX
+    - Bitwise Field
+    - Indicates the current layout of passengers in the station (max 53)
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_CARGO_{station}_DESIRED
     - Number (Kilograms)
-    - Indicates the weight of the selected payload station
-    - {stationIndex}
-        - 5 | FWD BAGGAGE/CONTAINER
-        - 6 | AFT CONTAINER
-        - 7 | AFT BAGGAGE
-        - 8 | AFT BULK/LOOSE
+    - Indicates the targeted weight of the station in kilograms
+    - {station}
+        - FWD_BAGGAGE
+        - AFT_CONTAINER
+        - AFT_BAGGAGE
+        - AFT_BULK_LOOSE
+
+- A32NX_CARGO
+    - Number (Kilograms)
+    - Indicates the current weight of the station in kilograms
+    - {station}
+        - FWD_BAGGAGE
+        - AFT_CONTAINER
+        - AFT_BAGGAGE
+        - AFT_BULK_LOOSE
 
 - A32NX_MCDU_{side}_ANNUNC_{annunciator}
     - Boolean

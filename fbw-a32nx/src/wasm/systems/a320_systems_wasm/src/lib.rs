@@ -6,6 +6,7 @@ mod elevators;
 mod flaps;
 mod gear;
 mod nose_wheel_steering;
+mod payload;
 mod rudder;
 mod spoilers;
 mod trimmable_horizontal_stabilizer;
@@ -19,6 +20,7 @@ use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
+use payload::payload;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
@@ -250,6 +252,20 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 3)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 4)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 5)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 6)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 7)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)?
+    .provides_named_variable("FSDT_GSX_BOARDING_STATE")?
+    .provides_named_variable("FSDT_GSX_DEBOARDING_STATE")?
+    .provides_named_variable("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL")?
+    .provides_named_variable("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL")?
+    .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
+    .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
     .provides_aircraft_variable("NAV SOUND", "Bool", 1)?
     .provides_aircraft_variable("NAV SOUND", "Bool", 2)?
     .provides_aircraft_variable("NAV SOUND", "Bool", 3)?
@@ -313,6 +329,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(elevators)?
     .with_aspect(rudder)?
     .with_aspect(gear)?
+    .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
     .with_aspect(communications)?
     .build(A320::new)?;
