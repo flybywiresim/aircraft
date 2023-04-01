@@ -95,7 +95,7 @@ module.exports = {
             vars: 'all',
             varsIgnorePattern: '^_|^FSComponent$',
             args: 'after-used',
-            argsIgnorePattern: '^_|^node$',
+            argsIgnorePattern: '^_|^node$|^deltaTime$',
         }],
 
         'no-use-before-define': 'off',

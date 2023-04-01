@@ -332,10 +332,9 @@ class CDUInitPage {
         return isFinite(mcdu.blockFuel) &&
             isFinite(mcdu.zeroFuelWeightMassCenter) &&
             isFinite(mcdu.zeroFuelWeight) &&
-            mcdu.cruiseFlightLevel &&
             mcdu.flightPlanManager.getWaypointsCount() > 0 &&
             mcdu._zeroFuelWeightZFWCGEntered &&
-            mcdu._blockFuelEntered;
+            (mcdu._blockFuelEntered || mcdu.isAnEngineOn());
     }
     static trySetFuelPred(mcdu) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {

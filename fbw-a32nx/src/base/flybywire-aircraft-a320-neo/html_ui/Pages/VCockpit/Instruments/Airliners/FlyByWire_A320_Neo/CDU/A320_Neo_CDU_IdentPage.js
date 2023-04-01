@@ -67,19 +67,7 @@ function calculateSecDate(date) {
 }
 
 async function switchDataBase(mcdu) {
-    // Only performing a reset of the MCDU for now, no secondary database
-    // Speed AP returns to selected
-    //const isSelected = Simplane.getAutoPilotAirspeedSelected();
-    //if (isSelected == false)
-    //    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
-    // flight plan
-    mcdu.resetCoroute();
-    mcdu.atsu.resetAtisAutoUpdate();
-    await mcdu.flightPlanManager.clearFlightPlan();
-    // stored data
-    mcdu.dataManager.deleteAllStoredWaypoints();
-    // Reset MCDU apart from TakeOff config
-    mcdu.initVariables(false);
+    await mcdu.switchNavDatabase();
 }
 
 const ConfirmType = {

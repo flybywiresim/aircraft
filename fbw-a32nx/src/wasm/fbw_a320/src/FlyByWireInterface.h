@@ -23,7 +23,9 @@
 #include "fcdc/Fcdc.h"
 #include "sec/Sec.h"
 
+#include "utils/ConfirmNode.h"
 #include "utils/HysteresisNode.h"
+#include "utils/SRFlipFlop.h"
 
 class FlyByWireInterface {
  public:
@@ -62,6 +64,9 @@ class FlyByWireInterface {
   int facDisabled = -1;
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
+
+  ConfirmNode elac2EmerPowersupplyRelayTimer = ConfirmNode(true, 30);
+  SRFlipFlop elac2EmerPowersupplyNoseGearConditionLatch = SRFlipFlop(true);
 
   bool wasTcasEngaged = false;
 
@@ -380,6 +385,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
 
   // LGCIU inputs
+  std::unique_ptr<LocalVariable> idLgciu1NoseGearDownlocked;
+
   std::unique_ptr<LocalVariable> idLgciuNoseGearCompressed[2];
   std::unique_ptr<LocalVariable> idLgciuLeftMainGearCompressed[2];
   std::unique_ptr<LocalVariable> idLgciuRightMainGearCompressed[2];
@@ -553,6 +560,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
   std::unique_ptr<LocalVariable> idElecBat1HotBusPowered;
+  std::unique_ptr<LocalVariable> idElecBat2HotBusPowered;
 
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;
