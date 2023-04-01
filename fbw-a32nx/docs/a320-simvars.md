@@ -189,6 +189,15 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
+- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+    - Enum
+    - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
+      Value | Meaning
+      --- | ---
+      0 | Inactive
+      1 | Maintenance Mode active
+      2 | Engineering display test in progress
+
 - A32NX_ECAM_ND_XFR_SWITCHING_KNOB
     - ECAM/ND XFR
     - Position (0-2)
@@ -431,10 +440,6 @@
 - A32NX_RMP_{L,R}_SAVED_COURSE_ILS
     - Number
     - The ILS course tuned via the left/right RMP
-
-- A32NX_RMP_ILS_TUNED
-    - Bool
-    - If the ILS is tuned via the RMP
 
 - A32NX_TO_CONFIG_FLAPS
     - Enum
@@ -1055,6 +1060,7 @@
     - Auto brake panel push button for MAX mode is pressed
 
 - A32NX_FM_LS_COURSE
+    - ** DEPRECATED ** Do not use.
     - Number<Degrees | -1>
     - Landing system course. Values, in priority order:
         - Pilot entered course
@@ -1076,15 +1082,6 @@
       APPROACH | 5
       GOAROUND | 6
       DONE | 7
-
-- A32NX_FMGC_RADIONAV_TUNING_MODE
-    - Enum
-    - Hold the FMGCs current tuning mode
-      Value | Meaning
-      --- | ---
-      0 | AUTO
-      1 | MANUAL
-      2 | REMOTE VIA RMPs
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number

@@ -282,6 +282,7 @@ impl EmergencyElectrical {
         electricity: &Electricity,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
     ) {
+        // TODO A380 has also total flame out condition: all engines N3 under 50% throws emergency elec
         if !ac_electrical_system.any_non_essential_bus_powered(electricity)
             && context.indicated_airspeed() > Velocity::new::<knot>(100.)
         {
