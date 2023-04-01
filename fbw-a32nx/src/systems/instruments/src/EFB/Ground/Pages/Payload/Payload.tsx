@@ -340,15 +340,15 @@ export const Payload = () => {
                     confirmText={`${t('Ground.Payload.DeboardConfirmationConfirm')}`}
                     cancelText={`${t('Ground.Payload.DeboardConfirmationCancel')}`}
                     onConfirm={() => {
-                        setTargetPax(totalPaxDesired < totalPax ? totalPaxDesired : 0);
-                        setTargetCargo(totalPaxDesired < totalPax ? totalPaxDesired : 0, totalCargoDesired < totalCargo ? totalCargoDesired : 0);
+                        setTargetPax(0);
+                        setTargetCargo(0, 0);
                         setBoardingStarted(true);
                     }}
                 />,
             );
         }
         setBoardingStarted(false);
-    }, [totalPaxDesired, totalPax, totalCargo, totalCargoDesired]);
+    }, [totalPaxDesired, totalPax, totalCargo, boardingStarted, totalCargoDesired]);
 
     const calculateBoardingTime = useMemo(() => {
         // factors taken from payload.rs TODO: Simvar
