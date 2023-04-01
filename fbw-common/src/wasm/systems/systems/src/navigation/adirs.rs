@@ -485,6 +485,8 @@ impl AirDataSource for AirDataInertialReferenceSystem {
 
     fn alpha(&self, adiru_number: usize) -> Arinc429Word<Angle> {
         self.adirus[adiru_number - 1].alpha()
+    }
+}
 
 impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
     fn is_fully_aligned(&self, adiru_number: usize) -> bool {
