@@ -49,8 +49,10 @@
 /fbw-a32nx/src/base/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.bin
 /fbw-a32nx/src/base/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf
 /fbw-a32nx/src/systems/instruments/aceBundles
+/fbw-a32nx/src/systems/instruments/buildSrc/custom/*
 
-/fbw-a32nx/src/systems/instruments/src/EFB/Localization/downloaded/*.json
+/fbw-a32nx/src/localization/flypad/downloaded/*.json
+/fbw-a32nx/src/localization/msfs/downloaded/*.locPak
 /fbw-a32nx/src/systems/instruments/src/EFB/dist
 /fbw-a32nx/src/systems/instruments/src/EFB/web/
 
@@ -97,40 +99,4 @@ target/
 *.wasm
 cmake-build*
 
-# ======== OLD =============
-
-#!/.husky/**
-#!CODEOWNERS
-#/src/mcdu-server/client/build
-#/src/presets/obj/
-#/src/systems/a320_hydraulic_simulation_graphs/*.png
-#/src/systems/a320_pneumatic_simulation_graph_data/*.txt
-#/src/systems/target/
-#!/flybywire-aircraft-a320-neo/CORS SERVER/*
-#/src/fadec/obj/
-#/src/fbw_a320/obj/
-#/src/fbw_a380/obj/
-#/src/sound/.cache
-#/src/instruments/buildSrc/custom/*
-#src/instruments/buildSrc/custom/*
-#/src/autothrottle/target
-#/flybywire-aircraft-a320-neo/layout.json
-#/flybywire-aircraft-a320-neo/manifest.json
-#/flybywire-aircraft-a320-neo/a32nx_build_info.json
-#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/
-#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/fmgc/
-#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client/
-#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/simbridge-client/
-#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/tcas/
-#/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/*
-#!/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD
-#/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.js
-#/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.css
-#/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.html
-#/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/generated/**
-#/flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated
-#!/docs/**
-#!/src/**
-#!/scripts/**
-#!/typings/**
-fbw-a32nx/src/systems/instruments/buildSrc/custom/*
+localazy.keys.json
