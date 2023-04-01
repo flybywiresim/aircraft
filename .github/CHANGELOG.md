@@ -79,6 +79,9 @@
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
 1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
 1. [HYD] New aerodynamic model for RAT turbine / Added A320 RAT anti stall valve system - @Crocket63 (crocket)
+1. [W/B] Phase 1 of refactoring payload (passenger and cargo) logic into rust systems (2Cas#1022)
+1. [EFB] Allow payload page passenger seating to be manipulated via LocalVars - @2hwk (2Cas#1022)
+1. [EFB] GW and GWCG display on payload page - @2hwk (2Cas#1022)
 1. [FLIGHT MODEL/EFB] Updated CG for ELAC 103 - @donstim (donbikes#4084)
 
 ## 0.9.0
