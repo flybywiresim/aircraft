@@ -38,8 +38,8 @@ enum ClientData {
 // Local data structure for simconnect data
 struct SimulationData {
   double simulationTime;
-  // INT64 volumeCOM1;
-  // INT64 volumeCOM2;
+  INT64 volumeCOM1;
+  INT64 volumeCOM2;
 };
 
 // Data structure for PushbackDataID
