@@ -525,12 +525,17 @@
       "WindInteriorVolume": "Wind Interior Volume"
     },
     "Fast": "Fast",
+    "Frequent": "Frequent",
     "Instant": "Instant",
+    "None": "None",
     "Real": "Real",
+    "Typical": "Typical",
     "Realism": {
       "AdirsAlignTime": "ADIRS Align Time",
       "AutofillChecklists": "Autofill Checklists",
       "BoardingTime": "Boarding Time",
+      "ConnectingFlights": "Connecting Flights",
+      "PayloadDelta": "Variation of Payload",
       "DmcSelfTestTime": "DMC Self Test Time",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Mode",

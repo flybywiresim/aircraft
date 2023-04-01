@@ -26,6 +26,7 @@ export const RealismPage = () => {
     const [syncEfis, setFoEfis] = usePersistentNumberProperty('FO_SYNC_EFIS_ENABLED', 0);
     const [pilotAvatar, setPilotAvatar] = usePersistentNumberProperty('CONFIG_PILOT_AVATAR_VISIBLE', 0);
     const [firstOfficerAvatar, setFirstOfficerAvatar] = usePersistentNumberProperty('CONFIG_FIRST_OFFICER_AVATAR_VISIBLE', 0);
+    const [payloadDeltaRealism, setPayloadDeltaRealism] = usePersistentProperty('CONFIG_PAYLOAD_DELTA', 'CONNECTING FLIGHTS');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -43,6 +44,13 @@ export const RealismPage = () => {
         { name: t('Settings.Instant'), setting: 'INSTANT' },
         { name: t('Settings.Fast'), setting: 'FAST' },
         { name: t('Settings.Real'), setting: 'REAL' },
+    ];
+
+    const payloadDeltaRealismButtons: ButtonType[] = [
+        { name: t('Settings.None'), setting: 'NONE' },
+        { name: t('Settings.Typical'), setting: 'TYPICAL' },
+        { name: t('Settings.Realism.ConnectingFlights'), setting: 'CONNECTING FLIGHTS' },
+        { name: t('Settings.Frequent'), setting: 'FREQUENT' },
     ];
 
     return (
@@ -137,6 +145,21 @@ export const RealismPage = () => {
 
             <SettingItem name={t('Settings.Realism.FirstOfficerAvatar')}>
                 <Toggle value={!!firstOfficerAvatar} onToggle={(value) => setFirstOfficerAvatar(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.Realism.PayloadDelta')}>
+                <SelectGroup>
+                    {payloadDeltaRealismButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => {
+                                setPayloadDeltaRealism(button.setting);
+                            }}
+                            selected={payloadDeltaRealism === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
             </SettingItem>
 
         </SettingsPage>

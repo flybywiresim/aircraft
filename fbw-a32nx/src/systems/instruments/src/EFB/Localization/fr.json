@@ -525,12 +525,17 @@
       "WindInteriorVolume": "Volume intérieur du vent"
     },
     "Fast": "Rapide",
+    "Frequent": "Fréquent",
     "Instant": "Instantané",
+    "None": "Aucun",
     "Real": "Réel",
+    "Typical": "Typique",
     "Realism": {
       "AdirsAlignTime": "Temps d'alignement ADIRS",
       "AutofillChecklists": "Saisie automatique des check-lists",
       "BoardingTime": "Durée d'embarquement",
+      "ConnectingFlights": "Correspondances",
+      "PayloadDelta": "Variation de la charge utile",
       "DmcSelfTestTime": "Temps d'auto-test DMC",
       "FirstOfficerAvatar": "Afficher l'avatar du copilote",
       "HomeCockpitMode": "Mode home cockpit",
