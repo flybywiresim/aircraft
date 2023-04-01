@@ -62,6 +62,7 @@
 1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
 1. [FMS] Fix display of lat/lon close to zero on DUPLICATE NAMES page - @tracernz (Mike)
 1. [EWD] Fix placement of "5" and "10" scale on EWD N1 gauges - @flogross89 (Flo)
+1. [DMC] Add DMC maintenance and engineering test modes (including DMC switching) - @flogross89 (Flo)
 1. [MCDU] Fix negative EFOB on FLIGHT PLAN page - @Revyn112 (Revyn112#1010)
 1. [MCDU] Fix EFOB and FUEL PRED get dashed out at TOD - @Revyn112 (Revyn112#1010)
 1. [ELEC] A more accurate simulation of the transformer rectifiers - @Gurgel100 (Pascal)
@@ -76,6 +77,8 @@
 1. [MCDU] Implemented NAVAID page - @tracernz (Mike)
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
+1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
+1. [HYD] New aerodynamic model for RAT turbine / Added A320 RAT anti stall valve system - @Crocket63 (crocket)
 1. [MISC] Handle the BAROMETRIC (B) key event and set QNH/STD depending on FMS data - @tracernz (Mike)
 
 ## 0.9.0
