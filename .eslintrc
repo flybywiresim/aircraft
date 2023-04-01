@@ -1,0 +1,11 @@
+{
+    "root": true,
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "ignorePatterns": [
+        "/fbw-common/msfs-avionics-mirror/**",
+        "/fbw-ingamepanels-checklist-fix/**"
+    ]
+}
