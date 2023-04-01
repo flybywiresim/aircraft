@@ -165,8 +165,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "Suurin GW",
+        "MaxGWCG": "Suurin GW CG",
         "MaxPassengers": "Suurin mahdollinen matkustajamäärä",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
@@ -453,24 +453,24 @@
     "UseControllerInput": "Käyttäjän ohjaimen syöte"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Kohdista ADIRS",
+    "FinishBoarding": "Suorita koneeseennousu loppuun",
+    "OnScreenKeyboard": "Näyttönäppäimistö",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Yhdistetty",
     "SimBridgeConnecting": "Yhdistetään...",
     "SimBridgeOff": "Pois päältä",
     "SimBridgeOffline": "Ei saatavilla",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "Kohdista ADIRS välittömästi",
+      "AutoBrightness": "Kytke automaattinen kirkkaudensäätö päälle/pois",
+      "Brightness": "Aseta flyPadin kirkkaus",
+      "FinishBoarding": "Suorita koneeseen nousu välittömästi",
+      "OnScreenKeyboard": "Kytke näyttönäppäimistö päälle/pois päältä",
+      "PowerButton": "Sammuta",
+      "Settings": "Siirry flyPadin asetussivulle",
+      "SimBridge": "SimBridge-yhteyden hallinta",
+      "Sleep": "Valmiustila"
     },
     "Title": "Pika-asetukset"
   },
@@ -564,7 +564,7 @@
       "Off": "Pois päältä",
       "Save": "Tallenna",
       "Side": "Puoli",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Ulkoisen SimBridge-isäntäkoneen osoite",
       "SimBridgePort": "Ulkoinen SimBridge palvelinyhteys",
       "SyncMsfsFlightPlan": "Synkronoi MSFS lentosuunnitelma",
       "ThrottleDetents": "Kaasupykälät",
@@ -574,9 +574,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX tankkauksen synkronisointi",
+      "GsxPayloadEnabled": "GSX rahdin synkronointi",
+      "Title": "Kolmannen osapuolen asetukset"
     },
     "ThrottleConfig": {
       "Apply": "Käytä",
@@ -653,13 +653,13 @@
     "Wed": "ke"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "Käytät $edition julkaisua tällä versiolla:",
+    "LatestVersionText": "Uusin $edition julkaisun versio on",
+    "RecommendationText": "Päivitä lentokoneesi FlyByWire-asennusohjelmalla.",
+    "StatusBarWarning": "Vanhentunut lentokoneen versio",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Päivitä lentokoneesi FlyByWire-asennusohjelmalla."
     },
-    "Title": "New Version Available"
+    "Title": "Uusi versio saatavilla"
   }
 }

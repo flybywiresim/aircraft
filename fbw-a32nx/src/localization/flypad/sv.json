@@ -576,7 +576,7 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX Fueling Synkronisering",
       "GsxPayloadEnabled": "GSX-nyttolastsynkronisering",
-      "Title": "3rd Party Options"
+      "Title": "Inställningar för tredje part"
     },
     "ThrottleConfig": {
       "Apply": "Spara",
