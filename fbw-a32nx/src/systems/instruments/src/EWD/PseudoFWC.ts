@@ -1,4 +1,4 @@
-import { Subject, Subscribable, MappedSubject, ArraySubject, DebounceTimer } from 'msfssdk';
+import { Subject, Subscribable, MappedSubject, DebounceTimer } from 'msfssdk';
 
 import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
 import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@instruments/common/NXLogic';
@@ -40,6 +40,16 @@ export class PseudoFWC {
     /** The time to play the single chime sound in ms */
     private static readonly AURAL_SC_PLAY_TIME = 500;
 
+    private static readonly EWD_MESSAGE_LINES = 7;
+
+    private static readonly ewdMessageSimVarsLeft = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, i) => `L:A32NX_EWD_LOWER_LEFT_LINE_${i + 1}`);
+
+    private readonly ewdMessageLinesLeft = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) => Subject.create(''));
+
+    private static readonly ewdMessageSimVarsRight = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, i) => `L:A32NX_EWD_LOWER_RIGHT_LINE_${i + 1}`);
+
+    private readonly ewdMessageLinesRight = Array.from({ length: PseudoFWC.EWD_MESSAGE_LINES }, (_, _i) => Subject.create(''));
+
     /* PSEUDO FWC VARIABLES */
 
     private readonly allCurrentFailures: string[] = [];
@@ -47,14 +57,6 @@ export class PseudoFWC {
     private readonly failuresLeft: string[] = [];
 
     private readonly failuresRight: string[] = [];
-
-    private memoMessageLeft: ArraySubject<string> = ArraySubject.create([]);
-
-    private memoMessageLeftPrev: Array<string> = [];
-
-    private memoMessageRight: ArraySubject<string> = ArraySubject.create([]);
-
-    private memoMessageRightPrev = [];
 
     private recallFailures: string[] = [];
 
@@ -682,33 +684,13 @@ export class PseudoFWC {
     private readonly configPortableDevices = Subject.create(false);
 
     constructor() {
-        this.memoMessageLeft.sub((_i, _t, v) => {
-            if (v instanceof Array) {
-                if (v.length !== this.memoMessageLeftPrev.length || v.some((e, i) => e !== this.memoMessageLeftPrev[i])) {
-                    this.memoMessageLeftPrev = [...v];
-                    [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
-                        SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${value}`, 'string', '');
-                    });
-                    v.forEach((value, index) => {
-                        SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`, 'string', value);
-                    });
-                }
-            }
-        });
+        this.ewdMessageLinesLeft.forEach((ls, i) => ls.sub((l) => {
+            SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsLeft[i], 'string', l ?? '');
+        }));
 
-        this.memoMessageRight.sub((_i, _t, v) => {
-            if (v instanceof Array) {
-                if (v.length !== this.memoMessageRightPrev.length || v.some((e, i) => e !== this.memoMessageRightPrev[i])) {
-                    this.memoMessageRightPrev = [...v];
-                    [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
-                        SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${value}`, 'string', '');
-                    });
-                    v.forEach((value, index) => {
-                        SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${index + 1}`, 'string', value);
-                    });
-                }
-            }
-        });
+        this.ewdMessageLinesRight.forEach((ls, i) => ls.sub((l) => {
+            SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsRight[i], 'string', l ?? '');
+        }));
 
         SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
     }
@@ -1608,7 +1590,7 @@ export class PseudoFWC {
         this.failuresRight.push(...failureKeysRight);
 
         if (tempFailureArrayLeft.length > 0) {
-            this.memoMessageLeft.set(orderedFailureArrayLeft);
+            this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedFailureArrayLeft[i]));
         }
 
         for (const [, value] of Object.entries(this.ewdMessageMemos)) {
@@ -1649,7 +1631,7 @@ export class PseudoFWC {
         let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
 
         if (!failLeft) {
-            this.memoMessageLeft.set(orderedMemoArrayLeft);
+            this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
 
             if (orderedFailureArrayRight.length === 0) {
                 this.masterCaution.set(false);
@@ -1674,7 +1656,7 @@ export class PseudoFWC {
             }
         }
 
-        this.memoMessageRight.set(orderedMemoArrayRight);
+        this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
         // This does not consider interrupting c-chord, priority of synthetic voice etc.
         // We shall wait for the rust FWC for those nice things!
