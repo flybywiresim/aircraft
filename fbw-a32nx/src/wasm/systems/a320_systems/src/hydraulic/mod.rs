@@ -7122,20 +7122,38 @@ mod tests {
                 self
             }
 
-            fn get_flaps_left_position_percent(&mut self) -> f64 {
-                self.read_by_name("LEFT_FLAPS_POSITION_PERCENT")
+            fn get_flaps_left_position_percent(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("LEFT_FLAPS_INBOARD_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(
+                        self.read_by_name("LEFT_FLAPS_OUTBOARD_POSITION_PERCENT"),
+                    ))
+                    / 2.
             }
 
-            fn get_flaps_right_position_percent(&mut self) -> f64 {
-                self.read_by_name("RIGHT_FLAPS_POSITION_PERCENT")
+            fn get_flaps_right_position_percent(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("RIGHT_FLAPS_INBOARD_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(
+                        self.read_by_name("RIGHT_FLAPS_OUTBOARD_POSITION_PERCENT"),
+                    ))
+                    / 2.
             }
 
-            fn get_slats_left_position_percent(&mut self) -> f64 {
-                self.read_by_name("LEFT_SLATS_POSITION_PERCENT")
+            fn get_mean_slats_left_position_percent(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("LEFT_SLATS_1_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("LEFT_SLATS_2_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("LEFT_SLATS_3_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("LEFT_SLATS_4_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("LEFT_SLATS_5_POSITION_PERCENT")))
+                    / 5.
             }
 
-            fn get_slats_right_position_percent(&mut self) -> f64 {
-                self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
+            fn get_mean_slats_right_position_percent(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("RIGHT_SLATS_1_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("RIGHT_SLATS_2_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("RIGHT_SLATS_3_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("RIGHT_SLATS_4_POSITION_PERCENT"))
+                    + Ratio::new::<ratio>(self.read_by_name("RIGHT_SLATS_5_POSITION_PERCENT")))
+                    / 5.
             }
 
             fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> Ratio {
@@ -10222,10 +10240,20 @@ mod tests {
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(150));
 
-            assert!(test_bed.get_flaps_left_position_percent() > 99.);
-            assert!(test_bed.get_flaps_right_position_percent() > 99.);
-            assert!(test_bed.get_slats_left_position_percent() > 99.);
-            assert!(test_bed.get_slats_right_position_percent() > 99.);
+            assert!(test_bed.get_flaps_left_position_percent().get::<ratio>() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent().get::<ratio>() > 99.);
+            assert!(
+                test_bed
+                    .get_mean_slats_left_position_percent()
+                    .get::<ratio>()
+                    > 99.
+            );
+            assert!(
+                test_bed
+                    .get_mean_slats_right_position_percent()
+                    .get::<ratio>()
+                    > 99.
+            );
         }
 
         #[test]
@@ -10247,10 +10275,20 @@ mod tests {
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(32));
 
-            assert!(test_bed.get_flaps_left_position_percent() > 99.);
-            assert!(test_bed.get_flaps_right_position_percent() > 99.);
-            assert!(test_bed.get_slats_left_position_percent() < 1.);
-            assert!(test_bed.get_slats_right_position_percent() < 1.);
+            assert!(test_bed.get_flaps_left_position_percent().get::<ratio>() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent().get::<ratio>() > 99.);
+            assert!(
+                test_bed
+                    .get_mean_slats_left_position_percent()
+                    .get::<ratio>()
+                    < 1.
+            );
+            assert!(
+                test_bed
+                    .get_mean_slats_right_position_percent()
+                    .get::<ratio>()
+                    < 1.
+            );
         }
 
         #[test]
@@ -10268,10 +10306,20 @@ mod tests {
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(50));
 
-            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
-            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
-            assert!(test_bed.get_slats_left_position_percent() > 99.);
-            assert!(test_bed.get_slats_right_position_percent() > 99.);
+            assert!(test_bed.get_flaps_left_position_percent().get::<ratio>() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent().get::<ratio>() <= 1.);
+            assert!(
+                test_bed
+                    .get_mean_slats_left_position_percent()
+                    .get::<ratio>()
+                    > 99.
+            );
+            assert!(
+                test_bed
+                    .get_mean_slats_right_position_percent()
+                    .get::<ratio>()
+                    > 99.
+            );
         }
 
         #[test]
@@ -10289,10 +10337,20 @@ mod tests {
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(28));
 
-            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
-            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
-            assert!(test_bed.get_slats_left_position_percent() < 99.);
-            assert!(test_bed.get_slats_right_position_percent() < 99.);
+            assert!(test_bed.get_flaps_left_position_percent().get::<ratio>() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent().get::<ratio>() <= 1.);
+            assert!(
+                test_bed
+                    .get_mean_slats_left_position_percent()
+                    .get::<ratio>()
+                    < 99.
+            );
+            assert!(
+                test_bed
+                    .get_mean_slats_right_position_percent()
+                    .get::<ratio>()
+                    < 99.
+            );
         }
 
         #[test]
@@ -10315,10 +10373,20 @@ mod tests {
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(45));
 
-            assert!(test_bed.get_flaps_left_position_percent() > 99.);
-            assert!(test_bed.get_flaps_right_position_percent() > 99.);
-            assert!(test_bed.get_slats_left_position_percent() > 99.);
-            assert!(test_bed.get_slats_right_position_percent() > 99.);
+            assert!(test_bed.get_flaps_left_position_percent().get::<ratio>() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent().get::<ratio>() > 99.);
+            assert!(
+                test_bed
+                    .get_mean_slats_left_position_percent()
+                    .get::<ratio>()
+                    > 99.
+            );
+            assert!(
+                test_bed
+                    .get_mean_slats_right_position_percent()
+                    .get::<ratio>()
+                    > 99.
+            );
         }
 
         #[test]
@@ -10332,10 +10400,20 @@ mod tests {
                 .set_flaps_handle_position(4)
                 .run_waiting_for(Duration::from_secs(10));
 
-            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
-            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
-            assert!(test_bed.get_slats_left_position_percent() <= 1.);
-            assert!(test_bed.get_slats_right_position_percent() <= 1.);
+            assert!(test_bed.get_flaps_left_position_percent().get::<ratio>() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent().get::<ratio>() <= 1.);
+            assert!(
+                test_bed
+                    .get_mean_slats_left_position_percent()
+                    .get::<ratio>()
+                    <= 1.
+            );
+            assert!(
+                test_bed
+                    .get_mean_slats_right_position_percent()
+                    .get::<ratio>()
+                    <= 1.
+            );
 
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
