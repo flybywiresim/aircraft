@@ -10145,25 +10145,33 @@ mod tests {
         fn flaps_and_slats_simvars() {
             let test_bed = test_bed_on_ground_with().run_one_tick();
 
-            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
-            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
-            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
-            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_APPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_APPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("IS_FLAPS_MOVING"));
 
-            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_ANGLE"));
-            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_ANGLE"));
-            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_POSITION_PERCENT"));
-            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_INBOARD_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_OUTBOARD_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_INBOARD_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_OUTBOARD_POSITION_PERCENT"));
+
             assert!(test_bed.contains_variable_with_name("SLATS_IPPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_APPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_APPU_ANGLE"));
             assert!(test_bed.contains_variable_with_name("IS_SLATS_MOVING"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_5_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_5_POSITION_PERCENT"));
         }
 
         #[test]
