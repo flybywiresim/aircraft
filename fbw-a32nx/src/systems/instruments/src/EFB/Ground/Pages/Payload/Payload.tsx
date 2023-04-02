@@ -516,7 +516,7 @@ export const Payload = () => {
         // Note: Looks messy after phase 1 refactor, will be fixed by deprecating this and moving all calculations into rust
         const centerTankMoment = -4.5;
         const innerTankMoment = -8;
-        const outerTankMoment = -17.6;
+        const outerTankMoment = -16.9;
         // Adjust ZFW CG Values based on payload
         const newZfw = emptyWeight + totalPax * paxWeight + totalCargo;
         const newZfwDesired = emptyWeight + totalPaxDesired * paxWeight + totalCargoDesired;
