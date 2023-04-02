@@ -82,6 +82,17 @@ function processFile(fileName) {
     return true;
 }
 
+// Create folder if it does not exist
+function createFolderIfNotExist(folderPath) {
+    if (!fs.existsSync(folderPath)) {
+        console.log(`Creating folder ${folderPath}...`);
+        fs.mkdirSync(folderPath, { recursive: true });
+        return;
+    }
+    console.log(`Folder ${folderPath} exists.`);
+}
+
+// Copy files to out folder
 function copyFilesToOutFolder() {
     console.log('Copying files to out folder...');
     let dirEntries;
@@ -91,11 +102,13 @@ function copyFilesToOutFolder() {
         console.error(`Error while reading folder "${path.join(workingDir, convertedFilesPath)}": ${e}`);
         process.exit(1);
     }
+    // make sure the out folder exists before copying files - this is important for the nightly Localazy GitHub action
+    createFolderIfNotExist(path.join(workingDir, outFolder));
     for (const dirent of dirEntries) {
         if (dirent.isFile() && dirent.name.endsWith(fileExtension)) {
             const src = path.join(workingDir, convertedFilesPath, dirent.name);
             const dest = path.join(workingDir, outFolder, dirent.name);
-            console.debug(`Copying file ${src} to ${dest}`);
+            console.log(`Copying file ${src} to ${dest}`);
             fs.copyFileSync(src, dest);
         }
     }
