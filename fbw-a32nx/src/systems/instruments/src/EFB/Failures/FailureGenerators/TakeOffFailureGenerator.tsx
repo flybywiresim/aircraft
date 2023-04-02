@@ -118,13 +118,13 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
         if (failureFlightPhase === FailurePhases.TAKEOFF && gs < 1.0) {
             for (let i = 0; i < nbGenerator; i++) {
                 if (!failureGeneratorArmed[i] && settings[i * numberOfSettingsPerGenerator + 0] > 0) {
-                    if (Math.random() < settings[i * numberOfSettingsPerGenerator + 1]) {
-                        const chanceFailureLowTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + 2];
-                        const chanceFailureMediumTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + 3];
-                        const minFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + 4];
-                        const mediumTakeOffRegimeSpeed : number = settings[i * numberOfSettingsPerGenerator + 5];
-                        const maxFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + 6];
-                        const takeOffDeltaAltitudeEnd : number = 100 * settings[i * numberOfSettingsPerGenerator + 7];
+                    if (Math.random() < settings[i * numberOfSettingsPerGenerator + 2]) {
+                        const chanceFailureLowTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + 3];
+                        const chanceFailureMediumTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + 4];
+                        const minFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + 5];
+                        const mediumTakeOffRegimeSpeed : number = settings[i * numberOfSettingsPerGenerator + 6];
+                        const maxFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + 7];
+                        const takeOffDeltaAltitudeEnd : number = 100 * settings[i * numberOfSettingsPerGenerator + 8];
                         const rolledDice = Math.random();
                         if (rolledDice < chanceFailureLowTakeOffRegime) {
                             // Low Take Off speed regime
