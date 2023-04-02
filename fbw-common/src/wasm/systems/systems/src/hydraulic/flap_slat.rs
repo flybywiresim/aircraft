@@ -978,7 +978,7 @@ mod tests {
         }
     }
 
-    struct TestAircraft {
+    struct FlapSlatTestAircraft {
         core_hydraulic_updater: MaxStepLoop,
 
         flaps_slats: FlapSlatAssy<7>,
@@ -990,7 +990,7 @@ mod tests {
         left_motor_pressure: TestHydraulicSection,
         right_motor_pressure: TestHydraulicSection,
     }
-    impl TestAircraft {
+    impl FlapSlatTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 core_hydraulic_updater: MaxStepLoop::new(Duration::from_millis(10)),
@@ -1028,7 +1028,7 @@ mod tests {
         //         flap_fppu_from_surface_angle(surface_angle_request_sfcc2);
         // }
     }
-    impl Aircraft for TestAircraft {
+    impl Aircraft for FlapSlatTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.core_hydraulic_updater.update(context);
 
@@ -1045,7 +1045,7 @@ mod tests {
             }
         }
     }
-    impl SimulationElement for TestAircraft {
+    impl SimulationElement for FlapSlatTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.flaps_slats.accept(visitor);
 
@@ -1053,17 +1053,69 @@ mod tests {
         }
     }
 
+    struct FlapSlatTestBed {
+        test_bed: SimulationTestBed<FlapSlatTestAircraft>,
+    }
+    impl TestBed for FlapSlatTestBed {
+        type Aircraft = FlapSlatTestAircraft;
+
+        fn test_bed(&self) -> &SimulationTestBed<FlapSlatTestAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<FlapSlatTestAircraft> {
+            &mut self.test_bed
+        }
+    }
+    impl FlapSlatTestBed {
+        fn new() -> Self {
+            let test_bed = Self {
+                test_bed: SimulationTestBed::<FlapSlatTestAircraft>::new(|context| {
+                    FlapSlatTestAircraft::new(context)
+                }),
+            };
+
+            test_bed
+        }
+
+        // fn and_run(mut self) -> Self {
+        //     self.run();
+
+        //     self
+        // }
+
+        // fn and_stabilize(mut self) -> Self {
+        //     self.test_bed.run_multiple_frames(Duration::from_secs(16));
+
+        //     self
+        // }
+
+        fn set_hydraulic_circuit_pressure(mut self, pressure: Pressure) -> Self {
+            self.command(|a| a.set_current_pressure(pressure, pressure));
+
+            self
+        }
+
+        fn set_flaps_angle(mut self, angle: Angle) -> Self {
+            self.command(|a| a.set_angle_request(Some(angle)));
+
+            self
+        }
+    }
+
+    fn test_bed() -> FlapSlatTestBed {
+        FlapSlatTestBed::new()
+    }
+
+    fn test_bed_with() -> FlapSlatTestBed {
+        test_bed()
+    }
+
     #[test]
     fn flap_slat_new_pcu() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
-
-        test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(10.))));
-        test_bed.command(|a| {
-            a.set_current_pressure(
-                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-                Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-            )
-        });
+        let mut test_bed = test_bed_with()
+            .set_flaps_angle(Angle::new::<degree>(10.))
+            .set_hydraulic_circuit_pressure(Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI));
 
         test_bed.run_with_delta(Duration::from_secs(10));
 
@@ -1084,43 +1136,43 @@ mod tests {
         );
     }
 
-    #[test]
-    fn flap_slat_pressure_maintaining_valve() {
-        // let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
-        // let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+    // #[test]
+    // fn flap_slat_pressure_maintaining_valve() {
+    //     let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
+    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
 
-        // for gain in (-100..-40).rev() {
-        //     let gain_float = f64::from(gain) * 0.001;
-        //     test_bed.command(|a| a.set_gain(gain_float));
-        //     test_bed.command(|a| a.valve_reset());
-        //     test_bed.command(|a| {
-        //         a.set_current_pressure(Pressure::new::<psi>(580.), Pressure::new::<psi>(580.))
-        //     });
-        //     for _ in 0..20 {
-        //         test_bed.run_with_delta(Duration::from_millis(10));
-        //     }
-        //     let low_pressure_valve_position =
-        //         test_bed.query(|a| a.pressure_maintaining_valve.get_valve_position());
+    //     for gain in (-100..-40).rev() {
+    //         let gain_float = f64::from(gain) * 0.001;
+    //         test_bed.command(|a| a.set_gain(gain_float));
+    //         test_bed.command(|a| a.valve_reset());
+    //         test_bed.command(|a| {
+    //             a.set_current_pressure(Pressure::new::<psi>(580.), Pressure::new::<psi>(580.))
+    //         });
+    //         for _ in 0..20 {
+    //             test_bed.run_with_delta(Duration::from_millis(10));
+    //         }
+    //         let low_pressure_valve_position =
+    //             test_bed.query(|a| a.pressure_maintaining_valve.get_valve_position());
 
-        //     test_bed.command(|a| a.valve_reset());
-        //     test_bed.command(|a| {
-        //         a.set_current_pressure(Pressure::new::<psi>(2030.), Pressure::new::<psi>(2030.))
-        //     });
-        //     for _ in 0..20 {
-        //         test_bed.run_with_delta(Duration::from_millis(10));
-        //     }
-        //     let high_pressure_valve_position =
-        //         test_bed.query(|a| a.pressure_maintaining_valve.get_valve_position());
+    //         test_bed.command(|a| a.valve_reset());
+    //         test_bed.command(|a| {
+    //             a.set_current_pressure(Pressure::new::<psi>(2030.), Pressure::new::<psi>(2030.))
+    //         });
+    //         for _ in 0..20 {
+    //             test_bed.run_with_delta(Duration::from_millis(10));
+    //         }
+    //         let high_pressure_valve_position =
+    //             test_bed.query(|a| a.pressure_maintaining_valve.get_valve_position());
 
-        //     println!(
-        //         "GAIN {:.4}\tLOW {:.2}\tHIGH {:.2}\tDIFF {:.2}",
-        //         gain_float,
-        //         low_pressure_valve_position.get::<ratio>(),
-        //         high_pressure_valve_position.get::<ratio>(),
-        //         (high_pressure_valve_position - low_pressure_valve_position).get::<ratio>()
-        //     );
-        // }
-    }
+    //         println!(
+    //             "GAIN {:.4}\tLOW {:.2}\tHIGH {:.2}\tDIFF {:.2}",
+    //             gain_float,
+    //             low_pressure_valve_position.get::<ratio>(),
+    //             high_pressure_valve_position.get::<ratio>(),
+    //             (high_pressure_valve_position - low_pressure_valve_position).get::<ratio>()
+    //         );
+    //     }
+    // }
 
     // #[test]
     // fn flap_slat_assembly_init() {
