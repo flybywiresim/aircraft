@@ -1,0 +1,39 @@
+{
+  "LocalisationPackage": {
+    "Language": "zh-CN",
+    "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
+      "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX是由数百名个人贡献者合作完成的。",
+      "A32NX.LOADING.TIPS.A320NEO_002": "你知道吗？A320的降落侧风速度可达38节，尾风速度可达15节!",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire的名字来源于空客A320首次引入的飞线控制。",
+      "A32NX.LOADING.TIPS.A320NEO_004": "共造出多于9900架A320飞机! 这几乎和图瓦卢的人口一样多!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "空客A320neo飞机的航程为3500NM或6500KM。这足以从纽约飞到巴黎!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "你知道吗？A320家族有4种型号! A318 A319 A320和A321。",
+      "AIRCRAFT.DESCRIPTION": "空中客车公司（Airbus）于1984年3月推出了第一架A320。近26年后的2010年，他们宣布A320neo（“新发动机选件”）成为家族的最新成员，以振兴和维持其世界领先的产品线，在经过扩展的开发过程之后，A320neo于2016年初在汉莎航空正式服役，并迅速成为有史以来销售最快的商用飞机，迄今为止，已有115多家航空公司订购了7,000架飞机。延续了最初的A320建立的传统，A320是除协和飞机以外的第一架采用电传操纵进行正常运行的客机， A320neo与之前的机型共享95％以上的机身通用性。但是，正是引入了两种新一代发动机类型，再加上该公司专有的“ Sharklet”翼尖，才真正使Neo脱颖而出。有效载荷和缩短的着陆距离；这些重要的进步-以及噪音和CO 2排放量的大幅度减少-证明了A320neo不仅在商业上取得成功，而且在航空业对环境承担更大责任的道路上迈出了重要的一步。",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "向左调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "向右调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Adjust selected track to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Adjust selected track to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Decrease left PFD brightness",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Increase left PFD brightness",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Decrease right PFD brightness",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Increase right PFD brightness",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Set \"no smoke\" prompt light to AUTO",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE": "Turn off the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE": "Turn on the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE": "Decrease the volume of the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE": "Increase the volume of the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE": "Turn off the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE": "Turn on the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE": "Decrease the volume of the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_INCREASE": "Increase the volume of the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_OFF": "Allow morse ident",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_ON": "Inhibit morse ident"
+    }
+  }
+}

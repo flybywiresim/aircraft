@@ -1,0 +1,39 @@
+{
+  "LocalisationPackage": {
+    "Language": "pl-PL",
+    "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
+      "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX jest efektem współpracy setek indywidualnych współpracowników.",
+      "A32NX.LOADING.TIPS.A320NEO_002": "Czy wiesz, że? A320 może lądować przy wietrze bocznym o prędkości do 38 węzłów i tylnym do 15 węzłów!",
+      "A32NX.LOADING.TIPS.A320NEO_003": "Nazwa FlyByWire pochodzi od systemu sterowania fly-by-wire wprowadzonego po raz pierwszy w samolocie Airbus A320.",
+      "A32NX.LOADING.TIPS.A320NEO_004": "Zbudowano ponad 9900 samolotów z rodziny A320! To prawie tyle, ile wynosi liczba mieszkańców Tuvalu!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "Samoloty Airbus A320neo mają zasięg 3500 NM lub 6500 KM. To wystarczy, aby polecieć z Nowego Jorku do Paryża!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "Czy wiesz, że? Rodzina A320 ma 4 warianty! A318 A319 A320 i A321.",
+      "AIRCRAFT.DESCRIPTION": "Pierwszy model samolotu A320 został oddany do użytku przez firmę Airbus w marcu 1984 roku. Niemal 26 lat później, w roku 2010, firma ogłosiła narodziny najnowszego członka rodziny: modelu A320neo (ang. „new engine option” – nowy rodzaj silnika), którego celem była rewitalizacja linii wąskokadłubowych samolotów pasażerskich o dwóch silnikach turbowentylatorowych i utrzymanie pozycji lidera na rynku.</br></br>Po długim okresie przygotowawczym model A320neo został oficjalnie oddany do użytku w liniach Lufthansa na początku 2016 roku. Niemal natychmiast został najszybciej sprzedającym się komercyjnym statkiem powietrznym w historii – do dziś sprzedało się ponad 7000 egzemplarzy wykorzystywanych przez ponad 115 linii lotniczych.</br></br>Zgodnie z tradycją płatowiec modelu A320neo został zaprojektowany tak, by w ponad 95% przypominać formę wcześniejszych modeli z tej serii, w tym oryginalnego modelu A320, który obok Concorde'a był pierwszym samolotem pasażerskim z elektronicznym systemem sterowania FBW („fly-by-wire”) używanym podczas standardowych manewrów. Wyróżniały go jednak dwa silniki nowej generacji oraz zastrzeżone przez firmę końcówki skrzydeł typu „Sharklet”.</br></br>Dzięki zmniejszonemu zużyciu paliwa, krótszej odległości wymaganej do lądowania, zwiększonemu zasięgowi i większym możliwościom załadunkowym – a także dzięki znaczącej redukcji w zakresie emisji hałasu i dwutlenku węgla – model A320neo odniósł wielki sukces komercyjny i uznawany jest za milowy krok na drodze do zwiększenia odpowiedzialności za środowisko w sektorze lotniczym.",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU dostępne",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Zmień wybrany kurs w lewo o (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Zmień wybrany kurs w prawo o (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Zmień wybraną rzeczywistą linię drogi w lewo o (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Zmień wybraną rzeczywistą linię drogi w prawo o (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Zmniejsz jasność lewego PFD",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Zwiększ jasność lewego PFD",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Zmniejsz jasność prawego PFD",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Zwiększ jasność prawego PFD",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Ustaw znak \"nie palić\" na AUTO",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE": "Turn off the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE": "Turn on the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE": "Decrease the volume of the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE": "Increase the volume of the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE": "Turn off the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE": "Turn on the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE": "Decrease the volume of the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_INCREASE": "Increase the volume of the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_OFF": "Allow morse ident",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_ON": "Inhibit morse ident"
+    }
+  }
+}

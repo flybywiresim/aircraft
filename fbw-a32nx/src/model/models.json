@@ -32,6 +32,10 @@
     },
     "additions": [
       {
+        "gltf": "./fire-button/fire-button.gltf",
+        "bin": "./fire-button/fire-button.bin"
+      },
+      {
         "gltf": "./onbat/onbat.gltf",
         "bin": "./onbat/onbat.bin"
       },
