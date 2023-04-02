@@ -129,7 +129,7 @@ class CDUNavRadioPage {
         let identText;
         let freqText;
         if (vor.frequency !== null) {
-            const ident = vor.ident !== null ? vor.ident : '';
+            const ident = vor.ident !== null ? vor.ident : "[\xa0\xa0]";
             identText = `{${vor.manual ? 'big' : 'small'}}${receiverIndex === 2 ? ident.padEnd(4, '\xa0') : ident.padStart(4, '\xa0')}{end}`;
             freqText = `{${vor.manual && vor.ident === null ? 'big' : 'small'}}${vor.frequency.toFixed(2)}{end}`;
         } else {
@@ -232,7 +232,7 @@ class CDUNavRadioPage {
         let identText;
         let freqText;
         if (mmr.frequency !== null) {
-            const ident = mmr.ident !== null ? mmr.ident : '';
+            const ident = mmr.ident !== null ? mmr.ident : "[\xa0\xa0]";
             identText = `{${mmr.manual ? 'big' : 'small'}}${ident.padStart(4, '\xa0')}{end}`;
             freqText = `{${mmr.manual && mmr.ident === null ? 'big' : 'small'}}${mmr.frequency.toFixed(2)}{end}`;
         } else {
@@ -367,7 +367,7 @@ class CDUNavRadioPage {
         let identText;
         let freqText;
         if (adf.frequency !== null) {
-            const ident = adf.ident !== null ? adf.ident : '';
+            const ident = adf.ident !== null ? adf.ident : "[\xa0\xa0]";
             identText = `{${adf.manual ? 'big' : 'small'}}${receiverIndex === 2 ? ident.padEnd(4, '\xa0') : ident.padStart(4, '\xa0')}{end}`;
             freqText = `{${adf.manual && adf.ident === null ? 'big' : 'small'}}${adf.frequency.toFixed(1)}{end}`;
         } else {

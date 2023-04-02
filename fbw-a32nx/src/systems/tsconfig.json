@@ -18,6 +18,7 @@
       "@failures": ["./failures/src/index.ts"],
       "@fmgc/*": ["./fmgc/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@localization/*": ["../localization/*"],
       "@sentry/*": ["./sentry-client/src/*"],
       "@simbridge/*": ["./simbridge-client/src/*"],
       "@shared/*": ["./shared/src/*"],
