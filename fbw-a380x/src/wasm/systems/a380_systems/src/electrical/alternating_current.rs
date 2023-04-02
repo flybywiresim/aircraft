@@ -444,6 +444,7 @@ impl A380MainPowerSources {
                     |pb| matches!(*pb, Some(ACBusPowerSource::APUGenerator(n)) if n == apu_gen),
                 ),
             );
+            electricity.flow(apu.generator(apu_gen), contactor);
         }
         let close_isolation_contactor = overhead.bus_tie_is_auto()
             && (powered_by[..2]
@@ -457,9 +458,6 @@ impl A380MainPowerSources {
         self.system_isolation_contactor
             .close_when(close_isolation_contactor);
 
-        for (num, contactor) in self.apu_gen_contactors.iter().enumerate() {
-            electricity.flow(apu.generator(num), contactor);
-        }
         for (contactor, ext_pwr) in self.ext_pwr_contactors.iter().zip(ext_pwrs) {
             electricity.flow(ext_pwr, contactor);
         }
