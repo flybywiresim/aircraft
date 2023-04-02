@@ -4,6 +4,7 @@ use super::{
 };
 use std::time::Duration;
 use systems::accept_iterable;
+use systems::apu::ApuGenerator;
 use systems::electrical::ElectricalElement;
 use systems::simulation::InitContext;
 use systems::{
@@ -371,7 +372,10 @@ impl A380MainPowerSources {
             electricity.supplied_by(gen);
         }
 
-        electricity.supplied_by(apu);
+        for i in 1..=2 {
+            electricity.supplied_by(apu.generator(i));
+        }
+
         for ext_pwr in ext_pwrs {
             electricity.supplied_by(ext_pwr);
         }
@@ -453,8 +457,8 @@ impl A380MainPowerSources {
         self.system_isolation_contactor
             .close_when(close_isolation_contactor);
 
-        for contactor in &self.apu_gen_contactors {
-            electricity.flow(apu, contactor);
+        for (num, contactor) in self.apu_gen_contactors.iter().enumerate() {
+            electricity.flow(apu.generator(num), contactor);
         }
         for (contactor, ext_pwr) in self.ext_pwr_contactors.iter().zip(ext_pwrs) {
             electricity.flow(ext_pwr, contactor);
@@ -501,8 +505,9 @@ impl A380MainPowerSources {
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
     ) -> [Option<ACBusPowerSource>; 4] {
-        let apu_gen_available = [1, 2]
-            .map(|id| overhead.apu_generator_is_on(id) && apu.output_within_normal_parameters());
+        let apu_gen_available = [1, 2].map(|id| {
+            overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
+        });
 
         let gen_available: Vec<_> = self
             .engine_gens

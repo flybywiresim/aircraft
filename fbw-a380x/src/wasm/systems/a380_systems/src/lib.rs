@@ -51,7 +51,7 @@ pub struct A380 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
-    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
+    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 2>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A380PneumaticOverheadPanel,
@@ -85,9 +85,8 @@ impl A380 {
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
-            apu: AuxiliaryPowerUnitFactory::new_aps3200(
+            apu: AuxiliaryPowerUnitFactory::new_pw980(
                 context,
-                1,
                 APU_START_MOTOR_BUS_TYPE,
                 ElectricalBusType::DirectCurrentEssential,
                 ElectricalBusType::DirectCurrentEssential,

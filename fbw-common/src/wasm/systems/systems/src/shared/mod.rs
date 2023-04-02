@@ -1,5 +1,6 @@
 use crate::{
-    electrical::{ElectricalElement, ElectricitySource, Potential},
+    apu::ApuGenerator,
+    electrical::{ElectricalElement, Potential},
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     simulation::UpdateContext,
 };
@@ -35,10 +36,9 @@ pub trait ReservoirAirPressure {
     fn yellow_reservoir_pressure(&self) -> Pressure;
 }
 
-pub trait AuxiliaryPowerUnitElectrical:
-    ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
-{
-    fn output_within_normal_parameters(&self) -> bool;
+pub trait AuxiliaryPowerUnitElectrical: ControllerSignal<ContactorSignal> + ApuAvailable {
+    type Generator: ApuGenerator;
+    fn generator(&self, number: usize) -> &Self::Generator;
 }
 
 pub trait ApuAvailable {

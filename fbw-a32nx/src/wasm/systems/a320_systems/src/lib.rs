@@ -44,7 +44,7 @@ pub struct A320 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A320AirConditioning,
-    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
+    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A320PneumaticOverheadPanel,
