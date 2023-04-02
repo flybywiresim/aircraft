@@ -17,15 +17,15 @@ export class NXUnits {
       }
 
       static userToKg(value) {
-          return NXUnits.metricWeight ? value : value / 2.204625;
+          return NXUnits.metricWeight ? value : value * 0.4535934;
       }
 
       static kgToUser(value) {
-          return NXUnits.metricWeight ? value : value * 2.204625;
+          return NXUnits.metricWeight ? value : value / 0.4535934;
       }
 
       static poundsToUser(value) {
-          return NXUnits.metricWeight ? value / 2.204625 : value;
+          return NXUnits.metricWeight ? value * 0.4535934 : value;
       }
 
       static userWeightUnit() {
