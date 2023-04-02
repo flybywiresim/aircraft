@@ -189,7 +189,7 @@
                 }
             ],
             "stationIndex": 1,
-            "position": 20.0,
+            "position": 20.5,
             "fill": 0.19,
             "simVar": "A32NX_PAX_A"
         },
@@ -388,7 +388,7 @@
                 }
             ],
             "stationIndex": 2,
-            "position": 0.9,
+            "position": 1.5,
             "fill": 0.25,
             "simVar": "A32NX_PAX_B"
         },
@@ -614,7 +614,7 @@
                 }
             ],
             "stationIndex": 3,
-            "position": -17.3,
+            "position": -16.6,
             "fill": 0.28,
             "simVar": "A32NX_PAX_C"
         },
@@ -841,7 +841,7 @@
             ],
             "fill": 0.28,
             "stationIndex": 4,
-            "position": -36.3,
+            "position": -35.6,
             "simVar": "A32NX_PAX_D"
         }
     ],
@@ -850,7 +850,7 @@
             "name": "FWD BAGGAGE/CONTAINER",
             "weight": 3402,
             "stationIndex": 5,
-            "position": 16.3,
+            "position": 17.3,
             "progressBarWidth": 160,
             "simVar": "A32NX_CARGO_FWD_BAGGAGE_CONTAINER"
         },
@@ -858,7 +858,7 @@
             "name": "AFT CONTAINER",
             "weight": 2426,
             "stationIndex": 6,
-            "position": -25.1,
+            "position": -24.1,
             "progressBarWidth": 100,
             "simVar": "A32NX_CARGO_AFT_CONTAINER"
         },
@@ -866,7 +866,7 @@
             "name": "AFT BAGGAGE",
             "weight": 2110,
             "stationIndex": 7,
-            "position": -35.1,
+            "position": -34.1,
             "progressBarWidth": 100,
             "simVar": "A32NX_CARGO_AFT_BAGGAGE"
         },
@@ -874,7 +874,7 @@
             "name": "AFT BULK/LOOSE",
             "weight": 1497,
             "stationIndex": 8,
-            "position": -44.4,
+            "position": -42.4,
             "progressBarWidth": 100,
             "simVar": "A32NX_CARGO_AFT_BULK_LOOSE"
         }
