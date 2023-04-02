@@ -456,7 +456,7 @@ pub mod tests {
         dc_bat_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
         apu_start_motor_bus: ElectricalBus,
-        apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
+        apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1>,
         apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
         apu_overhead: AuxiliaryPowerUnitOverheadPanel,
         apu_bleed: OnOffFaultPushButton,
@@ -512,7 +512,7 @@ pub mod tests {
         }
 
         pub fn generator_is_unpowered(&self, electricity: &Electricity) -> bool {
-            electricity.output_of(&self.apu).is_unpowered()
+            electricity.output_of(self.apu.generator(1)).is_unpowered()
         }
 
         fn set_power_demand(&mut self, power: Power) {
@@ -538,7 +538,7 @@ pub mod tests {
         fn apu_generator_output_within_normal_parameters_after_processing_power_consumption_report(
             &self,
         ) -> bool {
-            self.apu.output_within_normal_parameters()
+            self.apu.generator(1).output_within_normal_parameters()
         }
 
         fn apu_generator_output_within_normal_parameters_before_processing_power_consumption_report(
@@ -567,9 +567,9 @@ pub mod tests {
                 self.has_fuel_remaining,
             );
 
-            self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report = self.apu.output_within_normal_parameters();
+            self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report = self.apu.generator(1).output_within_normal_parameters();
 
-            electricity.supplied_by(&self.apu);
+            electricity.supplied_by(self.apu.generator(1));
             electricity.supplied_by(&self.dc_bat_bus_electricity_source);
             electricity.flow(&self.dc_bat_bus_electricity_source, &self.dc_bat_bus);
             if matches!(self.apu.signal(), Some(ContactorSignal::Close))
@@ -578,7 +578,7 @@ pub mod tests {
                 electricity.flow(&self.dc_bat_bus, &self.apu_start_motor_bus);
             }
 
-            electricity.flow(&self.apu, &self.ac_1_bus);
+            electricity.flow(self.apu.generator(1), &self.ac_1_bus);
         }
 
         fn update_after_power_distribution(&mut self, _: &UpdateContext) {

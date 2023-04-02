@@ -519,15 +519,16 @@ mod a380_electrical_circuit_tests {
     use rstest::rstest;
     use std::{cell::Ref, time::Duration};
     use systems::{
+        apu::ApuGenerator,
         electrical::{
             ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-            Electricity, ElectricitySource, ExternalPowerSource, Potential,
-            INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
+            Electricity, ElectricitySource, ExternalPowerSource, Potential, ProvideFrequency,
+            ProvidePotential, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
         failures::FailureType,
         shared::{
-            ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            PotentialOrigin,
+            ApuAvailable, ApuMaster, ApuStart, ContactorSignal, ControllerSignal,
+            ElectricalBusType, ElectricalBuses, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -536,8 +537,8 @@ mod a380_electrical_circuit_tests {
     };
 
     use uom::si::{
-        angular_velocity::revolution_per_minute, electric_potential::volt, length::foot,
-        mass_density::slug_per_cubic_foot, ratio::percent,
+        angular_velocity::revolution_per_minute, electric_potential::volt, frequency::hertz,
+        length::foot, mass_density::slug_per_cubic_foot, ratio::percent,
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
@@ -2152,7 +2153,7 @@ mod a380_electrical_circuit_tests {
     }
 
     struct TestApu {
-        identifier: ElectricalElementIdentifier,
+        generators: [TestApuGenerator; 2],
         is_available: bool,
         start_motor_is_powered: bool,
         should_close_start_contactor: bool,
@@ -2160,7 +2161,7 @@ mod a380_electrical_circuit_tests {
     impl TestApu {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                identifier: context.next_electrical_identifier(),
+                generators: [1, 2].map(|i| TestApuGenerator::new(context, i)),
                 is_available: false,
                 start_motor_is_powered: false,
                 should_close_start_contactor: false,
@@ -2168,6 +2169,9 @@ mod a380_electrical_circuit_tests {
         }
 
         fn set_available(&mut self, available: bool) {
+            for gen in &mut self.generators {
+                gen.set_available(available);
+            }
             self.is_available = available;
         }
 
@@ -2180,38 +2184,20 @@ mod a380_electrical_circuit_tests {
         }
     }
     impl SimulationElement for TestApu {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            accept_iterable!(self.generators, visitor);
+            visitor.visit(self);
+        }
+
         fn receive_power(&mut self, buses: &impl ElectricalBuses) {
             self.start_motor_is_powered = buses.is_powered(ElectricalBusType::Sub("49-42-00"));
         }
     }
     impl AuxiliaryPowerUnitElectrical for TestApu {
-        fn output_within_normal_parameters(&self) -> bool {
-            self.is_available
-        }
-    }
-    impl ElectricitySource for TestApu {
-        fn output_potential(&self) -> Potential {
-            if self.is_available {
-                Potential::new(
-                    PotentialOrigin::ApuGenerator(1),
-                    ElectricPotential::new::<volt>(115.),
-                )
-            } else {
-                Potential::none()
-            }
-        }
-    }
-    impl ElectricalElement for TestApu {
-        fn input_identifier(&self) -> systems::electrical::ElectricalElementIdentifier {
-            self.identifier
-        }
+        type Generator = TestApuGenerator;
 
-        fn output_identifier(&self) -> systems::electrical::ElectricalElementIdentifier {
-            self.identifier
-        }
-
-        fn is_conductive(&self) -> bool {
-            true
+        fn generator(&self, number: usize) -> &Self::Generator {
+            &self.generators[number - 1]
         }
     }
     impl ApuAvailable for TestApu {
@@ -2228,6 +2214,84 @@ mod a380_electrical_circuit_tests {
             }
         }
     }
+
+    struct TestApuGenerator {
+        identifier: ElectricalElementIdentifier,
+        number: usize,
+        is_available: bool,
+    }
+    impl TestApuGenerator {
+        fn new(context: &mut InitContext, number: usize) -> Self {
+            Self {
+                identifier: context.next_electrical_identifier(),
+                is_available: false,
+                number,
+            }
+        }
+
+        fn set_available(&mut self, available: bool) {
+            self.is_available = available;
+        }
+    }
+    impl ApuGenerator for TestApuGenerator {
+        fn update(&mut self, n: Ratio, is_emergency_shutdown: bool) {}
+
+        fn output_within_normal_parameters(&self) -> bool {
+            true
+        }
+    }
+    impl ProvidePotential for TestApuGenerator {
+        fn potential(&self) -> ElectricPotential {
+            if self.is_available {
+                ElectricPotential::new::<volt>(115.)
+            } else {
+                ElectricPotential::default()
+            }
+        }
+
+        fn potential_normal(&self) -> bool {
+            self.is_available
+        }
+    }
+    impl ProvideFrequency for TestApuGenerator {
+        fn frequency(&self) -> Frequency {
+            if self.is_available {
+                Frequency::new::<hertz>(400.)
+            } else {
+                Frequency::default()
+            }
+        }
+
+        fn frequency_normal(&self) -> bool {
+            self.is_available
+        }
+    }
+    impl ElectricitySource for TestApuGenerator {
+        fn output_potential(&self) -> Potential {
+            if self.is_available {
+                Potential::new(
+                    PotentialOrigin::ApuGenerator(self.number),
+                    ElectricPotential::new::<volt>(115.),
+                )
+            } else {
+                Potential::none()
+            }
+        }
+    }
+    impl ElectricalElement for TestApuGenerator {
+        fn input_identifier(&self) -> systems::electrical::ElectricalElementIdentifier {
+            self.identifier
+        }
+
+        fn output_identifier(&self) -> systems::electrical::ElectricalElementIdentifier {
+            self.identifier
+        }
+
+        fn is_conductive(&self) -> bool {
+            true
+        }
+    }
+    impl SimulationElement for TestApuGenerator {}
 
     struct TestEngineFirePushButtons {
         is_released: [bool; 2],
