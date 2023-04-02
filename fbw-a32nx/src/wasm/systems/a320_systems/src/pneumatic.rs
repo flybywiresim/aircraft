@@ -16,11 +16,11 @@ use systems::{
     pneumatic::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
         BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
-        CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
+        CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode, DifferentialPressureTransducer,
         EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
-        PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
-        PressurizeableReservoir, TargetPressureTemperatureSignal, VariableVolumeContainer,
-        WingAntiIcePushButton,
+        PneumaticPipe, PneumaticValveSignal, Precooler, PressureTransducer,
+        PressurisedReservoirWithExhaustValve, PressurizeableReservoir,
+        TargetPressureTemperatureSignal, VariableVolumeContainer, WingAntiIcePushButton,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
@@ -597,8 +597,8 @@ struct BleedMonitoringComputerChannel {
     cross_bleed_valve_is_open: bool,
 }
 impl BleedMonitoringComputerChannel {
-    const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 52.;
-    const PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI: f64 = 46.;
+    const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 50.;
+    const PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI: f64 = 42.;
 
     fn new(
         engine_number: usize,
@@ -646,12 +646,18 @@ impl BleedMonitoringComputerChannel {
 
         self.pressure_regulating_valve_is_closed = !sensors.pressure_regulating_valve_is_open();
 
-        self.high_pressure_valve_pid
-            .next_control_output(self.transfer_pressure.get::<psi>(), Some(context.delta()));
-        self.pressure_regulating_valve_pid.next_control_output(
-            sensors.precooler_outlet_pressure().get::<psi>(),
-            Some(context.delta()),
-        );
+        if let Some(transfer_pressure_signal) = sensors.transfer_pressure_transducer_pressure() {
+            self.high_pressure_valve_pid
+                .next_control_output(transfer_pressure_signal.get::<psi>(), Some(context.delta()));
+        }
+
+        if let Some(regulated_pressure_signal) = sensors.regulated_pressure_transducer_pressure() {
+            self.pressure_regulating_valve_pid.next_control_output(
+                regulated_pressure_signal.get::<psi>(),
+                Some(context.delta()),
+            );
+        }
+
         self.fan_air_valve_pid.next_control_output(
             sensors
                 .precooler_outlet_temperature()
@@ -692,10 +698,17 @@ impl BleedMonitoringComputerChannel {
             && self.is_apu_bleed_valve_open
             && (self.engine_number == 1 || self.cross_bleed_valve_is_open)
     }
+
+    fn should_command_prv_closed(&self) -> bool {
+        !self.is_engine_bleed_pushbutton_auto
+            || self.is_engine_fire_pushbutton_released
+            || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on()
+            || self.engine_starter_valve_is_open
+    }
 }
 impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<HighPressureValveSignal> {
-        if self.pressure_regulating_valve_is_closed
+        if self.should_command_prv_closed()
             || self.high_pressure_compressor_pressure < Pressure::new::<psi>(18.)
         {
             Some(HighPressureValveSignal::new_closed())
@@ -708,11 +721,7 @@ impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChanne
 }
 impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<PressureRegulatingValveSignal> {
-        if self.transfer_pressure < Pressure::new::<psi>(18.)
-            || (!self.is_engine_bleed_pushbutton_auto || self.is_engine_fire_pushbutton_released)
-            || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on()
-            || self.engine_starter_valve_is_open
-        {
+        if self.transfer_pressure < Pressure::new::<psi>(15.) || self.should_command_prv_closed() {
             Some(PressureRegulatingValveSignal::new_closed())
         } else {
             Some(PressureRegulatingValveSignal::new(Ratio::new::<ratio>(
@@ -755,9 +764,6 @@ impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel 
 struct EngineBleedAirSystem {
     intermediate_pressure_id: VariableIdentifier,
     high_pressure_id: VariableIdentifier,
-    transfer_pressure_id: VariableIdentifier,
-    precooler_inlet_pressure_id: VariableIdentifier,
-    precooler_outlet_pressure_id: VariableIdentifier,
     starter_container_pressure_id: VariableIdentifier,
     intermediate_temperature_id: VariableIdentifier,
     high_temperature_id: VariableIdentifier,
@@ -769,6 +775,9 @@ struct EngineBleedAirSystem {
     high_pressure_valve_open_id: VariableIdentifier,
     pressure_regulating_valve_open_id: VariableIdentifier,
     starter_valve_open_id: VariableIdentifier,
+    transfer_pressure_transducer_pressure_id: VariableIdentifier,
+    regulated_pressure_transducer_pressure_id: VariableIdentifier,
+    differential_pressure_transducer_pressure_id: VariableIdentifier,
 
     number: usize,
     fan_compression_chamber_controller: EngineCompressionChamberController, // Controls pressure just behind the main fan
@@ -789,6 +798,10 @@ struct EngineBleedAirSystem {
     engine_starter_valve: DefaultValve,
     fan_air_valve: ElectroPneumaticValve,
     precooler: Precooler,
+
+    transfer_pressure_transducer: PressureTransducer,
+    regulated_pressure_transducer: PressureTransducer,
+    differential_pressure_transducer: DifferentialPressureTransducer,
 }
 impl EngineBleedAirSystem {
     fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
@@ -797,12 +810,6 @@ impl EngineBleedAirSystem {
             intermediate_pressure_id: context
                 .get_identifier(format!("PNEU_ENG_{}_IP_PRESSURE", number)),
             high_pressure_id: context.get_identifier(format!("PNEU_ENG_{}_HP_PRESSURE", number)),
-            transfer_pressure_id: context
-                .get_identifier(format!("PNEU_ENG_{}_TRANSFER_PRESSURE", number)),
-            precooler_inlet_pressure_id: context
-                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_INLET_PRESSURE", number)),
-            precooler_outlet_pressure_id: context
-                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_OUTLET_PRESSURE", number)),
             starter_container_pressure_id: context
                 .get_identifier(format!("PNEU_ENG_{}_STARTER_CONTAINER_PRESSURE", number)),
             intermediate_temperature_id: context
@@ -825,11 +832,19 @@ impl EngineBleedAirSystem {
                 .get_identifier(format!("PNEU_ENG_{}_PR_VALVE_OPEN", number)),
             starter_valve_open_id: context
                 .get_identifier(format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", number)),
+            transfer_pressure_transducer_pressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_TRANSFER_TRANSDUCER_PRESSURE", number)),
+            regulated_pressure_transducer_pressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_REGULATED_TRANSDUCER_PRESSURE", number)),
+            differential_pressure_transducer_pressure_id: context.get_identifier(format!(
+                "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
+                number
+            )),
             fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(3., 0., 4.),
+                EngineCompressionChamberController::new(3., 0., 1.5), // Maximum IP bleed pressure output should be about 150 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                3., 2., 4.,
+                3., 2., 3.5, // Maximum IP bleed pressure output should be about 660 psig
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -870,6 +885,9 @@ impl EngineBleedAirSystem {
             engine_starter_exhaust: PneumaticExhaust::new(3e-2, 3e-2, Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(180. * 2.),
+            transfer_pressure_transducer: PressureTransducer::new(powered_by),
+            regulated_pressure_transducer: PressureTransducer::new(powered_by),
+            differential_pressure_transducer: DifferentialPressureTransducer::new(powered_by),
         }
     }
 
@@ -938,7 +956,14 @@ impl EngineBleedAirSystem {
             &mut self.engine_starter_container,
         );
         self.engine_starter_exhaust
-            .update_move_fluid(context, &mut self.engine_starter_container)
+            .update_move_fluid(context, &mut self.engine_starter_container);
+
+        self.transfer_pressure_transducer
+            .update(context, &self.transfer_pressure_pipe);
+        self.regulated_pressure_transducer
+            .update(context, &self.precooler_inlet_pipe);
+        self.differential_pressure_transducer
+            .update(&self.precooler_inlet_pipe, &self.precooler_outlet_pipe);
     }
 
     fn intermediate_pressure(&self) -> Pressure {
@@ -953,10 +978,12 @@ impl EngineBleedAirSystem {
         self.transfer_pressure_pipe.pressure()
     }
 
+    #[cfg(test)]
     fn precooler_inlet_pressure(&self) -> Pressure {
         self.precooler_inlet_pipe.pressure()
     }
 
+    #[cfg(test)]
     fn precooler_outlet_pressure(&self) -> Pressure {
         self.precooler_outlet_pipe.pressure()
     }
@@ -988,6 +1015,18 @@ impl EngineBleedAirSystem {
     fn pressure_regulating_valve_is_open(&self) -> bool {
         self.pressure_regulating_valve.is_open()
     }
+
+    fn transfer_pressure_transducer_pressure(&self) -> Option<Pressure> {
+        self.transfer_pressure_transducer.signal()
+    }
+
+    fn regulated_pressure_transducer_pressure(&self) -> Option<Pressure> {
+        self.regulated_pressure_transducer.signal()
+    }
+
+    fn differential_pressure_transducer_pressure(&self) -> Option<Pressure> {
+        self.differential_pressure_transducer.signal()
+    }
 }
 impl SimulationElement for EngineBleedAirSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -995,20 +1034,30 @@ impl SimulationElement for EngineBleedAirSystem {
         self.pressure_regulating_valve.accept(visitor);
         self.fan_air_valve.accept(visitor);
 
+        self.transfer_pressure_transducer.accept(visitor);
+        self.regulated_pressure_transducer.accept(visitor);
+        self.differential_pressure_transducer.accept(visitor);
+
         visitor.visit(self);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.intermediate_pressure_id, self.intermediate_pressure());
         writer.write(&self.high_pressure_id, self.high_pressure());
-        writer.write(&self.transfer_pressure_id, self.transfer_pressure());
         writer.write(
-            &self.precooler_inlet_pressure_id,
-            self.precooler_inlet_pressure(),
+            &self.transfer_pressure_transducer_pressure_id,
+            self.transfer_pressure_transducer_pressure()
+                .map_or(-1., |p| p.get::<psi>()),
         );
         writer.write(
-            &self.precooler_outlet_pressure_id,
-            self.precooler_outlet_pressure(),
+            &self.regulated_pressure_transducer_pressure_id,
+            self.regulated_pressure_transducer_pressure()
+                .map_or(-1., |p| p.get::<psi>()),
+        );
+        writer.write(
+            &self.differential_pressure_transducer_pressure_id,
+            self.differential_pressure_transducer_pressure()
+                .map_or(-1., |p| p.get::<psi>()),
         );
         writer.write(
             &self.starter_container_pressure_id,
@@ -2288,7 +2337,6 @@ mod tests {
             .idle_eng2()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .mach_number(MachNumber(0.))
             .both_packs_auto();
 
         let mut time_points = Vec::new();
@@ -2317,9 +2365,7 @@ mod tests {
             time_points.push(i as f64 * 16.);
 
             if i == 2000 {
-                test_bed = test_bed.stop_eng2().stop_eng2();
-            } else if i == 4000 {
-                test_bed = test_bed.start_eng2().start_eng2();
+                test_bed = test_bed.toga_eng1().toga_eng2();
             }
 
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
@@ -2738,14 +2784,14 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_HP_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_HP_PRESSURE"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_TRANSFER_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_TRANSFER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_TRANSFER_TRANSDUCER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_TRANSFER_TRANSDUCER_PRESSURE"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_INLET_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_INLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_REGULATED_TRANSDUCER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_REGULATED_TRANSDUCER_PRESSURE"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_OUTLET_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_OUTLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_DIFFERENTIAL_TRANSDUCER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_DIFFERENTIAL_TRANSDUCER_PRESSURE"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_CONTAINER_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_CONTAINER_PRESSURE"));
