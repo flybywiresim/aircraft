@@ -125,6 +125,7 @@
     "Title": "Failures",
     "Generators": {
       "Acceleration": "Acceleration",
+      "All": "All",
       "AltitudeMax": "Maximum altitude",
       "AltitudeMin": "Minimum altitude",
       "days": "days",

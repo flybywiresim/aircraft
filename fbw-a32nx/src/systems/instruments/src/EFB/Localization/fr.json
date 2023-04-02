@@ -125,6 +125,7 @@
     "Title": "Pannes",
     "Generators": {
       "Acceleration": "Accélération",
+      "All": "Tout",
       "AltitudeMax": "Altitude maximale",
       "AltitudeMin": "Altitude minimale",
       "days": "jours",
