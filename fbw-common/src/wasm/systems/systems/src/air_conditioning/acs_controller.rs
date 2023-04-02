@@ -2271,8 +2271,6 @@ mod acs_controller_tests {
         }
 
         fn command_pax_quantity(&mut self, pax_quantity: u8) {
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), pax_quantity / 2);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), pax_quantity / 2);
             self.command(|a| a.set_passengers(pax_quantity));
         }
 

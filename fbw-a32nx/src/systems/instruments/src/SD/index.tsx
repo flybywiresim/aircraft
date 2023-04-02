@@ -49,6 +49,7 @@ render(
     <DisplayUnit
         electricitySimvar="L:A32NX_ELEC_AC_2_BUS_IS_POWERED"
         potentiometerIndex={93}
+        normDmc={1}
     >
         <Idle />
     </DisplayUnit>,

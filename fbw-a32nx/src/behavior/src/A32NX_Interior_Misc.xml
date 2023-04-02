@@ -204,6 +204,18 @@
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_Airbus_Fuel_Jet_Pump">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FUELSYSTEM_VALVE_TOGGLE)</LEFT_SINGLE_CODE>
+
+            <SEQ2_CODE>(A:FUELSYSTEM VALVE SWITCH:#ID#, Enum) 0 ==</SEQ2_CODE>
+
+            <DOWN_CODE>(A:FUELSYSTEM VALVE SWITCH:#ID#, Enum) 1 ==</DOWN_CODE>
+
+            <TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Enum) 0 ==)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
     <Template Name="FBW_Airbus_Fuel_Crossfeed">
         <UseTemplate Name="FBW_Push_Toggle">
             <SEQ2_CODE>(A:FUELSYSTEM VALVE SWITCH:#ID#, Bool)</SEQ2_CODE>
@@ -700,5 +712,29 @@ if groundCtl and !groundControlPermissives {
     groundCtl = false;
 }
         </Update>
+    </Template>
+
+    <Template Name="FBW_JET_PUMP">
+        <Parameters Type="Default">
+            <PUMP_INDEX>1</PUMP_INDEX>
+            <JUNCTION_INDEX>1</JUNCTION_INDEX>
+            <AUTO_VALVE_INDEX>1</AUTO_VALVE_INDEX>
+            <DISABLE_VALVE_INDEX>1</DISABLE_VALVE_INDEX>
+        </Parameters>
+        <Component ID="JET_PUMP_#PUMP_INDEX#">
+            <UseTemplate Name="Asobo_GT_Update">
+                <FREQUENCY>1</FREQUENCY>
+                <UPDATE_CODE type="rnp">
+                    let manualSelected = (A:FUELSYSTEM JUNCTION SETTING:#JUNCTION_INDEX#, number) > 1.5;
+                    let autoSelected = (A:FUELSYSTEM VALVE OPEN:#AUTO_VALVE_INDEX#, percent over 100) > 0.0 and !manualSelected;
+                    let valveOpen = (A:FUELSYSTEM VALVE OPEN:#DISABLE_VALVE_INDEX#, percent over 100) > 0.0 and (autoSelected or manualSelected);
+                    let jetPump = (A:FUELSYSTEM PUMP ACTIVE:#PUMP_INDEX#, bool);
+
+                    if valveOpen != jetPump {
+                        (K:FUELSYSTEM_PUMP_TOGGLE) = #PUMP_INDEX, number#;
+                    }
+                </UPDATE_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 </ModelBehaviors>

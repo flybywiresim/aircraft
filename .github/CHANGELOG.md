@@ -62,6 +62,7 @@
 1. [FMGC] Change PERF GO AROUND page layout to H3 - @tracernz (Mike)
 1. [FMS] Fix display of lat/lon close to zero on DUPLICATE NAMES page - @tracernz (Mike)
 1. [EWD] Fix placement of "5" and "10" scale on EWD N1 gauges - @flogross89 (Flo)
+1. [DMC] Add DMC maintenance and engineering test modes (including DMC switching) - @flogross89 (Flo)
 1. [MCDU] Fix negative EFOB on FLIGHT PLAN page - @Revyn112 (Revyn112#1010)
 1. [MCDU] Fix EFOB and FUEL PRED get dashed out at TOD - @Revyn112 (Revyn112#1010)
 1. [ELEC] A more accurate simulation of the transformer rectifiers - @Gurgel100 (Pascal)
@@ -78,6 +79,12 @@
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
 1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
 1. [HYD] New aerodynamic model for RAT turbine / Added A320 RAT anti stall valve system - @Crocket63 (crocket)
+1. [W/B] Phase 1 of refactoring payload (passenger and cargo) logic into rust systems (2Cas#1022)
+1. [EFB] Allow payload page passenger seating to be manipulated via LocalVars - @2hwk (2Cas#1022)
+1. [EFB] GW and GWCG display on payload page - @2hwk (2Cas#1022)
+1. [FLIGHTMODEL/EFB] Updated CG for ELAC 103 - @donstim (donbikes#4084)
+1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084), @tracernz (Mike), @Taz5150 (TazX [Z+2]#0405)
+1. [MODEL] Fix mouse collision boxes for the fire guards on the overhead - @tracernz (Mike)
 1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
 
 ## 0.9.0
