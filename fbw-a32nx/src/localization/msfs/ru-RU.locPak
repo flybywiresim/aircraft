@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "ru-RU",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX - это сотрудничество сотен индивидуальных участников.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Ты знал? A320 может приземляться при поперечном ветре до 38 узлов и попутном ветре до 15 узлов!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire назван в честь системы управления \"fly-by-wire\", впервые появившейся на Airbus A320.",

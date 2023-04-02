@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "ja-JP",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NXは数百名の個人の協力者によって作られました。",
       "A32NX.LOADING.TIPS.A320NEO_002": "ご存じですか？A320は横風38ノットまで、追い風15ノットまで着陸可能です。",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWireはAirbus A320で初めて導入されたフライ・バイ・ワイヤにちなんで名付けられました。",

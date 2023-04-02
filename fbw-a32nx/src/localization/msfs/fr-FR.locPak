@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "fr-FR",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "Le FlyByWire A32NX est le fruit d'une collaboration entre des centaines de contributeurs individuels.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Le saviez-vous ? L'A320 peut atterrir par vent de travers jusqu'à 38 nœuds et avec un vent arrière jusqu'à 15 nœuds !",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire tire son nom des commandes de vol électriques introduites pour la première fois dans l'Airbus A320.",

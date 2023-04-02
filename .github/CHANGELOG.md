@@ -82,7 +82,8 @@
 1. [W/B] Phase 1 of refactoring payload (passenger and cargo) logic into rust systems (2Cas#1022)
 1. [EFB] Allow payload page passenger seating to be manipulated via LocalVars - @2hwk (2Cas#1022)
 1. [EFB] GW and GWCG display on payload page - @2hwk (2Cas#1022)
-1. [FLIGHT MODEL/EFB] Updated CG for ELAC 103 - @donstim (donbikes#4084)
+1. [FLIGHTMODEL/EFB] Updated CG for ELAC 103 - @donstim (donbikes#4084)
+1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084), @tracernz (Mike), @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.9.0
 

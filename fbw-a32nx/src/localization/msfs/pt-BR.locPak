@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "pt-BR",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "O FlyByWire A32NX é uma colaboração entre centenas de colaboradores individuais.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Você sabia? O A320 pode pousar a ventos cruzados de até 38 nós e ventos de cauda de até 15 nós!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire tem o nome dos controles fly-by-wire introduzidos pela primeira vez no Airbus A320.",
