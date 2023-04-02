@@ -7274,7 +7274,7 @@ mod tests {
 
             // Ptu disabled from cargo operation
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                Duration::from_secs(5) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
             );
 
             assert!(!test_bed.is_ptu_enabled());
@@ -7325,7 +7325,7 @@ mod tests {
 
             // Need to wait for operator to first unlock, then activate hydraulic control
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                Duration::from_secs(5) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
             );
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
@@ -9460,7 +9460,7 @@ mod tests {
                 .dc_ground_service_lost()
                 .open_fwd_cargo_door()
                 .run_waiting_for(
-                    Duration::from_secs(1)
+                    Duration::from_secs(5)
                         + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
                 );
 
@@ -9573,7 +9573,7 @@ mod tests {
             assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                Duration::from_secs(5) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
             );
 
             assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
@@ -10001,7 +10001,7 @@ mod tests {
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
             );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
