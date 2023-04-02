@@ -61,8 +61,11 @@ folder of the flyPad or locPak folder.
 
 It checks the JSON syntax and writes new JSON files for each language to their respective target folder:
 
-flyPad: `sfbw-a32nx/src/localization/flypad`
-msfs locPak: `fbw-a32nx/src/localization/msfs` and `out/flybywire-aircraft-a320-neo/`
+flyPad: 
+`fbw-a32nx/src/localization/flypad`
+
+msfs locPak: 
+`fbw-a32nx/src/localization/msfs` and `out/flybywire-aircraft-a320-neo/`
 
 ## Update Source File
 
@@ -76,6 +79,10 @@ ANY CHANGES TO THE SOURCE FILES ON LOCALAZY WILL BE IMMEDIATELY BE VISIBLE IN EV
 THE A32NX - INDEPENDENT OF EDITION. 
 
 ### Using Localazy CLI
+                           
+Install the Localazy CLI via `npm install -g @localazy/cli` and then use the following commands to upload the source.
+
+[Localazy CLI Documentation](https://localazy.com/docs/cli/command-line-options)
 
 Use the option `-s` for a test run. Remove this option to actually upload the file.
 
@@ -83,16 +90,20 @@ The `deprecate` version of the configuration files will deprecate keys which are
 with caution.
 
 flyPad:
+
+`cd fbw-a32nx/src/localization`
+
 `localazy upload -w <writeKey> -c localazy-flypad-upload-config.json -d flypad`
-`localazy upload -w <writeKey> -c localazy-flypad-upload-deprecate-config.json -d flypad`
 
 MSFS locPak:
-`localazy upload -w <writeKey> -c localazy-flypad-upload-config.json -d flypad`
-`localazy upload -w <writeKey> -c localazy-flypad-upload-deprecate-config.json -d flypad`
+
+`cd fbw-a32nx/src/localization`
+
+`localazy upload -w <writeKey> -c localazy-locPak-upload-config.json -d msfs`
 
 The writeKey can be found in the Localazy project settings which are accessible by the Owners/Managers of the project.
 
-### Using en.json and Localazy Website
+### Using the English source file and Localazy Website
                                                
 #### flyPad:
 
@@ -114,6 +125,8 @@ The writeKey can be found in the Localazy project settings which are accessible 
 #### MSFS locPak:
          
 Same process as for flyPad but within the respective MSFS lokPak project.
+
+Localazy filename is `flybywire.locPak`.
 
 ### Manually via Localazy Website
 
