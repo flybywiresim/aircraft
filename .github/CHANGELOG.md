@@ -84,6 +84,7 @@
 1. [EFB] GW and GWCG display on payload page - @2hwk (2Cas#1022)
 1. [FLIGHTMODEL/EFB] Updated CG for ELAC 103 - @donstim (donbikes#4084)
 1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084), @tracernz (Mike), @Taz5150 (TazX [Z+2]#0405)
+1. [MODEL] Fix mouse collision boxes for the fire guards on the overhead - @tracernz (Mike)
 
 ## 0.9.0
 
