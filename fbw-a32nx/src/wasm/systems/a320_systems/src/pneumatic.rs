@@ -221,7 +221,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<2>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.physics_updater.update(context);
@@ -246,7 +246,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<2>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
@@ -1218,10 +1218,12 @@ impl PackComplex {
         &mut self,
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<2>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
         self.pack_flow_valve.update_open_amount(
-            &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
+            pack_flow_valve_signals
+                .pack_flow_controller(self.engine_number.into())
+                .as_ref(),
         );
 
         self.pack_flow_valve
@@ -1355,8 +1357,7 @@ impl SimulationElement for CrossBleedValve {
 mod tests {
     use systems::{
         air_conditioning::{
-            acs_controller::{Pack, PackFlowController},
-            AdirsToAirCondInterface, PackFlowControllers, ZoneType,
+            AdirsToAirCondInterface, PackFlowControllers, PackFlowValveSignal, ZoneType,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
@@ -1436,8 +1437,11 @@ mod tests {
             );
         }
     }
-    impl PackFlowControllers<2> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
+    impl PackFlowControllers for TestAirConditioning {
+        fn pack_flow_controller(
+            &self,
+            pack_id: usize,
+        ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
             self.a320_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }

@@ -203,7 +203,7 @@ impl A380Pneumatic {
         pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<4>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
         self.physics_updater.update(context);
 
@@ -226,7 +226,7 @@ impl A380Pneumatic {
         overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<4>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -1212,14 +1212,18 @@ impl PackComplex {
         context: &UpdateContext,
         left_input: &mut impl PneumaticContainer,
         right_input: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<4>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
         self.left_pack_flow_valve.update_open_amount(
-            &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
+            pack_flow_valve_signals
+                .pack_flow_controller(self.pack_number.into())
+                .as_ref(),
         );
 
         self.right_pack_flow_valve.update_open_amount(
-            &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
+            pack_flow_valve_signals
+                .pack_flow_controller(self.pack_number.into())
+                .as_ref(),
         );
 
         self.left_pack_flow_valve
@@ -1398,8 +1402,7 @@ mod tests {
     use rstest::rstest;
     use systems::{
         air_conditioning::{
-            acs_controller::{Pack, PackFlowController},
-            AdirsToAirCondInterface, PackFlowControllers, ZoneType,
+            AdirsToAirCondInterface, PackFlowControllers, PackFlowValveSignal, ZoneType,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
@@ -1496,10 +1499,13 @@ mod tests {
             );
         }
     }
-    impl PackFlowControllers<4> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
+    impl PackFlowControllers for TestAirConditioning {
+        fn pack_flow_controller(
+            &self,
+            fcv_id: usize,
+        ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
             self.a380_air_conditioning_system
-                .pack_flow_controller(pack_id)
+                .pack_flow_controller(fcv_id)
         }
     }
     impl SimulationElement for TestAirConditioning {

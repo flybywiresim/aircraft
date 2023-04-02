@@ -13,7 +13,8 @@ use crate::{
 
 use super::{
     AdirsToAirCondInterface, AirConditioningOverheadShared, DuctTemperature, OverheadFlowSelector,
-    PackFlow, PackFlowControllers, PressurizationOverheadShared, TrimAirSystem, ZoneType,
+    PackFlow, PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
+    TrimAirSystem, ZoneType,
 };
 
 use std::time::Duration;
@@ -189,11 +190,14 @@ impl<const ZONES: usize, const ENGINES: usize> PackFlow
     }
 }
 
-impl<const ZONES: usize, const ENGINES: usize> PackFlowControllers<ENGINES>
+impl<const ZONES: usize, const ENGINES: usize> PackFlowControllers
     for AirConditioningSystemController<ZONES, ENGINES>
 {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ENGINES> {
-        self.pack_flow_controller[pack_id.to_index()]
+    fn pack_flow_controller(
+        &self,
+        pack_id: usize,
+    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+        Box::new(self.pack_flow_controller[pack_id - 1])
     }
 }
 
@@ -632,20 +636,6 @@ impl<const ZONES: usize> ZoneController<ZONES> {
     }
 }
 
-pub struct PackFlowValveSignal {
-    target_open_amount: Ratio,
-}
-
-impl PneumaticValveSignal for PackFlowValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
-
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
-}
-
 #[derive(Clone, Copy)]
 /// Pack ID can be 1 or 2
 pub struct Pack(pub usize);
@@ -663,6 +653,12 @@ impl From<usize> for Pack {
         } else {
             Pack(value)
         }
+    }
+}
+
+impl From<Pack> for usize {
+    fn from(value: Pack) -> Self {
+        value.0
     }
 }
 
@@ -1489,7 +1485,7 @@ mod acs_controller_tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<2>,
+            pack_flow_valve_signals: &impl PackFlowControllers,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -1669,10 +1665,12 @@ mod acs_controller_tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<2>,
+            pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
             self.pack_flow_valve.update_open_amount(
-                &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
+                pack_flow_valve_signals
+                    .pack_flow_controller(self.engine_number)
+                    .as_ref(),
             );
             self.pack_flow_valve
                 .update_move_fluid(context, from, &mut self.pack_container);

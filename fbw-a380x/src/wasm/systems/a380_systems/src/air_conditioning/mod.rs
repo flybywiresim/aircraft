@@ -1,14 +1,15 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{AirConditioningSystemController, Pack, PackFlowController},
+        acs_controller::{AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
+        full_digital_agu_controller::FullDigitalAGUController,
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
         DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
-        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
-        ZoneType,
+        PackFlowControllers, PackFlowValveSignal, PressurizationConstants,
+        PressurizationOverheadShared, TrimAirSystem, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -38,6 +39,7 @@ pub(super) struct A380AirConditioning {
     a380_air_conditioning_system: A380AirConditioningSystem,
     a320_pressurization_system: A320PressurizationSystem,
 
+    // core_processing_input_output_module_b: CoreProcessingInputOutputModuleB,
     pressurization_updater: MaxStepLoop,
 }
 
@@ -141,10 +143,13 @@ impl A380AirConditioning {
     }
 }
 
-impl PackFlowControllers<4> for A380AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
+impl PackFlowControllers for A380AirConditioning {
+    fn pack_flow_controller(
+        &self,
+        fcv_id: usize,
+    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
         self.a380_air_conditioning_system
-            .pack_flow_controller(pack_id)
+            .pack_flow_controller(fcv_id)
     }
 }
 
@@ -242,6 +247,7 @@ impl SimulationElement for A380Cabin {
 
 pub struct A380AirConditioningSystem {
     acsc: AirConditioningSystemController<18, 4>,
+    _fdac: [FullDigitalAGUController<4>; 2],
     cabin_fans: [CabinFan; 2],
     mixer_unit: MixerUnit<18>,
     // Temporary structure until packs are simulated
@@ -266,6 +272,22 @@ impl A380AirConditioningSystem {
                     ElectricalBusType::AlternatingCurrent(2),
                 ],
             ),
+            _fdac: [
+                FullDigitalAGUController::new(
+                    1,
+                    vec![
+                        ElectricalBusType::DirectCurrentEssential, // 403XP
+                        ElectricalBusType::AlternatingCurrent(1),  // 117XP
+                    ],
+                ),
+                FullDigitalAGUController::new(
+                    2,
+                    vec![
+                        ElectricalBusType::DirectCurrentEssential, // 403XP
+                        ElectricalBusType::AlternatingCurrent(2),  // 204XP
+                    ],
+                ),
+            ],
             cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
@@ -338,9 +360,12 @@ impl A380AirConditioningSystem {
     }
 }
 
-impl PackFlowControllers<4> for A380AirConditioningSystem {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
-        self.acsc.pack_flow_controller(pack_id)
+impl PackFlowControllers for A380AirConditioningSystem {
+    fn pack_flow_controller(
+        &self,
+        fcv_id: usize,
+    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+        self.acsc.pack_flow_controller(fcv_id)
     }
 }
 
@@ -973,7 +998,7 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<4>,
+            pack_flow_valve_signals: &impl PackFlowControllers,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -1138,10 +1163,12 @@ mod tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<4>,
+            pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
             self.pack_flow_valve.update_open_amount(
-                &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
+                pack_flow_valve_signals
+                    .pack_flow_controller(self.engine_number.into())
+                    .as_ref(),
             );
             self.pack_flow_valve
                 .update_move_fluid(context, from, &mut self.pack_container);

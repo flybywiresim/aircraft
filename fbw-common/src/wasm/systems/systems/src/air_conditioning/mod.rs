@@ -1,12 +1,11 @@
 use self::acs_controller::{
-    AirConditioningSystemController, CabinFansSignal, Pack, PackFlowController,
-    TrimAirValveController,
+    AirConditioningSystemController, CabinFansSignal, TrimAirValveController,
 };
 
 use crate::{
     pneumatic::{
         valve::{DefaultValve, PneumaticExhaust},
-        ControllablePneumaticValve, PneumaticContainer, PneumaticPipe,
+        ControllablePneumaticValve, PneumaticContainer, PneumaticPipe, PneumaticValveSignal,
     },
     shared::{
         arinc429::Arinc429Word, AverageExt, CabinSimulation, ConsumePower, ControllerSignal,
@@ -35,6 +34,7 @@ use uom::si::{
 pub mod acs_controller;
 pub mod cabin_air;
 pub mod cabin_pressure_controller;
+pub mod full_digital_agu_controller;
 pub mod pressure_valve;
 
 pub trait DuctTemperature {
@@ -45,8 +45,29 @@ pub trait PackFlow {
     fn pack_flow(&self) -> MassRate;
 }
 
-pub trait PackFlowControllers<const ENGINES: usize> {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<ENGINES>;
+// pub trait PackFlowControllers<const ENGINES: usize> {
+//     fn pack_flow_controller(&self, pack_id: usize) -> PackFlowController<ENGINES>;
+// }
+
+pub trait PackFlowControllers {
+    fn pack_flow_controller(
+        &self,
+        pack_id: usize,
+    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>>;
+}
+
+pub struct PackFlowValveSignal {
+    target_open_amount: Ratio,
+}
+
+impl PneumaticValveSignal for PackFlowValveSignal {
+    fn new(target_open_amount: Ratio) -> Self {
+        Self { target_open_amount }
+    }
+
+    fn target_open_amount(&self) -> Ratio {
+        self.target_open_amount
+    }
 }
 
 pub trait OutletAir {
