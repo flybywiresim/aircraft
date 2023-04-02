@@ -61,9 +61,8 @@ impl A380Electrical {
     const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(1);
 
-    // TODO Set to DirectCurrentHot(3) when available
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentHot(2);
+        ElectricalBusType::DirectCurrentHot(3);
 
     const RAT_SIM_TIME_STEP: Duration = Duration::from_millis(33);
 
