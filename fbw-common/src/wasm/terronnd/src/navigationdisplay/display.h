@@ -39,6 +39,7 @@ class DisplayBase {
     std::uint8_t mode;
     bool terrainActive;
     float potentiometer;
+    bool powered;
   };
 
   DisplayBase(const DisplayBase&) = delete;
