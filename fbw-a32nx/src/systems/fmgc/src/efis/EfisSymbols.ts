@@ -453,6 +453,15 @@ export class EfisSymbols {
                 });
             }
 
+            for (const ndb of this.navaidTuner.tunedNdbs) {
+                upsertSymbol({
+                    databaseId: ndb.icao,
+                    ident: WayPoint.formatIdentFromIcao(ndb.icao),
+                    location: { lat: ndb.lat, long: ndb.lon },
+                    type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.Tuned,
+                });
+            }
+
             for (const vor of this.navaidTuner.tunedVors) {
                 upsertSymbol({
                     databaseId: vor.icao,
