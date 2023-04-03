@@ -2237,7 +2237,7 @@ mod a380_electrical_circuit_tests {
         fn update(&mut self, n: Ratio, is_emergency_shutdown: bool) {}
 
         fn output_within_normal_parameters(&self) -> bool {
-            true
+            self.is_available
         }
     }
     impl ProvidePotential for TestApuGenerator {
