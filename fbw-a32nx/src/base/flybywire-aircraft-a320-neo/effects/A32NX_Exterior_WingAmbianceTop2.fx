@@ -9,7 +9,7 @@ Tower=1
 Map=1
 
 [Emitter.0]
-Lifetime=0.50, 0.50
+Lifetime=0.5, 0.5
 Delay=0.00, 0.00
 Bounce=0.00
 Light=1
@@ -32,8 +32,8 @@ Z Offset=0.0, 0.0
 [Particle.0]
 Lifetime=0.00, 0.00
 Type=19
-X Scale=0.75, 0.75
-Y Scale=0.75, 0.75
+X Scale=0.15, 0.15
+Y Scale=0.15, 0.15
 Z Scale=0.00, 0.00
 X Scale Rate=0.00, 0.00
 Y Scale Rate=0.00, 0.00
@@ -43,35 +43,33 @@ Color Rate=0.00, 0.00
 X Offset=0.00, 0.00
 Y Offset=0.00, 0.00
 Z Offset=0.00, 0.00
-Fade In=0.50, 0.50
-Fade Out=0.50, 0.50
+Fade In=0.00, 0.00
+Fade Out=0.00, 0.00
 Rotation=0.00, 0.00
 Static=1
 Face=1, 1, 1
 
 [ParticleAttributes.0]
 Blend Mode=2
+Texture=fx_0.png
 Bounce=0.00
-Color Start=254, 254, 254, 10
-Color End=254, 254, 254, 10
+Color Start=140, 145, 149, 1
+Color End=140, 145, 149, 1
 Jitter Distance=0.00
 Jitter Time=0.00
 uv1=0.00, 0.00
 uv2=1.0, 1.0
-X Scale Goal=0.00
-Y Scale Goal=0.00
-Z Scale Goal=0.00
-Extrude Length=0.00
-Extrude Pitch Max=0.00
-Extrude Heading Max=0.00
+NearEndFade=1.0
+NearFade=6.0
+MinProjSize=0.2
 
 [LightAttributes.0]
 Type=spot
-Size=0.010
-Range=2.7
-Intensity=5.0
+Size=0.1
+Range=25
+Intensity=100
 Softness=0.0
-SpotInner=8.060
-SpotOuter=22.388
-Volumetric=30.000
+SpotInner=0
+SpotOuter=19
+Volumetric=0
 ScatDir=0.0
