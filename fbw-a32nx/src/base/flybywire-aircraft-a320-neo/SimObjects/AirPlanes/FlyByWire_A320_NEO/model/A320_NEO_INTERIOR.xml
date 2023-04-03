@@ -131,7 +131,7 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                <NODE_ID>LEVER_ELEVATORTRIM_DECAL</NODE_ID>
+                <NODE_ID>LEVER_ELEVATORTRIM_DECAL_NEO</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
@@ -309,14 +309,7 @@
             </UseTemplate>
 
             <UseTemplate Name="FBW_HANDLING_Indicator_ElevatorTrim_Template">
-                <ANIM_NAME>LEVER_ELEVATORTRIM_DECAL</ANIM_NAME>
-                <REF_VALUE_0>0</REF_VALUE_0>
-                <ANIM_VALUE_0>0</ANIM_VALUE_0>
-                <REF_VALUE_1>97.143</REF_VALUE_1>
-                <ANIM_VALUE_1>94.2</ANIM_VALUE_1>
-                <REF_VALUE_2>100</REF_VALUE_2>
-                <ANIM_VALUE_2>100</ANIM_VALUE_2>
-                <MAX_POINT_INDEX>2</MAX_POINT_INDEX>
+                <ANIM_NAME>LEVER_ELEVATORTRIM_DECAL_NEO</ANIM_NAME>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -4808,6 +4801,17 @@
                     </UseTemplate>
                 </Component>
                 <Component ID="PUSH_AUTOPILOT_MASTERAWARN_R" Node="PUSH_AUTOPILOT_MASTERAWARN_R">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+                <!-- Asobo A320ceo trim scale on the pitch trim wheel -->
+                <Component ID="LEVER_ELEVATORTRIM_DECAL" Node="LEVER_ELEVATORTRIM_DECAL">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+                <Component ID="LEVER_ELEVATORTRIM" Node="LEVER_ELEVATORTRIM">
                     <UseTemplate Name="ASOBO_GT_Visibility_Code">
                         <VISIBILITY_CODE>0</VISIBILITY_CODE>
                     </UseTemplate>
