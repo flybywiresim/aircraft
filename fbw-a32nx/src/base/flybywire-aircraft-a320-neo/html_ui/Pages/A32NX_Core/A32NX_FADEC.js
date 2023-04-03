@@ -3,7 +3,7 @@ class A32NX_FADEC {
         this.engine = engine;
         this.fadecTimer = -1;
         this.dcEssPoweredInPreviousUpdate = false;
-        this.lastActiveIgniterAutostart = 0 // 0 = A, 1 = B
+        this.lastActiveIgniterAutostart = 0; // 0 = A, 1 = B
     }
 
     init() {
@@ -13,8 +13,8 @@ class A32NX_FADEC {
     update(deltaTime) {
         const dcEssIsPowered = this.isDcEssPowered();
         const ignitionState = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum") === 2;
-        const engineState = SimVar.GetSimVarValue(`L:A32NX_ENGINE_STATE:${this.engine}`,"Number");
-        const n2Percent = SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${this.engine}`,"Percent");
+        const engineState = SimVar.GetSimVarValue(`L:A32NX_ENGINE_STATE:${this.engine}`, "Number");
+        const n2Percent = SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${this.engine}`, "Percent");
 
         if ((this.dcEssPoweredInPreviousUpdate !== dcEssIsPowered && dcEssIsPowered === 1) ||
             (this.lastEngineState !== engineState && engineState === 4) ) {
