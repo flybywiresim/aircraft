@@ -1,0 +1,324 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 36,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                1.5
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 36,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 1216,
+            "min": [
+                -0.08849053829908371,
+                -0.13431257009506226,
+                -0.13414466381072998
+            ],
+            "max": [
+                0.08849053829908371,
+                0.1355242133140564,
+                0.13373339176177979
+            ],
+            "type": "VEC3",
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 1216,
+            "type": "VEC4",
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 1216,
+            "type": "VEC4",
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 1216,
+            "type": "VEC2",
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 1216,
+            "type": "VEC2",
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 1216,
+            "type": "VEC4",
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5123,
+            "count": 2328,
+            "type": "SCALAR",
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO_indices#0"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 43776,
+            "componentType": 5126,
+            "count": 1320,
+            "min": [
+                -0.08912400901317596,
+                -0.1360263228416443,
+                -0.1357325315475464
+            ],
+            "max": [
+                0.08912427723407745,
+                0.13592129945755005,
+                0.13541007041931152
+            ],
+            "type": "VEC3",
+            "name": "x0_LEVER_ELEVATORTRIM_NEO_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 43788,
+            "componentType": 5120,
+            "count": 1320,
+            "type": "VEC4",
+            "name": "x0_LEVER_ELEVATORTRIM_NEO_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 43792,
+            "componentType": 5120,
+            "count": 1320,
+            "type": "VEC4",
+            "name": "x0_LEVER_ELEVATORTRIM_NEO_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 43796,
+            "componentType": 5122,
+            "count": 1320,
+            "type": "VEC2",
+            "name": "x0_LEVER_ELEVATORTRIM_NEO_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 43800,
+            "componentType": 5122,
+            "count": 1320,
+            "type": "VEC2",
+            "name": "x0_LEVER_ELEVATORTRIM_NEO_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 43804,
+            "componentType": 5123,
+            "count": 1320,
+            "type": "VEC4",
+            "name": "x0_LEVER_ELEVATORTRIM_NEO_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 3,
+            "byteOffset": 4656,
+            "componentType": 5123,
+            "count": 6048,
+            "type": "SCALAR",
+            "name": "x0_LEVER_ELEVATORTRIM_NEO_indices#0"
+        }
+    ],
+    "animations": [
+        {
+            "name": "LEVER_ELEVATORTRIM_DECAL_NEO",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 1,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 0,
+                    "output": 1,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v3.3.36 and Asobo Studio MSFS Blender I/O v1.3.0",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.08912427723407745,
+                    0.13592129945755005,
+                    0.13541007041931152
+                ],
+                "BoundingBoxMin": [
+                    -0.08912400901317596,
+                    -0.1360263228416443,
+                    -0.1357325315475464
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 4,
+                "UseCheckerboardMaterialForMissingTextures": true,
+                "UseOnlyFilenameForImageURI": true
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 144
+        },
+        {
+            "buffer": 0,
+            "byteLength": 576,
+            "byteOffset": 144
+        },
+        {
+            "buffer": 0,
+            "byteLength": 91296,
+            "byteStride": 36,
+            "byteOffset": 720,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 16752,
+            "byteOffset": 92016,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 14,
+                        "NORMAL": 11,
+                        "POSITION": 9,
+                        "TANGENT": 10,
+                        "TEXCOORD_0": 12,
+                        "TEXCOORD_1": 13
+                    },
+                    "indices": 15,
+                    "material": "THROTTLE",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2016,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_LEVER_ELEVATORTRIM_NEO"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 7,
+                        "NORMAL": 4,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 5,
+                        "TEXCOORD_1": 6
+                    },
+                    "indices": 8,
+                    "material": "TEXT",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 776,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_LEVER_ELEVATORTRIM_DECAL_NEO"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0.000007353723049163818,
+                0,
+                0
+            ],
+            "mesh": 0,
+            "name": "LEVER_ELEVATORTRIM_NEO"
+        },
+        {
+            "translation": [
+                0,
+                1.1848258972167969,
+                11.438844680786133
+            ],
+            "rotation": [
+                0.5202349424362183,
+                0,
+                0,
+                0.8540232181549072
+            ],
+            "mesh": 1,
+            "name": "LEVER_ELEVATORTRIM_DECAL_NEO",
+            "children": [
+                0
+            ]
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                1
+            ],
+            "name": "Scene"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 108768,
+            "uri": "trim-decals.bin"
+        }
+    ]
+}
