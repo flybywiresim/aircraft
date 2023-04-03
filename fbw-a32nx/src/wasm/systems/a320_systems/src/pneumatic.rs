@@ -1597,7 +1597,7 @@ mod tests {
             Self {
                 bleed_air_valve_signal: ApuBleedAirValveSignal::new_closed(),
                 bleed_air_pressure: Pressure::new::<psi>(14.7),
-                bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(15.),
+                bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(165.),
             }
         }
 
@@ -2336,6 +2336,7 @@ mod tests {
             .idle_eng1()
             .idle_eng2()
             .in_isa_atmosphere(alt)
+            .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .both_packs_auto();
 
@@ -2363,10 +2364,6 @@ mod tests {
 
         for i in 1..6000 {
             time_points.push(i as f64 * 16.);
-
-            if i == 2000 {
-                test_bed = test_bed.toga_eng1().toga_eng2();
-            }
 
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
             intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
