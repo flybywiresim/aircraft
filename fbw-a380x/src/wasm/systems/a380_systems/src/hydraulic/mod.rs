@@ -6715,7 +6715,7 @@ mod tests {
                 test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
                 ExternalPowerSource,
             },
-            engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+            engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
             failures::FailureType,
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{EmergencyElectricalState, LgciuId, PotentialOrigin},
@@ -6820,10 +6820,10 @@ mod tests {
         }
         struct A380HydraulicsTestAircraft {
             pneumatics: A380TestPneumatics,
-            engine_1: LeapEngine,
-            engine_2: LeapEngine,
-            engine_3: LeapEngine,
-            engine_4: LeapEngine,
+            engine_1: TrentEngine,
+            engine_2: TrentEngine,
+            engine_3: TrentEngine,
+            engine_4: TrentEngine,
             hydraulics: A380Hydraulic,
             overhead: A380HydraulicOverheadPanel,
             autobrake_panel: AutobrakePanel,
@@ -6863,10 +6863,10 @@ mod tests {
             fn new(context: &mut InitContext) -> Self {
                 Self {
                     pneumatics: A380TestPneumatics::new(),
-                    engine_1: LeapEngine::new(context, 1),
-                    engine_2: LeapEngine::new(context, 2),
-                    engine_3: LeapEngine::new(context, 3),
-                    engine_4: LeapEngine::new(context, 4),
+                    engine_1: TrentEngine::new(context, 1),
+                    engine_2: TrentEngine::new(context, 2),
+                    engine_3: TrentEngine::new(context, 3),
+                    engine_4: TrentEngine::new(context, 4),
                     hydraulics: A380Hydraulic::new(context),
                     overhead: A380HydraulicOverheadPanel::new(context),
                     autobrake_panel: AutobrakePanel::new(context),
