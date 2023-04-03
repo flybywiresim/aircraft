@@ -90,15 +90,19 @@ Valve.5=False
 Valve.6=False
 Valve.7=False
 Valve.8=False
+Valve.9=False
+Valve.10=False
+Valve.11=False
+Valve.12=False
 Pump.1=False
 Pump.2=False
 Pump.3=False
 Pump.4=False
 Pump.5=False
 Pump.6=False
-Pump.7=True
-Pump.8=True
-Pump.9=True
+Pump.7=False
+Junction.4=1
+Junction.5=1
 
 [Systems.0]
 BatterySwitch=True

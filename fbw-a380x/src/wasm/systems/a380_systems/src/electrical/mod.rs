@@ -50,7 +50,7 @@ pub(super) struct A380Electrical {
     emergency_gen: EmergencyGenerator,
 
     rat_physics_updater: MaxStepLoop,
-    gcu: GeneratorControlUnit<9>,
+    gcu: GeneratorControlUnit,
     ram_air_turbine: RamAirTurbine,
     rat_controller: A380RamAirTurbineController,
 }
@@ -59,6 +59,8 @@ impl A380Electrical {
 
     const RAT_CONTROL_SOLENOID1_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(1);
+
+    // TODO Set to DirectCurrentHot(3) when available
     const RAT_CONTROL_SOLENOID2_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentHot(2);
 
@@ -80,12 +82,7 @@ impl A380Electrical {
             ),
 
             rat_physics_updater: MaxStepLoop::new(Self::RAT_SIM_TIME_STEP),
-            gcu: GeneratorControlUnit::new(
-                [
-                    0., 100., 1000., 3000., 10000., 12000., 14000., 14001., 30000.,
-                ],
-                [0., 0., 1000., 8000., 8000., 8000., 1000., 0., 0.],
-            ),
+            gcu: GeneratorControlUnit::default(),
             ram_air_turbine: RamAirTurbine::new(context),
             rat_controller: A380RamAirTurbineController::new(
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
@@ -469,11 +466,10 @@ impl A380RamAirTurbineController {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
     ) {
-        // TODO check actual A380 logic for deployment : solenoid 1 stubbed for now
-        let solenoid_1_should_trigger_deployment_if_powered = false;
+        let solenoid_1_should_trigger_deployment_if_powered =
+            emergency_elec_state.is_in_emergency_elec();
 
-        let solenoid_2_should_trigger_deployment_if_powered =
-            emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
+        let solenoid_2_should_trigger_deployment_if_powered = rat_and_emer_gen_man_on.is_pressed();
 
         // due to initialization issues the RAT will not deployed in any case when simulation has just started
         self.should_deploy = context.is_sim_ready()
@@ -532,7 +528,8 @@ mod a380_electrical_circuit_tests {
 
     use uom::si::{
         angular_velocity::revolution_per_minute, electric_potential::volt, length::foot,
-        ratio::percent, velocity::knot,
+        mass_density::slug_per_cubic_foot, ratio::percent,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     #[test]
@@ -2069,13 +2066,13 @@ mod a380_electrical_circuit_tests {
         assert!(!test_bed.rat_and_emer_gen_has_fault());
     }
 
-    // TODO update accordingly with a380, ignored for now
     #[test]
-    #[ignore]
     fn when_rat_and_emer_gen_man_on_push_button_is_pressed_at_an_earlier_time_in_case_of_ac_1_and_2_unavailable_emergency_generator_provides_power_immediately(
     ) {
         let test_bed = test_bed_with()
             .running_engines()
+            .and()
+            .flight_conditions_for_a_spinning_rat()
             .and()
             .rat_and_emer_gen_man_on_pressed()
             .run_waiting_for(Duration::from_secs(100))
@@ -2541,6 +2538,13 @@ mod a380_electrical_circuit_tests {
 
         fn running_engines(self) -> Self {
             self.running_engine(1).and().running_engine(2)
+        }
+
+        fn flight_conditions_for_a_spinning_rat(mut self) -> Self {
+            self.set_true_airspeed(Velocity::new::<knot>(340.));
+            self.set_ambient_air_density(MassDensity::new::<slug_per_cubic_foot>(0.002367190));
+            self.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
+            self
         }
 
         fn running_apu(mut self) -> Self {
