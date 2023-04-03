@@ -340,7 +340,7 @@ class CDUAvailableArrivalsPage {
                     mcdu.insertTemporaryFlightPlan(() => {
                         mcdu.updateTowerHeadwind();
                         mcdu.updateConstraints();
-                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
+                        CDUFlightPlanPage.ShowPage(mcdu);
                     });
                 };
             } else {
