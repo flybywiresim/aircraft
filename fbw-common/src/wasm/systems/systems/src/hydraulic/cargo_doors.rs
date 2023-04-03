@@ -134,10 +134,14 @@ impl HydraulicDoorController {
                 DoorControlState::NoControl
             }
             DoorControlState::NoControl
-                if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
+                if self.duration_in_no_control > self.time_for_crew_to_activate_hydraulics =>
             {
                 self.should_unlock = false;
                 self.time_for_crew_to_activate_hydraulics = Self::random_hyd_control_time();
+                println!(
+                    "NEW DURATION COMPTED {:.2}",
+                    self.time_for_crew_to_activate_hydraulics.as_secs_f64()
+                );
 
                 DoorControlState::HydControl
             }
