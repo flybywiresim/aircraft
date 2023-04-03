@@ -2478,6 +2478,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number (Kg/h)
     - Expected idle fuel flow as a function of temperature and pressure
 
+- A32NX_FADEC_IGNITER_A_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter A on engine {index}
+
+- A32NX_FADEC_IGNITER_B_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter B on engine {index}
+
 - A32NX_FUEL_USED:{index}
     - Number (Kg)
     - Fuel burnt by engine {index} on deltaTime

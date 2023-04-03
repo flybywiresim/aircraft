@@ -21,13 +21,13 @@ class A32NX_FADEC {
             this.fadecTimer = 5 * 60;
         }
         if ((this.lastEngineState === 2 || this.lastEngineState === 3) && engineState !== 2 && engineState !== 3){
-            this.lastActiveIgniterAutostart ^= 1 // toggles Igniter
+            this.lastActiveIgniterAutostart ^= 1; // toggles Igniter
         }
 
         this.igniting = ignitionState && (engineState === 2 || engineState === 3) && n2Percent > 18 && n2Percent < 55;
 
         if (this.lastIgnitionState !== ignitionState && !ignitionState) {
-            this.fadecTimer = Math.max(30,this.fadecTimer);
+            this.fadecTimer = Math.max(30, this.fadecTimer);
         }
         this.fadecTimer -= deltaTime / 1000;
         this.updateSimVars();
