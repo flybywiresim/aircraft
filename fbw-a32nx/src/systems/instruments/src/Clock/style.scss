@@ -19,9 +19,9 @@ svg {
   position: absolute;
   width: 256px;
   height: 256px;
-  background: rgba(5, 40, 80, 0.01);
+  background: rgba(6, 6, 6, 1);
   /* TODO: Remove opacity when SAI/ISIS/CLOCK/BAT/ATC/RMP/RUD TRIM is split and not share the same emissive/mesh */
-  opacity: 0.5;
+  opacity: 1;
 }
 
 text {

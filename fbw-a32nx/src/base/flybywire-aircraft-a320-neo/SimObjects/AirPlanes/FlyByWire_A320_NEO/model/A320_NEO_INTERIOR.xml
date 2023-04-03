@@ -1809,7 +1809,7 @@
                         <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
                         <WWISE_EVENT>lswitch</WWISE_EVENT>
                         <DIMMER_POS_0_VALUE>100</DIMMER_POS_0_VALUE>
-                        <DIMMER_POS_1_VALUE>50</DIMMER_POS_1_VALUE>
+                        <DIMMER_POS_1_VALUE>20</DIMMER_POS_1_VALUE>
                         <DIMMER_POS_2_VALUE>0</DIMMER_POS_2_VALUE>
                         <CODE_POS_0>1 (&gt;K:2:CABIN_LIGHTS_SET) 100 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_0>
                         <CODE_POS_1>1 (&gt;K:2:CABIN_LIGHTS_SET) 50 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
