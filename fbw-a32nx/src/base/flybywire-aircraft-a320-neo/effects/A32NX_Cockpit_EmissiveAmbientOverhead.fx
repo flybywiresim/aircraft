@@ -63,7 +63,7 @@ Z Scale Goal=0.00
 [LightAttributes.0]
 Type=spot
 Size=0.001
-Range=1.1
+Range=0.8
 Intensity=0.5
 Softness=0
 SpotInner=0
