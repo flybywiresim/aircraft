@@ -189,11 +189,13 @@ export function FailureGeneratorSingleSetting(title:string,
 
 export function FailureGeneratorText(title:string, unit : string, text: string) {
     return (
-        <SettingItem name={`${title}${unit === '' ? '' : ` (${unit})`}`}>
-            <div className="flex-1 w-32 font-mono text-lg text-center break-keep">
-                {text}
-            </div>
-        </SettingItem>
+        <>
+            <SettingItem name={`${title}${unit === '' ? '' : ` (${unit})`}`}>
+                <div className="flex-1 w-32 font-mono text-2xl text-center break-keep">
+                    {text}
+                </div>
+            </SettingItem>
+        </>
     );
 }
 
