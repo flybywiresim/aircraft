@@ -5,9 +5,9 @@ import {
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 const additionalSetting = [2, 1, 300, 600];
@@ -51,10 +51,10 @@ const onErase = (genNumber : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.DelayAfterArmingMin')}:`, 32, t('Failures.Generators.seconds'), 0, settings[genNumber * numberOfSettingsPerGenerator + 3],
+        FailureGeneratorSingleSetting(t('Failures.Generators.DelayAfterArmingMin'), t('Failures.Generators.seconds'), 0, settings[genNumber * numberOfSettingsPerGenerator + 3],
             settings[genNumber * numberOfSettingsPerGenerator + 2], 1,
             setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.DelayAfterArmingMax')}:`, 32, t('Failures.Generators.seconds'), settings[genNumber * numberOfSettingsPerGenerator + 2], 10000,
+        FailureGeneratorSingleSetting(t('Failures.Generators.DelayAfterArmingMax'), t('Failures.Generators.seconds'), settings[genNumber * numberOfSettingsPerGenerator + 2], 10000,
             settings[genNumber * numberOfSettingsPerGenerator + 3], 1,
             setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
     ];

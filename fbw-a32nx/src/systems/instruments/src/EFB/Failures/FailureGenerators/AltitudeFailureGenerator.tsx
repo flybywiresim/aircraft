@@ -5,10 +5,10 @@ import {
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
+import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
 const additionalSetting = [2, 1, 0, 80, 250];
@@ -50,13 +50,13 @@ const onErase = (genNumber : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
-        FailureGeneratorChoiceSetting(`${t('Failures.Generators.Direction')}:`, settings[genNumber * numberOfSettingsPerGenerator + 2], climbDescentMode,
+        FailureGeneratorChoiceSetting(t('Failures.Generators.AltitudeCondition'), settings[genNumber * numberOfSettingsPerGenerator + 2], climbDescentMode,
             setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeMin')}:`, 24,
+        FailureGeneratorSingleSetting(t('Failures.Generators.AltitudeMin'),
             t('Failures.Generators.feet'), 0, settings[genNumber * numberOfSettingsPerGenerator + 4] * 100,
             settings[genNumber * numberOfSettingsPerGenerator + 3], 100,
             setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.AltitudeMax')}:`, 24,
+        FailureGeneratorSingleSetting(t('Failures.Generators.AltitudeMax'),
             t('Failures.Generators.feet'), settings[genNumber * numberOfSettingsPerGenerator + 3] * 100, 40000,
             settings[genNumber * numberOfSettingsPerGenerator + 4], 100,
             setNewSetting, generatorSettings, genNumber, 4, failureGenContext),

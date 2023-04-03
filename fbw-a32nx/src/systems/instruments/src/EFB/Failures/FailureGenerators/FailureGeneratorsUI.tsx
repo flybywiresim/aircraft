@@ -3,16 +3,15 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import {
     eraseGenerator, FailureGenContext, FailureGenData,
-    failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType, setNewSetting,
+    failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
-import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { Airplane, ArrowBarUp, ExclamationDiamond, PlusLg, Repeat, Repeat1, Sliders2Vertical, ToggleOff, Trash } from 'react-bootstrap-icons';
-import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
-import { ButtonType } from 'instruments/src/EFB/Settings/Settings';
+import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { ExclamationDiamond, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
+import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSettingsUI';
 
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
@@ -91,66 +90,14 @@ export const generatorsCardList : (settings : FailureGenContext)
     return temp;
 };
 
-export function FailureGeneratorDetailsModalUI(
-    failureGenContext : FailureGenContext,
-) {
-    const genNumber = ExtractFirstNumber(failureGenContext.modalContext.genUniqueID);
-    failureGenContext.setFailureGenModalType(ModalGenType.None);
-    const numberOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters,
-        failureGenContext.modalContext.genUniqueID).length;
-    return (
-        <div className="flex flex-col items-stretch px-2 pt-2 my-2 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
-            <div className="flex flex-row flex-1 justify-between items-stretch pb-2">
-                <div className="mr-4 text-left grow align-left">
-                    <h2>
-                        {`${failureGenContext.modalContext.genUniqueID} : ${failureGenContext.modalContext.failureGenData.alias()}`}
-                    </h2>
-                </div>
-                <div />
-                <div
-                    className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
-                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
-                    "
-                    onClick={() => failureGenContext.modals.popModal()}
-                >
-                    X
-                </div>
-            </div>
-            {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
-            <div className="flex flex-col justify-start items-stretch mt-1">
-                {FailureGeneratorSingleSettingShortcut(`${t('Failures.Generators.NumberOfFailures')}:`, 14, '', t('Failures.Generators.All'),
-                    numberOfSelectedFailures, 0, numberOfSelectedFailures,
-                    failureGenContext.modalContext.failureGenData.settings[genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + 1], 1,
-                    setNewSetting, failureGenContext.modalContext.failureGenData, genNumber, 1, failureGenContext)}
-                { failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext.failureGenData, failureGenContext) }
-            </div>
-        </div>
-    );
-}
-
-function ArmedState(generatorSettings : FailureGenData, genNumber : number) {
-    switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber]) {
-    case 0: return (<ToggleOff size={20} />);
-    case 1: return (<Repeat1 size={20} />);
-    case 2: return (
-        <>
-            <Airplane size={20} />
-            <ArrowBarUp size={20} />
-        </>
-    );
-    case 3: return (<Repeat size={20} />);
-    default: return (<></>);
-    }
-}
-
 function FailureShortList(failureGenContext: FailureGenContext, uniqueID : string) {
     const maxNumberOfFailureToDisplay = 4;
     let listOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
 
     if (listOfSelectedFailures.length === failureGenContext.allFailures.length) {
-        return <div className="p-1 mb-1 rounded-md bg-theme-accent">All failures</div>;
+        return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.AllFailures')}</div>;
     }
-    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">No failure</div>;
+    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">t('Failures.Generators.NoFailure')</div>;
 
     const chaptersFullySelected : AtaChapterNumber[] = [];
     failureGenContext.chapters.forEach((chapter) => {
@@ -239,171 +186,5 @@ export function FailureGeneratorCardTemplateUI(
             </div>
         </div>
 
-    );
-}
-
-export type SettingVar = {
-    settingVar: number,
-}
-
-const rearmButtons: (ButtonType & SettingVar)[] = [
-    { name: t('Failures.Generators.Off'), setting: 'OFF', settingVar: 0 },
-    { name: t('Failures.Generators.Once'), setting: 'Once', settingVar: 1 },
-    { name: t('Failures.Generators.TakeOff'), setting: 'Take-Off', settingVar: 2 },
-    { name: t('Failures.Generators.Repeat'), setting: 'Repeat', settingVar: 3 },
-];
-
-export const failureActivationMode: (ButtonType & SettingVar)[] = [
-    { name: 'One', setting: 'One', settingVar: 0 },
-    { name: 'All', setting: 'All', settingVar: 1 },
-];
-
-export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number,
-    setNewSetting : (newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) => void,
-    failureGenContext : FailureGenContext) {
-    return (
-        <div className="flex flex-col items-center text-center">
-            <div className="pb-2"><h2>{t('Failures.Generators.Rearming')}</h2></div>
-            <div className="flex flex-row justify-center">
-                <SelectGroup>
-                    {rearmButtons.map((button) => {
-                        if (button.setting !== 'Take-Off' || generatorSettings.disableTakeOffRearm === false) {
-                            return (
-                                <SelectItem
-                                    key={button.setting}
-                                    onSelect={() => {
-                                        setNewSetting(button.settingVar, generatorSettings, genID, 0);
-                                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                                    }}
-                                    selected={generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + 0] === button.settingVar}
-                                >
-                                    {button.name}
-                                </SelectItem>
-                            );
-                        }
-                        return (<></>);
-                    })}
-                </SelectGroup>
-            </div>
-        </div>
-    );
-}
-
-export type ButtonIcon = {
-    settingVar : number,
-    icon : JSX.Element,
-    setting : string,
-}
-
-export function FailureGeneratorChoiceSetting(title:string, value: number, multiChoice : (ButtonIcon)[],
-    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
-    return (
-        <div
-            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
-        >
-            <div className="flex-none mx-2 w-2/3 text-left break-keep">{title}</div>
-            <SelectGroup>
-                {multiChoice.map((button) => (
-                    <SelectItem
-                        key={button.setting}
-                        onSelect={() => {
-                            setNewSetting(button.settingVar, generatorSettings, genIndex, settingIndex);
-                            failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                        }}
-                        selected={value === button.settingVar}
-                    >
-                        {button.icon}
-                    </SelectItem>
-                ))}
-            </SelectGroup>
-        </div>
-    );
-}
-
-export function FailureGeneratorSingleSettingShortcut(title:string, width : number,
-    unit : string, shortCutText : string, shortCutValue : number, min:number, max:number,
-    value: number, mult : number,
-    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
-    const multCheck = mult === 0 ? 1 : mult;
-    return (
-        <div
-            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
-        >
-            <div className="flex-none mx-2 w-2/3 text-left truncate break-keep max-w-[66%]">{title}</div>
-            <SimpleInput
-                className={`w-${width} font-mono`}
-                fontSizeClassName="text-2xl"
-                number
-                min={min}
-                max={max}
-                value={value * multCheck}
-                onBlur={(x: string) => {
-                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                        setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                    }
-                }}
-            />
-            <div className="ml-2">
-                {unit}
-                {' ( '}
-                <span
-                    className="hover:text-theme-highlight"
-                    onClick={() => {
-                        setNewSetting(shortCutValue, generatorSettings, genIndex, settingIndex);
-                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                    }}
-                >
-                    {shortCutText}
-                </span>
-                {' )'}
-            </div>
-
-        </div>
-    );
-}
-
-export function FailureGeneratorSingleSetting(title:string, width : number,
-    unit : string, min:number, max:number,
-    value: number, mult : number,
-    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
-    const multCheck = mult === 0 ? 1 : mult;
-    return (
-        <div
-            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
-        >
-            <div className="flex-none mx-2 w-2/3 text-left truncate max-w-[66%] break-keep">{title}</div>
-            <SimpleInput
-                className={`w-${width} font-mono`}
-                fontSizeClassName="text-2xl"
-                number
-                min={min}
-                max={max}
-                value={value * multCheck}
-                onBlur={(x: string) => {
-                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
-                        setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                    }
-                }}
-            />
-            <div className="ml-2">{unit}</div>
-        </div>
-    );
-}
-
-export function FailureGeneratorText(title:string, text: string) {
-    return (
-        <div
-            className="flex flex-row justify-start items-center px-2 pb-2 text-left align-baseline"
-        >
-            <div className="flex-none mx-2 w-2/3 text-left truncate max-w-[66%] break-keep">{title}</div>
-            <div className="flex-1 mx-2 text-left break-keep">
-                {text}
-            </div>
-        </div>
     );
 }

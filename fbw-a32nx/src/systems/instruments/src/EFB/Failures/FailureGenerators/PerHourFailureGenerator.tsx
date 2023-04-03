@@ -5,9 +5,9 @@ import {
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 const additionalSetting = [3, 1, 0.1];
@@ -60,10 +60,10 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
         return `${Math.round(meanTimeToFailure * 60 * 60)} ${t('Failures.Generators.seconds')}`;
     };
     const settingTable = [
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.FailurePerHour')}:`, 32, `/${t('Failures.Generators.hour')}`, 0, 60,
+        FailureGeneratorSingleSetting(t('Failures.Generators.FailurePerHour'), '', 0, 60,
             settings[genNumber * numberOfSettingsPerGenerator + 2], 1,
             setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-        FailureGeneratorText(`${t('Failures.Generators.MeanTimeToFailure')}:`,
+        FailureGeneratorText(t('Failures.Generators.MeanTimeToFailure'), '',
             MTTFDisplay()),
     ];
     return settingTable;

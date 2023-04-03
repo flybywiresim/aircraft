@@ -5,10 +5,10 @@ import {
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { FastForward, Rewind, Speedometer2 } from 'react-bootstrap-icons';
+import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
 const additionalSetting = [2, 1, 0, 200, 300];
@@ -50,13 +50,13 @@ const onErase = (genNumber : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
-        FailureGeneratorChoiceSetting(`${t('Failures.Generators.Direction')}:`, settings[genNumber * numberOfSettingsPerGenerator + 2], accelDecelMode,
+        FailureGeneratorChoiceSetting(t('Failures.Generators.SpeedCondition'), settings[genNumber * numberOfSettingsPerGenerator + 2], accelDecelMode,
             setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.MinimumSpeed')}:`, 20, t('Failures.Generators.knots'), 0,
+        FailureGeneratorSingleSetting(t('Failures.Generators.MinimumSpeed'), t('Failures.Generators.knots'), 0,
             settings[genNumber * numberOfSettingsPerGenerator + 4],
             settings[genNumber * numberOfSettingsPerGenerator + 3], 1,
             setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
-        FailureGeneratorSingleSetting(`${t('Failures.Generators.MaximumSpeed')}:`, 20, t('Failures.Generators.knots'),
+        FailureGeneratorSingleSetting(t('Failures.Generators.MaximumSpeed'), t('Failures.Generators.knots'),
             settings[genNumber * numberOfSettingsPerGenerator + 3], 400,
             settings[genNumber * numberOfSettingsPerGenerator + 4], 1,
             setNewSetting, generatorSettings, genNumber, 4, failureGenContext),
