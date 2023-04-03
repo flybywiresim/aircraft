@@ -63,7 +63,9 @@ class Collection {
                                          EgpwcTerrOnNdLeftActive,
                                          EgpwcNdRightRange,
                                          EfisNdRightMode,
-                                         EgpwcTerrOnNdRightActive>>
+                                         EgpwcTerrOnNdRightActive,
+                                         AcEssBus,
+                                         Ac2Bus>>
       _ndConfiguration;
 
   // outputs
