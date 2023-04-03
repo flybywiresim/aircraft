@@ -1,5 +1,5 @@
 use self::acs_controller::{
-    AirConditioningSystemController, CabinFansSignal, TrimAirValveController,
+    AirConditioningSystemController, CabinFansSignal, Pack, TrimAirValveController,
 };
 
 use crate::{
@@ -42,7 +42,12 @@ pub trait DuctTemperature {
 }
 
 pub trait PackFlow {
-    fn pack_flow(&self) -> MassRate;
+    fn pack_flow(&self) -> MassRate {
+        MassRate::default()
+    }
+    fn pack_flow_demand(&self, pack_id: Pack) -> MassRate {
+        MassRate::default()
+    }
 }
 
 // pub trait PackFlowControllers<const ENGINES: usize> {

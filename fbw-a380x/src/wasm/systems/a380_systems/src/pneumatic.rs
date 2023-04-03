@@ -374,12 +374,28 @@ impl EngineStartState for A380Pneumatic {
 }
 impl PackFlowValveState for A380Pneumatic {
     fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-        self.packs[pack_id].left_pack_flow_valve_is_open()
         // TODO: Need to make this use both PACK valves
+        // For now we "hack" it
+        let id = {
+            if pack_id == 0 || pack_id == 1 {
+                0
+            } else {
+                1
+            }
+        };
+        self.packs[id].left_pack_flow_valve_is_open()
     }
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
         // TODO: Need to make this use both PACK valves
-        self.packs[pack_id].left_pack_flow_valve_air_flow()
+        // For now we "hack" it
+        let id = {
+            if pack_id == 0 || pack_id == 1 {
+                0
+            } else {
+                1
+            }
+        };
+        self.packs[id].left_pack_flow_valve_air_flow()
     }
 }
 impl SimulationElement for A380Pneumatic {

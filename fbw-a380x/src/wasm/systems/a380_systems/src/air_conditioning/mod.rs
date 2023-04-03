@@ -11,6 +11,7 @@ use systems::{
         PackFlowControllers, PackFlowValveSignal, PressurizationConstants,
         PressurizationOverheadShared, TrimAirSystem, ZoneType,
     },
+    integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         SpringLoadedSwitch, ValueKnob,
@@ -34,10 +35,18 @@ use uom::si::{
     velocity::knot,
 };
 
+use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
+
+use self::cpiom_b::CoreProcessingInputOutputModuleB;
+
+mod cpiom_b;
+
 pub(super) struct A380AirConditioning {
     a380_cabin: A380Cabin,
     a380_air_conditioning_system: A380AirConditioningSystem,
     a320_pressurization_system: A320PressurizationSystem,
+
+    cpiom_b: CoreProcessingInputOutputModuleB,
 
     // core_processing_input_output_module_b: CoreProcessingInputOutputModuleB,
     pressurization_updater: MaxStepLoop,
@@ -73,6 +82,8 @@ impl A380AirConditioning {
             a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
             a320_pressurization_system: A320PressurizationSystem::new(context),
 
+            cpiom_b: CoreProcessingInputOutputModuleB::new(context),
+
             pressurization_updater: MaxStepLoop::new(Self::PRESSURIZATION_SIM_MAX_TIME_STEP),
         }
     }
@@ -81,6 +92,7 @@ impl A380AirConditioning {
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
+        cpiom_b: &impl CoreProcessingInputOutputModuleShared,
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
@@ -89,6 +101,27 @@ impl A380AirConditioning {
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.pressurization_updater.update(context);
+
+        let cpiom = ["B1", "B2", "B3", "B4"]
+            .iter()
+            .map(|name| cpiom_b.core_processing_input_output_module(name))
+            .collect::<Vec<&CoreProcessingInputOutputModule>>()
+            .try_into()
+            .unwrap_or_else(|v: Vec<&CoreProcessingInputOutputModule>| {
+                panic!("Expected a Vec of length {} but it was {}", 4, v.len())
+            });
+
+        self.cpiom_b.update(
+            context,
+            adirs,
+            self.a380_air_conditioning_system
+                .air_conditioning_overhead(),
+            cpiom,
+            &engines,
+            lgciu,
+            pneumatic,
+            &self.a320_pressurization_system,
+        );
 
         self.a380_air_conditioning_system.update(
             context,
@@ -158,6 +191,7 @@ impl SimulationElement for A380AirConditioning {
         self.a380_cabin.accept(visitor);
         self.a380_air_conditioning_system.accept(visitor);
         self.a320_pressurization_system.accept(visitor);
+        self.cpiom_b.accept(visitor);
 
         visitor.visit(self);
     }
@@ -357,6 +391,10 @@ impl A380AirConditioningSystem {
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
         self.trim_air_system.mix_packs_air_update(pack_container);
+    }
+
+    fn air_conditioning_overhead(&self) -> &A380AirConditioningSystemOverhead {
+        &self.air_conditioning_overhead
     }
 }
 
@@ -895,6 +933,41 @@ mod tests {
         }
     }
 
+    struct TestAdcn {
+        cpiom_b: [CoreProcessingInputOutputModule; 4],
+    }
+    impl TestAdcn {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                cpiom_b: [
+                    ("B1", ElectricalBusType::DirectCurrent(1)),
+                    ("B2", ElectricalBusType::DirectCurrentEssential),
+                    ("B3", ElectricalBusType::DirectCurrentEssential),
+                    ("B4", ElectricalBusType::DirectCurrent(2)),
+                ]
+                .map(|(name, bus)| CoreProcessingInputOutputModule::new(context, name, bus)),
+            }
+        }
+    }
+    impl CoreProcessingInputOutputModuleShared for TestAdcn {
+        fn core_processing_input_output_module(
+            &self,
+            cpiom: &str,
+        ) -> &CoreProcessingInputOutputModule {
+            // If the string is not found this will panic
+            self.cpiom_b
+                .iter()
+                .find(|&module| module.name() == cpiom)
+                .unwrap()
+        }
+    }
+    impl SimulationElement for TestAdcn {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            accept_iterable!(self.cpiom_b, visitor);
+            visitor.visit(self);
+        }
+    }
+
     struct TestEngine {
         corrected_n1: Ratio,
     }
@@ -1034,10 +1107,28 @@ mod tests {
     }
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-            self.packs[pack_id].pfv_open_amount() > Ratio::default()
+            // TODO: Need to make this use both PACK valves
+            // For now we "hack" it
+            let id = {
+                if pack_id == 0 || pack_id == 1 {
+                    0
+                } else {
+                    1
+                }
+            };
+            self.packs[id].pfv_open_amount() > Ratio::default()
         }
         fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-            self.packs[pack_id].pack_flow_valve_air_flow()
+            // TODO: Need to make this use both PACK valves
+            // For now we "hack" it
+            let id = {
+                if pack_id == 0 || pack_id == 1 {
+                    0
+                } else {
+                    1
+                }
+            };
+            self.packs[id].pack_flow_valve_air_flow()
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -1278,6 +1369,7 @@ mod tests {
 
     struct TestAircraft {
         a380_cabin_air: A380AirConditioning,
+        adcn: TestAdcn,
         adirs: TestAdirs,
         engine_1: TestEngine,
         engine_2: TestEngine,
@@ -1310,6 +1402,7 @@ mod tests {
         fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
                 a380_cabin_air: A380AirConditioning::new(context),
+                adcn: TestAdcn::new(context),
                 adirs: TestAdirs::new(),
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
@@ -1411,6 +1504,7 @@ mod tests {
             self.a380_cabin_air.update(
                 context,
                 &self.adirs,
+                &self.adcn,
                 [
                     &self.engine_1,
                     &self.engine_2,
@@ -1428,6 +1522,7 @@ mod tests {
     impl SimulationElement for TestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.a380_cabin_air.accept(visitor);
+            self.adcn.accept(visitor);
             self.pneumatic.accept(visitor);
             self.pressurization_overhead.accept(visitor);
 

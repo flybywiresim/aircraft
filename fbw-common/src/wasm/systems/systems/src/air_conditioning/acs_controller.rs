@@ -221,7 +221,7 @@ impl<const ZONES: usize, const ENGINES: usize> SimulationElement
 }
 
 #[derive(Copy, Clone)]
-enum AirConditioningStateManager {
+pub enum AirConditioningStateManager {
     Initialisation(AirConditioningState<Initialisation>),
     OnGround(AirConditioningState<OnGround>),
     BeginTakeOff(AirConditioningState<BeginTakeOff>),
@@ -234,11 +234,11 @@ enum AirConditioningStateManager {
 impl AirConditioningStateManager {
     const TAKEOFF_THRESHOLD_SPEED_KNOTS: f64 = 70.;
 
-    fn new() -> Self {
+    pub fn new() -> Self {
         AirConditioningStateManager::Initialisation(AirConditioningState::init())
     }
 
-    fn update(
+    pub fn update(
         mut self,
         context: &UpdateContext,
         ground_speed: Velocity,
@@ -286,7 +286,7 @@ macro_rules! transition {
 }
 
 #[derive(Copy, Clone)]
-struct AirConditioningState<S> {
+pub struct AirConditioningState<S> {
     aircraft_state: std::marker::PhantomData<S>,
     timer: Duration,
 }
@@ -299,7 +299,7 @@ impl<S> AirConditioningState<S> {
 }
 
 #[derive(Copy, Clone)]
-struct Initialisation;
+pub struct Initialisation;
 
 impl AirConditioningState<Initialisation> {
     fn init() -> Self {
@@ -322,7 +322,7 @@ transition!(Initialisation, OnGround);
 transition!(Initialisation, InFlight);
 
 #[derive(Copy, Clone)]
-struct OnGround;
+pub struct OnGround;
 
 impl AirConditioningState<OnGround> {
     fn step(
@@ -346,7 +346,7 @@ transition!(OnGround, InFlight);
 transition!(OnGround, BeginTakeOff);
 
 #[derive(Copy, Clone)]
-struct BeginTakeOff;
+pub struct BeginTakeOff;
 
 impl AirConditioningState<BeginTakeOff> {
     fn step(
@@ -370,7 +370,7 @@ impl AirConditioningState<BeginTakeOff> {
 transition!(BeginTakeOff, EndTakeOff);
 
 #[derive(Copy, Clone)]
-struct EndTakeOff;
+pub struct EndTakeOff;
 
 impl AirConditioningState<EndTakeOff> {
     fn step(
@@ -391,7 +391,7 @@ impl AirConditioningState<EndTakeOff> {
 transition!(EndTakeOff, InFlight);
 
 #[derive(Copy, Clone)]
-struct InFlight;
+pub struct InFlight;
 
 impl AirConditioningState<InFlight> {
     fn step(
@@ -412,7 +412,7 @@ impl AirConditioningState<InFlight> {
 transition!(InFlight, BeginLanding);
 
 #[derive(Copy, Clone)]
-struct BeginLanding;
+pub struct BeginLanding;
 
 impl AirConditioningState<BeginLanding> {
     fn step(
@@ -436,7 +436,7 @@ impl AirConditioningState<BeginLanding> {
 transition!(BeginLanding, EndLanding);
 
 #[derive(Copy, Clone)]
-struct EndLanding;
+pub struct EndLanding;
 
 impl AirConditioningState<EndLanding> {
     fn step(
@@ -641,7 +641,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
 pub struct Pack(pub usize);
 
 impl Pack {
-    pub(super) fn to_index(self) -> usize {
+    pub fn to_index(self) -> usize {
         self.0 - 1
     }
 }
