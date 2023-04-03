@@ -4811,6 +4811,11 @@
                         <VISIBILITY_CODE>0</VISIBILITY_CODE>
                     </UseTemplate>
                 </Component>
+                <Component ID="LEVER_ELEVATORTRIM" Node="LEVER_ELEVATORTRIM">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
             </Component>
         </Component>
 

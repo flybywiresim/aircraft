@@ -37,7 +37,8 @@
       },
       {
         "gltf": "./trim-decals/trim-decals.gltf",
-        "bin": "./trim-decals/trim-decals.bin"
+        "bin": "./trim-decals/trim-decals.bin",
+        "maxLod": 0
       },
       {
         "gltf": "./onbat/onbat.gltf",
