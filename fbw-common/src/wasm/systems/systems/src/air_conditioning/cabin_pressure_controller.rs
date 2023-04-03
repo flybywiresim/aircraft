@@ -382,6 +382,11 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 .abs()
                 < 5000.)
             && altimeter_setting.is_some()
+            // Avoid coming back to local QNH in turbulence
+            && !(!self.is_ground()
+                && (self.reference_pressure.get::<hectopascal>() - Self::P_0).abs() < f64::EPSILON
+                && (altimeter_setting.unwrap_or_default().get::<hectopascal>() - Self::P_0).abs()
+                    > f64::EPSILON)
         {
             altimeter_setting.unwrap()
         } else {
