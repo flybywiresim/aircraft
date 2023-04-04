@@ -5,13 +5,13 @@
   font-style: normal;
 }
 
-.off {
-  opacity: 0;
+svg.powered {
+  opacity: 1;
   transition: opacity 0.01s linear;
 }
 
-.on {
-  opacity: 1;
+svg.unpowered {
+  opacity: 0;
   transition: opacity 0.01s linear;
 }
 

@@ -12,17 +12,19 @@ interface ClockProps extends ComponentProps {
 
 export class ClockRoot extends DisplayComponent<ClockProps> {
     private readonly gElementRef = FSComponent.createRef<SVGGElement>();
+    private readonly svgElementRef = FSComponent.createRef<SVGSVGElement>();
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<ClockSimvars>();
         sub.on('dcEssIsPowered').whenChanged().handle((dccEssIsPowered) => {
-            const svgElement = this.gElementRef.instance.closest('svg');
             if (dccEssIsPowered) {
-                svgElement.style.opacity = '1';
+                this.svgElementRef.instance.classList.add('powered');
+                this.svgElementRef.instance.classList.remove('unpowered');
             } else {
-                svgElement.style.opacity = '0';
+                this.svgElementRef.instance.classList.add('unpowered');
+                this.svgElementRef.instance.classList.remove('powered');
             }
         });
 
@@ -39,7 +41,7 @@ export class ClockRoot extends DisplayComponent<ClockProps> {
 
     render(): VNode {
         return (
-            <svg version="1.1" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <svg ref={this.svgElementRef} version="1.1" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
                 <g ref={this.gElementRef}>
                     <Chrono bus={this.props.bus} />
                     <Clock bus={this.props.bus} />
