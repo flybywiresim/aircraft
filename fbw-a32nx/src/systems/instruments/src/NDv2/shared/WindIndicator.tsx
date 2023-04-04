@@ -1,4 +1,5 @@
 import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from 'msfssdk';
+import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
@@ -23,9 +24,9 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcLogicEvents>();
 
-        sub.on('windDirection').whenChanged().atFrequency(2).handle((value) => {
+        sub.on('windDirection').atFrequency(2).handle((value) => {
             this.windDirectionWord.setWord(value);
 
             this.handleWindDirection();
@@ -33,7 +34,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
             this.handleWindArrow();
         });
 
-        sub.on('windSpeed').whenChanged().atFrequency(2).handle((value) => {
+        sub.on('windSpeed').atFrequency(2).handle((value) => {
             this.windSpeedWord.setWord(value);
 
             this.handleWindDirection();
@@ -41,7 +42,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
             this.handleWindArrow();
         });
 
-        sub.on('trueHeading').whenChanged().atFrequency(2).handle((value) => {
+        sub.on('heading').atFrequency(2).handle((value) => {
             this.planeHeadingWord.setWord(value);
 
             this.handleWindArrow();
