@@ -12,6 +12,7 @@ interface ClockProps extends ComponentProps {
 
 export class ClockRoot extends DisplayComponent<ClockProps> {
     private readonly gElementRef = FSComponent.createRef<SVGGElement>();
+
     private readonly svgElementRef = FSComponent.createRef<SVGSVGElement>();
 
     onAfterRender(node: VNode): void {
@@ -19,23 +20,14 @@ export class ClockRoot extends DisplayComponent<ClockProps> {
 
         const sub = this.props.bus.getSubscriber<ClockSimvars>();
         sub.on('dcEssIsPowered').whenChanged().handle((dccEssIsPowered) => {
-            if (dccEssIsPowered) {
-                this.svgElementRef.instance.classList.add('powered');
-                this.svgElementRef.instance.classList.remove('unpowered');
-            } else {
-                this.svgElementRef.instance.classList.add('unpowered');
-                this.svgElementRef.instance.classList.remove('powered');
-            }
+            this.svgElementRef.instance.classList.toggle('powered', dccEssIsPowered);
+            this.svgElementRef.instance.classList.toggle('unpowered', !dccEssIsPowered);
         });
 
+        sub.on('
         sub.on('timeOfDay').whenChanged().handle((timeOfDay) => {
-            if (timeOfDay === 1 || timeOfDay === 2) {
-                this.gElementRef.instance.classList.add('day');
-                this.gElementRef.instance.classList.remove('night');
-            } else {
-                this.gElementRef.instance.classList.add('night');
-                this.gElementRef.instance.classList.remove('day');
-            }
+            this.gElementRef.instance.classList.toggle('day', timeOfDay === 1 || timeOfDay === 2);
+            this.gElementRef.instance.classList.toggle('night', !(timeOfDay === 1 || timeOfDay === 2));
         });
     }
 
