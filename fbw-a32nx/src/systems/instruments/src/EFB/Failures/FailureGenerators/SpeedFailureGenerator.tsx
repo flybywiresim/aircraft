@@ -7,7 +7,7 @@ import {
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { FastForward, Rewind, Speedometer2 } from 'react-bootstrap-icons';
+import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
@@ -124,8 +124,7 @@ const accelDecelMode: (ButtonIcon)[] = [
     {
         icon: (
             <>
-                <Speedometer2 className="mr-2" />
-                <FastForward />
+                <ArrowUpRight />
             </>),
         settingVar: 0,
         setting: 'Accel',
@@ -133,8 +132,7 @@ const accelDecelMode: (ButtonIcon)[] = [
     {
         icon: (
             <>
-                <Speedometer2 className="mr-2" />
-                <Rewind />
+                <ArrowDownRight />
             </>),
         settingVar: 1,
         setting: 'Decel',

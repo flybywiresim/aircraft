@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
     activateRandomFailure, basicData, FailureGenContext, FailureGenData, failureGeneratorCommonFunction,
@@ -54,16 +54,20 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
     const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailureChancePerTakeOff')}`, '%', 0, 100,
         settings[genNumber * numberOfSettingsPerGenerator + 2], 100,
         setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-    FailureGeneratorSingleSetting(t('Failures.Generators.LowSpeedChance'), '%', 0,
-        100 - settings[genNumber * numberOfSettingsPerGenerator + 4] * 100,
-        settings[genNumber * numberOfSettingsPerGenerator + 3], 100,
-        setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
-    FailureGeneratorSingleSetting(t('Failures.Generators.MedSpeedChance'), '%', 0,
-        100 - settings[genNumber * numberOfSettingsPerGenerator + 3] * 100,
-        settings[genNumber * numberOfSettingsPerGenerator + 4], 100,
-        setNewSetting, generatorSettings, genNumber, 4, failureGenContext),
-    FailureGeneratorText(t('Failures.Generators.ClimbingChance'), '%',
-        chanceClimbing.toString()),
+    (
+        <div className="pl-10 w-full divide-y-2 divide-theme-accent">
+            {[FailureGeneratorText(`${t('Failures.Generators.SplitOverPhases')}:`, '', ''),
+                FailureGeneratorSingleSetting(t('Failures.Generators.LowSpeedChance'), '%', 0,
+                    100 - settings[genNumber * numberOfSettingsPerGenerator + 4] * 100,
+                    settings[genNumber * numberOfSettingsPerGenerator + 3], 100,
+                    setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
+                FailureGeneratorSingleSetting(t('Failures.Generators.MedSpeedChance'), '%', 0,
+                    100 - settings[genNumber * numberOfSettingsPerGenerator + 3] * 100,
+                    settings[genNumber * numberOfSettingsPerGenerator + 4], 100,
+                    setNewSetting, generatorSettings, genNumber, 4, failureGenContext),
+                FailureGeneratorText(t('Failures.Generators.ClimbingChance'), '%',
+                    chanceClimbing.toString())]}
+        </div>),
     FailureGeneratorSingleSetting(t('Failures.Generators.MinimumSpeed'), t('Failures.Generators.knots'),
         0, settings[genNumber * numberOfSettingsPerGenerator + 6],
         settings[genNumber * numberOfSettingsPerGenerator + 5], 1,
