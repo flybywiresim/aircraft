@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NXDataStore } from '@shared/persistence';
+import { getSupplier } from '@instruments/common/utils';
+
 import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
 
@@ -9,6 +11,7 @@ import './pixels.scss';
 type DisplayUnitProps = {
     electricitySimvar: string
     potentiometerIndex: number
+    normDmc: number
     failed?: boolean
 }
 
@@ -16,7 +19,9 @@ enum DisplayUnitState {
     On,
     Off,
     Selftest,
-    Standby
+    Standby,
+    MaintenanceMode,
+    EngineeringTest
 }
 
 function BacklightBleed(props) {
@@ -30,6 +35,22 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const timer = useRef<number | null>(null);
+
+    const [dmcSwitching] = useSimVar('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum', 200);
+    const supplyingDmc = getSupplier(props.normDmc, dmcSwitching);
+    const [dmcDisplayTestMode] = useSimVar(`L:A32NX_DMC_DISPLAYTEST:${supplyingDmc}`, 'enum');
+    useEffect(() => {
+        switch (dmcDisplayTestMode) {
+        case 1:
+            setState(DisplayUnitState.MaintenanceMode);
+            break;
+        case 2:
+            setState(DisplayUnitState.EngineeringTest);
+            break;
+        default:
+            setState(DisplayUnitState.On);
+        }
+    }, [dmcDisplayTestMode]);
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
@@ -95,6 +116,29 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                     </text>
                 </svg>
             </>
+        );
+    } if (state === DisplayUnitState.MaintenanceMode) {
+        return (
+            <svg className="MaintenanceMode" viewBox="0 0 600 600">
+                <text
+                    className="SelfTestText"
+                    x="50%"
+                    y="50%"
+                >
+                    MAINTENANCE MODE
+                </text>
+            </svg>
+        );
+    } if (state === DisplayUnitState.EngineeringTest) {
+        return (
+            <svg className="EngineeringTestMode" viewBox="0 0 600 600">
+                <text x={9} y={250}>P/N : C19755BA01</text>
+                <text x={10} y={270}>{`S/N : C197551733${supplyingDmc}`}</text>
+                <text x={10} y={344}>EIS SW</text>
+                <text x={10} y={366}>P/N : C1975517332</text>
+                <text textAnchor="end" x="90%" y={250}>THALES AVIONICS</text>
+                <text textAnchor="end" x="98%" y={366}>LCDU 725</text>
+            </svg>
         );
     } if (state === DisplayUnitState.Off) {
         return (
