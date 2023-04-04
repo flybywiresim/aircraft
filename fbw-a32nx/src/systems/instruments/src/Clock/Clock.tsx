@@ -24,7 +24,6 @@ export class ClockRoot extends DisplayComponent<ClockProps> {
             this.svgElementRef.instance.classList.toggle('unpowered', !dccEssIsPowered);
         });
 
-        sub.on('
         sub.on('timeOfDay').whenChanged().handle((timeOfDay) => {
             this.gElementRef.instance.classList.toggle('day', timeOfDay === 1 || timeOfDay === 2);
             this.gElementRef.instance.classList.toggle('night', !(timeOfDay === 1 || timeOfDay === 2));
