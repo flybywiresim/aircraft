@@ -88,7 +88,7 @@
 1. [FLIGHTMODEL/FUEL] Reinstate updated outer fuel tank position from updated CG for ELAC 103 -  @donstim (donbikes#4084)
 1. [MODEL] Change pitch trim scale to correct neo scale - @tracernz (Mike)
 1. [FMS] Handle approach transitions hidden inside other transition with Navigraph data - @tracernz (Mike)
-1. [LIGHTS] Redid all cockpit interior lighting and fixed exterior wing lights -@FinalLightNL (FinalLight#2113)
+1. [LIGHTS] Redid all cockpit interior lighting and fixed exterior wing lights - @FinalLightNL (FinalLight#2113)
 
 ## 0.9.0
 
