@@ -117,7 +117,6 @@
 1. [FLIGHTMODEL/FUEL] Reinstate updated outer fuel tank position from updated CG for ELAC 103 -  @donstim (donbikes#4084)
 1. [MODEL] Change pitch trim scale to correct neo scale - @tracernz (Mike)
 1. [MCDU] Fix no overfly shown on forced turn on F-PLN page, return to F-PLN page on TMPY insert - @tracernz (Mike)
-1. [FMS] Fix 5nm CF fixes for runway-by-itself approaches - @tracernz (Mike)
 1. [FMS] Handle approach transitions hidden inside other transition with Navigraph data - @tracernz (Mike)
 1. [ND] Do not draw background when busses are not powered - @saschl (saschl#9432)
 
