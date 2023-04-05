@@ -70,6 +70,6 @@ Range=23
 Intensity=25
 Softness=0.0
 SpotInner=11
-SpotOuter=49
+SpotOuter=61
 Volumetric=1
 ScatDir=0.0
