@@ -53,7 +53,7 @@ class CDUSelectedNavaids {
         const selectedNavaids = mcdu.getSelectedNavaids();
 
         for (const [i, navaid] of selectedNavaids.entries()) {
-            if (navaid.frequency < 1) {
+            if (navaid.frequency === null) {
                 continue;
             }
 
@@ -61,7 +61,7 @@ class CDUSelectedNavaids {
             const lineRow = labelRow + 1;
 
             template[labelRow][0] = `\xa0${NAVAID_TYPE_STRINGS[navaid.type].padEnd(9, '\xa0')}${NAVAID_MODE_STRINGS[navaid.mode]}`;
-            template[lineRow][0] = `{cyan}${navaid.facility !== null ? '{' : '\xa0'}${(navaid.ident.length > 0 ? navaid.ident : '').padEnd(6, '\xa0')}{end}{small}{green}${navaid.frequency.toFixed(2)}{end}{end}`;
+            template[lineRow][0] = `{cyan}${navaid.facility !== null ? '{' : '\xa0'}${(navaid.ident !== null ? navaid.ident : '').padEnd(6, '\xa0')}{end}{small}{green}${navaid.frequency.toFixed(2)}{end}{end}`;
 
             if (navaid.facility !== null) {
                 mcdu.onLeftInput[i] = (text, scratchpadCallback) => {

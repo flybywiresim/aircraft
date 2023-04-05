@@ -673,6 +673,19 @@ class EngineControl {
     bool uiFuelTamper = false;
     double pumpStateLeft = simVars->getPumpStateLeft();
     double pumpStateRight = simVars->getPumpStateRight();
+    bool xfrCenterLeftManual = simVars->getJunctionSetting(4) > 1.5;
+    bool xfrCenterRightManual = simVars->getJunctionSetting(5) > 1.5;
+    bool xfrCenterLeftAuto = simVars->getValve(11) > 0.0 && !xfrCenterLeftManual;
+    bool xfrCenterRightAuto = simVars->getValve(12) > 0.0 && !xfrCenterRightManual;
+    bool xfrValveCenterLeftOpen = simVars->getValve(9) > 0.0 && (xfrCenterLeftAuto || xfrCenterLeftManual);
+    bool xfrValveCenterRightOpen = simVars->getValve(10) > 0.0 && (xfrCenterRightAuto || xfrCenterRightManual);
+    double xfrValveOuterLeft1 = simVars->getValve(6);
+    double xfrValveOuterLeft2 = simVars->getValve(4);
+    double xfrValveOuterRight1 = simVars->getValve(7);
+    double xfrValveOuterRight2 = simVars->getValve(5);
+    double lineLeftToCenterFlow = simVars->getLineFlow(27);
+    double lineRightToCenterFlow = simVars->getLineFlow(28);
+    double lineFlowRatio = 0;
 
     double engine1PreFF = simVars->getEngine1PreFF();  // KG/H
     double engine2PreFF = simVars->getEngine2PreFF();  // KG/H
@@ -683,22 +696,23 @@ class EngineControl {
     double fuelUsedLeft = simVars->getFuelUsedLeft();    // Kg
     double fuelUsedRight = simVars->getFuelUsedRight();  // Kg
 
-    double fuelLeftPre = simVars->getFuelLeftPre();                                   // LBS
-    double fuelRightPre = simVars->getFuelRightPre();                                 // LBS
-    double fuelAuxLeftPre = simVars->getFuelAuxLeftPre();                             // LBS
-    double fuelAuxRightPre = simVars->getFuelAuxRightPre();                           // LBS
-    double fuelCenterPre = simVars->getFuelCenterPre();                               // LBS
-    double leftQuantity = simVars->getTankLeftQuantity() * fuelWeightGallon;          // LBS
-    double rightQuantity = simVars->getTankRightQuantity() * fuelWeightGallon;        // LBS
-    double leftAuxQuantity = simVars->getTankLeftAuxQuantity() * fuelWeightGallon;    // LBS
-    double rightAuxQuantity = simVars->getTankRightAuxQuantity() * fuelWeightGallon;  // LBS
-    double centerQuantity = simVars->getTankCenterQuantity() * fuelWeightGallon;      // LBS
-    double fuelLeft = 0;                                                              // LBS
+    double fuelLeftPre = simVars->getFuelLeftPre();                                // LBS
+    double fuelRightPre = simVars->getFuelRightPre();                              // LBS
+    double fuelAuxLeftPre = simVars->getFuelAuxLeftPre();                          // LBS
+    double fuelAuxRightPre = simVars->getFuelAuxRightPre();                        // LBS
+    double fuelCenterPre = simVars->getFuelCenterPre();                            // LBS
+    double leftQuantity = simVars->getFuelTankQuantity(2) * fuelWeightGallon;      // LBS
+    double rightQuantity = simVars->getFuelTankQuantity(3) * fuelWeightGallon;     // LBS
+    double leftAuxQuantity = simVars->getFuelTankQuantity(4) * fuelWeightGallon;   // LBS
+    double rightAuxQuantity = simVars->getFuelTankQuantity(5) * fuelWeightGallon;  // LBS
+    double centerQuantity = simVars->getFuelTankQuantity(1) * fuelWeightGallon;    // LBS
+    double fuelLeft = 0;                                                           // LBS
     double fuelRight = 0;
     double fuelLeftAux = 0;
     double fuelRightAux = 0;
     double fuelCenter = 0;
-    double xfrCenter = 0;
+    double xfrCenterToLeft = 0;
+    double xfrCenterToRight = 0;
     double xfrAuxLeft = 0;
     double xfrAuxRight = 0;
     double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
@@ -707,6 +721,13 @@ class EngineControl {
 
     double engine1State = simVars->getEngine1State();
     double engine2State = simVars->getEngine2State();
+
+    int isTankClosed = 0;
+    double xFeedValve = simVars->getValve(3);
+    double leftPump1 = simVars->getPump(2);
+    double leftPump2 = simVars->getPump(5);
+    double rightPump1 = simVars->getPump(3);
+    double rightPump2 = simVars->getPump(6);
 
     // Check Ready & Development State for UI
     isReady = simVars->getIsReady();
@@ -727,7 +748,6 @@ class EngineControl {
       }
     } else if (pumpStateLeft == 1 && timerLeft.elapsed() >= 2100) {
       simVars->setPumpStateLeft(0);
-      //fuelLeftPre = 0;
       timerLeft.reset();
     } else if (pumpStateLeft == 2 && timerLeft.elapsed() >= 2700) {
       simVars->setPumpStateLeft(0);
@@ -747,7 +767,6 @@ class EngineControl {
       }
     } else if (pumpStateRight == 1 && timerRight.elapsed() >= 2100) {
       simVars->setPumpStateRight(0);
-      //fuelRightPre = 0;
       timerRight.reset();
     } else if (pumpStateRight == 2 && timerRight.elapsed() >= 2700) {
       simVars->setPumpStateRight(0);
@@ -761,11 +780,11 @@ class EngineControl {
     }
 
     if (simPaused || uiFuelTamper && devState == 0) {  // Detects whether the Sim is paused or the Fuel UI is being tampered with
-      simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
-      simVars->setFuelRightPre(fuelRightPre);        // in LBS
-      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
-      simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
-      simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
+      simVars->setFuelLeftPre(fuelLeftPre);            // in LBS
+      simVars->setFuelRightPre(fuelRightPre);          // in LBS
+      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);      // in LBS
+      simVars->setFuelAuxRightPre(fuelAuxRightPre);    // in LBS
+      simVars->setFuelCenterPre(fuelCenterPre);        // in LBS
 
       fuelLeft = (fuelLeftPre / fuelWeightGallon);          // USG
       fuelRight = (fuelRightPre / fuelWeightGallon);        // USG
@@ -779,11 +798,11 @@ class EngineControl {
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
-      simVars->setFuelLeftPre(leftQuantity);          // in LBS
-      simVars->setFuelRightPre(rightQuantity);        // in LBS
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(centerQuantity);      // in LBS
+      simVars->setFuelLeftPre(leftQuantity);                 // in LBS
+      simVars->setFuelRightPre(rightQuantity);               // in LBS
+      simVars->setFuelAuxLeftPre(leftAuxQuantity);           // in LBS
+      simVars->setFuelAuxRightPre(rightAuxQuantity);         // in LBS
+      simVars->setFuelCenterPre(centerQuantity);             // in LBS
     } else {
       if (uiFuelTamper == 1) {
         fuelLeftPre = leftQuantity;          // LBS
@@ -792,9 +811,23 @@ class EngineControl {
         fuelAuxRightPre = rightAuxQuantity;  // LBS
         fuelCenterPre = centerQuantity;      // LBS
       }
+      //-----------------------------------------------------------
+      // Cross-feed Logic
+      // isTankClosed = 0, both tanks can supply fuel
+      // isTankClosed = 1, left tank does not supply fuel
+      // isTankClosed = 2, right tank does not supply fuel
+      // isTankClosed = 3, left & right tanks do not supply fuel
+      if (xFeedValve > 0.0) {
+        if (leftPump1 == 0 && leftPump2 == 0)
+          isTankClosed = 1;
+        if (rightPump1 == 0 && rightPump2 == 0)
+          isTankClosed = 2;
+        if (leftPump1 == 0 && leftPump2 == 0 && rightPump1 == 0 && rightPump2 == 0)
+          isTankClosed = 3;
+      }
+
       //--------------------------------------------
       // Left Engine and Wing routine
-      //--------------------------------------------
       if (fuelLeftPre > 0) {
         // Cycle Fuel Burn for Engine 1
         if (devState != 2) {
@@ -802,24 +835,17 @@ class EngineControl {
           b = engine1PreFF;
           fuelBurn1 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
         }
-        // Fuel Used Accumulators - Engine 1
-        fuelUsedLeft += fuelBurn1;
 
         // Fuel transfer routine for Left Wing
-        if (fuelAuxLeftPre > leftAuxQuantity) {
+        if (xfrValveOuterLeft1 > 0.0 || xfrValveOuterLeft2 > 0.0)
           xfrAuxLeft = fuelAuxLeftPre - leftAuxQuantity;
-        }
-      } else if (fuelLeftPre <= 0) {
-        fuelBurn1 = 0;
-        fuelLeftPre = 0;
       } else {
         fuelBurn1 = 0;
-        fuelLeftPre = -10;
+        fuelLeftPre = 0;
       }
 
       //--------------------------------------------
       // Right Engine and Wing routine
-      //--------------------------------------------
       if (fuelRightPre > 0) {
         // Cycle Fuel Burn for Engine 2
         if (devState != 2) {
@@ -827,46 +853,61 @@ class EngineControl {
           b = engine2PreFF;
           fuelBurn2 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
         }
-        // Fuel Used Accumulators - Engine 2
-        fuelUsedRight += fuelBurn2;
-
-        // Fuel transfer routine for Left Wing
-        if (fuelAuxRightPre > rightAuxQuantity) {
+        // Fuel transfer routine for Right Wing
+        if (xfrValveOuterRight1 > 0.0 || xfrValveOuterRight2 > 0.0)
           xfrAuxRight = fuelAuxRightPre - rightAuxQuantity;
-        }
-      } else if (fuelRightPre <= 0) {
-        fuelBurn2 = 0;
-        fuelRightPre = 0;
       } else {
         fuelBurn2 = 0;
-        fuelRightPre = -10;
+        fuelRightPre = 0;
+      }
+
+      //--------------------------------------------
+      // Fuel used accumulators
+      fuelUsedLeft += fuelBurn1;
+      fuelUsedRight += fuelBurn2;
+
+      //--------------------------------------------
+      // Cross-feed fuel burn routine
+      // If fuel pumps for a given tank are closed,
+      // all fuel will be burnt on the other tank
+      switch (isTankClosed) {
+        case 1:
+          fuelBurn2 = fuelBurn1 + fuelBurn2;
+          fuelBurn1 = 0;
+          break;
+        case 2:
+          fuelBurn1 = fuelBurn1 + fuelBurn2;
+          fuelBurn2 = 0;
+          break;
+        case 3:
+          fuelBurn1 = 0;
+          fuelBurn2 = 0;
+          break;
+        default:
+          break;
       }
 
       //--------------------------------------------
       // Center Tank transfer routine
+      if (xfrValveCenterLeftOpen && xfrValveCenterRightOpen) {
+        if (lineLeftToCenterFlow < 0.1 && lineRightToCenterFlow < 0.1)
+          lineFlowRatio = 0.5;
+        else
+          lineFlowRatio = lineLeftToCenterFlow / (lineLeftToCenterFlow + lineRightToCenterFlow);
+
+        xfrCenterToLeft = (fuelCenterPre - centerQuantity) * lineFlowRatio;
+        xfrCenterToRight = (fuelCenterPre - centerQuantity) * (1 - lineFlowRatio);
+      } else if (xfrValveCenterLeftOpen)
+        xfrCenterToLeft = fuelCenterPre - centerQuantity;
+      else if (xfrValveCenterRightOpen)
+        xfrCenterToRight = fuelCenterPre - centerQuantity;
+
       //--------------------------------------------
-      if (fuelCenterPre > centerQuantity) {
-        xfrCenter = fuelCenterPre - centerQuantity;
-      }
+      // Final Fuel levels for left and right inner tanks
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft;      // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;  // LBS
 
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);     // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + (xfrCenter / 2);  // LBS
-
-      // Checking for Inner Tank overflow - Will be taken off with Rust code
-      if (fuelLeft > 12167.1 && fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + (fuelLeft - 12167.1) + (fuelRight - 12167.1);
-        fuelLeft = 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + fuelRight - 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelLeft > 12167.1) {
-        fuelCenter = centerQuantity + fuelLeft - 12167.1;
-        fuelLeft = 12167.1;
-      } else {
-        fuelCenter = centerQuantity;
-      }
-
+      //--------------------------------------------
       // Setting new pre-cycle conditions
       simVars->setEngine1PreFF(engine1FF);
       simVars->setEngine2PreFF(engine2FF);
@@ -874,21 +915,21 @@ class EngineControl {
       simVars->setFuelUsedRight(fuelUsedRight);       // in KG
       simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
       simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(fuelCenter);          // in LBS
+      simVars->setFuelCenterPre(centerQuantity);      // in LBS
 
       simVars->setFuelLeftPre(fuelLeft);    // in LBS
       simVars->setFuelRightPre(fuelRight);  // in LBS
 
-      fuelLeft = (fuelLeft / fuelWeightGallon);      // USG
-      fuelRight = (fuelRight / fuelWeightGallon);    // USG
-      fuelCenter = (fuelCenter / fuelWeightGallon);  // USG
+      fuelLeft = (fuelLeft / fuelWeightGallon);    // USG
+      fuelRight = (fuelRight / fuelWeightGallon);  // USG
 
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
     }
 
-    // Will save the current fuel quantities if on the ground AND engines being shutdown
+    //--------------------------------------------
+    // Will save the current fuel quantities if on
+    // the ground AND engines being shutdown
     if (timerFuel.elapsed() >= 1000 && simVars->getSimOnGround() &&
         (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 || engine2State == 0 || engine2State == 10 ||
          engine2State == 4 || engine2State == 14)) {

@@ -46,6 +46,7 @@ class Units {
   ENUM Psi = get_units_enum("Psi");
   ENUM Pph = get_units_enum("Pounds per hour");
   ENUM Gallons = get_units_enum("Gallons");
+  ENUM Gph = get_units_enum("Gallons per hour");
   ENUM Feet = get_units_enum("Feet");
   ENUM FootPounds = get_units_enum("Foot pounds");
   ENUM FeetMin = get_units_enum("Feet per minute");
@@ -92,21 +93,16 @@ class SimVars {
   ENUM EngineCombustion = get_aircraft_var_enum("GENERAL ENG COMBUSTION");
   ENUM animDeltaTime = get_aircraft_var_enum("ANIMATION DELTA TIME");
 
-  ENUM TankLeftAuxCapacity = get_aircraft_var_enum("FUEL TANK LEFT AUX CAPACITY");
-  ENUM TankRightAuxCapacity = get_aircraft_var_enum("FUEL TANK RIGHT AUX CAPACITY");
-  ENUM TankLeftCapacity = get_aircraft_var_enum("FUEL TANK LEFT MAIN CAPACITY");
-  ENUM TankRightCapacity = get_aircraft_var_enum("FUEL TANK RIGHT MAIN CAPACITY");
-  ENUM TankCenterCapacity = get_aircraft_var_enum("FUEL TANK CENTER CAPACITY");
-
-  ENUM TankLeftAuxQuantity = get_aircraft_var_enum("FUEL TANK LEFT AUX QUANTITY");
-  ENUM TankRightAuxQuantity = get_aircraft_var_enum("FUEL TANK RIGHT AUX QUANTITY");
-  ENUM TankLeftQuantity = get_aircraft_var_enum("FUEL TANK LEFT MAIN QUANTITY");
-  ENUM TankRightQuantity = get_aircraft_var_enum("FUEL TANK RIGHT MAIN QUANTITY");
-  ENUM TankCenterQuantity = get_aircraft_var_enum("FUEL TANK CENTER QUANTITY");
-  ENUM FuelTotalQuantity = get_aircraft_var_enum("FUEL TOTAL QUANTITY");
+  ENUM FuelTankQuantity = get_aircraft_var_enum("FUELSYSTEM TANK QUANTITY");
   ENUM EmptyWeight = get_aircraft_var_enum("EMPTY WEIGHT");
   ENUM TotalWeight = get_aircraft_var_enum("TOTAL WEIGHT");
+  ENUM FuelTotalQuantity = get_aircraft_var_enum("FUEL TOTAL QUANTITY");
   ENUM FuelWeightGallon = get_aircraft_var_enum("FUEL WEIGHT PER GALLON");
+
+  ENUM FuelPump = get_aircraft_var_enum("FUELSYSTEM PUMP ACTIVE");
+  ENUM FuelValve = get_aircraft_var_enum("FUELSYSTEM VALVE OPEN");
+  ENUM FuelLineFlow = get_aircraft_var_enum("FUELSYSTEM LINE FUEL FLOW");
+  ENUM FuelJunctionSetting = get_aircraft_var_enum("FUELSYSTEM JUNCTION SETTING");
 
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
 
@@ -359,16 +355,7 @@ class SimVars {
   FLOAT64 getAmbientPressure() { return aircraft_varget(AmbientPressure, m_Units->Millibars, 0); }
   FLOAT64 getStdTemperature() { return aircraft_varget(StdTemp, m_Units->Celsius, 0); }
   FLOAT64 getSimOnGround() { return aircraft_varget(SimOnGround, m_Units->Bool, 0); }
-  FLOAT64 getTankLeftAuxCapacity() { return aircraft_varget(TankLeftAuxCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightAuxCapacity() { return aircraft_varget(TankRightAuxCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftCapacity() { return aircraft_varget(TankLeftCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightCapacity() { return aircraft_varget(TankRightCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankCenterCapacity() { return aircraft_varget(TankCenterCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftAuxQuantity() { return aircraft_varget(TankLeftAuxQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightAuxQuantity() { return aircraft_varget(TankRightAuxQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftQuantity() { return aircraft_varget(TankLeftQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightQuantity() { return aircraft_varget(TankRightQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankCenterQuantity() { return aircraft_varget(TankCenterQuantity, m_Units->Gallons, 0); }
+  FLOAT64 getFuelTankQuantity(int index) { return aircraft_varget(FuelTankQuantity, m_Units->Gallons, index); }
   FLOAT64 getFuelTotalQuantity() { return aircraft_varget(FuelTotalQuantity, m_Units->Gallons, 0); }
   FLOAT64 getEmptyWeight() { return aircraft_varget(EmptyWeight, m_Units->Pounds, 0); }
   FLOAT64 getTotalWeight() { return aircraft_varget(TotalWeight, m_Units->Pounds, 0); }
@@ -380,4 +367,8 @@ class SimVars {
   FLOAT64 getAnimDeltaTime() { return aircraft_varget(animDeltaTime, m_Units->Seconds, 0); }
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
   FLOAT64 getPayloadStationWeight(int index) { return aircraft_varget(PayloadStationWeights, m_Units->Pounds, index); }
+  FLOAT64 getPump(int index) { return aircraft_varget(FuelPump, m_Units->Number, index); }
+  FLOAT64 getValve(int index) { return aircraft_varget(FuelValve, m_Units->Number, index); }
+  FLOAT64 getLineFlow(int index) { return aircraft_varget(FuelLineFlow, m_Units->Gph, index); }
+  FLOAT64 getJunctionSetting(int index) { return aircraft_varget(FuelJunctionSetting, m_Units->Number, index); }
 };

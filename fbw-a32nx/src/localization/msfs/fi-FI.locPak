@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "fi-FI",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX on useiden eri sisällöntuottajien yhteistyön tulos.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Tiesitkö tätä? A320 voi laskeutua 38 solmun ristuuleen ja jopa 15 solmun myötätuuleen!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire on nimetty alunperin Airbus A320 koneessa käytetyn fly-by-wire ohjausjärjestelmän mukaan.",

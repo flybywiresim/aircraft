@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "es-MX",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "The FlyByWire A32NX is a collaboration between hundreds of individual contributors.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Did you know? The A320 can land at crosswinds up to 38 knots and tailwinds of up to 15 knots!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire is named after the fly-by-wire controls first introduced in the Airbus A320.",
