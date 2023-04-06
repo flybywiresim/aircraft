@@ -130,6 +130,7 @@ impl A380AirConditioning {
             &self.cpiom_b,
             engines,
             engine_fire_push_buttons,
+            self.a380_cabin.number_of_open_doors(),
             pneumatic,
             pneumatic_overhead,
             &self.a320_pressurization_system,
@@ -237,7 +238,6 @@ impl A380Cabin {
         let lgciu_gears_compressed = lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
-        let number_of_open_doors = self.fwd_door_is_open as u8 + self.rear_door_is_open as u8;
 
         self.cabin_air_simulation.update(
             context,
@@ -246,8 +246,12 @@ impl A380Cabin {
             pressurization.safety_valve_open_amount(),
             lgciu_gears_compressed,
             self.number_of_passengers,
-            number_of_open_doors,
+            self.number_of_open_doors(),
         );
+    }
+
+    fn number_of_open_doors(&self) -> u8 {
+        self.fwd_door_is_open as u8 + self.rear_door_is_open as u8
     }
 }
 
@@ -340,6 +344,7 @@ impl A380AirConditioningSystem {
         cpiom_b: &impl PackFlow,
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
+        number_of_open_doors: u8,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization: &impl CabinAltitude,
@@ -361,12 +366,11 @@ impl A380AirConditioningSystem {
             &self.trim_air_system,
         );
 
-        // TODO: read any_door_open
         self.fdac.iter_mut().for_each(|controller| {
             controller.update(
                 context,
                 &self.air_conditioning_overhead,
-                false,
+                number_of_open_doors > 0,
                 engine_fire_push_buttons,
                 engines,
                 cpiom_b,
@@ -1806,11 +1810,19 @@ mod tests {
         }
 
         fn engines_idle(mut self) -> Self {
+            self.write_by_name("ENGINE_STATE:1", 1);
+            self.write_by_name("ENGINE_STATE:2", 1);
+            self.write_by_name("ENGINE_STATE:3", 1);
+            self.write_by_name("ENGINE_STATE:4", 1);
             self.command_engine_n1(Ratio::new::<percent>(15.));
             self
         }
 
         fn engines_off(mut self) -> Self {
+            self.write_by_name("ENGINE_STATE:1", 0);
+            self.write_by_name("ENGINE_STATE:2", 0);
+            self.write_by_name("ENGINE_STATE:3", 0);
+            self.write_by_name("ENGINE_STATE:4", 0);
             self.command_engine_n1(Ratio::new::<percent>(0.));
             self
         }
@@ -1945,6 +1957,8 @@ mod tests {
         fn command_engine_in_start_mode(mut self) -> Self {
             self.write_by_name("ENGINE_STATE:1", 2);
             self.write_by_name("ENGINE_STATE:2", 2);
+            self.write_by_name("ENGINE_STATE:3", 2);
+            self.write_by_name("ENGINE_STATE:4", 2);
             self
         }
 
@@ -3228,6 +3242,36 @@ mod tests {
                     .iterate(20)
                     .then()
                     .command_engine_on_fire()
+                    .iterate(4);
+
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
+            }
+
+            #[test]
+            fn pack_flow_stops_when_doors_open_with_engines() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(20)
+                    .then()
+                    .command_open_door()
+                    .iterate(4);
+
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
+            }
+
+            #[test]
+            fn pack_flow_does_not_stop_when_doors_open_with_no_engines() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_off()
+                    .iterate(20)
+                    .then()
+                    .command_open_door()
                     .iterate(4);
 
                 assert_eq!(test_bed.pack_flow(), MassRate::default());
