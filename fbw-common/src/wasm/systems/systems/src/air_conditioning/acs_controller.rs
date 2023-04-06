@@ -272,6 +272,12 @@ impl AirConditioningStateManager {
     }
 }
 
+impl Default for AirConditioningStateManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 macro_rules! transition {
     ($from: ty, $to: tt) => {
         impl From<AirConditioningState<$from>> for AirConditioningState<$to> {
@@ -818,33 +824,16 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         pressurization_overhead: &impl PressurizationOverheadShared,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> bool {
-        match Pack::from(self.id + 1) {
-            Pack(1) => {
-                acs_overhead.pack_pushbuttons_state()[0]
-                    && !(pneumatic.left_engine_state() == EngineState::Starting)
-                    && (!(pneumatic.right_engine_state() == EngineState::Starting)
-                        || !pneumatic.engine_crossbleed_is_on())
-                    && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
-                        || (pneumatic.left_engine_state() != EngineState::Off
-                            && pneumatic.left_engine_state() != EngineState::Shutting))
-                    && !engine_fire_push_buttons.is_released(1)
-                    && !pressurization_overhead.ditching_is_on()
-                // && ! pack 1 overheat
-            }
-            Pack(2) => {
-                acs_overhead.pack_pushbuttons_state()[1]
-                    && !(pneumatic.right_engine_state() == EngineState::Starting)
-                    && (!(pneumatic.left_engine_state() == EngineState::Starting)
-                        || !pneumatic.engine_crossbleed_is_on())
-                    && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
-                        || (pneumatic.right_engine_state() != EngineState::Off
-                            && pneumatic.right_engine_state() != EngineState::Shutting))
-                    && !engine_fire_push_buttons.is_released(2)
-                    && !pressurization_overhead.ditching_is_on()
-                // && ! pack 2 overheat
-            }
-            _ => panic!("Pack ID number out of bounds."),
-        }
+        acs_overhead.pack_pushbuttons_state()[self.id]
+            && !(pneumatic.engine_state(self.id + 1) == EngineState::Starting)
+            && (!(pneumatic.engine_state((self.id == 0) as usize + 1) == EngineState::Starting)
+                || !pneumatic.engine_crossbleed_is_on())
+            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
+                || (pneumatic.engine_state(self.id + 1) != EngineState::Off
+                    && pneumatic.engine_state(self.id + 1) != EngineState::Shutting))
+            && !engine_fire_push_buttons.is_released(1)
+            && !pressurization_overhead.ditching_is_on()
+        // && ! pack 1 overheat
     }
 
     fn can_move_fcv(
@@ -1524,11 +1513,8 @@ mod acs_controller_tests {
         }
     }
     impl EngineStartState for TestPneumatic {
-        fn left_engine_state(&self) -> EngineState {
-            self.fadec.engine_state(1)
-        }
-        fn right_engine_state(&self) -> EngineState {
-            self.fadec.engine_state(2)
+        fn engine_state(&self, engine_number: usize) -> EngineState {
+            self.fadec.engine_state(engine_number)
         }
         fn engine_mode_selector(&self) -> EngineModeSelector {
             self.fadec.engine_mode_selector()

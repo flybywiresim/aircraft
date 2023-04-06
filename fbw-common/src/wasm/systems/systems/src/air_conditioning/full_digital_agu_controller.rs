@@ -1,5 +1,5 @@
 use crate::{
-    pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
+    pneumatic::{EngineState, PneumaticValveSignal},
     shared::{
         pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
         EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::{
-    acs_controller::Pack, AirConditioningOverheadShared, PackFlow, PackFlowControllers,
-    PackFlowValveSignal, PressurizationOverheadShared,
+    AirConditioningOverheadShared, PackFlow, PackFlowControllers, PackFlowValveSignal,
+    PressurizationOverheadShared,
 };
 
 use uom::si::{
@@ -32,6 +32,12 @@ enum FdacFault {
     PowerLoss,
 }
 
+#[derive(Clone, Copy)]
+enum FcvFault {
+    PositionDisagree,
+    //More to be added
+}
+
 impl OperatingChannel {
     fn has_fault(&self) -> bool {
         // TODO: Improve
@@ -49,7 +55,6 @@ impl OperatingChannel {
 }
 
 pub struct FullDigitalAGUController<const ENGINES: usize> {
-    id: usize, // 1 (LH) or 2 (RH)
     active_channel: OperatingChannel,
     flow_control: FDACFlowControl<ENGINES>,
     // agu_control
@@ -61,7 +66,6 @@ pub struct FullDigitalAGUController<const ENGINES: usize> {
 impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     pub fn new(fdac_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
-            id: fdac_id,
             active_channel: OperatingChannel::FDACChannelOne(false),
             flow_control: FDACFlowControl::new(fdac_id),
             // agu_control
@@ -78,7 +82,7 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
         any_door_open: bool,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN1; ENGINES],
-        pack_flow_demand: MassRate,
+        pack_flow_demand: &impl PackFlow,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization_overhead: &impl PressurizationOverheadShared,
@@ -105,18 +109,20 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
             if !self.is_powered {
                 Some(FdacFault::PowerLoss)
             } else if self.active_channel.has_fault() {
-                // TODO: At the moment switching channels always clears the fault
                 self.active_channel.switch();
-                Some(FdacFault::OneChannelFault)
+                if self.active_channel.has_fault() {
+                    Some(FdacFault::BothChannelsFault)
+                } else {
+                    Some(FdacFault::OneChannelFault)
+                }
             } else {
-                // This is unreachable - implement failures
-                Some(FdacFault::BothChannelsFault)
+                None
             }
         }
     }
 
-    fn fdac_id(&self) -> usize {
-        self.id
+    pub fn fcv_status_determination(&self, fcv_id: usize) -> bool {
+        self.flow_control.fcv_has_fault(fcv_id)
     }
 }
 
@@ -146,24 +152,16 @@ impl<const ENGINES: usize> SimulationElement for FullDigitalAGUController<ENGINE
 struct FDACFlowControl<const ENGINES: usize> {
     fdac_id: usize, // 1 or 2
     flow_control_valves_controller: [PackFlowController<ENGINES>; 2],
-    fcv_open_allowed: bool,
+    fcv_open_allowed: [bool; 2],
     should_open_fcv: [bool; 2],
 }
 
 impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
     fn new(fdac_id: usize) -> Self {
-        let flow_control_valves_controller: [PackFlowController<ENGINES>; 2] = [1, 2]
-            .iter()
-            .map(|id| PackFlowController::new(id + ((fdac_id == 2) as usize * 2)))
-            .collect::<Vec<PackFlowController<ENGINES>>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<PackFlowController<ENGINES>>| {
-                panic!("Expected a Vec of length {} but it was {}", 2, v.len())
-            });
         Self {
             fdac_id,
-            flow_control_valves_controller,
-            fcv_open_allowed: false,
+            flow_control_valves_controller: [PackFlowController::new(); 2],
+            fcv_open_allowed: [false; 2],
             should_open_fcv: [false; 2],
         }
     }
@@ -175,19 +173,11 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
         any_door_open: bool,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN1; ENGINES],
-        pack_flow_demand: MassRate,
+        pack_flow_demand: &impl PackFlow,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
-        self.fcv_open_allowed = self.fcv_open_allowed_determination(
-            acs_overhead,
-            any_door_open,
-            engine_fire_push_buttons,
-            pressurization_overhead,
-            pneumatic,
-        );
-
         let fcv_id: [usize; 2] = [1, 2]
             .iter_mut()
             .map(|i| *i + ((self.fdac_id == 2) as usize * 2))
@@ -196,11 +186,35 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
             .unwrap_or_else(|v: Vec<usize>| {
                 panic!("Expected a Vec of length {} but it was {}", 2, v.len())
             });
-        self.should_open_fcv = fcv_id
+
+        self.fcv_open_allowed = fcv_id
             .iter()
             .map(|id| {
-                self.fcv_open_allowed
-                    && self.can_move_fcv(engines, *id, pneumatic, pneumatic_overhead)
+                self.fcv_open_allowed_determination(
+                    acs_overhead,
+                    any_door_open,
+                    engine_fire_push_buttons,
+                    *id,
+                    pressurization_overhead,
+                    pneumatic,
+                )
+            })
+            .collect::<Vec<bool>>()
+            .try_into()
+            .unwrap_or_else(|v: Vec<bool>| {
+                panic!(
+                    "Expected a Vec of length {} but it was {}",
+                    self.fcv_open_allowed.len(),
+                    v.len()
+                )
+            });
+
+        self.should_open_fcv = fcv_id
+            .iter()
+            .zip([0, 1])
+            .map(|(fcv, id)| {
+                self.fcv_open_allowed[id]
+                    && self.can_move_fcv(engines, *fcv, pneumatic, pneumatic_overhead)
             })
             .collect::<Vec<bool>>()
             .try_into()
@@ -212,11 +226,20 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
                 )
             });
 
+        // At the moment we split the demand of the pack between the two FCV equally
+        // TODO: Add provision in case one of the valves fails
         self.flow_control_valves_controller
             .iter_mut()
-            .zip(self.should_open_fcv)
-            .for_each(|(controller, should_open_fcv)| {
-                controller.update(context, should_open_fcv, pack_flow_demand, pneumatic)
+            .enumerate()
+            .for_each(|(id, controller)| {
+                controller.update(
+                    context,
+                    fcv_id[id],
+                    self.fcv_open_allowed[id],
+                    self.should_open_fcv[id],
+                    pack_flow_demand.pack_flow_demand(self.fdac_id.into()) / 2.,
+                    pneumatic,
+                )
             });
     }
 
@@ -225,46 +248,34 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
         acs_overhead: &impl AirConditioningOverheadShared,
         any_door_open: bool,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
+        fcv_id: usize,
         pressurization_overhead: &impl PressurizationOverheadShared,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> bool {
-        match Pack::from(self.fdac_id) {
-            Pack(1) => {
-                acs_overhead.pack_pushbuttons_state()[0]
-                    && !(pneumatic.left_engine_state() == EngineState::Starting)
-                    && (!(pneumatic.right_engine_state() == EngineState::Starting)
-                        || !pneumatic.engine_crossbleed_is_on())
-                    && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
-                        || (pneumatic.left_engine_state() != EngineState::Off
-                            && pneumatic.left_engine_state() != EngineState::Shutting))
-                    && !(engine_fire_push_buttons.is_released(1)
-                        || engine_fire_push_buttons.is_released(2))
-                    && !pressurization_overhead.ditching_is_on()
-                    && !(any_door_open
-                        && (pneumatic.left_engine_state() != EngineState::Off
-                            || pneumatic.right_engine_state() != EngineState::Off))
-                // && ! pack 1 overheat
-                // && mixer unit burst
-            }
-            Pack(2) => {
-                acs_overhead.pack_pushbuttons_state()[1]
-                    && !(pneumatic.right_engine_state() == EngineState::Starting)
-                    && (!(pneumatic.left_engine_state() == EngineState::Starting)
-                        || !pneumatic.engine_crossbleed_is_on())
-                    && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
-                        || (pneumatic.right_engine_state() != EngineState::Off
-                            && pneumatic.right_engine_state() != EngineState::Shutting))
-                    && !(engine_fire_push_buttons.is_released(3)
-                        || engine_fire_push_buttons.is_released(4))
-                    && !pressurization_overhead.ditching_is_on()
-                    && !(any_door_open
-                        && (pneumatic.left_engine_state() != EngineState::Off
-                            || pneumatic.right_engine_state() != EngineState::Off))
-                // && ! pack 2 overheat
-                // && mixer unit burst
-            }
-            _ => panic!("Pack ID number out of bounds."),
-        }
+        let onside_engine_numbers = [
+            1 + (self.fdac_id == 2) as usize * 2,
+            2 + (self.fdac_id == 2) as usize * 2,
+        ];
+        // The pack flow valve closes when:
+        // The associated PACK pbs is set to off
+        !(!acs_overhead.pack_pushbuttons_state()[self.fdac_id - 1]
+            // The FIRE pb of the associated engine is pressed
+            || engine_fire_push_buttons.is_released(fcv_id)
+            // One onside engine starts, and the crossbleed valves are closed
+            || onside_engine_numbers
+                .iter()
+                .any(|engine| pneumatic.engine_state(*engine) == EngineState::Starting)
+                && !pneumatic.engine_crossbleed_is_on()
+            // Any engine starts, and the crossbleed valves are opened
+            || (1..=4).any(|engine| pneumatic.engine_state(engine) == EngineState::Starting)
+                && pneumatic.engine_crossbleed_is_on()
+            // The DITCHING pb-sw is set to ON
+            || pressurization_overhead.ditching_is_on())
+            // On ground, one door (or more) is opened, and at least one engine is running
+            && !(any_door_open
+                && (1..=4).any(|engine| pneumatic.engine_state(engine) == EngineState::On))
+        // && ! pack overheat
+        // && mixer unit burst
     }
 
     fn can_move_fcv(
@@ -287,10 +298,10 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
             || pneumatic.apu_bleed_is_on()
     }
 
-    fn fcv_status_determination(&self, pneumatic: &impl PackFlowValveState) -> bool {
-        // FIXME: This needs to look at each individual valve
-        // Pneumatic trait needs fixing
-        (pneumatic.pack_flow_valve_is_open(self.fdac_id)) != self.fcv_open_allowed
+    pub fn fcv_has_fault(&self, fcv_id: usize) -> bool {
+        self.flow_control_valves_controller[fcv_id - 1 - ((self.fdac_id == 2) as usize * 2)]
+            .has_fault()
+            .is_some()
     }
 }
 
@@ -314,38 +325,59 @@ impl<const ENGINES: usize> PackFlowControllers for FDACFlowControl<ENGINES> {
 
 #[derive(Copy, Clone)]
 pub struct PackFlowController<const ENGINES: usize> {
-    fcv_id: usize, // 1, 2, 3, 4
     should_open_fcv: bool,
     pack_flow: MassRate,
     pid: PidController,
+    fault: Option<FcvFault>,
 }
 
 impl<const ENGINES: usize> PackFlowController<ENGINES> {
-    fn new(id: usize) -> Self {
+    fn new() -> Self {
         Self {
-            fcv_id: id,
             should_open_fcv: false,
             pack_flow: MassRate::default(),
             pid: PidController::new(0.01, 0.1, 0., 0., 1., 0., 1.),
+            fault: None,
         }
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
+        fcv_id: usize,
+        fcv_open_allowed: bool,
         should_open_fcv: bool,
         pack_flow_demand: MassRate,
         pneumatic: &impl PackFlowValveState,
     ) {
+        self.fault_determination(fcv_id, fcv_open_allowed, pneumatic);
+
         self.should_open_fcv = should_open_fcv;
-        self.pack_flow = pneumatic.pack_flow_valve_air_flow(self.fcv_id);
+        self.pack_flow = pneumatic.pack_flow_valve_air_flow(fcv_id);
 
         self.pid
-            .change_setpoint(pack_flow_demand.get::<kilogram_per_second>() / ENGINES as f64);
+            .change_setpoint(pack_flow_demand.get::<kilogram_per_second>());
         self.pid.next_control_output(
             self.pack_flow.get::<kilogram_per_second>(),
             Some(context.delta()),
         );
+    }
+
+    fn fault_determination(
+        &mut self,
+        fcv_id: usize,
+        fcv_open_allowed: bool,
+        pneumatic: &impl PackFlowValveState,
+    ) {
+        self.fault = if fcv_open_allowed != pneumatic.pack_flow_valve_is_open(fcv_id) {
+            Some(FcvFault::PositionDisagree)
+        } else {
+            None
+        }
+    }
+
+    fn has_fault(&self) -> Option<FcvFault> {
+        self.fault
     }
 }
 

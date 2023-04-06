@@ -45,14 +45,10 @@ pub trait PackFlow {
     fn pack_flow(&self) -> MassRate {
         MassRate::default()
     }
-    fn pack_flow_demand(&self, pack_id: Pack) -> MassRate {
+    fn pack_flow_demand(&self, _pack_id: Pack) -> MassRate {
         MassRate::default()
     }
 }
-
-// pub trait PackFlowControllers<const ENGINES: usize> {
-//     fn pack_flow_controller(&self, pack_id: usize) -> PackFlowController<ENGINES>;
-// }
 
 pub trait PackFlowControllers {
     fn pack_flow_controller(

@@ -215,8 +215,7 @@ pub trait PneumaticBleed {
 }
 
 pub trait EngineStartState {
-    fn left_engine_state(&self) -> EngineState;
-    fn right_engine_state(&self) -> EngineState;
+    fn engine_state(&self, engine_number: usize) -> EngineState;
     fn engine_mode_selector(&self) -> EngineModeSelector;
 }
 

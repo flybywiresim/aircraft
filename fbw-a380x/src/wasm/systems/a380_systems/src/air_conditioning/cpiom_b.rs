@@ -69,7 +69,7 @@ impl CoreProcessingInputOutputModuleB {
             });
 
         // We check if any CPIOM B is available to run the applications
-        if self.cpiom_are_active.iter().any(|&cpiom| cpiom == true) {
+        if self.cpiom_are_active.iter().any(|&cpiom| cpiom) {
             self.ags_app.update(
                 context,
                 adirs,
@@ -88,9 +88,9 @@ impl PackFlow for CoreProcessingInputOutputModuleB {
         // CPIOM B1 and B3 calculate the LH AGU Flow Demand
         // CPIOM B2 and B4 calculate the RH AGU Flow Demand
         // If both CPIOMs for the respective AGU are not available, we return 0
-        if matches!(pack_id, Pack(1)) && self.cpiom_are_active[0] || self.cpiom_are_active[2] {
-            self.ags_app.pack_flow_demand(pack_id)
-        } else if matches!(pack_id, Pack(2)) && self.cpiom_are_active[1] || self.cpiom_are_active[3]
+        if (matches!(pack_id, Pack(1)) && (self.cpiom_are_active[0] || self.cpiom_are_active[2]))
+            || (matches!(pack_id, Pack(2))
+                && (self.cpiom_are_active[1] || self.cpiom_are_active[3]))
         {
             self.ags_app.pack_flow_demand(pack_id)
         } else {
@@ -112,7 +112,7 @@ struct AirGenerationSystemApplication {
     pack_flow_id: [VariableIdentifier; 4],
 
     aircraft_state: AirConditioningStateManager,
-    fcv_timer_open: Duration,
+    fcv_timer_open: [Duration; 2], // One for each pack
     flow_demand_ratio: [Ratio; 2], // One for each pack
     flow_ratio: [Ratio; 4],        // One for each FCV
     pack_flow_demand: [MassRate; 2],
@@ -135,7 +135,7 @@ impl AirGenerationSystemApplication {
             pack_flow_id: Self::pack_flow_id(context),
 
             aircraft_state: AirConditioningStateManager::new(),
-            fcv_timer_open: Duration::from_secs(0),
+            fcv_timer_open: [Duration::from_secs(0); 2],
             flow_demand_ratio: [Ratio::default(); 2],
             flow_ratio: [Ratio::default(); 4],
             pack_flow_demand: [MassRate::default(); 2],
@@ -170,7 +170,7 @@ impl AirGenerationSystemApplication {
 
         self.aircraft_state = self
             .aircraft_state
-            .update(context, ground_speed, &engines, lgciu);
+            .update(context, ground_speed, engines, lgciu);
 
         self.flow_demand_ratio = [
             self.flow_demand_determination(&self.aircraft_state, acs_overhead, Pack(1), pneumatic),
@@ -180,7 +180,7 @@ impl AirGenerationSystemApplication {
             self.absolute_flow_calculation(Pack(1), pressurization),
             self.absolute_flow_calculation(Pack(2), pressurization),
         ];
-
+        self.update_timer(context, pneumatic);
         self.flow_ratio = self.actual_flow_percentage_calculation(pneumatic, pressurization);
     }
 
@@ -198,7 +198,8 @@ impl AirGenerationSystemApplication {
     ) -> bool {
         // Returns true when one of the packs is in start condition
         pneumatic.pack_flow_valve_is_open(pack.into())
-            && self.fcv_timer_open <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND)
+            && self.fcv_timer_open[pack.to_index()]
+                <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND)
     }
 
     fn flow_demand_determination(
@@ -292,6 +293,19 @@ impl AirGenerationSystemApplication {
                     v.len()
                 )
             })
+    }
+
+    fn update_timer(&mut self, context: &UpdateContext, pneumatic: &impl PackFlowValveState) {
+        if pneumatic.pack_flow_valve_is_open(1) || pneumatic.pack_flow_valve_is_open(2) {
+            self.fcv_timer_open[0] += context.delta();
+        } else {
+            self.fcv_timer_open[0] = Duration::from_secs(0);
+        }
+        if pneumatic.pack_flow_valve_is_open(3) || pneumatic.pack_flow_valve_is_open(4) {
+            self.fcv_timer_open[1] += context.delta();
+        } else {
+            self.fcv_timer_open[1] = Duration::from_secs(0);
+        }
     }
 }
 

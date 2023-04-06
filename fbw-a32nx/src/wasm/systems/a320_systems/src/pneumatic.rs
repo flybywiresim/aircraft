@@ -373,11 +373,8 @@ impl PneumaticBleed for A320Pneumatic {
     }
 }
 impl EngineStartState for A320Pneumatic {
-    fn left_engine_state(&self) -> EngineState {
-        self.fadec.engine_state(1)
-    }
-    fn right_engine_state(&self) -> EngineState {
-        self.fadec.engine_state(2)
+    fn engine_state(&self, engine_number: usize) -> EngineState {
+        self.fadec.engine_state(engine_number)
     }
     fn engine_mode_selector(&self) -> EngineModeSelector {
         self.fadec.engine_mode_selector()
@@ -1222,7 +1219,7 @@ impl PackComplex {
     ) {
         self.pack_flow_valve.update_open_amount(
             pack_flow_valve_signals
-                .pack_flow_controller(self.engine_number.into())
+                .pack_flow_controller(self.engine_number)
                 .as_ref(),
         );
 
