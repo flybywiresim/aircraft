@@ -118,7 +118,9 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
 
     useEffect(() => {
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
-        for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
+        for (let i = 0; i < generatorNumber; i++) {
+            failureGeneratorArmed[i] = false;
+         }
     }, []);
 };
 
