@@ -1134,6 +1134,12 @@ mod tests {
             self
         }
 
+        fn set_no_flaps_angle(mut self) -> Self {
+            self.command(|a| a.set_angle_request(None));
+
+            self
+        }
+
         fn fppu_position(&self) -> Angle {
             self.query(|a| a.flaps_slats.fppu_angle())
         }
@@ -1490,144 +1496,122 @@ mod tests {
         assert!(test_bed.fppu_position() == Angle::new::<degree>(0.));
     }
 
-    // #[test]
-    // fn flap_slat_assembly_stops_at_max_position_at_half_speed_with_one_sfcc() {
-    //     let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+    #[test]
+    fn flap_slat_assembly_stops_at_max_position_at_half_speed_with_one_sfcc() {
+        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
+        let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
 
-    //     let flap_position_request = Angle::new::<degree>(40.);
-    //     test_bed.command(|a| a.set_angle_per_sfcc(None, Some(flap_position_request)));
-    //     test_bed.command(|a| {
-    //         a.set_current_pressure(
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //         )
-    //     });
+        let mut test_bed = test_bed_with()
+            .set_flaps_angle(Angle::new::<degree>(40.))
+            .set_hydraulic_circuit_pressure(circuit_pressure, circuit_pressure);
 
-    //     test_bed.run_multiple_frames(Duration::from_millis(1000));
+        test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(1000));
 
-    //     let current_speed = test_bed.query(|a| a.flaps_slats.speed);
-    //     assert!(
-    //         (current_speed - max_speed / 2.).abs()
-    //             <= AngularVelocity::new::<radian_per_second>(0.01)
-    //     );
+        let current_speed = test_bed.fppu_speed();
+        assert!(
+            (current_speed - max_speed / 2.).abs()
+                <= AngularVelocity::new::<radian_per_second>(0.01)
+        );
 
-    //     test_bed.run_multiple_frames(Duration::from_millis(40000));
+        // test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(40000));
+        // assert!(test_bed.fppu_position() == test_bed.query(|a| a.flaps_slats.max_synchro_angle));
+    }
 
-    //     assert!(
-    //         test_bed.query(|a| a.flaps_slats.position_feedback())
-    //             == test_bed.query(|a| a.flaps_slats.max_synchro_angle)
-    //     );
-    // }
+    #[test]
+    fn flap_slat_assembly_stops_if_no_sfcc() {
+        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
+        let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
 
-    // #[test]
-    // fn flap_slat_assembly_stops_if_no_sfcc() {
-    //     let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+        let mut test_bed = test_bed_with()
+            .set_flaps_angle(Angle::new::<degree>(40.))
+            .set_hydraulic_circuit_pressure(circuit_pressure, circuit_pressure);
 
-    //     let flap_position_request = Angle::new::<degree>(40.);
-    //     test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
-    //     test_bed.command(|a| {
-    //         a.set_current_pressure(
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //         )
-    //     });
+        test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(5000));
 
-    //     test_bed.run_multiple_frames(Duration::from_millis(5000));
+        let current_speed = test_bed.fppu_speed();
+        assert!(
+            (current_speed - max_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01)
+        );
 
-    //     let current_speed = test_bed.query(|a| a.flaps_slats.speed);
-    //     assert!(
-    //         (current_speed - max_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01)
-    //     );
+        test_bed = test_bed.set_no_flaps_angle();
 
-    //     test_bed.command(|a| a.set_angle_request(None));
+        test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(5000));
+        let current_speed = test_bed.fppu_speed();
+        assert!((current_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01));
+    }
 
-    //     test_bed.run_multiple_frames(Duration::from_millis(5000));
-    //     let current_speed = test_bed.query(|a| a.flaps_slats.speed);
-    //     assert!((current_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01));
-    // }
+    #[test]
+    fn flap_slat_assembly_slows_down_approaching_req_pos_while_extending() {
+        let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
+        let flap_position_request = Angle::new::<degree>(10.);
 
-    // #[test]
-    // fn flap_slat_assembly_slows_down_approaching_req_pos_while_extending() {
-    //     let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+        let mut test_bed = test_bed_with()
+            .set_flaps_angle(flap_position_request)
+            .set_hydraulic_circuit_pressure(circuit_pressure, circuit_pressure);
 
-    //     let flap_position_request = Angle::new::<degree>(10.);
-    //     test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
-    //     test_bed.command(|a| {
-    //         a.set_current_pressure(
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //         )
-    //     });
+        let mut flap_speed_snapshot = test_bed.fppu_speed();
+        for _ in 0..150 {
+            test_bed.run_with_delta(Duration::from_millis(100));
 
-    //     let mut flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
-    //     for _ in 0..150 {
-    //         test_bed.run_with_delta(Duration::from_millis(100));
+            let current_flap_angle = surface_angle_from_fppu(Some(test_bed.fppu_position()));
 
-    //         let current_flap_angle = test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle());
+            if (current_flap_angle.unwrap() - flap_position_request)
+                .abs()
+                .get::<degree>()
+                < 0.5
+            {
+                assert!(test_bed.fppu_speed() < flap_speed_snapshot)
+            } else {
+                flap_speed_snapshot = test_bed.fppu_speed();
+            }
 
-    //         if (current_flap_angle - flap_position_request)
-    //             .abs()
-    //             .get::<degree>()
-    //             < 0.5
-    //         {
-    //             assert!(test_bed.query(|a| a.flaps_slats.speed) < flap_speed_snapshot)
-    //         } else {
-    //             flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
-    //         }
+            println!(
+                "Speed {:.2}-> Surface angle {:.2}",
+                test_bed.fppu_speed().get::<radian_per_second>(),
+                surface_angle_from_fppu(Some(test_bed.fppu_position()))
+                    .unwrap()
+                    .get::<degree>()
+            );
+        }
+    }
 
-    //         println!(
-    //             "Speed {:.2}-> Surface angle {:.2}",
-    //             test_bed.query(|a| a.flaps_slats.speed.get::<radian_per_second>()),
-    //             test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle().get::<degree>())
-    //         );
-    //     }
-    // }
+    #[test]
+    fn flap_slat_assembly_slows_down_approaching_req_pos_while_retracting() {
+        let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
+        let flap_position_request = Angle::new::<degree>(30.);
 
-    // #[test]
-    // fn flap_slat_assembly_slows_down_approaching_req_pos_while_retracting() {
-    //     let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
-    //     let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+        let mut test_bed = test_bed_with()
+            .set_flaps_angle(flap_position_request)
+            .set_hydraulic_circuit_pressure(circuit_pressure, circuit_pressure);
 
-    //     let flap_position_request = Angle::new::<degree>(30.);
-    //     test_bed.command(|a| a.set_angle_request(Some(flap_position_request)));
-    //     test_bed.command(|a| {
-    //         a.set_current_pressure(
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //             Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI),
-    //         )
-    //     });
+        test_bed = test_bed
+            .and_run_multiple_frames(Duration::from_millis(30000))
+            .set_flaps_angle(flap_position_request - Angle::new::<degree>(10.));
 
-    //     test_bed.run_multiple_frames(Duration::from_millis(30000));
+        let mut flap_speed_snapshot = test_bed.fppu_speed();
 
-    //     test_bed.command(|a| {
-    //         a.set_angle_request(Some(flap_position_request - Angle::new::<degree>(10.)))
-    //     });
+        for _ in 0..150 {
+            test_bed.run_with_delta(Duration::from_millis(100));
 
-    //     let mut flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
+            let current_flap_angle = surface_angle_from_fppu(Some(test_bed.fppu_position()));
 
-    //     for _ in 0..150 {
-    //         test_bed.run_with_delta(Duration::from_millis(100));
+            if (current_flap_angle.unwrap() - flap_position_request)
+                .abs()
+                .get::<degree>()
+                < 0.5
+            {
+                assert!(test_bed.fppu_speed() < flap_speed_snapshot)
+            } else {
+                flap_speed_snapshot = test_bed.fppu_speed();
+            }
 
-    //         let current_flap_angle = test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle());
-
-    //         if (current_flap_angle - flap_position_request)
-    //             .abs()
-    //             .get::<degree>()
-    //             < 0.5
-    //         {
-    //             assert!(test_bed.query(|a| a.flaps_slats.speed) < flap_speed_snapshot)
-    //         } else {
-    //             flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
-    //         }
-
-    //         println!(
-    //             "Speed {:.2}-> Surface angle {:.2}",
-    //             test_bed.query(|a| a.flaps_slats.speed.get::<radian_per_second>()),
-    //             test_bed.query(|a| a.flaps_slats.fppu_to_surface_angle().get::<degree>())
-    //         );
-    //     }
-    // }
+            println!(
+                "Speed {:.2}-> Surface angle {:.2}",
+                test_bed.fppu_speed().get::<radian_per_second>(),
+                surface_angle_from_fppu(Some(test_bed.fppu_position()))
+                    .unwrap()
+                    .get::<degree>()
+            );
+        }
+    }
 }
