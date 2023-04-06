@@ -615,8 +615,16 @@ impl BleedMonitoringComputerChannel {
             is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
-            high_pressure_valve_pid: PidController::new(0.05, 0.003, 0., 0., 1., 65., 1.),
-            pressure_regulating_valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., 46., 1.),
+            high_pressure_valve_pid: PidController::new(0.02, 0.003, 0., 0., 1., 65., 1.),
+            pressure_regulating_valve_pid: PidController::new(
+                0.05,
+                0.01,
+                0.,
+                0.,
+                1.,
+                Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI,
+                1.,
+            ),
             fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200., 1.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
@@ -1973,6 +1981,24 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_outlet_pressure())
         }
 
+        fn transfer_pressure_transducer_signal(&self, number: usize) -> Option<Pressure> {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1].transfer_pressure_transducer_pressure()
+            })
+        }
+
+        fn regulated_pressure_transducer_signal(&self, number: usize) -> Option<Pressure> {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1].regulated_pressure_transducer_pressure()
+            })
+        }
+
+        fn differential_pressure_transducer_signal(&self, number: usize) -> Option<Pressure> {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1].differential_pressure_transducer_pressure()
+            })
+        }
+
         fn precooler_supply_pressure(&self, number: usize) -> Pressure {
             self.query(|a| {
                 a.pneumatic.engine_systems[number - 1]
@@ -3323,6 +3349,87 @@ mod tests {
 
         assert!(!test_bed.precooler_inlet_pressure(1).is_nan());
         assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
+    }
+
+    #[test]
+    fn pr_valve_regulates_to_42_psig_in_dual_bleed_config() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .both_packs_auto();
+
+        // We need a bit of time to get into an equilibrium state
+        test_bed.run_with_delta(Duration::from_secs(30));
+
+        let eng1_pressure = test_bed.regulated_pressure_transducer_signal(1).unwrap();
+        let eng2_pressure = test_bed.regulated_pressure_transducer_signal(2).unwrap();
+
+        println!("Eng 1 pressure: {}", eng1_pressure.get::<psi>());
+        println!("Eng 2 pressure: {}", eng2_pressure.get::<psi>());
+
+        assert!(eng1_pressure >= Pressure::new::<psi>(40.));
+        assert!(eng1_pressure <= Pressure::new::<psi>(44.));
+        assert!(eng2_pressure >= Pressure::new::<psi>(40.));
+        assert!(eng2_pressure <= Pressure::new::<psi>(44.));
+    }
+
+    #[test]
+    fn pr_valve_regulates_to_50_psig_in_single_bleed_config() {
+        let mut test_bed = test_bed_with()
+            .stop_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .both_packs_auto();
+
+        // We need a bit of time to get into an equilibrium state
+        test_bed.run_with_delta(Duration::from_secs(30));
+
+        let eng1_pressure = test_bed.regulated_pressure_transducer_signal(1).unwrap();
+        let eng2_pressure = test_bed.regulated_pressure_transducer_signal(2).unwrap();
+
+        println!("Eng 1 pressure: {}", eng1_pressure.get::<psi>());
+        println!("Eng 2 pressure: {}", eng2_pressure.get::<psi>());
+
+        assert!(eng2_pressure >= Pressure::new::<psi>(48.));
+        assert!(eng2_pressure <= Pressure::new::<psi>(52.));
+    }
+
+    #[test]
+    fn pressure_transducer_signals() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        // The state doesn't really matter here
+        let test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .both_packs_auto()
+            .and_stabilize();
+
+        for i in 1..2 {
+            assert!(
+                test_bed.regulated_pressure_transducer_signal(i).unwrap()
+                    - test_bed.precooler_inlet_pressure(i)
+                    - ambient_pressure
+                    < Pressure::new::<psi>(0.1)
+            );
+
+            assert!(
+                test_bed.transfer_pressure_transducer_signal(i).unwrap()
+                    - test_bed.transfer_pressure(i)
+                    - ambient_pressure
+                    < Pressure::new::<psi>(0.1)
+            );
+
+            assert!(
+                test_bed.differential_pressure_transducer_signal(i).unwrap()
+                    - (test_bed.precooler_inlet_pressure(i)
+                        - test_bed.precooler_outlet_pressure(i))
+                    < Pressure::new::<psi>(0.1)
+            );
+        }
     }
 
     mod wing_anti_ice {
