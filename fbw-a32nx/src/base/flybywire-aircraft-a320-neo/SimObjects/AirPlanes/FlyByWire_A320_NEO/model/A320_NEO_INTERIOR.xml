@@ -5274,5 +5274,25 @@
             </Component>
         </Component>
 
+        <Component ID="WINDSHIELD">
+            <!-- Windshield Left -->
+            <UseTemplate Name="FBW_Windshield_Wiped">
+                <SIDE>CAPT</SIDE>
+                <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+            </UseTemplate>
+
+            <!-- Windshield Right -->
+            <UseTemplate Name="FBW_Windshield_Wiped">
+                <SIDE>FO</SIDE>
+                <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+            </UseTemplate>
+
+            <!-- Hide Asobo Windshield -->
+            <Component ID="WINDSHIELD" Node="WINDSHIELD">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+        </Component>
     </Behaviors>
 </ModelInfo>
