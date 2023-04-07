@@ -10,7 +10,9 @@ use super::{
 use crate::{
     failures::{Failure, FailureType},
     shared::{ConsumePower, ElectricalBusType, PotentialOrigin, PowerConsumptionReport},
-    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    },
 };
 
 pub struct BatteryChargeRectifierUnit {
@@ -156,7 +158,7 @@ impl ElectricalElement for BatteryChargeRectifierUnit {
 }
 impl ElectricityTransformer for BatteryChargeRectifierUnit {
     fn transform(&self, input: Ref<Potential>) -> Potential {
-        if input.is_powered() {
+        if !self.failure.is_active() && input.is_powered() {
             Potential::new(
                 PotentialOrigin::TransformerRectifier(self.number),
                 ElectricPotential::new::<volt>(28.),
@@ -167,6 +169,12 @@ impl ElectricityTransformer for BatteryChargeRectifierUnit {
     }
 }
 impl SimulationElement for BatteryChargeRectifierUnit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_direct(self, writer);
     }
