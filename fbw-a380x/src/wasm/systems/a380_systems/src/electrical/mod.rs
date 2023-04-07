@@ -140,7 +140,7 @@ impl A380Electrical {
         self.emergency_gen.update(&self.gcu);
 
         self.alternating_current
-            .update(context, electricity, overhead, &self.emergency_gen);
+            .update(electricity, overhead, &self.emergency_gen);
 
         self.direct_current.update(
             context,
@@ -2777,7 +2777,7 @@ mod a380_electrical_circuit_tests {
         }
     }
     impl ApuGenerator for TestApuGenerator {
-        fn update(&mut self, n: Ratio, is_emergency_shutdown: bool) {}
+        fn update(&mut self, _n: Ratio, _is_emergency_shutdown: bool) {}
 
         fn output_within_normal_parameters(&self) -> bool {
             self.is_available

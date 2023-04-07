@@ -2,7 +2,6 @@ use super::{
     A380AlternatingCurrentElectricalSystem, A380DirectCurrentElectricalSystem,
     A380ElectricalOverheadPanel,
 };
-use std::time::Duration;
 use systems::accept_iterable;
 use systems::apu::ApuGenerator;
 use systems::electrical::ElectricalElement;
@@ -13,8 +12,7 @@ use systems::{
         EmergencyGenerator, EngineGenerator, ExternalPowerSource, TransformerRectifier,
     },
     shared::{
-        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN2,
-        EngineFirePushButtons,
+        AuxiliaryPowerUnitElectrical, ElectricalBusType, EngineCorrectedN2, EngineFirePushButtons,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -31,7 +29,7 @@ pub(super) struct A380AlternatingCurrentElectrical {
     eha_contactors: [Contactor; 2],
     tr_apu: TransformerRectifier,
     emergency_gen_contactor: Contactor,
-    ac_gnd_flt_service_bus: ElectricalBus,
+    //ac_gnd_flt_service_bus: ElectricalBus,
 }
 impl A380AlternatingCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
@@ -58,10 +56,10 @@ impl A380AlternatingCurrentElectrical {
             eha_contactors: ["911XN", "911XH"].map(|id| Contactor::new(context, id)),
             tr_apu: TransformerRectifier::new(context, 4),
             emergency_gen_contactor: Contactor::new(context, "5XE"),
-            ac_gnd_flt_service_bus: ElectricalBus::new(
-                context,
-                ElectricalBusType::AlternatingCurrentGndFltService,
-            ),
+            // ac_gnd_flt_service_bus: ElectricalBus::new(
+            //     context,
+            //     ElectricalBusType::AlternatingCurrentGndFltService,
+            // ),
         }
     }
 
@@ -91,13 +89,11 @@ impl A380AlternatingCurrentElectrical {
 
     pub fn update(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
         overhead: &A380ElectricalOverheadPanel,
         emergency_generator: &EmergencyGenerator,
     ) {
         self.ac_ess_feed_contactors.update(
-            context,
             electricity,
             &self.ac_buses[0],
             &self.ac_buses[3],
@@ -640,7 +636,6 @@ impl A380AcEssFeedContactors {
 
     fn update(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
         ac_bus_1: &ElectricalBus,
         ac_bus_4: &ElectricalBus,
@@ -664,11 +659,6 @@ impl A380AcEssFeedContactors {
     fn power_400xp(&self, electricity: &mut Electricity, bus_400xp: &ElectricalBus) {
         electricity.flow(&self.ac_ess_feed_contactor_1, bus_400xp);
         electricity.flow(&self.ac_ess_feed_contactor_2, bus_400xp);
-    }
-
-    fn provides_power(&self, electricity: &Electricity) -> bool {
-        electricity.is_powered(&self.ac_ess_feed_contactor_1)
-            || electricity.is_powered(&self.ac_ess_feed_contactor_2)
     }
 }
 impl SimulationElement for A380AcEssFeedContactors {
