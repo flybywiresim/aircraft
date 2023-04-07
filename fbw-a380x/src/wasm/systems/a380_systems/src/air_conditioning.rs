@@ -472,8 +472,14 @@ impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
 
 impl SimulationElement for A380AirConditioningSystemOverhead {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let flow_selector_id: f64 = reader.read(&self.flow_selector_id);
-        self.flow_selector = OverheadFlowSelector::from_a320(flow_selector_id);
+        let selector_position: f64 = reader.read(&self.flow_selector_id);
+        self.flow_selector = match selector_position as u8 {
+            0 => OverheadFlowSelector::Man,
+            1 => OverheadFlowSelector::Lo,
+            2 => OverheadFlowSelector::Norm,
+            3 => OverheadFlowSelector::Hi,
+            _ => panic!("Overhead flow selector position not recognized."),
+        }
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1424,7 +1430,7 @@ mod tests {
             test_bed.command_measured_temperature(
                 [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
             );
-            test_bed.command_pack_flow_selector_position(1);
+            test_bed.command_pack_flow_selector_position(2);
             test_bed.command_engine_n1(Ratio::new::<percent>(30.));
 
             test_bed

@@ -1176,7 +1176,12 @@ mod acs_controller_tests {
             self.cabin_fans_pb = is_on;
         }
         fn set_flow_selector(&mut self, selector_position: f64) {
-            self.flow_selector = OverheadFlowSelector::from_a320(selector_position);
+            self.flow_selector = match selector_position as u8 {
+                0 => OverheadFlowSelector::Lo,
+                1 => OverheadFlowSelector::Norm,
+                2 => OverheadFlowSelector::Hi,
+                _ => panic!("Overhead flow selector position not recognized."),
+            }
         }
     }
     impl AirConditioningOverheadShared for TestAcsOverhead {

@@ -440,8 +440,13 @@ impl<const ZONES: usize> AirConditioningOverheadShared
 
 impl<const ZONES: usize> SimulationElement for A320AirConditioningSystemOverhead<ZONES> {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let flow_selector_id: f64 = reader.read(&self.flow_selector_id);
-        self.flow_selector = OverheadFlowSelector::from_a320(flow_selector_id);
+        let selector_position: f64 = reader.read(&self.flow_selector_id);
+        self.flow_selector = match selector_position as u8 {
+            0 => OverheadFlowSelector::Lo,
+            1 => OverheadFlowSelector::Norm,
+            2 => OverheadFlowSelector::Hi,
+            _ => panic!("Overhead flow selector position not recognized."),
+        }
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

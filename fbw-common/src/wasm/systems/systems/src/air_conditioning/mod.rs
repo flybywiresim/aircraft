@@ -141,25 +141,6 @@ pub enum OverheadFlowSelector {
     Hi = 120,
     Man = 0,
 }
-impl OverheadFlowSelector {
-    pub fn from_a320(value: f64) -> Self {
-        match value as u8 {
-            0 => OverheadFlowSelector::Lo,
-            1 => OverheadFlowSelector::Norm,
-            2 => OverheadFlowSelector::Hi,
-            _ => panic!("Overhead flow selector position not recognized."),
-        }
-    }
-    pub fn from_a380(value: f64) -> Self {
-        match value as u8 {
-            0 => OverheadFlowSelector::Man,
-            1 => OverheadFlowSelector::Lo,
-            2 => OverheadFlowSelector::Norm,
-            3 => OverheadFlowSelector::Hi,
-            _ => panic!("Overhead flow selector position not recognized."),
-        }
-    }
-}
 
 impl From<OverheadFlowSelector> for Ratio {
     fn from(value: OverheadFlowSelector) -> Self {
