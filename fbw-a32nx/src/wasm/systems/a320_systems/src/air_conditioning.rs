@@ -440,7 +440,8 @@ impl<const ZONES: usize> AirConditioningOverheadShared
 
 impl<const ZONES: usize> SimulationElement for A320AirConditioningSystemOverhead<ZONES> {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.flow_selector = reader.read(&self.flow_selector_id);
+        let flow_selector_id: f64 = reader.read(&self.flow_selector_id);
+        self.flow_selector = OverheadFlowSelector::from_a320(flow_selector_id);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

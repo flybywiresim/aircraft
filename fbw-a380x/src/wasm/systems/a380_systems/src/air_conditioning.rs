@@ -472,7 +472,8 @@ impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
 
 impl SimulationElement for A380AirConditioningSystemOverhead {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.flow_selector = reader.read(&self.flow_selector_id);
+        let flow_selector_id: f64 = reader.read(&self.flow_selector_id);
+        self.flow_selector = OverheadFlowSelector::from_a320(flow_selector_id);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

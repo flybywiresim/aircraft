@@ -13,8 +13,8 @@ use crate::{
         ElectricalBusType, ElectricalBuses,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorWriter,
-        UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
     },
 };
 
@@ -141,17 +141,21 @@ pub enum OverheadFlowSelector {
     Hi = 120,
     Man = 0,
 }
-
-read_write_enum!(OverheadFlowSelector);
-
-impl From<f64> for OverheadFlowSelector {
-    fn from(value: f64) -> Self {
+impl OverheadFlowSelector {
+    pub fn from_a320(value: f64) -> Self {
         match value as u8 {
-            // Note: A380 overhead only has 0,1,2 positions, it doesn't rotate to MAN
             0 => OverheadFlowSelector::Lo,
             1 => OverheadFlowSelector::Norm,
             2 => OverheadFlowSelector::Hi,
-            3 => OverheadFlowSelector::Man,
+            _ => panic!("Overhead flow selector position not recognized."),
+        }
+    }
+    pub fn from_a380(value: f64) -> Self {
+        match value as u8 {
+            0 => OverheadFlowSelector::Man,
+            1 => OverheadFlowSelector::Lo,
+            2 => OverheadFlowSelector::Norm,
+            3 => OverheadFlowSelector::Hi,
             _ => panic!("Overhead flow selector position not recognized."),
         }
     }
