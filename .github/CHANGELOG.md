@@ -88,7 +88,7 @@
 1. [FLIGHTMODEL/FUEL] Reinstate updated outer fuel tank position from updated CG for ELAC 103 -  @donstim (donbikes#4084)
 1. [MODEL] Change pitch trim scale to correct neo scale - @tracernz (Mike)
 1. [FMS] Handle approach transitions hidden inside other transition with Navigraph data - @tracernz (Mike)
-
+1. [HYD] Engine pumps disconnection mechanism on A380- @Crocket63 (crocket)
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)

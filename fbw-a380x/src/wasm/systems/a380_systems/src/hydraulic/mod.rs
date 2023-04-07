@@ -41,9 +41,9 @@ use systems::{
         trimmable_horizontal_stabilizer::{
             TrimmableHorizontalStabilizerActuator, TrimmableHorizontalStabilizerMotorController,
         },
-        Accumulator, ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PriorityValve,
-        PumpController, Reservoir,
+        Accumulator, ElectricPump, EngineDrivenPump, HeatingElement, HydraulicCircuit,
+        HydraulicCircuitController, HydraulicPressureSensors, PressureSwitch, PressureSwitchType,
+        PriorityValve, PumpController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
@@ -65,6 +65,8 @@ use std::fmt::Debug;
 
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
+mod engine_pump_disc;
+use engine_pump_disc::EnginePumpDisconnectionClutch;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
@@ -1935,6 +1937,28 @@ impl A380Hydraulic {
         }
     }
 
+    fn pump_disc_has_fault(&self, engine_id: usize) -> bool {
+        match engine_id {
+            1 => {
+                self.engine_driven_pump_1a_controller.has_disc_fault()
+                    || self.engine_driven_pump_1b_controller.has_disc_fault()
+            }
+            2 => {
+                self.engine_driven_pump_2a_controller.has_disc_fault()
+                    || self.engine_driven_pump_2b_controller.has_disc_fault()
+            }
+            3 => {
+                self.engine_driven_pump_3a_controller.has_disc_fault()
+                    || self.engine_driven_pump_3b_controller.has_disc_fault()
+            }
+            4 => {
+                self.engine_driven_pump_4a_controller.has_disc_fault()
+                    || self.engine_driven_pump_4b_controller.has_disc_fault()
+            }
+            _ => panic!("Not more than 4 engines!!"),
+        }
+    }
+
     fn epump_has_fault(&self, pump_id: A380ElectricPumpId) -> bool {
         match pump_id {
             A380ElectricPumpId::YellowA => self.yellow_electric_pump_a_controller.has_any_fault(),
@@ -3017,7 +3041,7 @@ impl HydraulicCircuitController for A380HydraulicCircuitController {
 }
 
 use std::fmt::Display;
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum A380EngineDrivenPumpId {
     Edp1a,
     Edp1b,
@@ -3114,8 +3138,11 @@ struct A380EngineDrivenPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
+    has_overheat_fault: bool,
 
     are_pumps_disconnected: bool,
+
+    disconnection_mechanism: EnginePumpDisconnectionClutch,
 }
 impl A380EngineDrivenPumpController {
     fn new(
@@ -3123,10 +3150,10 @@ impl A380EngineDrivenPumpController {
         pump_id: A380EngineDrivenPumpId,
         powered_by: Vec<ElectricalBusType>,
     ) -> Self {
+        let engine_num = pump_id.into_engine_num();
         Self {
             low_press_id: context.get_identifier(format!("HYD_EDPUMP_{}_LOW_PRESS", pump_id)),
-            disconnected_id: context
-                .get_identifier(format!("HYD_ENG_{}AB_PUMP_DISC", pump_id.into_engine_num())),
+            disconnected_id: context.get_identifier(format!("HYD_ENG_{}AB_PUMP_DISC", engine_num)),
 
             is_powered: false,
             powered_by,
@@ -3138,8 +3165,15 @@ impl A380EngineDrivenPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
+            has_overheat_fault: false,
 
             are_pumps_disconnected: false,
+
+            disconnection_mechanism: EnginePumpDisconnectionClutch::new(match engine_num {
+                1 | 4 => ElectricalBusType::DirectCurrent(2),
+                2 | 3 => ElectricalBusType::DirectCurrent(1),
+                _ => panic!("Only 4 engines on A380"),
+            }),
         }
     }
 
@@ -3201,6 +3235,9 @@ impl A380EngineDrivenPumpController {
         self.are_pumps_disconnected = self.are_pumps_disconnected
             || overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num());
 
+        self.disconnection_mechanism
+            .update(overhead_panel.engines_edp_disconnected(self.pump_id.into_engine_num()));
+
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         // TODO disconnected pump is just depressurising it as a placeholder for disc mechanism
         self.should_pressurise =
@@ -3211,18 +3248,34 @@ impl A380EngineDrivenPumpController {
         self.update_low_air_pressure(reservoir, overhead_panel);
 
         self.update_low_level(reservoir, overhead_panel);
+
+        self.has_overheat_fault = reservoir.is_overheating();
     }
 
     fn has_any_fault(&self) -> bool {
         self.has_pressure_low_fault || self.has_air_pressure_low_fault || self.has_low_level_fault
+    }
+
+    fn has_disc_fault(&self) -> bool {
+        // Fault cleared when disconnect is selected according to fcom
+        (self.has_low_level_fault || self.has_overheat_fault) && !self.are_pumps_disconnected
     }
 }
 impl PumpController for A380EngineDrivenPumpController {
     fn should_pressurise(&self) -> bool {
         self.should_pressurise
     }
+
+    fn is_input_shaft_connected(&self) -> bool {
+        self.disconnection_mechanism.is_connected()
+    }
 }
 impl SimulationElement for A380EngineDrivenPumpController {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.disconnection_mechanism.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.low_press_id, self.is_pressure_low);
         writer.write(&self.disconnected_id, self.are_pumps_disconnected);
@@ -4705,6 +4758,15 @@ impl A380HydraulicOverheadPanel {
     }
 
     pub(super) fn update(&mut self, hyd: &A380Hydraulic) {
+        self.eng1_edp_disconnect
+            .set_fault(hyd.pump_disc_has_fault(1));
+        self.eng2_edp_disconnect
+            .set_fault(hyd.pump_disc_has_fault(2));
+        self.eng3_edp_disconnect
+            .set_fault(hyd.pump_disc_has_fault(3));
+        self.eng4_edp_disconnect
+            .set_fault(hyd.pump_disc_has_fault(4));
+
         self.edp1a_push_button
             .set_fault(hyd.edp_has_fault(A380EngineDrivenPumpId::Edp1a));
         self.edp2a_push_button
@@ -7575,6 +7637,18 @@ mod tests {
                 self
             }
 
+            fn set_disconnect_engine_edp(mut self, engine_id: usize) -> Self {
+                match engine_id {
+                    1 => self.write_by_name("OVHD_HYD_ENG_1AB_PUMP_DISC_PB_IS_AUTO", false),
+                    2 => self.write_by_name("OVHD_HYD_ENG_2AB_PUMP_DISC_PB_IS_AUTO", false),
+                    3 => self.write_by_name("OVHD_HYD_ENG_3AB_PUMP_DISC_PB_IS_AUTO", false),
+                    4 => self.write_by_name("OVHD_HYD_ENG_4AB_PUMP_DISC_PB_IS_AUTO", false),
+                    _ => panic!("Only 4 engines buddy!"),
+                };
+
+                self
+            }
+
             fn get_flaps_left_position_percent(&mut self) -> f64 {
                 self.read_by_name("LEFT_FLAPS_POSITION_PERCENT")
             }
@@ -9028,6 +9102,76 @@ mod tests {
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn green_edp_disconnection() {
+            let mut test_bed = test_bed_on_ground_with()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(4500.));
+
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            test_bed = test_bed
+                .set_disconnect_engine_edp(2)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(4500.));
+
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            test_bed = test_bed
+                .set_disconnect_engine_edp(1)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(1500.));
+
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn yellow_edp_disconnection() {
+            let mut test_bed = test_bed_on_ground_with()
+                .start_eng3(Ratio::new::<percent>(80.))
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(4500.));
+
+            test_bed = test_bed
+                .set_disconnect_engine_edp(4)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(4500.));
+
+            test_bed = test_bed
+                .set_disconnect_engine_edp(3)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1500.));
         }
 
         #[test]

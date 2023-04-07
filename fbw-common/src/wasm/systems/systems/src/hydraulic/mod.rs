@@ -2516,6 +2516,10 @@ pub trait PumpController {
     fn max_displacement_restriction(&self) -> Ratio {
         Ratio::new::<ratio>(1.)
     }
+
+    fn is_input_shaft_connected(&self) -> bool {
+        true
+    }
 }
 
 pub struct Pump {
@@ -2817,6 +2821,8 @@ impl EngineDrivenPump {
 
     const MIN_SPEED_TO_REPORT_HEATING_RPM: f64 = 200.;
 
+    const SPEED_SPOOLDOWN_WHEN_DECLUTCHED_RPM_PER_S: f64 = 800.;
+
     pub fn new(
         context: &mut InitContext,
         id: AirbusEngineDrivenPumpId,
@@ -2857,11 +2863,15 @@ impl EngineDrivenPump {
                     > Self::MIN_SPEED_TO_REPORT_HEATING_RPM,
         );
 
-        self.speed = if !self.is_damaged() {
+        self.speed = if !self.is_damaged() && controller.is_input_shaft_connected() {
             pump_speed
         } else {
-            AngularVelocity::default()
+            self.speed
+                - AngularVelocity::new::<revolution_per_minute>(
+                    Self::SPEED_SPOOLDOWN_WHEN_DECLUTCHED_RPM_PER_S,
+                )
         };
+        self.speed = self.speed.max(AngularVelocity::default());
 
         self.pump
             .update(context, section, reservoir, self.speed, controller);
