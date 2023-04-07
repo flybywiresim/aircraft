@@ -24,7 +24,7 @@ export const failureGeneratorCommonFunction = () => {
     return { maxFailuresAtOnce, setMaxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
 };
 
-export type FailureGenData = {setting: string,
+export type FailureGenData = {
     setSetting : (value: string) => void,
     settings : number[],
     numberOfSettingsPerGenerator : number,

@@ -28,7 +28,6 @@ export const failureGenConfigAltitude : ()=>FailureGenData = () => {
         return [];
     }, [setting]);
     return {
-        setting,
         setSetting,
         settings,
         numberOfSettingsPerGenerator,
@@ -120,7 +119,7 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) {
             failureGeneratorArmed[i] = false;
-         }
+        }
     }, []);
 };
 

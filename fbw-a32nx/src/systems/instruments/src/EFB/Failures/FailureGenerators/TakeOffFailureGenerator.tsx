@@ -28,7 +28,6 @@ export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
         return [];
     }, [setting]);
     return {
-        setting,
         setSetting,
         settings,
         numberOfSettingsPerGenerator,

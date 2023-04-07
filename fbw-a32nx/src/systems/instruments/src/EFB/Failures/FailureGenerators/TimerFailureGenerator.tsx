@@ -28,7 +28,6 @@ export const failureGenConfigTimer : ()=>FailureGenData = () => {
         return [];
     }, [setting]);
     return {
-        setting,
         setSetting,
         settings,
         numberOfSettingsPerGenerator,

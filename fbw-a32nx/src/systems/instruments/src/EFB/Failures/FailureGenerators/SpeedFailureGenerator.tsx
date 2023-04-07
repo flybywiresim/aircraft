@@ -28,7 +28,6 @@ export const failureGenConfigSpeed : ()=>FailureGenData = () => {
         return [];
     }, [setting]);
     return {
-        setting,
         setSetting,
         settings,
         numberOfSettingsPerGenerator,
