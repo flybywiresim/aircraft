@@ -272,17 +272,9 @@ trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem
     fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool;
     fn ac_ess_bus_powered(&self, electricity: &Electricity) -> bool;
     fn tr_apu(&self) -> &TransformerRectifier;
-    fn power_from_ac_bus(
-        &self,
-        electricity: &mut Electricity,
-        number: usize,
-        element: &impl ElectricalElement,
-    );
-    fn power_from_ac_ess_bus(
-        &self,
-        electricity: &mut Electricity,
-        element: &impl systems::electrical::ElectricalElement,
-    );
+    fn power_tr_1(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
+    fn power_tr_2(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
+    fn power_tr_ess(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
 }
 
 pub(super) struct A380ElectricalOverheadPanel {

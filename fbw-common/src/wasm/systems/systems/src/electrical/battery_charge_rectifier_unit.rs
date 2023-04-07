@@ -159,7 +159,7 @@ impl ElectricityTransformer for BatteryChargeRectifierUnit {
         if input.is_powered() {
             Potential::new(
                 PotentialOrigin::TransformerRectifier(self.number),
-                self.output_potential,
+                ElectricPotential::new::<volt>(28.),
             )
         } else {
             Potential::none()

@@ -131,9 +131,9 @@ impl A380DirectCurrentElectrical {
         emergency_config: &EmergencyElectrical,
         tefo_condition: bool,
     ) {
-        ac_state.power_from_ac_bus(electricity, 2, &self.tr_1);
-        ac_state.power_from_ac_bus(electricity, 3, &self.tr_2);
-        ac_state.power_from_ac_ess_bus(electricity, &self.tr_ess);
+        ac_state.power_tr_1(electricity, &self.tr_1);
+        ac_state.power_tr_2(electricity, &self.tr_2);
+        ac_state.power_tr_ess(electricity, &self.tr_ess);
 
         for (tr, battery, contactor, dc_bus) in [
             (
@@ -163,6 +163,7 @@ impl A380DirectCurrentElectrical {
             electricity.flow(contactor, dc_bus);
         }
 
+        // TODO: Figure out the exact behavior how the APU BUS is powered
         // TODO: Move contactor logic into TR APU
         self.tr_apu_contactor.close_when(
             electricity.is_powered(ac_state.tr_apu())
@@ -171,27 +172,6 @@ impl A380DirectCurrentElectrical {
         );
         electricity.flow(ac_state.tr_apu(), &self.tr_apu_contactor);
         electricity.flow(&self.tr_apu_contactor, &self.apu_bat_bus);
-
-        self.tr_2_to_dc_gnd_flt_service_bus_contactor.close_when(
-            electricity.is_powered(&self.tr_2) && !ac_state.ac_bus_powered(electricity, 3),
-        );
-        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .close_when(
-                electricity.is_powered(&self.tr_2) && ac_state.ac_bus_powered(electricity, 3),
-            );
-        electricity.flow(&self.tr_2, &self.tr_2_to_dc_gnd_flt_service_bus_contactor);
-        electricity.flow(
-            &self.dc_bus_2,
-            &self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor,
-        );
-        electricity.flow(
-            &self.tr_2_to_dc_gnd_flt_service_bus_contactor,
-            &self.dc_gnd_flt_service_bus,
-        );
-        electricity.flow(
-            &self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor,
-            &self.dc_gnd_flt_service_bus,
-        );
 
         self.inter_bus_line_contactors[0].close_when(
             self.inter_bus_line_contactors[1].is_open()
@@ -291,6 +271,25 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.dc_ess_bus, &self.inter_bus_line_ess_contactor);
         electricity.flow(&self.dc_bus_2_to_dc_eha_contactor, &self.dc_eha_bus);
         electricity.flow(&self.inter_bus_line_ess_contactor, &self.dc_eha_bus);
+
+        self.tr_2_to_dc_gnd_flt_service_bus_contactor.close_when(
+            electricity.is_powered(&self.tr_2) && !electricity.is_powered(&self.dc_bus_2),
+        );
+        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
+            .close_when(electricity.is_powered(&self.dc_bus_2));
+        electricity.flow(&self.tr_2, &self.tr_2_to_dc_gnd_flt_service_bus_contactor);
+        electricity.flow(
+            &self.dc_bus_2,
+            &self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor,
+        );
+        electricity.flow(
+            &self.tr_2_to_dc_gnd_flt_service_bus_contactor,
+            &self.dc_gnd_flt_service_bus,
+        );
+        electricity.flow(
+            &self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor,
+            &self.dc_gnd_flt_service_bus,
+        );
     }
 
     #[cfg(test)]
@@ -360,11 +359,11 @@ impl SimulationElement for A380DirectCurrentElectrical {
         self.apu_start_contactors.accept(visitor);
         self.apu_start_motor_bus.accept(visitor);
 
-        /*self.dc_gnd_flt_service_bus.accept(visitor);
+        self.dc_gnd_flt_service_bus.accept(visitor);
         self.tr_2_to_dc_gnd_flt_service_bus_contactor
             .accept(visitor);
         self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .accept(visitor);*/
+            .accept(visitor);
 
         visitor.visit(self);
     }

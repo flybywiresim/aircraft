@@ -31,6 +31,7 @@ pub(super) struct A380AlternatingCurrentElectrical {
     eha_contactors: [Contactor; 2],
     tr_apu: TransformerRectifier,
     emergency_gen_contactor: Contactor,
+    ac_gnd_flt_service_bus: ElectricalBus,
 }
 impl A380AlternatingCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
@@ -57,6 +58,10 @@ impl A380AlternatingCurrentElectrical {
             eha_contactors: ["911XN", "911XH"].map(|id| Contactor::new(context, id)),
             tr_apu: TransformerRectifier::new(context, 4),
             emergency_gen_contactor: Contactor::new(context, "5XE"),
+            ac_gnd_flt_service_bus: ElectricalBus::new(
+                context,
+                ElectricalBusType::AlternatingCurrentGndFltService,
+            ),
         }
     }
 
@@ -119,6 +124,30 @@ impl A380AlternatingCurrentElectrical {
         electricity.flow(&self.ac_buses[2], &self.eha_contactors[0]);
 
         self.update_shedding(emergency_generator, electricity);
+
+        /*// TODO: Check behavior and architecture of ground service bus
+        // On the real aircraft there is a button inside the galley which is taken into
+        // account when determining whether to close this contactor or not.
+        // As we're not building a galley simulator, for now we assume the button is ON.
+        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
+            .close_when(
+                !electricity.is_powered(&self.ac_buses[2])
+                    && !self.tr_2.has_failed()
+                    && electricity.is_powered(ext_pwr),
+            );
+        electricity.flow(
+            ext_pwr,
+            &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
+        );
+
+        electricity.flow(
+            &self.ac_bus_2_to_tr_2_contactor,
+            &self.ac_gnd_flt_service_bus,
+        );
+        electricity.flow(
+            &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
+            &self.ac_gnd_flt_service_bus,
+        );*/
     }
 
     pub fn update_after_direct_current(
@@ -199,21 +228,16 @@ impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical
         &self.tr_apu
     }
 
-    fn power_from_ac_bus(
-        &self,
-        electricity: &mut Electricity,
-        number: usize,
-        element: &impl ElectricalElement,
-    ) {
-        electricity.flow(&self.ac_buses[number - 1], element);
+    fn power_tr_1(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
+        electricity.flow(&self.ac_buses[1], tr);
     }
 
-    fn power_from_ac_ess_bus(
-        &self,
-        electricity: &mut Electricity,
-        element: &impl ElectricalElement,
-    ) {
-        electricity.flow(&self.ac_ess_bus, element);
+    fn power_tr_2(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
+        electricity.flow(&self.ac_buses[2], tr);
+    }
+
+    fn power_tr_ess(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
+        electricity.flow(&self.ac_ess_bus, tr);
     }
 }
 impl AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
@@ -380,7 +404,7 @@ impl A380MainPowerSources {
             electricity.supplied_by(ext_pwr);
         }
 
-        let powered_by = self.calc_ac_sources(ext_pwrs, overhead, apu);
+        let powered_by = self.calc_ac_sources(context, ext_pwrs, overhead, apu);
 
         // Configure contactors
         for (i, (&power_source, (gen_contactor, ext_pwr_contactor))) in powered_by
@@ -499,13 +523,19 @@ impl A380MainPowerSources {
 
     fn calc_ac_sources(
         &self,
+        context: &UpdateContext,
         ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
     ) -> [Option<ACBusPowerSource>; 4] {
+        // TODO: check who decides if only one APU generator is available and where it gets the info of in flight
         let apu_gen_available = [1, 2].map(|id| {
             overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
         });
+        let apu_gen_available = [
+            apu_gen_available[0],
+            apu_gen_available[1] && (context.is_on_ground() || !apu_gen_available[0]),
+        ];
 
         let gen_available: Vec<_> = self
             .engine_gens
@@ -599,18 +629,12 @@ enum ACBusPowerSource {
 pub(super) struct A380AcEssFeedContactors {
     ac_ess_feed_contactor_1: Contactor,
     ac_ess_feed_contactor_2: Contactor,
-    ac_ess_feed_contactor_delay_logic_gate: DelayedTrueLogicGate,
 }
 impl A380AcEssFeedContactors {
-    pub const AC_ESS_FEED_TO_AC_BUS_4_DELAY_IN_SECONDS: Duration = Duration::from_secs(3);
-
     fn new(context: &mut InitContext) -> Self {
         A380AcEssFeedContactors {
             ac_ess_feed_contactor_1: Contactor::new(context, "3XC1"),
             ac_ess_feed_contactor_2: Contactor::new(context, "3XC2"),
-            ac_ess_feed_contactor_delay_logic_gate: DelayedTrueLogicGate::new(
-                A380AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_4_DELAY_IN_SECONDS,
-            ),
         }
     }
 
@@ -622,18 +646,15 @@ impl A380AcEssFeedContactors {
         ac_bus_4: &ElectricalBus,
         overhead: &A380ElectricalOverheadPanel,
     ) {
-        self.ac_ess_feed_contactor_delay_logic_gate
-            .update(context, !electricity.is_powered(ac_bus_1));
+        let ac_bus_1_powered = electricity.is_powered(ac_bus_1);
 
         self.ac_ess_feed_contactor_1.close_when(
             electricity.is_powered(ac_bus_1)
-                && (!self.ac_ess_feed_contactor_delay_logic_gate.output()
-                    && overhead.ac_ess_feed_is_normal()),
+                && (ac_bus_1_powered && overhead.ac_ess_feed_is_normal()),
         );
         self.ac_ess_feed_contactor_2.close_when(
             electricity.is_powered(ac_bus_4)
-                && (self.ac_ess_feed_contactor_delay_logic_gate.output()
-                    || overhead.ac_ess_feed_is_altn()),
+                && (!ac_bus_1_powered || overhead.ac_ess_feed_is_altn()),
         );
 
         electricity.flow(ac_bus_1, &self.ac_ess_feed_contactor_1);
