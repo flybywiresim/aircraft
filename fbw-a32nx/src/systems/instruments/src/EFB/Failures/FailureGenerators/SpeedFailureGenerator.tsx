@@ -72,7 +72,7 @@ export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, str
     const { failureFlightPhase } = basicData();
     const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
-    const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+    const [gs] = useSimVar('GPS GROUND SPEED', 'knots');
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {

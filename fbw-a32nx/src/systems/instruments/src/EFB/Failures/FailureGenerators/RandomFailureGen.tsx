@@ -13,7 +13,7 @@ import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EF
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { AtaChapterNumber } from '@shared/ata';
 import { deleteGeneratorFailures, selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-
+import { useSimVar } from '@instruments/common/simVars';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -108,7 +108,7 @@ export const activateRandomFailure = (failureList : readonly Readonly<Failure>[]
 };
 
 export const basicData = () => {
-    const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool');
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
     const failureFlightPhase = useMemo(() => {
