@@ -234,10 +234,10 @@ impl A380DirectCurrentElectrical {
         // TODO: Move contactor logic into TR APU
         self.battery_apu_contactor.close_when(
             overhead.bat_is_auto(4)
-                && (matches!(apu.signal(), Some(ContactorSignal::Close))
+                && ((matches!(apu.signal(), Some(ContactorSignal::Close))
                     && self.tr_apu_contactor.is_open())
-                || (!matches!(apu.signal(), Some(ContactorSignal::Close))
-                    && self.battery_apu.needs_charging()),
+                    || (!matches!(apu.signal(), Some(ContactorSignal::Close))
+                        && self.battery_apu.needs_charging())),
         );
         electricity.flow(&self.battery_apu_contactor, &self.battery_apu);
         electricity.flow(&self.hot_bus_apu, &self.battery_apu);
