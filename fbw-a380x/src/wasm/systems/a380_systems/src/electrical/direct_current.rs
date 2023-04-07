@@ -303,6 +303,16 @@ impl A380DirectCurrentElectrical {
     }
 
     #[cfg(test)]
+    pub fn battery_ess(&self) -> &Battery {
+        &self.battery_ess
+    }
+
+    #[cfg(test)]
+    pub fn battery_apu(&self) -> &Battery {
+        &self.battery_apu
+    }
+
+    #[cfg(test)]
     pub fn empty_battery_1(&mut self) {
         self.battery_1.set_empty_battery_charge();
     }
@@ -310,6 +320,31 @@ impl A380DirectCurrentElectrical {
     #[cfg(test)]
     pub fn empty_battery_2(&mut self) {
         self.battery_2.set_empty_battery_charge();
+    }
+
+    #[cfg(test)]
+    pub fn empty_battery_ess(&mut self) {
+        self.battery_ess.set_empty_battery_charge();
+    }
+
+    #[cfg(test)]
+    pub fn empty_battery_apu(&mut self) {
+        self.battery_apu.set_empty_battery_charge();
+    }
+
+    #[cfg(test)]
+    pub fn tr_1(&self) -> &BatteryChargeRectifierUnit {
+        &self.tr_1
+    }
+
+    #[cfg(test)]
+    pub fn tr_2(&self) -> &BatteryChargeRectifierUnit {
+        &self.tr_2
+    }
+
+    #[cfg(test)]
+    pub fn tr_ess(&self) -> &BatteryChargeRectifierUnit {
+        &self.tr_ess
     }
 }
 impl A380DirectCurrentElectricalSystem for A380DirectCurrentElectrical {
