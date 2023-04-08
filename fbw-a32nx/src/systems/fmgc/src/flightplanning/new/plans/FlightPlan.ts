@@ -14,8 +14,8 @@ import { MagVar } from '@shared/MagVar';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
-import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
-import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
+import { FlightArea } from '@fmgc/navigation/FlightArea';
+import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData'; import { BaseFlightPlan, FlightPlanQueuedOperation } from './BaseFlightPlan';
 
 export class FlightPlan extends BaseFlightPlan {
     static empty(index: number, bus: EventBus): FlightPlan {
@@ -330,13 +330,5 @@ export class FlightPlan extends BaseFlightPlan {
         }
 
         return FlightArea.Enroute;
-    }
-
-    static deserialize(serialized: SerializedFlightPlan, withIndex: number, withBus: EventBus): FlightPlan {
-        const plan = new FlightPlan(withIndex, withBus);
-
-        plan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
-
-        return plan;
     }
 }
