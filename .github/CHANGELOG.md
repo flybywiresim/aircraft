@@ -118,6 +118,7 @@
 1. [MCDU] Fix no overfly shown on forced turn on F-PLN page, return to F-PLN page on TMPY insert - @tracernz (Mike)
 1. [FMS] Handle approach transitions hidden inside other transition with Navigraph data - @tracernz (Mike)
 1. [ND] Do not draw background when busses are not powered - @saschl (saschl#9432)
+1. [MODEL] Working windshield wipers - @tracernz (Mike)
 
 ## 0.9.0
 
