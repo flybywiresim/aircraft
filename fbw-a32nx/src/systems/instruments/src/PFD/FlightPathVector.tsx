@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';

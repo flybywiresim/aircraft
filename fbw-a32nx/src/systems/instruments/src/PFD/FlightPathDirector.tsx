@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { getDisplayIndex } from './PFD';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';

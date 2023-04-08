@@ -1,4 +1,6 @@
-import { EventBus, Publisher } from '@microsoft/msfs-sdk';
+import { Publisher } from '@microsoft/msfs-sdk';
+
+import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 
 export interface SimplaneValues {
     units: string;
