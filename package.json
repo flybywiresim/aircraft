@@ -121,6 +121,7 @@
     "lint-staged": "10.4.0",
     "postcss": "^8.4.5",
     "postcss-color-functional-notation": "^4.2.2",
+    "postcss-inset": "^1.0.0",
     "prettier": "2.1.2",
     "react-msfs": "^0.1.4",
     "redux-devtools-extension": "^2.13.8",
