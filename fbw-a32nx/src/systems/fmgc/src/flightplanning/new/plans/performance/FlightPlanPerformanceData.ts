@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MappedSubject, Subject } from 'msfssdk';
+import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 
 type VSpeedValue = number | undefined;
 
