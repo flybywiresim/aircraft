@@ -297,6 +297,41 @@ export class FlightPlan extends BaseFlightPlan {
         this.incrementVersion();
     }
 
+    /**
+     * Returns the active flight area for this flight plan
+     */
+    calculateActiveArea(): FlightArea {
+        const activeLegIndex = this.activeLegIndex;
+        const [activeSegment] = this.segmentPositionForIndex(activeLegIndex);
+
+        if (activeSegment === this.missedApproachSegment
+            || activeSegment === this.destinationSegment
+            || activeSegment === this.approachSegment
+            || activeSegment === this.approachViaSegment
+        ) {
+            const approachType = this.approach?.type ?? ApproachType.Unknown;
+
+            switch (approachType) {
+            case ApproachType.Ils:
+                return FlightArea.PrecisionApproach;
+            case ApproachType.Gps:
+            case ApproachType.Rnav:
+                return FlightArea.GpsApproach;
+            case ApproachType.Vor:
+            case ApproachType.VorDme:
+                return FlightArea.VorApproach;
+            default:
+                return FlightArea.NonPrecisionApproach;
+            }
+        }
+
+        if (activeSegment.class === SegmentClass.Arrival || activeSegment.class === SegmentClass.Departure) {
+            return FlightArea.Terminal;
+        }
+
+        return FlightArea.Enroute;
+    }
+
     static deserialize(serialized: SerializedFlightPlan, withIndex: number, withBus: EventBus): FlightPlan {
         const plan = new FlightPlan(withIndex, withBus);
 
