@@ -9,7 +9,7 @@ import { FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg'
 import { Fix, Waypoint } from 'msfs-navdata';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { EventBus } from 'msfssdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 
