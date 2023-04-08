@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
