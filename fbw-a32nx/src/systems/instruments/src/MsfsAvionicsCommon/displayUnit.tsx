@@ -4,7 +4,6 @@ import { getSupplier } from '@instruments/common/utils';
 import { DisplayVars } from './SimVarTypes';
 
 import './common.scss';
-import './pixels.scss';
 
 export const getDisplayIndex = () => {
     const url = document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url');
@@ -17,6 +16,7 @@ type DisplayUnitProps = {
     failed?: Subscribable<boolean>,
     powered?: Subscribable<boolean>,
     brightness?: Subscribable<number>,
+    test?: Subscribable<number>,
 }
 
 enum DisplayUnitState {
@@ -41,11 +41,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
     private pfdRef = FSComponent.createRef<HTMLDivElement>();
 
-    private backLightBleedRef = FSComponent.createRef<HTMLDivElement>();
-
-    private isHomeCockpitMode = false;
-
-    private supplyingDmc: number = 3;
+    // private supplyingDmc: number = 3;
 
     private brightness: number = 0;
 
@@ -62,20 +58,6 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             // override MSFS menu animations setting for this instrument
             if (!document.documentElement.classList.contains('animationsEnabled')) {
                 document.documentElement.classList.add('animationsEnabled');
-            }
-
-            const dmcKnob = SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'Enum');
-            this.supplyingDmc = getSupplier(this.props.normDmc, dmcKnob);
-            const dmcDisplayTestMode = SimVar.GetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${this.supplyingDmc}`, 'Enum');
-            switch (dmcDisplayTestMode) {
-            case 1:
-                this.state = DisplayUnitState.MaintenanceMode;
-                break;
-            case 2:
-                this.state = DisplayUnitState.EngineeringTest;
-                break;
-            default:
-                this.state = DisplayUnitState.On;
             }
             this.updateState();
         });
@@ -94,11 +76,6 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             this.powered = f;
             this.updateState();
         }, true);
-
-        NXDataStore.getAndSubscribe('HOME_COCKPIT_ENABLED', (_key, val) => {
-            this.isHomeCockpitMode = val === '1';
-            this.updateState();
-        }, '0');
     }
 
     setTimer(time: number) {
@@ -112,11 +89,31 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
         }, time * 1000);
     }
 
+    // TODO: Fix and reenable
+    /*
+    checkMaintMode() {
+        const dmcKnob = SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'Enum');
+        this.supplyingDmc = getSupplier(this.props.normDmc, dmcKnob);
+        const dmcDisplayTestMode = SimVar.GetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${this.supplyingDmc}`, 'Enum');
+        switch (dmcDisplayTestMode) {
+        case 1:
+            this.state = DisplayUnitState.MaintenanceMode;
+            break;
+        case 2:
+            this.state = DisplayUnitState.EngineeringTest;
+            break;
+        default:
+            this.state = DisplayUnitState.On;
+        }
+    }
+    */
+
     updateState() {
         if (this.state !== DisplayUnitState.Off && this.failed) {
             this.state = DisplayUnitState.Off;
             clearTimeout(this.timeOut);
-        } else if (this.state === DisplayUnitState.On && (this.brightness === 0 || !this.powered)) {
+        } else if (
+            this.state === DisplayUnitState.On && (this.brightness === 0 || !this.powered)) {
             this.state = DisplayUnitState.Standby;
             this.setTimer(10);
         } else if (this.state === DisplayUnitState.Standby && (this.brightness !== 0 && this.powered)) {
@@ -135,40 +132,33 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             this.maintenanceModeRef.instance.style.display = 'none';
             this.engineeringTestModeRef.instance.style.display = 'none';
             this.pfdRef.instance.style.display = 'none';
-            this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
         } else if (this.state === DisplayUnitState.On) {
             this.selfTestRef.instance.style.display = 'none';
             this.maintenanceModeRef.instance.style.display = 'none';
             this.engineeringTestModeRef.instance.style.display = 'none';
             this.pfdRef.instance.style.display = 'block';
-            this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
         } else if (this.state === DisplayUnitState.MaintenanceMode) {
             this.selfTestRef.instance.style.display = 'none';
             this.maintenanceModeRef.instance.style.display = 'block';
             this.engineeringTestModeRef.instance.style.display = 'none';
             this.pfdRef.instance.style.display = 'none';
-            this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
         } else if (this.state === DisplayUnitState.EngineeringTest) {
             this.selfTestRef.instance.style.display = 'none';
             this.maintenanceModeRef.instance.style.display = 'none';
             this.engineeringTestModeRef.instance.style.display = 'block';
             this.pfdRef.instance.style.display = 'none';
-            this.backLightBleedRef.instance.style.display = this.isHomeCockpitMode ? 'none' : 'block';
         } else {
             this.selfTestRef.instance.style.display = 'none';
             this.maintenanceModeRef.instance.style.display = 'none';
             this.engineeringTestModeRef.instance.style.display = 'none';
             this.pfdRef.instance.style.display = 'none';
-            this.backLightBleedRef.instance.style.display = 'none';
         }
     }
 
     render(): VNode {
         return (
             <>
-                <div ref={this.backLightBleedRef} class="BacklightBleed" />
-
-                <svg ref={this.selfTestRef} class="SelfTest" viewBox="0 0 600 600">
+                <svg style="display:none" ref={this.selfTestRef} class="SelfTest" viewBox="0 0 600 600">
                     <rect class="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
                     <text
                         class="SelfTestText"
@@ -186,7 +176,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
                     </text>
                 </svg>
 
-                <svg ref={this.maintenanceModeRef} class="MaintenanceMode" viewBox="0 0 600 600">
+                <svg style="display:none" ref={this.maintenanceModeRef} class="MaintenanceMode" viewBox="0 0 600 600">
                     <text
                         class="SelfTestText"
                         x="50%"
@@ -196,7 +186,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
                     </text>
                 </svg>
 
-                <svg ref={this.engineeringTestModeRef} class="EngineeringTestMode" viewBox="0 0 600 600">
+                <svg style="display:none" ref={this.engineeringTestModeRef} class="EngineeringTestMode" viewBox="0 0 600 600">
                     <text class="EngineeringTestModeText" x={9} y={250}>P/N : C19755BA01</text>
                     <text class="EngineeringTestModeText" x={10} y={270}>S/N : C1975517334</text>
                     <text class="EngineeringTestModeText" x={10} y={344}>EIS SW</text>

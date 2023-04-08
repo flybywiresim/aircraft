@@ -21,7 +21,6 @@ export const RealismPage = () => {
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
-    const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
     const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
     const [syncEfis, setFoEfis] = usePersistentNumberProperty('FO_SYNC_EFIS_ENABLED', 0);
     const [pilotAvatar, setPilotAvatar] = usePersistentNumberProperty('CONFIG_PILOT_AVATAR_VISIBLE', 0);
@@ -94,10 +93,6 @@ export const RealismPage = () => {
 
             <SettingItem name={t('Settings.Realism.AutofillChecklists')} unrealistic>
                 <Toggle value={!!autoFillChecklists} onToggle={(value) => setAutoFillChecklists(value ? 1 : 0)} />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.Realism.HomeCockpitMode')}>
-                <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
             </SettingItem>
 
             <SettingItem name={t('Settings.Realism.SeparateTillerFromRudderInputs')}>

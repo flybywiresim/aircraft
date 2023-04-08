@@ -904,14 +904,6 @@
     - 0 for legacy mode (steering with rudder). 1 for realistic mode with tiller axis
       Tiller axis to be binded on "ENGINE 4 MIXTURE AXIS"
 
-- A32NX_HOME_COCKPIT_ENABLED
-    - Bool
-    - 1 to enable Home Cockpit mode which:
-        - Removes backlight bleed from the PFD, ND, and ECAM displays
-        - Removes reflection from the ISIS
-    - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present
-      on their displays.
-
 - A32NX_FO_SYNC_EFIS_ENABLED
     - Bool
     - 1 to sync the status of FD and LS buttons between CPT and FO sides
