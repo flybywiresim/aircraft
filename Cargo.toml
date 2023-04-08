@@ -18,6 +18,6 @@ strip = true
 # We enable some basic optimization to prevent stack overflows during testing (flybywiresim/a32nx#7631)
 # However, if this interferes with your ability to debug locally you can disable it here
 opt-level=1
-lto = false
+lto = true
 debug-assertions=true
 debug=true

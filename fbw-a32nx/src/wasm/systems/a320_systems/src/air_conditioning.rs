@@ -25,6 +25,8 @@ use systems::{
 use std::time::Duration;
 use uom::si::{f64::*, pressure::hectopascal, ratio::percent, velocity::knot};
 
+use crate::payload::{A320Pax, NumberOfPassengers};
+
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
     a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
@@ -67,6 +69,7 @@ impl A320AirConditioning {
         adirs: &impl AdirsToAirCondInterface,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
+        number_of_passengers: &impl NumberOfPassengers,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<2>,
         pressurization_overhead: &A320PressurizationOverheadPanel,
@@ -95,6 +98,7 @@ impl A320AirConditioning {
                 &context.with_delta(cur_time_step),
                 &self.a320_air_conditioning_system,
                 lgciu,
+                number_of_passengers,
                 &self.a320_pressurization_system,
             );
 
@@ -142,7 +146,6 @@ impl SimulationElement for A320AirConditioning {
 }
 
 struct A320Cabin {
-    passenger_rows_id: [Option<Vec<VariableIdentifier>>; 3],
     fwd_door_id: VariableIdentifier,
     rear_door_id: VariableIdentifier,
 
@@ -157,20 +160,7 @@ impl A320Cabin {
     const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
 
     fn new(context: &mut InitContext) -> Self {
-        let passenger_rows_id = [
-            None,
-            Some(vec![
-                context.get_identifier("PAX_TOTAL_ROWS_1_6".to_owned()),
-                context.get_identifier("PAX_TOTAL_ROWS_7_13".to_owned()),
-            ]),
-            Some(vec![
-                context.get_identifier("PAX_TOTAL_ROWS_14_21".to_owned()),
-                context.get_identifier("PAX_TOTAL_ROWS_22_29".to_owned()),
-            ]),
-        ];
-
         Self {
-            passenger_rows_id,
             fwd_door_id: context.get_identifier(Self::FWD_DOOR.to_owned()),
             rear_door_id: context.get_identifier(Self::REAR_DOOR.to_owned()),
 
@@ -189,12 +179,15 @@ impl A320Cabin {
         context: &UpdateContext,
         air_conditioning_system: &(impl OutletAir + DuctTemperature),
         lgciu: [&impl LgciuWeightOnWheels; 2],
+        number_of_passengers: &impl NumberOfPassengers,
         pressurization: &A320PressurizationSystem,
     ) {
         let lgciu_gears_compressed = lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
         let number_of_open_doors = self.fwd_door_is_open as u8 + self.rear_door_is_open as u8;
+
+        self.update_number_of_passengers(number_of_passengers);
 
         self.cabin_air_simulation.update(
             context,
@@ -205,6 +198,15 @@ impl A320Cabin {
             self.number_of_passengers,
             number_of_open_doors,
         );
+    }
+
+    fn update_number_of_passengers(&mut self, number_of_passengers: &impl NumberOfPassengers) {
+        self.number_of_passengers[1] = (number_of_passengers.number_of_passengers(A320Pax::A)
+            + number_of_passengers.number_of_passengers(A320Pax::B))
+            as u8;
+        self.number_of_passengers[2] = (number_of_passengers.number_of_passengers(A320Pax::C)
+            + number_of_passengers.number_of_passengers(A320Pax::D))
+            as u8;
     }
 }
 
@@ -228,16 +230,6 @@ impl SimulationElement for A320Cabin {
         self.rear_door_is_open = rear_door_read > Ratio::default();
         let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
         self.fwd_door_is_open = fwd_door_read > Ratio::default();
-
-        for (zone_sum_passengers, variable) in self
-            .number_of_passengers
-            .iter_mut()
-            .zip(&self.passenger_rows_id)
-        {
-            if let Some(var) = variable {
-                *zone_sum_passengers = var.iter().map(|v| Read::<u8>::read(reader, v)).sum();
-            }
-        }
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -699,6 +691,13 @@ mod tests {
         }
     }
 
+    struct TestPayload;
+    impl NumberOfPassengers for TestPayload {
+        fn number_of_passengers(&self, _ps: A320Pax) -> i8 {
+            0
+        }
+    }
+
     struct TestPneumatic {
         apu_bleed_air_valve: DefaultValve,
         engine_bleed: [TestEngineBleed; 2],
@@ -1001,6 +1000,7 @@ mod tests {
         engine_1: TestEngine,
         engine_2: TestEngine,
         engine_fire_push_buttons: TestEngineFirePushButtons,
+        payload: TestPayload,
         pneumatic: TestPneumatic,
         pneumatic_overhead: TestPneumaticOverhead,
         pressurization_overhead: A320PressurizationOverheadPanel,
@@ -1033,6 +1033,7 @@ mod tests {
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
+                payload: TestPayload {},
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization_overhead: A320PressurizationOverheadPanel::new(context),
@@ -1132,6 +1133,7 @@ mod tests {
                 &self.adirs,
                 [&self.engine_1, &self.engine_2],
                 &self.engine_fire_push_buttons,
+                &self.payload,
                 &self.pneumatic,
                 &self.pneumatic_overhead,
                 &self.pressurization_overhead,
@@ -1388,7 +1390,9 @@ mod tests {
             const KPA_FT: f64 = 0.0205; //KPa/ft ASL
             const PRESSURE_CONSTANT: f64 = 911.47;
 
+            self.command_on_ground(false);
             self.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+            self.indicated_airspeed(Velocity::new::<knot>(150.));
             self.command_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
                 init_altitude,
             ));
@@ -1484,6 +1488,10 @@ mod tests {
                     .outlet_air()
                     .flow_rate()
             })
+        }
+
+        fn reference_pressure(&self) -> Pressure {
+            self.query(|a| a.a320_cabin_air.a320_pressurization_system.cpc[0].reference_pressure())
         }
     }
     impl TestBed for CabinAirTestBed {
@@ -2299,6 +2307,121 @@ mod tests {
                     test_bed.cabin_altitude().get::<foot>(),
                     initial_altitude.get::<foot>(),
                     20.
+                );
+            }
+
+            #[test]
+            fn altitude_calculation_uses_local_altimeter_when_not_at_sea_level() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
+
+                assert!(
+                    (test_bed.cabin_altitude() - Length::new::<foot>(10000.)).abs()
+                        > Length::new::<foot>(20.)
+                );
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1013.,
+                    1.,
+                );
+
+                test_bed = test_bed
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
+
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+            }
+
+            #[test]
+            fn altitude_calculation_uses_local_altimeter_during_climb() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
+
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+
+                test_bed = test_bed
+                    .command_aircraft_climb(
+                        Length::new::<foot>(10000.),
+                        Length::new::<foot>(14000.),
+                    )
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            14000.,
+                        )) + Pressure::new::<hectopascal>(5.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
+
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+            }
+
+            #[test]
+            fn altitude_calculation_uses_isa_altimeter_when_over_5000_ft_from_airport() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
+
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+
+                test_bed = test_bed
+                    .command_aircraft_climb(
+                        Length::new::<foot>(10000.),
+                        Length::new::<foot>(16000.),
+                    )
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            16000.,
+                        )) + Pressure::new::<hectopascal>(5.4),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
+
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1013.,
+                    1.,
                 );
             }
         }

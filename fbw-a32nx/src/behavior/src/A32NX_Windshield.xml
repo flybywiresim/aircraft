@@ -1,0 +1,21 @@
+<!-- Copyright (c) 2023 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_Windshield_Wiped">
+        <Parameters Type="Default">
+            <SIDE>CAPT</SIDE>
+            <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+        </Parameters>
+        <Component ID="WINDSHIELD_#SIDE#_UNWIPED" Node="WINDSHIELD_#SIDE#_UNWIPED">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(A:CIRCUIT ON:#CIRCUIT_ID_WIPERS#, bool) !</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+        <Component ID="WINDSHIELD_#SIDE#_WIPED" Node="WINDSHIELD_#SIDE#_WIPED">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(A:CIRCUIT ON:#CIRCUIT_ID_WIPERS#, bool)</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>
