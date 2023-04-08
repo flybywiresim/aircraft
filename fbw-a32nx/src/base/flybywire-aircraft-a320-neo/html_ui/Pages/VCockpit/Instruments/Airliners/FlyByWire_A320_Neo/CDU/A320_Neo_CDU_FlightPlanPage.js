@@ -252,7 +252,7 @@ class CDUFlightPlanPage {
                 }
 
                 let ident = wp.ident;
-                const isOverfly = wp.definition.overfly;
+                let isOverfly = wp.definition.overfly;
 
                 let verticalWaypoint = null;
                 if (vnavPredictionsMapByWaypoint) {
@@ -428,6 +428,9 @@ class CDUFlightPlanPage {
                     } else {
                         ident += "}";
                     }
+
+                    // the overfly symbol is not shown in this case
+                    isOverfly = false;
                 }
 
                 scrollWindow[rowI] = {
