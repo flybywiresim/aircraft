@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { CpdlcMessage, DatalinkModeCode, DatalinkStatusCode, FreetextMessage } from '@datalink/common';
-import { EventBus, Publisher } from 'msfssdk';
+import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { RouterAtcAocMessages, RouterFmsMessages } from './databus';
 
 export class DigitalOutputs {

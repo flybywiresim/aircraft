@@ -1,4 +1,4 @@
-import { Clock, EventBus, FSComponent } from 'msfssdk';
+import { Clock, EventBus, FSComponent } from '@microsoft/msfs-sdk';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdComponent } from './EWD';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';

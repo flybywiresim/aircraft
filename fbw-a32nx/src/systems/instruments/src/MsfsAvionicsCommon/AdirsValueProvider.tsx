@@ -1,11 +1,13 @@
-import { EventBus, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { SimVarValueType } from '@microsoft/msfs-sdk';
 import { EfisSide } from '@shared/NavigationDisplay';
 import { AdirsSimVars, SwitchingPanelVSimVars } from './SimVarTypes';
+import { ArincEventBus } from './ArincEventBus';
+import { UpdatableSimVarPublisher } from './UpdatableSimVarPublisher';
 
 export class AdirsValueProvider<T extends AdirsSimVars> {
     constructor(
-        private readonly bus: EventBus,
-        private readonly varProvider: SimVarPublisher<T>,
+        private readonly bus: ArincEventBus,
+        private readonly varProvider: UpdatableSimVarPublisher<T>,
         private readonly displaySide: EfisSide,
     ) {
     }
