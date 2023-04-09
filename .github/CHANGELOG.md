@@ -120,6 +120,7 @@
 1. [ND] Do not draw background when busses are not powered - @saschl (saschl#9432)
 1. [MODEL] Working windshield wipers - @tracernz (Mike)
 1. [LIGHTS] Redid all cockpit interior lighting and fixed exterior wing lights - @FinalLightNL (FinalLight#2113)
+1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
 
 ## 0.9.0
 
