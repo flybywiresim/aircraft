@@ -5,6 +5,7 @@
 - [A380 Local SimVars](#a380-local-simvars)
   - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
+  - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
@@ -140,6 +141,12 @@
 - A32NX_CDS_CAN_BUS_2_2
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
+
+## Bleed Air ATA 36
+
+- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE
+  - Psi
+  - Pressure measured at the intermediate pressure transducer at engine {number}, -1 if no output
 
 ## Integrated Modular Avionics ATA 42
 
