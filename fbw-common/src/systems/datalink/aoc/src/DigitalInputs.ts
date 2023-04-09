@@ -13,7 +13,7 @@ import {
     WeatherMessage,
 } from '@datalink/common';
 import { RouterAtcAocMessages } from '@datalink/router';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AocFmsMessages, FmsAocMessages } from './databus/FmsBus';
 
 export type AocDigitalInputCallbacks = {

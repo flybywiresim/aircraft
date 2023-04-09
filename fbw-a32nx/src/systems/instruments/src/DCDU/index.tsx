@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { EventBus, Publisher, EventSubscriber } from 'msfssdk';
+import { EventBus, Publisher, EventSubscriber } from '@microsoft/msfs-sdk';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvents } from '@instruments/common/hooks';
 import {

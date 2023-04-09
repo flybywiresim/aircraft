@@ -1,0 +1,571 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 103,
+            "min": [
+                -1.3688398599624634,
+                0.4466957151889801,
+                16.823232650756836
+            ],
+            "max": [
+                1.3784726858139038,
+                0.98350989818573,
+                18.173280715942383
+            ],
+            "type": "VEC3",
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 103,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 103,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 103,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 103,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 103,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 477,
+            "type": "SCALAR",
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3708,
+            "componentType": 5126,
+            "count": 189,
+            "min": [
+                -1.3688398599624634,
+                0.4466957151889801,
+                16.823232650756836
+            ],
+            "max": [
+                1.3784726858139038,
+                0.98350989818573,
+                18.173280715942383
+            ],
+            "type": "VEC3",
+            "name": "x0_WINDSHIELD_CAPT_WIPED_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3720,
+            "componentType": 5120,
+            "count": 189,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_CAPT_WIPED_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3724,
+            "componentType": 5120,
+            "count": 189,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_CAPT_WIPED_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3728,
+            "componentType": 5122,
+            "count": 189,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_CAPT_WIPED_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3732,
+            "componentType": 5122,
+            "count": 189,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_CAPT_WIPED_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 3736,
+            "componentType": 5123,
+            "count": 189,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_CAPT_WIPED_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 954,
+            "componentType": 5123,
+            "count": 690,
+            "type": "SCALAR",
+            "name": "x0_WINDSHIELD_CAPT_WIPED_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 10512,
+            "componentType": 5126,
+            "count": 92,
+            "min": [
+                -0.8485425114631653,
+                0.471060574054718,
+                17.324979782104492
+            ],
+            "max": [
+                -0.05760837718844414,
+                0.9829865097999573,
+                18.172712326049805
+            ],
+            "type": "VEC3",
+            "name": "x0_WINDSHIELD_FO_UNWIPED_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 10524,
+            "componentType": 5120,
+            "count": 92,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_FO_UNWIPED_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 10528,
+            "componentType": 5120,
+            "count": 92,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_FO_UNWIPED_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 10532,
+            "componentType": 5122,
+            "count": 92,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_FO_UNWIPED_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 10536,
+            "componentType": 5122,
+            "count": 92,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_FO_UNWIPED_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 10540,
+            "componentType": 5123,
+            "count": 92,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_FO_UNWIPED_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 2334,
+            "componentType": 5123,
+            "count": 441,
+            "type": "SCALAR",
+            "name": "x0_WINDSHIELD_FO_UNWIPED_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 13824,
+            "componentType": 5126,
+            "count": 178,
+            "min": [
+                -0.8485425114631653,
+                0.471060574054718,
+                17.324979782104492
+            ],
+            "max": [
+                -0.05760837718844414,
+                0.9829865097999573,
+                18.172712326049805
+            ],
+            "type": "VEC3",
+            "name": "x0_WINDSHIELD_FO_WIPED_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 13836,
+            "componentType": 5120,
+            "count": 178,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_FO_WIPED_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 13840,
+            "componentType": 5120,
+            "count": 178,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_FO_WIPED_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 13844,
+            "componentType": 5122,
+            "count": 178,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_FO_WIPED_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 13848,
+            "componentType": 5122,
+            "count": 178,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_FO_WIPED_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 13852,
+            "componentType": 5123,
+            "count": 178,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_FO_WIPED_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 3216,
+            "componentType": 5123,
+            "count": 663,
+            "type": "SCALAR",
+            "name": "x0_WINDSHIELD_FO_WIPED_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20232,
+            "componentType": 5126,
+            "count": 332,
+            "min": [
+                -1.5122013092041016,
+                0.41324639320373535,
+                16.33877944946289
+            ],
+            "max": [
+                1.5128778219223022,
+                0.9799656271934509,
+                17.620121002197266
+            ],
+            "type": "VEC3",
+            "name": "x0_WINDSHIELD_NO_WIPE_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20244,
+            "componentType": 5120,
+            "count": 332,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_NO_WIPE_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20248,
+            "componentType": 5120,
+            "count": 332,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_NO_WIPE_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20252,
+            "componentType": 5122,
+            "count": 332,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_NO_WIPE_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20256,
+            "componentType": 5122,
+            "count": 332,
+            "type": "VEC2",
+            "name": "x0_WINDSHIELD_NO_WIPE_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20260,
+            "componentType": 5123,
+            "count": 332,
+            "type": "VEC4",
+            "name": "x0_WINDSHIELD_NO_WIPE_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 4542,
+            "componentType": 5123,
+            "count": 1503,
+            "type": "SCALAR",
+            "name": "x0_WINDSHIELD_NO_WIPE_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v3.3.36 and Asobo Studio MSFS Blender I/O v1.3.0",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    1.5128778219223022,
+                    0.98350989818573,
+                    18.173280715942383
+                ],
+                "BoundingBoxMin": [
+                    -1.5122013092041016,
+                    0.41324639320373535,
+                    16.33877944946289
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 4,
+                "UseCheckerboardMaterialForMissingTextures": true,
+                "UseOnlyFilenameForImageURI": true
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 32184,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 7548,
+            "byteOffset": 32184,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": "windshield",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 159,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_WINDSHIELD_CAPT_UNWIPED"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 12,
+                        "NORMAL": 9,
+                        "POSITION": 7,
+                        "TANGENT": 8,
+                        "TEXCOORD_0": 10,
+                        "TEXCOORD_1": 11
+                    },
+                    "indices": 13,
+                    "material": "windshield",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 230,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_WINDSHIELD_CAPT_WIPED"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 19,
+                        "NORMAL": 16,
+                        "POSITION": 14,
+                        "TANGENT": 15,
+                        "TEXCOORD_0": 17,
+                        "TEXCOORD_1": 18
+                    },
+                    "indices": 20,
+                    "material": "windshield",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 147,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_WINDSHIELD_FO_UNWIPED"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 26,
+                        "NORMAL": 23,
+                        "POSITION": 21,
+                        "TANGENT": 22,
+                        "TEXCOORD_0": 24,
+                        "TEXCOORD_1": 25
+                    },
+                    "indices": 27,
+                    "material": "windshield",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 221,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_WINDSHIELD_FO_WIPED"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 33,
+                        "NORMAL": 30,
+                        "POSITION": 28,
+                        "TANGENT": 29,
+                        "TEXCOORD_0": 31,
+                        "TEXCOORD_1": 32
+                    },
+                    "indices": 34,
+                    "material": "windshield",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 501,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_WINDSHIELD_NO_WIPE"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                -0.000027179718017578125,
+                1.3199610710144043,
+                -5.994541168212891
+            ],
+            "mesh": 0,
+            "name": "WINDSHIELD_CAPT_UNWIPED"
+        },
+        {
+            "translation": [
+                -0.000027179718017578125,
+                1.3199610710144043,
+                -5.994541168212891
+            ],
+            "mesh": 1,
+            "name": "WINDSHIELD_CAPT_WIPED"
+        },
+        {
+            "translation": [
+                -0.000027179718017578125,
+                1.3199610710144043,
+                -5.994541168212891
+            ],
+            "mesh": 2,
+            "name": "WINDSHIELD_FO_UNWIPED"
+        },
+        {
+            "translation": [
+                -0.000027179718017578125,
+                1.3199610710144043,
+                -5.994541168212891
+            ],
+            "mesh": 3,
+            "name": "WINDSHIELD_FO_WIPED"
+        },
+        {
+            "translation": [
+                -0.000027179718017578125,
+                1.3199610710144043,
+                -5.994541168212891
+            ],
+            "mesh": 4,
+            "name": "WINDSHIELD_NO_WIPE"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "name": "Scene"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "ASOBO_material_blend_gbuffer",
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 39732,
+            "uri": "flight-deck-wipers.bin"
+        }
+    ]
+}

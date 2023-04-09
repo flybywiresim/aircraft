@@ -1,4 +1,4 @@
-import { EventBus, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 import { TuningMode } from '@fmgc/radionav';
 
 export interface VorSimVars {
