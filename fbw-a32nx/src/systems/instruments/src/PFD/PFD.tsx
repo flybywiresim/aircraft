@@ -1,5 +1,5 @@
 import { A320Failure, FailuresConsumer } from '@failures';
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { LagFilter } from './PFDUtils';
@@ -15,6 +15,7 @@ import { LandingSystem } from './LandingSystemIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
@@ -22,7 +23,7 @@ export const getDisplayIndex = () => {
 };
 
 interface PFDProps extends ComponentProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     instrument: BaseInstrument;
 }
 
@@ -68,7 +69,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         });
 
         sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
-            this.displayPowered.set(value === 1);
+            this.displayPowered.set(value);
         });
 
         sub.on('heading').handle((h) => {

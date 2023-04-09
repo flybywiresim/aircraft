@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher } from 'msfssdk';
+import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import './style.scss';

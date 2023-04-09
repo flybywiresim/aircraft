@@ -1809,13 +1809,13 @@
                         <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
                         <WWISE_EVENT>lswitch</WWISE_EVENT>
                         <DIMMER_POS_0_VALUE>100</DIMMER_POS_0_VALUE>
-                        <DIMMER_POS_1_VALUE>50</DIMMER_POS_1_VALUE>
+                        <DIMMER_POS_1_VALUE>20</DIMMER_POS_1_VALUE>
                         <DIMMER_POS_2_VALUE>0</DIMMER_POS_2_VALUE>
                         <CODE_POS_0>1 (&gt;K:2:CABIN_LIGHTS_SET) 100 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_0>
-                        <CODE_POS_1>1 (&gt;K:2:CABIN_LIGHTS_SET) 50 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
+                        <CODE_POS_1>1 (&gt;K:2:CABIN_LIGHTS_SET) 20 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
                         <CODE_POS_2>0 (&gt;K:2:CABIN_LIGHTS_SET) 0 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_2>
                         <STATE0_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 100 == and</STATE0_TEST>
-                        <STATE1_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 50 == and</STATE1_TEST>
+                        <STATE1_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 20 == and</STATE1_TEST>
                         <STATE2_TEST>(A:LIGHT CABIN:1, Bool) 0 == (A:LIGHT POTENTIOMETER:7, Percent) 0 == and </STATE2_TEST>
                     </UseTemplate>
                 </Component>
@@ -5274,5 +5274,25 @@
             </Component>
         </Component>
 
+        <Component ID="WINDSHIELD">
+            <!-- Windshield Left -->
+            <UseTemplate Name="FBW_Windshield_Wiped">
+                <SIDE>CAPT</SIDE>
+                <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+            </UseTemplate>
+
+            <!-- Windshield Right -->
+            <UseTemplate Name="FBW_Windshield_Wiped">
+                <SIDE>FO</SIDE>
+                <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+            </UseTemplate>
+
+            <!-- Hide Asobo Windshield -->
+            <Component ID="WINDSHIELD" Node="WINDSHIELD">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+        </Component>
     </Behaviors>
 </ModelInfo>

@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, VNode, Subscribable, MappedSubject, ComponentProps } from 'msfssdk';
+import { FSComponent, DisplayComponent, VNode, Subscribable, MappedSubject, ComponentProps } from '@microsoft/msfs-sdk';
 
 export interface LayerProps extends ComponentProps {
     x: number | Subscribable<number>;

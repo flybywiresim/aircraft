@@ -1,4 +1,4 @@
-import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { GaugeComponent, GaugeMarkerComponent, GaugeMaxComponent, ThrottlePositionDonutComponent, valueRadianAngleConverter } from '../MsfsAvionicsCommon/gauges';
 import { Layer } from '../MsfsAvionicsCommon/Layer';

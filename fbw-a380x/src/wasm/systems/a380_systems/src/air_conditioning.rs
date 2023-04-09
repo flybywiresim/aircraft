@@ -1642,7 +1642,9 @@ mod tests {
             const KPA_FT: f64 = 0.0205; //KPa/ft ASL
             const PRESSURE_CONSTANT: f64 = 911.47;
 
+            self.command_on_ground(false);
             self.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+            self.indicated_airspeed(Velocity::new::<knot>(150.));
             self.command_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
                 init_altitude,
             ));
@@ -1737,6 +1739,10 @@ mod tests {
 
         fn is_mode_sel_pb_auto(&mut self) -> bool {
             self.read_by_name("OVHD_PRESS_MODE_SEL_PB_IS_AUTO")
+        }
+
+        fn reference_pressure(&self) -> Pressure {
+            self.query(|a| a.a380_cabin_air.a320_pressurization_system.cpc[0].reference_pressure())
         }
     }
     impl TestBed for CabinAirTestBed {
@@ -2552,6 +2558,121 @@ mod tests {
                     test_bed.cabin_altitude().get::<foot>(),
                     initial_altitude.get::<foot>(),
                     20.
+                );
+            }
+
+            #[test]
+            fn altitude_calculation_uses_local_altimeter_when_not_at_sea_level() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
+
+                assert!(
+                    (test_bed.cabin_altitude() - Length::new::<foot>(10000.)).abs()
+                        > Length::new::<foot>(20.)
+                );
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1013.,
+                    1.,
+                );
+
+                test_bed = test_bed
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
+
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+            }
+
+            #[test]
+            fn altitude_calculation_uses_local_altimeter_during_climb() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
+
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+
+                test_bed = test_bed
+                    .command_aircraft_climb(
+                        Length::new::<foot>(10000.),
+                        Length::new::<foot>(14000.),
+                    )
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            14000.,
+                        )) + Pressure::new::<hectopascal>(5.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
+
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+            }
+
+            #[test]
+            fn altitude_calculation_uses_isa_altimeter_when_over_5000_ft_from_airport() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
+
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+
+                test_bed = test_bed
+                    .command_aircraft_climb(
+                        Length::new::<foot>(10000.),
+                        Length::new::<foot>(16000.),
+                    )
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            16000.,
+                        )) + Pressure::new::<hectopascal>(5.4),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
+
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1013.,
+                    1.,
                 );
             }
         }

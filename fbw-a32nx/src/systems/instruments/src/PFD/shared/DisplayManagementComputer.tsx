@@ -1,7 +1,8 @@
 import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
-import { EventBus, Subject } from 'msfssdk';
+import { Subject } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
 
 export interface DisplayManagementComputerEvents {
     trueRefActive: boolean,
@@ -24,7 +25,7 @@ export class DisplayManagementComputer {
 
     private readonly trueRefActive = Subject.create(false);
 
-    constructor(private bus: EventBus) {}
+    constructor(private bus: ArincEventBus) {}
 
     init(): void {
         const pub = this.bus.getPublisher<DisplayManagementComputerEvents>();
