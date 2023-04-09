@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
+import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
 import { NotificationManager } from '@shared/notification';
 import { PopUpDialog } from '@shared/popup';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
@@ -14,7 +14,7 @@ import { AircraftPresetsList } from '../common/AircraftPresetsList';
 export class KeyInterceptor {
     private eventBus: EventBus;
 
-    private keyInterceptManager: KeyInterceptManager;
+    private keyInterceptManager: KeyEventManager;
 
     private notification: NotificationManager;
 
@@ -22,7 +22,7 @@ export class KeyInterceptor {
 
     constructor(private readonly bus: EventBus) {
         this.eventBus = bus;
-        KeyInterceptManager.getManager(this.eventBus).then((manager) => {
+        KeyEventManager.getManager(this.eventBus).then((manager) => {
             this.keyInterceptManager = manager;
             this.registerIntercepts();
         });

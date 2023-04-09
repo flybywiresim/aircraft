@@ -66,8 +66,6 @@
 /fbw-a380x/src/systems/instruments/aceBundles
 
 !/fbw-common/**
-/fbw-common/msfs-avionics-mirror/src/sdk/build
-/fbw-common/msfs-avionics-mirror/src/sdk/build/**
 
 /fbw-ingamepanels-checklist-fix/*
 !/fbw-ingamepanels-checklist-fix/README.md
@@ -86,7 +84,6 @@
 
 # avoid issues when switching branches during transistion from old to new structure
 /src/
-/msfs-avionics-mirror/
 /flybywire-aircraft-a320-neo/
 /flybywire-aircraft-a320-neo-lock-highlight/
 

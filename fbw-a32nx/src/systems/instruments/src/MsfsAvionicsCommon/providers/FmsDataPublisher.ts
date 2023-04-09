@@ -1,4 +1,4 @@
-import { EventBus, SimVarValueType, Subject } from 'msfssdk';
+import { EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { SwitchableSimVarProvider } from './SwitchableProvider';
 
 export interface FmsVars {
