@@ -1,6 +1,6 @@
 import { FSComponent, ClockEvents, DisplayComponent, EventBus, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@shared/persistence';
-import { getSupplier } from '@instruments/common/utils';
+// import { getSupplier } from '@instruments/common/utils';
 import { DisplayVars } from './SimVarTypes';
 
 import './common.scss';
