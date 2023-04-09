@@ -370,32 +370,33 @@ impl EngineStartState for A380Pneumatic {
     }
 }
 impl PackFlowValveState for A380Pneumatic {
+    // fcv_id: 1, 2, 3 or 4
     fn pack_flow_valve_is_open(&self, fcv_id: usize) -> bool {
         let id = {
-            if fcv_id == 0 || fcv_id == 1 {
+            if fcv_id == 1 || fcv_id == 2 {
                 0
             } else {
                 1
             }
         };
         if fcv_id % 2 == 0 {
-            self.packs[id].left_pack_flow_valve_is_open()
-        } else {
             self.packs[id].right_pack_flow_valve_is_open()
+        } else {
+            self.packs[id].left_pack_flow_valve_is_open()
         }
     }
     fn pack_flow_valve_air_flow(&self, fcv_id: usize) -> MassRate {
         let id = {
-            if fcv_id == 0 || fcv_id == 1 {
+            if fcv_id == 1 || fcv_id == 2 {
                 0
             } else {
                 1
             }
         };
         if fcv_id % 2 == 0 {
-            self.packs[id].left_pack_flow_valve_air_flow()
-        } else {
             self.packs[id].right_pack_flow_valve_air_flow()
+        } else {
+            self.packs[id].left_pack_flow_valve_air_flow()
         }
     }
 }

@@ -26,6 +26,7 @@ enum OperatingChannel {
     FDACChannelTwo(bool),
 }
 
+#[derive(Debug)]
 enum FdacFault {
     OneChannelFault,
     BothChannelsFault,
@@ -336,7 +337,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         Self {
             should_open_fcv: false,
             pack_flow: MassRate::default(),
-            pid: PidController::new(0.01, 0.1, 0., 0., 1., 0., 1.),
+            pid: PidController::new(0.01, 0.4, 0., 0., 1., 0., 1.),
             fault: None,
         }
     }
@@ -355,12 +356,14 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         self.should_open_fcv = should_open_fcv;
         self.pack_flow = pneumatic.pack_flow_valve_air_flow(fcv_id);
 
-        self.pid
-            .change_setpoint(pack_flow_demand.get::<kilogram_per_second>());
-        self.pid.next_control_output(
-            self.pack_flow.get::<kilogram_per_second>(),
-            Some(context.delta()),
-        );
+        if self.should_open_fcv {
+            self.pid
+                .change_setpoint(pack_flow_demand.get::<kilogram_per_second>());
+            self.pid.next_control_output(
+                self.pack_flow.get::<kilogram_per_second>(),
+                Some(context.delta()),
+            );
+        }
     }
 
     fn fault_determination(

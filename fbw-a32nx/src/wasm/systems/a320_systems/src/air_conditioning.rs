@@ -982,10 +982,10 @@ mod tests {
     }
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-            self.packs[pack_id].pfv_open_amount() > Ratio::default()
+            self.packs[pack_id - 1].pfv_open_amount() > Ratio::default()
         }
         fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-            self.packs[pack_id].pack_flow_valve_air_flow()
+            self.packs[pack_id - 1].pack_flow_valve_air_flow()
         }
     }
     impl SimulationElement for TestPneumatic {

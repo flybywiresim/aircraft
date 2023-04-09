@@ -166,7 +166,11 @@ pub enum OverheadFlowSelector {
 
 impl From<OverheadFlowSelector> for Ratio {
     fn from(value: OverheadFlowSelector) -> Self {
-        Ratio::new::<percent>((value as u8) as f64)
+        if matches!(value, OverheadFlowSelector::Man) {
+            Ratio::new::<percent>(100.)
+        } else {
+            Ratio::new::<percent>((value as u8) as f64)
+        }
     }
 }
 

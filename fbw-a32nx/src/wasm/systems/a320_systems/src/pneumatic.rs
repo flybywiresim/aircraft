@@ -381,11 +381,12 @@ impl EngineStartState for A320Pneumatic {
     }
 }
 impl PackFlowValveState for A320Pneumatic {
+    // pack_id: 1 or 2
     fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-        self.packs[pack_id].pack_flow_valve_is_open()
+        self.packs[pack_id - 1].pack_flow_valve_is_open()
     }
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-        self.packs[pack_id].pack_flow_valve_air_flow()
+        self.packs[pack_id - 1].pack_flow_valve_air_flow()
     }
 }
 impl SimulationElement for A320Pneumatic {

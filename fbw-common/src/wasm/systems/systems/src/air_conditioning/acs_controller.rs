@@ -747,17 +747,17 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
             .change_setpoint(self.pack_flow_demand.get::<kilogram_per_second>());
         self.pid.next_control_output(
             pneumatic
-                .pack_flow_valve_air_flow(self.id)
+                .pack_flow_valve_air_flow(self.id + 1)
                 .get::<kilogram_per_second>(),
             Some(context.delta()),
         );
 
-        self.pack_flow = pneumatic.pack_flow_valve_air_flow(self.id);
+        self.pack_flow = pneumatic.pack_flow_valve_air_flow(self.id + 1);
     }
 
     fn pack_start_condition_determination(&self, pneumatic: &impl PackFlowValveState) -> bool {
         // Returns true when one of the packs is in start condition
-        pneumatic.pack_flow_valve_is_open(self.id)
+        pneumatic.pack_flow_valve_is_open(self.id + 1)
             && self.fcv_timer_open <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND)
     }
 
@@ -785,8 +785,8 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
                 intermediate_flow.max(Ratio::new::<percent>(Self::APU_SUPPLY_FLOW_LIMIT));
         }
         // Single pack operation determination
-        if (pneumatic.pack_flow_valve_is_open(self.id))
-            != (pneumatic.pack_flow_valve_is_open(1 - self.id))
+        if (pneumatic.pack_flow_valve_is_open(self.id + 1))
+            != (pneumatic.pack_flow_valve_is_open(2 - self.id))
         {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::ONE_PACK_FLOW_LIMIT));
@@ -802,7 +802,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
                 intermediate_flow.min(Ratio::new::<percent>(Self::FLOW_REDUCTION_LIMIT));
         }
         // If the flow control valve is closed the indication is in the Lo position
-        if !(pneumatic.pack_flow_valve_is_open(self.id)) {
+        if !(pneumatic.pack_flow_valve_is_open(self.id + 1)) {
             OverheadFlowSelector::Lo.into()
         } else {
             intermediate_flow.max(Ratio::new::<percent>(Self::BACKFLOW_LIMIT))
@@ -860,7 +860,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
     }
 
     fn fcv_status_determination(&self, pneumatic: &impl PackFlowValveState) -> bool {
-        (pneumatic.pack_flow_valve_is_open(self.id)) != self.fcv_open_allowed
+        (pneumatic.pack_flow_valve_is_open(self.id + 1)) != self.fcv_open_allowed
     }
 }
 
@@ -960,7 +960,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         !pack_flow_controller
             .iter()
             .any(|pack| pack.pack_start_condition_determination(pneumatic))
-            && ((pneumatic.pack_flow_valve_is_open(0)) || (pneumatic.pack_flow_valve_is_open(1)))
+            && ((pneumatic.pack_flow_valve_is_open(1)) || (pneumatic.pack_flow_valve_is_open(2)))
     }
 
     fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController {
@@ -1522,10 +1522,10 @@ mod acs_controller_tests {
     }
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-            self.packs[pack_id].pfv_open_amount() > Ratio::default()
+            self.packs[pack_id - 1].pfv_open_amount() > Ratio::default()
         }
         fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-            self.packs[pack_id].pack_flow_valve_air_flow()
+            self.packs[pack_id - 1].pack_flow_valve_air_flow()
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -2385,7 +2385,7 @@ mod acs_controller_tests {
 
         fn pack_flow(&self) -> MassRate {
             self.query(|a| {
-                a.pneumatic.pack_flow_valve_air_flow(0) + a.pneumatic.pack_flow_valve_air_flow(1)
+                a.pneumatic.pack_flow_valve_air_flow(1) + a.pneumatic.pack_flow_valve_air_flow(2)
             })
         }
 

@@ -52,6 +52,7 @@ impl CoreProcessingInputOutputModuleB {
         cpiom_b: [&CoreProcessingInputOutputModule; 4],
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
+        number_of_passengers: usize,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pressurization: &impl CabinAltitude,
     ) {
@@ -76,6 +77,7 @@ impl CoreProcessingInputOutputModuleB {
                 acs_overhead,
                 engines,
                 lgciu,
+                number_of_passengers,
                 pneumatic,
                 pressurization,
             );
@@ -128,7 +130,8 @@ impl AirGenerationSystemApplication {
 
     const FLOW_CONSTANT_C: f64 = 0.5675; // kg/s
     const FLOW_CONSTANT_XCAB: f64 = 0.00001828; // kg(feet*s)
-    const A320_T0_A380_FLOW_CONVERSION_FACTOR: f64 = 2.8; // TODO
+    const A320_T0_A380_FLOW_CONVERSION_FACTOR: f64 = 2.8; // This is an assumed conversion factor for now based on number of pax
+    const A380_TOTAL_NUMBER_OF_PASSENGERS: f64 = 517.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -163,6 +166,7 @@ impl AirGenerationSystemApplication {
         acs_overhead: &impl AirConditioningOverheadShared,
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
+        number_of_passengers: usize,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pressurization: &impl CabinAltitude,
     ) {
@@ -177,8 +181,18 @@ impl AirGenerationSystemApplication {
             self.flow_demand_determination(&self.aircraft_state, acs_overhead, Pack(2), pneumatic),
         ];
         self.pack_flow_demand = [
-            self.absolute_flow_calculation(Pack(1), pressurization),
-            self.absolute_flow_calculation(Pack(2), pressurization),
+            self.absolute_flow_calculation(
+                acs_overhead,
+                number_of_passengers,
+                Pack(1),
+                pressurization,
+            ),
+            self.absolute_flow_calculation(
+                acs_overhead,
+                number_of_passengers,
+                Pack(2),
+                pressurization,
+            ),
         ];
         self.update_timer(context, pneumatic);
         self.flow_ratio = self.actual_flow_percentage_calculation(pneumatic, pressurization);
@@ -221,8 +235,8 @@ impl AirGenerationSystemApplication {
                 intermediate_flow.max(Ratio::new::<percent>(Self::APU_SUPPLY_FLOW_LIMIT));
         }
         // Single pack operation determination
-        if (pneumatic.pack_flow_valve_is_open(pack.to_index()))
-            != (pneumatic.pack_flow_valve_is_open(1 - pack.to_index()))
+        if (pneumatic.pack_flow_valve_is_open(pack.into()))
+            != (pneumatic.pack_flow_valve_is_open(3 - usize::from(pack)))
         {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::ONE_PACK_FLOW_LIMIT));
@@ -247,14 +261,25 @@ impl AirGenerationSystemApplication {
 
     fn absolute_flow_calculation(
         &self,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        number_of_passengers: usize,
         pack: Pack,
         pressurization: &impl CabinAltitude,
     ) -> MassRate {
+        let passenger_factor: f64 = if matches!(
+            acs_overhead.flow_selector_position(),
+            OverheadFlowSelector::Norm
+        ) {
+            number_of_passengers as f64 / Self::A380_TOTAL_NUMBER_OF_PASSENGERS
+        } else {
+            1.
+        };
         MassRate::new::<kilogram_per_second>(
             self.flow_demand_ratio[pack.to_index()].get::<ratio>()
                 * (Self::FLOW_CONSTANT_XCAB * pressurization.altitude().get::<foot>()
                     + Self::FLOW_CONSTANT_C)
-                * Self::A320_T0_A380_FLOW_CONVERSION_FACTOR,
+                * Self::A320_T0_A380_FLOW_CONVERSION_FACTOR
+                * passenger_factor,
         )
     }
 
@@ -270,10 +295,10 @@ impl AirGenerationSystemApplication {
         );
 
         let actual_flow = [
-            pneumatic.pack_flow_valve_air_flow(0),
             pneumatic.pack_flow_valve_air_flow(1),
             pneumatic.pack_flow_valve_air_flow(2),
             pneumatic.pack_flow_valve_air_flow(3),
+            pneumatic.pack_flow_valve_air_flow(4),
         ];
 
         actual_flow
