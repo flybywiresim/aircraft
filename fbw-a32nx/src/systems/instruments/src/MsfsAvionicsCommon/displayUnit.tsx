@@ -1,4 +1,4 @@
-import { FSComponent, ClockEvents, DisplayComponent, EventBus, Subscribable, VNode } from 'msfssdk';
+import { FSComponent, ClockEvents, DisplayComponent, EventBus, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@shared/persistence';
 import { getSupplier } from '@instruments/common/utils';
 import { DisplayVars } from './SimVarTypes';
@@ -83,17 +83,17 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
         this.props.brightness?.sub((f) => {
             this.brightness = f;
             this.updateState();
-        });
+        }, true);
 
         this.props.failed?.sub((f) => {
             this.failed = f;
             this.updateState();
-        });
+        }, true);
 
         this.props.powered?.sub((f) => {
             this.powered = f;
             this.updateState();
-        });
+        }, true);
 
         NXDataStore.getAndSubscribe('HOME_COCKPIT_ENABLED', (_key, val) => {
             this.isHomeCockpitMode = val === '1';

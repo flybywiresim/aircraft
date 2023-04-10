@@ -1,4 +1,4 @@
-import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
+import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import EWDMessages from '@instruments/common/EWDMessages';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { FormattedFwcText } from './FormattedFwcText';
