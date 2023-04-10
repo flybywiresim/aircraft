@@ -47,7 +47,7 @@ impl OperatingChannel {
 
     fn switch(self) -> Self {
         // At the moment switching channels always clears the fault in the second channel
-        // This needs to be improved so we can have dual channel failures
+        // TODO: This needs to be improved so we can have dual channel failures
         if matches!(self, OperatingChannel::FDACChannelOne(_)) {
             OperatingChannel::FDACChannelTwo(false)
         } else {

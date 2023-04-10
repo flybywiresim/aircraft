@@ -1,1 +1,0 @@
-{"version":3,"file":"DebounceTimer.d.ts","sourceRoot":"","sources":["../../utils/DebounceTimer.ts"],"names":[],"mappings":"AAAA;;GAEG;AACH,qBAAa,aAAa;IACxB,OAAO,CAAC,KAAK,CAA+B;IAE5C;;;OAGG;IACI,SAAS,IAAI,OAAO;IAI3B;;;;;OAKG;IACI,QAAQ,CAAC,MAAM,EAAE,MAAM,IAAI,EAAE,KAAK,EAAE,MAAM,GAAG,IAAI;IAQxD;;OAEG;IACI,KAAK,IAAI,IAAI;CAQrB"}

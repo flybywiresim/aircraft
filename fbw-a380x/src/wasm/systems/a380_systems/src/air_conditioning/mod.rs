@@ -48,14 +48,13 @@ pub(super) struct A380AirConditioning {
 
     cpiom_b: CoreProcessingInputOutputModuleB,
 
-    // core_processing_input_output_module_b: CoreProcessingInputOutputModuleB,
     pressurization_updater: MaxStepLoop,
 }
 
 impl A380AirConditioning {
     const PRESSURIZATION_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(50);
 
-    pub fn new(context: &mut InitContext) -> Self {
+    pub(super) fn new(context: &mut InitContext) -> Self {
         let cabin_zones: [ZoneType; 18] = [
             ZoneType::Cockpit,
             ZoneType::Cabin(11), // MAIN_DECK_1
@@ -88,7 +87,7 @@ impl A380AirConditioning {
         }
     }
 
-    pub fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
@@ -164,7 +163,10 @@ impl A380AirConditioning {
         }
     }
 
-    pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
+    pub(super) fn mix_packs_air_update(
+        &mut self,
+        pack_container: &mut [impl PneumaticContainer; 2],
+    ) {
         self.a380_air_conditioning_system
             .mix_packs_air_update(pack_container);
     }
@@ -299,7 +301,7 @@ impl SimulationElement for A380Cabin {
     }
 }
 
-pub struct A380AirConditioningSystem {
+struct A380AirConditioningSystem {
     acsc: AirConditioningSystemController<18, 4>,
     fdac: [FullDigitalAGUController<4>; 2],
     cabin_fans: [CabinFan; 2],
@@ -312,7 +314,7 @@ pub struct A380AirConditioningSystem {
 }
 
 impl A380AirConditioningSystem {
-    pub(crate) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
+    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         Self {
             acsc: AirConditioningSystemController::new(
                 context,
@@ -351,7 +353,7 @@ impl A380AirConditioningSystem {
         }
     }
 
-    pub(crate) fn update(
+    fn update(
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
@@ -421,14 +423,14 @@ impl A380AirConditioningSystem {
             .set_pack_pushbutton_fault(self.pack_fault_determination());
     }
 
-    pub fn pack_fault_determination(&self) -> [bool; 2] {
+    fn pack_fault_determination(&self) -> [bool; 2] {
         [
             self.fdac[0].fcv_status_determination(1) || self.fdac[0].fcv_status_determination(2),
             self.fdac[1].fcv_status_determination(3) || self.fdac[1].fcv_status_determination(4),
         ]
     }
 
-    pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
+    fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
         self.trim_air_system.mix_packs_air_update(pack_container);
     }
 
@@ -478,7 +480,7 @@ impl SimulationElement for A380AirConditioningSystem {
     }
 }
 
-pub(crate) struct A380AirConditioningSystemOverhead {
+struct A380AirConditioningSystemOverhead {
     flow_selector_id: VariableIdentifier,
 
     // Air panel
@@ -498,7 +500,7 @@ pub(crate) struct A380AirConditioningSystemOverhead {
 }
 
 impl A380AirConditioningSystemOverhead {
-    pub fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
             flow_selector_id: context
                 .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
@@ -612,7 +614,7 @@ struct A320PressurizationSystem {
 }
 
 impl A320PressurizationSystem {
-    pub fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext) -> Self {
         let random = random_number();
         let active = 2 - (random % 2);
 
@@ -636,7 +638,7 @@ impl A320PressurizationSystem {
         }
     }
 
-    pub fn update(
+    fn update(
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
@@ -781,7 +783,7 @@ impl PressurizationConstants for A320PressurizationConstants {
     const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64 = 1.45; // PSI
 }
 
-pub struct A380PressurizationOverheadPanel {
+pub(crate) struct A380PressurizationOverheadPanel {
     mode_sel: AutoManFaultPushButton,
     man_vs_ctl_switch: SpringLoadedSwitch,
     ldg_elev_knob: ValueKnob,
@@ -789,7 +791,7 @@ pub struct A380PressurizationOverheadPanel {
 }
 
 impl A380PressurizationOverheadPanel {
-    pub fn new(context: &mut InitContext) -> Self {
+    pub(crate) fn new(context: &mut InitContext) -> Self {
         Self {
             mode_sel: AutoManFaultPushButton::new_auto(context, "PRESS_MODE_SEL"),
             man_vs_ctl_switch: SpringLoadedSwitch::new(context, "PRESS_MAN_VS_CTL"),

@@ -1,1 +1,0 @@
-{"version":3,"file":"JSXDefinitions.d.ts","sourceRoot":"","sources":["../../components/JSXDefinitions.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,aAAa,EAAE,MAAM,eAAe,CAAC;AAE9C;;GAEG;AACH,yBAAiB,cAAc,CAAC;IAE9B;;OAEG;IACH,UAAiB,iBAAiB;QAChC,CAAC,QAAQ,EAAE,MAAM,GAAG,GAAG,CAAC;QAExB,4CAA4C;QAC5C,GAAG,CAAC,EAAE,aAAa,CAAC,GAAG,CAAC,CAAC;KAC1B;CACF"}

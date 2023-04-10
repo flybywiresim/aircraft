@@ -33,7 +33,7 @@ pub(super) struct CoreProcessingInputOutputModuleB {
 }
 
 impl CoreProcessingInputOutputModuleB {
-    pub(crate) fn new(context: &mut InitContext) -> Self {
+    pub(super) fn new(context: &mut InitContext) -> Self {
         Self {
             cpiom_are_active: [false; 4],
             ags_app: AirGenerationSystemApplication::new(context),
@@ -44,7 +44,7 @@ impl CoreProcessingInputOutputModuleB {
         }
     }
 
-    pub(crate) fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
