@@ -1,20 +1,25 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{Pack, PackFlowController},
+        acs_controller::{AirConditioningSystemController, Pack, PackFlowController},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
-        AdirsToAirCondInterface, AirConditioningSystem, DuctTemperature, OutflowValveSignal,
-        OutletAir, PackFlowControllers, PressurizationConstants, ZoneType,
+        AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
+        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
+        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
+        ZoneType,
     },
-    overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
+    overhead::{
+        AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
+        SpringLoadedSwitch, ValueKnob,
+    },
     pneumatic::PneumaticContainer,
     shared::{
-        random_number, update_iterator::MaxStepLoop, CabinAltitude, CabinSimulation,
+        random_number, update_iterator::MaxStepLoop, AverageExt, CabinAltitude, CabinSimulation,
         ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
         EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
-        PneumaticBleed, PressurizationOverheadShared,
+        PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -23,13 +28,16 @@ use systems::{
 };
 
 use std::time::Duration;
-use uom::si::{f64::*, pressure::hectopascal, ratio::percent, velocity::knot};
+use uom::si::{
+    f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
+    velocity::knot,
+};
 
 use crate::payload::{A320Pax, NumberOfPassengers};
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
-    a320_air_conditioning_system: AirConditioningSystem<3, 2, 2>,
+    a320_air_conditioning_system: A320AirConditioningSystem,
     a320_pressurization_system: A320PressurizationSystem,
 
     pressurization_updater: MaxStepLoop,
@@ -44,19 +52,7 @@ impl A320AirConditioning {
 
         Self {
             a320_cabin: A320Cabin::new(context),
-            a320_air_conditioning_system: AirConditioningSystem::new(
-                context,
-                cabin_zones,
-                vec![
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::AlternatingCurrent(1),
-                ],
-                vec![
-                    ElectricalBusType::DirectCurrent(2),
-                    ElectricalBusType::AlternatingCurrent(2),
-                ],
-                ElectricalBusType::AlternatingCurrent(1),
-            ),
+            a320_air_conditioning_system: A320AirConditioningSystem::new(context, &cabin_zones),
             a320_pressurization_system: A320PressurizationSystem::new(context),
 
             pressurization_updater: MaxStepLoop::new(Self::PRESSURIZATION_SIM_MAX_TIME_STEP),
@@ -128,8 +124,8 @@ impl A320AirConditioning {
     }
 }
 
-impl PackFlowControllers<3, 2> for A320AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 2> {
+impl PackFlowControllers<2> for A320AirConditioning {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
         self.a320_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
@@ -234,6 +230,230 @@ impl SimulationElement for A320Cabin {
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.cabin_air_simulation.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct A320AirConditioningSystem {
+    acsc: AirConditioningSystemController<3, 2>,
+    cabin_fans: [CabinFan; 2],
+    mixer_unit: MixerUnit<3>,
+    // Temporary structure until packs are simulated
+    packs: [AirConditioningPack; 2],
+    trim_air_system: TrimAirSystem<3, 2>,
+
+    air_conditioning_overhead: A320AirConditioningSystemOverhead<3>,
+}
+
+impl A320AirConditioningSystem {
+    pub(crate) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 3]) -> Self {
+        Self {
+            acsc: AirConditioningSystemController::new(
+                context,
+                cabin_zones,
+                vec![
+                    ElectricalBusType::DirectCurrent(1),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ],
+                vec![
+                    ElectricalBusType::DirectCurrent(2),
+                    ElectricalBusType::AlternatingCurrent(2),
+                ],
+            ),
+            cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+            mixer_unit: MixerUnit::new(cabin_zones),
+            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
+            trim_air_system: TrimAirSystem::new(context, cabin_zones),
+
+            air_conditioning_overhead: A320AirConditioningSystemOverhead::new(context, cabin_zones),
+        }
+    }
+
+    pub(crate) fn update(
+        &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsToAirCondInterface,
+        cabin_simulation: &impl CabinSimulation,
+        engines: [&impl EngineCorrectedN1; 2],
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
+        pneumatic_overhead: &impl EngineBleedPushbutton<2>,
+        pressurization: &impl CabinAltitude,
+        pressurization_overhead: &A320PressurizationOverheadPanel,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+    ) {
+        self.acsc.update(
+            context,
+            adirs,
+            &self.air_conditioning_overhead,
+            cabin_simulation,
+            engines,
+            engine_fire_push_buttons,
+            pneumatic,
+            pneumatic_overhead,
+            pressurization,
+            pressurization_overhead,
+            lgciu,
+            &self.trim_air_system,
+        );
+
+        for fan in self.cabin_fans.iter_mut() {
+            fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
+        }
+
+        let pack_flow: [MassRate; 2] = [
+            self.acsc.individual_pack_flow(Pack(1)),
+            self.acsc.individual_pack_flow(Pack(2)),
+        ];
+        let duct_demand_temperature = self.acsc.duct_demand_temperature();
+        for (id, pack) in self.packs.iter_mut().enumerate() {
+            pack.update(pack_flow[id], &duct_demand_temperature)
+        }
+
+        let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
+        for fan in self.cabin_fans.iter() {
+            mixer_intakes.push(fan)
+        }
+        self.mixer_unit.update(mixer_intakes);
+
+        self.trim_air_system
+            .update(context, &self.mixer_unit, &self.acsc);
+
+        self.air_conditioning_overhead
+            .set_pack_pushbutton_fault(self.pack_fault_determination(pneumatic));
+    }
+
+    pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
+        self.acsc.pack_fault_determination(pneumatic)
+    }
+
+    pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
+        self.trim_air_system.mix_packs_air_update(pack_container);
+    }
+}
+
+impl PackFlowControllers<2> for A320AirConditioningSystem {
+    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
+        self.acsc.pack_flow_controller(pack_id)
+    }
+}
+
+impl DuctTemperature for A320AirConditioningSystem {
+    fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        self.trim_air_system.duct_temperature()
+    }
+}
+
+impl OutletAir for A320AirConditioningSystem {
+    fn outlet_air(&self) -> Air {
+        let mut outlet_air = Air::new();
+        outlet_air.set_flow_rate(
+            self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2)),
+        );
+        outlet_air.set_pressure(self.trim_air_system.trim_air_outlet_pressure());
+        outlet_air.set_temperature(self.duct_temperature().iter().average());
+
+        outlet_air
+    }
+}
+
+impl SimulationElement for A320AirConditioningSystem {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+        self.acsc.accept(visitor);
+        self.trim_air_system.accept(visitor);
+        accept_iterable!(self.cabin_fans, visitor);
+
+        self.air_conditioning_overhead.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub(crate) struct A320AirConditioningSystemOverhead<const ZONES: usize> {
+    flow_selector_id: VariableIdentifier,
+
+    pack_pbs: [OnOffFaultPushButton; 2],
+    hot_air_pb: OnOffFaultPushButton,
+    cabin_fans_pb: OnOffPushButton,
+    temperature_selectors: Vec<ValueKnob>,
+    flow_selector: OverheadFlowSelector,
+}
+
+impl<const ZONES: usize> A320AirConditioningSystemOverhead<ZONES> {
+    pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+        let mut overhead = Self {
+            flow_selector_id: context
+                .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
+
+            pack_pbs: [
+                OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
+                OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
+            ],
+            hot_air_pb: OnOffFaultPushButton::new_on(context, "COND_HOT_AIR"),
+            cabin_fans_pb: OnOffPushButton::new_on(context, "VENT_CAB_FANS"),
+            temperature_selectors: Vec::new(),
+            flow_selector: OverheadFlowSelector::Norm,
+        };
+        for id in cabin_zone_ids {
+            let knob_id = format!("COND_{}_SELECTOR", id);
+            overhead
+                .temperature_selectors
+                .push(ValueKnob::new_with_value(context, &knob_id, 24.));
+        }
+        overhead
+    }
+
+    fn set_pack_pushbutton_fault(&mut self, pb_has_fault: [bool; 2]) {
+        self.pack_pbs
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
+    }
+}
+
+impl<const ZONES: usize> AirConditioningOverheadShared
+    for A320AirConditioningSystemOverhead<ZONES>
+{
+    fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature {
+        let knob = &self.temperature_selectors[zone_id];
+        // Map from knob range 0-300 to 18-30 degrees C
+        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
+    }
+
+    fn pack_pushbuttons_state(&self) -> Vec<bool> {
+        self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
+    }
+
+    fn hot_air_pushbutton_is_on(&self) -> bool {
+        self.hot_air_pb.is_on()
+    }
+
+    fn cabin_fans_is_on(&self) -> bool {
+        self.cabin_fans_pb.is_on()
+    }
+
+    fn flow_selector_position(&self) -> OverheadFlowSelector {
+        self.flow_selector
+    }
+}
+
+impl<const ZONES: usize> SimulationElement for A320AirConditioningSystemOverhead<ZONES> {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let selector_position: f64 = reader.read(&self.flow_selector_id);
+        self.flow_selector = match selector_position as u8 {
+            0 => OverheadFlowSelector::Lo,
+            1 => OverheadFlowSelector::Norm,
+            2 => OverheadFlowSelector::Hi,
+            _ => panic!("Overhead flow selector position not recognized."),
+        }
+    }
+
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.temperature_selectors, visitor);
+        accept_iterable!(self.pack_pbs, visitor);
+        self.hot_air_pb.accept(visitor);
+        self.cabin_fans_pb.accept(visitor);
 
         visitor.visit(self);
     }
@@ -723,7 +943,7 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2>,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -888,7 +1108,7 @@ mod tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<3, 2>,
+            pack_flow_valve_signals: &impl PackFlowControllers<2>,
         ) {
             self.pack_flow_valve.update_open_amount(
                 &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
@@ -1886,7 +2106,6 @@ mod tests {
         #[test]
         fn cabin_vs_changes_to_cruise() {
             let test_bed = test_bed_in_cruise().iterate_with_delta(200, Duration::from_millis(100));
-
             assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
         }
 
