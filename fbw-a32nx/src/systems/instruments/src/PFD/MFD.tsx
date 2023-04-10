@@ -1,7 +1,18 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
-import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
+
 import './style.scss';
+
+import { SysSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/SysSelectorDropdownMenu';
+import { NumberInputField } from 'instruments/src/PFD/MFD-common/NumberInputField';
+import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
+
+import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+
+import { Button } from 'instruments/src/PFD/MFD-common/Button';
+import { PageSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/PageSelectorDropdownMenu';
+import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
+import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { MFDSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -21,6 +32,8 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
 
     private displayPowered = Subject.create(false);
 
+    private testSubject = Subject.create(0);
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -30,6 +43,14 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
+
+            if (this.displayBrightness.get() > 0 && this.displayBrightness.get() < 0.3) {
+                this.testSubject.set(0);
+            } else if (this.displayBrightness.get() >= 0.3 && this.displayBrightness.get() < 0.7) {
+                this.testSubject.set(1);
+            } else {
+                this.testSubject.set(2);
+            }
         });
 
         sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
@@ -49,96 +70,30 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
                 <div class="mfd-main">
                     {/* begin header */}
                     <div style="display: flex; flex-direction: row;">
-                        <div class="MFDSysSelectorOuter">
-                            <div style="background-color: #040405; display: flex; flex: 4; margin: 4px;">
-                                <span class="MFDSysSelectorLabel">
-                                    FMS 1
-                                </span>
-                            </div>
-                            <div style="display: flex; flex: 1; justify-content: center;">
-                                <span style="color: white; align-self: center;">
-                                    <svg height="10" width="10">
-                                        <polygon points="0,0 10,0 5,10" style="fill: white" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
+                        <SysSelectorDropdownMenu values={Subject.create(['FMS 1', 'ATCCOM', 'SURV'])} selectedIndex={Subject.create(0)} />
                     </div>
                     <div style="display: flex; flex-direction: row;">
-                        <div class="MFDPageSelectorOuter">
-                            <div style="display: flex; flex: 8; justify-content: center;">
-                                <span class="MFDPageSelectorLabel active">
-                                    ACTIVE
-                                </span>
-                            </div>
-                            <div style="display: flex;">
-                                <span style="padding: 8px;">
-                                    <svg height="10" width="10">
-                                        <polygon points="0,0 10,0 5,10" style="fill: white" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="MFDPageSelectorOuter">
-                            <div style="display: flex; flex: 8; justify-content: center;">
-                                <span class="MFDPageSelectorLabel">
-                                    POSITION
-                                </span>
-                            </div>
-                            <div style="display: flex;">
-                                <span style="padding: 8px;">
-                                    <svg height="10" width="10">
-                                        <polygon points="0,0 10,0 5,10" style="fill: white" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="MFDPageSelectorOuter">
-                            <div style="display: flex; flex: 8; justify-content: center;">
-                                <span class="MFDPageSelectorLabel">
-                                    SEC
-                                </span>
-                            </div>
-                            <div style="display: flex;">
-                                <span style="padding: 8px;">
-                                    <svg height="10" width="10">
-                                        <polygon points="0,0 10,0 5,10" style="fill: white" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="MFDPageSelectorOuter">
-                            <div style="display: flex; flex: 8; justify-content: center;">
-                                <span class="MFDPageSelectorLabel">
-                                    DATA
-                                </span>
-                            </div>
-                            <div style="display: flex;">
-                                <span style="padding: 8px;">
-                                    <svg height="10" width="10">
-                                        <polygon points="0,0 10,0 5,10" style="fill: white" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
+                        <PageSelectorDropdownMenu isActive={Subject.create(true)}>
+                            ACTIVE
+                        </PageSelectorDropdownMenu>
+                        <PageSelectorDropdownMenu isActive={Subject.create(false)}>
+                            POSITION
+                        </PageSelectorDropdownMenu>
+                        <PageSelectorDropdownMenu isActive={Subject.create(false)}>
+                            SEC INDEX
+                        </PageSelectorDropdownMenu>
+                        <PageSelectorDropdownMenu isActive={Subject.create(false)}>
+                            DATA
+                        </PageSelectorDropdownMenu>
                     </div>
-                    <div style="display: flex;">
-                        <div style="flex: 10; background-color: #a0a0a0;">
-                            <span class="MFDLabel" style="color: #222222; padding-left: 7px; font-size: 26px;">ACTIVE/PERF</span>
-                        </div>
-                        <div style="width: 60px; background-color: #a0a0a0; margin-left: 2px;" />
-                        <div style="width: 80px; background-color: #a0a0a0; margin-left: 2px;" />
-                    </div>
+                    <ActivePageTitleBar activePage={Subject.create('ACTIVE/PERF')} tmpyIsActive={Subject.create(false)} />
                     {/* end header */}
                     {/* begin page content */}
                     <div class="MFDPageContainer">
                         <div style="margin: 15px; display: flex; justify-content: space-between;">
                             <div class="MFDLabelValueContainer">
                                 <span class="MFDLabel spacingRight">CRZ</span>
-                                <div class="MFDTextInput">
-                                    <span class="MFDUnitLabel leadingUnit">FL</span>
-                                    <span class="MFDCyanValue">350</span>
-                                </div>
+                                <NumberInputField value={Subject.create(350)} emptyValueString="---" unitLeading={Subject.create('FL')} />
                             </div>
                             <div class="MFDLabelValueContainer">
                                 <span class="MFDLabel spacingRight">OPT</span>
@@ -151,96 +106,8 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
                                 <span class="MFDGreenValue">393</span>
                             </div>
                         </div>
-                        <div class="MFDTopTabNavigatorContainer">
-                            <div class="MFDTopTabNavigatorBar">
-                                <div class="MFDTopTabNavigatorBarElementOuter active">
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,36 6.35,0 6.35,36" style="fill:#040405;" />
-                                        <line x1="0" y1="36" x2="6.35" y2="0" style="stroke: lightgrey; stroke-width:2" />
-                                    </svg>
-                                    <span class="MFDTopTabNavigatorBarElementLabel active">T.O</span>
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,0 6.35,36 0,36" style="fill: #040405;" />
-                                        <line x1="0" y1="0" x2="6.35" y2="36" style="stroke: lightgrey; stroke-width:2" />
-                                    </svg>
-                                </div>
-                                <div class="MFDTopTabNavigatorBarElementOuter">
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,36 6.35,0 6.35,36" style="fill:#3c3c3c;" />
-                                        <line x1="0" y1="36" x2="6.35" y2="0" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                    <span class="MFDTopTabNavigatorBarElementLabel">CLB</span>
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,0 6.35,36 0,36" style="fill: #3c3c3c;" />
-                                        <line x1="0" y1="0" x2="6.35" y2="36" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                </div>
-                                <div class="MFDTopTabNavigatorBarElementOuter">
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,36 6.35,0 6.35,36" style="fill:#3c3c3c;" />
-                                        <line x1="0" y1="36" x2="6.35" y2="0" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                    <span class="MFDTopTabNavigatorBarElementLabel">CRZ</span>
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,0 6.35,36 0,36" style="fill: #3c3c3c;" />
-                                        <line x1="0" y1="0" x2="6.35" y2="36" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                </div>
-                                <div class="MFDTopTabNavigatorBarElementOuter">
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,36 6.35,0 6.35,34" style="fill:#3c3c3c;" />
-                                        <line x1="0" y1="36" x2="6.35" y2="0" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                    <span class="MFDTopTabNavigatorBarElementLabel">DES</span>
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,0 6.35,36 0,36" style="fill: #3c3c3c;" />
-                                        <line x1="0" y1="0" x2="6.35" y2="36" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                </div>
-                                <div class="MFDTopTabNavigatorBarElementOuter">
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,36 6.35,0 6.35,34" style="fill:#3c3c3c;" />
-                                        <line x1="0" y1="36" x2="6.35" y2="0" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                    <span class="MFDTopTabNavigatorBarElementLabel">APPR</span>
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,0 6.35,36 0,36" style="fill: #3c3c3c;" />
-                                        <line x1="0" y1="0" x2="6.35" y2="36" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                </div>
-                                <div class="MFDTopTabNavigatorBarElementOuter">
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,36 6.35,0 6.35,34" style="fill:#3c3c3c;" />
-                                        <line x1="0" y1="36" x2="6.35" y2="0" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                    <span class="MFDTopTabNavigatorBarElementLabel">GA</span>
-                                    <svg height="36" width="6.35">
-                                        <polygon points="0,0 6.35,36 0,36" style="fill: #3c3c3c;" />
-                                        <line x1="0" y1="0" x2="6.35" y2="36" style="stroke: lightgrey; stroke-width:2" />
-                                        <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />
-                                        {/* only if tab inactive */}
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="MFDTopTabNavigatorTabContent">
+                        <TopTabNavigator pageTitles={Subject.create(['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA'])} selectedPageIndex={this.testSubject}>
+                            <TopTabNavigatorPage>
                                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey">
                                     <div class="MFDLabelValueContainer" style="padding: 15px;">
                                         <span class="MFDLabel spacingRight">RWY</span>
@@ -253,10 +120,7 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
                                     >
                                         <div class="MFDLabelValueContainer">
                                             <span class="MFDLabel spacingRight">V1</span>
-                                            <div class="MFDTextInput">
-                                                <span class="MFDCyanValue">135</span>
-                                                <span class="MFDUnitLabel trailingUnit">KT</span>
-                                            </div>
+                                            <NumberInputField value={Subject.create(135)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
                                         </div>
                                         <div class="MFDLabelValueContainer">
                                             <span class="MFDLabel spacingRight">F</span>
@@ -265,10 +129,7 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
                                         </div>
                                         <div class="MFDLabelValueContainer">
                                             <span class="MFDLabel spacingRight">VR</span>
-                                            <div class="MFDTextInput">
-                                                <span class="MFDCyanValue">140</span>
-                                                <span class="MFDUnitLabel trailingUnit">KT</span>
-                                            </div>
+                                            <NumberInputField value={Subject.create(140)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
                                         </div>
                                         <div class="MFDLabelValueContainer">
                                             <span class="MFDLabel spacingRight">S</span>
@@ -277,10 +138,7 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
                                         </div>
                                         <div class="MFDLabelValueContainer">
                                             <span class="MFDLabel spacingRight">V2</span>
-                                            <div class="MFDTextInput">
-                                                <span class="MFDCyanValue">145</span>
-                                                <span class="MFDUnitLabel trailingUnit">KT</span>
-                                            </div>
+                                            <NumberInputField value={Subject.create(145)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
                                         </div>
                                         <div class="MFDLabelValueContainer">
                                             <span class="MFDLabel spacingRight">O</span>
@@ -309,65 +167,52 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
                                 <div style="margin: 15px 0px 15px 0px; display: flex; justify-content: space-between;">
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">FLAPS</span>
-                                        <div class="MFDDropdownOuter">
-                                            <div style="background-color: #040405; display: flex; margin: 4px;">
-                                                <span class="MFDDropdownLabel">
-                                                    1
-                                                </span>
-                                            </div>
-                                            <div style="display: flex; justify-content: center; padding-right: 5px;">
-                                                <span style="color: white; align-self: center;">
-                                                    <svg height="10" width="10">
-                                                        <polygon points="0,0 10,0 5,10" style="fill: white" />
-                                                    </svg>
-                                                </span>
-                                            </div>
-                                        </div>
+                                        <DropdownMenu values={Subject.create(['-', '1', '2', '3'])} selectedIndex={Subject.create(0)} />
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">THS FOR</span>
-                                        <div class="MFDTextInput">
-                                            <span class="MFDCyanValue">39.0</span>
-                                            <span class="MFDUnitLabel trailingUnit">%</span>
-                                        </div>
+                                        <NumberInputField value={Subject.create(39.0)} emptyValueString="--.-" unitTrailing={Subject.create('%')} />
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">T.O SHIFT</span>
-                                        <div class="MFDTextInput" style="padding-left: 20px; padding-right: 20px;">
-                                            <span class="MFDCyanValue">----</span>
-                                            <span class="MFDUnitLabel trailingUnit">M</span>
-                                        </div>
+                                        <NumberInputField value={Subject.create(undefined)} emptyValueString="----" unitTrailing={Subject.create('M')} />
                                     </div>
                                 </div>
                                 <div style="display: grid; grid-template-columns: auto auto; justify-content: space-between; margin: 10px 80px 10px 80px;">
                                     <div class="MFDLabelValueContainer" style="justify-content: flex-end;">
                                         <span class="MFDLabel spacingRight">THR RED</span>
-                                        <div class="MFDTextInput" style="width: 125px; justify-content: flex-end;">
-                                            <span class="MFDCyanValue">3000</span>
-                                            <span class="MFDUnitLabel trailingUnit">FT</span>
-                                        </div>
+                                        <NumberInputField
+                                            value={Subject.create(3000)}
+                                            emptyValueString="----"
+                                            unitTrailing={Subject.create('FT')}
+                                            containerStyle="width: 125px; justify-content: flex-end;"
+                                        />
                                     </div>
                                     <div class="MFDLabelValueContainer" />
                                     <div class="MFDLabelValueContainer" style="justify-content: flex-end;">
                                         <span class="MFDLabel spacingRight">ACCEL</span>
-                                        <div class="MFDTextInput" style="width: 125px; justify-content: flex-end;">
-                                            <span class="MFDCyanValue">800</span>
-                                            <span class="MFDUnitLabel trailingUnit">FT</span>
-                                        </div>
+                                        <NumberInputField
+                                            value={Subject.create(800)}
+                                            emptyValueString="----"
+                                            unitTrailing={Subject.create('FT')}
+                                            containerStyle="width: 125px; justify-content: flex-end;"
+                                        />
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">EO ACCEL</span>
-                                        <div class="MFDTextInput" style="width: 125px; justify-content: flex-end;">
-                                            <span class="MFDCyanValue">1990</span>
-                                            <span class="MFDUnitLabel trailingUnit">FT</span>
-                                        </div>
+                                        <NumberInputField
+                                            value={Subject.create(1990)}
+                                            emptyValueString="----"
+                                            unitTrailing={Subject.create('FT')}
+                                            containerStyle="width: 125px; justify-content: flex-end;"
+                                        />
                                     </div>
                                 </div>
                                 <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row;">
                                     <div style="display: flex; flex: 1;">
-                                        <span class="MFDButton" style="align-items: center;">
+                                        <Button>
                                             NOISE
-                                        </span>
+                                        </Button>
                                     </div>
                                 </div>
                                 <div style="flex-grow: 1;" />
@@ -375,39 +220,55 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
                                 <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row; justify-self: flex-end;">
                                     <div class="MFDLabelValueContainer" style="flex: 4; margin-left: 80px;">
                                         <span class="MFDLabel spacingRight">TRANS</span>
-                                        <div class="MFDTextInput" style="width: 125px; justify-content: flex-end;">
-                                            <span class="MFDCyanValue">5000</span>
-                                            <span class="MFDUnitLabel trailingUnit">FT</span>
-                                        </div>
+                                        <NumberInputField
+                                            value={Subject.create(5000)}
+                                            emptyValueString="----"
+                                            unitTrailing={Subject.create('FT')}
+                                        />
                                     </div>
-                                    <span class="MFDButton" style="flex: 1;">
+                                    <Button>
                                         CPNY T.O
                                         <br />
                                         REQUEST
-                                    </span>
+                                    </Button>
                                 </div>
-                            </div>
-                        </div>
+                            </TopTabNavigatorPage>
+                            <TopTabNavigatorPage>
+                                <span style="color: white; font-size: 60px;">CLB</span>
+                            </TopTabNavigatorPage>
+                            <TopTabNavigatorPage>
+                                <span style="color: white; font-size: 60px;">CRZ</span>
+                            </TopTabNavigatorPage>
+                            <TopTabNavigatorPage>
+                                <span style="color: white; font-size: 60px;">DES</span>
+                            </TopTabNavigatorPage>
+                            <TopTabNavigatorPage>
+                                <span style="color: white; font-size: 60px;">APPR</span>
+                            </TopTabNavigatorPage>
+                            <TopTabNavigatorPage>
+                                <span style="color: white; font-size: 60px;">GA</span>
+                            </TopTabNavigatorPage>
+                        </TopTabNavigator>
                         <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row;">
                             <div style="display: flex; flex: 1;">
-                                <span class="MFDButton" style="align-items: center;">
+                                <Button>
                                     RETURN
-                                </span>
+                                </Button>
                             </div>
-                            <span class="MFDButton">
+                            <Button>
                                 POS MONITOR
-                            </span>
+                            </Button>
                             <div style="flex: 1" />
                         </div>
                     </div>
                     {/* end page content */}
                     {/* begin footer */}
-                    <div style="display: flex; border-top: 2px solid #3c3c3c; padding: 5px;">
-                        <span class="MFDButton">
+                    <div style="display: flex; border-top: 2px solid $display-mfd-dark-grey; padding: 5px;">
+                        <Button>
                             CLEAR
                             <br />
                             INFO
-                        </span>
+                        </Button>
                     </div>
                     {/* end footer */}
                 </div>

@@ -1,0 +1,279 @@
+﻿@import "../../MsfsAvionicsCommon/definitions";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "MFD-numbers";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a32nx/HoneywellMCDU.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+$display-mfd-dark-grey: #3c3c3c;
+
+.mfd-main {
+  position: absolute;
+  width: 768px;
+  height: 1024px; /* 1:1.33 W:H  */
+  background: $display-background;
+  /* background: $display-background; */
+  font-family: "Ecam", monospace !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.MFDLabel {
+  font-size: 20px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+}
+
+.MFDUnitLabel {
+  color: rgb(33, 33, 255);
+  font-size: 20px;
+}
+
+.MFDGreenValue {
+  font-family: "MFD-numbers", monospace;
+  color: $display-green;
+  font-size: 25px;
+}
+
+.MFDCyanValue {
+  font-family: "MFD-numbers", monospace;
+  color: $display-cyan;
+  font-size: 25px;
+}
+
+.MFDButton {
+  font-size: 22px;
+  background-color: $display-mfd-dark-grey;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  text-align: center;
+  border: 2px outset $display-light-grey;
+  padding: 9px 12px 5px 12px;
+}
+
+.MFDSysSelectorOuter {
+  width: 25%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: $display-mfd-dark-grey;
+  border: 2px outset $display-light-grey;
+}
+
+.MFDSysSelectorLabel {
+  font-size: 22px;
+  color: $display-cyan;
+  font-family: "Ecam", monospace;
+  padding: 2px 5px 2px 5px;
+}
+
+.MFDDropdownOuter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: $display-mfd-dark-grey;
+  border: 2px outset $display-light-grey;
+}
+
+.MFDDropdownLabel {
+  font-size: 22px;
+  color: $display-cyan;
+  font-family: "Ecam", monospace;
+  padding: 2px 10px 2px 10px;
+}
+
+.MFDPageSelectorLabel {
+  font-size: 22px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  padding: 2px;
+  text-align: center;
+  display: inline;
+  margin: 10px;
+  padding: 4px;
+}
+
+.MFDPageSelectorLabel.active {
+  border: 1px solid $display-white;
+}
+
+.MFDPageSelectorOuter {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  background-color: $display-mfd-dark-grey;
+  border-top: 2px solid $display-light-grey;
+  border-left: 2px solid $display-light-grey;
+  border-bottom: 2px solid rgba(211, 211, 211, 0.432);
+  border-right: 2px solid rgba(211, 211, 211, 0.432);
+}
+
+.MFDPageContainer {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+}
+
+.spacingRight {
+  margin-right: 15px;
+}
+
+.leadingUnit {
+  margin-right: 6px;
+}
+
+.trailingUnit {
+  margin-left: 6px;
+}
+
+.MFDTextInput {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  align-items: baseline;
+  padding: 4px;
+  border: 2px inset $display-light-grey;
+  text-align: center;
+  vertical-align: center;
+}
+
+.MFDTopTabNavigatorContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 2px;
+}
+
+.MFDTopTabNavigatorBar {
+  display: flex;
+  height: 36px;
+}
+
+.leftedge {
+  background: linear-gradient(100deg, $display-background 5%, white 50%, $display-background 50%);
+  width: 20px;
+}
+
+.MFDTopTabNavigatorBarElementOuter {
+  display: flex;
+  flex: 1;
+  border-bottom: 2px solid $display-light-grey;
+}
+
+.MFDTopTabNavigatorBarElementLabel {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  color: $display-white;
+  background-color: $display-mfd-dark-grey;
+  border-top: 2px solid $display-light-grey;
+  font-size: 20px;
+  padding: 6px 0px 2px 0px;
+}
+
+.MFDTopTabNavigatorBarElementLabel.active {
+  background-color: $display-background;
+}
+
+.MFDTopTabNavigatorBarElementOuter.active {
+  background-color: $display-background;
+  border-bottom-style: none;
+}
+
+.MFDTopTabNavigatorTabContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  border: 2px outset $display-light-grey;
+  border-top-style: none;
+  padding: 10px;
+}
+
+.MFDLabelValueContainer {
+  padding: 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+
+
+
+
+
+
+
+/* Customize the label (the container) */
+.container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 30px;
+  margin-left: 15px;
+  cursor: pointer;
+  font-size: 22px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  color: $display-light-grey;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom radio button */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border: 1px solid $display-light-grey;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+  border: 1px solid $display-light-grey;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: $display-cyan;
+}

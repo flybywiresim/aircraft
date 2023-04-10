@@ -33,16 +33,20 @@ class A32NX_MFD extends BaseInstrument {
         return 'A32NX_PFD';
     }
 
+    get isInteractive() {
+        return true;
+    }
+
+    get isGlassCockpit() {
+        return true;
+    }
+
     public getDeltaTime() {
         return this.deltaTime;
     }
 
     public onInteractionEvent(args: string[]): void {
         this.hEventPublisher.dispatchHEvent(args[0]);
-    }
-
-    get isInteractive() {
-        return true;
     }
 
     public connectedCallback(): void {
