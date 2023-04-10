@@ -41,12 +41,13 @@ enum FcvFault {
 
 impl OperatingChannel {
     fn has_fault(&self) -> bool {
-        // TODO: Improve
         matches!(self, OperatingChannel::FDACChannelOne(true))
             || matches!(self, OperatingChannel::FDACChannelTwo(true))
     }
 
     fn switch(self) -> Self {
+        // At the moment switching channels always clears the fault in the second channel
+        // This needs to be improved so we can have dual channel failures
         if matches!(self, OperatingChannel::FDACChannelOne(_)) {
             OperatingChannel::FDACChannelTwo(false)
         } else {
@@ -90,7 +91,9 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     ) {
         self.fault_determination();
 
-        if self.fault.is_none() {
+        if !matches!(self.fault, Some(FdacFault::PowerLoss))
+            && !matches!(self.fault, Some(FdacFault::BothChannelsFault))
+        {
             self.flow_control.update(
                 context,
                 acs_overhead,
@@ -301,7 +304,7 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
 
     pub fn fcv_has_fault(&self, fcv_id: usize) -> bool {
         self.flow_control_valves_controller[fcv_id - 1 - ((self.fdac_id == 2) as usize * 2)]
-            .has_fault()
+            .fault()
             .is_some()
     }
 }
@@ -379,7 +382,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         }
     }
 
-    fn has_fault(&self) -> Option<FcvFault> {
+    fn fault(&self) -> Option<FcvFault> {
         self.fault
     }
 }

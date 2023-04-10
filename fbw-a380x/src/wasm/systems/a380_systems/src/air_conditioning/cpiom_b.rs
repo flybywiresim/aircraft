@@ -109,8 +109,8 @@ impl SimulationElement for CoreProcessingInputOutputModuleB {
     }
 }
 
+/// Determines the pack flow demand and sends it to the FDAC for actuation of the valves
 struct AirGenerationSystemApplication {
-    // output: absolute flow demand
     pack_flow_id: [VariableIdentifier; 4],
 
     aircraft_state: AirConditioningStateManager,
