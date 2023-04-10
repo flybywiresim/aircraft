@@ -472,11 +472,12 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
     )
 
     private gridTrackVisible = MappedSubject.create(
-        ([lat, lon, trueTrack, apprMsg]) => apprMsg.length === 0 && lon.isNormalOperation() && trueTrack.isNormalOperation() && Math.abs(lat.valueOr(0)) > 65,
+        ([lat, lon, trueTrack, apprMsg, trueRef]) => trueRef && apprMsg.length === 0 && lon.isNormalOperation() && trueTrack.isNormalOperation() && Math.abs(lat.valueOr(0)) > 65,
         this.pposLatWord,
         this.pposLonWord,
         this.trueTrackWord,
         this.approachMessageValue,
+        this.trueRefActive,
     )
 
     private readonly trueFlagX = MappedSubject.create(
