@@ -28,8 +28,8 @@ use uom::si::{
     velocity::knot,
 };
 
-#[derive(PartialEq, Clone, Copy)]
-enum ACSCActiveComputer {
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum ACSCActiveComputer {
     Primary,
     Secondary,
     None,
@@ -37,7 +37,7 @@ enum ACSCActiveComputer {
 
 pub struct AirConditioningSystemController<const ZONES: usize, const ENGINES: usize> {
     aircraft_state: AirConditioningStateManager,
-    zone_controller: Vec<ZoneController<ZONES>>,
+    zone_controller: Vec<ZoneController>,
     pack_flow_controller: [PackFlowController<ENGINES>; 2],
     trim_air_system_controller: TrimAirSystemController<ZONES, ENGINES>,
     cabin_fans_controller: CabinFanController<ZONES>,
@@ -57,7 +57,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         let zone_controller = cabin_zone_ids
             .iter()
             .map(ZoneController::new)
-            .collect::<Vec<ZoneController<ZONES>>>();
+            .collect::<Vec<ZoneController>>();
         Self {
             aircraft_state: AirConditioningStateManager::new(),
             zone_controller,
@@ -173,12 +173,17 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     pub fn individual_pack_flow(&self, pack_id: Pack) -> MassRate {
         self.pack_flow_controller[pack_id.to_index()].pack_flow()
     }
+}
 
-    pub fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        self.zone_controller
-            .iter()
-            .map(|zone| zone.duct_demand_temperature())
-            .collect()
+impl<const ZONES: usize, const ENGINES: usize> DuctTemperature
+    for AirConditioningSystemController<ZONES, ENGINES>
+{
+    fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        let mut duct_demand_temperature = Vec::new();
+        for controller in self.zone_controller.iter() {
+            duct_demand_temperature.extend(&controller.duct_demand_temperature())
+        }
+        duct_demand_temperature
     }
 }
 
@@ -458,14 +463,14 @@ impl AirConditioningState<EndLanding> {
 
 transition!(EndLanding, OnGround);
 
-struct ZoneController<const ZONES: usize> {
+pub struct ZoneController {
     zone_id: usize,
     duct_demand_temperature: ThermodynamicTemperature,
     zone_selected_temperature: ThermodynamicTemperature,
     pid_controller: PidController,
 }
 
-impl<const ZONES: usize> ZoneController<ZONES> {
+impl ZoneController {
     const K_ALTITUDE_CORRECTION_DEG_PER_FEET: f64 = 0.0000375; // deg/feet
     const UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS: f64 = 19.; // C
     const UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS: f64 = 17.; // C
@@ -481,7 +486,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
     const KP_DUCT_DEMAND_CABIN: f64 = 3.5;
     const KP_DUCT_DEMAND_COCKPIT: f64 = 2.;
 
-    fn new(zone_type: &ZoneType) -> Self {
+    pub fn new(zone_type: &ZoneType) -> Self {
         let pid_controller = match zone_type {
             ZoneType::Cockpit => {
                 PidController::new(
@@ -512,7 +517,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         acs_overhead: &impl AirConditioningOverheadShared,
@@ -635,9 +640,11 @@ impl<const ZONES: usize> ZoneController<ZONES> {
             },
         )
     }
+}
 
-    fn duct_demand_temperature(&self) -> ThermodynamicTemperature {
-        self.duct_demand_temperature
+impl DuctTemperature for ZoneController {
+    fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        vec![self.duct_demand_temperature]
     }
 }
 
@@ -948,7 +955,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
     ) -> bool {
         // TODO: Add overheat protection
         // TODO: If more than one TAV fails, the system should be off
-        acs_overhead.hot_air_pushbutton_is_on() && operation_mode == ACSCActiveComputer::Primary
+        acs_overhead.hot_air_pushbutton_is_on(1) && operation_mode == ACSCActiveComputer::Primary
     }
 
     fn trim_air_pressure_regulating_valve_is_open_determination(
@@ -999,20 +1006,20 @@ impl PneumaticValveSignal for TrimAirValveSignal {
 }
 
 #[derive(Clone, Copy)]
-pub(super) struct TrimAirValveController {
+pub struct TrimAirValveController {
     tav_open_allowed: bool,
     pid: PidController,
 }
 
 impl TrimAirValveController {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             tav_open_allowed: false,
             pid: PidController::new(0.0002, 0.005, 0., 0., 1., 24., 1.),
         }
     }
 
-    fn update(
+    pub(crate) fn update(
         &mut self,
         context: &UpdateContext,
         open_allowed: bool,
@@ -1177,7 +1184,7 @@ mod acs_controller_tests {
             self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
         }
 
-        fn hot_air_pushbutton_is_on(&self) -> bool {
+        fn hot_air_pushbutton_is_on(&self, _hot_air_id: usize) -> bool {
             self.hot_air_pb
         }
 

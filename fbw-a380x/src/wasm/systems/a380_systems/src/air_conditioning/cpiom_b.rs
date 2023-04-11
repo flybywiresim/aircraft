@@ -2,12 +2,14 @@ use std::time::Duration;
 
 use systems::{
     air_conditioning::{
-        acs_controller::{AirConditioningStateManager, Pack},
-        AdirsToAirCondInterface, AirConditioningOverheadShared, OverheadFlowSelector, PackFlow,
+        acs_controller::{ACSCActiveComputer, AirConditioningStateManager, Pack, ZoneController},
+        trim_air_drive_device::TaddShared,
+        AdirsToAirCondInterface, AirConditioningOverheadShared, DuctTemperature,
+        OverheadFlowSelector, PackFlow, ZoneType,
     },
     integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     shared::{
-        CabinAltitude, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels,
+        CabinAltitude, CabinSimulation, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels,
         PackFlowValveState, PneumaticBleed,
     },
     simulation::{
@@ -26,18 +28,18 @@ use uom::si::{
 pub(super) struct CoreProcessingInputOutputModuleB {
     cpiom_are_active: [bool; 4],
     ags_app: AirGenerationSystemApplication,
-    // temperature_control_system_app: TemperatureControlSystemApplication,
+    tcs_app: TemperatureControlSystemApplication,
     // ventilation_control_system_app: VentilationControlSystemApplication,
     // cabin_pressure_control_system_app: CabinPressureControllSystemApplication,
     // avionics_ventilation_system_app: AvionicsVentilationSystemApplication,
 }
 
 impl CoreProcessingInputOutputModuleB {
-    pub(super) fn new(context: &mut InitContext) -> Self {
+    pub(super) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         Self {
             cpiom_are_active: [false; 4],
             ags_app: AirGenerationSystemApplication::new(context),
-            // temperature_control_system_app: TemperatureControlSystemApplication::new(),
+            tcs_app: TemperatureControlSystemApplication::new(context, cabin_zones),
             // ventilation_control_system_app: VentilationControlSystemApplication::new(),
             // cabin_pressure_control_system_app: CabinPressureControllSystemApplication::new(),
             // avionics_ventilation_system_app: AvionicsVentilationSystemApplication::new(),
@@ -49,12 +51,14 @@ impl CoreProcessingInputOutputModuleB {
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
         acs_overhead: &impl AirConditioningOverheadShared,
+        cabin_temperature: &impl CabinSimulation,
         cpiom_b: [&CoreProcessingInputOutputModule; 4],
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         number_of_passengers: usize,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pressurization: &impl CabinAltitude,
+        trim_air_drive_device: &impl TaddShared,
     ) {
         self.cpiom_are_active = cpiom_b.map(|cpiom| cpiom.is_available());
 
@@ -70,7 +74,18 @@ impl CoreProcessingInputOutputModuleB {
                 pneumatic,
                 pressurization,
             );
+            self.tcs_app.update(
+                context,
+                acs_overhead,
+                cabin_temperature,
+                pressurization,
+                trim_air_drive_device,
+            );
         }
+    }
+
+    pub(super) fn should_close_taprv(&self) -> [bool; 2] {
+        self.tcs_app.should_close_taprv()
     }
 }
 
@@ -90,9 +105,16 @@ impl PackFlow for CoreProcessingInputOutputModuleB {
     }
 }
 
+impl DuctTemperature for CoreProcessingInputOutputModuleB {
+    fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        self.tcs_app.duct_demand_temperature()
+    }
+}
+
 impl SimulationElement for CoreProcessingInputOutputModuleB {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.ags_app.accept(visitor);
+        self.tcs_app.accept(visitor);
 
         visitor.visit(self);
     }
@@ -315,5 +337,125 @@ impl SimulationElement for AirGenerationSystemApplication {
             .iter()
             .zip(self.flow_ratio)
             .for_each(|(id, flow)| writer.write(id, flow));
+    }
+}
+
+struct TemperatureControlSystemApplication {
+    hot_air_is_enabled_id: [VariableIdentifier; 2],
+    hot_air_is_open_id: [VariableIdentifier; 2],
+
+    zone_controllers: [ZoneController; 16],
+    hot_air_is_enabled: [bool; 2],
+    hot_air_is_open: [bool; 2],
+}
+impl TemperatureControlSystemApplication {
+    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
+        let mut zone_controllers_vec: Vec<ZoneController> = Vec::new();
+        for zone in cabin_zones {
+            if matches!(zone, ZoneType::Cockpit) || matches!(zone, ZoneType::Cabin(_)) {
+                zone_controllers_vec.push(ZoneController::new(zone))
+            } else {
+                continue;
+            }
+        }
+        let zone_controllers =
+            zone_controllers_vec
+                .try_into()
+                .unwrap_or_else(|v: Vec<ZoneController>| {
+                    panic!("Expected a Vec of length {} but it was {}", 16, v.len())
+                });
+        let hot_air_variable_identifiers = Self::hot_air_id_init(context);
+        Self {
+            hot_air_is_enabled_id: hot_air_variable_identifiers[0],
+            hot_air_is_open_id: hot_air_variable_identifiers[1],
+            zone_controllers,
+            hot_air_is_enabled: [false; 2],
+            hot_air_is_open: [false; 2],
+        }
+    }
+
+    fn hot_air_id_init(context: &mut InitContext) -> Vec<[VariableIdentifier; 2]> {
+        let hot_air_ids: Vec<Vec<String>> = vec![
+            [1, 2]
+                .iter()
+                .map(|id| format!("HOT_AIR_VALVE_{}_IS_ENABLED", id))
+                .collect(),
+            [1, 2]
+                .iter()
+                .map(|id| format!("HOT_AIR_VALVE_{}_IS_OPEN", id))
+                .collect(),
+        ];
+
+        hot_air_ids
+            .iter()
+            .map(|id_vec| {
+                id_vec
+                    .iter()
+                    .map(|st| context.get_identifier(st.clone()))
+                    .collect::<Vec<VariableIdentifier>>()
+                    .try_into()
+                    .unwrap_or_else(|v: Vec<VariableIdentifier>| {
+                        panic!("Expected a Vec of length {} but it was {}", 2, v.len())
+                    })
+            })
+            .collect()
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        cabin_temperature: &impl CabinSimulation,
+        pressurization: &impl CabinAltitude,
+        trim_air_drive_device: &impl TaddShared,
+    ) {
+        // ACSCActive computer is only relevant to the A320 so we set it as Primary here to maintain commonality
+        for (index, zone) in self.zone_controllers.iter_mut().enumerate() {
+            zone.update(
+                context,
+                acs_overhead,
+                cabin_temperature.cabin_temperature()[index],
+                pressurization,
+                &ACSCActiveComputer::Primary,
+            )
+        }
+
+        self.hot_air_is_enabled = [
+            trim_air_drive_device.hot_air_is_enabled(1),
+            trim_air_drive_device.hot_air_is_enabled(2),
+        ];
+        self.hot_air_is_open = [
+            trim_air_drive_device.trim_air_pressure_regulating_valve_is_open(1),
+            trim_air_drive_device.trim_air_pressure_regulating_valve_is_open(2),
+        ];
+    }
+
+    fn should_close_taprv(&self) -> [bool; 2] {
+        // This signal is used when there is an overheat or leak detection
+        // At the moment we hard code it to false until failures are implemented
+        [false; 2]
+    }
+}
+
+impl DuctTemperature for TemperatureControlSystemApplication {
+    fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        let mut duct_demand_temperature = Vec::new();
+        for controller in self.zone_controllers.iter() {
+            duct_demand_temperature.extend(&controller.duct_demand_temperature())
+        }
+        duct_demand_temperature
+    }
+}
+
+impl SimulationElement for TemperatureControlSystemApplication {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        self.hot_air_is_enabled_id
+            .iter()
+            .zip(self.hot_air_is_enabled)
+            .for_each(|(id, is_enabled)| writer.write(id, is_enabled));
+        self.hot_air_is_open_id
+            .iter()
+            .zip(self.hot_air_is_open)
+            .for_each(|(id, is_open)| writer.write(id, is_open));
     }
 }

@@ -6,8 +6,9 @@ use systems::{
         cabin_pressure_controller::CabinPressureController,
         full_digital_agu_controller::FullDigitalAGUController,
         pressure_valve::{OutflowValve, SafetyValve},
+        trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
-        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlow,
+        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
         ZoneType,
     },
@@ -80,7 +81,7 @@ impl A380AirConditioning {
             a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
             a320_pressurization_system: A320PressurizationSystem::new(context),
 
-            cpiom_b: CoreProcessingInputOutputModuleB::new(context),
+            cpiom_b: CoreProcessingInputOutputModuleB::new(context, &cabin_zones),
 
             pressurization_updater: MaxStepLoop::new(Self::PRESSURIZATION_SIM_MAX_TIME_STEP),
         }
@@ -108,12 +109,14 @@ impl A380AirConditioning {
             adirs,
             self.a380_air_conditioning_system
                 .air_conditioning_overhead(),
+            &self.a380_cabin,
             cpiom,
             &engines,
             lgciu,
             self.a380_cabin.number_of_passengers(),
             pneumatic,
             &self.a320_pressurization_system,
+            &self.a380_air_conditioning_system,
         );
 
         self.a380_air_conditioning_system.update(
@@ -305,6 +308,7 @@ impl SimulationElement for A380Cabin {
 pub(super) struct A380AirConditioningSystem {
     acsc: AirConditioningSystemController<18, 4>,
     fdac: [FullDigitalAGUController<4>; 2],
+    tadd: TrimAirDriveDevice<16, 4>,
     cabin_fans: [CabinFan; 2],
     mixer_unit: MixerUnit<18>,
     // Temporary structure until packs are simulated
@@ -345,6 +349,13 @@ impl A380AirConditioningSystem {
                     ],
                 ),
             ],
+            tadd: TrimAirDriveDevice::new(
+                // TODO: This is a placeholder
+                vec![
+                    ElectricalBusType::DirectCurrentEssential, // 403XP
+                    ElectricalBusType::AlternatingCurrent(1),  // 117XP
+                ],
+            ),
             cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
@@ -359,7 +370,7 @@ impl A380AirConditioningSystem {
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
         cabin_simulation: &impl CabinSimulation,
-        cpiom_b: &impl PackFlow,
+        cpiom_b: &CoreProcessingInputOutputModuleB,
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_open_doors: u8,
@@ -397,6 +408,17 @@ impl A380AirConditioningSystem {
                 pressurization_overhead,
             )
         });
+
+        self.tadd.update(
+            context,
+            &self.air_conditioning_overhead,
+            cpiom_b,
+            &self.trim_air_system,
+            engines,
+            pneumatic,
+            pneumatic_overhead,
+            cpiom_b.should_close_taprv(),
+        );
 
         for fan in self.cabin_fans.iter_mut() {
             fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
@@ -465,6 +487,16 @@ impl OutletAir for A380AirConditioningSystem {
         outlet_air.set_temperature(self.duct_temperature().iter().average());
 
         outlet_air
+    }
+}
+
+impl TaddShared for A380AirConditioningSystem {
+    fn hot_air_is_enabled(&self, hot_air_id: usize) -> bool {
+        self.tadd.hot_air_is_enabled(hot_air_id)
+    }
+    fn trim_air_pressure_regulating_valve_is_open(&self, taprv_id: usize) -> bool {
+        self.tadd
+            .trim_air_pressure_regulating_valve_is_open(taprv_id)
     }
 }
 
@@ -562,9 +594,8 @@ impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
         self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
     }
 
-    fn hot_air_pushbutton_is_on(&self) -> bool {
-        // FIXME: Temporary solution until A380 air cond is implemented
-        self.hot_air_pbs[0].is_on() || self.hot_air_pbs[1].is_on()
+    fn hot_air_pushbutton_is_on(&self, hot_air_id: usize) -> bool {
+        self.hot_air_pbs[hot_air_id - 1].is_on()
     }
 
     fn cabin_fans_is_on(&self) -> bool {
@@ -903,6 +934,7 @@ mod tests {
     use super::*;
     use ntest::assert_about_eq;
     use systems::{
+        air_conditioning::PackFlow,
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
         overhead::AutoOffFaultPushButton,

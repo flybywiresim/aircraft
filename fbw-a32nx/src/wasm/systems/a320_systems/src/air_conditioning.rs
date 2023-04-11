@@ -431,7 +431,7 @@ impl<const ZONES: usize> AirConditioningOverheadShared
         self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
     }
 
-    fn hot_air_pushbutton_is_on(&self) -> bool {
+    fn hot_air_pushbutton_is_on(&self, _hot_air_id: usize) -> bool {
         self.hot_air_pb.is_on()
     }
 

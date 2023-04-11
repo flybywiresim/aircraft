@@ -36,9 +36,15 @@ pub mod cabin_air;
 pub mod cabin_pressure_controller;
 pub mod full_digital_agu_controller;
 pub mod pressure_valve;
+pub mod trim_air_drive_device;
 
 pub trait DuctTemperature {
-    fn duct_temperature(&self) -> Vec<ThermodynamicTemperature>;
+    fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        vec![ThermodynamicTemperature::new::<degree_celsius>(0.)]
+    }
+    fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        vec![ThermodynamicTemperature::new::<degree_celsius>(0.)]
+    }
 }
 
 pub trait PackFlow {
@@ -83,7 +89,7 @@ pub trait AdirsToAirCondInterface {
 pub trait AirConditioningOverheadShared {
     fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature;
     fn pack_pushbuttons_state(&self) -> Vec<bool>;
-    fn hot_air_pushbutton_is_on(&self) -> bool;
+    fn hot_air_pushbutton_is_on(&self, hot_air_id: usize) -> bool;
     fn cabin_fans_is_on(&self) -> bool;
     fn flow_selector_position(&self) -> OverheadFlowSelector;
 }
@@ -93,6 +99,18 @@ pub trait PressurizationOverheadShared {
     fn ditching_is_on(&self) -> bool;
     fn ldg_elev_is_auto(&self) -> bool;
     fn ldg_elev_knob_value(&self) -> f64;
+}
+
+trait OperatingChannel {
+    fn has_fault(&self) -> bool;
+    fn switch(&mut self);
+}
+
+// Future work this can be different types of failure. Dead code for now since `Fault` is never constructed
+#[allow(dead_code)]
+enum OperatingChannelFault {
+    NoFault,
+    Fault,
 }
 
 /// Cabin Zones with double digit IDs are specific to the A380

@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::{
-    AirConditioningOverheadShared, PackFlow, PackFlowControllers, PackFlowValveSignal,
-    PressurizationOverheadShared,
+    AirConditioningOverheadShared, OperatingChannel, OperatingChannelFault, PackFlow,
+    PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
 };
 
 use uom::si::{
@@ -18,13 +18,6 @@ use uom::si::{
     mass_rate::kilogram_per_second,
     ratio::{percent, ratio},
 };
-
-// Future work this can be different types of failure. Dead code for now since `Fault` is never constructed
-#[allow(dead_code)]
-enum OperatingChannelFault {
-    NoFault,
-    Fault,
-}
 
 #[derive(Debug)]
 enum FdacFault {
@@ -38,33 +31,34 @@ enum FcvFault {
     PositionDisagree,
     //More to be added
 }
-enum OperatingChannel {
+
+enum FdacOperatingChannel {
     FDACChannelOne(OperatingChannelFault),
     FDACChannelTwo(OperatingChannelFault),
 }
 
-impl OperatingChannel {
+impl OperatingChannel for FdacOperatingChannel {
     fn has_fault(&self) -> bool {
         matches!(
             self,
-            OperatingChannel::FDACChannelOne(OperatingChannelFault::Fault)
-                | OperatingChannel::FDACChannelTwo(OperatingChannelFault::Fault)
+            FdacOperatingChannel::FDACChannelOne(OperatingChannelFault::Fault)
+                | FdacOperatingChannel::FDACChannelTwo(OperatingChannelFault::Fault)
         )
     }
 
     fn switch(&mut self) {
         // At the moment switching channels always clears the fault in the second channel
         // TODO: This needs to be improved so we can have dual channel failures
-        *self = if matches!(self, OperatingChannel::FDACChannelOne(_)) {
-            OperatingChannel::FDACChannelTwo(OperatingChannelFault::NoFault)
+        *self = if matches!(self, FdacOperatingChannel::FDACChannelOne(_)) {
+            FdacOperatingChannel::FDACChannelTwo(OperatingChannelFault::NoFault)
         } else {
-            OperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault)
+            FdacOperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault)
         };
     }
 }
 
 pub struct FullDigitalAGUController<const ENGINES: usize> {
-    active_channel: OperatingChannel,
+    active_channel: FdacOperatingChannel,
     flow_control: FDACFlowControl<ENGINES>,
     // agu_control
     powered_by: Vec<ElectricalBusType>,
@@ -75,7 +69,7 @@ pub struct FullDigitalAGUController<const ENGINES: usize> {
 impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     pub fn new(fdac_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
-            active_channel: OperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault),
+            active_channel: FdacOperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault),
             flow_control: FDACFlowControl::new(fdac_id),
             // agu_control
             powered_by,
