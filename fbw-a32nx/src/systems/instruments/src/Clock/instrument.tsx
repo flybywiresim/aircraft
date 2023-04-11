@@ -1,4 +1,4 @@
-import { EventBus, FSComponent, HEventPublisher } from 'msfssdk';
+import { EventBus, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
 import { ClockSimvarPublisher } from './shared/ClockSimvarPublisher';
 import { ClockRoot } from './Clock';
 

@@ -209,13 +209,6 @@ pub trait CabinSimulation {
     }
 }
 
-pub trait PressurizationOverheadShared {
-    fn is_in_man_mode(&self) -> bool;
-    fn ditching_is_on(&self) -> bool;
-    fn ldg_elev_is_auto(&self) -> bool;
-    fn ldg_elev_knob_value(&self) -> f64;
-}
-
 pub trait PneumaticBleed {
     fn apu_bleed_is_on(&self) -> bool;
     fn engine_crossbleed_is_on(&self) -> bool;

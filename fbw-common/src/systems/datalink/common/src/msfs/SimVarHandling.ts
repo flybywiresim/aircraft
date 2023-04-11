@@ -3,7 +3,7 @@
 
 import { AtcMessageButtonBusMessages } from '@datalink/atc';
 import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
-import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes } from '../databus';
 
 interface SimVars {

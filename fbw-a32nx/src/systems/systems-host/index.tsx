@@ -1,4 +1,4 @@
-import { EventBus, HEventPublisher } from 'msfssdk';
+import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
 import './style.scss';
 import { PowerSupplyBusses } from './systems/powersupply';

@@ -120,6 +120,8 @@
 1. [ND] Do not draw background when busses are not powered - @saschl (saschl#9432)
 1. [MCDU] Change title of INIT B page on current fuel planning state - @revyn112 (Revyn112#1010)
 1. [MODEL] Working windshield wipers - @tracernz (Mike)
+1. [LIGHTS] Redid all cockpit interior lighting and fixed exterior wing lights - @FinalLightNL (FinalLight#2113)
+1. [BLEED] Add pressure sensors to bleed system - @BlueberryKing (BlueberryKing#6641)
 
 ## 0.9.0
 

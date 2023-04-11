@@ -1,4 +1,4 @@
-import { Subject, Subscribable, MappedSubject, DebounceTimer } from 'msfssdk';
+import { Subject, Subscribable, MappedSubject, DebounceTimer } from '@microsoft/msfs-sdk';
 
 import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
 import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@instruments/common/NXLogic';
