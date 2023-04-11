@@ -96,8 +96,8 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
     const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
     const { failureFlightPhase } = basicData();
 
-    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet');
-    const [gs] = useSimVar('GPS GROUND SPEED', 'knots');
+    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 500);
+    const [gs] = useSimVar('GPS GROUND SPEED', 'knots', 500);
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {

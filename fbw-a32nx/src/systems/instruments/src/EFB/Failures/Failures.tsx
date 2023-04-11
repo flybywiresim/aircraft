@@ -25,13 +25,12 @@ export const FailuresHome = () => {
         <>
             <div className="flex flex-row justify-between space-x-4">
                 <h1 className="font-bold">{t('Failures.Title')}</h1>
-                <div className="flex flex-row items-center py-1 px-4 space-x-2 rounded-md bg-colors-yellow-400">
+                <div className="flex flex-row items-center py-1 px-4 space-x-2 bg-yellow-400 rounded-md">
                     <InfoCircleFill className="text-black" />
                     <div className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</div>
                 </div>
                 <Navbar basePath="/failures" tabs={tabs} className="flex flex-row items-center" />
             </div>
-
             <Route path="/failures/failureslist">
                 <Failures />
             </Route>
@@ -72,16 +71,7 @@ export const Failures = () => {
 
     return (
         <>
-            <div className="flex flex-row justify-between space-x-4">
-                <h1 className="font-bold">{t('Failures.Title')}</h1>
-
-                <div className="flex flex-row items-center py-1 px-4 space-x-2 bg-yellow-400 rounded-md">
-                    <InfoCircleFill className="text-black" />
-                    <p className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</p>
-                </div>
-            </div>
-
-            <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="p-4 mt-4 space-y-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
                 <div className="flex flex-row space-x-4">
                     <SimpleInput
                         placeholder={t('Failures.Search')}

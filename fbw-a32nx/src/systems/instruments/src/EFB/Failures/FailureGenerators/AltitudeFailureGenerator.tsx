@@ -72,7 +72,7 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
     const { failureFlightPhase } = basicData();
     const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
 
-    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet');
+    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 1000);
 
     useEffect(() => {
         if (totalActiveFailures < maxFailuresAtOnce) {
