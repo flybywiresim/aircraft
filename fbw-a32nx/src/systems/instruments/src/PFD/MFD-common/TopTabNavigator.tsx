@@ -5,22 +5,35 @@ import './common.scss';
 interface TopTabElementProps {
     title: string;
     isSelected: boolean;
+    selectedTextColor: string;
+    height: number; // height of tab bar element
+    slantedEdgeAngle: number; // in degrees
 }
 
 class TopTabElement extends DisplayComponent<TopTabElementProps> {
+    private triangleWidth = (this.props.height * Math.tan(this.props.slantedEdgeAngle * Math.PI / 180));
+
     render(): VNode {
         return (
             <div class={`MFDTopTabNavigatorBarElementOuter${this.props.isSelected === true ? ' active' : ''}`}>
-                <svg height="36" width="6.35">
-                    <polygon points="0,36 6.35,0 6.35,36" style={`fill:${this.props.isSelected === true ? '#040405' : '#3c3c3c'};`} />
-                    <line x1="0" y1="36" x2="6.35" y2="0" style="stroke: lightgrey; stroke-width:2" />
-                    {this.props.isSelected === false && <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />}
+                <svg height={this.props.height} width={this.triangleWidth}>
+                    <polygon
+                        points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
+                        style={`fill:${this.props.isSelected === true ? '#040405' : '#3c3c3c'};`}
+                    />
+                    <line x1="0" y1={this.props.height} x2={this.triangleWidth} y2="0" style="stroke: lightgrey; stroke-width:2" />
+                    {this.props.isSelected === false && <line x1="0" y1={this.props.height - 1} x2={this.triangleWidth} y2={this.props.height - 1} style="stroke: lightgrey; stroke-width:2" />}
                 </svg>
-                <span class={`MFDTopTabNavigatorBarElementLabel${this.props.isSelected === true ? ' active' : ''}`}>{this.props.title}</span>
-                <svg height="36" width="6.35">
-                    <polygon points="0,0 6.35,36 0,36" style={`fill:${this.props.isSelected === true ? '#040405' : '#3c3c3c'};`} />
-                    <line x1="0" y1="0" x2="6.35" y2="36" style="stroke: lightgrey; stroke-width:2" />
-                    {this.props.isSelected === false && <line x1="0" y1="35" x2="6.35" y2="35" style="stroke: lightgrey; stroke-width:2" />}
+                <span
+                    class={`MFDTopTabNavigatorBarElementLabel${this.props.isSelected === true ? ' active' : ''}`}
+                    style={`font-size: ${Math.floor(this.props.height * 0.55)}px; color: ${this.props.isSelected ? this.props.selectedTextColor : 'white'}`}
+                >
+                    {this.props.title}
+                </span>
+                <svg height={this.props.height} width={this.triangleWidth}>
+                    <polygon points={`0,0 ${this.triangleWidth},${this.props.height} 0,${this.props.height}`} style={`fill:${this.props.isSelected === true ? '#040405' : '#3c3c3c'};`} />
+                    <line x1="0" y1="0" x2={this.triangleWidth} y2={this.props.height} style="stroke: lightgrey; stroke-width:2" />
+                    {this.props.isSelected === false && <line x1="0" y1={this.props.height - 1} x2={this.triangleWidth} y2={this.props.height - 1} style="stroke: lightgrey; stroke-width:2" />}
                 </svg>
             </div>
         );
@@ -29,6 +42,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
 interface TopTabNavigatorPageProps {
     isVisible?: Subscribable<boolean>;
+    containerStyle?: string;
 }
 
 export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPageProps> {
@@ -50,7 +64,7 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
 
     render(): VNode {
         return (
-            <div ref={this.topDivRef} class="MFDTopTabNavigatorTabContent">
+            <div ref={this.topDivRef} class="MFDTopTabNavigatorTabContent" style={this.props.containerStyle}>
                 {this.props.children}
             </div>
         );
@@ -60,6 +74,10 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
 interface TopTabNavigatorProps {
     pageTitles: Subscribable<string[]>;
     selectedPageIndex: Subscribable<number>;
+    selectedTabTextColor?: string;
+    tabBarHeight?: number; // in pixels
+    tabBarSlantedEdgeAngle?: number; // in degrees, vertical line equals 0°
+    additionalRightSpace?: number; // in pixels
 }
 
 export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
@@ -78,7 +96,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
             if (page.instance instanceof TopTabNavigatorPage) {
                 page.instance.setVisibility(index === this.props.selectedPageIndex.get());
             } else {
-                console.error('Discovered one children of TopTabNavigator which is not an instance of TopTabNavigatorPage.');
+                console.error('Discovered child of TopTabNavigator which is not an instance of TopTabNavigatorPage.');
             }
         });
     }
@@ -102,16 +120,41 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
 
             // Re-populate top navigation bar
             this.props.pageTitles.get().forEach((pageTitle, index) => {
-                FSComponent.render(<TopTabElement title={pageTitle} isSelected={(value === index)} />, this.navigatorBarRef.instance);
+                FSComponent.render(<TopTabElement
+                    title={pageTitle}
+                    isSelected={(value === index)}
+                    height={this.props.tabBarHeight || 36}
+                    slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
+                    selectedTextColor={this.props.selectedTabTextColor || 'white'}
+                />, this.navigatorBarRef.instance);
             });
+
+            // Add space at end, if any
+            if (this.props.additionalRightSpace) {
+                const div = document.createElement('div');
+                div.style.width = `${this.props.additionalRightSpace}px`;
+                div.style.borderBottom = '2px solid lightgray';
+                this.navigatorBarRef.instance.appendChild(div);
+            }
         });
     }
 
     render(): VNode {
         return (
             <div class="MFDTopTabNavigatorContainer">
-                <div class="MFDTopTabNavigatorBar" ref={this.navigatorBarRef}>
-                    {this.props.pageTitles.get().map((pageTitle, index) => <TopTabElement title={pageTitle} isSelected={(this.props.selectedPageIndex.get() === index)} />)}
+                <div class="MFDTopTabNavigatorBar" ref={this.navigatorBarRef} style={`height: ${this.props.tabBarHeight || 36}px`}>
+                    {
+                        this.props.pageTitles.get().map((pageTitle, index) => (
+                            <TopTabElement
+                                title={pageTitle}
+                                isSelected={(this.props.selectedPageIndex.get() === index)}
+                                height={this.props.tabBarHeight || 36}
+                                slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
+                                selectedTextColor={this.props.selectedTabTextColor || 'white'}
+                            />
+                        ))
+                    }
+                    <div style="width: 50px; border-bottom: 2px solid lightgray" />
                 </div>
                 {this.props.children}
             </div>

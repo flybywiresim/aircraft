@@ -6,6 +6,7 @@ export type MFDSimvars = {
     elecFo: number;
     potentiometerCaptain: number;
     potentiometerFo: number;
+    ecamNdXfr: number;
   }
 
 export enum MFDVars {
@@ -14,6 +15,7 @@ export enum MFDVars {
     elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
     potentiometerCaptain = 'LIGHT POTENTIOMETER:88',
     potentiometerFo = 'LIGHT POTENTIOMETER:90',
+    ecamNdXfr = 'L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -24,6 +26,7 @@ export class MFDSimvarPublisher extends SimVarPublisher<MFDSimvars> {
         ['elecFo', { name: MFDVars.elecFo, type: SimVarValueType.Bool }],
         ['potentiometerCaptain', { name: MFDVars.potentiometerCaptain, type: SimVarValueType.Number }],
         ['potentiometerFo', { name: MFDVars.potentiometerFo, type: SimVarValueType.Number }],
+        ['ecamNdXfr', { name: MFDVars.ecamNdXfr, type: SimVarValueType.Enum }],
     ])
 
     public constructor(bus: EventBus) {

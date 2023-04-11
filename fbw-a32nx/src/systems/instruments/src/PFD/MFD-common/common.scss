@@ -35,6 +35,14 @@ $display-mfd-dark-grey: #3c3c3c;
   font-family: "Ecam", monospace;
 }
 
+.MFDLabel.bigger {
+  font-size: 24px;
+}
+
+.MFDLabel.biggest {
+  font-size: 28px;
+}
+
 .MFDUnitLabel {
   color: rgb(33, 33, 255);
   font-size: 20px;
@@ -44,6 +52,14 @@ $display-mfd-dark-grey: #3c3c3c;
   font-family: "MFD-numbers", monospace;
   color: $display-green;
   font-size: 25px;
+}
+
+.MFDGreenValue.smaller {
+  font-size: 20px;
+}
+
+.MFDGreenValue.bigger {
+  font-size: 30px;
 }
 
 .MFDCyanValue {
@@ -60,6 +76,21 @@ $display-mfd-dark-grey: #3c3c3c;
   text-align: center;
   border: 2px outset $display-light-grey;
   padding: 9px 12px 5px 12px;
+  cursor: crosshair;
+}
+
+.MFDButton:hover {
+  border: 2px outset cyan;
+}
+
+.MFDIconButton {
+  display: flex;
+  flex-direction: row;
+  background-color: $display-mfd-dark-grey;
+  color: $display-white;
+  border: 2px outset $display-light-grey;
+  justify-content: center;
+  align-items: center;
 }
 
 .MFDSysSelectorOuter {
@@ -158,12 +189,6 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .MFDTopTabNavigatorBar {
   display: flex;
-  height: 36px;
-}
-
-.leftedge {
-  background: linear-gradient(100deg, $display-background 5%, white 50%, $display-background 50%);
-  width: 20px;
 }
 
 .MFDTopTabNavigatorBarElementOuter {
@@ -176,10 +201,8 @@ $display-mfd-dark-grey: #3c3c3c;
   display: flex;
   flex: 1;
   justify-content: center;
-  color: $display-white;
   background-color: $display-mfd-dark-grey;
   border-top: 2px solid $display-light-grey;
-  font-size: 20px;
   padding: 6px 0px 2px 0px;
 }
 
@@ -193,12 +216,13 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .MFDTopTabNavigatorTabContent {
-  display: flex;
   flex: 1;
+  display: flex;
   flex-direction: column;
   border: 2px outset $display-light-grey;
   border-top-style: none;
   padding: 10px;
+  overflow: hidden;
 }
 
 .MFDLabelValueContainer {
@@ -211,16 +235,11 @@ $display-mfd-dark-grey: #3c3c3c;
 
 
 
-
-
-
-
 /* Customize the label (the container) */
 .container {
   display: block;
   position: relative;
   padding-left: 35px;
-  margin-bottom: 30px;
   margin-left: 15px;
   cursor: pointer;
   font-size: 22px;

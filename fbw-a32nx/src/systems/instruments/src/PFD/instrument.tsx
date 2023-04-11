@@ -2,8 +2,6 @@ import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
 import { MFDComponent } from './MFD';
 import { MFDSimvarPublisher } from './shared/MFDSimvarPublisher';
 
-import './style.scss';
-
 class A32NX_MFD extends BaseInstrument {
     private bus: EventBus;
 
@@ -33,20 +31,12 @@ class A32NX_MFD extends BaseInstrument {
         return 'A32NX_PFD';
     }
 
-    get isInteractive() {
-        return true;
-    }
-
-    get isGlassCockpit() {
+    get isInteractive(): boolean {
         return true;
     }
 
     public getDeltaTime() {
         return this.deltaTime;
-    }
-
-    public onInteractionEvent(args: string[]): void {
-        this.hEventPublisher.dispatchHEvent(args[0]);
     }
 
     public connectedCallback(): void {
@@ -60,6 +50,7 @@ class A32NX_MFD extends BaseInstrument {
         this.simVarPublisher.subscribe('coldDark');
         this.simVarPublisher.subscribe('potentiometerCaptain');
         this.simVarPublisher.subscribe('potentiometerFo');
+        this.simVarPublisher.subscribe('ecamNdXfr');
 
         FSComponent.render(<MFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 

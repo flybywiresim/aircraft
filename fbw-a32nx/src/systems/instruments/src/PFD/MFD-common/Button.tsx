@@ -2,6 +2,7 @@
 import './common.scss';
 
 interface ButtonProps {
+    containerStyle?: string;
 }
 export class Button extends DisplayComponent<ButtonProps> {
     onAfterRender(node: VNode): void {
@@ -10,7 +11,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     render(): VNode {
         return (
-            <span class="MFDButton" style="align-items: center;">
+            <span class="MFDButton" style={`align-items: center; ${this.props.containerStyle}`}>
                 {this.props.children}
             </span>
         );
