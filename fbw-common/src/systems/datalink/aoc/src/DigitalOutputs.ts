@@ -11,7 +11,7 @@ import {
     WeatherMessage,
 } from '@datalink/common';
 import { AtcAocRouterMessages } from '@datalink/router';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AocFmsMessages } from './databus/FmsBus';
 
 export class DigitalOutputs {

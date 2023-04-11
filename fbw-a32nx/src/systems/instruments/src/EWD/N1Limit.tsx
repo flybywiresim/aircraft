@@ -1,4 +1,4 @@
-import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
+import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';

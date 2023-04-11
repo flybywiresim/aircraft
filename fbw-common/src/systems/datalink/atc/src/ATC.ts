@@ -21,7 +21,7 @@ import {
     timestampToString,
     Conversion,
 } from '@datalink/common';
-import { EventBus } from 'msfssdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FmsRouteData } from './databus/FmsBus';
 import { MailboxBus } from './databus/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
