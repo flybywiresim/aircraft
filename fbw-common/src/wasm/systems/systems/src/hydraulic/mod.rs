@@ -2626,7 +2626,7 @@ impl Pump {
         }
     }
 
-    fn get_max_flow_from_max_dsiplacement(&self) -> VolumeRate {
+    fn get_max_flow_from_max_displacement(&self) -> VolumeRate {
         if self.speed
             > self
                 .pump_characteristics
