@@ -1,9 +1,10 @@
-import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
 import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
     private timeout: number = 0;
@@ -33,7 +34,7 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
     }
 }
 
-export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subscribable<boolean> }> {
+export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: Subscribable<boolean> }> {
     private activeLateralMode: number = 0;
 
     private activeVerticalMode: number = 0;
@@ -174,7 +175,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
     }
 }
 
-class Row1 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<boolean>}> {
+class Row1 extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: Subscribable<boolean> }> {
     private b1Cell = FSComponent.createRef<B1Cell>();
 
     private c1Cell = FSComponent.createRef<C1Cell>();
@@ -220,7 +221,7 @@ class Row1 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
     }
 }
 
-class Row2 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<boolean>}> {
+class Row2 extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: Subscribable<boolean> }> {
     private cellsToHide = FSComponent.createRef<SVGGElement>();
 
     onAfterRender(node: VNode): void {
@@ -249,7 +250,7 @@ class Row2 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
     }
 }
 
-class A2Cell extends DisplayComponent<{ bus:EventBus }> {
+class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     private text = Subject.create('');
 
     private className = Subject.create('FontMedium MiddleAlign Cyan');
@@ -306,7 +307,7 @@ class A2Cell extends DisplayComponent<{ bus:EventBus }> {
     }
 }
 
-class Row3 extends DisplayComponent<{ bus:EventBus, isAttExcessive: Subscribable<boolean>, AB3Message: Subscribable<boolean> }> {
+class Row3 extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: Subscribable<boolean>, AB3Message: Subscribable<boolean> }> {
     private cellsToHide = FSComponent.createRef<SVGGElement>();
 
     onAfterRender(node: VNode): void {
@@ -337,7 +338,7 @@ class Row3 extends DisplayComponent<{ bus:EventBus, isAttExcessive: Subscribable
 }
 
 interface CellProps extends ComponentProps {
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 class A1A2Cell extends ShowForSecondsComponent<CellProps> {
@@ -1248,7 +1249,7 @@ const getBC3Message = (
     return [text, className];
 };
 
-class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, bus: EventBus, }> {
+class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, bus: ArincEventBus, }> {
     private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
     private classNameSub = Subject.create('');
@@ -1407,7 +1408,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     }
 }
 
-class D3Cell extends DisplayComponent<{bus: EventBus}> {
+class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
     private textRef = FSComponent.createRef<SVGTextElement>();
 
     private classNameSub = Subject.create('');

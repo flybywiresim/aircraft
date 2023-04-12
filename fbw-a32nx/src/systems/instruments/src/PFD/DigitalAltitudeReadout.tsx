@@ -1,7 +1,8 @@
 import { Arinc429Word } from '@shared/arinc429';
-import { DisplayComponent, EventBus, FSComponent, NodeReference, Subject, Subscribable, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 const TensDigits = (value: number) => {
     let text: string;
@@ -49,7 +50,7 @@ const TenThousandsDigit = (value: number) => {
 };
 
 interface DigitalAltitudeReadoutProps {
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
