@@ -173,7 +173,7 @@ class CDUFlightPlanPage {
                 }
 
                 let ident = wp.ident;
-                const isOverfly = wp.additionalData && wp.additionalData.overfly;
+                let isOverfly = wp.additionalData && wp.additionalData.overfly;
 
                 // Time
                 let time;
@@ -413,6 +413,8 @@ class CDUFlightPlanPage {
                     } else {
                         ident += "}";
                     }
+                    // the overfly symbol is not shown in this case
+                    isOverfly = false;
                 }
 
                 scrollWindow[rowI] = {

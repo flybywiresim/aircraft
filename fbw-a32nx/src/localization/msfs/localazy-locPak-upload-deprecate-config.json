@@ -1,0 +1,18 @@
+{
+  "readKey": "a7871633982927335592-326d5a956e5632ceb52d675963a56707d2c98902e1a375fdb7e23cc73dc8cd20",
+  "upload": {
+    "skipFailedAutodetection": true,
+    "deprecate": "project",
+    "appVersion": 0,
+    "keySeparator": ".",
+    "features": [],
+    "folder": ".",
+    "type": "json",
+    "files": {
+      "pattern": "en-US.locPak",
+      "type": "json",
+      "path": ".",
+      "file": "flybywire.locPak"
+    }
+  }
+}

@@ -32,6 +32,20 @@
     },
     "additions": [
       {
+        "gltf": "./fire-button/fire-button.gltf",
+        "bin": "./fire-button/fire-button.bin"
+      },
+      {
+        "gltf": "./trim-decals/trim-decals.gltf",
+        "bin": "./trim-decals/trim-decals.bin",
+        "maxLod": 0
+      },
+      {
+        "gltf": "./wipers/flight-deck-wipers.gltf",
+        "bin": "./wipers/flight-deck-wipers.bin",
+        "maxLod": 0
+      },
+      {
         "gltf": "./onbat/onbat.gltf",
         "bin": "./onbat/onbat.bin"
       },
@@ -1015,6 +1029,11 @@
       {
         "gltf": "./satcom/HoneywellJetwave.gltf",
         "bin": "./satcom/HoneywellJetwave.bin"
+      },
+      {
+        "gltf": "./wipers/exterior-wipers.gltf",
+        "bin": "./wipers/exterior-wipers.bin",
+        "maxLod": 0
       },
       {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],

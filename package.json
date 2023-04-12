@@ -8,7 +8,8 @@
     "build-a32nx:copy-base-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/)",
     "build-a32nx:copy-base-lock-highlight-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo-lock-highlight && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/)",
     "build-a32nx:copy-base-files": "npm run build-a32nx:copy-base-package && npm run build-a32nx:copy-base-lock-highlight-package",
-    "build-a32nx:efb-translation": "cd fbw-a32nx/src/systems/instruments/src/EFB/Localization && node build-translation.js",
+    "build-a32nx:efb-translation": "cd fbw-a32nx/src/localization && node build-flypad-translation.js",
+    "build-a32nx:locPak-translation": "cd fbw-a32nx/src/localization && node build-locPak-translation.js",
 
     "build-a32nx:model": "node fbw-a32nx/src/model/build.js",
     "build-a32nx:behavior": "node fbw-a32nx/src/behavior/build.js",
@@ -32,6 +33,9 @@
     "build-a32nx:metadata": "node scripts/metadata.js fbw-a32nx/out/flybywire-aircraft-a320-neo a32nx",
     "build-a32nx:manifest": "node scripts/build_a32nx.js",
 
+    "build-a32nx:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -c .\\fbw-a32nx\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
+    "watch-a32nx:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\fbw-a32nx\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
+
     "build-a32nx:all": "npm run build-a32nx:copy-base-files && npm run build-a32nx:efb-translation && npm run build-a32nx:model && npm run build-a32nx:behavior && npm run build-a32nx:atsu-common && npm run build-a32nx:atsu-fms-client && npm run build-a32nx:systems-host && npm run build-a32nx:failures && npm run build-a32nx:fmgc && npm run build-a32nx:sentry-client && npm run build-a32nx:simbridge-client && npm run build-a32nx:tcas && npm run build-a32nx:pfd && npm run build-a32nx:systems && npm run build-a32nx:fadec && npm run build-a32nx:fbw && npm run build-a32nx:flypad-backend && npm run build-a32nx:metadata && npm run build-a32nx:manifest",
 
     "=======deprecated=========": "===========================",
@@ -41,8 +45,6 @@
 
     "prettier": "prettier --write **/*.json **/*.yml fbw-a32nx/src/systems/instruments/**/*.css",
     "serve:efb": "cd fbw-a32nx/src/systems/instruments/src/EFB/ && vite --port 9696",
-    "build:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -c .\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
-    "watch:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
     "build:instruments": "rollup --max-old-space-size=8192 -c src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
 
@@ -119,6 +121,7 @@
     "lint-staged": "10.4.0",
     "postcss": "^8.4.5",
     "postcss-color-functional-notation": "^4.2.2",
+    "postcss-inset": "^1.0.0",
     "prettier": "2.1.2",
     "react-msfs": "^0.1.4",
     "redux-devtools-extension": "^2.13.8",
@@ -164,7 +167,7 @@
     "immer": "^9.0.3",
     "lodash": "^4.17.20",
     "msfs-geo": "^0.1.0-alpha3",
-    "msfssdk": "file:fbw-common/msfs-avionics-mirror/src/sdk/build/msfssdk-0.1.0.tgz",
+    "@microsoft/msfs-sdk": "^0.4.0",
     "nanoid": "^3.3.1",
     "network": "^0.6.1",
     "pdf-to-printer": "^5.1.1",

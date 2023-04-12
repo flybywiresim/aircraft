@@ -131,7 +131,7 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                <NODE_ID>LEVER_ELEVATORTRIM_DECAL</NODE_ID>
+                <NODE_ID>LEVER_ELEVATORTRIM_DECAL_NEO</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
@@ -309,14 +309,7 @@
             </UseTemplate>
 
             <UseTemplate Name="FBW_HANDLING_Indicator_ElevatorTrim_Template">
-                <ANIM_NAME>LEVER_ELEVATORTRIM_DECAL</ANIM_NAME>
-                <REF_VALUE_0>0</REF_VALUE_0>
-                <ANIM_VALUE_0>0</ANIM_VALUE_0>
-                <REF_VALUE_1>97.143</REF_VALUE_1>
-                <ANIM_VALUE_1>94.2</ANIM_VALUE_1>
-                <REF_VALUE_2>100</REF_VALUE_2>
-                <ANIM_VALUE_2>100</ANIM_VALUE_2>
-                <MAX_POINT_INDEX>2</MAX_POINT_INDEX>
+                <ANIM_NAME>LEVER_ELEVATORTRIM_DECAL_NEO</ANIM_NAME>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -1816,13 +1809,13 @@
                         <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
                         <WWISE_EVENT>lswitch</WWISE_EVENT>
                         <DIMMER_POS_0_VALUE>100</DIMMER_POS_0_VALUE>
-                        <DIMMER_POS_1_VALUE>50</DIMMER_POS_1_VALUE>
+                        <DIMMER_POS_1_VALUE>20</DIMMER_POS_1_VALUE>
                         <DIMMER_POS_2_VALUE>0</DIMMER_POS_2_VALUE>
                         <CODE_POS_0>1 (&gt;K:2:CABIN_LIGHTS_SET) 100 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_0>
-                        <CODE_POS_1>1 (&gt;K:2:CABIN_LIGHTS_SET) 50 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
+                        <CODE_POS_1>1 (&gt;K:2:CABIN_LIGHTS_SET) 20 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
                         <CODE_POS_2>0 (&gt;K:2:CABIN_LIGHTS_SET) 0 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_2>
                         <STATE0_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 100 == and</STATE0_TEST>
-                        <STATE1_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 50 == and</STATE1_TEST>
+                        <STATE1_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 20 == and</STATE1_TEST>
                         <STATE2_TEST>(A:LIGHT CABIN:1, Bool) 0 == (A:LIGHT POTENTIOMETER:7, Percent) 0 == and </STATE2_TEST>
                     </UseTemplate>
                 </Component>
@@ -1910,13 +1903,13 @@
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP2_ON</ON_TOOLTIP>
                 </UseTemplate>
 
-                <!-- FUEL PUMP 1 -->
+                <!-- Centre Tank Transfer (Jet Pump) Valve L -->
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
-                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Jet_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP1</NODE_ID>
                     <PART_ID>OVHD_FUEL_PUMP1</PART_ID>
-                    <ID>1</ID>
+                    <ID>9</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -1925,13 +1918,13 @@
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_1_ON</ON_TOOLTIP>
                 </UseTemplate>
 
-                <!-- FUEL PUMP 2 -->
+                <!-- Centre Tank Transfer (Jet Pump) Valve R -->
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
-                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Jet_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP2</NODE_ID>
                     <PART_ID>OVHD_FUEL_PUMP2</PART_ID>
-                    <ID>4</ID>
+                    <ID>10</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -1975,16 +1968,39 @@
                     <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
                     <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
+                    <PART_ID>OVHD_FUEL_MODESEL</PART_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ1_CODE>
                         (A:FUELSYSTEM TANK WEIGHT:1, pound) 550 &gt;
                         (A:FUELSYSTEM TANK WEIGHT:2, pound) 11000 &lt;
                         (A:FUELSYSTEM TANK WEIGHT:3, pound) 11000 &lt; or and
                     </SEQ1_CODE>
-                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE>(L:A32NX_OVHD_FUEL_MODESEL_MANUAL)</SEQ2_CODE>>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                    <DUMMY_BUTTON/>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <LEFT_SINGLE_CODE>
+                        (L:A32NX_OVHD_FUEL_MODESEL_MANUAL) ! s0 (&gt;L:A32NX_OVHD_FUEL_MODESEL_MANUAL)
+                        1 l0 + sp0
+                        l0 4 (&gt;K:2:FUELSYSTEM_JUNCTION_SET)
+                        l0 5 (&gt;K:2:FUELSYSTEM_JUNCTION_SET)
+                    </LEFT_SINGLE_CODE>
+                    <OFF_TOOLTIP>A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF</OFF_TOOLTIP>
+                    <ON_TOOLTIP>A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON</ON_TOOLTIP>
+                </UseTemplate>
+
+                <!-- run the MSFS jet "pump" depending on which valves are open -->
+                <UseTemplate Name="FBW_JET_PUMP">
+                    <PUMP_INDEX>1</PUMP_INDEX>
+                    <JUNCTION_INDEX>4</JUNCTION_INDEX>
+                    <AUTO_VALVE_INDEX>11</AUTO_VALVE_INDEX>
+                    <DISABLE_VALVE_INDEX>9</DISABLE_VALVE_INDEX>
+                </UseTemplate>
+                <UseTemplate Name="FBW_JET_PUMP">
+                    <PUMP_INDEX>4</PUMP_INDEX>
+                    <JUNCTION_INDEX>5</JUNCTION_INDEX>
+                    <AUTO_VALVE_INDEX>12</AUTO_VALVE_INDEX>
+                    <DISABLE_VALVE_INDEX>10</DISABLE_VALVE_INDEX>
                 </UseTemplate>
             </Component>
 
@@ -4789,6 +4805,17 @@
                         <VISIBILITY_CODE>0</VISIBILITY_CODE>
                     </UseTemplate>
                 </Component>
+                <!-- Asobo A320ceo trim scale on the pitch trim wheel -->
+                <Component ID="LEVER_ELEVATORTRIM_DECAL" Node="LEVER_ELEVATORTRIM_DECAL">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+                <Component ID="LEVER_ELEVATORTRIM" Node="LEVER_ELEVATORTRIM">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
             </Component>
         </Component>
 
@@ -5062,9 +5089,6 @@
                 <NODE_ID>HANDLE_RIGHT</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -5250,5 +5274,25 @@
             </Component>
         </Component>
 
+        <Component ID="WINDSHIELD">
+            <!-- Windshield Left -->
+            <UseTemplate Name="FBW_Windshield_Wiped">
+                <SIDE>CAPT</SIDE>
+                <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+            </UseTemplate>
+
+            <!-- Windshield Right -->
+            <UseTemplate Name="FBW_Windshield_Wiped">
+                <SIDE>FO</SIDE>
+                <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+            </UseTemplate>
+
+            <!-- Hide Asobo Windshield -->
+            <Component ID="WINDSHIELD" Node="WINDSHIELD">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+        </Component>
     </Behaviors>
 </ModelInfo>

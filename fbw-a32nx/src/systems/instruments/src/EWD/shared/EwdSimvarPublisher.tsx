@@ -1,4 +1,4 @@
-import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from 'msfssdk';
+import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
 
 export type EwdSimvars = {
     acEssBus: boolean;
@@ -145,7 +145,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         ['engine1AntiIce', { name: EwdVars.engine1AntiIce, type: SimVarValueType.Bool }],
         ['engine1EGT', { name: EwdVars.engine1EGT, type: SimVarValueType.Number }],
         ['engine1Fadec', { name: EwdVars.engine1Fadec, type: SimVarValueType.Bool }],
-        ['engine1FF', { name: EwdVars.engine1FF, type: SimVarValueType.Bool }],
+        ['engine1FF', { name: EwdVars.engine1FF, type: SimVarValueType.Number }],
         ['engine1N1', { name: EwdVars.engine1N1, type: SimVarValueType.Number }],
         ['engine1N2', { name: EwdVars.engine1N2, type: SimVarValueType.Number }],
         ['engine1ReverserTransit', { name: EwdVars.engine1ReverserTransit, type: SimVarValueType.Bool }],
@@ -154,7 +154,7 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         ['engine2AntiIce', { name: EwdVars.engine2AntiIce, type: SimVarValueType.Bool }],
         ['engine2EGT', { name: EwdVars.engine2EGT, type: SimVarValueType.Number }],
         ['engine2Fadec', { name: EwdVars.engine2Fadec, type: SimVarValueType.Bool }],
-        ['engine2FF', { name: EwdVars.engine2FF, type: SimVarValueType.Bool }],
+        ['engine2FF', { name: EwdVars.engine2FF, type: SimVarValueType.Number }],
         ['engine2N1', { name: EwdVars.engine2N1, type: SimVarValueType.Number }],
         ['engine2N2', { name: EwdVars.engine2N2, type: SimVarValueType.Number }],
         ['engine2ReverserTransit', { name: EwdVars.engine2ReverserTransit, type: SimVarValueType.Bool }],

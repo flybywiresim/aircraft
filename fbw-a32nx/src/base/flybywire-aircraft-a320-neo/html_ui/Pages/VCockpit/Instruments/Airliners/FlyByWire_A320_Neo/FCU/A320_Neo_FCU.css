@@ -68,9 +68,9 @@
 }
 
 :root {
-  --main-display-colour-background: hsl(53, 82%, 2%);
-  --main-display-colour: hsl(30, 100%, 45%);
-  --main-display-colour-inactive: hsl(53, 82%, 1%);
+  --main-display-colour-background: #030200;
+  --main-display-colour: hsl(36, 100%, 45%);
+  --main-display-colour-inactive: hsl(53, 82%, 0%);
 }
 
 :root text.Common {
@@ -130,7 +130,6 @@ a320-neo-fcu-element #Mainframe #LargeScreen {
   display: block;
   position: absolute;
   background-color: var(--main-display-colour-background);
-  box-shadow: inset 0px 0px 110px -20px rgba(255,98,0,0.5);
 }
 
 a320-neo-fcu-element #Mainframe #LargeScreen #Speed {
@@ -182,7 +181,6 @@ a320-neo-fcu-element #Mainframe #SmallScreen {
   position: absolute;
   top: 8%;
   background-color: var(--main-display-colour-background);
-  box-shadow: inset 0px 0px 110px -40px rgba(255,98,0,0.5);
 }
 
 a320-neo-fcu-element #Mainframe #SmallScreen #Selected,

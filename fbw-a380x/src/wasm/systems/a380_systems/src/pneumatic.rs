@@ -203,7 +203,7 @@ impl A380Pneumatic {
         pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+        pack_flow_valve_signals: &impl PackFlowControllers<4>,
     ) {
         self.physics_updater.update(context);
 
@@ -226,7 +226,7 @@ impl A380Pneumatic {
         overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+        pack_flow_valve_signals: &impl PackFlowControllers<4>,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -1212,7 +1212,7 @@ impl PackComplex {
         context: &UpdateContext,
         left_input: &mut impl PneumaticContainer,
         right_input: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<3, 4>,
+        pack_flow_valve_signals: &impl PackFlowControllers<4>,
     ) {
         self.left_pack_flow_valve.update_open_amount(
             &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
@@ -1399,7 +1399,7 @@ mod tests {
     use systems::{
         air_conditioning::{
             acs_controller::{Pack, PackFlowController},
-            AdirsToAirCondInterface, AirConditioningSystem, PackFlowControllers, ZoneType,
+            AdirsToAirCondInterface, PackFlowControllers, ZoneType,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
@@ -1429,31 +1429,43 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
-    use crate::air_conditioning::A380PressurizationOverheadPanel;
+    use crate::air_conditioning::{A380AirConditioningSystem, A380PressurizationOverheadPanel};
 
     use super::{A380Pneumatic, A380PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a380_air_conditioning_system: AirConditioningSystem<3, 2, 4>,
-
+        a380_air_conditioning_system: A380AirConditioningSystem,
         test_cabin: TestCabin,
+
         adirs: TestAdirs,
         pressurization: TestPressurization,
         pressurization_overhead: A380PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
         fn new(context: &mut InitContext) -> Self {
-            let cabin_zones: [ZoneType; 3] =
-                [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
+            let cabin_zones: [ZoneType; 18] = [
+                ZoneType::Cockpit,
+                ZoneType::Cabin(11), // MAIN_DECK_1
+                ZoneType::Cabin(12), // MAIN_DECK_2
+                ZoneType::Cabin(13), // MAIN_DECK_3
+                ZoneType::Cabin(14), // MAIN_DECK_4
+                ZoneType::Cabin(15), // MAIN_DECK_5
+                ZoneType::Cabin(16), // MAIN_DECK_6
+                ZoneType::Cabin(17), // MAIN_DECK_7
+                ZoneType::Cabin(18), // MAIN_DECK_8
+                ZoneType::Cabin(21), // UPPER_DECK_1
+                ZoneType::Cabin(22), // UPPER_DECK_2
+                ZoneType::Cabin(23), // UPPER_DECK_3
+                ZoneType::Cabin(24), // UPPER_DECK_4
+                ZoneType::Cabin(25), // UPPER_DECK_5
+                ZoneType::Cabin(26), // UPPER_DECK_6
+                ZoneType::Cabin(27), // UPPER_DECK_7
+                ZoneType::Cargo(1),  // FWD
+                ZoneType::Cargo(2),  // BULK
+            ];
 
             Self {
-                a380_air_conditioning_system: AirConditioningSystem::new(
-                    context,
-                    cabin_zones,
-                    vec![ElectricalBusType::DirectCurrent(1)],
-                    vec![ElectricalBusType::DirectCurrent(2)],
-                    ElectricalBusType::AlternatingCurrent(1),
-                ),
+                a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
                 test_cabin: TestCabin::new(),
 
                 adirs: TestAdirs::new(),
@@ -1484,8 +1496,8 @@ mod tests {
             );
         }
     }
-    impl PackFlowControllers<3, 4> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<3, 4> {
+    impl PackFlowControllers<4> for TestAirConditioning {
+        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
             self.a380_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }
@@ -1506,7 +1518,7 @@ mod tests {
     }
     impl CabinSimulation for TestCabin {
         fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
-            vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 3]
+            vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 18]
         }
     }
 
@@ -1692,11 +1704,13 @@ mod tests {
         dc_2_bus: ElectricalBus,
         dc_ess_bus: ElectricalBus,
         dc_ess_shed_bus: ElectricalBus,
+        ac_1_bus: ElectricalBus,
         // Electric buses states to be able to kill them dynamically
         is_dc_1_powered: bool,
         is_dc_2_powered: bool,
         is_dc_ess_powered: bool,
         is_dc_ess_shed_powered: bool,
+        is_ac_1_powered: bool,
     }
     impl PneumaticTestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -1723,10 +1737,12 @@ mod tests {
                     context,
                     ElectricalBusType::DirectCurrentEssentialShed,
                 ),
+                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 is_dc_1_powered: true,
                 is_dc_2_powered: true,
                 is_dc_ess_powered: true,
                 is_dc_ess_shed_powered: true,
+                is_ac_1_powered: true,
             }
         }
 
@@ -1756,6 +1772,10 @@ mod tests {
 
             if self.is_dc_ess_shed_powered {
                 electricity.flow(&self.powered_source, &self.dc_ess_shed_bus);
+            }
+
+            if self.is_ac_1_powered {
+                electricity.flow(&self.powered_source, &self.ac_1_bus);
             }
         }
 

@@ -1,11 +1,12 @@
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface VerticalSpeedIndicatorProps {
-    bus: EventBus,
+    bus: ArincEventBus,
     instrument: BaseInstrument,
     filteredRadioAltitude: Subscribable<number>,
 }
@@ -50,7 +51,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         sub.on('tcasState').whenChanged().handle((s) => {
             this.tcasState.tcasState = s;
@@ -157,7 +158,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
                         <path d="m151.84 117.39h-1.9151v1.4615h1.9151z" />
                         <path d="m151.84 127.59h-1.9151v1.2095h1.9151z" />
                     </g>
-                    <g class="SmallStroke  White">
+                    <g class="SmallStroke White">
                         <path d="m149.92 67.216h1.7135h0" />
                         <path d="m151.84 48.569h-1.9151h0" />
                         <path d="m151.84 38.489h-1.9151h0" />
@@ -218,7 +219,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
     }
 }
 
-class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable<number>, textColour: Subscribable<string> }> {
+class VSpeedText extends DisplayComponent<{ bus: ArincEventBus, yOffset: Subscribable<number>, textColour: Subscribable<string> }> {
     private vsTextRef = FSComponent.createRef<SVGTextElement>();
 
     private groupRef = FSComponent.createRef<SVGGElement>();
@@ -263,7 +264,7 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
 }
 
 interface VSpeedTcasProps extends ComponentProps {
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 class VSpeedTcas extends DisplayComponent<VSpeedTcasProps> {
     private tcasGroup = FSComponent.createRef<SVGGElement>();

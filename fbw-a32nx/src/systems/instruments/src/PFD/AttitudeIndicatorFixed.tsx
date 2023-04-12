@@ -1,13 +1,14 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface AttitudeIndicatorFixedUpperProps {
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
@@ -82,7 +83,7 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 }
 
 interface AttitudeIndicatorFixedCenterProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     isAttExcessive: Subscribable<boolean>;
 }
 
@@ -173,7 +174,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
     }
 }
 
-class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
+class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
     private lateralMode = 0;
 
     private fdYawCommand = 0;
@@ -255,7 +256,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
     }
 }
 
-class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
+class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
     private lateralMode = 0;
 
     private verticalMode = 0;
@@ -405,7 +406,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
     }
 }
 
-class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
+class SidestickIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private captPitchCommand = new Arinc429Word(0);
 
     private foPitchCommand = new Arinc429Word(0);
