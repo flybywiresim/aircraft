@@ -2576,7 +2576,7 @@ impl Pump {
         );
 
         let max_flow = self
-            .get_max_flow_from_max_dsiplacement()
+            .get_max_flow_from_max_displacement()
             .max(VolumeRate::new::<gallon_per_second>(0.));
 
         let max_flow_available_from_reservoir =
