@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, EventBus, VNode, Subject, HEvent } from 'msfssdk';
+import { ComponentProps, DisplayComponent, FSComponent, EventBus, VNode, Subject, HEvent } from '@microsoft/msfs-sdk';
 import { ClockSimvars } from '../shared/ClockSimvarPublisher';
 
 enum DisplayTime {

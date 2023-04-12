@@ -1,4 +1,4 @@
-import { EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { EventBus, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { fuelForDisplay } from '@instruments/common/fuel';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
