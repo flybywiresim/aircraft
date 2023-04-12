@@ -1,17 +1,18 @@
-﻿import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+﻿import { DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, VNode } from 'msfssdk';
 import './common.scss';
 
 interface DropdownMenuProps {
-    values: Subscribable<string[]>;
+    values: SubscribableArray<string>;
     selectedIndex: Subscribable<number>;
+    useNewStyle?: boolean;
 }
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
-    private label = Subject.create<string>('X');
+    private label = Subject.create<string>('NOT SET');
 
     constructor(props: DropdownMenuProps) {
         super(props);
 
-        this.label.set(this.props.values.get()[this.props.selectedIndex.get()]);
+        this.label.set(this.props.values.get(this.props.selectedIndex.get()));
     }
 
     onAfterRender(node: VNode): void {
@@ -22,24 +23,22 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         });
 
         this.props.selectedIndex.sub((value) => {
-            this.label.set(this.props.values.get()[value]);
+            this.label.set(this.props.values.get(value));
         });
     }
 
     render(): VNode {
         return (
             <div class="MFDDropdownOuter">
-                <div style="background-color: #040405; display: flex; margin: 4px;">
-                    <span class="MFDDropdownLabel">
+                <div class={`MFDDropdownInner${this.props.useNewStyle ? 'V2' : ''}`}>
+                    <span class={`MFDDropdownLabel${this.props.useNewStyle ? 'V2' : ''}`}>
                         {this.label}
                     </span>
                 </div>
-                <div style="display: flex; justify-content: center; padding-right: 5px;">
-                    <span style="color: white; align-self: center;">
-                        <svg height="10" width="10">
-                            <polygon points="0,0 10,0 5,10" style="fill: white" />
-                        </svg>
-                    </span>
+                <div style="display: flex; justify-content: center; align-items: center; width: 25px;">
+                    <svg height="10" width="10">
+                        <polygon points="0,0 10,0 5,10" style="fill: white" />
+                    </svg>
                 </div>
             </div>
         );

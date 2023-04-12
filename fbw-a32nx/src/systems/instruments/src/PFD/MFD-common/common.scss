@@ -8,14 +8,6 @@
   font-style: normal;
 }
 
-@font-face {
-  font-family: "MFD-numbers";
-  //noinspection CssUnknownTarget
-  src: url("/Fonts/fbw-a32nx/HoneywellMCDU.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
 $display-mfd-dark-grey: #3c3c3c;
 
 .mfd-main {
@@ -44,12 +36,11 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .MFDUnitLabel {
-  color: rgb(33, 33, 255);
+  color: $display-dark-blue;
   font-size: 20px;
 }
 
 .MFDGreenValue {
-  font-family: "MFD-numbers", monospace;
   color: $display-green;
   font-size: 25px;
 }
@@ -63,7 +54,6 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .MFDCyanValue {
-  font-family: "MFD-numbers", monospace;
   color: $display-cyan;
   font-size: 25px;
 }
@@ -76,11 +66,18 @@ $display-mfd-dark-grey: #3c3c3c;
   text-align: center;
   border: 2px outset $display-light-grey;
   padding: 9px 12px 5px 12px;
-  cursor: crosshair;
 }
 
 .MFDButton:hover {
-  border: 2px outset cyan;
+  border-color: $display-cyan;
+}
+
+.MFDButton.disabled {
+  color: $display-light-grey;
+}
+
+.MFDButton.disabled:hover {
+  border-color: $display-light-grey;
 }
 
 .MFDIconButton {
@@ -93,6 +90,10 @@ $display-mfd-dark-grey: #3c3c3c;
   align-items: center;
 }
 
+.MFDIconButton:hover {
+  border: 2px outset cyan;
+}
+
 .MFDSysSelectorOuter {
   width: 25%;
   display: flex;
@@ -100,6 +101,10 @@ $display-mfd-dark-grey: #3c3c3c;
   justify-content: space-between;
   background-color: $display-mfd-dark-grey;
   border: 2px outset $display-light-grey;
+}
+
+.MFDSysSelectorOuter:hover {
+  border-color: $display-cyan;
 }
 
 .MFDSysSelectorLabel {
@@ -117,11 +122,37 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px outset $display-light-grey;
 }
 
+.MFDDropdownOuter:hover {
+  border-color: $display-cyan;
+}
+
+.MFDDropdownInner {
+  background-color: #040405;
+  display: flex;
+  margin: 4px;
+}
+
+.MFDDropdownInnerV2 {
+  background-color: #040405;
+  display: flex;
+  flex: 1;
+}
+
 .MFDDropdownLabel {
   font-size: 22px;
   color: $display-cyan;
   font-family: "Ecam", monospace;
   padding: 2px 10px 2px 10px;
+}
+
+.MFDDropdownLabelV2 {
+  flex: 1;
+  font-size: 26px;
+  color: $display-cyan;
+  text-align: center;
+  font-family: "Ecam", monospace;
+  padding: 6px 10px 6px 10px;
+  display: block;
 }
 
 .MFDPageSelectorLabel {
@@ -149,6 +180,10 @@ $display-mfd-dark-grey: #3c3c3c;
   border-left: 2px solid $display-light-grey;
   border-bottom: 2px solid rgba(211, 211, 211, 0.432);
   border-right: 2px solid rgba(211, 211, 211, 0.432);
+}
+
+.MFDPageSelectorOuter:hover {
+  border-color: $display-cyan;
 }
 
 .MFDPageContainer {
@@ -201,6 +236,7 @@ $display-mfd-dark-grey: #3c3c3c;
   display: flex;
   flex: 1;
   justify-content: center;
+  align-items: center;
   background-color: $display-mfd-dark-grey;
   border-top: 2px solid $display-light-grey;
   padding: 6px 0px 2px 0px;
@@ -208,6 +244,10 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .MFDTopTabNavigatorBarElementLabel.active {
   background-color: $display-background;
+}
+
+.MFDTopTabNavigatorBarElementLabel:hover {
+  border: 2px outset $display-cyan;
 }
 
 .MFDTopTabNavigatorBarElementOuter.active {
@@ -232,67 +272,119 @@ $display-mfd-dark-grey: #3c3c3c;
   align-items: center;
 }
 
-
-
-
-/* Customize the label (the container) */
-.container {
-  display: block;
-  position: relative;
-  padding-left: 35px;
-  margin-left: 15px;
-  cursor: pointer;
-  font-size: 22px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  color: $display-light-grey;
+.MFDRadioButton{
+  -webkit-appearance: none; /* WebKit */
+  -moz-appearance: none; /* Mozilla */
+  -o-appearance: none; /* Opera */
+  -ms-appearance: none; /* Internet Explorer */
+  appearance: none; /* CSS3 */
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  border: 2px solid transparent;
 }
 
-/* Hide the browser's default radio button */
-.container input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
+.MFDRadioButton + .MFDRadioButton {
+  margin-top: 5px;
 }
 
-/* Create a custom radio button */
-.checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 20px;
-  width: 20px;
+.MFDRadioButton input[type="radio"] {
+  appearance: none; /* CSS3 */
+  background-color: $display-background;
+  width: 30px;
+  height: 30px;
+  border: 2px inset lightgray;
   border-radius: 50%;
-  border: 1px solid $display-light-grey;
+  margin-right: 15px;
+  display: grid;
+  place-content: center;
 }
 
-/* When the radio button is checked, add a blue background */
-.container input:checked ~ .checkmark {
-  border: 1px solid $display-light-grey;
-}
-
-/* Create the indicator (the dot/circle - hidden when not checked) */
-.checkmark:after {
-  content: "";
-  position: absolute;
+.MFDRadioButton input[type="radio"]::after {
   display: none;
 }
 
-/* Show the indicator (dot/circle) when checked */
-.container input:checked ~ .checkmark:after {
-  display: block;
+
+.MFDRadioButton input[type="radio"]:checked {
+  background: cyan;
+  box-shadow: inset 0 0 0px 4px black;
 }
 
-/* Style the indicator (dot/circle) */
-.container .checkmark:after {
-  top: 3px;
-  left: 3px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: $display-cyan;
+
+.MFDRadioButton input[type="radio"]:checked {
+  background: cyan;
+  box-shadow: inset 0 0 0px 4px black;
+}
+
+.MFDRadioButton input[type="radio"]:checked ~ * {
+  color: cyan;
+}
+
+.MFDRadioButton:hover {
+  border: 2px outset cyan;
+}
+
+.select {
+  display:flex;
+  flex-direction: column;
+  position:relative;
+  width:200px;
+  height:100px;
+}
+.option {
+  padding:0 30px 0 10px;
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  background:rgb(9, 184, 67);
+  border-top:#222 solid 1px;
+  position:absolute;
+  top:0;
+  width: 100%;
+  order:2;
+  z-index:1;
+  box-sizing:border-box;
+  overflow:hidden;
+  white-space:nowrap;
+
+}
+.option:hover {
+  background:rgb(8, 145, 26);
+}
+
+input {
+  opacity:1;
+  position:absolute;
+  left:99px;
+}
+
+input:checked + label {
+  order: 2;
+  z-index:2;
+  background:#666;
+  border-top:none;
+  position:relative;
+}
+
+input:checked + label:before {
+  content:'';
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid white;
+  position:absolute;
+  right:10px;
+  top:calc(50% - 2.5px);
+  z-index:3;
+}
+
+input:checked + label:after {
+  display: none;
+  position:absolute;
+  right:50;
+  height: 40px;
+  width: 40px;
+  content: '';
+  background:#666;
 }

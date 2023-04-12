@@ -1,0 +1,17 @@
+﻿@import "../MsfsAvionicsCommon/definitions";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+$display-mfd-dark-grey: #3c3c3c;
+
+.OANSInfoBox {
+  background-color: $display-mfd-dark-grey;
+  border: 2px outset $display-light-grey;
+  padding: 9px 12px 5px 12px;
+}

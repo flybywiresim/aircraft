@@ -5,7 +5,6 @@ import 'instruments/src/PFD/MFD-common/common.scss';
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 
 import { OANS } from 'instruments/src/PFD/OANS';
-import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { MFDSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {

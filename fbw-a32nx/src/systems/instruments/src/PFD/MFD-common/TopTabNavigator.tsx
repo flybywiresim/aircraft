@@ -8,14 +8,23 @@ interface TopTabElementProps {
     selectedTextColor: string;
     height: number; // height of tab bar element
     slantedEdgeAngle: number; // in degrees
+    onClick: () => void;
 }
 
 class TopTabElement extends DisplayComponent<TopTabElementProps> {
     private triangleWidth = (this.props.height * Math.tan(this.props.slantedEdgeAngle * Math.PI / 180));
 
+    private divRef = FSComponent.createRef<HTMLDivElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.divRef.instance.addEventListener('click', this.props.onClick);
+    }
+
     render(): VNode {
         return (
-            <div class={`MFDTopTabNavigatorBarElementOuter${this.props.isSelected === true ? ' active' : ''}`}>
+            <div ref={this.divRef} class={`MFDTopTabNavigatorBarElementOuter${this.props.isSelected === true ? ' active' : ''}`}>
                 <svg height={this.props.height} width={this.triangleWidth}>
                     <polygon
                         points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
@@ -78,6 +87,7 @@ interface TopTabNavigatorProps {
     tabBarHeight?: number; // in pixels
     tabBarSlantedEdgeAngle?: number; // in degrees, vertical line equals 0°
     additionalRightSpace?: number; // in pixels
+    pageChangeCallback?: (index: number) => void;
 }
 
 export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
@@ -126,6 +136,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
                     height={this.props.tabBarHeight || 36}
                     slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
                     selectedTextColor={this.props.selectedTabTextColor || 'white'}
+                    onClick={() => this.props.pageChangeCallback(index)}
                 />, this.navigatorBarRef.instance);
             });
 
@@ -151,6 +162,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
                                 height={this.props.tabBarHeight || 36}
                                 slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
                                 selectedTextColor={this.props.selectedTabTextColor || 'white'}
+                                onClick={() => this.props.pageChangeCallback(index)}
                             />
                         ))
                     }
