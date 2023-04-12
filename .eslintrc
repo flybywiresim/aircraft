@@ -7,7 +7,6 @@
   "ignorePatterns": [
     "/fbw-a32nx/src/base/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/**",
     "/fbw-common/src/typings/**",
-    "/fbw-common/msfs-avionics-mirror/**",
     "/fbw-ingamepanels-checklist-fix/**"
   ],
   // DO NOT CHANGE THIS FILE (unless you are an admin) (if admin, make sure you change the same file in the latest asobo branch as well)
