@@ -1,7 +1,7 @@
-﻿import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
 import './common.scss';
 
-interface PageSelectorDropdownMenuProps {
+interface PageSelectorDropdownMenuProps extends ComponentProps {
     isActive: Subscribable<boolean>;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {

@@ -1,7 +1,7 @@
-﻿import { DisplayComponent, FSComponent, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, VNode } from 'msfssdk';
 import './common.scss';
 
-interface IconButtonProps {
+interface IconButtonProps extends ComponentProps {
     containerStyle?: string;
     icon: 'double-up' | '' | null;
     onClick?: () => void;

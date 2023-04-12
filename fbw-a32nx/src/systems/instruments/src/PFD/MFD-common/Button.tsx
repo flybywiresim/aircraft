@@ -1,7 +1,7 @@
-﻿import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
 import './common.scss';
 
-interface ButtonProps {
+interface ButtonProps extends ComponentProps {
     disabled?: Subscribable<boolean>;
     containerStyle?: string;
     onClick?: () => void;
@@ -12,8 +12,8 @@ export class Button extends DisplayComponent<ButtonProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        if (this.props.disabled !== undefined && this.props.disabled.get() === true) {
-            this.spanRef.instance.addEventListener('click', this.props.onClick);
+        if (this.props.disabled === undefined || this.props.disabled.get() === false) {
+            this.spanRef.instance.addEventListener('click', () => this.props.onClick());
         }
     }
 

@@ -114,6 +114,10 @@ $display-mfd-dark-grey: #3c3c3c;
   padding: 2px 5px 2px 5px;
 }
 
+.MFDDropdownContainer {
+  position: relative;
+}
+
 .MFDDropdownOuter {
   display: flex;
   flex-direction: row;
@@ -153,6 +157,41 @@ $display-mfd-dark-grey: #3c3c3c;
   font-family: "Ecam", monospace;
   padding: 6px 10px 6px 10px;
   display: block;
+}
+
+.MFDDropdownMenu::-webkit-scrollbar {
+  width: 25px;
+}
+
+.MFDDropdownMenu::-webkit-scrollbar-track {
+  background: $display-mfd-dark-grey;
+}
+
+.MFDDropdownMenu::-webkit-scrollbar-thumb {
+  background: $display-light-grey;
+}
+
+.MFDDropdownMenu {
+  background-color: $display-mfd-dark-grey;
+  width: 100%;
+  position: absolute;
+  z-index: 10;
+  overflow: auto;
+  max-height: 200px;
+  display: none;
+}
+
+.MFDDropdownMenuElement {
+  color: $display-white;
+  font-size: 20px;
+  text-align: center;
+  padding: 12px 16px;
+  display: block;
+  border: 3px solid transparent;
+}
+
+.MFDDropdownMenuElement:hover {
+  border: 3px solid $display-cyan;
 }
 
 .MFDPageSelectorLabel {
@@ -324,67 +363,65 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px outset cyan;
 }
 
-.select {
-  display:flex;
-  flex-direction: column;
-  position:relative;
-  width:200px;
-  height:100px;
-}
-.option {
-  padding:0 30px 0 10px;
-  min-height:40px;
-  display:flex;
-  align-items:center;
-  background:rgb(9, 184, 67);
-  border-top:#222 solid 1px;
-  position:absolute;
-  top:0;
-  width: 100%;
-  order:2;
-  z-index:1;
-  box-sizing:border-box;
-  overflow:hidden;
-  white-space:nowrap;
-
-}
-.option:hover {
-  background:rgb(8, 145, 26);
-}
-
-input {
-  opacity:1;
-  position:absolute;
-  left:99px;
-}
-
-input:checked + label {
-  order: 2;
-  z-index:2;
-  background:#666;
-  border-top:none;
-  position:relative;
-}
-
-input:checked + label:before {
-  content:'';
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid white;
-  position:absolute;
-  right:10px;
-  top:calc(50% - 2.5px);
-  z-index:3;
-}
-
-input:checked + label:after {
+.MFDContextMenu {
+  background-color: $display-mfd-dark-grey;
+  position: absolute;
+  z-index: 10;
+  overflow: auto;
   display: none;
-  position:absolute;
-  right:50;
-  height: 40px;
-  width: 40px;
-  content: '';
-  background:#666;
+}
+
+.MFDContextMenuElement {
+  color: $display-white;
+  font-size: 22px;
+  text-align: left;
+  padding: 4px 2px;
+  display: block;
+  border: 3px solid transparent;
+}
+
+.MFDContextMenuElement:hover {
+  border: 3px solid $display-cyan;
+}
+
+.MFDContextMenuElement.disabled {
+  color: $display-dark-grey;
+}
+
+.MFDContextMenuElement.disabled:hover {
+  border: 3px solid transparent;
+}
+
+.MFDNumberInputContainer {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  align-items: baseline;
+  padding: 4px;
+  background-color: $display-background;
+  border: 2px inset $display-light-grey;
+}
+
+.MFDNumberInputContainer:hover {
+  border: 2px inset $display-cyan;
+}
+
+.MFDNumberInputTextInput {
+  background-color: $display-background;
+  border: none;
+  font-family: "Ecam", monospace;
+  font-size: 25px;
+  text-align: right;
+  vertical-align: center;
+  color: $display-cyan;
+  padding: 0px 5px;
+  caret-shape: block; // not yet supported
+}
+
+.MFDMouseCursor {
+  pointer-events: none;
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  z-index: 999;
 }

@@ -1,7 +1,7 @@
-﻿import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import './common.scss';
 
-interface DropdownMenuProps {
+interface DropdownMenuProps extends ComponentProps {
     values: Subscribable<string[]>;
     selectedId: Subscribable<number>;
 }

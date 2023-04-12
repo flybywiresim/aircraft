@@ -1,7 +1,7 @@
-﻿import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
 import './common.scss';
 
-interface ActivePageTitleBarProps {
+interface ActivePageTitleBarProps extends ComponentProps {
     activePage: Subscribable<string>;
     tmpyIsActive: Subscribable<boolean>;
 }

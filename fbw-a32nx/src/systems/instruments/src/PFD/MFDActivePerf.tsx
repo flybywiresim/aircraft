@@ -3,7 +3,7 @@
 import './style.scss';
 
 import { SysSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/SysSelectorDropdownMenu';
-import { NumberInputField } from 'instruments/src/PFD/MFD-common/NumberInputField';
+import { NumberInputField } from 'instruments/src/PFD/MFD-common/archive/NumberInputDeprecated';
 import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
 

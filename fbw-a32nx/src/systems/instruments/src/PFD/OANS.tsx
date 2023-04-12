@@ -7,14 +7,13 @@ import { Button } from 'instruments/src/PFD/MFD-common/Button';
 import { IconButton } from 'instruments/src/PFD/MFD-common/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
 import { OANSRunwayInfoBox } from 'instruments/src/PFD/OANSRunwayInfoBox';
+import { ContextMenu } from 'instruments/src/PFD/MFD-common/ContextMenu';
 
 import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 
 import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
-import { NumberInputField } from 'instruments/src/PFD/MFD-common/NumberInputField';
 import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
-import { DropdownMenuTest } from 'instruments/src/PFD/MFD-common/DropdownMenuTest';
-import { MFDSimvars } from './shared/MFDSimvarPublisher';
+import { NumberInput } from 'instruments/src/PFD/MFD-common/NumberInput';
 
 export interface OANSProps extends ComponentProps {
     bus: EventBus;
@@ -27,14 +26,17 @@ export enum EntityTypes {
     OTHER
 }
 
-export class OANS extends DisplayComponent<OANSProps> {
-    private testSubject = Subject.create(0);
+declare type MousePosition = {
+    x: number;
+    y: number;
+}
 
+export class OANS extends DisplayComponent<OANSProps> {
     private availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
 
     private selectedEntityType = Subject.create<EntityTypes>(EntityTypes.RWY);
 
-    private entityList = ArraySubject.create<string>(['08L', '08R', 'M', 'S']);
+    private entityList = ArraySubject.create<string>(['08L', '08R', '26L', '26R', 'M', 'N', 'S', 'T']);
 
     private selectedEntityIndex = Subject.create<number>(0);
 
@@ -44,15 +46,48 @@ export class OANS extends DisplayComponent<OANSProps> {
 
     private selectedAirportSearchFilter = Subject.create<number>(0); // 0 = ICAO, 1 = IATA, 2 = CITY NAME
 
-    private airportName = Subject.create('MUNICH INTL');
+    private mapRef = FSComponent.createRef<HTMLDivElement>();
 
-    private airportCodes = Subject.create('EDDM MUC');
-
-    private airportCoordinates = Subject.create('48°21.5N/011°47.0E');
+    private contextMenuRef = FSComponent.createRef<ContextMenu>();
 
     private oansMenuRef = FSComponent.createRef<HTMLDivElement>();
 
     private oansMenuSelectedPageIndex = Subject.create(0);
+
+    private contextMenuPositionTriggered = Subject.create<MousePosition>({ x: 0, y: 0 })
+
+    private contextMenuActions = ArraySubject.create([
+        {
+            title: 'ADD CROSS',
+            disabled: false,
+            onSelectCallback: () => console.log(`ADD CROSS at (${this.contextMenuPositionTriggered.get().x}, ${this.contextMenuPositionTriggered.get().y})`),
+        },
+        {
+            title: 'ADD FLAG',
+            disabled: false,
+            onSelectCallback: () => console.log(`ADD FLAG at (${this.contextMenuPositionTriggered.get().x}, ${this.contextMenuPositionTriggered.get().y})`),
+        },
+        {
+            title: 'MAP DATA',
+            disabled: false,
+            onSelectCallback: () => this.toggleOANSMenu(),
+        },
+        {
+            title: 'ERASE ALL CROSSES',
+            disabled: true,
+            onSelectCallback: () => console.log('ERASE ALL CROSSES'),
+        },
+        {
+            title: 'ERASE ALL FLAGS',
+            disabled: true,
+            onSelectCallback: () => console.log('ERASE ALL FLAGS'),
+        },
+        {
+            title: 'CENTER ON ACFT',
+            disabled: false,
+            onSelectCallback: () => console.log('CENTER ON ACFT'),
+        },
+    ]);
 
     private changeSelectedEntityType(newSelectedIndex: number) {
         this.selectedEntityType.set(newSelectedIndex);
@@ -83,24 +118,19 @@ export class OANS extends DisplayComponent<OANSProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<MFDSimvars>();
-
-        sub.on('potentiometerCaptain').whenChanged().handle((value) => {
-            if (value > 0 && value < 0.4) {
-                this.testSubject.set(0);
-            } else if (value >= 0.4 && value < 0.7) {
-                this.testSubject.set(1);
-            } else {
-                this.testSubject.set(2);
-            }
+        this.mapRef.instance.addEventListener('contextmenu', (e) => {
+            console.log('context');
+            this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
+            this.contextMenuRef.instance.display(e.clientX, e.clientY);
         });
 
-        sub.on('ecamNdXfr').whenChanged().handle((value) => {
-            if (value === 1) {
-                this.oansMenuRef.instance.style.display = 'flex';
-            } else {
-                this.oansMenuRef.instance.style.display = 'none';
-            }
+        this.mapRef.instance.addEventListener('dblclick', (e) => {
+            this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
+            this.contextMenuRef.instance.display(e.clientX, e.clientY);
+        });
+
+        this.mapRef.instance.addEventListener('click', () => {
+            this.contextMenuRef.instance.hideMenu();
         });
     }
 
@@ -126,8 +156,13 @@ export class OANS extends DisplayComponent<OANSProps> {
                         <span class="MFDLabel">EDDM MUC</span>
                     </div>
                 </div>
-                <div style="display: flex; flex: 1; justify-content: center; align-items: center;">
-                    <span style="font-size: 40px; color: white">MAP</span>
+                <div ref={this.mapRef} style="display: flex; flex: 1; justify-content: center; align-items: center; background-color: #111; cursor: crosshair;">
+                    <span style="font-size: 40px; color: white;">MAP</span>
+                    <ContextMenu
+                        ref={this.contextMenuRef}
+                        idPrefix="contextMenu"
+                        values={this.contextMenuActions}
+                    />
                 </div>
                 <IconButton onClick={() => this.toggleOANSMenu()} icon="double-up" containerStyle="width: 49px; height: 45px; position: absolute; right: 2px; top: calc(65% + 54px);" />
                 <div ref={this.oansMenuRef} style="display: flex; height: 30%; cursor: crosshair;">
@@ -146,6 +181,8 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     <DropdownMenu
                                         values={this.entityList}
                                         selectedIndex={this.selectedEntityIndex}
+                                        idPrefix="123"
+                                        onChangeCallback={(i) => this.selectedEntityIndex.set(i)}
                                         useNewStyle
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; border-right: 2px solid lightgrey; height: 100%;">
@@ -166,11 +203,11 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     </div>
                                     <div style="flex: 5; display: flex; flex-direction: row; justify-content: space-between; margin: 10px;">
                                         <div style="display: flex; flex-direction: column;">
-                                            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 50px 50px; align-items: center;">
+                                            <div style="display: grid; grid-template-columns: 1fr auto; grid-template-rows: 50px 50px; align-items: center;">
                                                 <span class="MFDLabel spacingRight bigger" style="justify-self: flex-end">THRESHOLD SHIFT</span>
-                                                <NumberInputField emptyValueString="----" value={Subject.create(0)} unitTrailing={Subject.create('M')} />
+                                                <NumberInput emptyValueString="----" value={Subject.create(0)} unitTrailing={Subject.create('M')} />
                                                 <span class="MFDLabel spacingRight bigger" style="justify-self: flex-end">END SHIFT</span>
-                                                <NumberInputField emptyValueString="----" value={Subject.create(0)} unitTrailing={Subject.create('M')} />
+                                                <NumberInput emptyValueString="----" value={Subject.create(0)} unitTrailing={Subject.create('M')} />
                                             </div>
                                             <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">
                                                 <Button
@@ -211,10 +248,11 @@ export class OANS extends DisplayComponent<OANSProps> {
                         <TopTabNavigatorPage>
                             <div style="flex: 1; display: flex; flex-direction: row; height: 100%;">
                                 <div style="width: 30%; display: flex: flex-direction: column; justify-content: stretch;">
-                                    <DropdownMenuTest
+                                    <DropdownMenu
                                         values={this.airportList}
                                         selectedIndex={this.selectedAirportIndex}
-                                        idPrefix="123"
+                                        idPrefix="airportDropdown"
+                                        onChangeCallback={(i) => this.selectedAirportIndex.set(i)}
                                         useNewStyle
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; height: 100%;">
@@ -246,8 +284,8 @@ export class OANS extends DisplayComponent<OANSProps> {
                                 align-items: center; border-left: 2px solid lightgrey"
                                 >
                                     <Button>EDDM</Button>
-                                    <Button disabled={Subject.create(true)}>KJFK</Button>
-                                    <Button>ALTN</Button>
+                                    <Button>KJFK</Button>
+                                    <Button disabled={Subject.create(true)}>ALTN</Button>
                                 </div>
                             </div>
                         </TopTabNavigatorPage>

@@ -1,7 +1,7 @@
-﻿import { DisplayComponent, FSComponent, Subscribable, SubscribableArray, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, SubscribableArray, VNode } from 'msfssdk';
 import './common.scss';
 
-interface RadioButtonGroupProps {
+interface RadioButtonGroupProps extends ComponentProps {
     values: SubscribableArray<string>;
     selectedIndex: Subscribable<number>;
     idPrefix: string;
@@ -12,12 +12,12 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         super.onAfterRender(node);
 
         for (let i = 0; i < this.props.values.length; i++) {
-            document.getElementById(this.props.idPrefix + i).addEventListener('change', () => this.props.onChangeCallback(i));
+            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('change', () => this.props.onChangeCallback(i));
 
             if (i === this.props.selectedIndex.get()) {
-                document.getElementById(this.props.idPrefix + i).setAttribute('checked', 'checked');
+                document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('checked', 'checked');
             } else {
-                document.getElementById(this.props.idPrefix + i).removeAttribute('checked');
+                document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('checked');
             }
         }
 
@@ -26,9 +26,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         this.props.selectedIndex.sub((val) => {
             for (let i = 0; i < this.props.values.length; i++) {
                 if (i === val) {
-                    document.getElementById(this.props.idPrefix + i).setAttribute('checked', 'checked');
+                    document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('checked', 'checked');
                 } else {
-                    document.getElementById(this.props.idPrefix + i).removeAttribute('checked');
+                    document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('checked');
                 }
             }
         });
@@ -38,8 +38,8 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         return (
             <form>
                 {this.props.values.getArray().map((el, idx) => (
-                    <label class="MFDRadioButton" htmlFor={this.props.idPrefix + idx}>
-                        <input type="radio" name="entityType" id={this.props.idPrefix + idx} />
+                    <label class="MFDRadioButton" htmlFor={`${this.props.idPrefix}_${idx}`}>
+                        <input type="radio" name="entityType" id={`${this.props.idPrefix}_${idx}`} />
                         <span>{el}</span>
                     </label>
                 ))}

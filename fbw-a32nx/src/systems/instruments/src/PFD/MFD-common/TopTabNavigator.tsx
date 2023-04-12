@@ -1,8 +1,8 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
-import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
 import './common.scss';
 
-interface TopTabElementProps {
+interface TopTabElementProps extends ComponentProps {
     title: string;
     isSelected: boolean;
     selectedTextColor: string;

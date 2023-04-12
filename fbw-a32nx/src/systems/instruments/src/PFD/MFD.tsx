@@ -5,6 +5,7 @@ import 'instruments/src/PFD/MFD-common/common.scss';
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 
 import { OANS } from 'instruments/src/PFD/OANS';
+import { CustomMouseCursor } from 'instruments/src/PFD/MFD-common/CustomMouseCursor';
 import { MFDSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -20,11 +21,9 @@ interface MFDProps extends ComponentProps {
 export class MFDComponent extends DisplayComponent<MFDProps> {
     private displayBrightness = Subject.create(0);
 
-    private displayFailed = Subject.create(false);
-
     private displayPowered = Subject.create(false);
 
-    private testSubject = Subject.create(0);
+    private mouseCursorRef = FSComponent.createRef<CustomMouseCursor>();
 
     private oansRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -41,25 +40,24 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
-
-            if (this.displayBrightness.get() > 0 && this.displayBrightness.get() < 0.3) {
-                this.testSubject.set(0);
-            } else if (this.displayBrightness.get() >= 0.3 && this.displayBrightness.get() < 0.7) {
-                this.testSubject.set(1);
-            } else {
-                this.testSubject.set(2);
-            }
         });
 
         sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
             this.displayPowered.set(value === 1);
         });
+
+        this.oansRef.instance.addEventListener('mousemove', (ev) => {
+            // this.mouseCursorRef.instance.style.left = `${ev.clientX - 40}px`;
+            // this.mouseCursorRef.instance.style.top = `${ev.clientY - 40}px`;
+            this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
+        });
     }
 
     render(): VNode {
         return (
-            <div class="mfd-main" id="test_1233" ref={this.oansRef}>
+            <div class="mfd-main" ref={this.oansRef}>
                 <OANS bus={this.props.bus} />
+                <CustomMouseCursor ref={this.mouseCursorRef} />
             </div>
         );
     }
