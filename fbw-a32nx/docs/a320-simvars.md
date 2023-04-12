@@ -2674,27 +2674,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_TRANSFER_PRESSURE:
-    - Pressure between IP/HP valves but before the pressure regulating valve
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
-    - Pressure at the precooler inlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_PRESSURE:
-    - Pressure at theh precooler outlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
 - A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_PRESSURE:
     - Pressure behind the starter valve of the engine
     - PSI
@@ -2702,24 +2681,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE:
-    - Pressure measured at the intermediate pressure transducer, -1 if no output
-    - psi
-
 - A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
     - Pressure measured at the transfer pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_REGULATED_TRANSDUCER_PRESSURE
     - Pressure measured at the regulated pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_DIFFERENTIAL_TRANSDUCER_PRESSURE
     - Pressure measured at the differential pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
     - Temperature in intermediate pressure compression chamber
