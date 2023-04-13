@@ -189,6 +189,15 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
+- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+    - Enum
+    - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
+      Value | Meaning
+      --- | ---
+      0 | Inactive
+      1 | Maintenance Mode active
+      2 | Engineering display test in progress
+
 - A32NX_ECAM_ND_XFR_SWITCHING_KNOB
     - ECAM/ND XFR
     - Position (0-2)
@@ -431,10 +440,6 @@
 - A32NX_RMP_{L,R}_SAVED_COURSE_ILS
     - Number
     - The ILS course tuned via the left/right RMP
-
-- A32NX_RMP_ILS_TUNED
-    - Bool
-    - If the ILS is tuned via the RMP
 
 - A32NX_TO_CONFIG_FLAPS
     - Enum
@@ -1055,6 +1060,7 @@
     - Auto brake panel push button for MAX mode is pressed
 
 - A32NX_FM_LS_COURSE
+    - ** DEPRECATED ** Do not use.
     - Number<Degrees | -1>
     - Landing system course. Values, in priority order:
         - Pilot entered course
@@ -1076,15 +1082,6 @@
       APPROACH | 5
       GOAROUND | 6
       DONE | 7
-
-- A32NX_FMGC_RADIONAV_TUNING_MODE
-    - Enum
-    - Hold the FMGCs current tuning mode
-      Value | Meaning
-      --- | ---
-      0 | AUTO
-      1 | MANUAL
-      2 | REMOTE VIA RMPs
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number
@@ -1390,32 +1387,54 @@
         - 2
         - 3
 
-- A32NX_PAX_TOTAL_ROWS_{rows}
-    - Number
-    - Indicates the current number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_BOARDING_STARTED_BY_USR
+    - Bool
+    - Indicates current pax/cargo loading state
 
-- A32NX_PAX_TOTAL_ROWS_{rows}_DESIRED
-    - Number
-    - Indicates the target number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_PAX_{station}
+    - Bitwise Field
+    - Indicates the current pax in the selected rows (max 53 bits)
+    - {station}
+        - A
+        - B
+        - C
+        - D
 
-- PAYLOAD STATION WEIGHT:{stationIndex}
+- A32NX_PAX_{station}_DESIRED
+    - Bitwise Field
+    - Indicates the target layout of passengers in the station (max 53)
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_PAX
+    - Bitwise Field
+    - Indicates the current layout of passengers in the station (max 53)
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_CARGO_{station}_DESIRED
     - Number (Kilograms)
-    - Indicates the weight of the selected payload station
-    - {stationIndex}
-        - 5 | FWD BAGGAGE/CONTAINER
-        - 6 | AFT CONTAINER
-        - 7 | AFT BAGGAGE
-        - 8 | AFT BULK/LOOSE
+    - Indicates the targeted weight of the station in kilograms
+    - {station}
+        - FWD_BAGGAGE
+        - AFT_CONTAINER
+        - AFT_BAGGAGE
+        - AFT_BULK_LOOSE
+
+- A32NX_CARGO
+    - Number (Kilograms)
+    - Indicates the current weight of the station in kilograms
+    - {station}
+        - FWD_BAGGAGE
+        - AFT_CONTAINER
+        - AFT_BAGGAGE
+        - AFT_BULK_LOOSE
 
 - A32NX_MCDU_{side}_ANNUNC_{annunciator}
     - Boolean
@@ -2459,6 +2478,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number (Kg/h)
     - Expected idle fuel flow as a function of temperature and pressure
 
+- A32NX_FADEC_IGNITER_A_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter A on engine {index}
+
+- A32NX_FADEC_IGNITER_B_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter B on engine {index}
+
 - A32NX_FUEL_USED:{index}
     - Number (Kg)
     - Fuel burnt by engine {index} on deltaTime
@@ -2647,27 +2674,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_TRANSFER_PRESSURE:
-    - Pressure between IP/HP valves but before the pressure regulating valve
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
-    - Pressure at the precooler inlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_PRESSURE:
-    - Pressure at theh precooler outlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
 - A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_PRESSURE:
     - Pressure behind the starter valve of the engine
     - PSI
@@ -2675,24 +2681,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE:
-    - Pressure measured at the intermediate pressure transducer, -1 if no output
-    - psi
-
 - A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
     - Pressure measured at the transfer pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_REGULATED_TRANSDUCER_PRESSURE
     - Pressure measured at the regulated pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_DIFFERENTIAL_TRANSDUCER_PRESSURE
     - Pressure measured at the differential pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
     - Temperature in intermediate pressure compression chamber

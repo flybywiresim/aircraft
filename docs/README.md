@@ -44,7 +44,6 @@ a32nx (repo)                                     <flybywire monorepo - will be r
 │               ├── a380_systems
 │               └── a380_systems_wasm
 ├── fbw-common                                   <common code and libs>
-│   ├── msfs-avionics-mirror
 │   └── src
 │       ├── jest
 │       ├── typings                              <msfs specific typings>

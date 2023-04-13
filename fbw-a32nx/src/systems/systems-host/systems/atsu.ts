@@ -2,7 +2,7 @@ import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
 import { Router } from '@datalink/router';
-import { EventBus, EventSubscriber } from 'msfssdk';
+import { EventBus, EventSubscriber } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 
 export class AtsuSystem {
