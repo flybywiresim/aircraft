@@ -112,8 +112,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
         if (this.state !== DisplayUnitState.Off && this.failed) {
             this.state = DisplayUnitState.Off;
             clearTimeout(this.timeOut);
-        } else if (
-            this.state === DisplayUnitState.On && (this.brightness === 0 || !this.powered)) {
+        } else if (this.state === DisplayUnitState.On && (this.brightness === 0 || !this.powered)) {
             this.state = DisplayUnitState.Standby;
             this.setTimer(10);
         } else if (this.state === DisplayUnitState.Standby && (this.brightness !== 0 && this.powered)) {
