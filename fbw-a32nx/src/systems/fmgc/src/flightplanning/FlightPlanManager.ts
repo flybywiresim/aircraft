@@ -25,7 +25,6 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { LegType } from '@fmgc/types/fstypes/FSEnums';
-import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ApproachStats, HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentType } from '@fmgc/wtsdk';
@@ -2009,7 +2008,8 @@ export class FlightPlanManager {
     }
 
     public tryAddOrUpdateCruiseStep(waypointIdent: string, toAltitude: Feet): boolean {
-        if (this._flightPlans[this._currentFlightPlanIndex].tryAddOrUpdateCruiseStep(waypointIdent, toAltitude)) {
+        const stepAltModificationSuccessful = this._flightPlans[this._currentFlightPlanIndex].tryAddOrUpdateCruiseStep(waypointIdent, toAltitude)
+        if (stepAltModificationSuccessful) {
             this.updateFlightPlanVersion().catch(console.error);
             return true;
         }

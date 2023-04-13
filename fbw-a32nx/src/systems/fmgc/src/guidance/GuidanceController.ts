@@ -278,6 +278,7 @@ export class GuidanceController {
         try {
             this.verticalProfileComputationParametersObserver.update();
             this.windProfileFactory.updateFmgcInputs();
+            this.atmosphericConditions.update();
         } catch (e) {
             console.error('[FMS] Error during update of VNAV input parameters. See exception below.');
             console.error(e);
@@ -318,8 +319,6 @@ export class GuidanceController {
                 console.error(e);
             }
         }
-
-        this.atmosphericConditions.update();
 
         try {
             this.updateMrpState();

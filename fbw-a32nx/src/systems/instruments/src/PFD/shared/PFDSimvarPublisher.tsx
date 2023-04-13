@@ -149,12 +149,6 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     irMaintWordRaw: number;
     slatPosLeft: number;
     fm1NavDiscrete: number;
-    linearDeviationActive: boolean;
-    targetAltitude: number;
-    verticalProfileLatched: boolean;
-    showSpeedMargins: boolean;
-    upperSpeedMargin: number;
-    lowerSpeedMargin: number;
   }
 
 export enum PFDVars {
@@ -303,12 +297,6 @@ export enum PFDVars {
     trueTrackRaw = 'L:A32NX_ADIRS_IR_1_TRUE_TRACK',
     slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
     fm1NavDiscrete = 'L:A32NX_FM1_NAV_DISCRETE',
-    linearDeviationActive = 'L:A32NX_PFD_LINEAR_DEVIATION_ACTIVE',
-    targetAltitude = 'L:A32NX_PFD_TARGET_ALTITUDE',
-    verticalProfileLatched = 'L:A32NX_PFD_VERTICAL_PROFILE_LATCHED',
-    showSpeedMargins = 'L:A32NX_PFD_SHOW_SPEED_MARGINS',
-    upperSpeedMargin = 'L:A32NX_PFD_UPPER_SPEED_MARGIN',
-    lowerSpeedMargin = 'L:A32NX_PFD_LOWER_SPEED_MARGIN',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -458,12 +446,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['irMaintWordRaw', { name: PFDVars.irMaintWordRaw, type: SimVarValueType.Number }],
         ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
         ['fm1NavDiscrete', { name: PFDVars.fm1NavDiscrete, type: SimVarValueType.Number }],
-        ['linearDeviationActive', { name: PFDVars.linearDeviationActive, type: SimVarValueType.Bool }],
-        ['targetAltitude', { name: PFDVars.targetAltitude, type: SimVarValueType.Feet }],
-        ['verticalProfileLatched', { name: PFDVars.verticalProfileLatched, type: SimVarValueType.Bool }],
-        ['showSpeedMargins', { name: PFDVars.showSpeedMargins, type: SimVarValueType.Bool }],
-        ['upperSpeedMargin', { name: PFDVars.upperSpeedMargin, type: SimVarValueType.Knots }],
-        ['lowerSpeedMargin', { name: PFDVars.lowerSpeedMargin, type: SimVarValueType.Knots }],
     ])
 
     public constructor(bus: ArincEventBus) {

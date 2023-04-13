@@ -43,13 +43,13 @@ export interface DescentStrategy {
     /**
      * Computes a step from an initial altitude until the aircraft reaches finalSpeed
      * @param initialAltitude
-     * @param speed
+     * @param initialSpeed
      * @param finalSpeed
      * @param mach
      * @param fuelOnBoard
      */
     predictToSpeed(
-        initialAltitude: number, finalSpeed: Knots, speed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration
+        initialAltitude: number, finalSpeed: Knots, initialSpeed: Knots, mach: Mach, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration
     ): StepResults
 }
 
@@ -92,9 +92,9 @@ export class DesModeStrategy implements DescentStrategy {
     }
 
     predictToSpeed(
-        initialAltitude: number, finalSpeed: number, speed: number, mach: number, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration,
+        initialAltitude: number, finalSpeed: number, initialSpeed: number, mach: number, fuelOnBoard: number, headwindComponent: WindComponent, config?: AircraftConfiguration,
     ): StepResults {
-        return this.decelerationStrategy.predictToSpeed(initialAltitude, finalSpeed, speed, mach, fuelOnBoard, headwindComponent, config);
+        return this.decelerationStrategy.predictToSpeed(initialAltitude, finalSpeed, initialSpeed, mach, fuelOnBoard, headwindComponent, config);
     }
 }
 
@@ -173,7 +173,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     predictToSpeed(
         initialAltitude: number,
         finalSpeed: Knots,
-        speed: Knots,
+        initialSpeed: Knots,
         mach: Mach,
         fuelOnBoard: number,
         headwindComponent: WindComponent,
@@ -182,16 +182,16 @@ export class IdleDescentStrategy implements DescentStrategy {
         const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
         const { flapConfig, gearExtended, speedbrakesExtended } = { ...this.defaultConfig, ...config };
 
-        const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
+        const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
         const predictedN1 = EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + VnavConfig.IDLE_N1_MARGIN;
 
-        const initialMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
+        const initialMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
         const finalMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, finalSpeed), mach);
 
         return Predictions.speedChangeStep(
             -1,
             initialAltitude,
-            speed,
+            initialSpeed,
             finalSpeed,
             initialMach,
             finalMach,

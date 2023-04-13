@@ -230,7 +230,7 @@ export class VnavDriver implements GuidanceComponent {
 
         const vLs = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
         const vMan = this.getVman(approachSpeed);
-        const econMachAsCas = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', managedDescentSpeedMach);
+        const econMachAsCas = this.atmosphericConditions.computeCasFromMach(presentPosition.alt, managedDescentSpeedMach);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', Math.max(vLs, vMan, Math.min(newSpeedTarget, econMachAsCas)));
     }
 
@@ -306,7 +306,7 @@ export class VnavDriver implements GuidanceComponent {
                 continue;
             }
 
-            if (!legA?.ident !== !legB?.ident) {
+            if (!legA?.repr !== !legB?.repr) {
                 return true;
             }
         }
@@ -453,6 +453,8 @@ export class VnavDriver implements GuidanceComponent {
 
             const prediction = this.profileManager.mcduProfile.interpolateEverythingFromStart(tacticalDistanceFromStart + distanceFromAircraft);
             const tasPrediction = this.atmosphericConditions.computeTasFromCas(prediction.altitude, prediction.speed);
+
+            // TODO: Use wind speed prediction for that leg instead of current wind speed
             const gsPrediction = tasPrediction + this.atmosphericConditions.currentWindSpeed;
 
             leg.predictedTas = tasPrediction;

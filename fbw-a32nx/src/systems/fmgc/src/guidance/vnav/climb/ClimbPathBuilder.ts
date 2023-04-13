@@ -13,7 +13,7 @@ export class ClimbPathBuilder {
     constructor(private computationParametersObserver: VerticalProfileComputationParametersObserver, private atmosphericConditions: AtmosphericConditions) { }
 
     /**
-     * Compute climb profile assuming climb thrust until top of climb. This does not care if we're below acceleration/thrust reduction altitude.
+     * Compute climb profile assuming climb thrust until top of climb.
      * @param profile
      * @returns
      */

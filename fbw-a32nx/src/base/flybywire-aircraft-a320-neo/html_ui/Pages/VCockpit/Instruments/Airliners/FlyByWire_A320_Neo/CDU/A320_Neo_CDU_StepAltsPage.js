@@ -32,7 +32,7 @@ class CDUStepAltsPage {
         ]);
 
         for (let i = 0; i < 4; i++) {
-            mcdu.onLeftInput[i] = (value) => CDUStepAltsPage.tryParseLeftInput(mcdu, i, value);
+            mcdu.onLeftInput[i] = (value) => CDUStepAltsPage.tryAddOrUpdateCruiseStepFromLeftInput(mcdu, i, value);
         }
 
         mcdu.onLeftInput[4] = () => { };
@@ -102,7 +102,7 @@ class CDUStepAltsPage {
         }
     }
 
-    static tryParseLeftInput(mcdu, index, input) {
+    static tryAddOrUpdateCruiseStepFromLeftInput(mcdu, index, input) {
         if (index < mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps.length) {
             return this.onClickExistingStepClimb(mcdu, index, input);
         }
@@ -128,7 +128,8 @@ class CDUStepAltsPage {
             return false;
         }
 
-        if (!mcdu.flightPlanManager.tryAddOrUpdateCruiseStep(rawIdentInput, alt)) {
+        const stepAltModificationSuccessful = mcdu.flightPlanManager.tryAddOrUpdateCruiseStep(rawIdentInput, alt);
+        if (!stepAltModificationSuccessful) {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             return false;
         }

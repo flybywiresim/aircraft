@@ -1,6 +1,6 @@
-import { DisplayComponent, EventBus, FSComponent, NodeReference, VNode } from 'msfssdk';
+import { DisplayComponent, EventBus, FSComponent, NodeReference, VNode } from '@microsoft/msfs-sdk';
+import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
-import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
 type LinearDeviationIndicatorProps = {
     bus: EventBus,
@@ -29,7 +29,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
 
         sub.on('altitudeAr').handle((alt) => {
             if (!alt.isNormalOperation()) {

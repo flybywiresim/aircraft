@@ -209,7 +209,6 @@ export class Predictions {
             stepTime = (tas - headwindAtMidStepAlt) !== 0 ? 3600 * distance / (tas - headwindAtMidStepAlt) : 0; // in seconds
             stepSize = stepTime / 60 * verticalSpeed;
             fuelBurned = (fuelFlow / 3600) * stepTime;
-            // const endStepWeight = zeroFuelWeight + (initialFuelWeight - fuelBurned); <- not really needed
 
             // Adjust variables for better accuracy next iteration
             previousFinalAltitude = finalAltitude;

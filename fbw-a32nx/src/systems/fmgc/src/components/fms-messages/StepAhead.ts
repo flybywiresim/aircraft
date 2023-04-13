@@ -1,14 +1,14 @@
 import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
+import { FMMessageTypes } from '@shared/FmMessages';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 export class StepAhead implements FMMessageSelector {
-    message: FMMessage = FMMessageTypes.StepAhead;
+    message = FMMessageTypes.StepAhead;
 
     private guidanceController: GuidanceController;
 
-    private lastState: boolean = false;
+    private lastState = false;
 
     init(baseInstrument: BaseInstrument): void {
         this.guidanceController = baseInstrument.guidanceController;

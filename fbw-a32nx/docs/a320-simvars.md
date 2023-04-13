@@ -1354,15 +1354,15 @@
     - Boolean
     - Indicates whether to show the latch symbol on the PFD with the deviation indicator
 
-- L:A32NX_PFD_SHOW_SPEED_MARGINS
+- A32NX_PFD_SHOW_SPEED_MARGINS
     - Boolean
     - Indicates whether speed margins are shown on the PFD in DES mode.
 
-- L:A32NX_PFD_UPPER_SPEED_MARGIN
+- A32NX_PFD_UPPER_SPEED_MARGIN
     - Knots
     - Indicates the speed for the upper speed margin limit in DES mode
 
-- L:A32NX_PFD_LOWER_SPEED_MARGIN
+- A32NX_PFD_LOWER_SPEED_MARGIN
     - Knots
     - Indicates the speed for the lower speed margin limit in DES mode
 

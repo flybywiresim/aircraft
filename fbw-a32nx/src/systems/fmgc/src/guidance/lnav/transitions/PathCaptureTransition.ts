@@ -490,7 +490,7 @@ export class PathCaptureTransition extends Transition {
         let dtg = 0;
 
         for (const path of this.predictedPath) {
-            if ('centrePoint' in path) {
+            if (path.type === PathVectorType.Arc) {
                 // Arc
                 const turnSign = this.computedTurnDirection === TurnDirection.Left ? -1 : 1;
                 let trackAngleError = this.computedTargetTrack - trueTrack;
@@ -499,7 +499,7 @@ export class PathCaptureTransition extends Transition {
                 }
 
                 dtg += pathVectorLength(path) * trackAngleError / path.sweepAngle;
-            } else if ('endPoint' in path) {
+            } else if (path.type === PathVectorType.Line) {
                 // Line
                 dtg += Math.min(pathVectorLength(path), distanceTo(path.endPoint, ppos));
             }

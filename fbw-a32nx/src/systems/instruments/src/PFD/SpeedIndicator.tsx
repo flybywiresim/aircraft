@@ -1,5 +1,6 @@
 import { ClockEvents, DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -1010,11 +1011,11 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
 
         sub.on('showSpeedMargins').handle(this.hideOrShow(this.entireComponentRef));
 
-        sub.on('speedAr').withArinc429Precision(2).handle((s) => this.currentSpeed = s);
+        sub.on('speedAr').withPrecision(2).handle((s) => this.currentSpeed = s);
 
         sub.on('upperSpeedMargin').handle(this.moveToSpeed(this.upperSpeedMarginRef));
 

@@ -2,8 +2,8 @@ import { Fmgc } from '@fmgc/guidance/GuidanceController';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { UnitType } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, LateralMode, VerticalMode } from '@shared/autopilot';
-import { Constants } from '@shared/Constants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 export interface VerticalProfileComputationParameters {
@@ -87,7 +87,7 @@ export class VerticalProfileComputationParametersObserver {
             managedDescentSpeedMach: this.fmgc.getManagedDescentSpeedMach(),
 
             zeroFuelWeight: this.fmgc.getZeroFuelWeight(),
-            fuelOnBoard: this.fmgc.getFOB() * Constants.TONS_TO_POUNDS,
+            fuelOnBoard: UnitType.TONNE.convertTo(this.fmgc.getFOB(), UnitType.POUND),
             v2Speed: this.fmgc.getV2Speed(),
             tropoPause: this.fmgc.getTropoPause(),
             perfFactor: 0, // FIXME: Use actual value,
@@ -108,7 +108,7 @@ export class VerticalProfileComputationParametersObserver {
             preselectedCruiseSpeed: this.fmgc.getPreSelectedCruiseSpeed(),
             preselectedDescentSpeed: this.fmgc.getPreSelectedDescentSpeed(),
             takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting(),
-            estimatedDestinationFuel: this.fmgc.getDestEFOB(false) * Constants.TONS_TO_POUNDS,
+            estimatedDestinationFuel: UnitType.TONNE.convertTo(this.fmgc.getDestEFOB(false), UnitType.POUND),
 
             approachQnh: this.fmgc.getApproachQnh(),
             approachTemperature: this.fmgc.getApproachTemperature(),

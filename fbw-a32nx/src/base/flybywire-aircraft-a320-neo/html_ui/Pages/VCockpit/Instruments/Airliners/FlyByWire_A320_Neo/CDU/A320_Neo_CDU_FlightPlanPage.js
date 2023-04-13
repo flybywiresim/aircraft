@@ -27,17 +27,17 @@ class CDUFlightPlanPage {
             let runwayText, runwayAlt;
             if (runway) {
                 runwayText = Avionics.Utils.formatRunway(runway.designation);
-                runwayAlt = (runway.elevation * 3.280).toFixed(0).toString();
+                runwayAlt = (runway.elevation * 3.280).toFixed(0);
             }
             return [runwayText, runwayAlt];
         }
 
         function formatAltitudeOrLevel(altitudeToFormat) {
             if (mcdu.flightPlanManager.getOriginTransitionAltitude() >= 100 && altitudeToFormat > mcdu.flightPlanManager.getOriginTransitionAltitude()) {
-                return `FL${(altitudeToFormat / 100).toFixed(0).toString().padStart(3,"0")}`;
+                return `FL${(altitudeToFormat / 100).toFixed(0).padStart(3,"0")}`;
             }
 
-            return (10 * Math.round(altitudeToFormat / 10)).toFixed(0).toString().padStart(5,"\xa0");
+            return (10 * Math.round(altitudeToFormat / 10)).toFixed(0).padStart(5,"\xa0");
         }
 
         //mcdu.flightPlanManager.updateWaypointDistances(false /* approach */);
@@ -187,7 +187,7 @@ class CDUFlightPlanPage {
                         if (fpm.getActiveWaypointIndex() === fpIndex) {
                             const br = fpm.getBearingToActiveWaypoint();
                             const bearing = A32NX_Util.trueToMagnetic(br, magVar);
-                            bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
+                            bearingTrack = `BRG${bearing.toFixed(0).padStart(3,"0")}\u00b0`;
                         }
                         break;
                     case 2:

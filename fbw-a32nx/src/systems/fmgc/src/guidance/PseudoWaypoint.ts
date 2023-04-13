@@ -53,7 +53,8 @@ export interface PseudoWaypoint {
     efisSymbolLla: Coordinates,
 
     /**
-     * The distance from the start of the path
+     * The distance from the start of the path.
+     * This is relevant for PWP placed along the track line in HDG/TRK mode.
      */
     distanceFromStart: NauticalMiles,
 

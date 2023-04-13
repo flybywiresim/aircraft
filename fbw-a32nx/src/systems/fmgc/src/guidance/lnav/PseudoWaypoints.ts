@@ -19,9 +19,6 @@ import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 
-const PWP_IDENT_CLIMB_CONSTRAINT_LEVEL_OFF = 'Level off for climb constraint';
-const PWP_IDENT_CONTINUE_CLIMB = 'Continue climb';
-const PWP_SPEED_CHANGE = 'Speed change';
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
 const PWP_IDENT_STEP_DESCENT = '(S/D)';
@@ -153,7 +150,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             }
 
             newPseudoWaypoints.push({
-                ident: PWP_SPEED_CHANGE,
+                ident: 'Speed change',
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpSpeedChange | NdSymbolTypeFlags.MagentaColor,
@@ -400,7 +397,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         switch (checkpoint.reason) {
         case VerticalCheckpointReason.LevelOffForClimbConstraint:
             return {
-                ident: PWP_IDENT_CLIMB_CONSTRAINT_LEVEL_OFF,
+                ident: 'Level 1',
                 efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.MagentaColor,
                 alongLegIndex,
                 distanceFromLegTermination,
@@ -411,7 +408,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             };
         case VerticalCheckpointReason.ContinueClimb:
             return {
-                ident: PWP_IDENT_CONTINUE_CLIMB,
+                ident: 'Start of climb 1',
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpStartOfClimb | NdSymbolTypeFlags.CyanColor,
@@ -448,7 +445,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             };
         case VerticalCheckpointReason.CrossingFcuAltitudeClimb:
             return {
-                ident: 'FCU alt',
+                ident: 'Level 2',
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.CyanColor,
@@ -530,7 +527,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             };
         case VerticalCheckpointReason.CrossingFcuAltitudeDescent:
             return {
-                ident: 'FCU alt',
+                ident: 'Level 2',
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.CyanColor,
@@ -541,7 +538,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             };
         case VerticalCheckpointReason.LevelOffForDescentConstraint:
             return {
-                ident: 'Level off for descent constraint',
+                ident: 'Level 1',
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.MagentaColor,
@@ -552,7 +549,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             };
         case VerticalCheckpointReason.InterceptDescentProfileSelected:
             return {
-                ident: 'Intercept',
+                ident: 'Intercept point 1',
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile,
@@ -563,7 +560,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             };
         case VerticalCheckpointReason.InterceptDescentProfileManaged:
             return {
-                ident: 'Intercept',
+                ident: 'Intercept point 2',
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile | NdSymbolTypeFlags.CyanColor,
