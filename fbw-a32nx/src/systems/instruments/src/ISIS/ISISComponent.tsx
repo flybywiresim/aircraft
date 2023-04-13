@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';
 import { ISISDisplayUnit } from './ISISDisplayUnit';
-import { DisplayComponent, EventBus, FSComponent, VNode } from 'msfssdk';
 
 export interface ISISProps {
     bus: EventBus,

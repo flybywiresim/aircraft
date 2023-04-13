@@ -1,5 +1,5 @@
 import './style.scss';
-import { Clock, EventBus, FSComponent } from 'msfssdk';
+import { Clock, EventBus, FSComponent } from '@microsoft/msfs-sdk';
 import { ISISSimvarPublisher } from './shared/ISISSimvarPublisher';
 import { ISISComponent } from './ISISComponent';
 

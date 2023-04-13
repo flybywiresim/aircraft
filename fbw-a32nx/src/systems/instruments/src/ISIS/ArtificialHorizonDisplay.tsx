@@ -1,4 +1,4 @@
-import { DisplayComponent, EventBus, FSComponent } from 'msfssdk';
+import { DisplayComponent, EventBus, FSComponent } from '@microsoft/msfs-sdk';
 import { ArtificialHorizon } from './ArtificialHorizon';
 
 type ArtificialHorizonDisplayProps = {

@@ -1,4 +1,4 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { ISISSimvars } from './shared/ISISSimvarPublisher';
 /* import { PitchScale } from './PitchScale';
 import { RollScale } from './RollScale';

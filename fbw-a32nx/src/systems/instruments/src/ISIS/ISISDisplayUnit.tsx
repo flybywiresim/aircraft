@@ -1,4 +1,4 @@
-import { DisplayComponent, VNode, FSComponent, EventBus, ClockEvents, Subject, MappedSubject } from 'msfssdk';
+import { DisplayComponent, VNode, FSComponent, EventBus, ClockEvents, Subject, MappedSubject } from '@microsoft/msfs-sdk';
 import { ISISSimvars } from './shared/ISISSimvarPublisher';
 
 enum DisplayUnitState {
