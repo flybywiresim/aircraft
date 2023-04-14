@@ -93,7 +93,7 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
 
     if (state === DisplayUnitState.Off) {
         return (
-            <></>
+            <svg id="Off" style={{ backgroundColor: 'black' }} className="SelfTest" version="1.1" viewBox="0 0 512 512" />
         );
     }
 
