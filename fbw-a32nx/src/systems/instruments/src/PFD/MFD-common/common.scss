@@ -133,34 +133,25 @@ $display-mfd-dark-grey: #3c3c3c;
 .MFDDropdownInner {
   background-color: #040405;
   display: flex;
-  margin: 4px;
-}
-
-.MFDDropdownInnerV2 {
-  background-color: #040405;
-  display: flex;
   flex: 1;
+  justify-content: center;
 }
 
 .MFDDropdownLabel {
-  font-size: 22px;
-  color: $display-cyan;
-  font-family: "Ecam", monospace;
-  padding: 2px 10px 2px 10px;
-}
-
-.MFDDropdownLabelV2 {
-  flex: 1;
   font-size: 26px;
   color: $display-cyan;
-  text-align: center;
   font-family: "Ecam", monospace;
-  padding: 6px 10px 6px 10px;
+  margin: 6px 10px 6px 10px;
   display: block;
 }
 
+.MFDDropdownLabel.opened {
+  background-color: $display-cyan;
+  color: $display-background;
+}
+
 .MFDDropdownMenu::-webkit-scrollbar {
-  width: 25px;
+  width: 20px;
 }
 
 .MFDDropdownMenu::-webkit-scrollbar-track {
@@ -179,12 +170,12 @@ $display-mfd-dark-grey: #3c3c3c;
   overflow: auto;
   max-height: 200px;
   display: none;
+  border: 2px outset $display-light-grey;
 }
 
 .MFDDropdownMenuElement {
   color: $display-white;
   font-size: 20px;
-  text-align: center;
   padding: 12px 16px;
   display: block;
   border: 3px solid transparent;
@@ -365,6 +356,7 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .MFDContextMenu {
   background-color: $display-mfd-dark-grey;
+  border: 2px outset $display-light-grey;
   position: absolute;
   z-index: 10;
   overflow: auto;

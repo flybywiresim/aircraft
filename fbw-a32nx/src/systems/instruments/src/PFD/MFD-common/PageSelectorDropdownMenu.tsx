@@ -15,8 +15,8 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
                 </div>
                 <div style="display: flex;">
                     <span style="padding: 8px;">
-                        <svg height="10" width="10">
-                            <polygon points="0,0 10,0 5,10" style="fill: white" />
+                        <svg height="15" width="15">
+                            <polygon points="0,0 15,0 7.5,15" style="fill: white" />
                         </svg>
                     </span>
                 </div>

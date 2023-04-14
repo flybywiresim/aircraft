@@ -4,8 +4,8 @@ import 'instruments/src/PFD/MFD-common/common.scss';
 
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 
-import { OANS } from 'instruments/src/PFD/OANS';
 import { CustomMouseCursor } from 'instruments/src/PFD/MFD-common/CustomMouseCursor';
+import { MFDActivePerf } from 'instruments/src/PFD/MFDActivePerf';
 import { MFDSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -47,8 +47,6 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
         });
 
         this.oansRef.instance.addEventListener('mousemove', (ev) => {
-            // this.mouseCursorRef.instance.style.left = `${ev.clientX - 40}px`;
-            // this.mouseCursorRef.instance.style.top = `${ev.clientY - 40}px`;
             this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
         });
     }
@@ -56,7 +54,7 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
     render(): VNode {
         return (
             <div class="mfd-main" ref={this.oansRef}>
-                <OANS bus={this.props.bus} />
+                <MFDActivePerf bus={this.props.bus} />
                 <CustomMouseCursor ref={this.mouseCursorRef} />
             </div>
         );

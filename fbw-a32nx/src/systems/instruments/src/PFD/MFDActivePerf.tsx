@@ -1,40 +1,32 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 
-import './style.scss';
-
-import { SysSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/SysSelectorDropdownMenu';
-import { NumberInputField } from 'instruments/src/PFD/MFD-common/archive/NumberInputDeprecated';
 import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
+import { NumberInput } from 'instruments/src/PFD/MFD-common/NumberInput';
+
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
 
-import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 
 import { Button } from 'instruments/src/PFD/MFD-common/Button';
 import { PageSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/PageSelectorDropdownMenu';
 import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
-import { MFDSimvars } from './shared/MFDSimvarPublisher';
+import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
 
 interface MFDActivePerfProps extends ComponentProps {
     bus: EventBus;
 }
 
 export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
-    private testSubject = Subject.create(0);
+    private sysSelectorSelectedIndex = Subject.create(0);
+
+    private flightPhasesSelectedPageIndex = Subject.create(0);
+
+    private selectedThrustSettingIndex = Subject.create(0);
+
+    private selectedFlapsIndex = Subject.create(0);
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-
-        const sub = this.props.bus.getSubscriber<MFDSimvars>();
-
-        sub.on('potentiometerCaptain').whenChanged().handle((value) => {
-            if (value > 0 && value < 0.3) {
-                this.testSubject.set(0);
-            } else if (value >= 0.3 && value < 0.7) {
-                this.testSubject.set(1);
-            } else {
-                this.testSubject.set(2);
-            }
-        });
     }
 
     render(): VNode {
@@ -42,7 +34,14 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
             <>
                 {/* begin header */}
                 <div style="display: flex; flex-direction: row;">
-                    <SysSelectorDropdownMenu values={Subject.create(['FMS 1', 'ATCCOM', 'SURV', 'FCU BKUP'])} selectedIndex={Subject.create(0)} />
+                    <DropdownMenu
+                        values={ArraySubject.create(['FMS 1', 'ATCCOM', 'SURV', 'FCU BKUP'])}
+                        selectedIndex={this.sysSelectorSelectedIndex}
+                        idPrefix="sysSelectorDropdown"
+                        onChangeCallback={(val) => this.sysSelectorSelectedIndex.set(val)}
+                        containerStyle="width: 25%;"
+                        alignLabels="left"
+                    />
                 </div>
                 <div style="display: flex; flex-direction: row;">
                     <PageSelectorDropdownMenu isActive={Subject.create(true)}>
@@ -65,7 +64,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                     <div style="margin: 15px; display: flex; justify-content: space-between;">
                         <div class="MFDLabelValueContainer">
                             <span class="MFDLabel spacingRight">CRZ</span>
-                            <NumberInputField value={Subject.create(350)} emptyValueString="---" unitLeading={Subject.create('FL')} />
+                            <NumberInput value={Subject.create(350)} emptyValueString="---" unitLeading={Subject.create('FL')} />
                         </div>
                         <div class="MFDLabelValueContainer">
                             <span class="MFDLabel spacingRight">OPT</span>
@@ -78,7 +77,12 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                             <span class="MFDGreenValue">393</span>
                         </div>
                     </div>
-                    <TopTabNavigator pageTitles={Subject.create(['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA'])} selectedPageIndex={this.testSubject}>
+                    <TopTabNavigator
+                        pageTitles={Subject.create(['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA'])}
+                        selectedPageIndex={this.flightPhasesSelectedPageIndex}
+                        pageChangeCallback={(val) => this.flightPhasesSelectedPageIndex.set(val)}
+                        selectedTabTextColor="white"
+                    >
                         <TopTabNavigatorPage>
                             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey">
                                 <div class="MFDLabelValueContainer" style="padding: 15px;">
@@ -92,7 +96,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                                 >
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">V1</span>
-                                        <NumberInputField value={Subject.create(135)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
+                                        <NumberInput value={Subject.create(135)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">F</span>
@@ -101,7 +105,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">VR</span>
-                                        <NumberInputField value={Subject.create(140)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
+                                        <NumberInput value={Subject.create(140)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">S</span>
@@ -110,7 +114,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">V2</span>
-                                        <NumberInputField value={Subject.create(145)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
+                                        <NumberInput value={Subject.create(145)} emptyValueString="---" unitTrailing={Subject.create('KT')} />
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">O</span>
@@ -119,41 +123,39 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                                     </div>
                                 </div>
                                 <div style="flex: 4; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
-                                    <label class="container">
-                                        TOGA
-                                        <input type="checkbox" checked="checked" />
-                                        <span class="checkmark" />
-                                    </label>
-                                    <label class="container">
-                                        FLEX
-                                        <input type="checkbox" />
-                                        <span class="checkmark" />
-                                    </label>
-                                    <label class="container">
-                                        DERATED
-                                        <input type="checkbox" />
-                                        <span class="checkmark" />
-                                    </label>
+                                    <span style="width: 175px; display: inline; margin-left: 15px;">
+                                        <RadioButtonGroup
+                                            values={ArraySubject.create(['TOGA', 'FLEX', 'DERATED'])}
+                                            selectedIndex={this.selectedThrustSettingIndex}
+                                            idPrefix="thrustSettingRadio"
+                                            onChangeCallback={(num) => this.selectedThrustSettingIndex.set(num)}
+                                        />
+                                    </span>
                                 </div>
                             </div>
                             <div style="margin: 15px 0px 15px 0px; display: flex; justify-content: space-between;">
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">FLAPS</span>
-                                    <DropdownMenu values={Subject.create(['-', '1', '2', '3'])} selectedIndex={Subject.create(0)} />
+                                    <DropdownMenu
+                                        values={ArraySubject.create(['-', '1', '2', '3'])}
+                                        selectedIndex={this.selectedFlapsIndex}
+                                        idPrefix="flapDropdown"
+                                        onChangeCallback={(val) => this.selectedFlapsIndex.set(val)}
+                                    />
                                 </div>
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">THS FOR</span>
-                                    <NumberInputField value={Subject.create(39.0)} emptyValueString="--.-" unitTrailing={Subject.create('%')} />
+                                    <NumberInput value={Subject.create(39.0)} emptyValueString="--.-" unitTrailing={Subject.create('%')} />
                                 </div>
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">T.O SHIFT</span>
-                                    <NumberInputField value={Subject.create(undefined)} emptyValueString="----" unitTrailing={Subject.create('M')} />
+                                    <NumberInput value={Subject.create(undefined)} emptyValueString="----" unitTrailing={Subject.create('M')} />
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: auto auto; justify-content: space-between; margin: 10px 80px 10px 80px;">
                                 <div class="MFDLabelValueContainer" style="justify-content: flex-end;">
                                     <span class="MFDLabel spacingRight">THR RED</span>
-                                    <NumberInputField
+                                    <NumberInput
                                         value={Subject.create(3000)}
                                         emptyValueString="----"
                                         unitTrailing={Subject.create('FT')}
@@ -163,7 +165,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                                 <div class="MFDLabelValueContainer" />
                                 <div class="MFDLabelValueContainer" style="justify-content: flex-end;">
                                     <span class="MFDLabel spacingRight">ACCEL</span>
-                                    <NumberInputField
+                                    <NumberInput
                                         value={Subject.create(800)}
                                         emptyValueString="----"
                                         unitTrailing={Subject.create('FT')}
@@ -172,7 +174,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                                 </div>
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">EO ACCEL</span>
-                                    <NumberInputField
+                                    <NumberInput
                                         value={Subject.create(1990)}
                                         emptyValueString="----"
                                         unitTrailing={Subject.create('FT')}
@@ -192,7 +194,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                             <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row; justify-self: flex-end;">
                                 <div class="MFDLabelValueContainer" style="flex: 4; margin-left: 80px;">
                                     <span class="MFDLabel spacingRight">TRANS</span>
-                                    <NumberInputField
+                                    <NumberInput
                                         value={Subject.create(5000)}
                                         emptyValueString="----"
                                         unitTrailing={Subject.create('FT')}

@@ -11,9 +11,9 @@ interface NumberInputProps extends ComponentProps {
 export class NumberInput extends DisplayComponent<NumberInputProps> {
     private textInputRef = FSComponent.createRef<HTMLInputElement>();
 
-    private setInputFilter(textbox: Element, inputFilter: (value: string) => boolean): void {
+    private setInputFilter(el: Element, inputFilter: (value: string) => boolean): void {
         ['input', 'keydown', 'keyup', 'mousedown', 'mouseup', 'select', 'contextmenu', 'drop', 'focusout'].forEach((event) => {
-            textbox.addEventListener(event, function (this: (HTMLInputElement | HTMLTextAreaElement) & { oldValue: string; oldSelectionStart: number | null, oldSelectionEnd: number | null }) {
+            el.addEventListener(event, function (this: (HTMLInputElement | HTMLTextAreaElement) & { oldValue: string; oldSelectionStart: number | null, oldSelectionEnd: number | null }) {
                 if (inputFilter(this.value)) {
                     this.oldValue = this.value;
                     this.oldSelectionStart = this.selectionStart;

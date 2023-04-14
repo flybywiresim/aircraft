@@ -36,9 +36,11 @@ export class OANS extends DisplayComponent<OANSProps> {
 
     private selectedEntityType = Subject.create<EntityTypes>(EntityTypes.RWY);
 
-    private entityList = ArraySubject.create<string>(['08L', '08R', '26L', '26R', 'M', 'N', 'S', 'T']);
+    private availableEntityList = ArraySubject.create<string>(['08L', '08R', '26L', '26R', 'M', 'N', 'S', 'T']);
 
     private selectedEntityIndex = Subject.create<number>(0);
+
+    private selectedEntityString = Subject.create<string>('08L');
 
     private airportList = ArraySubject.create<string>(['EDDM', 'KJFK']);
 
@@ -132,6 +134,8 @@ export class OANS extends DisplayComponent<OANSProps> {
         this.mapRef.instance.addEventListener('click', () => {
             this.contextMenuRef.instance.hideMenu();
         });
+
+        this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val)));
     }
 
     render(): VNode {
@@ -179,11 +183,10 @@ export class OANS extends DisplayComponent<OANSProps> {
                             <div style="flex: 1; display: flex; flex-direction: row; height: 100%;">
                                 <div style="flex: 1; display: flex: flex-direction: column; justify-content: stretch;">
                                     <DropdownMenu
-                                        values={this.entityList}
+                                        values={this.availableEntityList}
                                         selectedIndex={this.selectedEntityIndex}
                                         idPrefix="123"
                                         onChangeCallback={(i) => this.selectedEntityIndex.set(i)}
-                                        useNewStyle
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; border-right: 2px solid lightgrey; height: 100%;">
                                         <RadioButtonGroup
@@ -198,7 +201,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     <div style="flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
                                         <div class="MFDLabelValueContainer" style="padding: 15px;">
                                             <span class="MFDLabel spacingRight">RWY</span>
-                                            <span class="MFDGreenValue">{this.entityList.get(this.selectedEntityIndex.get())}</span>
+                                            <span class="MFDGreenValue">{this.selectedEntityString}</span>
                                         </div>
                                     </div>
                                     <div style="flex: 5; display: flex; flex-direction: row; justify-content: space-between; margin: 10px;">
@@ -228,15 +231,15 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     </div>
                                     <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
                                         <Button
-                                            onClick={() => console.log(`CENTER MAP ON ${this.entityList.get(this.selectedEntityIndex.get())}`)}
+                                            onClick={() => console.log(`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get())}`)}
                                             containerStyle="width: 65%"
                                         >
-                                            {`CENTER MAP ON ${this.entityList.get(this.selectedEntityIndex.get())}`}
+                                            {`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get())}`}
                                         </Button>
                                     </div>
                                     <OANSRunwayInfoBox
                                         rwyOrStand={this.selectedEntityType}
-                                        selectedEntity={Subject.create(this.entityList.get(this.selectedEntityIndex.get()))}
+                                        selectedEntity={this.selectedEntityString}
                                         tora={Subject.create(4000)}
                                         lda={Subject.create(4000)}
                                         ldaIsReduced={Subject.create(false)}
@@ -253,7 +256,6 @@ export class OANS extends DisplayComponent<OANSProps> {
                                         selectedIndex={this.selectedAirportIndex}
                                         idPrefix="airportDropdown"
                                         onChangeCallback={(i) => this.selectedAirportIndex.set(i)}
-                                        useNewStyle
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; height: 100%;">
                                         <RadioButtonGroup

@@ -6,22 +6,19 @@ interface DropdownMenuProps extends ComponentProps {
     selectedIndex: Subscribable<number>;
     idPrefix: string;
     onChangeCallback: (newSelectedIndex: number) => void;
-    useNewStyle?: boolean;
+    containerStyle?: string;
+    alignLabels?: 'left' | 'center';
 }
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     private label = Subject.create<string>('NOT SET');
 
     private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
+    private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
+
     private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
-    private toggleMenuVisibility() {
-        if (this.dropdownMenuRef.instance.style.display === 'block') {
-            this.dropdownMenuRef.instance.style.display = 'none';
-        } else {
-            this.dropdownMenuRef.instance.style.display = 'block';
-        }
-    }
+    private dropdownIsOpened = Subject.create(false);
 
     constructor(props: DropdownMenuProps) {
         super(props);
@@ -40,12 +37,18 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             this.label.set(this.props.values.get(value));
         });
 
-        this.dropdownSelectorRef.instance.addEventListener('click', () => this.toggleMenuVisibility());
-        this.dropdownMenuRef.instance.style.display = 'none';
+        this.dropdownSelectorRef.instance.addEventListener('click', () => {
+            this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+        });
+
+        this.dropdownIsOpened.sub((val) => {
+            this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
+            this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
+        });
 
         for (let i = 0; i < this.props.values.length; i++) {
             document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
-                this.toggleMenuVisibility();
+                this.dropdownIsOpened.set(false);
                 this.props.onChangeCallback(i);
             });
         }
@@ -53,10 +56,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     render(): VNode {
         return (
-            <div class="MFDDropdownContainer">
+            <div class="MFDDropdownContainer" style={this.props.containerStyle}>
                 <div ref={this.dropdownSelectorRef} class="MFDDropdownOuter">
-                    <div class={`MFDDropdownInner${this.props.useNewStyle ? 'V2' : ''}`}>
-                        <span class={`MFDDropdownLabel${this.props.useNewStyle ? 'V2' : ''}`}>
+                    <div class="MFDDropdownInner" style={`justify-content: ${this.props.alignLabels === 'left' ? 'flex-start' : 'center'};`}>
+                        <span ref={this.dropdownSelectorLabelRef} class="MFDDropdownLabel">
                             {this.label}
                         </span>
                     </div>
@@ -66,8 +69,16 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                         </svg>
                     </div>
                 </div>
-                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu">
-                    {this.props.values.getArray().map((el, idx) => <span class="MFDDropdownMenuElement" id={`${this.props.idPrefix}_${idx}`}>{el}</span>)}
+                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>
+                    {this.props.values.getArray().map((el, idx) => (
+                        <span
+                            class="MFDDropdownMenuElement"
+                            id={`${this.props.idPrefix}_${idx}`}
+                            style={`text-align: ${this.props.alignLabels === 'left' ? 'flex-start' : 'center'};`}
+                        >
+                            {el}
+                        </span>
+                    ))}
                 </div>
             </div>
         );
