@@ -1,18 +1,18 @@
 use std::time::Duration;
-use uom::si::{f64::*, pressure::psi, ratio::ratio, volume::gallon};
+use uom::si::{f64::*, ratio::ratio, volume::gallon};
 
 use crate::{
     shared::{
         low_pass_filter::LowPassFilter, random_from_normal_distribution, ElectricalBusType,
         ElectricalBuses, ReverserPosition,
     },
-    simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
-    },
+    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
-use super::{linear_actuator::Actuator, PressureSwitch, PressureSwitchState, PressureSwitchType};
+use super::{
+    linear_actuator::Actuator, HydraulicValve, HydraulicValveType, PressureSwitch,
+    PressureSwitchState, PressureSwitchType,
+};
 
 struct ReverserActuator {
     position: Ratio,
@@ -161,100 +161,6 @@ impl SimulationElement for ElectricalLock {
     }
 }
 
-//TODO remove valve duplication from gear system
-
-#[derive(PartialEq, Clone, Copy)]
-enum HydraulicValveType {
-    ClosedWhenOff,
-    _OpenedWhenOff,
-    Mechanical,
-}
-
-struct HydraulicValve {
-    position: LowPassFilter<Ratio>,
-    is_powered: bool,
-    powered_by: ElectricalBusType,
-    valve_type: HydraulicValveType,
-
-    pressure_input: Pressure,
-    pressure_output: Pressure,
-}
-impl HydraulicValve {
-    const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(150);
-    const MIN_POSITION_FOR_ZERO_PRESSURE_RATIO: f64 = 0.02;
-
-    fn new(valve_type: HydraulicValveType, powered_by: ElectricalBusType) -> Self {
-        Self {
-            position: LowPassFilter::<Ratio>::new(Self::POSITION_RESPONSE_TIME_CONSTANT),
-            is_powered: false, // TODO set to false and add SimulationElement powering
-            powered_by,
-            valve_type,
-            pressure_input: Pressure::default(),
-            pressure_output: Pressure::default(),
-        }
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        commanded_open: bool,
-        current_pressure_input: Pressure,
-    ) {
-        let commanded_position = self.actual_target_position_from_valve_type(commanded_open);
-
-        self.position.update(context.delta(), commanded_position);
-
-        self.pressure_input = current_pressure_input;
-        self.update_output_pressure();
-    }
-
-    fn actual_target_position_from_valve_type(&self, commanded_open: bool) -> Ratio {
-        match self.valve_type {
-            HydraulicValveType::_OpenedWhenOff => {
-                if !commanded_open && self.is_powered {
-                    Ratio::new::<ratio>(0.)
-                } else {
-                    Ratio::new::<ratio>(1.)
-                }
-            }
-            HydraulicValveType::ClosedWhenOff => {
-                if commanded_open && self.is_powered {
-                    Ratio::new::<ratio>(1.)
-                } else {
-                    Ratio::new::<ratio>(0.)
-                }
-            }
-            HydraulicValveType::Mechanical => {
-                if commanded_open {
-                    Ratio::new::<ratio>(1.)
-                } else {
-                    Ratio::new::<ratio>(0.)
-                }
-            }
-        }
-    }
-
-    fn update_output_pressure(&mut self) {
-        self.pressure_output =
-            if self.position.output().get::<ratio>() > Self::MIN_POSITION_FOR_ZERO_PRESSURE_RATIO {
-                self.pressure_input
-                    * (self.position.output().sqrt() * 1.4)
-                        .min(Ratio::new::<ratio>(1.).max(Ratio::new::<ratio>(0.)))
-            } else {
-                Pressure::default()
-            }
-    }
-
-    fn pressure_output(&self) -> Pressure {
-        self.pressure_output
-    }
-}
-impl SimulationElement for HydraulicValve {
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by)
-    }
-}
-
 struct DirectionalValve {
     position: LowPassFilter<Ratio>,
     is_powered: bool,
@@ -330,7 +236,10 @@ impl ReverserHydraulicManifold {
         switch_low_pressure: Pressure,
     ) -> Self {
         Self {
-            isolation_valve: HydraulicValve::new(HydraulicValveType::ClosedWhenOff, powered_by),
+            isolation_valve: HydraulicValve::new(
+                HydraulicValveType::ClosedWhenOff,
+                Some(vec![powered_by]),
+            ),
             directional_valve: DirectionalValve::new(powered_by),
             pressure_switch: PressureSwitch::new(
                 switch_high_pressure,
@@ -377,6 +286,7 @@ impl ReverserHydraulicManifold {
         // );
     }
 
+    #[cfg(test)]
     fn manifold_pressure(&self) -> Pressure {
         self.isolation_valve.pressure_output()
     }
@@ -488,7 +398,7 @@ impl SimulationElement for ReverserAssembly {
 
 #[cfg(test)]
 mod tests {
-    use uom::si::{angle::degree, electric_potential::volt, volume_rate::gallon_per_minute};
+    use uom::si::electric_potential::volt;
 
     use crate::electrical::test::TestElectricitySource;
     use crate::electrical::ElectricalBus;
@@ -496,10 +406,12 @@ mod tests {
 
     use super::*;
     use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
-    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement};
-    use ntest::assert_about_eq;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::{Aircraft, InitContext, SimulationElement};
+
     use std::time::Duration;
+
+    use uom::si::pressure::psi;
 
     struct TestReverserController {
         should_lock: bool,

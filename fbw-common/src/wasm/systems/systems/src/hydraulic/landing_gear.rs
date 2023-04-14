@@ -2,8 +2,8 @@ use crate::{
     failures::{Failure, FailureType},
     landing_gear::GearSystemSensors,
     shared::{
-        low_pass_filter::LowPassFilter, random_from_range, GearActuatorId, GearWheel,
-        LgciuGearControl, LgciuId, ProximityDetectorId, SectionPressure,
+        random_from_range, ElectricalBusType, GearActuatorId, GearWheel, LgciuGearControl, LgciuId,
+        ProximityDetectorId, SectionPressure,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -17,11 +17,10 @@ use super::{
         Actuator, ElectroHydrostaticPowered, HydraulicAssemblyController,
         HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatorMode,
     },
+    HydraulicValve, HydraulicValveType,
 };
 
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
-
-use std::time::Duration;
 
 pub trait GearGravityExtension {
     fn extension_handle_number_of_turns(&self) -> u8;
@@ -274,6 +273,7 @@ impl GearSystemSensors for HydraulicGearSystem {
 }
 impl SimulationElement for HydraulicGearSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.hydraulic_supply.accept(visitor);
         self.nose_gear_assembly.accept(visitor);
         self.left_gear_assembly.accept(visitor);
         self.right_gear_assembly.accept(visitor);
@@ -335,9 +335,21 @@ struct GearSystemHydraulicSupply {
 impl GearSystemHydraulicSupply {
     fn new() -> Self {
         Self {
-            safety_valve: HydraulicValve::new(HydraulicValveType::ClosedWhenOff),
-            cutoff_valve: HydraulicValve::new(HydraulicValveType::Mechanical),
-            gear_and_door_selector_valve: HydraulicValve::new(HydraulicValveType::ClosedWhenOff),
+            safety_valve: HydraulicValve::new(
+                HydraulicValveType::ClosedWhenOff,
+                Some(vec![
+                    ElectricalBusType::DirectCurrentEssential,
+                    ElectricalBusType::DirectCurrentGndFltService,
+                ]),
+            ),
+            cutoff_valve: HydraulicValve::new(HydraulicValveType::Mechanical, None),
+            gear_and_door_selector_valve: HydraulicValve::new(
+                HydraulicValveType::ClosedWhenOff,
+                Some(vec![
+                    ElectricalBusType::DirectCurrentEssential,
+                    ElectricalBusType::DirectCurrentGndFltService,
+                ]),
+            ),
         }
     }
 
@@ -367,6 +379,14 @@ impl GearSystemHydraulicSupply {
 
     fn gear_system_manifold_pressure(&self) -> Pressure {
         self.gear_and_door_selector_valve.pressure_output()
+    }
+}
+impl SimulationElement for GearSystemHydraulicSupply {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.safety_valve.accept(visitor);
+        self.gear_and_door_selector_valve.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -751,91 +771,6 @@ impl HydraulicLock {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
-enum HydraulicValveType {
-    ClosedWhenOff,
-    _OpenedWhenOff,
-    Mechanical,
-}
-
-struct HydraulicValve {
-    position: LowPassFilter<Ratio>,
-    is_powered: bool,
-    valve_type: HydraulicValveType,
-
-    pressure_input: Pressure,
-    pressure_output: Pressure,
-}
-impl HydraulicValve {
-    const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(150);
-    const MIN_POSITION_FOR_ZERO_PRESSURE_RATIO: f64 = 0.02;
-
-    fn new(valve_type: HydraulicValveType) -> Self {
-        Self {
-            position: LowPassFilter::<Ratio>::new(Self::POSITION_RESPONSE_TIME_CONSTANT),
-            is_powered: true, // TODO set to false and add SimulationElement powering
-            valve_type,
-            pressure_input: Pressure::default(),
-            pressure_output: Pressure::default(),
-        }
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        commanded_open: bool,
-        current_pressure_input: Pressure,
-    ) {
-        let commanded_position = self.actual_target_position_from_valve_type(commanded_open);
-
-        self.position.update(context.delta(), commanded_position);
-
-        self.pressure_input = current_pressure_input;
-        self.update_output_pressure();
-    }
-
-    fn actual_target_position_from_valve_type(&self, commanded_open: bool) -> Ratio {
-        match self.valve_type {
-            HydraulicValveType::_OpenedWhenOff => {
-                if !commanded_open && self.is_powered {
-                    Ratio::new::<ratio>(0.)
-                } else {
-                    Ratio::new::<ratio>(1.)
-                }
-            }
-            HydraulicValveType::ClosedWhenOff => {
-                if commanded_open && self.is_powered {
-                    Ratio::new::<ratio>(1.)
-                } else {
-                    Ratio::new::<ratio>(0.)
-                }
-            }
-            HydraulicValveType::Mechanical => {
-                if commanded_open {
-                    Ratio::new::<ratio>(1.)
-                } else {
-                    Ratio::new::<ratio>(0.)
-                }
-            }
-        }
-    }
-
-    fn update_output_pressure(&mut self) {
-        self.pressure_output =
-            if self.position.output().get::<ratio>() > Self::MIN_POSITION_FOR_ZERO_PRESSURE_RATIO {
-                self.pressure_input
-                    * (self.position.output().sqrt() * 1.4)
-                        .min(Ratio::new::<ratio>(1.).max(Ratio::new::<ratio>(0.)))
-            } else {
-                Pressure::default()
-            }
-    }
-
-    fn pressure_output(&self) -> Pressure {
-        self.pressure_output
-    }
-}
-
 struct ProximityDetector {
     is_active: bool,
 
@@ -1132,8 +1067,6 @@ mod tests {
         }
     }
     impl SimulationElement for TestSingleGearAircraft {}
-
-    impl SimulationElement for GearSystemHydraulicSupply {}
 
     #[test]
     fn proximity_detector_active_when_at_position() {
