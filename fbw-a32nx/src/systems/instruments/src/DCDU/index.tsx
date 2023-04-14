@@ -486,24 +486,17 @@ const DCDU: React.FC = () => {
     switch (state) {
     case DcduState.Selftest:
         return (
-            <>
-                <div className="BacklightBleed" />
-                <SelfTest />
-            </>
+            <SelfTest />
         );
     case DcduState.Waiting:
         return (
-            <>
-                <div className="BacklightBleed" />
-                <WaitingForData />
-            </>
+            <WaitingForData />
         );
     case DcduState.Off:
         return <></>;
     default:
         return (
             <>
-                <div className="BacklightBleed" />
                 <svg className="dcdu">
                     {(visibleMessages === undefined && atcMessage !== '' && (
                         <>
