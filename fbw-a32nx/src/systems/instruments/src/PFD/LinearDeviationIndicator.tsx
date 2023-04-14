@@ -1,4 +1,4 @@
-import { DisplayComponent, EventBus, FSComponent, NodeReference, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, NodeReference, Subject, VNode } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 
@@ -13,13 +13,17 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
     private upperLinearDeviationReadout = FSComponent.createRef<SVGTextElement>();
 
+    private upperLinearDeviationReadoutVisibility = Subject.create<'visible' | 'hidden'>('hidden');
+
     private lowerLinearDeviationReadout = FSComponent.createRef<SVGTextElement>();
 
-    private linearDeviationDot = FSComponent.createRef<SVGPathElement>();
+    private lowerLinearDeviationReadoutVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private linearDeviationDotUpperHalf = FSComponent.createRef<SVGPathElement>();
+    private linearDeviationDotVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private linearDeviationDotLowerHalf = FSComponent.createRef<SVGPathElement>();
+    private linearDeviationDotUpperHalfVisibility = Subject.create<'visible' | 'hidden'>('hidden');
+
+    private linearDeviationDotLowerHalfVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
     private latchSymbol = FSComponent.createRef<SVGPathElement>();
 
@@ -53,29 +57,29 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
             this.lowerLinearDeviationReadout.instance.textContent = linearDeviationReadoutText;
 
             if (deviation > 540) {
-                this.lowerLinearDeviationReadout.instance.style.visibility = 'visible';
-                this.linearDeviationDotLowerHalf.instance.style.visibility = 'visible';
+                this.lowerLinearDeviationReadoutVisibility.set('visible');
+                this.linearDeviationDotLowerHalfVisibility.set('visible');
 
-                this.upperLinearDeviationReadout.instance.style.visibility = 'hidden';
-                this.linearDeviationDotUpperHalf.instance.style.visibility = 'hidden';
+                this.upperLinearDeviationReadoutVisibility.set('hidden');
+                this.linearDeviationDotUpperHalfVisibility.set('hidden');
 
-                this.linearDeviationDot.instance.style.visibility = 'hidden';
+                this.linearDeviationDotVisibility.set('hidden');
             } else if (deviation > -500 && deviation < 500) {
-                this.lowerLinearDeviationReadout.instance.style.visibility = 'hidden';
-                this.linearDeviationDotLowerHalf.instance.style.visibility = 'hidden';
+                this.lowerLinearDeviationReadoutVisibility.set('hidden');
+                this.linearDeviationDotLowerHalfVisibility.set('hidden');
 
-                this.upperLinearDeviationReadout.instance.style.visibility = 'hidden';
-                this.linearDeviationDotUpperHalf.instance.style.visibility = 'hidden';
+                this.upperLinearDeviationReadoutVisibility.set('hidden');
+                this.linearDeviationDotUpperHalfVisibility.set('hidden');
 
-                this.linearDeviationDot.instance.style.visibility = 'visible';
+                this.linearDeviationDotVisibility.set('visible');
             } else if (deviation < -540) {
-                this.lowerLinearDeviationReadout.instance.style.visibility = 'hidden';
-                this.linearDeviationDotLowerHalf.instance.style.visibility = 'hidden';
+                this.lowerLinearDeviationReadoutVisibility.set('hidden');
+                this.linearDeviationDotLowerHalfVisibility.set('hidden');
 
-                this.upperLinearDeviationReadout.instance.style.visibility = 'visible';
-                this.linearDeviationDotUpperHalf.instance.style.visibility = 'visible';
+                this.upperLinearDeviationReadoutVisibility.set('visible');
+                this.linearDeviationDotUpperHalfVisibility.set('visible');
 
-                this.linearDeviationDot.instance.style.visibility = 'hidden';
+                this.linearDeviationDotVisibility.set('hidden');
             }
         });
 
@@ -99,18 +103,16 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
             <g id="LinearDeviationIndicator">
                 <text ref={this.upperLinearDeviationReadout} x="110" y="42.5" class="FontSmallest Green" />
                 <g ref={this.component} id="LinearDeviationDot">
-                    <path id="EntireDot" ref={this.linearDeviationDot} d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z" class="Fill Green" />
+                    <path id="EntireDot" visibility={this.linearDeviationDotVisibility} d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z" class="Fill Green" />
                     <path
                         id="DotUpperHalf"
-                        style="visiblity: hidden;"
-                        ref={this.linearDeviationDotUpperHalf}
+                        visibility={this.linearDeviationDotUpperHalfVisibility}
                         d="m116.24 80.796c4.9e-4 -0.83466 0.67686-1.511 1.511-1.511 0.83418 0 1.5105 0.67635 1.511 1.511h-1.511z"
                         class="Fill Green"
                     />
                     <path
                         id="DotLowerHalf"
-                        style="visiblity: hidden;"
-                        ref={this.linearDeviationDotLowerHalf}
+                        visibility={this.linearDeviationDotLowerHalfVisibility}
                         d="m116.24 80.796c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z"
                         class="Fill Green"
                     />

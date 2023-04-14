@@ -43,4 +43,11 @@ export const VnavConfig = {
      * Percent N1 to add to the predicted idle N1. The real aircraft does also use a margin for this, but I don't know how much
      */
     IDLE_N1_MARGIN: 3,
+
+    /**
+     * VNAV needs to make an initial estimate of the fuel on board at destination to compute the descent path.
+     * We don't want this figure to be too large as it might crash the predictions. So we clamp it to this value.
+     * This value is in lbs.
+     */
+    MAXIMUM_FUEL_ESTIMATE: 40000,
 };
