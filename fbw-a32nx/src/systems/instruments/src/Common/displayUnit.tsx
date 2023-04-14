@@ -6,7 +6,6 @@ import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
 
 import './common.scss';
-import './pixels.scss';
 
 type DisplayUnitProps = {
     electricitySimvar: string
@@ -24,13 +23,6 @@ enum DisplayUnitState {
     EngineeringTest
 }
 
-function BacklightBleed(props) {
-    if (props.homeCockpit) {
-        return null;
-    }
-    return <div className="BacklightBleed" />;
-}
-
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Standby);
@@ -38,6 +30,8 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     const [dmcSwitching] = useSimVar('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum', 200);
     const supplyingDmc = getSupplier(props.normDmc, dmcSwitching);
+    // TODO: Fix and reenable
+    /*
     const [dmcDisplayTestMode] = useSimVar(`L:A32NX_DMC_DISPLAYTEST:${supplyingDmc}`, 'enum');
     useEffect(() => {
         switch (dmcDisplayTestMode) {
@@ -51,10 +45,10 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
             setState(DisplayUnitState.On);
         }
     }, [dmcDisplayTestMode]);
+    */
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
-    const [homeCockpit] = useSimVar('L:A32NX_HOME_COCKPIT_ENABLED', 'bool', 200);
 
     useUpdate((deltaTime) => {
         if (timer.current !== null) {
@@ -96,7 +90,6 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     if (state === DisplayUnitState.Selftest) {
         return (
             <>
-                <BacklightBleed homeCockpit={homeCockpit} />
                 <svg className="SelfTest" viewBox="0 0 600 600">
                     <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
@@ -148,7 +141,6 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     return (
         <>
-            <BacklightBleed homeCockpit={homeCockpit} />
             <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
         </>
     );
