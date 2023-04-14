@@ -59,7 +59,6 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             if (!document.documentElement.classList.contains('animationsEnabled')) {
                 document.documentElement.classList.add('animationsEnabled');
             }
-            this.updateState();
         });
 
         this.props.brightness?.sub((f) => {
