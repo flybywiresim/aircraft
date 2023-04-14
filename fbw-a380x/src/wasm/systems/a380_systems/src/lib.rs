@@ -28,6 +28,8 @@ use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
 use uom::si::{f64::Length, length::nautical_mile};
 
+use systems::wing_flex::WingFlex;
+
 use systems::{
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
@@ -76,6 +78,7 @@ pub struct A380 {
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
+    wing_flex: WingFlex,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -133,6 +136,7 @@ impl A380 {
                 ],
                 1,
             ),
+            wing_flex: WingFlex::new(context),
         }
     }
 }
@@ -253,6 +257,8 @@ impl Aircraft for A380 {
         self.cds.update();
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+
+        self.wing_flex.update(context);
     }
 }
 impl SimulationElement for A380 {
@@ -287,6 +293,7 @@ impl SimulationElement for A380 {
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
         self.egpwc.accept(visitor);
+        self.wing_flex.accept(visitor);
 
         visitor.visit(self);
     }
