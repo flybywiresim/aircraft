@@ -53,7 +53,6 @@ impl SpringPhysics {
 pub enum GravityEffect {
     NoGravity,
     GravityFiltered,
-    //gravity_unfiltered,
 }
 
 pub struct WobblePhysics {

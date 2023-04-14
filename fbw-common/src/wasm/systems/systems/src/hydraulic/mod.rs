@@ -2144,13 +2144,6 @@ impl FluidPhysics {
     fn update(&mut self, context: &UpdateContext) {
         self.wobble_physics.update(context);
 
-        println!(
-            "WOBBLE POS {:.2}/{:.2}/{:.2} ",
-            self.wobble_physics.position()[0],
-            self.wobble_physics.position()[1],
-            self.wobble_physics.position()[2],
-        );
-
         self.g_trap_is_empty
             .update(context, self.is_fluid_going_up());
     }
