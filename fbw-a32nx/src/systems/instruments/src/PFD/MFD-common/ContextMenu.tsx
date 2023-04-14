@@ -1,5 +1,5 @@
 ﻿import { ComponentProps, DisplayComponent, FSComponent, SubscribableArray, VNode } from 'msfssdk';
-import './common.scss';
+import './style.scss';
 
 interface ContextMenuElementProps {
     title: string;

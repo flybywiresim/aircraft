@@ -1,5 +1,5 @@
 ﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
-import './common.scss';
+import './style.scss';
 
 interface NumberInputProps extends ComponentProps {
     value: Subscribable<number | undefined>;

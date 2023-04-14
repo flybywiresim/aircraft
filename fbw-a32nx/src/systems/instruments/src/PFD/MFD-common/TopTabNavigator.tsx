@@ -1,6 +1,6 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
-import './common.scss';
+import './style.scss';
 
 interface TopTabElementProps extends ComponentProps {
     title: string;

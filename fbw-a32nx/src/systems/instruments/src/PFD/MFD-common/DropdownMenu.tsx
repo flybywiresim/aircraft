@@ -1,5 +1,5 @@
 ﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, VNode } from 'msfssdk';
-import './common.scss';
+import './style.scss';
 
 interface DropdownMenuProps extends ComponentProps {
     values: SubscribableArray<string>;
@@ -10,7 +10,7 @@ interface DropdownMenuProps extends ComponentProps {
     alignLabels?: 'left' | 'center';
 }
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
-    private label = Subject.create<string>('NOT SET');
+    private label = Subject.create('NOT SET');
 
     private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 

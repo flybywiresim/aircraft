@@ -1,5 +1,5 @@
 ﻿import { ComponentProps, DisplayComponent, FSComponent, VNode } from 'msfssdk';
-import './common.scss';
+import './style.scss';
 
 interface IconButtonProps extends ComponentProps {
     containerStyle?: string;

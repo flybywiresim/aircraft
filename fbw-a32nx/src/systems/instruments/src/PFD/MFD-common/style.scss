@@ -94,26 +94,6 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px outset cyan;
 }
 
-.MFDSysSelectorOuter {
-  width: 25%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  background-color: $display-mfd-dark-grey;
-  border: 2px outset $display-light-grey;
-}
-
-.MFDSysSelectorOuter:hover {
-  border-color: $display-cyan;
-}
-
-.MFDSysSelectorLabel {
-  font-size: 22px;
-  color: $display-cyan;
-  font-family: "Ecam", monospace;
-  padding: 2px 5px 2px 5px;
-}
-
 .MFDDropdownContainer {
   position: relative;
 }

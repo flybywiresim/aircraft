@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import 'instruments/src/PFD/MFD-common/common.scss';
+import 'instruments/src/PFD/MFD-common/style.scss';
 
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 
+import { OANS } from 'instruments/src/PFD/OANS';
 import { CustomMouseCursor } from 'instruments/src/PFD/MFD-common/CustomMouseCursor';
-import { MFDActivePerf } from 'instruments/src/PFD/MFDActivePerf';
 import { MFDSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -54,7 +54,7 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
     render(): VNode {
         return (
             <div class="mfd-main" ref={this.oansRef}>
-                <MFDActivePerf bus={this.props.bus} />
+                <OANS bus={this.props.bus} />
                 <CustomMouseCursor ref={this.mouseCursorRef} />
             </div>
         );

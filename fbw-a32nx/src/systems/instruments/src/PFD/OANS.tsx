@@ -1,6 +1,6 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 
-import 'instruments/src/PFD/MFD-common/common.scss';
+import 'instruments/src/PFD/MFD-common/style.scss';
 import 'instruments/src/PFD/oans.scss';
 
 import { Button } from 'instruments/src/PFD/MFD-common/Button';
@@ -36,17 +36,17 @@ export class OANS extends DisplayComponent<OANSProps> {
 
     private selectedEntityType = Subject.create<EntityTypes>(EntityTypes.RWY);
 
-    private availableEntityList = ArraySubject.create<string>(['08L', '08R', '26L', '26R', 'M', 'N', 'S', 'T']);
+    private availableEntityList = ArraySubject.create(['08L', '08R', '26L', '26R', 'M', 'N', 'S', 'T']);
 
-    private selectedEntityIndex = Subject.create<number>(0);
+    private selectedEntityIndex = Subject.create(0);
 
-    private selectedEntityString = Subject.create<string>('08L');
+    private selectedEntityString = Subject.create('08L');
 
-    private airportList = ArraySubject.create<string>(['EDDM', 'KJFK']);
+    private airportList = ArraySubject.create(['EDDM', 'KJFK']);
 
-    private selectedAirportIndex = Subject.create<number>(0);
+    private selectedAirportIndex = Subject.create(0);
 
-    private selectedAirportSearchFilter = Subject.create<number>(0); // 0 = ICAO, 1 = IATA, 2 = CITY NAME
+    private selectedAirportSearchFilter = Subject.create(0); // 0 = ICAO, 1 = IATA, 2 = CITY NAME
 
     private mapRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -91,14 +91,6 @@ export class OANS extends DisplayComponent<OANSProps> {
         },
     ]);
 
-    private changeSelectedEntityType(newSelectedIndex: number) {
-        this.selectedEntityType.set(newSelectedIndex);
-    }
-
-    private changeSelectedAirportSearchFilter(newSelectedIndex: number) {
-        this.selectedAirportSearchFilter.set(newSelectedIndex);
-    }
-
     private toggleOANSMenu() {
         if (this.oansMenuRef.instance.style.display === 'flex') {
             this.oansMenuRef.instance.style.display = 'none';
@@ -121,7 +113,7 @@ export class OANS extends DisplayComponent<OANSProps> {
         super.onAfterRender(node);
 
         this.mapRef.instance.addEventListener('contextmenu', (e) => {
-            console.log('context');
+            // Not firing right now, use double click
             this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
             this.contextMenuRef.instance.display(e.clientX, e.clientY);
         });
@@ -193,7 +185,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                             values={ArraySubject.create(this.availableEntityTypes)}
                                             selectedIndex={this.selectedEntityType}
                                             idPrefix="entityTypesRadio"
-                                            onChangeCallback={(num) => this.changeSelectedEntityType(num)}
+                                            onChangeCallback={(num) => this.selectedEntityType.set(num)}
                                         />
                                     </div>
                                 </div>
@@ -262,7 +254,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                             values={ArraySubject.create(['ICAO', 'IATA', 'CITY NAME'])}
                                             selectedIndex={this.selectedAirportSearchFilter}
                                             idPrefix="airportSearchFilterRadio"
-                                            onChangeCallback={(num) => this.changeSelectedAirportSearchFilter(num)}
+                                            onChangeCallback={(num) => this.selectedAirportSearchFilter.set(num)}
                                         />
                                     </div>
                                 </div>
