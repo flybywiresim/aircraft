@@ -68,7 +68,7 @@ impl ReverserActuator {
             .max(Ratio::default())
             .min(Ratio::new::<ratio>(1.));
 
-        self.update_flow(context);
+        self.update_flow();
     }
 
     fn update_current_speed(
@@ -85,7 +85,7 @@ impl ReverserActuator {
         }
     }
 
-    fn update_flow(&mut self, context: &UpdateContext) {
+    fn update_flow(&mut self) {
         let volume_used = Volume::new::<gallon>(
             self.current_speed.output().get::<ratio>().abs() * Self::SPEED_TO_HYD_FLOW_GAIN,
         );
