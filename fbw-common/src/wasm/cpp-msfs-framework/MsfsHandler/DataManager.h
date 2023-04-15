@@ -27,12 +27,11 @@
 class MsfsHandler;
 
 // convenience typedefs
-typedef std::shared_ptr<CacheableVariable> CacheableVariablePtr;
-typedef std::shared_ptr<NamedVariable> NamedVariablePtr;
-typedef std::shared_ptr<AircraftVariable> AircraftVariablePtr;
-typedef std::shared_ptr<SimObjectBase> SimObjectBasePtr;
-typedef std::shared_ptr<ClientEvent> ClientEventPtr;
-// convenience typedefs for templated variables
+using CacheableVariablePtr = std::shared_ptr<CacheableVariable>;
+using NamedVariablePtr = std::shared_ptr<NamedVariable>;
+using AircraftVariablePtr = std::shared_ptr<AircraftVariable>;
+using SimObjectBasePtr = std::shared_ptr<SimObjectBase>;
+using ClientEventPtr = std::shared_ptr<ClientEvent>;
 template <typename T>
 using DataDefinitionVariablePtr = std::shared_ptr<DataDefinitionVariable<T>>;
 template <typename T>
@@ -41,17 +40,17 @@ template <typename T, std::size_t ChunkSize>
 using StreamingClientDataAreaVariablePtr = std::shared_ptr<StreamingClientDataAreaVariable<T, ChunkSize>>;
 
 // Used to identify a key event
-typedef ID32 KeyEventID;
+using KeyEventID = ID32;
 
 // Used for callback registration to allow removal of callbacks
-typedef std::uint64_t KeyEventCallbackID;
+using KeyEventCallbackID = UINT64;
 
 /**
  * Defines a callback function for a key event
  * @param number of parameters to use
  * @param parameters 0-4 to pass to the callback function
  */
-typedef std::function<void(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> KeyEventCallbackFunction;
+using KeyEventCallbackFunction = std::function<void(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> ;
 
 /**
  * @brief The DataManager class is responsible for managing all variables and events.
@@ -67,7 +66,7 @@ typedef std::function<void(DWORD param0, DWORD param1, DWORD param2, DWORD param
 class DataManager {
  private:
   // Backreference to the MsfsHandler instance.
-  MsfsHandler* msfsHandler;
+  const MsfsHandler* msfsHandlerPtr;
 
   // Handle to the simconnect instance.
   HANDLE hSimConnect{};
@@ -100,11 +99,14 @@ class DataManager {
   /**
    * Creates an instance of the DataManager.
    */
-  explicit DataManager(MsfsHandler* msfsHdl) : msfsHandler(msfsHdl) {}
+  explicit DataManager(MsfsHandler* msfsHdl) : msfsHandlerPtr(msfsHdl) {}
 
   DataManager() = delete;                               // no default constructor
   DataManager(const DataManager&) = delete;             // no copy constructor
   DataManager& operator=(const DataManager&) = delete;  // no copy assignment
+  DataManager(DataManager&&) = delete;                  // no move constructor
+  DataManager& operator=(DataManager&&) = delete;       // no move assignment
+
   ~DataManager() = default;
 
   // ===============================================================================================
@@ -211,8 +213,8 @@ class DataManager {
    */
   [[nodiscard]] AircraftVariablePtr make_aircraft_var(const std::string& varName,
                                                       int index = 0,
-                                                      const std::string setterEventName = "",
-                                                      ClientEventPtr setterEvent = nullptr,
+                                                      std::string setterEventName = "",
+                                                      const ClientEventPtr& setterEvent = nullptr,
                                                       SimUnit unit = UNITS.Number,
                                                       bool autoReading = false,
                                                       bool autoWriting = false,
@@ -373,7 +375,7 @@ class DataManager {
    *  make_custom_event, make_sim_event, make_system_event
    *
    * @param clientEventName The name of the client event.<p/>
-   *                        If the intention is to map this client event it to a sim event the name
+   *                        If the intention is to map this client event to a sim event the name
    *                        needs to be the same as the sim event name.<p/>
    *                        If it is a custom event, the name must includes one or more periods
    *                        (e.g. "Custom.Event") so the sim can distinguish it from a sim event.

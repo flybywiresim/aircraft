@@ -90,6 +90,8 @@ class ClientEvent {
   ClientEvent() = delete;                               // no default constructor
   ClientEvent(const ClientEvent&) = delete;             // no copy constructor
   ClientEvent& operator=(const ClientEvent&) = delete;  // no copy assignment
+  ClientEvent(ClientEvent&&) = delete;                  // no move constructor
+  ClientEvent& operator=(ClientEvent&&) = delete;       // no move assignment
   ~ClientEvent();
 
   // =================================================================================================

@@ -77,6 +77,8 @@ class CacheableVariable : public ManagedDataObjectBase {
   CacheableVariable() = delete;                                     // no default constructor
   CacheableVariable(const CacheableVariable&) = delete;             // no copy constructor
   CacheableVariable& operator=(const CacheableVariable&) = delete;  // no copy assignment
+  CacheableVariable(CacheableVariable&&) = delete;                  // no move constructor
+  CacheableVariable& operator=(CacheableVariable&&) = delete;       // no move assignment
 
   /**
    * Returns the cached value or the default value (FLOAT64{}) if the cache is empty.<p/>

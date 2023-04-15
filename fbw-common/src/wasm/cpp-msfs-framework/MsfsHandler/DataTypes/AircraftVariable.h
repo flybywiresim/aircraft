@@ -115,9 +115,11 @@ class AircraftVariable : public CacheableVariable {
   }
 
  public:
-  AircraftVariable() = delete;                                    // no default constructor
-  AircraftVariable(const AircraftVariable&) = delete;             // no copy constructor
-  AircraftVariable& operator=(const AircraftVariable&) = delete;  // no copy assignment
+  AircraftVariable() = delete;                                   // no default constructor
+  AircraftVariable(const AircraftVariable&) = delete;            // no copy constructor
+  AircraftVariable& operator=(const AircraftVariable&) = delete; // no copy assignment
+  AircraftVariable(AircraftVariable&&) = delete;                 // move constructor
+  AircraftVariable& operator=(AircraftVariable&&) = delete;      // move assignment
 
   [[nodiscard]] FLOAT64 rawReadFromSim() const override;
   void rawWriteToSim() override;

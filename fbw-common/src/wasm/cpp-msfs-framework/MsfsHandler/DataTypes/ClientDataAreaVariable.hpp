@@ -138,12 +138,14 @@ class ClientDataAreaVariable : public SimObjectBase {
   ClientDataAreaVariable<T>() = delete;                                             // no default constructor
   ClientDataAreaVariable<T>(const ClientDataAreaVariable&) = delete;                // no copy constructor
   ClientDataAreaVariable<T>& operator=(const ClientDataAreaVariable<T>&) = delete;  // no copy assignment
+  ClientDataAreaVariable(ClientDataAreaVariable&&) = delete;                        // no move constructor
+  ClientDataAreaVariable& operator=(ClientDataAreaVariable&&) = delete;             // no move assignment
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
    * is freed when the sim is closed.
    */
-  ~ClientDataAreaVariable<T>() {
+  ~ClientDataAreaVariable<T>() override {
     LOG_INFO("ClientDataAreaVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {
       LOG_ERROR("ClientDataAreaVariable: Clearing client data definition failed: " + name);
@@ -158,7 +160,7 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @param readOnlyForOthers (optional) If true, the data area is read-only for other clients.
    * @return true if the allocation was successful, false otherwise
    */
-  virtual bool allocateClientDataArea(bool readOnlyForOthers = false) {
+  virtual bool allocateClientDataArea(bool readOnlyForOthers) {
     const DWORD readOnlyFlag =
         readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
     if (!SUCCEEDED(SimConnect_CreateClientData(hSimConnect, clientDataId, sizeof(T), readOnlyFlag))) {

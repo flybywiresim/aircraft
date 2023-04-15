@@ -16,7 +16,7 @@
 #include "fingerprint.hpp"
 
 bool ExampleModule::initialize() {
-  dataManager = &msfsHandler.getDataManager();
+  dataManager = &msfsHandlerPtr.getDataManager();
 
   /*
    * Update mode of a variable - last 4 optional parameters of the make_... calls:
@@ -290,7 +290,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
   // Do not do anything if the sim is not running - this is not required but is a good idea
   // It is ready after the click on "READY TO FLY"
-  if (!msfsHandler.getAircraftIsReadyVar())
+  if (!msfsHandlerPtr.getAircraftIsReadyVar())
     return true;
 
 #ifdef STREAM_RECEIVE_EXAMPLE
@@ -316,9 +316,9 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 #endif
 
   // Use this to throttle output frequency while you are debugging
-  if (msfsHandler.getTickCounter() % 100 == 0) {
-    [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
-    [[maybe_unused]] const UINT64 tickCounter = msfsHandler.getTickCounter();
+  if (msfsHandlerPtr.getTickCounter() % 100 == 0) {
+    [[maybe_unused]] const FLOAT64 timeStamp = msfsHandlerPtr.getTimeStamp();
+    [[maybe_unused]] const UINT64 tickCounter = msfsHandlerPtr.getTickCounter();
 
     std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
 
@@ -359,7 +359,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     // difference if using different units
     LOG_INFO("--- LVAR EXAMPLE");
-    LOG_INFO("timeStamp = " + std::to_string(timeStamp) + " / ticks = " + std::to_string(msfsHandler.getTickCounter()));
+    LOG_INFO("timeStamp = " + std::to_string(timeStamp) + " / ticks = " + std::to_string(msfsHandlerPtr.getTickCounter()));
 
     LOG_INFO("debugLVARPtr  DEBUG_LVAR (hours)   = " + std::to_string(debugLVARPtr->get()));
     LOG_INFO("debugLVAR2Ptr DEBUG_LVAR (minutes) = " + std::to_string(debugLVAR2Ptr->get()));
@@ -378,8 +378,8 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     // manual changing in the sim's LocalVariables dialog - uncomment below and comment out above
     //
-    // std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? " << (debugLVARPtr->hasChanged() ? "yes" : "no") << " debugLVARPtr  time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
-    // std::cout << "debugLVAR2Ptr = " << debugLVAR2Ptr->get() << " changed? " << (debugLVAR2Ptr->hasChanged() ? "yes" : "no") << " debugLVAR2Ptr time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
+    // std::cout << "debugLVARPtr =  " << debugLVARPtr->get() << " changed? " << (debugLVARPtr->hasChanged() ? "yes" : "no") << " debugLVARPtr  time = " << msfsHandlerPtr.getTimeStamp() << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
+    // std::cout << "debugLVAR2Ptr = " << debugLVAR2Ptr->get() << " changed? " << (debugLVAR2Ptr->hasChanged() ? "yes" : "no") << " debugLVAR2Ptr time = " << msfsHandlerPtr.getTimeStamp() << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
 
     // Set a variable which does not auto write - uncomment below and comment out above
     // debugLVARPtr->setAndWriteToSim(debugLVARPtr->get() + 1);
@@ -390,15 +390,15 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 #ifdef AIRCRAFT_VAR_EXAMPLE
     // Read vars which auto update each tick
     std::cout << "beaconLightSwitchPtr =  " << beaconLightSwitchPtr->get() << " changed? "
-              << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no") << " beaconLightSwitchPtr  time = " << msfsHandler.getTimeStamp()
-              << " tick = " << msfsHandler.getTickCounter() << std::endl;
+              << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no") << " beaconLightSwitchPtr  time = " << msfsHandlerPtr.getTimeStamp()
+              << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
     std::cout << "beaconLightSwitch2Ptr = " << beaconLightSwitch2Ptr->get() << " changed? "
-              << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch2Ptr time = " << msfsHandler.getTimeStamp()
-              << " tick = " << msfsHandler.getTickCounter() << std::endl;
+              << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch2Ptr time = " << msfsHandlerPtr.getTimeStamp()
+              << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
 
     std::cout << "beaconLightSwitch3Ptr = " << beaconLightSwitch3Ptr->updateFromSim(timeStamp, tickCounter) << " changed? "
-              << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch3Ptr time = " << msfsHandler.getTimeStamp()
-              << " tick = " << msfsHandler.getTickCounter() << std::endl;
+              << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch3Ptr time = " << msfsHandlerPtr.getTimeStamp()
+              << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
 
     // Test writing an aircraft variable by toggling the beacon light switch
     // Immediate write
@@ -410,10 +410,10 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
 #ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
     std::cout << "fuelPumpSwitch1Ptr = " << fuelPumpSwitch1Ptr->get() << " changed? " << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-              << " time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
+              << " time = " << msfsHandlerPtr.getTimeStamp() << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
 
     std::cout << "fuelPumpSwitch2Ptr = " << fuelPumpSwitch2Ptr->get() << " changed? " << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-              << " time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
+              << " time = " << msfsHandlerPtr.getTimeStamp() << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
 #endif
 
 #ifdef DATA_DEFINITION_EXAMPLE

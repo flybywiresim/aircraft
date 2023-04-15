@@ -130,14 +130,15 @@ class DataDefinitionVariable : public SimObjectBase {
  public:
   DataDefinitionVariable<T>() = delete;                               // no default constructor
   DataDefinitionVariable<T>(const DataDefinitionVariable&) = delete;  // no copy constructor
-  // no copy assignment
-  DataDefinitionVariable<T>& operator=(const DataDefinitionVariable&) = delete;
+  DataDefinitionVariable<T>& operator=(const DataDefinitionVariable&) = delete;   // no copy assignment
+  DataDefinitionVariable<T>(DataDefinitionVariable&&) = delete;                   // no move constructor
+  DataDefinitionVariable<T>& operator=(DataDefinitionVariable&&) = delete;        // no move assignment
 
   /**
    * Destructor - clears the client data definition but does not free any sim memory. The sim memory
    * is freed when the sim is closed.
    */
-  ~DataDefinitionVariable<T>() {
+  ~DataDefinitionVariable<T>() override {
     // Clear the client data definition
     LOG_INFO("DataDefinitionVariable: Clearing client data definition: " + name);
     if (!SUCCEEDED(SimConnect_ClearClientDataDefinition(hSimConnect, dataDefId))) {

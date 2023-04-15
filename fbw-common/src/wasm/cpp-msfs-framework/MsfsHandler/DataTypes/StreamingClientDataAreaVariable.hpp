@@ -63,14 +63,14 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    *                    the requestUpdateFromSim() method.
    */
   StreamingClientDataAreaVariable<T, ChunkSize>(HANDLE hSimConnect,
-                                               const std::string& clientDataName,
-                                               SIMCONNECT_CLIENT_DATA_ID clientDataId,
-                                               SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
-                                               SIMCONNECT_DATA_REQUEST_ID requestId,
-                                               bool autoRead = false,
-                                               bool autoWrite = false,
-                                               FLOAT64 maxAgeTime = 0.0,
-                                               UINT64 maxAgeTicks = 0)
+                                                const std::string& clientDataName,
+                                                SIMCONNECT_CLIENT_DATA_ID clientDataId,
+                                                SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
+                                                SIMCONNECT_DATA_REQUEST_ID requestId,
+                                                bool autoRead = false,
+                                                bool autoWrite = false,
+                                                FLOAT64 maxAgeTime = 0.0,
+                                                UINT64 maxAgeTicks = 0)
       : ClientDataAreaVariable<T>(hSimConnect,
                                   clientDataName,
                                   clientDataId,
@@ -84,10 +84,12 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
         content() {}
 
  public:
-  StreamingClientDataAreaVariable<T, ChunkSize>() = delete;                                       // no default constructor
+  StreamingClientDataAreaVariable<T, ChunkSize>() = delete;                                        // no default constructor
   StreamingClientDataAreaVariable<T, ChunkSize>(const StreamingClientDataAreaVariable&) = delete;  // no copy constructor
   // no copy assignment
   StreamingClientDataAreaVariable<T, ChunkSize>& operator=(const StreamingClientDataAreaVariable<T, ChunkSize>&) = delete;
+  StreamingClientDataAreaVariable<T, ChunkSize>(StreamingClientDataAreaVariable<T, ChunkSize>&&) = delete;  // no move constructor
+  StreamingClientDataAreaVariable<T, ChunkSize>& operator=(StreamingClientDataAreaVariable<T, ChunkSize>&&) = delete;  // no move assignment
 
   bool allocateClientDataArea(bool readOnlyForOthers) override {
     const DWORD readOnlyFlag =
@@ -104,7 +106,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    * data structure.<br/>
    * It needs to be called before the first data chunk is received so that the internal data structure
    * is reset and prepared to receive new data.
-   * @param _expectedByteCount Number of expected bytes in streaming cases
+   * @param expectedByteCnt Number of expected bytes in streaming cases
    */
   void reserve(std::size_t expectedByteCnt) {
     this->setChanged(false);
@@ -143,7 +145,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    * @return true if successful, false otherwise
    */
   bool writeDataToSim() override {
-    [[maybe_unused]] int chunkCount = 0; // for debugging output only
+    [[maybe_unused]] int chunkCount = 0;  // for debugging output only
     std::size_t sentBytes = 0;
     std::size_t remainingBytes = this->content.size();
 
@@ -156,7 +158,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
           return false;
         }
         sentBytes += ChunkSize;
-      } else { // last chunk
+      } else {  // last chunk
         // use a tmp array buffer to send the remaining bytes
         std::array<T, ChunkSize> buffer{};
         std::memcpy(buffer.data(), &this->content.data()[sentBytes], remainingBytes);
@@ -170,7 +172,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
       }
       remainingBytes = this->content.size() - sentBytes;
       LOG_VERBOSE("Sending chunk: " + std::to_string(chunkCount) + " Sent bytes: " + std::to_string(sentBytes) +
-                " Remaining bytes: " + std::to_string(remainingBytes));
+                  " Remaining bytes: " + std::to_string(remainingBytes));
     }
 
     LOG_DEBUG("Finished sending data in " + std::to_string(chunkCount) + " chunks" + " Sent bytes: " + std::to_string(sentBytes) +

@@ -22,6 +22,8 @@ class DataObjectBase {
   DataObjectBase() = delete;                                  // no default constructor
   DataObjectBase(const DataObjectBase&) = delete;             // no copy constructor
   DataObjectBase& operator=(const DataObjectBase&) = delete;  // no copy assignment
+  DataObjectBase(DataObjectBase&&) = delete;                  // no move constructor
+  DataObjectBase& operator=(DataObjectBase&&) = delete;       // no move assignment
 
   /**
    * @return the name of the variable

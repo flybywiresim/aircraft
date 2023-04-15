@@ -133,6 +133,8 @@ class ManagedDataObjectBase : public DataObjectBase {
   ManagedDataObjectBase() = delete;                                         // no default constructor
   ManagedDataObjectBase(const ManagedDataObjectBase&) = delete;             // no copy constructor
   ManagedDataObjectBase& operator=(const ManagedDataObjectBase&) = delete;  // no copy assignment
+  ManagedDataObjectBase(ManagedDataObjectBase&&) = delete;                  // no move constructor
+  ManagedDataObjectBase& operator=(ManagedDataObjectBase&&) = delete;       // no move assignment
   virtual ~ManagedDataObjectBase() = default;
 
   /**
@@ -193,7 +195,7 @@ class ManagedDataObjectBase : public DataObjectBase {
    * has actually changed.
    * @return true if the value has changed since the last read from the sim.
    */
-  [[nodiscard]] bool hasChanged() const { return this->changedFlag; }
+  [[nodiscard]] bool hasChanged() const { return changedFlag; }
 
   /**
    * @return true if the check for data changes should be skipped to save performance when the check is not required, false otherwise
@@ -206,7 +208,7 @@ class ManagedDataObjectBase : public DataObjectBase {
    * set the changed flag to true no matter if the value has changed or not.
    * @param changeCheck
    */
-  void setSkipChangeCheck(bool skipChangeCheck) { this->skipChangeCheckFlag = skipChangeCheck; }
+  void setSkipChangeCheck(bool skipChangeCheck) { skipChangeCheckFlag = skipChangeCheck; }
 
   /**
    * @return true if the variable should be automatically updated from the sim n the DataManagers

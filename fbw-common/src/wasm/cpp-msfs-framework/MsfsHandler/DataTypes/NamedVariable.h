@@ -51,16 +51,18 @@ class NamedVariable : public CacheableVariable {
                          FLOAT64 maxAgeTime = 0.0,
                          UINT64 maxAgeTicks = 0)
       : CacheableVariable(NamedVariable::AIRCRAFT_PREFIX + varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks) {
-    // just while the build is not yet finalized - this makes sure to quickly spot an issue with the prefix
+    // this makes sure to quickly spot an issue with the prefix
     SIMPLE_ASSERT(NamedVariable::AIRCRAFT_PREFIX == "A32NX_" || NamedVariable::AIRCRAFT_PREFIX == "A380X_",
                   "Aircraft prefix is not set correctly!");
     dataID = register_named_variable(name.c_str());
   };
 
  public:
-  NamedVariable() = delete;                                 // no default constructor
-  NamedVariable(const NamedVariable&) = delete;             // no copy constructor
-  NamedVariable& operator=(const NamedVariable&) = delete;  // no copy assignment
+  NamedVariable() = delete;                                // no default constructor
+  NamedVariable(const NamedVariable&) = delete;            // no copy constructor
+  NamedVariable& operator=(const NamedVariable&) = delete; // no copy assignment
+  NamedVariable(NamedVariable&&) = delete;                 // move constructor
+  NamedVariable& operator=(NamedVariable&&) = delete;      // move assignment
 
   [[nodiscard]] FLOAT64 rawReadFromSim() const override;
   void rawWriteToSim() override;
@@ -80,7 +82,7 @@ class NamedVariable : public CacheableVariable {
    * Returns the aircraft prefix for all NamedVariables.
    * @return The aircraft prefix.
    */
-  static const std::string&  getAircraftPrefix() { return AIRCRAFT_PREFIX; }
+  static const std::string& getAircraftPrefix() { return AIRCRAFT_PREFIX; }
 
   friend std::ostream& operator<<(std::ostream& os, const NamedVariable& namedVariable);
 };

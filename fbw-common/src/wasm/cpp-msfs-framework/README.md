@@ -94,10 +94,10 @@ modules - this is the only place a new module has to be added.
 
 ```cpp 
 ... 
-MsfsHandler msfsHandler("Gauge_Extra_Backend");
-LightingPresets lightingPresets(&msfsHandler);
-Pushback pushback(&msfsHandler);
-AircraftPresets aircraftPresets(&msfsHandler);
+MsfsHandler msfsHandlerPtr("Gauge_Extra_Backend");
+LightingPresets lightingPresets(&msfsHandlerPtr);
+Pushback pushback(&msfsHandlerPtr);
+AircraftPresets aircraftPresets(&msfsHandlerPtr);
 ...
 ```
 

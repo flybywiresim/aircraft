@@ -31,7 +31,7 @@
 //  in the A380X EFB
 MsfsHandler msfsHandler("Gauge_Extra_Backend_A380X", "A32NX_");
 #ifdef EXAMPLES
-ExampleModule exampleModule(msfsHandler);
+ExampleModule exampleModule(msfsHandlerPtr);
 #endif
 
 // FIXME: As the A380X does not yet provide the "A...._IS_READY" LVAR the modules will
