@@ -49,6 +49,7 @@
         <Node>Engine_PIVOT_RIGHT_2</Node> <!-- the right wing engine pivot node furthest from the center -->
     </NodeAnimation>
     <Behaviors>
+        <Include ModelBehaviorFile="A32NX\Exterior\A32NX_Exterior_Includes.xml"/>
         <Include ModelBehaviorFile="Asobo\Exterior.xml"/>
         <Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
         <Include Path="A32NX\generated\A32NX_Exterior.xml"/>
