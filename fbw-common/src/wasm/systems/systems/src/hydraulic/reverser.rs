@@ -55,14 +55,6 @@ impl ReverserActuator {
     ) {
         self.update_current_speed(context, pressure, is_mechanically_locked);
 
-        // println!(
-        //     "ACTUATOR: islocked{:?} speed {:.2} position {:.3} pressure {:.0}",
-        //     is_mechanically_locked,
-        //     self.current_speed.output().get::<ratio>(),
-        //     self.position.get::<ratio>(),
-        //     pressure.get::<psi>()
-        // );
-
         self.position += context.delta_as_secs_f64() * self.current_speed.output();
 
         if self.current_speed.output().get::<ratio>() > 0. && self.position.get::<ratio>() >= 1.
@@ -99,11 +91,6 @@ impl ReverserActuator {
         );
         self.volume_to_actuator_accumulator += volume_used;
         self.volume_to_res_accumulator += volume_used;
-
-        println!(
-            "ACTUATOR FLOW USED GPM {:.3}",
-            60. * volume_used.get::<gallon>() / context.delta_as_secs_f64()
-        );
     }
 
     fn max_speed_from_pressure(&self, pressure: Pressure) -> Ratio {
@@ -164,17 +151,17 @@ impl SimulationElement for ElectricalLock {
 struct DirectionalValve {
     position: LowPassFilter<Ratio>,
     is_powered: bool,
-    powered_by: ElectricalBusType,
+    powered_by: Vec<ElectricalBusType>,
 
     pressure_output: Pressure,
 }
 impl DirectionalValve {
     const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
-    fn new(powered_by: ElectricalBusType) -> Self {
+    fn new(powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
             position: LowPassFilter::<Ratio>::new(Self::POSITION_RESPONSE_TIME_CONSTANT),
-            is_powered: true, // TODO set to false and add SimulationElement powering
+            is_powered: false,
             powered_by,
             pressure_output: Pressure::default(),
         }
@@ -203,7 +190,7 @@ impl DirectionalValve {
 }
 impl SimulationElement for DirectionalValve {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by)
+        self.is_powered = buses.any_is_powered(&self.powered_by)
     }
 }
 
@@ -231,16 +218,20 @@ struct ReverserHydraulicManifold {
 }
 impl ReverserHydraulicManifold {
     fn new(
-        powered_by: ElectricalBusType,
+        primary_powered_by: ElectricalBusType,
+        secondary_powered_by: ElectricalBusType,
         switch_high_pressure: Pressure,
         switch_low_pressure: Pressure,
     ) -> Self {
         Self {
             isolation_valve: HydraulicValve::new(
                 HydraulicValveType::ClosedWhenOff,
-                Some(vec![powered_by]),
+                Some(vec![primary_powered_by, secondary_powered_by]),
             ),
-            directional_valve: DirectionalValve::new(powered_by),
+            directional_valve: DirectionalValve::new(vec![
+                primary_powered_by,
+                secondary_powered_by,
+            ]),
             pressure_switch: PressureSwitch::new(
                 switch_high_pressure,
                 switch_low_pressure,
@@ -269,21 +260,6 @@ impl ReverserHydraulicManifold {
             !controller.should_deploy_reverser() || !controller.should_power_valves(),
             self.isolation_valve.pressure_output(),
         );
-
-        // println!(
-        //     "MANIFOLD: isolationPos{:?} pressures {:.0}/{:.0} PressureSwithc {:?}",
-        //     self.isolation_valve.position.output().get::<ratio>(),
-        //     pressure.get::<psi>(),
-        //     self.isolation_valve.pressure_output().get::<psi>(),
-        //     self.pressure_switch.state_is_pressurised
-        // );
-
-        // println!(
-        //     "MANIFOLD: directionalPos{:?} pressures {:.0}/{:.0}",
-        //     self.directional_valve.position.output().get::<ratio>(),
-        //     self.isolation_valve.pressure_output().get::<psi>(),
-        //     self.directional_valve.pressure_output().get::<psi>(),
-        // );
     }
 
     #[cfg(test)]
@@ -319,12 +295,14 @@ impl ReverserAssembly {
         switch_high_threshold_pressure: Pressure,
         switch_low_threshold_pressure: Pressure,
         electrical_lock_powered_by: ElectricalBusType,
-        hyd_valves_powered_by: ElectricalBusType,
+        hyd_valves_primary_powered_by: ElectricalBusType,
+        hyd_valves_secondary_powered_by: ElectricalBusType,
     ) -> Self {
         Self {
             electrical_lock: ElectricalLock::new(electrical_lock_powered_by),
             hydraulic_manifold: ReverserHydraulicManifold::new(
-                hyd_valves_powered_by,
+                hyd_valves_primary_powered_by,
+                hyd_valves_secondary_powered_by,
                 switch_high_threshold_pressure,
                 switch_low_threshold_pressure,
             ),
@@ -485,6 +463,7 @@ mod tests {
                     Pressure::new::<psi>(2100.),
                     Pressure::new::<psi>(1750.),
                     ElectricalBusType::AlternatingCurrent(2),
+                    ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrent(2),
                 ),
 

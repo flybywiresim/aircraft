@@ -3113,7 +3113,7 @@ impl HeatingPressureSource for RamAirTurbine {}
 #[derive(PartialEq, Clone, Copy)]
 enum HydraulicValveType {
     ClosedWhenOff,
-    OpenedWhenOff,
+    _OpenedWhenOff,
     Mechanical,
 }
 
@@ -3157,7 +3157,7 @@ impl HydraulicValve {
 
     fn actual_target_position_from_valve_type(&self, commanded_open: bool) -> Ratio {
         match self.valve_type {
-            HydraulicValveType::OpenedWhenOff => {
+            HydraulicValveType::_OpenedWhenOff => {
                 if !commanded_open && self.is_powered {
                     Ratio::new::<ratio>(0.)
                 } else {
@@ -3199,7 +3199,7 @@ impl HydraulicValve {
 impl SimulationElement for HydraulicValve {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if let Some(powered_by_element) = &self.powered_by {
-            self.is_powered = buses.any_is_powered(&powered_by_element);
+            self.is_powered = buses.any_is_powered(powered_by_element);
         }
     }
 }

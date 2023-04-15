@@ -2457,8 +2457,7 @@ impl A320Hydraulic {
             self.brake_steer_computer.alternate_controller(),
         );
 
-        // println!("REV CONTROL1: {:?}", self.engine_reverser_control[0]);
-        // TODO CHECK LGCIU USAGE
+        // TODO CHECK LGCIU USAGE for reversers
         self.engine_reverser_control[0].update(
             context,
             engine1,
@@ -5837,18 +5836,18 @@ struct A320Reversers {
     reversers_deployed: [bool; 2],
 }
 impl A320Reversers {
-    //TODO Check busses
+    // TODO Check busses and power, placeholder only for now
     const REVERSER1_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
     const REVERSER2_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
 
-    const REVERSER1_ISOLATION_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER1_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
-    const REVERSER1_DIRECTIONAL_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER1_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
 
-    const REVERSER2_ISOLATION_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER2_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
-    const REVERSER2_DIRECTIONAL_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER2_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
 
     fn new(context: &mut InitContext) -> Self {
@@ -5874,7 +5873,8 @@ impl A320Reversers {
                         A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
                     ),
                     Self::REVERSER1_SUPPLY_POWER_BUS,
-                    Self::REVERSER1_ISOLATION_VALVE_SUPPLY_POWER_BUS,
+                    Self::REVERSER1_PRIMARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER1_SECONDARY_VALVES_SUPPLY_POWER_BUS,
                 ),
                 ReverserAssembly::new(
                     Pressure::new::<psi>(
@@ -5887,7 +5887,8 @@ impl A320Reversers {
                         A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
                     ),
                     Self::REVERSER2_SUPPLY_POWER_BUS,
-                    Self::REVERSER2_ISOLATION_VALVE_SUPPLY_POWER_BUS,
+                    Self::REVERSER2_PRIMARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER2_SECONDARY_VALVES_SUPPLY_POWER_BUS,
                 ),
             ],
             reversers_in_transition: [false, false],
@@ -11701,6 +11702,31 @@ mod tests {
             test_bed = test_bed
                 .eng1_throttle_reverse_full()
                 .eng2_throttle_reverse_full()
+                .run_waiting_for(Duration::from_secs_f64(3.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() > 0.99);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() > 0.99);
+
+            test_bed = test_bed
+                .set_throttles_idle()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() < 0.01);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() < 0.01);
+        }
+
+        #[test]
+        fn reversers_deploy_and_retract_at_idle_reverse_on_ground_with_eng_on() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(60.))
+                .start_eng2(Ratio::new::<percent>(60.))
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            test_bed = test_bed
+                .eng1_throttle_reverse_idle()
+                .eng2_throttle_reverse_idle()
                 .run_waiting_for(Duration::from_secs_f64(3.));
 
             assert!(test_bed.get_reverser_1_position().get::<ratio>() > 0.99);
