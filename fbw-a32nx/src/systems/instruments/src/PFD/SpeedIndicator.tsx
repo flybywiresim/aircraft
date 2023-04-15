@@ -1000,56 +1000,55 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
 }
 
 class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
-    private entireComponentRef = FSComponent.createRef<SVGGElement>();
+    private componentVisibilty = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private upperSpeedMarginRef = FSComponent.createRef<SVGPathElement>();
+    private currentSpeed = Subject.create(new Arinc429Word(0));
 
-    private lowerSpeedMarginRef = FSComponent.createRef<SVGPathElement>();
+    private upperSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private currentSpeed = new Arinc429Word(0);
+    private lowerSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
+
+    private upperMarginTransform = Subject.create('translate3d(0px, 0px, 0px)');
+
+    private lowerMarginTransform = Subject.create('translate3d(0px, 0px, 0px)');
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-
         const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
 
-        sub.on('showSpeedMargins').handle(this.hideOrShow(this.entireComponentRef));
+        sub.on('showSpeedMargins').whenChanged().handle((active) => this.componentVisibilty.set(active ? 'visible' : 'hidden'));
 
-        sub.on('speedAr').withPrecision(2).handle((s) => this.currentSpeed = s);
+        sub.on('speedAr').handle(this.currentSpeed.set);
 
-        sub.on('upperSpeedMargin').handle(this.moveToSpeed(this.upperSpeedMarginRef));
-
-        sub.on('lowerSpeedMargin').handle(this.moveToSpeed(this.lowerSpeedMarginRef));
+        sub.on('upperSpeedMargin').handle(this.updateMargin(this.upperSpeedMarginVisibility, this.upperMarginTransform));
+        sub.on('upperSpeedMargin').handle(this.updateMargin(this.lowerSpeedMarginVisibility, this.lowerMarginTransform));
     }
 
     render(): VNode {
         return (
-            <g ref={this.entireComponentRef} id="SpeedMargins" style="display: none;">
-                <path ref={this.upperSpeedMarginRef} id="UpperSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" />
-                <path ref={this.lowerSpeedMarginRef} id="LowerSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" />
+            <g id="SpeedMargins" visibility={this.componentVisibilty}>
+                <path id="UpperSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" visibility={this.upperSpeedMarginVisibility} transform={this.upperMarginTransform} />
+                <path id="LowerSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" visibility={this.lowerSpeedMarginVisibility} transform={this.lowerMarginTransform} />
             </g>
         );
     }
 
-    private moveToSpeed<T extends(HTMLElement | SVGElement)>(component: NodeReference<T>) {
+    private updateMargin(visibility: Subject<'visible' | 'hidden'>, transform: Subject<string>) {
         return (speed: number) => {
-            const offset = (Math.round(100 * (this.currentSpeed.value - speed) * DistanceSpacing / ValueSpacing) / 100).toFixed(2);
+            if (!this.componentVisibilty) {
+                return;
+            }
 
-            const isInRange = Math.abs(this.currentSpeed.value - speed) < DisplayRange;
-            component.instance.style.visibility = isInRange ? 'visible' : 'hidden';
+            if (!this.currentSpeed.get().isNormalOperation()) {
+                visibility.set('hidden');
+            }
+
+            const isInRange = Math.abs(this.currentSpeed.get().value - speed) < DisplayRange;
+            visibility.set(isInRange ? 'visible' : 'hidden');
 
             if (isInRange) {
-                component.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            }
-        };
-    }
-
-    private hideOrShow<T extends(HTMLElement | SVGElement)>(component: NodeReference<T>) {
-        return (isActive: boolean) => {
-            if (isActive) {
-                component.instance.removeAttribute('style');
-            } else {
-                component.instance.setAttribute('style', 'display: none');
+                const offset = Math.round(100 * (this.currentSpeed.get().value - speed) * DistanceSpacing / ValueSpacing) / 100;
+                transform.set(`translate3d(0px, ${offset}px, 0px)`);
             }
         };
     }

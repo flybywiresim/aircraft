@@ -1,4 +1,4 @@
-import { DisplayComponent, EventBus, FSComponent, NodeReference, Subject, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 
@@ -9,13 +9,15 @@ type LinearDeviationIndicatorProps = {
 export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIndicatorProps> {
     private lastIsActive: boolean = false;
 
-    private component = FSComponent.createRef<SVGGElement>();
+    private componentVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private upperLinearDeviationReadout = FSComponent.createRef<SVGTextElement>();
+    private componentTransform = Subject.create('translate3d(0px, 0px, 0px)');
+
+    private upperLinearDeviationReadoutText = Subject.create('00');
 
     private upperLinearDeviationReadoutVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private lowerLinearDeviationReadout = FSComponent.createRef<SVGTextElement>();
+    private lowerLinearDeviationReadoutText = Subject.create('00');
 
     private lowerLinearDeviationReadoutVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
@@ -25,7 +27,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
     private linearDeviationDotLowerHalfVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private latchSymbol = FSComponent.createRef<SVGPathElement>();
+    private latchSymbolVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
     // TODO: Use ARINC value for this
     private flightPathAltitude: Feet = 0;
@@ -37,7 +39,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
         sub.on('altitudeAr').handle((alt) => {
             if (!alt.isNormalOperation()) {
-                // TODO: Should probably hide the yoyo in this case
+                this.componentVisibility.set('hidden');
                 return;
             }
 
@@ -49,12 +51,17 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
             const deviation = alt.value - this.flightPathAltitude;
             const pixelOffset = this.pixelOffsetFromDeviation(Math.max(Math.min(deviation, 500), -500));
 
-            this.component.instance.style.transform = `translate3d(0px, ${pixelOffset}px, 0px)`;
+            this.componentTransform.set(`translate3d(0px, ${pixelOffset}px, 0px)`);
 
             const linearDeviationReadoutText = Math.min(99, Math.round(Math.abs(deviation) / 100)).toFixed(0).padStart(2, '0');
 
-            this.upperLinearDeviationReadout.instance.textContent = linearDeviationReadoutText;
-            this.lowerLinearDeviationReadout.instance.textContent = linearDeviationReadoutText;
+            if (this.upperLinearDeviationReadoutVisibility.get() === 'visible') {
+                this.upperLinearDeviationReadoutText.set(linearDeviationReadoutText);
+            }
+
+            if (this.lowerLinearDeviationReadoutVisibility.get() === 'visible') {
+                this.lowerLinearDeviationReadoutText.set(linearDeviationReadoutText);
+            }
 
             if (deviation > 540) {
                 this.lowerLinearDeviationReadoutVisibility.set('visible');
@@ -86,12 +93,12 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         sub.on('linearDeviationActive').whenChanged().handle((isActive) => {
             this.lastIsActive = isActive;
 
-            hideOrShow(this.component)(isActive);
-            hideOrShow(this.upperLinearDeviationReadout)(isActive);
-            hideOrShow(this.lowerLinearDeviationReadout)(isActive);
+            this.componentVisibility.set(isActive ? 'visible' : 'hidden');
+            this.upperLinearDeviationReadoutVisibility.set(isActive ? 'visible' : 'hidden');
+            this.lowerLinearDeviationReadoutVisibility.set(isActive ? 'visible' : 'hidden');
         });
 
-        sub.on('verticalProfileLatched').whenChanged().handle(hideOrShow(this.latchSymbol));
+        sub.on('verticalProfileLatched').whenChanged().handle((s) => this.latchSymbolVisibility.set(s ? 'visible' : 'hidden'));
 
         sub.on('targetAltitude').atFrequency(1000 / 60).handle((targetAltitude) => {
             this.flightPathAltitude = targetAltitude;
@@ -101,8 +108,8 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     render(): VNode {
         return (
             <g id="LinearDeviationIndicator">
-                <text ref={this.upperLinearDeviationReadout} x="110" y="42.5" class="FontSmallest Green" />
-                <g ref={this.component} id="LinearDeviationDot">
+                <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontSmallest Green">{this.upperLinearDeviationReadoutText}</text>
+                <g visibility={this.componentVisibility} id="LinearDeviationDot">
                     <path id="EntireDot" visibility={this.linearDeviationDotVisibility} d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z" class="Fill Green" />
                     <path
                         id="DotUpperHalf"
@@ -116,9 +123,9 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
                         d="m116.24 80.796c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z"
                         class="Fill Green"
                     />
-                    <path ref={this.latchSymbol} d="m 119 78.3 h -3 v 5 h 3" class="Magenta" />
+                    <path ref={this.latchSymbolVisibility} d="m 119 78.3 h -3 v 5 h 3" class="Magenta" />
                 </g>
-                <text ref={this.lowerLinearDeviationReadout} x="110" y="123" class="FontSmallest Green" />
+                <text visibility={this.lowerLinearDeviationReadoutVisibility} x="110" y="123" class="FontSmallest Green">{this.lowerLinearDeviationReadoutText}</text>
             </g>
         );
     }
@@ -126,14 +133,4 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     private pixelOffsetFromDeviation(deviation: number) {
         return deviation * 40.5 / 500;
     }
-}
-
-function hideOrShow<T extends(HTMLElement | SVGElement)>(component: NodeReference<T>) {
-    return (isActive: boolean) => {
-        if (isActive) {
-            component.instance.removeAttribute('style');
-        } else {
-            component.instance.setAttribute('style', 'display: none');
-        }
-    };
 }
