@@ -35,8 +35,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.refreshISA(Arinc429Word.empty());
         this.refreshClock();
         this.refreshGrossWeight(true);
-        this.backlightBleed = document.querySelector("#BacklightBleed");
-        this.refreshHomeCockpitMode();
         this.isInitialised = true;
     }
     update(_deltaTime) {
@@ -188,10 +186,6 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.gwUnit.textContent = gwUnit;
             }
         }
-    }
-    refreshHomeCockpitMode() {
-        const isHomeCockpit = SimVar.GetSimVarValue("L:A32NX_HOME_COCKPIT_ENABLED", "bool");
-        this.backlightBleed.style.visibility = isHomeCockpit ? "hidden" : "visible";
     }
 }
 customElements.define("eicas-common-display", EICASCommonDisplay);
