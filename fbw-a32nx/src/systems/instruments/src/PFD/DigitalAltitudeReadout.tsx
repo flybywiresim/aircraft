@@ -81,7 +81,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
             this.mda = mda;

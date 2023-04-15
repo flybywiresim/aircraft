@@ -1416,7 +1416,7 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
             if ((!mda.isNoComputedData() && !mda.isFailureWarning()) && mda.value !== 0) {

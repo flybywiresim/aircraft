@@ -695,7 +695,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
 
         sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
             this.state.MDA = mda;

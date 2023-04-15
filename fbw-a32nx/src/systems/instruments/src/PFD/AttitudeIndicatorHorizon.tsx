@@ -347,7 +347,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('rollAr').handle((roll) => {
             this.roll = roll;
