@@ -2,15 +2,43 @@ import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
 
 let nxNotificationsListener: ViewListener.ViewListener;
 
+export enum NotificationType {
+    Message = 'MESSAGE',
+    Subtitles = 'SUBTITLES',
+}
+
+export enum NotificationTheme {
+    Tips = 'TIPS',
+    Gameplay = 'GAMEPLAY',
+    System = 'SYSTEM',
+}
+
+export enum NotificationImage {
+    Notification = 'IMAGE_NOTIFICATION',
+    Score = 'IMAGE_SCORE',
+}
+
+/** Parameters that may be provided for construction of a notification */
+export interface NotificationParameters {
+    /** Type of the notification */
+    type: NotificationType,
+    /** Theme of the notification */
+    theme: NotificationTheme,
+    /** Image icon to display */
+    image: NotificationImage,
+    /** Title of the notification */
+    title: string,
+    /** Message to display (can be multiline) */
+    message: string,
+    /** Time in ms before notification message will disappear */
+    timeout: number,
+}
+
 /**
  * NotificationData container for notifications to package notification metadata
  */
-export type NotificationData = {
+export interface NotificationData extends Omit<NotificationParameters, 'message'> {
     id: string;
-    title: string;
-    type: string;
-    theme: string;
-    image: string;
     description: string;
     timeout: number;
     time: number;
@@ -66,7 +94,7 @@ export class NotificationManager {
         });
     }
 
-    showNotification(params: any = {}): void {
+    showNotification(params: Partial<NotificationParameters> = {}): void {
         const notif: Notification = new Notification();
         notif.showNotification(params);
         this.notifications.push(notif);
@@ -87,9 +115,9 @@ class Notification {
         this.params = {
             id: `${title}_${this.time}`,
             title,
-            type: 'MESSAGE',
-            theme: 'GAMEPLAY',
-            image: 'IMAGE_NOTIFICATION',
+            type: NotificationType.Message,
+            theme: NotificationTheme.Gameplay,
+            image: NotificationImage.Notification,
             description: 'Default Message',
             timeout: 10000,
             time: this.time,
@@ -98,14 +126,9 @@ class Notification {
 
     /**
      * Modify the display data for this Notification
-     * @param {string} params.title Title for notification - will show as the message header
-     * @param {string} params.type Type of Notification - Valid types are MESSAGE|SUBTITLES
-     * @param {string} params.theme Theme of Notification. Valid types are TIPS|GAMEPLAY|SYSTEM
-     * @param {string} params.image Notification image. Valid types are IMAGE_NOTIFICATION|IMAGE_SCORE
-     * @param {string} params.message Notification message
-     * @param {number} params.timeout Time in ms before notification message will disappear
+     * @param params Parameters for the notification
      */
-    private setData(params: any = {}): void {
+    private setData(params: Partial<NotificationParameters> = {}): void {
         if (params.title) {
             this.params.title = params.title;
             this.params.id = `${params.title}_${new Date().getTime()}`;
@@ -129,14 +152,9 @@ class Notification {
 
     /**
      * Show notification with given or already initiated parametrs.
-     * @param {string} params.title Title for notification - will show as the message header
-     * @param {string} params.type Type of Notification - Valid types are MESSAGE|SUBTITLES
-     * @param {string} params.theme Theme of Notification. Valid types are TIPS|GAMEPLAY|SYSTEM
-     * @param {string} params.image Notification image. Valid types are IMAGE_NOTIFICATION|IMAGE_SCORE
-     * @param {string} params.message Notification message
-     * @param {number} params.timeout Time in ms before notification message will disappear
+     * @param params Parameters for the notification
      */
-    showNotification(params: any = {}): void {
+    showNotification(params: Partial<NotificationParameters> = {}): void {
         this.setData(params);
 
         if (!nxNotificationsListener) {
