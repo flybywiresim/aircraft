@@ -14,7 +14,7 @@ use crate::{
 use super::{
     AdirsToAirCondInterface, AirConditioningOverheadShared, DuctTemperature, OverheadFlowSelector,
     PackFlow, PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
-    TrimAirSystem, ZoneType,
+    TrimAirControllers, TrimAirSystem, ZoneType,
 };
 
 use std::time::Duration;
@@ -161,11 +161,6 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         ]
     }
 
-    pub(super) fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController {
-        self.trim_air_system_controller
-            .trim_air_valve_controllers(zone_id)
-    }
-
     pub fn cabin_fans_controller(&self) -> CabinFanController<ZONES> {
         self.cabin_fans_controller
     }
@@ -202,6 +197,15 @@ impl<const ZONES: usize, const ENGINES: usize> PackFlowControllers
 
     fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
         &self.pack_flow_controller[pack_id - 1]
+    }
+}
+
+impl<const ZONES: usize, const ENGINES: usize> TrimAirControllers
+    for AirConditioningSystemController<ZONES, ENGINES>
+{
+    fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController {
+        self.trim_air_system_controller
+            .trim_air_valve_controllers(zone_id)
     }
 }
 

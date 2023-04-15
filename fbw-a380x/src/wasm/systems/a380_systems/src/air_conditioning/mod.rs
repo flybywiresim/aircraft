@@ -308,7 +308,7 @@ impl SimulationElement for A380Cabin {
 pub(super) struct A380AirConditioningSystem {
     acsc: AirConditioningSystemController<18, 4>,
     fdac: [FullDigitalAGUController<4>; 2],
-    tadd: TrimAirDriveDevice<16, 4>,
+    tadd: TrimAirDriveDevice<18, 4>,
     cabin_fans: [CabinFan; 2],
     mixer_unit: MixerUnit<18>,
     // Temporary structure until packs are simulated
@@ -350,10 +350,10 @@ impl A380AirConditioningSystem {
                 ),
             ],
             tadd: TrimAirDriveDevice::new(
-                // TODO: This is a placeholder
+                // TODO: Each of these should power one of the channels
                 vec![
-                    ElectricalBusType::DirectCurrentEssential, // 403XP
-                    ElectricalBusType::AlternatingCurrent(1),  // 117XP
+                    ElectricalBusType::AlternatingCurrent(2), // 403XP
+                    ElectricalBusType::AlternatingCurrent(4), // 117XP
                 ],
             ),
             cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
@@ -425,12 +425,12 @@ impl A380AirConditioningSystem {
         }
 
         let pack_flow: [MassRate; 2] = [
-            self.acsc.individual_pack_flow(Pack(1)),
-            self.acsc.individual_pack_flow(Pack(2)),
+            self.fdac[0].individual_pack_flow(Pack(1)),
+            self.fdac[1].individual_pack_flow(Pack(2)),
         ];
-        let duct_demand_temperature = self.acsc.duct_demand_temperature();
+
         for (id, pack) in self.packs.iter_mut().enumerate() {
-            pack.update(pack_flow[id], &duct_demand_temperature)
+            pack.update(pack_flow[id], &cpiom_b.duct_demand_temperature())
         }
 
         let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
@@ -440,7 +440,7 @@ impl A380AirConditioningSystem {
         self.mixer_unit.update(mixer_intakes);
 
         self.trim_air_system
-            .update(context, &self.mixer_unit, &self.acsc);
+            .update(context, &self.mixer_unit, &self.tadd);
 
         self.air_conditioning_overhead
             .set_pack_pushbutton_fault(self.pack_fault_determination());
@@ -504,6 +504,7 @@ impl SimulationElement for A380AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.acsc.accept(visitor);
         accept_iterable!(self.fdac, visitor);
+        self.tadd.accept(visitor);
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
 
@@ -545,8 +546,8 @@ impl A380AirConditioningSystemOverhead {
                 OnOffFaultPushButton::new_on(context, "COND_HOT_AIR_2"),
             ],
             temperature_selectors: [
-                ValueKnob::new_with_value(context, "COND_CKPT_SELECTOR", 24.),
-                ValueKnob::new_with_value(context, "COND_CABIN_SELECTOR", 24.),
+                ValueKnob::new_with_value(context, "COND_CKPT_SELECTOR", 150.),
+                ValueKnob::new_with_value(context, "COND_CABIN_SELECTOR", 150.),
             ],
             ram_air_pb: OnOffPushButton::new_off(context, "COND_RAM_AIR"),
             pack_pbs: [
@@ -1188,6 +1189,10 @@ mod tests {
         fn set_cross_bleed_valve_open(&mut self) {
             self.cross_bleed_valve = DefaultValve::new_open();
         }
+
+        fn packs(&mut self) -> &mut [TestPneumaticPackComplex; 2] {
+            &mut self.packs
+        }
     }
 
     impl PneumaticBleed for TestPneumatic {
@@ -1505,6 +1510,7 @@ mod tests {
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         powered_dc_source_1: TestElectricitySource,
+        powered_dc_source_ess: TestElectricitySource,
         powered_ac_source_ess: TestElectricitySource,
         powered_ac_source_1: TestElectricitySource,
         powered_dc_source_2: TestElectricitySource,
@@ -1547,6 +1553,10 @@ mod tests {
                     context,
                     PotentialOrigin::Battery(1),
                 ),
+                powered_dc_source_ess: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EmergencyGenerator,
+                ),
                 powered_ac_source_ess: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::EmergencyGenerator,
@@ -1565,7 +1575,7 @@ mod tests {
                 ),
                 powered_ac_source_4: TestElectricitySource::powered(
                     context,
-                    PotentialOrigin::EngineGenerator(2),
+                    PotentialOrigin::EngineGenerator(4),
                 ),
                 dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
@@ -1632,6 +1642,26 @@ mod tests {
             self.powered_ac_source_ess.power();
         }
 
+        fn unpower_dc_1_bus(&mut self) {
+            self.powered_dc_source_1.unpower();
+        }
+
+        fn unpower_dc_2_bus(&mut self) {
+            self.powered_dc_source_2.unpower();
+        }
+
+        fn unpower_dc_ess_bus(&mut self) {
+            self.powered_dc_source_ess.unpower();
+        }
+
+        fn unpower_ac_1_bus(&mut self) {
+            self.powered_ac_source_1.unpower();
+        }
+
+        fn power_ac_1_bus(&mut self) {
+            self.powered_ac_source_1.power();
+        }
+
         fn unpower_ac_2_bus(&mut self) {
             self.powered_ac_source_2.unpower();
         }
@@ -1679,13 +1709,14 @@ mod tests {
             electricity.supplied_by(&self.powered_ac_source_2);
             electricity.supplied_by(&self.powered_ac_source_4);
             electricity.supplied_by(&self.powered_ac_source_ess);
+            electricity.supplied_by(&self.powered_dc_source_ess);
             electricity.flow(&self.powered_dc_source_1, &self.dc_1_bus);
             electricity.flow(&self.powered_ac_source_1, &self.ac_1_bus);
             electricity.flow(&self.powered_dc_source_2, &self.dc_2_bus);
             electricity.flow(&self.powered_ac_source_2, &self.ac_2_bus);
             electricity.flow(&self.powered_ac_source_4, &self.ac_4_bus);
             electricity.flow(&self.powered_ac_source_ess, &self.ac_ess_bus);
-            electricity.flow(&self.powered_dc_source_1, &self.dc_ess_bus);
+            electricity.flow(&self.powered_dc_source_ess, &self.dc_ess_bus);
             electricity.flow(&self.powered_dc_source_1, &self.dc_bat_bus);
         }
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -1694,6 +1725,8 @@ mod tests {
                 &self.a380_cabin_air,
                 [&self.engine_1, &self.engine_2],
             );
+            self.a380_cabin_air
+                .mix_packs_air_update(self.pneumatic.packs());
             self.a380_cabin_air.update(
                 context,
                 &self.adirs,
@@ -1742,9 +1775,6 @@ mod tests {
             test_bed.set_indicated_altitude(Length::default());
             test_bed.indicated_airspeed(Velocity::new::<knot>(250.));
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-            test_bed.command_measured_temperature(
-                [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
-            );
             test_bed.command_pack_flow_selector_position(0);
             test_bed.command_engine_n1(Ratio::new::<percent>(30.));
 
@@ -1918,6 +1948,31 @@ mod tests {
             self
         }
 
+        fn unpowered_dc_ess_bus(mut self) -> Self {
+            self.command(|a| a.unpower_dc_ess_bus());
+            self
+        }
+
+        fn unpowered_dc_1_bus(mut self) -> Self {
+            self.command(|a| a.unpower_dc_1_bus());
+            self
+        }
+
+        fn unpowered_dc_2_bus(mut self) -> Self {
+            self.command(|a| a.unpower_dc_2_bus());
+            self
+        }
+
+        fn unpowered_ac_1_bus(mut self) -> Self {
+            self.command(|a| a.unpower_ac_1_bus());
+            self
+        }
+
+        fn powered_ac_1_bus(mut self) -> Self {
+            self.command(|a| a.power_ac_1_bus());
+            self
+        }
+
         fn unpowered_ac_2_bus(mut self) -> Self {
             self.command(|a| a.unpower_ac_2_bus());
             self
@@ -1942,11 +1997,14 @@ mod tests {
             self.vertical_speed = vertical_speed;
         }
 
-        fn command_measured_temperature(&mut self, temp_array: [ThermodynamicTemperature; 2]) {
-            for (temp, id) in temp_array.iter().zip(["CKPT", "FWD"].iter()) {
-                let zone_measured_temp_id = format!("COND_{}_TEMP", &id);
-                self.write_by_name(&zone_measured_temp_id, temp.get::<degree_celsius>());
-            }
+        fn command_measured_temperature(mut self, temp: ThermodynamicTemperature) -> Self {
+            self.command(|a| {
+                a.a380_cabin_air
+                    .a380_cabin
+                    .cabin_air_simulation
+                    .command_cabin_temperature(temp)
+            });
+            self
         }
 
         fn command_pack_flow_selector_position(&mut self, value: u8) {
@@ -1997,6 +2055,18 @@ mod tests {
                 format!("OVHD_COND_PACK_{}_PB_IS_ON", opposite_pack_id).as_str(),
                 false,
             );
+            self
+        }
+
+        fn command_cab_fans_pb_on(mut self, on_off: bool) -> Self {
+            self.write_by_name("OVHD_VENT_CAB_FANS_PB_IS_ON", on_off);
+            self
+        }
+
+        fn command_selected_temperature(mut self, temperature: ThermodynamicTemperature) -> Self {
+            let knob_value: f64 = (temperature.get::<degree_celsius>() - 18.) / 0.04;
+            self.write_by_name("OVHD_COND_CKPT_SELECTOR_KNOB", knob_value);
+            self.write_by_name("OVHD_COND_CABIN_SELECTOR_KNOB", knob_value);
             self
         }
 
@@ -2161,12 +2231,20 @@ mod tests {
             self.query(|a| a.a380_cabin_air.a320_pressurization_system.cpc[0].landing_elevation())
         }
 
+        fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            self.query(|a| a.a380_cabin_air.cpiom_b.duct_demand_temperature())
+        }
+
         fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
             self.query(|a| {
                 a.a380_cabin_air
                     .a380_air_conditioning_system
                     .duct_temperature()
             })
+        }
+
+        fn measured_temperature(&mut self) -> ThermodynamicTemperature {
+            self.read_by_name("COND_MAIN_DECK_1_TEMP")
         }
 
         fn is_mode_sel_pb_auto(&mut self) -> bool {
@@ -2195,6 +2273,15 @@ mod tests {
         fn pack_flow_by_pack(&self, pack_id: usize) -> MassRate {
             self.query(|a| {
                 a.a380_cabin_air.a380_air_conditioning_system.fdac[pack_id - 1].pack_flow()
+            })
+        }
+
+        fn trim_air_valves_open_amount(&self) -> Ratio {
+            self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .trim_air_system
+                    .trim_air_valves_open_amount()[1]
             })
         }
     }
@@ -3177,38 +3264,6 @@ mod tests {
     mod a380_air_conditioning_tests {
         use super::*;
 
-        const A380_ZONE_IDS: [&str; 18] = [
-            "CKPT",
-            "MAIN_DECK_1",
-            "MAIN_DECK_2",
-            "MAIN_DECK_3",
-            "MAIN_DECK_4",
-            "MAIN_DECK_5",
-            "MAIN_DECK_6",
-            "MAIN_DECK_7",
-            "MAIN_DECK_8",
-            "UPPER_DECK_1",
-            "UPPER_DECK_2",
-            "UPPER_DECK_3",
-            "UPPER_DECK_4",
-            "UPPER_DECK_5",
-            "UPPER_DECK_6",
-            "UPPER_DECK_7",
-            "CARGO_FWD",
-            "CARGO_BULK",
-        ];
-
-        #[test]
-        fn duct_temperature_starts_at_24_c_in_all_zones() {
-            let test_bed = test_bed();
-
-            for id in 0..A380_ZONE_IDS.len() {
-                assert_eq!(
-                    test_bed.duct_temperature()[id],
-                    ThermodynamicTemperature::new::<degree_celsius>(24.)
-                );
-            }
-        }
         mod pack_flow_controller_tests {
             use super::*;
 
@@ -3595,6 +3650,283 @@ mod tests {
                     .powered_ac_4_bus()
                     .iterate(4);
                 assert_eq!(test_bed.pack_flow(), MassRate::default());
+            }
+        }
+
+        mod zone_controller_tests {
+            use super::*;
+
+            const A380_ZONE_IDS: [&str; 16] = [
+                "CKPT",
+                "MAIN_DECK_1",
+                "MAIN_DECK_2",
+                "MAIN_DECK_3",
+                "MAIN_DECK_4",
+                "MAIN_DECK_5",
+                "MAIN_DECK_6",
+                "MAIN_DECK_7",
+                "MAIN_DECK_8",
+                "UPPER_DECK_1",
+                "UPPER_DECK_2",
+                "UPPER_DECK_3",
+                "UPPER_DECK_4",
+                "UPPER_DECK_5",
+                "UPPER_DECK_6",
+                "UPPER_DECK_7",
+            ];
+
+            #[test]
+            fn duct_temperature_starts_at_24_c_in_all_zones() {
+                let test_bed = test_bed();
+
+                for id in 0..A380_ZONE_IDS.len() {
+                    assert_eq!(
+                        test_bed.duct_demand_temperature()[id],
+                        ThermodynamicTemperature::new::<degree_celsius>(24.)
+                    );
+                    assert_eq!(
+                        test_bed.duct_temperature()[id],
+                        ThermodynamicTemperature::new::<degree_celsius>(24.)
+                    );
+                }
+            }
+
+            #[test]
+            fn duct_temp_starts_and_stays_at_24_c_with_no_input() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(false)
+                    .and()
+                    .command_cab_fans_pb_on(false)
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        24.,
+                    ));
+
+                test_bed
+                    .set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
+
+                test_bed = test_bed.iterate(2);
+
+                for id in 0..A380_ZONE_IDS.len() {
+                    assert_eq!(
+                        test_bed.duct_temperature()[id],
+                        ThermodynamicTemperature::new::<degree_celsius>(24.)
+                    );
+                }
+
+                test_bed = test_bed.iterate(200);
+
+                for id in 0..A380_ZONE_IDS.len() {
+                    assert_eq!(
+                        test_bed.duct_temperature()[id],
+                        ThermodynamicTemperature::new::<degree_celsius>(24.)
+                    );
+                }
+            }
+
+            #[test]
+            fn system_maintains_24_in_cabin_with_no_inputs() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        24.,
+                    ))
+                    .iterate(1000);
+
+                assert!((test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs() < 1.);
+            }
+
+            #[test]
+            fn duct_temperature_is_cabin_temp_when_no_flow() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(false)
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        18.,
+                    ))
+                    .iterate(1000);
+
+                assert!(
+                    (test_bed.duct_temperature()[1].get::<degree_celsius>()
+                        - test_bed.measured_temperature().get::<degree_celsius>())
+                    .abs()
+                        < 1.
+                );
+            }
+
+            #[test]
+            fn increasing_selected_temp_increases_duct_demand_temp() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        30.,
+                    ));
+
+                let initial_temperature = test_bed.duct_demand_temperature()[1];
+                test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+
+                assert!(test_bed.duct_demand_temperature()[1] > initial_temperature);
+            }
+
+            #[test]
+            fn increasing_measured_temp_reduces_duct_demand_temp() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .run_and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        24.,
+                    ))
+                    .iterate_with_delta(100, Duration::from_secs(10))
+                    .then()
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        30.,
+                    ))
+                    .iterate(4);
+
+                assert!(
+                    test_bed.duct_demand_temperature()[1]
+                        < ThermodynamicTemperature::new::<degree_celsius>(24.)
+                );
+            }
+
+            #[test]
+            fn duct_demand_temp_reaches_equilibrium() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .run_and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        26.,
+                    ))
+                    .iterate(100);
+
+                let mut previous_temp = test_bed.duct_demand_temperature()[1];
+                test_bed.run();
+                let initial_temp_diff = test_bed.duct_demand_temperature()[1]
+                    .get::<degree_celsius>()
+                    - previous_temp.get::<degree_celsius>();
+                test_bed = test_bed.iterate(100);
+                previous_temp = test_bed.duct_demand_temperature()[1];
+                test_bed.run();
+                let final_temp_diff = test_bed.duct_demand_temperature()[1].get::<degree_celsius>()
+                    - previous_temp.get::<degree_celsius>();
+
+                assert!(initial_temp_diff.abs() > final_temp_diff.abs());
+            }
+
+            #[test]
+            fn duct_temp_increases_with_altitude() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        24.,
+                    ))
+                    .iterate(1000);
+
+                let initial_temperature = test_bed.duct_temperature()[1];
+
+                test_bed = test_bed
+                    .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(30000.))
+                    .iterate(1000);
+
+                assert!(test_bed.duct_temperature()[1] > initial_temperature);
+            }
+
+            #[test]
+            fn duct_demand_limit_changes_with_measured_temperature() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        10.,
+                    ))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        24.,
+                    ))
+                    .iterate_with_delta(200, Duration::from_secs(1));
+
+                assert!(
+                    (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 8.).abs() < 1.
+                );
+
+                test_bed = test_bed
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        27.,
+                    ))
+                    .and_run();
+
+                assert!(
+                    (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 5.).abs() < 1.
+                );
+
+                test_bed = test_bed
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        29.,
+                    ))
+                    .and_run();
+
+                assert!(
+                    (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 2.).abs() < 1.
+                );
+            }
+
+            #[test]
+            fn knobs_dont_affect_duct_temperature_when_cpiom_unpowered() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .and()
+                    .unpowered_dc_1_bus()
+                    .unpowered_dc_2_bus()
+                    .unpowered_dc_ess_bus()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        30.,
+                    ));
+
+                test_bed = test_bed.iterate(1000);
+
+                assert!((test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.);
+            }
+
+            #[test]
+            fn unpowering_the_tadd_closes_trim_air_pressure_regulating_valves() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(20)
+                    .and()
+                    .unpowered_ac_2_bus()
+                    .unpowered_ac_4_bus()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        30.,
+                    ));
+
+                test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+
+                assert!(test_bed.trim_air_valves_open_amount() < Ratio::new::<percent>(1.))
             }
         }
     }

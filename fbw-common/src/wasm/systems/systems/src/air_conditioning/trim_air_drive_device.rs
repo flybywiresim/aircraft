@@ -8,7 +8,7 @@ use crate::{
 
 use super::{
     acs_controller::TrimAirValveController, AirConditioningOverheadShared, DuctTemperature,
-    OperatingChannel, OperatingChannelFault,
+    OperatingChannel, OperatingChannelFault, TrimAirControllers,
 };
 
 use uom::si::{f64::*, ratio::percent};
@@ -207,6 +207,14 @@ impl<const ZONES: usize, const ENGINES: usize> TaddShared for TrimAirDriveDevice
     }
     fn trim_air_pressure_regulating_valve_is_open(&self, taprv_id: usize) -> bool {
         self.should_open_taprv[taprv_id - 1]
+    }
+}
+
+impl<const ZONES: usize, const ENGINES: usize> TrimAirControllers
+    for TrimAirDriveDevice<ZONES, ENGINES>
+{
+    fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController {
+        self.trim_air_valve_controllers[zone_id]
     }
 }
 

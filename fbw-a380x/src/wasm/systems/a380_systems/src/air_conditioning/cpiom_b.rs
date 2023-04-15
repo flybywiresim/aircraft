@@ -344,7 +344,7 @@ struct TemperatureControlSystemApplication {
     hot_air_is_enabled_id: [VariableIdentifier; 2],
     hot_air_is_open_id: [VariableIdentifier; 2],
 
-    zone_controllers: [ZoneController; 16],
+    zone_controllers: [ZoneController; 18],
     hot_air_is_enabled: [bool; 2],
     hot_air_is_open: [bool; 2],
 }
@@ -352,17 +352,19 @@ impl TemperatureControlSystemApplication {
     fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         let mut zone_controllers_vec: Vec<ZoneController> = Vec::new();
         for zone in cabin_zones {
-            if matches!(zone, ZoneType::Cockpit) || matches!(zone, ZoneType::Cabin(_)) {
-                zone_controllers_vec.push(ZoneController::new(zone))
-            } else {
-                continue;
-            }
+            // TODO: Figure out what happens with cargo zones
+            // if matches!(zone, ZoneType::Cockpit) || matches!(zone, ZoneType::Cabin(_)) {
+            //     zone_controllers_vec.push(ZoneController::new(zone))
+            // } else {
+            //     continue;
+            // }
+            zone_controllers_vec.push(ZoneController::new(zone))
         }
         let zone_controllers =
             zone_controllers_vec
                 .try_into()
                 .unwrap_or_else(|v: Vec<ZoneController>| {
-                    panic!("Expected a Vec of length {} but it was {}", 16, v.len())
+                    panic!("Expected a Vec of length {} but it was {}", 18, v.len())
                 });
         let hot_air_variable_identifiers = Self::hot_air_id_init(context);
         Self {
@@ -417,7 +419,7 @@ impl TemperatureControlSystemApplication {
                 cabin_temperature.cabin_temperature()[index],
                 pressurization,
                 &ACSCActiveComputer::Primary,
-            )
+            );
         }
 
         self.hot_air_is_enabled = [

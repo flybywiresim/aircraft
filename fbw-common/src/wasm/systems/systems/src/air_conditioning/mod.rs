@@ -1,6 +1,4 @@
-use self::acs_controller::{
-    AirConditioningSystemController, CabinFansSignal, Pack, TrimAirValveController,
-};
+use self::acs_controller::{CabinFansSignal, Pack, TrimAirValveController};
 
 use crate::{
     pneumatic::{
@@ -59,6 +57,10 @@ pub trait PackFlow {
 pub trait PackFlowControllers {
     type PackFlowControllerSignal: ControllerSignal<PackFlowValveSignal>;
     fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal;
+}
+
+pub trait TrimAirControllers {
+    fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController;
 }
 
 pub struct PackFlowValveSignal {
@@ -505,7 +507,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         &mut self,
         context: &UpdateContext,
         mixer_air: &MixerUnit<ZONES>,
-        tav_controller: &AirConditioningSystemController<ZONES, ENGINES>,
+        tav_controller: &impl TrimAirControllers,
     ) {
         for (id, tav) in self.trim_air_valves.iter_mut().enumerate() {
             tav.update(
@@ -525,6 +527,21 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.outlet_air.set_flow_rate(total_flow);
         self.outlet_air
             .set_pressure(self.trim_air_outlet_pressure());
+        // println!(
+        //     "TAV open amount: {}, tav outlet air temp: {}, tav outlet flow: {} tav mixer outlet: {}",
+        //     self.trim_air_valves[1]
+        //         .trim_air_valve_open_amount()
+        //         .get::<percent>(),
+        //     self.trim_air_valves[1]
+        //         .outlet_air()
+        //         .temperature()
+        //         .get::<degree_celsius>(),
+        //     self.trim_air_valves[1].outlet_air().flow_rate().get::<kilogram_per_second>(),
+        //     self.trim_air_mixers[1]
+        //         .outlet_air()
+        //         .temperature()
+        //         .get::<degree_celsius>()
+        // );
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -554,8 +571,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             .average()
     }
 
-    #[cfg(test)]
-    fn trim_air_valves_open_amount(&self) -> [Ratio; ZONES] {
+    pub fn trim_air_valves_open_amount(&self) -> [Ratio; ZONES] {
         self.trim_air_valves
             .iter()
             .map(|tav| tav.trim_air_valve_open_amount())

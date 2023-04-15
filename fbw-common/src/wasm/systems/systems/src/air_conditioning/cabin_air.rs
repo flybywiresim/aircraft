@@ -166,15 +166,11 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
     ) -> ThermodynamicTemperature {
         if lgciu_gear_compressed {
             // If the aircraft is on the ground the cabin starts at the same temperature as ambient
-            self.cabin_zones
-                .iter_mut()
-                .for_each(|zone| zone.set_zone_air_temperature(context.ambient_temperature()));
+            self.command_cabin_temperature(context.ambient_temperature());
             context.ambient_temperature()
         } else {
             // If the aircraft is flying we assume the temperature has been stabilized at 24 degrees
-            self.cabin_zones.iter_mut().for_each(|zone| {
-                zone.set_zone_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.))
-            });
+            self.command_cabin_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             ThermodynamicTemperature::new::<degree_celsius>(24.)
         }
     }
@@ -305,6 +301,12 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             * temperature_change;
 
         Pressure::new::<pascal>(pressure_change_mass + pressure_change_temperature)
+    }
+
+    pub fn command_cabin_temperature(&mut self, temperature: ThermodynamicTemperature) {
+        self.cabin_zones
+            .iter_mut()
+            .for_each(|zone| zone.set_zone_air_temperature(temperature));
     }
 }
 
