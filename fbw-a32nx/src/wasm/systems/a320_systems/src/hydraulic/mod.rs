@@ -4,7 +4,7 @@ use std::{fmt::Debug, fmt::Display, time::Duration};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::{degree, radian},
+    angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
@@ -26,6 +26,7 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
+        cargo_doors::{CargoDoor, HydraulicDoorController},
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
@@ -39,6 +40,7 @@ use systems::{
             SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
+        pushback::PushbackTug,
         reverser::{ReverserAssembly, ReverserFeedback, ReverserInterface},
         rudder_control::{
             AngularPositioningController, RudderMechanicalControl, YawDamperActuatorController,
@@ -57,14 +59,14 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
-        random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
-        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
-        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
-        LandingGearHandle, LgciuInterface, LgciuWeightOnWheels, RamAirTurbineController,
-        ReservoirAirPressure, ReverserPosition, SectionPressure, TrimmableHorizontalStabilizer,
+        interpolation, random_from_normal_distribution, random_from_range,
+        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirbusElectricPumpId,
+        AirbusEngineDrivenPumpId, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
+        EmergencyElectricalState, EmergencyGeneratorControlUnit, EmergencyGeneratorPower,
+        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
+        LgciuWeightOnWheels, RamAirTurbineController, ReservoirAirPressure, ReverserPosition,
+        SectionPressure, TrimmableHorizontalStabilizer,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1489,9 +1491,9 @@ pub(super) struct A320Hydraulic {
     emergency_gen: HydraulicGeneratorMotor,
 
     forward_cargo_door: CargoDoor,
-    forward_cargo_door_controller: A320DoorController,
+    forward_cargo_door_controller: HydraulicDoorController,
     aft_cargo_door: CargoDoor,
-    aft_cargo_door_controller: A320DoorController,
+    aft_cargo_door_controller: HydraulicDoorController,
 
     elevator_system_controller: ElevatorSystemHydraulicController,
     aileron_system_controller: AileronSystemHydraulicController,
@@ -1738,7 +1740,7 @@ impl A320Hydraulic {
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
             ),
-            forward_cargo_door_controller: A320DoorController::new(
+            forward_cargo_door_controller: HydraulicDoorController::new(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
             ),
@@ -1747,7 +1749,10 @@ impl A320Hydraulic {
                 context,
                 Self::AFT_CARGO_DOOR_ID,
             ),
-            aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
+            aft_cargo_door_controller: HydraulicDoorController::new(
+                context,
+                Self::AFT_CARGO_DOOR_ID,
+            ),
 
             elevator_system_controller: ElevatorSystemHydraulicController::new(context),
             aileron_system_controller: AileronSystemHydraulicController::new(context),
@@ -2452,8 +2457,7 @@ impl A320Hydraulic {
             self.brake_steer_computer.alternate_controller(),
         );
 
-        // println!("REV CONTROL1: {:?}", self.engine_reverser_control[0]);
-        // TODO CHECK LGCIU USAGE
+        // TODO CHECK LGCIU USAGE for reversers
         self.engine_reverser_control[0].update(
             context,
             engine1,
@@ -3148,8 +3152,8 @@ impl A320YellowElectricPumpController {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        forward_cargo_door_controller: &A320DoorController,
-        aft_cargo_door_controller: &A320DoorController,
+        forward_cargo_door_controller: &HydraulicDoorController,
+        aft_cargo_door_controller: &HydraulicDoorController,
         hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
         elec_pump: &impl HeatingElement,
@@ -3206,8 +3210,8 @@ impl A320YellowElectricPumpController {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        forward_cargo_door_controller: &A320DoorController,
-        aft_cargo_door_controller: &A320DoorController,
+        forward_cargo_door_controller: &HydraulicDoorController,
+        aft_cargo_door_controller: &HydraulicDoorController,
     ) {
         self.is_required_for_cargo_door_operation.update(
             context,
@@ -3326,8 +3330,8 @@ impl A320PowerTransferUnitController {
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        forward_cargo_door_controller: &A320DoorController,
-        aft_cargo_door_controller: &A320DoorController,
+        forward_cargo_door_controller: &HydraulicDoorController,
+        aft_cargo_door_controller: &HydraulicDoorController,
         pushback_tug: &PushbackTug,
         lgciu2: &impl LgciuInterface,
         reservoir_left_side: &Reservoir,
@@ -4018,321 +4022,6 @@ impl SimulationElement for A320BrakingForce {
 
         self.is_chocks_enabled = reader.read(&self.enabled_chocks_id);
         self.is_light_beacon_on = reader.read(&self.light_beacon_on_id);
-    }
-}
-
-#[derive(PartialEq, Clone, Copy)]
-enum DoorControlState {
-    DownLocked = 0,
-    NoControl = 1,
-    HydControl = 2,
-    UpLocked = 3,
-}
-
-struct A320DoorController {
-    requested_position_id: VariableIdentifier,
-
-    control_state: DoorControlState,
-
-    position_requested: Ratio,
-
-    duration_in_no_control: Duration,
-    duration_in_hyd_control: Duration,
-
-    should_close_valves: bool,
-    control_position_request: Ratio,
-    should_unlock: bool,
-}
-impl A320DoorController {
-    // Duration which the hydraulic valves sends a open request when request is closing (this is done on real aircraft so uplock can be easily unlocked without friction)
-    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(200);
-
-    // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
-    const DELAY_UNLOCK_TO_HYDRAULIC_CONTROL: Duration = Duration::from_secs(5);
-
-    fn new(context: &mut InitContext, id: &str) -> Self {
-        Self {
-            requested_position_id: context.get_identifier(format!("{}_DOOR_CARGO_OPEN_REQ", id)),
-            control_state: DoorControlState::DownLocked,
-            position_requested: Ratio::new::<ratio>(0.),
-
-            duration_in_no_control: Duration::from_secs(0),
-            duration_in_hyd_control: Duration::from_secs(0),
-
-            should_close_valves: true,
-            control_position_request: Ratio::new::<ratio>(0.),
-            should_unlock: false,
-        }
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        door: &CargoDoor,
-        current_pressure: &impl SectionPressure,
-    ) {
-        self.control_state =
-            self.determine_control_state_and_lock_action(door, current_pressure.pressure());
-        self.update_timers(context);
-        self.update_actions_from_state();
-    }
-
-    fn update_timers(&mut self, context: &UpdateContext) {
-        if self.control_state == DoorControlState::NoControl {
-            self.duration_in_no_control += context.delta();
-        } else {
-            self.duration_in_no_control = Duration::from_secs(0);
-        }
-
-        if self.control_state == DoorControlState::HydControl {
-            self.duration_in_hyd_control += context.delta();
-        } else {
-            self.duration_in_hyd_control = Duration::from_secs(0);
-        }
-    }
-
-    fn update_actions_from_state(&mut self) {
-        match self.control_state {
-            DoorControlState::DownLocked => {}
-            DoorControlState::NoControl => {
-                self.should_close_valves = true;
-            }
-            DoorControlState::HydControl => {
-                self.should_close_valves = false;
-                self.control_position_request = if self.position_requested > Ratio::new::<ratio>(0.)
-                    || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
-                {
-                    Ratio::new::<ratio>(1.0)
-                } else {
-                    Ratio::new::<ratio>(-0.1)
-                }
-            }
-            DoorControlState::UpLocked => {
-                self.should_close_valves = true;
-            }
-        }
-    }
-
-    fn determine_control_state_and_lock_action(
-        &mut self,
-        door: &CargoDoor,
-        current_pressure: Pressure,
-    ) -> DoorControlState {
-        match self.control_state {
-            DoorControlState::DownLocked if self.position_requested > Ratio::new::<ratio>(0.) => {
-                self.should_unlock = true;
-                DoorControlState::NoControl
-            }
-            DoorControlState::NoControl
-                if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
-            {
-                self.should_unlock = false;
-                DoorControlState::HydControl
-            }
-            DoorControlState::HydControl if door.is_locked() => {
-                self.should_unlock = false;
-                DoorControlState::DownLocked
-            }
-            DoorControlState::HydControl
-                if door.position() > Ratio::new::<ratio>(0.9)
-                    && self.position_requested > Ratio::new::<ratio>(0.5) =>
-            {
-                self.should_unlock = false;
-                DoorControlState::UpLocked
-            }
-            DoorControlState::UpLocked
-                if self.position_requested < Ratio::new::<ratio>(1.)
-                    && current_pressure > Pressure::new::<psi>(1000.) =>
-            {
-                DoorControlState::HydControl
-            }
-            _ => self.control_state,
-        }
-    }
-
-    fn should_pressurise_hydraulics(&self) -> bool {
-        (self.control_state == DoorControlState::UpLocked
-            && self.position_requested < Ratio::new::<ratio>(1.))
-            || self.control_state == DoorControlState::HydControl
-    }
-}
-impl HydraulicAssemblyController for A320DoorController {
-    fn requested_mode(&self) -> LinearActuatorMode {
-        if self.should_close_valves {
-            LinearActuatorMode::ClosedValves
-        } else {
-            LinearActuatorMode::PositionControl
-        }
-    }
-
-    fn requested_position(&self) -> Ratio {
-        self.control_position_request
-    }
-
-    fn should_lock(&self) -> bool {
-        !self.should_unlock
-    }
-
-    fn requested_lock_position(&self) -> Ratio {
-        Ratio::new::<ratio>(0.)
-    }
-}
-impl SimulationElement for A320DoorController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
-    }
-}
-impl HydraulicLocking for A320DoorController {}
-impl ElectroHydrostaticPowered for A320DoorController {}
-
-struct CargoDoor {
-    hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
-
-    position_id: VariableIdentifier,
-    locked_id: VariableIdentifier,
-    position: Ratio,
-
-    is_locked: bool,
-
-    aerodynamic_model: AerodynamicModel,
-}
-impl CargoDoor {
-    fn new(
-        context: &mut InitContext,
-        id: &str,
-        hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
-        aerodynamic_model: AerodynamicModel,
-    ) -> Self {
-        Self {
-            hydraulic_assembly,
-            position_id: context.get_identifier(format!("{}_DOOR_CARGO_POSITION", id)),
-            locked_id: context.get_identifier(format!("{}_DOOR_CARGO_LOCKED", id)),
-
-            position: Ratio::new::<ratio>(0.),
-
-            is_locked: true,
-
-            aerodynamic_model,
-        }
-    }
-
-    fn position(&self) -> Ratio {
-        self.position
-    }
-
-    fn is_locked(&self) -> bool {
-        self.is_locked
-    }
-
-    fn actuator(&mut self) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(0)
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        cargo_door_controller: &(impl HydraulicAssemblyController
-              + HydraulicLocking
-              + ElectroHydrostaticPowered),
-        current_pressure: &impl SectionPressure,
-    ) {
-        self.aerodynamic_model
-            .update_body(context, self.hydraulic_assembly.body());
-        self.hydraulic_assembly.update(
-            context,
-            std::slice::from_ref(cargo_door_controller),
-            [current_pressure.pressure()],
-        );
-
-        self.position = self.hydraulic_assembly.position_normalized();
-        self.is_locked = self.hydraulic_assembly.is_locked();
-    }
-}
-impl SimulationElement for CargoDoor {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_id, self.position());
-        writer.write(&self.locked_id, self.is_locked());
-    }
-}
-
-struct PushbackTug {
-    nw_strg_disc_memo_id: VariableIdentifier,
-    state_id: VariableIdentifier,
-    steer_angle_id: VariableIdentifier,
-
-    steering_angle_raw: Angle,
-    steering_angle: LowPassFilter<Angle>,
-
-    // Type of pushback:
-    // 0 = Straight
-    // 1 = Left
-    // 2 = Right
-    // 3 = Assumed to be no pushback
-    // 4 = might be finishing pushback, to confirm
-    state: f64,
-    nose_wheel_steering_pin_inserted: DelayedFalseLogicGate,
-}
-impl PushbackTug {
-    const DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK: Duration =
-        Duration::from_secs(15);
-
-    const STATE_NO_PUSHBACK: f64 = 3.;
-
-    const STEERING_ANGLE_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
-
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
-            state_id: context.get_identifier("PUSHBACK STATE".to_owned()),
-            steer_angle_id: context.get_identifier("PUSHBACK ANGLE".to_owned()),
-
-            steering_angle_raw: Angle::default(),
-            steering_angle: LowPassFilter::new(Self::STEERING_ANGLE_FILTER_TIME_CONSTANT),
-
-            state: Self::STATE_NO_PUSHBACK,
-            nose_wheel_steering_pin_inserted: DelayedFalseLogicGate::new(
-                Self::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
-            ),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        self.nose_wheel_steering_pin_inserted
-            .update(context, self.is_pushing());
-
-        if self.is_pushing() {
-            self.steering_angle
-                .update(context.delta(), self.steering_angle_raw);
-        } else {
-            self.steering_angle.reset(Angle::default());
-        }
-    }
-
-    fn is_pushing(&self) -> bool {
-        (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() > f64::EPSILON
-    }
-}
-impl Pushback for PushbackTug {
-    fn is_nose_wheel_steering_pin_inserted(&self) -> bool {
-        self.nose_wheel_steering_pin_inserted.output()
-    }
-
-    fn steering_angle(&self) -> Angle {
-        self.steering_angle.output()
-    }
-}
-impl SimulationElement for PushbackTug {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.state = reader.read(&self.state_id);
-
-        self.steering_angle_raw = Angle::new::<radian>(reader.read(&self.steer_angle_id));
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.nw_strg_disc_memo_id,
-            self.is_nose_wheel_steering_pin_inserted(),
-        );
     }
 }
 
@@ -6044,6 +5733,7 @@ impl A320ReverserController {
         let allow_directional_valve_to_deploy =
             allow_isolation_valve_to_open && reverser_feedback.pressure_switch_pressurised();
 
+        // TODO: this should come from a SEC output, this is a placeholder of the SEC output
         self.tertiary_lock_from_sec_should_unlock
             .update(context, self.throttle_lever_angle.get::<degree>() <= -3.);
 
@@ -6147,18 +5837,18 @@ struct A320Reversers {
     reversers_deployed: [bool; 2],
 }
 impl A320Reversers {
-    //TODO Check busses
+    // TODO Check busses and power, placeholder only for now
     const REVERSER1_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
     const REVERSER2_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
 
-    const REVERSER1_ISOLATION_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER1_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
-    const REVERSER1_DIRECTIONAL_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER1_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
 
-    const REVERSER2_ISOLATION_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER2_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
-    const REVERSER2_DIRECTIONAL_VALVE_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER2_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
 
     fn new(context: &mut InitContext) -> Self {
@@ -6184,7 +5874,8 @@ impl A320Reversers {
                         A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
                     ),
                     Self::REVERSER1_SUPPLY_POWER_BUS,
-                    Self::REVERSER1_ISOLATION_VALVE_SUPPLY_POWER_BUS,
+                    Self::REVERSER1_PRIMARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER1_SECONDARY_VALVES_SUPPLY_POWER_BUS,
                 ),
                 ReverserAssembly::new(
                     Pressure::new::<psi>(
@@ -6197,7 +5888,8 @@ impl A320Reversers {
                         A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
                     ),
                     Self::REVERSER2_SUPPLY_POWER_BUS,
-                    Self::REVERSER2_ISOLATION_VALVE_SUPPLY_POWER_BUS,
+                    Self::REVERSER2_PRIMARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER2_SECONDARY_VALVES_SUPPLY_POWER_BUS,
                 ),
             ],
             reversers_in_transition: [false, false],
@@ -6296,7 +5988,10 @@ mod tests {
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
             failures::FailureType,
-            hydraulic::electrical_generator::TestGenerator,
+            hydraulic::{
+                cargo_doors::{DoorControlState, HydraulicDoorController},
+                electrical_generator::TestGenerator,
+            },
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{
                 EmergencyElectricalState, EmergencyGeneratorControlUnit, LgciuId, PotentialOrigin,
@@ -6309,6 +6004,7 @@ mod tests {
 
         use uom::si::{
             angle::degree,
+            angle::radian,
             electric_potential::volt,
             length::foot,
             mass_density::kilogram_per_cubic_meter,
@@ -6644,7 +6340,9 @@ mod tests {
             }
 
             fn is_cargo_fwd_door_locked_up(&self) -> bool {
-                self.hydraulics.forward_cargo_door_controller.control_state
+                self.hydraulics
+                    .forward_cargo_door_controller
+                    .control_state()
                     == DoorControlState::UpLocked
             }
 
@@ -7885,7 +7583,7 @@ mod tests {
 
             // Ptu disabled from cargo operation
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                Duration::from_secs(5) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
             );
 
             assert!(!test_bed.is_ptu_enabled());
@@ -7936,7 +7634,7 @@ mod tests {
 
             // Need to wait for operator to first unlock, then activate hydraulic control
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                Duration::from_secs(5) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
             );
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
 
@@ -10071,7 +9769,8 @@ mod tests {
                 .dc_ground_service_lost()
                 .open_fwd_cargo_door()
                 .run_waiting_for(
-                    Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                    Duration::from_secs(5)
+                        + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
                 );
 
             assert!(test_bed.query(|a| a.is_cargo_powering_yellow_epump()));
@@ -10183,7 +9882,7 @@ mod tests {
             assert!(test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
 
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                Duration::from_secs(1) + A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
+                Duration::from_secs(5) + HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL,
             );
 
             assert!(!test_bed.query(|a| a.is_ptu_controller_activating_ptu()));
@@ -10611,7 +10310,7 @@ mod tests {
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
             );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
@@ -12004,6 +11703,31 @@ mod tests {
             test_bed = test_bed
                 .eng1_throttle_reverse_full()
                 .eng2_throttle_reverse_full()
+                .run_waiting_for(Duration::from_secs_f64(3.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() > 0.99);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() > 0.99);
+
+            test_bed = test_bed
+                .set_throttles_idle()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.get_reverser_1_position().get::<ratio>() < 0.01);
+            assert!(test_bed.get_reverser_2_position().get::<ratio>() < 0.01);
+        }
+
+        #[test]
+        fn reversers_deploy_and_retract_at_idle_reverse_on_ground_with_eng_on() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(60.))
+                .start_eng2(Ratio::new::<percent>(60.))
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            test_bed = test_bed
+                .eng1_throttle_reverse_idle()
+                .eng2_throttle_reverse_idle()
                 .run_waiting_for(Duration::from_secs_f64(3.));
 
             assert!(test_bed.get_reverser_1_position().get::<ratio>() > 0.99);

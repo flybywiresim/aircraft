@@ -87,6 +87,9 @@
 
 # avoid issues when switching branches during transistion from old to new structure
 /src/
+/fbw-common/msfs-avionics-mirror/src/sdk/build
+/fbw-common/msfs-avionics-mirror/src/sdk/build/**
+/msfs-avionics-mirror/
 /flybywire-aircraft-a320-neo/
 /flybywire-aircraft-a320-neo-lock-highlight/
 

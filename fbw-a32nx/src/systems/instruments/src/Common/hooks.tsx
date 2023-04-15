@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlowEventSync } from '@shared/FlowEventSync';
+import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { getRootElement } from './defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
@@ -86,9 +86,9 @@ export const useFlowSyncEvent = (event: string, handler: (topic: string, data: a
     }, [handler]);
 
     React.useEffect(() => {
-        const flowEventHandler = new FlowEventSync(savedHandler.current, event);
+        const genericEventHandler = new GenericDataListenerSync(savedHandler.current, event);
         return () => {
-            flowEventHandler.stop();
+            genericEventHandler.stop();
         };
     }, [event]);
 };
