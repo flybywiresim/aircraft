@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
-import { NotificationManager } from '@shared/notification';
+import { NotificationManager, NotificationType } from '@shared/notification';
 import { PopUpDialog } from '@shared/popup';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
@@ -16,17 +16,14 @@ export class KeyInterceptor {
 
     private keyInterceptManager: KeyEventManager;
 
-    private notification: NotificationManager;
-
     private dialogVisible = false;
 
-    constructor(private readonly bus: EventBus) {
+    constructor(private readonly bus: EventBus, private readonly notification: NotificationManager) {
         this.eventBus = bus;
         KeyEventManager.getManager(this.eventBus).then((manager) => {
             this.keyInterceptManager = manager;
             this.registerIntercepts();
         });
-        this.notification = new NotificationManager();
         console.log('KeyInterceptor: Created');
     }
 
@@ -75,8 +72,8 @@ export class KeyInterceptor {
                 'Ctrl+E Not supported',
                 `<div style="font-size: 120%; text-align: left;">
                            Engine Auto Start is not supported by the A32NX.<br/>
-                           <br/>                        
-                           Do you want to you use the flyPad's Aircraft Presets to set the aircraft to 
+                           <br/>
+                           Do you want to you use the flyPad's Aircraft Presets to set the aircraft to
                            <strong>"${AircraftPresetsList.getPresetName(presetID)}"</strong>?
                          </div>`,
                 'small',
