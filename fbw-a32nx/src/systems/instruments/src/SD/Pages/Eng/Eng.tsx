@@ -216,18 +216,9 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
     const [isEngineStarting] = useSimVar(`GENERAL ENG STARTER:${engineNumber}`, 'bool', 300);
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
-    const [showIgniter, setShowIgniter] = useState(false);
-    const [n2Igniting] = useSimVar(`TURB ENG IS IGNITING:${engineNumber}`, 'bool', 300);
+    const [igniterAactive] = useSimVar(`L:A32NX_FADEC_IGNITER_A_ACTIVE_ENG${engineNumber}`, 'bool', 300);
+    const [igniterBactive] = useSimVar(`L:A32NX_FADEC_IGNITER_B_ACTIVE_ENG${engineNumber}`, 'bool', 300);
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
-
-    // This useEffect ensures that the igniter is only shown when the engine is starting, n2 is igniting, and n2 percent is in between 18 and 55
-    useEffect(() => {
-        if (isEngineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
-            setShowIgniter(true);
-        } else {
-            setShowIgniter(false);
-        }
-    }, [isEngineStarting, n2Igniting, n2Percent]);
 
     // This useEffect ensures that the valve is only opened if the engine mode selector is set to IGN/START, the engine is starting, and n2% is below 50
     useEffect(() => {
@@ -248,8 +239,8 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
 
     return (
         <SvgGroup x={0} y={0} className={`${engSelectorPosition !== 2 && 'Hidden'}`}>
-            <text x={x - 7} y={y} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>A</text>
-            <text x={x + 7} y={y} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && showIgniter) && 'Hidden'}`}>B</text>
+            <text x={x - 7} y={y} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && igniterAactive) && 'Hidden'}`}>A</text>
+            <text x={x + 7} y={y} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && igniterBactive) && 'Hidden'}`}>B</text>
             <g className="StartValveDiagram">
                 {/* 375 to 30 */}
                 <circle r={14} cx={x} cy={y + 30} />
