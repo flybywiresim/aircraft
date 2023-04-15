@@ -1288,7 +1288,7 @@ class FacilityLoader {
     /** @param {string} icao */
     loadRunwayCfFix(icao) {
         return new Promise((resolve, reject) => {
-            const airportIdent = WayPoint.formatIdentFromIcao(rawAirport.icao);
+            const airportIdent = icao.substring(3, 7);
             const airportIcao = `A      ${airportIdent} `;
             const runwayDesignation = icao.substring(9, 12).trim();
             this.getFacilityRaw(airportIcao).then((rawAirport) => {

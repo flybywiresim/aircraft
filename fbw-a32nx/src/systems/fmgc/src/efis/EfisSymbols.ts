@@ -9,7 +9,7 @@ import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
-import { FlowEventSync } from '@shared/FlowEventSync';
+import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
@@ -29,7 +29,7 @@ export class EfisSymbols {
 
     private nearby: NearbyFacilities;
 
-    private syncer: FlowEventSync = new FlowEventSync();
+    private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
     private static sides = ['L', 'R'];
 
@@ -450,6 +450,15 @@ export class EfisSymbols {
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
                     type: pwp.efisSymbolFlag,
+                });
+            }
+
+            for (const ndb of this.navaidTuner.tunedNdbs) {
+                upsertSymbol({
+                    databaseId: ndb.icao,
+                    ident: WayPoint.formatIdentFromIcao(ndb.icao),
+                    location: { lat: ndb.lat, long: ndb.lon },
+                    type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.Tuned,
                 });
             }
 
