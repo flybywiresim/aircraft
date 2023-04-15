@@ -3,12 +3,13 @@
 
 #include <algorithm>
 #include <sstream>
+#include <utility>
 
 #include "ClientEvent.h"
 #include "logging.h"
 
-ClientEvent::ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName)
-    : hSimConnect(hSimConnect), clientEventId(clientEventId), clientEventName(clientEventName) {}
+ClientEvent::ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, std::string clientEventName)
+    : hSimConnect(hSimConnect), clientEventId(clientEventId), clientEventName(std::move(clientEventName)) {}
 
 ClientEvent::~ClientEvent() {
   callbacks.clear();

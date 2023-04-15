@@ -4,21 +4,14 @@
 #ifndef FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 #define FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 
-#include <iostream>
-#include <optional>
-#include <sstream>
 #include <string>
-#include <utility>
 #include <map>
 
 #include <MSFS/Legacy/gauges.h>
 
-#include "Callback.h"
 #include "DataObjectBase.h"
 #include "IDGenerator.h"
-#include "SimUnits.h"
 #include "logging.h"
-#include "math_utils.hpp"
 
 // Used for callback registration to allow removal of callbacks
 typedef uint64_t CallbackID;
@@ -37,7 +30,7 @@ typedef std::function<void()> CallbackFunction;
  * Adds the ability to autoRead, autoWrite variables considering max age based on
  * time- and tick-stamps.
  * Also adds a hasChanged flag and the ability to register callbacks for when
- * the variable changes (TODO).
+ * the variable changes.
  */
 class ManagedDataObjectBase : public DataObjectBase {
  private:
@@ -49,19 +42,19 @@ class ManagedDataObjectBase : public DataObjectBase {
   /**
    * Map of callbacks to be called when the event is triggered in the sim.
    */
-  std::map<CallbackID, CallbackFunction> callbacks;
+  std::map<CallbackID, CallbackFunction> callbacks{};
 
   // Flag to indicate if the variable has changed compared to the last read/write from the sim.
   // Private because it should only be set by the setChanged() method so callbacks from
   // listeners can be triggered.
-  bool changed = false;
+  bool changedFlag = false;
 
  protected:
   /**
    * Flag to indicate if the check for data changes should be skipped to save performance when the
    * check is not required.
    */
-  bool skipChangeCheck = false;
+  bool skipChangeCheckFlag = false;
 
   /**
    * Used by external classes to determine if the data should be updated from the sim when
@@ -123,13 +116,13 @@ class ManagedDataObjectBase : public DataObjectBase {
       : DataObjectBase(varName), autoRead(autoRead), autoWrite(autoWrite), maxAgeTime(maxAgeTime), maxAgeTicks(maxAgeTicks) {}
 
   /**
-   * Sets the changed flag to the given value and triggers the registered callbacks
-   * if the value has changed.
-   * @param changed the new value for the changed flag
+   * Sets the changedFlag flag to the given value and triggers the registered callbacks
+   * if the value has changedFlag.
+   * @param changed the new value for the changedFlag flag
    */
   void setChanged(bool changed) {
-    this->changed = changed;
-    if (changed) {
+    this->changedFlag = changed;
+    if (this->changedFlag) {
       for (const auto& [id, callback] : callbacks) {
         callback();
       }
@@ -200,12 +193,12 @@ class ManagedDataObjectBase : public DataObjectBase {
    * has actually changed.
    * @return true if the value has changed since the last read from the sim.
    */
-  [[nodiscard]] bool hasChanged() const { return this->changed; }
+  [[nodiscard]] bool hasChanged() const { return this->changedFlag; }
 
   /**
    * @return true if the check for data changes should be skipped to save performance when the check is not required, false otherwise
    */
-  [[nodiscard]] bool getSkipChangeCheck() const { return skipChangeCheck; }
+  [[nodiscard]] bool getSkipChangeCheck() const { return skipChangeCheckFlag; }
 
   /**
    * Sets the flag to skip the check for data changes to save performance when
@@ -213,7 +206,7 @@ class ManagedDataObjectBase : public DataObjectBase {
    * set the changed flag to true no matter if the value has changed or not.
    * @param changeCheck
    */
-  void setSkipChangeCheck(bool skipChangeCheck) { this->skipChangeCheck = skipChangeCheck; }
+  void setSkipChangeCheck(bool skipChangeCheck) { this->skipChangeCheckFlag = skipChangeCheck; }
 
   /**
    * @return true if the variable should be automatically updated from the sim n the DataManagers

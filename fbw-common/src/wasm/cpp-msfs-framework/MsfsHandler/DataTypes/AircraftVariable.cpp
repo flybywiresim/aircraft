@@ -1,7 +1,7 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include <utility>
+#include <sstream>
 
 #include "AircraftVariable.h"
 

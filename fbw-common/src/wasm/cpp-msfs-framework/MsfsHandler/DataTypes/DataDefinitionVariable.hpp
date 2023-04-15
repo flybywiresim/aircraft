@@ -211,7 +211,7 @@ class DataDefinitionVariable : public SimObjectBase {
     const auto pSimobjectData = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
 
     // if not required then skip the rather expensive check for change
-    if (skipChangeCheck || std::memcmp(&pSimobjectData->dwData, &this->dataStruct, sizeof(T)) != 0) {
+    if (skipChangeCheckFlag || std::memcmp(&pSimobjectData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       LOG_TRACE("DataDefinitionVariable: Data has changed: " + name);
       std::memcpy(&this->dataStruct, &pSimobjectData->dwData, sizeof(T));
       updateStamps(simTime, tickCounter);
@@ -260,7 +260,7 @@ class DataDefinitionVariable : public SimObjectBase {
     ss << ", nextUpdateTimeStamp: " << nextUpdateTimeStamp;
     ss << ", tickStamp: " << tickStamp;
     ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
-    ss << ", skipChangeCheck: " << skipChangeCheck;
+    ss << ", skipChangeCheckFlag: " << skipChangeCheckFlag;
     ss << ", dataChanged: " << hasChanged();
     ss << ", autoRead: " << autoRead;
     ss << ", autoWrite: " << autoWrite;

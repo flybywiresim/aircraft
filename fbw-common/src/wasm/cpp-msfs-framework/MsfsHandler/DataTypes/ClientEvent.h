@@ -84,7 +84,7 @@ class ClientEvent {
    * @see
    * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_MapClientEventToSimEvent.htm
    */
-  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, const std::string& clientEventName);
+  ClientEvent(HANDLE hSimConnect, SIMCONNECT_CLIENT_EVENT_ID clientEventId, std::string  clientEventName);
 
  public:
   ClientEvent() = delete;                               // no default constructor

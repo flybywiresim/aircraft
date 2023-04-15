@@ -34,7 +34,7 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
 FLOAT64 CacheableVariable::readFromSim() {
   const FLOAT64 fromSim = rawReadFromSim();
   // compare the value from the sim with the cached value
-  bool changed = skipChangeCheck || !cachedValue.has_value() || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
+  bool changed = skipChangeCheckFlag || !cachedValue.has_value() || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
   if (changed)
     cachedValue = fromSim;
   dirty = false;

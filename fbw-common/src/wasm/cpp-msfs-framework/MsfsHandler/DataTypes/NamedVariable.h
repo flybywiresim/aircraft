@@ -4,7 +4,6 @@
 #ifndef FLYBYWIRE_NAMEDVARIABLE_H
 #define FLYBYWIRE_NAMEDVARIABLE_H
 
-#include <iostream>
 #include <string>
 
 #include "CacheableVariable.h"
@@ -62,9 +61,8 @@ class NamedVariable : public CacheableVariable {
   NamedVariable() = delete;                                 // no default constructor
   NamedVariable(const NamedVariable&) = delete;             // no copy constructor
   NamedVariable& operator=(const NamedVariable&) = delete;  // no copy assignment
-  ~NamedVariable()  = default;
 
-  FLOAT64 rawReadFromSim() const override;
+  [[nodiscard]] FLOAT64 rawReadFromSim() const override;
   void rawWriteToSim() override;
 
   [[nodiscard]] std::string str() const override;
@@ -82,7 +80,7 @@ class NamedVariable : public CacheableVariable {
    * Returns the aircraft prefix for all NamedVariables.
    * @return The aircraft prefix.
    */
-  static const std::string& getAircraftPrefix() { return AIRCRAFT_PREFIX; }
+  static const std::string&  getAircraftPrefix() { return AIRCRAFT_PREFIX; }
 
   friend std::ostream& operator<<(std::ostream& os, const NamedVariable& namedVariable);
 };

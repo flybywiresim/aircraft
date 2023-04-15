@@ -231,7 +231,7 @@ class ClientDataAreaVariable : public SimObjectBase {
   void processSimData(const SIMCONNECT_RECV* pData, FLOAT64 simTime, UINT64 tickCounter) override {
     const auto pClientData = reinterpret_cast<const SIMCONNECT_RECV_CLIENT_DATA*>(pData);
     // if not required then skip the rather expensive check for change
-    if (skipChangeCheck || std::memcmp(&pClientData->dwData, &this->dataStruct, sizeof(T)) != 0) {
+    if (skipChangeCheckFlag || std::memcmp(&pClientData->dwData, &this->dataStruct, sizeof(T)) != 0) {
       std::memcpy(&this->dataStruct, &pClientData->dwData, sizeof(T));
       updateStamps(simTime, tickCounter);
       setChanged(true);
@@ -272,7 +272,7 @@ class ClientDataAreaVariable : public SimObjectBase {
     ss << ", nextUpdateTimeStamp: " << nextUpdateTimeStamp;
     ss << ", tickStamp: " << tickStamp;
     ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
-    ss << ", skipChangeCheck: " << skipChangeCheck;
+    ss << ", skipChangeCheckFlag: " << skipChangeCheckFlag;
     ss << ", dataChanged: " << hasChanged();
     ss << ", autoRead: " << autoRead;
     ss << ", autoWrite: " << autoWrite;

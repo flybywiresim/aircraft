@@ -5,6 +5,7 @@
 #define FLYBYWIRE_LIGHTINGPRESETS_H
 
 #include "LightingPresets/LightingPresets.h"
+#include "math_utils.hpp"
 
 class MsfsHandler;
 

@@ -6,6 +6,8 @@
 
 #include "LightingPresets/LightingPresets.h"
 
+#include "math_utils.hpp"
+
 class MsfsHandler;
 
 // FIXME: This is not yet adapted to the A380X - not all necessary systems and APIs are available yet.

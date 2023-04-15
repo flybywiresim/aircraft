@@ -6,6 +6,7 @@
 #include "AircraftPresets.h"
 #include "SimUnits.h"
 #include "logging.h"
+#include "math_utils.hpp"
 
 ///
 // DataManager Howto Note:

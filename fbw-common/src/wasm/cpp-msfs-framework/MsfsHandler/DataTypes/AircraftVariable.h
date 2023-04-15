@@ -66,7 +66,7 @@ class AircraftVariable : public CacheableVariable {
    */
   explicit AircraftVariable(const std::string& varName,
                             int varIndex = 0,
-                            const std::string& setterEventName = "",
+                            std::string setterEventName = "",
                             SimUnit unit = UNITS.Number,
                             bool autoReading = false,
                             bool autoWriting = false,
@@ -74,7 +74,7 @@ class AircraftVariable : public CacheableVariable {
                             UINT64 maxAgeTicks = 0)
       : CacheableVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks),
         index(varIndex),
-        setterEventName(setterEventName),
+        setterEventName(std::move(setterEventName)),
         setterEvent(nullptr) {
     dataID = get_aircraft_var_enum(varName.c_str());
     if (dataID == -1) {  // cannot throw an exception in MSFS
@@ -118,9 +118,8 @@ class AircraftVariable : public CacheableVariable {
   AircraftVariable() = delete;                                    // no default constructor
   AircraftVariable(const AircraftVariable&) = delete;             // no copy constructor
   AircraftVariable& operator=(const AircraftVariable&) = delete;  // no copy assignment
-  ~AircraftVariable() = default;
 
-  FLOAT64 rawReadFromSim() const override;
+  [[nodiscard]] FLOAT64 rawReadFromSim() const override;
   void rawWriteToSim() override;
   void setAutoWrite(bool autoWriting) override;
   void set(FLOAT64 value) override;

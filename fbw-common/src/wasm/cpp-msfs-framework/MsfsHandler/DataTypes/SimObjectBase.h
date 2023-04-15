@@ -66,7 +66,6 @@ class SimObjectBase : public ManagedDataObjectBase {
   SimObjectBase() = delete;                                 // no default constructor
   SimObjectBase(const SimObjectBase&) = delete;             // no copy constructor
   SimObjectBase& operator=(const SimObjectBase&) = delete;  // no copy assignment
-  virtual ~SimObjectBase() override = default;
 
   /**
    * Sends a data request to the sim to have the sim prepare the requested data.

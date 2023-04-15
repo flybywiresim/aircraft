@@ -5,9 +5,7 @@
 #define FLYBYWIRE_CACHEABLEVARIABLE_H
 
 #include <optional>
-#include <sstream>
 #include <string>
-#include <utility>
 
 #include <MSFS/Legacy/gauges.h>
 
@@ -79,7 +77,6 @@ class CacheableVariable : public ManagedDataObjectBase {
   CacheableVariable() = delete;                                     // no default constructor
   CacheableVariable(const CacheableVariable&) = delete;             // no copy constructor
   CacheableVariable& operator=(const CacheableVariable&) = delete;  // no copy assignment
-  virtual ~CacheableVariable() = default;
 
   /**
    * Returns the cached value or the default value (FLOAT64{}) if the cache is empty.<p/>
@@ -131,7 +128,7 @@ class CacheableVariable : public ManagedDataObjectBase {
    * This method is called by the readFromSim() method.
    * @return the value read from the sim
    */
-  virtual FLOAT64 rawReadFromSim() const = 0;
+  [[nodiscard]] virtual FLOAT64 rawReadFromSim() const = 0;
 
   /**
    * Sets the cache value and marks the variable as dirty.<p/>

@@ -88,9 +88,8 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
   StreamingClientDataAreaVariable<T, ChunkSize>(const StreamingClientDataAreaVariable&) = delete;  // no copy constructor
   // no copy assignment
   StreamingClientDataAreaVariable<T, ChunkSize>& operator=(const StreamingClientDataAreaVariable<T, ChunkSize>&) = delete;
-  ~StreamingClientDataAreaVariable() = default;  // destructor
 
-  bool allocateClientDataArea(bool readOnlyForOthers = false) override {
+  bool allocateClientDataArea(bool readOnlyForOthers) override {
     const DWORD readOnlyFlag =
         readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
     if (!SUCCEEDED(SimConnect_CreateClientData(this->hSimConnect, this->clientDataId, ChunkSize, readOnlyFlag))) {
@@ -217,7 +216,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
     ss << ", nextUpdateTimeStamp: " << this->nextUpdateTimeStamp;
     ss << ", tickStamp: " << this->tickStamp;
     ss << ", nextUpdateTickStamp: " << this->nextUpdateTickStamp;
-    ss << ", skipChangeCheck: " << this->skipChangeCheck;
+    ss << ", skipChangeCheckFlag: " << this->skipChangeCheckFlag;
     ss << ", dataChanged: " << this->hasChanged();
     ss << ", autoRead: " << this->autoRead;
     ss << ", autoWrite: " << this->autoWrite;
