@@ -1018,10 +1018,10 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 
         sub.on('showSpeedMargins').whenChanged().handle((active) => this.componentVisibilty.set(active ? 'visible' : 'hidden'));
 
-        sub.on('speedAr').handle(this.currentSpeed.set);
+        sub.on('speedAr').withPrecision(1).handle((s) => this.currentSpeed.set(s));
 
         sub.on('upperSpeedMargin').handle(this.updateMargin(this.upperSpeedMarginVisibility, this.upperMarginTransform));
-        sub.on('upperSpeedMargin').handle(this.updateMargin(this.lowerSpeedMarginVisibility, this.lowerMarginTransform));
+        sub.on('lowerSpeedMargin').handle(this.updateMargin(this.lowerSpeedMarginVisibility, this.lowerMarginTransform));
     }
 
     render(): VNode {
@@ -1047,7 +1047,7 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
             visibility.set(isInRange ? 'visible' : 'hidden');
 
             if (isInRange) {
-                const offset = Math.round(100 * (this.currentSpeed.get().value - speed) * DistanceSpacing / ValueSpacing) / 100;
+                const offset = (Math.round(100 * (this.currentSpeed.get().value - speed) * DistanceSpacing / ValueSpacing) / 100).toFixed(2);
                 transform.set(`translate3d(0px, ${offset}px, 0px)`);
             }
         };

@@ -109,7 +109,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         return (
             <g id="LinearDeviationIndicator">
                 <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontSmallest Green">{this.upperLinearDeviationReadoutText}</text>
-                <g visibility={this.componentVisibility} id="LinearDeviationDot">
+                <g visibility={this.componentVisibility} id="LinearDeviationDot" transform={this.componentTransform}>
                     <path id="EntireDot" visibility={this.linearDeviationDotVisibility} d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z" class="Fill Green" />
                     <path
                         id="DotUpperHalf"
@@ -123,7 +123,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
                         d="m116.24 80.796c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z"
                         class="Fill Green"
                     />
-                    <path ref={this.latchSymbolVisibility} d="m 119 78.3 h -3 v 5 h 3" class="Magenta" />
+                    <path visibility={this.latchSymbolVisibility} d="m 119 78.3 h -3 v 5 h 3" class="Magenta" />
                 </g>
                 <text visibility={this.lowerLinearDeviationReadoutVisibility} x="110" y="123" class="FontSmallest Green">{this.lowerLinearDeviationReadoutText}</text>
             </g>

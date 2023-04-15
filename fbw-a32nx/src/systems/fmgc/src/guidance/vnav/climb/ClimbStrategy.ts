@@ -169,7 +169,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     ): StepResults {
         const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
-        const finalAltitude = initialAltitude + UnitType.NMILE.convertTo(distance, UnitType.FEET) * Math.tan(this.flightPathAngle * MathUtils.DEGREES_TO_RADIANS);
+        const finalAltitude = initialAltitude + UnitType.NMILE.convertTo(distance, UnitType.FOOT) * Math.tan(this.flightPathAngle * MathUtils.DEGREES_TO_RADIANS);
 
         return Predictions.geometricStep(
             initialAltitude,
