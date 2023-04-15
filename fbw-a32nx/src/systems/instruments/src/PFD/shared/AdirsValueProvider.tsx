@@ -1,4 +1,4 @@
-import { EventBus, SimVarValueType } from 'msfssdk';
+import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from '../MFD';
 import { PFDSimvarPublisher, PFDSimvars } from './MFDSimvarPublisher';
 

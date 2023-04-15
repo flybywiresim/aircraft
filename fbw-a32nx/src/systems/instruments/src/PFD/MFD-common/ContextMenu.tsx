@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, SubscribableArray, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, SubscribableArray, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface ContextMenuElementProps {

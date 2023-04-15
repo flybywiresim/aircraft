@@ -1,4 +1,4 @@
-﻿import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
+﻿import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import './MFD-common/style.scss';
 import { EntityTypes } from 'instruments/src/PFD/OANS';
 

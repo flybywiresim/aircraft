@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface DropdownMenuProps extends ComponentProps {

@@ -1,4 +1,4 @@
-import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
+import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
 import { MFDComponent } from './MFD';
 import { MFDSimvarPublisher } from './shared/MFDSimvarPublisher';
 

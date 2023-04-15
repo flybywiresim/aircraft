@@ -1,4 +1,4 @@
-import { EventBus, Publisher } from 'msfssdk';
+import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { MFDSimvars } from './MFDSimvarPublisher';
 

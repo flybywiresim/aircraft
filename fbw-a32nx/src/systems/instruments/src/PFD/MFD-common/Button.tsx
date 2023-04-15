@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface ButtonProps extends ComponentProps {

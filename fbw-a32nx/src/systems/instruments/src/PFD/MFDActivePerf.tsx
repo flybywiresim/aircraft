@@ -5,7 +5,7 @@ import { NumberInput } from 'instruments/src/PFD/MFD-common/NumberInput';
 
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
 
-import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/PFD/MFD-common/Button';
 import { PageSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/PageSelectorDropdownMenu';

@@ -1,4 +1,4 @@
-import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from 'msfssdk';
+import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
 
 export type MFDSimvars = {
     coldDark: number;

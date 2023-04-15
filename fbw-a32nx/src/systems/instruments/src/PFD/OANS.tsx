@@ -9,7 +9,7 @@ import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-co
 import { OANSRunwayInfoBox } from 'instruments/src/PFD/OANSRunwayInfoBox';
 import { ContextMenu } from 'instruments/src/PFD/MFD-common/ContextMenu';
 
-import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
 import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';

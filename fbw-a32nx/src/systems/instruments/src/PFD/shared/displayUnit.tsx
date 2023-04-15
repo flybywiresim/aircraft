@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import './common.scss';
 import './pixels.scss';

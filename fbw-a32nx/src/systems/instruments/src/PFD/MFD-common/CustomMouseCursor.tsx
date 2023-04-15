@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, VNode } from 'msfssdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface CustomMouseCursorProps extends ComponentProps {
