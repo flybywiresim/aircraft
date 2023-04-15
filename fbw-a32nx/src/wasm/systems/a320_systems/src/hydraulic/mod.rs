@@ -5733,6 +5733,7 @@ impl A320ReverserController {
         let allow_directional_valve_to_deploy =
             allow_isolation_valve_to_open && reverser_feedback.pressure_switch_pressurised();
 
+        // TODO: this should come from a SEC output, this is a placeholder of the SEC output
         self.tertiary_lock_from_sec_should_unlock
             .update(context, self.throttle_lever_angle.get::<degree>() <= -3.);
 
