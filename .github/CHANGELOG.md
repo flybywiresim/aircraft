@@ -105,6 +105,7 @@
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
 1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
+1. [FADEC] Automatic enginestarts use one igniter alternating and enabled use of FADEC GND PWR pushbuttons @Maximilian-Reuter (Maximilian Reuter)
 1. [FWC] Target a modern FWC version - @beheh (Benedict Etzel)
 1. [HYD] New aerodynamic model for RAT turbine / Added A320 RAT anti stall valve system - @Crocket63 (crocket)
 1. [W/B] Phase 1 of refactoring payload (passenger and cargo) logic into rust systems - @2hwk (2Cas#1022)
@@ -118,6 +119,11 @@
 1. [MCDU] Fix no overfly shown on forced turn on F-PLN page, return to F-PLN page on TMPY insert - @tracernz (Mike)
 1. [FMS] Handle approach transitions hidden inside other transition with Navigraph data - @tracernz (Mike)
 1. [ND] Do not draw background when busses are not powered - @saschl (saschl#9432)
+1. [MODEL] Working windshield wipers - @tracernz (Mike)
+1. [LIGHTS] Redid all cockpit interior lighting and fixed exterior wing lights - @FinalLightNL (FinalLight#2113)
+1. [BLEED] Add pressure sensors to bleed system - @BlueberryKing (BlueberryKing#6641)
+1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
+1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
 
 ## 0.9.0
 

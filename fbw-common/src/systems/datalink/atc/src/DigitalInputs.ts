@@ -14,7 +14,7 @@ import {
 import { RouterAtcAocMessages } from '@datalink/router';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AtcMessageButtonBusMessages } from './databus/AtcMessageButtonBus';
 import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
 import { AtcFmsMessages, FmsAtcMessages, FmsRouteData } from './databus/FmsBus';

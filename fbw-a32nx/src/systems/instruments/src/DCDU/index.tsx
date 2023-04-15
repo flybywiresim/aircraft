@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { EventBus, Publisher, EventSubscriber } from 'msfssdk';
+import { EventBus, Publisher, EventSubscriber } from '@microsoft/msfs-sdk';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvents } from '@instruments/common/hooks';
 import {
@@ -486,24 +486,17 @@ const DCDU: React.FC = () => {
     switch (state) {
     case DcduState.Selftest:
         return (
-            <>
-                <div className="BacklightBleed" />
-                <SelfTest />
-            </>
+            <SelfTest />
         );
     case DcduState.Waiting:
         return (
-            <>
-                <div className="BacklightBleed" />
-                <WaitingForData />
-            </>
+            <WaitingForData />
         );
     case DcduState.Off:
         return <></>;
     default:
         return (
             <>
-                <div className="BacklightBleed" />
                 <svg className="dcdu">
                     {(visibleMessages === undefined && atcMessage !== '' && (
                         <>
