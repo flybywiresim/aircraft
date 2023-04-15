@@ -155,7 +155,7 @@ class ClientDataAreaVariable : public SimObjectBase {
    * This must be done by the client owning the data. Clients only reading the data area do not
    * need to allocate it. In fact trying to allocated a data area with the same name twice throws
    * a Simconnect exception.
-   * @param readOnlyForOthers
+   * @param readOnlyForOthers (optional) If true, the data area is read-only for other clients.
    * @return true if the allocation was successful, false otherwise
    */
   virtual bool allocateClientDataArea(bool readOnlyForOthers = false) {
