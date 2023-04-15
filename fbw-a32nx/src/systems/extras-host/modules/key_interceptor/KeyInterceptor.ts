@@ -114,8 +114,8 @@ export class KeyInterceptor {
             this.notification.showNotification({
                 title: 'Aircraft Presets',
                 message: `Loading Preset is already in progress "${(AircraftPresetsList.getPresetName(loadingInProgress))}"`,
-                type: 'MESSAGE',
-                duration: 1500,
+                type: NotificationType.Message,
+                timeout: 1500,
             });
             return true;
         }
