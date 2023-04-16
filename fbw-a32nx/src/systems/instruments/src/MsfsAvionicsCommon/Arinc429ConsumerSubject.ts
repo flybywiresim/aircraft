@@ -1,5 +1,5 @@
 import { Consumer, ConsumerSubject } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@shared/arinc429';
+import { Arinc429Register, Arinc429WordData } from '@shared/arinc429';
 
 export const Arinc429EqualityFunc = (a: Arinc429WordData, b: Arinc429WordData) => a.value === b.value && a.ssm === b.ssm;
 

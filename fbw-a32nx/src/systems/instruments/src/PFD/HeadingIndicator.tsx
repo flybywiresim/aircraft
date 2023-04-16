@@ -1,5 +1,4 @@
 import { DisplayComponent, FSComponent, HEvent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Register } from '@shared/arinc429';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
