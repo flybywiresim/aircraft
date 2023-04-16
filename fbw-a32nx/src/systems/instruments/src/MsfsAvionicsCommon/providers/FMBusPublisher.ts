@@ -1,4 +1,4 @@
-import { EventBus, SimVarPublisher, SimVarValueType } from 'msfssdk';
+import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export interface FMBusEvents {
     'fm.1.healthy_discrete': boolean,

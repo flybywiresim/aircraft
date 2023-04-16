@@ -25,7 +25,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
                 this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
             } else if (symbol.type & NdSymbolTypeFlags.Airport || symbol.type & NdSymbolTypeFlags.Runway) {
                 this.paintAirport(false, context, rx, ry, symbol);
-            } else if (symbol.type & (NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme)) {
+            } else if (symbol.type & (NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(false, context, rx, ry, symbol);
             } else {
                 this.paintWaypoint(false, context, rx, ry, symbol);

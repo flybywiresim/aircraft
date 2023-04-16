@@ -1,8 +1,18 @@
-import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode } from 'msfssdk';
-import { Arinc429Register } from '@shared/arinc429';
+import {
+    ConsumerSubject,
+    DisplayComponent,
+    EventBus,
+    FSComponent,
+    Subject,
+    Subscribable,
+    VNode,
+} from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { NDSimvars } from '../NDSimvarPublisher';
 import { getSmallestAngle } from '../../PFD/PFDUtils';
+import { Arinc429ConsumerSubject } from '../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
+import { FcuSimVars } from '../../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 export interface TrackBugProps {
     bus: EventBus,
@@ -10,9 +20,11 @@ export interface TrackBugProps {
 }
 
 export class TrackBug extends DisplayComponent<TrackBugProps> {
-    private readonly headingWord = Arinc429Register.empty();
+    private readonly ndMode = ConsumerSubject.create(null, EfisNdMode.ARC);
 
-    private readonly trackWord =Arinc429Register.empty();
+    private readonly headingWord = Arinc429ConsumerSubject.create(null);
+
+    private readonly trackWord = Arinc429ConsumerSubject.create(null);
 
     private readonly diffSubject = Subject.create(0);
 
@@ -21,35 +33,35 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DmcEvents & NDSimvars>();
+        const sub = this.props.bus.getSubscriber<DmcEvents & NDSimvars & FcuSimVars>();
 
-        sub.on('heading').whenChanged().handle((v) => {
-            this.headingWord.set(v);
-            this.handleDisplay();
-        });
+        this.ndMode.setConsumer(sub.on('ndMode').whenChanged());
+        this.headingWord.setConsumer(sub.on('heading'));
+        this.trackWord.setConsumer(sub.on('track'));
 
-        sub.on('track').whenChanged().handle((v) => {
-            this.trackWord.set(v);
-            this.handleDisplay();
-        });
+        this.ndMode.sub(() => this.handleDisplay(), true);
+        this.headingWord.sub(() => this.handleDisplay(), true);
+        this.trackWord.sub(() => this.handleDisplay(), true);
     }
 
     private handleDisplay() {
-        const headingValid = this.headingWord.isNormalOperation();
-        const trackValid = this.trackWord.isNormalOperation();
+        const wrongNdMode = this.ndMode.get() === EfisNdMode.PLAN;
 
-        if (headingValid && trackValid) {
+        const headingInvalid = !this.headingWord.get().isNormalOperation();
+        const trackInvalid = !this.trackWord.get().isNormalOperation();
+
+        if (wrongNdMode || headingInvalid || trackInvalid) {
+            this.bugShown.set(false);
+        } else {
             let diff;
             if (this.props.isUsingTrackUpMode.get()) {
                 diff = 0;
             } else {
-                diff = getSmallestAngle(this.trackWord.value, this.headingWord.value);
+                diff = getSmallestAngle(this.trackWord.get().value, this.headingWord.get().value);
             }
 
             this.bugShown.set(diff <= 40);
             this.diffSubject.set(diff);
-        } else {
-            this.bugShown.set(false);
         }
     }
 

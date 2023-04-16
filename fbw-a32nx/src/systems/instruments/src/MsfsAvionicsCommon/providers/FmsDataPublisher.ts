@@ -1,19 +1,16 @@
-import { EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
-import { SwitchableSimVarProvider } from './SwitchableProvider';
+import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
+import { EfisSide } from '@shared/NavigationDisplay';
 
 export interface FmsVars {
     ndMessageFlags: number,
     crossTrackError: number,
 }
 
-export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R'> {
-    constructor(
-        bus: EventBus,
-        stateSubject: Subject<'L' | 'R'>,
-    ) {
+export class FmsDataPublisher extends SimVarPublisher<FmsVars> {
+    constructor(bus: EventBus, efisSide: EfisSide) {
         super(new Map([
-            ['ndMessageFlags', { name: (side) => `L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, type: SimVarValueType.Number }],
-            ['crossTrackError', { name: (_side) => 'L:A32NX_FG_CROSS_TRACK_ERROR', type: SimVarValueType.NM }],
-        ]), stateSubject, bus);
+            ['ndMessageFlags', { name: `L:A32NX_EFIS_${efisSide}_ND_FM_MESSAGE_FLAGS`, type: SimVarValueType.Number }],
+            ['crossTrackError', { name: 'L:A32NX_FG_CROSS_TRACK_ERROR', type: SimVarValueType.NM }],
+        ]), bus);
     }
 }

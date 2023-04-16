@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, Subject } from 'msfssdk';
+import { ComponentProps, DisplayComponent, Subject } from '@microsoft/msfs-sdk';
 
 export abstract class NDPage<P extends ComponentProps = ComponentProps> extends DisplayComponent<P> {
     isVisible: Subject<boolean>;

@@ -1,14 +1,15 @@
-import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from 'msfssdk';
+import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
 import {
     AdirsSimVarDefinitions,
     AdirsSimVars,
     SwitchingPanelSimVarsDefinitions,
     SwitchingPanelVSimVars,
 } from '../MsfsAvionicsCommon/SimVarTypes';
+import { UpdatableSimVarPublisher } from '../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
-    elec: number;
-    elecFo: number;
+    elec: boolean;
+    elecFo: boolean;
     potentiometerCaptain: number;
     potentiometerFo: number;
     toWptIdent0Captain: number;
@@ -51,7 +52,7 @@ export enum NDVars {
 }
 
 /** A publisher to poll and publish nav/com simvars. */
-export class NDSimvarPublisher extends SimVarPublisher<NDSimvars> {
+export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
     private static simvars = new Map<keyof NDSimvars, SimVarDefinition>([
         ...AdirsSimVarDefinitions,
         ...SwitchingPanelSimVarsDefinitions,

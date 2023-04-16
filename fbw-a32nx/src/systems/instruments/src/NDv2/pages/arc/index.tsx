@@ -1,17 +1,14 @@
-import { FSComponent, ComponentProps, ConsumerSubject, EventBus, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { FSComponent, ComponentProps, ConsumerSubject, EventBus, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429WordData } from '@shared/arinc429';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { LsCourseBug } from 'instruments/src/NDv2/pages/arc/LsCourseBug';
-import { TrackBug } from '../../shared/TrackBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { SelectedHeadingBug } from './SelectedHeadingBug';
-import { LubberLine } from './LubberLine';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
 import { CrossTrackError } from '../../shared/CrossTrackError';
 import { RadioNeedle } from '../../shared/RadioNeedle';
-import { TrackLine } from '../../shared/TrackLine';
 import { NDControlEvents } from '../../NDControlEvents';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
@@ -57,7 +54,9 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
         return 0;
     }, this.props.isUsingTrackUpMode, this.props.headingWord, this.props.trackWord);
 
-    private readonly mapFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.props.headingWord);
+    private readonly mapFlagShown = MappedSubject.create(([headingWord]) => {
+        return !headingWord.isNormalOperation();
+    }, this.props.headingWord);
 
     onShow() {
         super.onShow();
@@ -221,22 +220,6 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                 <SelectedHeadingBug
                     bus={this.props.bus}
                     rotationOffset={this.planeRotation}
-                />
-
-                <TrackLine
-                    bus={this.props.bus}
-                    x={384}
-                    y={620}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                />
-                <TrackBug
-                    bus={this.props.bus}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                />
-
-                <LubberLine
-                    available={this.props.headingWord.map((it) => it.isNormalOperation())}
-                    rotation={this.planeRotation}
                 />
 
                 <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>

@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, Subscribable, VNode } from 'msfssdk';
+import { FSComponent, DisplayComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 export interface PlanModeUnderlayProps {
     mapRange: Subscribable<number>,

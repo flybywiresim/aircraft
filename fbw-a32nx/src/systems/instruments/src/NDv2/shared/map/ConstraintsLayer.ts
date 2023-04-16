@@ -37,9 +37,9 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
 
     private paintConstraintCircle(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
         if (isColorLayer) {
-            if (symbol.type & NdSymbolTypeFlags.ConstraintMet) {
+            if (symbol.type & NdSymbolTypeFlags.MagentaColor) {
                 context.strokeStyle = '#ff94ff';
-            } else if (symbol.type & NdSymbolTypeFlags.ConstraintMissed) {
+            } else if (symbol.type & NdSymbolTypeFlags.AmberColor) {
                 context.strokeStyle = '#e68000';
             } else {
                 context.strokeStyle = '#fff';

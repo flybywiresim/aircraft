@@ -1,4 +1,4 @@
-import { ArraySubject, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ArraySubject, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
 import { EfisNdMode } from '@shared/NavigationDisplay';
 import { Layer } from '../MsfsAvionicsCommon/Layer';

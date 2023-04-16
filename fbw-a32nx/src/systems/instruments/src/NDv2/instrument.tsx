@@ -1,9 +1,8 @@
-import { Clock, FSComponent, EventBus, HEventPublisher, Subject } from 'msfssdk';
+import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { EfisSide } from '@shared/NavigationDisplay';
 import { NDComponent } from './ND';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
-import { EcpBusSimVarPublisher } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
@@ -14,15 +13,23 @@ import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
+import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 import './style.scss';
 
-class A32NX_ND extends BaseInstrument {
-    private readonly bus: EventBus;
+class NDInstrument implements FsInstrument {
+    public readonly instrument: BaseInstrument;
+
+    private readonly efisSide: EfisSide;
+
+    private readonly bus: ArincEventBus;
+
+    private readonly backplane = new InstrumentBackplane();
 
     private readonly simVarPublisher: NDSimvarPublisher;
 
-    private readonly ecpBusSimVarPublisher: EcpBusSimVarPublisher;
+    private readonly fcuBusPublisher: FcuBusPublisher;
 
     private readonly fmsDataPublisher: FmsDataPublisher;
 
@@ -38,231 +45,119 @@ class A32NX_ND extends BaseInstrument {
 
     private readonly dmcPublisher: DmcPublisher;
 
+    private readonly egpwcBusPublisher: EgpwcBusPublisher;
+
     private readonly hEventPublisher;
+
+    private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
     private readonly clock: Clock;
 
-    private adirsValueProvider: AdirsValueProvider<NDSimvars>;
-
-    private egpwcBusPublisher: EgpwcBusPublisher;
-
-    /**
-     * "mainmenu" = 0
-     * "loading" = 1
-     * "briefing" = 2
-     * "ingame" = 3
-     */
-    private gameState = 0;
-
     constructor() {
-        super();
-        this.bus = new EventBus();
+        const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
+
+        this.efisSide = side;
+
+        this.bus = new ArincEventBus();
+
         this.simVarPublisher = new NDSimvarPublisher(this.bus);
-        this.ecpBusSimVarPublisher = new EcpBusSimVarPublisher(this.bus, Subject.create('L'));
-        this.fmsDataPublisher = new FmsDataPublisher(this.bus, Subject.create('L'));
-        this.fgDataPublisher = new FGDataPublisher(this.bus, Subject.create('L'));
+        this.fcuBusPublisher = new FcuBusPublisher(this.bus, side);
+        this.fmsDataPublisher = new FmsDataPublisher(this.bus, side);
+        this.fgDataPublisher = new FGDataPublisher(this.bus);
         this.fmBusPublisher = new FMBusPublisher(this.bus);
-        this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus);
+        this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, side);
         this.vorBusPublisher = new VorBusPublisher(this.bus);
         this.tcasBusPublisher = new TcasBusPublisher(this.bus);
         this.dmcPublisher = new DmcPublisher(this.bus);
+        this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
         this.hEventPublisher = new HEventPublisher(this.bus);
-        this.clock = new Clock(this.bus);
-    }
-
-    get templateID(): string {
-        return 'A32NX_ND';
-    }
-
-    public getDeltaTime() {
-        return this.deltaTime;
-    }
-
-    public onInteractionEvent(args: string[]): void {
-        // FIXME temporary
-        if (args[0].endsWith('A32NX_EFIS_L_CHRONO_PUSHED')) {
-            this.bus.getPublisher<NDControlEvents>().pub('chrono_pushed', undefined);
-        }
-
-        this.hEventPublisher.dispatchHEvent(args[0]);
-    }
-
-    public connectedCallback(): void {
-        super.connectedCallback();
-
-        const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
 
         this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
-        this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
 
-        this.clock.init();
+        this.clock = new Clock(this.bus);
+
+        this.backplane.addPublisher('ndSimVars', this.simVarPublisher);
+        this.backplane.addPublisher('fcu', this.fcuBusPublisher);
+        this.backplane.addPublisher('fms', this.fmsDataPublisher);
+        this.backplane.addPublisher('fg', this.fgDataPublisher);
+        this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
+        this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);
+        this.backplane.addPublisher('vor', this.vorBusPublisher);
+        this.backplane.addPublisher('tcas', this.tcasBusPublisher);
+        this.backplane.addPublisher('dmc', this.dmcPublisher);
+        this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
+
+        this.backplane.addInstrument('clock', this.clock);
+
+        this.doInit();
+    }
+
+    private doInit(): void {
+        this.backplane.init();
+
         this.dmcPublisher.init();
 
-        this.simVarPublisher.subscribe('attHdgKnob');
-        this.simVarPublisher.subscribe('airKnob');
+        this.adirsValueProvider.start();
 
-        this.simVarPublisher.subscribe('elec');
-        this.simVarPublisher.subscribe('elecFo');
-
-        this.simVarPublisher.subscribe('potentiometerCaptain');
-        this.simVarPublisher.subscribe('potentiometerFo');
-
-        this.simVarPublisher.subscribe('groundSpeed');
-        this.simVarPublisher.subscribe('trueAirSpeed');
-        this.simVarPublisher.subscribe('windDirection');
-        this.simVarPublisher.subscribe('windSpeed');
-        this.simVarPublisher.subscribe('speed');
-        this.simVarPublisher.subscribe('magHeadingRaw');
-        this.simVarPublisher.subscribe('trueHeadingRaw');
-        this.simVarPublisher.subscribe('magTrackRaw');
-        this.simVarPublisher.subscribe('trueTrackRaw');
-        this.simVarPublisher.subscribe('toWptIdent0Captain');
-        this.simVarPublisher.subscribe('toWptIdent1Captain');
-        this.simVarPublisher.subscribe('toWptBearingCaptain');
-        this.simVarPublisher.subscribe('toWptTrueBearingCaptain');
-        this.simVarPublisher.subscribe('toWptDistanceCaptain');
-        this.simVarPublisher.subscribe('toWptEtaCaptain');
-        this.simVarPublisher.subscribe('apprMessage0Captain');
-        this.simVarPublisher.subscribe('apprMessage1Captain');
-        this.simVarPublisher.subscribe('ilsCourse');
-        this.simVarPublisher.subscribe('selectedWaypointLat');
-        this.simVarPublisher.subscribe('selectedWaypointLong');
-        this.simVarPublisher.subscribe('selectedHeading');
-        this.simVarPublisher.subscribe('latitude');
-        this.simVarPublisher.subscribe('longitude');
-        this.simVarPublisher.subscribe('irMaintWordRaw');
-        this.simVarPublisher.subscribe('absoluteTime');
-
-        this.ecpBusSimVarPublisher.subscribe('ndRangeSetting');
-        this.ecpBusSimVarPublisher.subscribe('ndMode');
-        this.ecpBusSimVarPublisher.subscribe('navaidMode1');
-        this.ecpBusSimVarPublisher.subscribe('navaidMode2');
-
-        this.fmsDataPublisher.subscribe('ndMessageFlags');
-        this.fmsDataPublisher.subscribe('crossTrackError');
-
-        this.fgDataPublisher.subscribe('fg.fma.lateralMode');
-        this.fgDataPublisher.subscribe('fg.fma.lateralArmedBitmask');
-
-        this.fmBusPublisher.subscribe('fm.1.healthy_discrete');
-        this.fmBusPublisher.subscribe('fm.2.healthy_discrete');
-        this.fmBusPublisher.subscribe('fm.1.tuning_discrete_word');
-        this.fmBusPublisher.subscribe('fm.2.tuning_discrete_word');
-
-        this.vorBusPublisher.subscribe('nav1Ident');
-        this.vorBusPublisher.subscribe('nav1Frequency');
-        this.vorBusPublisher.subscribe('nav1HasDme');
-        this.vorBusPublisher.subscribe('nav1DmeDistance');
-        this.vorBusPublisher.subscribe('nav1RelativeBearing');
-        this.vorBusPublisher.subscribe('nav1Obs');
-        this.vorBusPublisher.subscribe('nav1Available');
-        this.vorBusPublisher.subscribe('nav1StationDeclination');
-        this.vorBusPublisher.subscribe('nav1Location');
-
-        this.vorBusPublisher.subscribe('nav2Ident');
-        this.vorBusPublisher.subscribe('nav2Frequency');
-        this.vorBusPublisher.subscribe('nav2HasDme');
-        this.vorBusPublisher.subscribe('nav2DmeDistance');
-        this.vorBusPublisher.subscribe('nav2RelativeBearing');
-        this.vorBusPublisher.subscribe('nav2Obs');
-        this.vorBusPublisher.subscribe('nav2Available');
-        this.vorBusPublisher.subscribe('nav2StationDeclination');
-        this.vorBusPublisher.subscribe('nav2Location');
-
-        this.vorBusPublisher.subscribe('nav3Ident');
-        this.vorBusPublisher.subscribe('nav3Frequency');
-        this.vorBusPublisher.subscribe('nav3HasDme');
-        this.vorBusPublisher.subscribe('nav3DmeDistance');
-        this.vorBusPublisher.subscribe('nav3RelativeBearing');
-        this.vorBusPublisher.subscribe('nav3Obs');
-        this.vorBusPublisher.subscribe('nav3Available');
-        this.vorBusPublisher.subscribe('nav3Localizer');
-        this.vorBusPublisher.subscribe('nav3StationDeclination');
-        this.vorBusPublisher.subscribe('nav3Location');
-
-        this.vorBusPublisher.subscribe('nav4Ident');
-        this.vorBusPublisher.subscribe('nav4Frequency');
-        this.vorBusPublisher.subscribe('nav4HasDme');
-        this.vorBusPublisher.subscribe('nav4DmeDistance');
-        this.vorBusPublisher.subscribe('nav4RelativeBearing');
-        this.vorBusPublisher.subscribe('nav4Obs');
-        this.vorBusPublisher.subscribe('nav4Available');
-        this.vorBusPublisher.subscribe('nav4Localizer');
-        this.vorBusPublisher.subscribe('nav4StationDeclination');
-        this.vorBusPublisher.subscribe('nav4Location');
-
-        this.vorBusPublisher.subscribe('localizerValid');
-        this.vorBusPublisher.subscribe('glideSlopeValid');
-        this.vorBusPublisher.subscribe('glideSlopeDeviation');
-
-        this.vorBusPublisher.subscribe('adf1Ident');
-        this.vorBusPublisher.subscribe('adf1ActiveFrequency');
-        this.vorBusPublisher.subscribe('adf1Valid');
-        this.vorBusPublisher.subscribe('adf1Radial');
-
-        this.vorBusPublisher.subscribe('adf2Ident');
-        this.vorBusPublisher.subscribe('adf2ActiveFrequency');
-        this.vorBusPublisher.subscribe('adf2Valid');
-        this.vorBusPublisher.subscribe('adf2Radial');
-
-        this.tcasBusPublisher.subscribe('tcasTaOnly');
-        this.tcasBusPublisher.subscribe('tcasFault');
-        this.tcasBusPublisher.subscribe('tcasMode');
-
-        this.egpwcBusPublisher.subscribe('egpwc.minElevation');
-        this.egpwcBusPublisher.subscribe('egpwc.minElevationMode');
-        this.egpwcBusPublisher.subscribe('egpwc.maxElevation');
-        this.egpwcBusPublisher.subscribe('egpwc.maxElevationMode');
-
-        this.dmcPublisher.subscribe('trueRefPushButton');
-
-        FSComponent.render(<NDComponent bus={this.bus} side={side} />, document.getElementById('ND_CONTENT'));
+        FSComponent.render(<NDComponent bus={this.bus} side={this.efisSide} />, document.getElementById('ND_CONTENT'));
 
         // Remove "instrument didn't load" text
         document.getElementById('ND_CONTENT').querySelector(':scope > h1').remove();
-    }
-
-    get isInteractive(): boolean {
-        return true;
     }
 
     /**
      * A callback called when the instrument gets a frame update.
      */
     public Update(): void {
-        super.Update();
+        this.backplane.onUpdate();
+    }
 
-        if (this.gameState !== 3) {
-            const gamestate = this.getGameState();
-            if (gamestate === 3) {
-                this.simVarPublisher.startPublish();
-                this.ecpBusSimVarPublisher.startPublish();
-                this.fmsDataPublisher.startPublish();
-                this.fgDataPublisher.startPublish();
-                this.fmBusPublisher.startPublish();
-                this.fmsSymbolsPublisher.startPublish();
-                this.vorBusPublisher.startPublish();
-                this.tcasBusPublisher.startPublish();
-                this.egpwcBusPublisher.startPublish();
-                this.hEventPublisher.startPublish();
-                this.adirsValueProvider.start();
-                this.dmcPublisher.startPublish();
-            }
-            this.gameState = gamestate;
-        } else {
-            this.simVarPublisher.onUpdate();
-            this.ecpBusSimVarPublisher.onUpdate();
-            this.fmsDataPublisher.onUpdate();
-            this.fgDataPublisher.onUpdate();
-            this.fmBusPublisher.onUpdate();
-            this.fmsSymbolsPublisher.onUpdate();
-            this.vorBusPublisher.onUpdate();
-            this.tcasBusPublisher.onUpdate();
-            this.egpwcBusPublisher.onUpdate();
-            this.clock.onUpdate();
-            this.dmcPublisher.onUpdate();
+    public onInteractionEvent(args: string[]): void {
+        if (args[0].endsWith(`A32NX_EFIS_${this.efisSide}_CHRONO_PUSHED`)) {
+            this.bus.getPublisher<NDControlEvents>().pub('chrono_pushed', undefined);
         }
+
+        this.hEventPublisher.dispatchHEvent(args[0]);
+    }
+
+    onGameStateChanged(_oldState: GameState, _newState: GameState) {
+        // noop
+    }
+
+    onFlightStart() {
+        // noop
+    }
+
+    onSoundEnd(_soundEventId: Name_Z) {
+        // noop
     }
 }
+
+class A32NX_ND extends FsBaseInstrument<NDInstrument> {
+    constructInstrument(): NDInstrument {
+        return new NDInstrument();
+    }
+
+    get isInteractive(): boolean {
+        return false;
+    }
+
+    get templateID(): string {
+        return 'A32NX_ND';
+    }
+}
+
+// Hack to support tspan SVG elements, which FSComponent does not recognise as SVG
+
+const original = document.createElement.bind(document);
+
+const extraSvgTags = ['tspan'];
+
+document.createElement = ((tagName, options) => {
+    if (extraSvgTags.includes(tagName)) {
+        return document.createElementNS('http://www.w3.org/2000/svg', tagName, options);
+    }
+    return original(tagName, options);
+}) as any;
 
 registerInstrument('a32nx-nd', A32NX_ND);

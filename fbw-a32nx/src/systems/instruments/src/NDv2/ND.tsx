@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { SimVarString } from '@shared/simvar';
 import { EfisNdMode, EfisNdRangeValue, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
@@ -26,6 +25,9 @@ import { Arinc429RegisterSubject } from '../MsfsAvionicsCommon/Arinc429RegisterS
 import { Chrono } from './Chrono';
 import { WindIndicator } from './shared/WindIndicator';
 import { TerrainMapThresholds } from './TerrainMapThresholds';
+import { Arinc429ConsumerSubject } from '../MsfsAvionicsCommon/Arinc429ConsumerSubject';
+import { TrackLine } from './shared/TrackLine';
+import { TrackBug } from './shared/TrackBug';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -55,10 +57,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
     private readonly trueTrackWord = Arinc429RegisterSubject.createEmpty();
 
     /** either magnetic or true heading depending on true ref mode */
-    private readonly headingWord = Arinc429RegisterSubject.createEmpty();
+    private readonly headingWord = Arinc429ConsumerSubject.create(null);
 
     /** either magnetic or true track depending on true ref mode */
-    private readonly trackWord = Arinc429RegisterSubject.createEmpty();
+    private readonly trackWord = Arinc429ConsumerSubject.create(null);
 
     private readonly trueRefActive = Subject.create(false);
 
@@ -127,7 +129,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         });
 
         sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
-            this.displayPowered.set(value === 1);
+            this.displayPowered.set(value);
         });
 
         sub.on('trueHeadingRaw').whenChanged().handle((value) => {
@@ -138,9 +140,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.trueTrackWord.setWord(value);
         });
 
-        sub.on('heading').whenChanged().handle((value) => this.headingWord.setWord(value));
+        this.headingWord.setConsumer(sub.on('heading'));
 
-        sub.on('track').whenChanged().handle((value) => this.trackWord.setWord(value));
+        this.trackWord.setConsumer(sub.on('track'));
 
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
@@ -219,7 +221,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     render(): VNode | null {
         return (
-            <DisplayUnit bus={this.props.bus} failed={this.displayFailed} powered={this.displayPowered} brightness={this.displayBrightness}>
+            <DisplayUnit bus={this.props.bus} failed={this.displayFailed} powered={this.displayPowered} brightness={this.displayBrightness} normDmc={getDisplayIndex()}>
                 {/* ND Vector graphics - bottom layer */}
                 <svg class="nd-svg" viewBox="0 0 768 768">
                     <RoseLSPage
@@ -301,6 +303,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                 {/* ND Vector graphics - top layer */}
                 <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768">
+                    <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+
                     <Airplane bus={this.props.bus} />
 
                     <Chrono bus={this.props.bus} />

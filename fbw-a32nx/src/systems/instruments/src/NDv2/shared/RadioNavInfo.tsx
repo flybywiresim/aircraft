@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode, DebounceTimer } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode, DebounceTimer } from '@microsoft/msfs-sdk';
 import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusPublisher';
 import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
@@ -132,7 +132,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                 this.identTimer.clear();
                 this.identVisible.set(false);
             }
-        });
+        }, true);
     }
 
     render(): VNode | null {

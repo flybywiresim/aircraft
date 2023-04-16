@@ -32,7 +32,7 @@ export const LnavConfig = {
     /**
      * Whether to use the L:A32NX_DEBUG_TAS and L:A32NX_DEBUG_GS LVar for prediction speeds
      */
-    DEBUG_USE_SPEED_LVARS: false,
+    DEBUG_USE_SPEED_LVARS: true,
 
     /**
      * Whether to force the drawing of course reversal (hold, proc turn) vectors at any point in the path

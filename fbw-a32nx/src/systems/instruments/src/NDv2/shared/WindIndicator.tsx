@@ -1,8 +1,9 @@
-import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, Subject, VNode } from '@microsoft/msfs-sdk';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
+import { Arinc429ConsumerSubject } from '../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
@@ -11,7 +12,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly windSpeedWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly planeHeadingWord = Arinc429RegisterSubject.createEmpty();
+    private readonly planeHeadingWord = Arinc429ConsumerSubject.create(null);
 
     private readonly windDirectionText = Subject.create('');
 
@@ -42,11 +43,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
             this.handleWindArrow();
         });
 
-        sub.on('heading').atFrequency(2).handle((value) => {
-            this.planeHeadingWord.setWord(value);
-
-            this.handleWindArrow();
-        });
+        this.planeHeadingWord.setConsumer(sub.on('heading').atFrequency(2));
     }
 
     private handleWindDirection() {

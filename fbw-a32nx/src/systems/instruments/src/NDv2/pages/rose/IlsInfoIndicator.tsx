@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, VNode, Subject, EventBus } from 'msfssdk';
+import { FSComponent, DisplayComponent, VNode, Subject, EventBus } from '@microsoft/msfs-sdk';
 import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
 

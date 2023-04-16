@@ -1,11 +1,12 @@
-import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType, Subject } from 'msfssdk';
+import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { Arinc429WordData } from '@shared/arinc429';
 import { Arinc429RegisterSubject } from '../Arinc429RegisterSubject';
 import { AdirsSimVars } from '../SimVarTypes';
 
 export interface DmcLogicEvents {
     trueRefActive: boolean,
-    heading: number,
-    track: number,
+    heading: Arinc429WordData,
+    track: Arinc429WordData,
 }
 
 export interface DmcDiscreteInputEvents {
@@ -17,13 +18,13 @@ export type DmcEvents = DmcLogicEvents & DmcDiscreteInputEvents;
 export class DmcPublisher extends SimVarPublisher<DmcDiscreteInputEvents> {
     private readonly irMaintWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly magHeading = Subject.create(0);
+    private readonly magHeading = Arinc429RegisterSubject.createEmpty();
 
-    private readonly trueHeading = Subject.create(0);
+    private readonly trueHeading = Arinc429RegisterSubject.createEmpty();
 
-    private readonly magTrack = Subject.create(0);
+    private readonly magTrack = Arinc429RegisterSubject.createEmpty();
 
-    private readonly trueTrack = Subject.create(0);
+    private readonly trueTrack = Arinc429RegisterSubject.createEmpty();
 
     private readonly trueRefPb = Subject.create(false);
 
@@ -57,10 +58,10 @@ export class DmcPublisher extends SimVarPublisher<DmcDiscreteInputEvents> {
 
         sub.on('irMaintWordRaw').whenChanged().handle((v) => this.irMaintWord.setWord(v));
         sub.on('trueRefPushButton').whenChanged().handle((v) => this.trueRefPb.set(v));
-        sub.on('magHeadingRaw').whenChanged().handle((v) => this.magHeading.set(v));
-        sub.on('magTrackRaw').whenChanged().handle((v) => this.magTrack.set(v));
-        sub.on('trueHeadingRaw').whenChanged().handle((v) => this.trueHeading.set(v));
-        sub.on('trueTrackRaw').whenChanged().handle((v) => this.trueTrack.set(v));
+        sub.on('magHeadingRaw').whenChanged().handle((v) => this.magHeading.setWord(v));
+        sub.on('magTrackRaw').whenChanged().handle((v) => this.magTrack.setWord(v));
+        sub.on('trueHeadingRaw').whenChanged().handle((v) => this.trueHeading.setWord(v));
+        sub.on('trueTrackRaw').whenChanged().handle((v) => this.trueTrack.setWord(v));
     }
 
     private handleTrueRef(): void {

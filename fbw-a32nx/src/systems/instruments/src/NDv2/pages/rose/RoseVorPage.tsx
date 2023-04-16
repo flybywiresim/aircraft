@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { FSComponent, DisplayComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429WordData } from '@shared/arinc429';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { EfisNdMode } from '@shared/NavigationDisplay';
@@ -12,6 +12,7 @@ import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429Reg
 import { NDControlEvents } from '../../NDControlEvents';
 import { VorInfoIndicator } from './VorInfoIndicator';
 import { RadioNeedle } from '../../shared/RadioNeedle';
+import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface RoseVorProps extends RoseModeProps {
     index: 1 | 2,
@@ -20,7 +21,7 @@ export interface RoseVorProps extends RoseModeProps {
 export class RoseVorPage extends RoseMode<RoseVorProps> {
     isVisible = Subject.create(false);
 
-    private readonly headingWord = Arinc429RegisterSubject.createEmpty();
+    private readonly headingWord = Arinc429ConsumerSubject.create(null);
 
     private readonly courseSub = Subject.create(0);
 
@@ -43,7 +44,7 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
 
         const index = this.props.index;
 
-        sub.on('heading').whenChanged().handle((v) => this.headingWord.setWord(v));
+        this.headingWord.setConsumer(sub.on('heading'));
 
         sub.on(`nav${index}Obs`).whenChanged().handle((v) => this.courseSub.set(v));
 
@@ -90,11 +91,6 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
                     course={this.courseSub}
                     courseDeviation={this.courseDeviationSub}
                     vorAvailable={this.vorAvailableSub}
-                />
-
-                <TrackBug
-                    bus={this.props.bus}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                 />
 
                 <Flag visible={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>

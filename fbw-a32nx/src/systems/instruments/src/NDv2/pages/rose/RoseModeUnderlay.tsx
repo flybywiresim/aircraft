@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, ComponentProps, Subject, Subscribable, VNode, EventBus } from 'msfssdk';
+import { FSComponent, DisplayComponent, ComponentProps, Subject, Subscribable, VNode, EventBus } from '@microsoft/msfs-sdk';
 import { Arinc429WordData } from '@shared/arinc429';
 import { rangeSettings } from '@shared/NavigationDisplay';
 import { MathUtils } from '@shared/MathUtils';

@@ -1,4 +1,4 @@
-import { FSComponent, ComponentProps, Subscribable, Subject, EventBus } from 'msfssdk';
+import { FSComponent, ComponentProps, Subscribable, Subject, EventBus } from '@microsoft/msfs-sdk';
 import { Arinc429WordData } from '@shared/arinc429';
 import { EfisNdRangeValue } from '@shared/NavigationDisplay';
 import { NDPage } from '../NDPage';

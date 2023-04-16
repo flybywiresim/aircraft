@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode, EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags, NdTraffic } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { Coordinates, distanceTo } from 'msfs-geo';

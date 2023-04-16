@@ -1,4 +1,4 @@
-import { FSComponent, ComponentProps, DisplayComponent, EventBus, Subject, VNode, MappedSubject } from 'msfssdk';
+import { FSComponent, ComponentProps, DisplayComponent, EventBus, Subject, VNode, MappedSubject } from '@microsoft/msfs-sdk';
 import { Layer } from 'instruments/src/MsfsAvionicsCommon/Layer';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { FMBusEvents } from '../../../MsfsAvionicsCommon/providers/FMBusPublisher';
@@ -99,13 +99,13 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
                     {this.props.index.toString()}
                 </text>
 
-                <g visibility={this.vorAvailable.map(this.visibilityFn)}>
-                    <text x={0} y={0} font-size={25} class="White" text-anchor="end">
+                <g visibility={this.vorAvailable.map(this.visibilityFn)} class="White" text-anchor="end">
+                    <text x={0} y={0} font-size={25}>
                         {this.frequencyIntTextSub}
-                        <tspan font-size={20}>
-                            .
-                            {this.frequencyDecimalTextSub}
-                        </tspan>
+                    </text>
+                    <text x={60} y={0} font-size={20}>
+                        .
+                        {this.frequencyDecimalTextSub}
                     </text>
                 </g>
 

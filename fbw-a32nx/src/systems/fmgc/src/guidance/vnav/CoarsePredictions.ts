@@ -22,11 +22,11 @@ export class CoarsePredictions {
                 continue;
             }
 
-            if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
-                leg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
-                leg.predictedGs = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_GS', 'knots');
-                continue;
-            }
+            // if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
+            leg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
+            leg.predictedGs = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_GS', 'knots');
+            continue;
+            // }
 
             const alt = wp.additionalData.predictedAltitude;
             const cas = wp.additionalData.predictedSpeed;

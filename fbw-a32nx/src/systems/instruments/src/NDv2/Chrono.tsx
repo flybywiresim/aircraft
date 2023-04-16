@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, Subject, VNode, ComponentProps, EventBus } from 'msfssdk';
+import { FSComponent, DisplayComponent, Subject, VNode, ComponentProps, EventBus } from '@microsoft/msfs-sdk';
 import { NDControlEvents } from './NDControlEvents';
 import { NDSimvars } from './NDSimvarPublisher';
 

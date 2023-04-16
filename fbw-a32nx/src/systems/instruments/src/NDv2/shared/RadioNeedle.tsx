@@ -1,5 +1,5 @@
-import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode, MappedSubject, ClockEvents } from 'msfssdk';
-import { EfisNdMode, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
+import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode, MappedSubject, ClockEvents } from '@microsoft/msfs-sdk';
+import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
 import { Arinc429WordData } from '@shared/arinc429';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';

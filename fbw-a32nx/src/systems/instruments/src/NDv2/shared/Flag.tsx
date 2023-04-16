@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 export interface FlagProps {
     x: Subscribable<number> | number,

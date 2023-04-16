@@ -110,7 +110,7 @@ export class DmeArcTransition extends Transition {
             }
         } else if (this.nextLeg instanceof AFLeg) {
             const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
-            const reference = placeBearingDistance(this.previousLeg.getPathEndPoint(), this.previousLeg.outboundCourse + 90 * turnDirection, this.radius);
+            const reference = placeBearingDistance(this.previousLeg.getPathStartPoint(), this.previousLeg.outboundCourse + 90 * turnDirection, this.radius);
             const dme = this.nextLeg.centre;
 
             let turnCentre;

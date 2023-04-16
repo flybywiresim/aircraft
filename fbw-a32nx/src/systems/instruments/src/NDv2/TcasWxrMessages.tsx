@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, VNode, Subject, MappedSubject, EventBus, Subscribable } from 'msfssdk';
+import { FSComponent, DisplayComponent, VNode, Subject, MappedSubject, EventBus, Subscribable } from '@microsoft/msfs-sdk';
 import { EfisNdMode, TcasWxrMessage } from '@shared/NavigationDisplay';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { TcasSimVars } from '../MsfsAvionicsCommon/providers/TcasBusPublisher';

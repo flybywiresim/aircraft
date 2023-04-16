@@ -1,4 +1,4 @@
-import { FSComponent, Subject, VNode } from 'msfssdk';
+import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode } from '@shared/NavigationDisplay';
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { TrackBug } from '../../shared/TrackBug';
@@ -56,11 +56,6 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
                 />
 
                 {/* FIXME LOC indications */}
-
-                <TrackBug
-                    bus={this.props.bus}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                />
             </g>
         );
     }

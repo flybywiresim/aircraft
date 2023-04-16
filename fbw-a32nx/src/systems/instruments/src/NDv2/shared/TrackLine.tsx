@@ -1,26 +1,33 @@
-import { FSComponent, DisplayComponent, EventBus, VNode, MappedSubject, Subscribable, ConsumerSubject } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, VNode, MappedSubject, Subscribable, ConsumerSubject } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@shared/MathUtils';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { NDSimvars } from '../NDSimvarPublisher';
 import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
-import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { FcuSimVars } from '../../MsfsAvionicsCommon/providers/FcuBusPublisher';
+import { Arinc429ConsumerSubject } from '../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface TrackLineProps {
     bus: EventBus,
-    x: number,
-    y: number,
     isUsingTrackUpMode: Subscribable<boolean>,
 }
+
+const TRACK_LINE_Y_POSITION = {
+    [EfisNdMode.ROSE_NAV]: 384,
+    [EfisNdMode.ARC]: 620,
+};
 
 export class TrackLine extends DisplayComponent<TrackLineProps> {
     private readonly lineRef = FSComponent.createRef<SVGLineElement>();
 
-    private headingWord = Arinc429RegisterSubject.createEmpty();
+    private readonly sub = this.props.bus.getSubscriber<DmcEvents & FGVars & NDSimvars & FcuSimVars>();
 
-    private trackWord =Arinc429RegisterSubject.createEmpty();
+    private readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode').whenChanged(), EfisNdMode.ARC);
 
-    private readonly sub = this.props.bus.getSubscriber<DmcEvents & FGVars & NDSimvars>();
+    private headingWord = Arinc429ConsumerSubject.create(null);
+
+    private trackWord = Arinc429ConsumerSubject.create(null);
 
     private lateralModeSub = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode').whenChanged(), null);
 
@@ -38,36 +45,28 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
         return 0;
     }, this.headingWord, this.trackWord);
 
+    private readonly y = this.ndMode.map((mode) => TRACK_LINE_Y_POSITION[mode] ?? 0);
+
+    private readonly transform = MappedSubject.create(([rotation, y]) => {
+        return `rotate(${rotation} 384 ${y})`;
+    }, this.rotate, this.y);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        this.sub.on('heading').whenChanged().handle((v) => {
-            const oldSsm = this.headingWord.get().ssm;
+        this.headingWord.setConsumer(this.sub.on('heading'));
+        this.trackWord.setConsumer(this.sub.on('track'));
 
-            this.headingWord.setWord(v);
-
-            // FIXME make this not sus
-            if (this.headingWord.get().ssm !== oldSsm) {
-                this.handleLineVisibility();
-            }
-        });
-
-        this.sub.on('track').whenChanged().handle((v) => {
-            const oldSsm = this.trackWord.get().ssm;
-
-            this.trackWord.setWord(v);
-
-            // FIXME make this not sus
-            if (this.trackWord.get().ssm !== oldSsm) {
-                this.handleLineVisibility();
-            }
-        });
-
+        this.headingWord.sub(() => this.handleLineVisibility());
+        this.trackWord.sub(() => this.handleLineVisibility());
         this.lateralModeSub.sub(() => this.handleLineVisibility());
         this.lateralArmedSub.sub(() => this.handleLineVisibility());
+        this.ndMode.sub(() => this.handleLineVisibility());
     }
 
     private handleLineVisibility() {
+        const wrongNDMode = TRACK_LINE_Y_POSITION[this.ndMode.get()] === undefined;
+
         const headingInvalid = !this.headingWord.get().isNormalOperation();
         const trackInvalid = !this.trackWord.get().isNormalOperation();
 
@@ -77,7 +76,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
         const shouldShowLine = (lateralMode === LateralMode.NONE || lateralMode === LateralMode.HDG || lateralMode === LateralMode.TRACK)
             && !isArmed(lateralArmed, ArmedLateralMode.NAV);
 
-        if (headingInvalid || trackInvalid || !shouldShowLine) {
+        if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {
             this.lineRef.instance.style.visibility = 'hidden';
         } else {
             this.lineRef.instance.style.visibility = 'inherit';
@@ -86,9 +85,9 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
 
     render(): VNode | null {
         return (
-            <g ref={this.lineRef} transform={this.rotate.map((rotate) => `rotate(${rotate} ${this.props.x} ${this.props.y})`)}>
-                <line x1={384} y1={149} x2={this.props.x} y2={this.props.y} class="rounded shadow" stroke-width={3.0} />
-                <line x1={384} y1={149} x2={this.props.x} y2={this.props.y} class="rounded Green" stroke-width={2.5} />
+            <g ref={this.lineRef} transform={this.transform}>
+                <line x1={384} y1={149} x2={384} y2={this.y} class="rounded shadow" stroke-width={3.0} />
+                <line x1={384} y1={149} x2={384} y2={this.y} class="rounded Green" stroke-width={2.5} />
             </g>
         );
     }

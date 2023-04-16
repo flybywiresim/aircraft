@@ -1,4 +1,4 @@
-import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, ConsumerSubject } from 'msfssdk';
+import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, ConsumerSubject } from '@microsoft/msfs-sdk';
 import { Arinc429Register, Arinc429WordData } from '@shared/arinc429';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { PlanModeUnderlay } from './PlanModeUnderlay';

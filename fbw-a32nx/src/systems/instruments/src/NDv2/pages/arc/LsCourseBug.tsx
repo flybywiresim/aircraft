@@ -1,8 +1,9 @@
-import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface LsCourseBugProps {
     bus: EventBus,
@@ -12,7 +13,7 @@ export interface LsCourseBugProps {
 export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
     private readonly diffSubject = Subject.create(0);
 
-    private readonly headingWord = Arinc429RegisterSubject.createEmpty();
+    private readonly headingWord = Arinc429ConsumerSubject.create(null);
 
     private readonly ilsCourse = Subject.create(0);
 
@@ -33,10 +34,7 @@ export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
 
         const sub = this.props.bus.getSubscriber<DmcEvents & NDSimvars>();
 
-        sub.on('heading').whenChanged().handle((v) => {
-            this.headingWord.setWord(v);
-            this.handleDisplay();
-        });
+        this.headingWord.setConsumer(sub.on('heading'));
 
         sub.on('ilsCourse').whenChanged().handle((v) => {
             this.ilsCourse.set(v);

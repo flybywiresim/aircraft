@@ -1,4 +1,4 @@
-import { FSComponent, ConsumerSubject, DisplayComponent, EventBus, VNode, MappedSubject } from 'msfssdk';
+import { FSComponent, ConsumerSubject, DisplayComponent, EventBus, VNode, MappedSubject } from '@microsoft/msfs-sdk';
 import { EgpwcSimVars, TerrainLevelMode } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 
 export interface TerrainMapThresholdsProps {

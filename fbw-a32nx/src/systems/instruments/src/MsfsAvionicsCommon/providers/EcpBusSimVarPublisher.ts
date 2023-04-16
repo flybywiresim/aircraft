@@ -1,4 +1,4 @@
-import { EventBus, SimVarValueType, Subject } from 'msfssdk';
+import { EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { EfisNdMode, EfisOption, NavAidMode } from '@shared/NavigationDisplay';
 import { SwitchableSimVarProvider } from './SwitchableProvider';
 

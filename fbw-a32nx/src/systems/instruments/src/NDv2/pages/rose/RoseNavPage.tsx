@@ -1,8 +1,6 @@
-import { ConsumerSubject, FSComponent, Subject, VNode } from 'msfssdk';
+import { ConsumerSubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { RoseMode } from './RoseMode';
-import { TrackLine } from '../../shared/TrackLine';
-import { TrackBug } from '../../shared/TrackBug';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
@@ -106,17 +104,6 @@ export class RoseNavPage extends RoseMode {
                     index={2}
                     mode={EfisNdMode.ROSE_NAV}
                     centreHeight={384}
-                />
-
-                <TrackLine
-                    bus={this.props.bus}
-                    x={384}
-                    y={384}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                />
-                <TrackBug
-                    bus={this.props.bus}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                 />
             </g>
         );

@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, Subject, Subscribable, VNode, EventBus, MappedSubject } from 'msfssdk';
+import { FSComponent, DisplayComponent, Subject, Subscribable, VNode, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
 import { FmsVars } from '../../MsfsAvionicsCommon/providers/FmsDataPublisher';
 
 export interface CrossTrackErrorProps {

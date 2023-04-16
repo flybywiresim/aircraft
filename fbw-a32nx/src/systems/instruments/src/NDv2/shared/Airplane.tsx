@@ -1,15 +1,16 @@
-import { FSComponent, DisplayComponent, VNode, Subject, EventBus, MappedSubject } from 'msfssdk';
+import { FSComponent, DisplayComponent, VNode, Subject, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { NDControlEvents } from '../NDControlEvents';
-import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { Arinc429ConsumerSubject } from '../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
+import { LubberLine } from '../pages/arc/LubberLine';
 
 const PLANE_X_OFFSET = -41;
 const PLANE_Y_OFFSET = 0;
 
 export class Airplane extends DisplayComponent<{ bus: EventBus }> {
-    private readonly headingWord = Arinc429RegisterSubject.createEmpty();
+    private readonly headingWord = Arinc429ConsumerSubject.create(null);
 
     private readonly headingWordValid = this.headingWord.map((it) => it.isNormalOperation());
 
@@ -30,7 +31,7 @@ export class Airplane extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcEvents & NDControlEvents>();
 
-        sub.on('heading').whenChanged().handle((v) => this.headingWord.setWord(v));
+        this.headingWord.setConsumer(sub.on('heading'));
 
         sub.on('set_show_plane').handle((show) => {
             this.showPlane.set(show);
@@ -51,34 +52,38 @@ export class Airplane extends DisplayComponent<{ bus: EventBus }> {
 
     render(): VNode | null {
         return (
-            <Layer
-                x={this.x.map((x) => x + PLANE_X_OFFSET)}
-                y={this.y.map((y) => y + PLANE_Y_OFFSET)}
-            >
-                <g visibility={this.planeVisibility.map((it) => (it ? 'inherit' : 'hidden'))} transform={this.rotation.map((rotation) => `rotate(${rotation} ${-PLANE_X_OFFSET} 0)`)}>
-                    <path
-                        class="shadow"
-                        stroke-width={8}
-                        stroke-linecap="round"
-                        d="M 0, 0 h 82 m -41, -29.5 v 70.25 m -11.5, -9.75 h 23.5"
-                    />
-                    <path
-                        class="Yellow"
-                        stroke-width={5}
-                        stroke-linecap="round"
-                        d="M 0, 0 h 82 m -41, -29.5 v 70.25 m -11.5, -9.75 h 23.5"
-                    />
-                </g>
+            <>
+                <Layer
+                    x={this.x.map((x) => x + PLANE_X_OFFSET)}
+                    y={this.y.map((y) => y + PLANE_Y_OFFSET)}
+                >
+                    <g visibility={this.planeVisibility.map((it) => (it ? 'inherit' : 'hidden'))} transform={this.rotation.map((rotation) => `rotate(${rotation} ${-PLANE_X_OFFSET} 0)`)}>
+                        <path
+                            class="shadow"
+                            stroke-width={8}
+                            stroke-linecap="round"
+                            d="M 0, 0 h 82 m -41, -29.5 v 70.25 m -11.5, -9.75 h 23.5"
+                        />
+                        <path
+                            class="Yellow"
+                            stroke-width={5}
+                            stroke-linecap="round"
+                            d="M 0, 0 h 82 m -41, -29.5 v 70.25 m -11.5, -9.75 h 23.5"
+                        />
+                    </g>
 
-                <circle
-                    class="Red"
-                    stroke-width={2}
-                    visibility={this.circleVisibility.map((it) => (it ? 'inherit' : 'hidden'))}
-                    cx={-PLANE_X_OFFSET}
-                    cy={-PLANE_Y_OFFSET}
-                    r={9}
-                />
-            </Layer>
+                    <circle
+                        class="Red"
+                        stroke-width={2}
+                        visibility={this.circleVisibility.map((it) => (it ? 'inherit' : 'hidden'))}
+                        cx={-PLANE_X_OFFSET}
+                        cy={-PLANE_Y_OFFSET}
+                        r={9}
+                    />
+                </Layer>
+
+                <LubberLine bus={this.props.bus} visible={this.planeVisibility} rotation={this.rotation} />
+            </>
         );
     }
 }
