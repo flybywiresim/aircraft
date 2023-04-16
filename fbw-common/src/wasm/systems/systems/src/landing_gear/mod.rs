@@ -17,6 +17,7 @@ use uom::si::{
     angle::degree,
     f64::*,
     length::meter,
+    mass::kilogram,
     ratio::{percent, ratio},
 };
 

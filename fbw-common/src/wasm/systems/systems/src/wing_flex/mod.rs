@@ -1,8 +1,8 @@
 use crate::shared::interpolation;
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::simulation::{
-    InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
-    VariableIdentifier, Write,
+    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -14,7 +14,7 @@ use uom::si::{
     mass::kilogram,
     mass_density::kilogram_per_cubic_meter,
     power::watt,
-    ratio::ratio,
+    ratio::{percent, ratio},
     thermodynamic_temperature::kelvin,
     torque::newton_meter,
     velocity::knot,
@@ -23,57 +23,172 @@ use uom::si::{
 
 use std::time::Duration;
 
-pub struct WingFlex {
-    left_compression_id: VariableIdentifier,
-    right_compression_id: VariableIdentifier,
+pub enum GearWheelHeavy {
+    NOSE = 0,
+    LEFT_BODY = 1,
+    RIGHT_BODY = 2,
+    LEFT_WING = 3,
+    RIGHT_WING = 4,
+}
+pub struct LandingGearHeavy {
+    center_compression_id: VariableIdentifier,
 
-    left_comp: Ratio,
-    right_comp: Ratio,
+    left_wing_compression_id: VariableIdentifier,
+    right_wing_compression_id: VariableIdentifier,
+
+    left_body_compression_id: VariableIdentifier,
+    right_body_compression_id: VariableIdentifier,
+
+    center_compression: Ratio,
+    left_wing_compression: Ratio,
+    right_wing_compression: Ratio,
+    left_body_compression: Ratio,
+    right_body_compression: Ratio,
+}
+impl LandingGearHeavy {
+    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.01;
+
+    pub const GEAR_CENTER_COMPRESSION: &'static str = "GEAR ANIMATION POSITION";
+    pub const GEAR_LEFT_BODY_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
+    pub const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:2";
+    pub const GEAR_LEFT_WING_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:3";
+    pub const GEAR_RIGHT_WING_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:4";
+
+    pub fn new(context: &mut InitContext) -> Self {
+        Self {
+            center_compression_id: context.get_identifier(Self::GEAR_CENTER_COMPRESSION.to_owned()),
+            left_wing_compression_id: context
+                .get_identifier(Self::GEAR_LEFT_WING_COMPRESSION.to_owned()),
+            right_wing_compression_id: context
+                .get_identifier(Self::GEAR_RIGHT_WING_COMPRESSION.to_owned()),
+            left_body_compression_id: context
+                .get_identifier(Self::GEAR_LEFT_BODY_COMPRESSION.to_owned()),
+            right_body_compression_id: context
+                .get_identifier(Self::GEAR_RIGHT_BODY_COMPRESSION.to_owned()),
+
+            center_compression: Ratio::new::<percent>(0.),
+            left_wing_compression: Ratio::new::<percent>(0.),
+            right_wing_compression: Ratio::new::<percent>(0.),
+            left_body_compression: Ratio::new::<percent>(0.),
+            right_body_compression: Ratio::new::<percent>(0.),
+        }
+    }
+
+    fn is_any_on_ground(&self) -> bool {
+        self.wheel_id_compression(GearWheelHeavy::NOSE)
+            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+            || self.wheel_id_compression(GearWheelHeavy::LEFT_BODY)
+                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+            || self.wheel_id_compression(GearWheelHeavy::RIGHT_BODY)
+                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+            || self.wheel_id_compression(GearWheelHeavy::LEFT_WING)
+                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+            || self.wheel_id_compression(GearWheelHeavy::RIGHT_WING)
+                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+    }
+
+    fn wheel_id_compression(&self, wheel_id: GearWheelHeavy) -> Ratio {
+        match wheel_id {
+            GearWheelHeavy::NOSE => self.center_compression,
+            GearWheelHeavy::LEFT_WING => self.left_wing_compression,
+            GearWheelHeavy::RIGHT_WING => self.right_wing_compression,
+            GearWheelHeavy::LEFT_BODY => self.left_body_compression,
+            GearWheelHeavy::RIGHT_BODY => self.right_body_compression,
+        }
+    }
+
+    fn total_weight_on_wheels(&self) -> Mass {
+        println!(
+            "WoW = c{:.0} lwrw{:.0}/{:.0} lbrb{:.0}/{:.0} TOT{:.0}",
+            self.weight_on_wheel(GearWheelHeavy::NOSE).get::<kilogram>(),
+            self.weight_on_wheel(GearWheelHeavy::LEFT_WING)
+                .get::<kilogram>(),
+            self.weight_on_wheel(GearWheelHeavy::RIGHT_WING)
+                .get::<kilogram>(),
+            self.weight_on_wheel(GearWheelHeavy::LEFT_BODY)
+                .get::<kilogram>(),
+            self.weight_on_wheel(GearWheelHeavy::RIGHT_BODY)
+                .get::<kilogram>(),
+            (self.weight_on_wheel(GearWheelHeavy::NOSE)
+                + self.weight_on_wheel(GearWheelHeavy::LEFT_WING)
+                + self.weight_on_wheel(GearWheelHeavy::RIGHT_WING)
+                + self.weight_on_wheel(GearWheelHeavy::LEFT_BODY)
+                + self.weight_on_wheel(GearWheelHeavy::RIGHT_BODY))
+            .get::<kilogram>()
+        );
+        self.weight_on_wheel(GearWheelHeavy::NOSE)
+            + self.weight_on_wheel(GearWheelHeavy::LEFT_WING)
+            + self.weight_on_wheel(GearWheelHeavy::RIGHT_WING)
+            + self.weight_on_wheel(GearWheelHeavy::LEFT_BODY)
+            + self.weight_on_wheel(GearWheelHeavy::RIGHT_BODY)
+    }
+
+    fn weight_on_wheel(&self, wheel_id: GearWheelHeavy) -> Mass {
+        match wheel_id {
+            GearWheelHeavy::NOSE => {
+                Mass::new::<kilogram>(4.5 * self.center_compression.get::<percent>().powi(2))
+            }
+            GearWheelHeavy::LEFT_WING => {
+                Mass::new::<kilogram>(9. * self.left_wing_compression.get::<percent>().powi(2))
+            }
+            GearWheelHeavy::RIGHT_WING => {
+                Mass::new::<kilogram>(9. * self.right_wing_compression.get::<percent>().powi(2))
+            }
+            GearWheelHeavy::LEFT_BODY => {
+                Mass::new::<kilogram>(9. * self.left_body_compression.get::<percent>().powi(2))
+            }
+            GearWheelHeavy::RIGHT_BODY => {
+                Mass::new::<kilogram>(9. * self.right_body_compression.get::<percent>().powi(2))
+            }
+        }
+    }
+}
+impl SimulationElement for LandingGearHeavy {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let center: f64 = reader.read(&self.center_compression_id);
+        let left_body: f64 = reader.read(&self.left_body_compression_id);
+        let right_body: f64 = reader.read(&self.right_body_compression_id);
+        let left_wing: f64 = reader.read(&self.left_wing_compression_id);
+        let right_wing: f64 = reader.read(&self.right_wing_compression_id);
+
+        self.center_compression = Ratio::new::<ratio>((center - 0.5) * 2.);
+        self.left_wing_compression = Ratio::new::<ratio>((left_wing - 0.5) * 2.);
+        self.right_wing_compression = Ratio::new::<ratio>((right_wing - 0.5) * 2.);
+        self.left_body_compression = Ratio::new::<ratio>((left_body - 0.5) * 2.);
+        self.right_body_compression = Ratio::new::<ratio>((right_body - 0.5) * 2.);
+
+        println!(
+            "center raw read {:.2} Center comp read {:.2}  lw{:.2} lb{:.2}",
+            center,
+            self.center_compression.get::<percent>(),
+            self.left_wing_compression.get::<percent>(),
+            self.left_body_compression.get::<percent>()
+        );
+    }
+}
+
+pub struct WingFlex {
+    gear_weight_on_wheels: LandingGearHeavy,
 }
 impl WingFlex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            left_compression_id: context.get_identifier(format!("GEAR ANIMATION POSITION:{}", 1)),
-            right_compression_id: context.get_identifier(format!("GEAR ANIMATION POSITION:{}", 2)),
-            left_comp: Ratio::default(),
-            right_comp: Ratio::default(),
+            gear_weight_on_wheels: LandingGearHeavy::new(context),
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        let compression_brkpoints = [0.5, 0.6, 0.7, 0.8];
-        let compression_coeff_map = [0., 0.2, 0.95, 1.2];
-
-        let left_gear_weight_coeff = interpolation(
-            &compression_brkpoints,
-            &compression_coeff_map,
-            self.left_comp.get::<ratio>(),
-        );
-        let right_gear_weight_coeff = interpolation(
-            &compression_brkpoints,
-            &compression_coeff_map,
-            self.right_comp.get::<ratio>(),
-        );
+        let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
         let accel_y = context.acceleration_plane_reference_filtered_ms2_vector()[1];
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
         let cur_weight_kg = context.total_weight().get::<kilogram>();
 
-        let left_gear_weight = left_gear_weight_coeff * cur_weight_kg / 2.;
-        let right_gear_weight = right_gear_weight_coeff * cur_weight_kg / 2.;
-
-        println!(
-            "GEAR WEIGHTS {:.0}/{:.0}",
-            left_gear_weight, right_gear_weight
-        );
-
         let lift = 9.8 * cur_weight_kg + raw_accel_no_grav * cur_weight_kg
-            - 9.8 * (left_gear_weight + right_gear_weight);
+            - 9.8 * total_weight_on_wheels.get::<kilogram>();
 
         println!(
-            "COMPS {:.2}/{:.2}   Weight:{:.1}Tons AccelY {:.3}  rawAccelNoG {:1} LIFT {:.0} Kg",
-            self.left_comp.get::<ratio>(),
-            self.right_comp.get::<ratio>(),
+            " Weight:{:.1}Tons AccelY {:.3}  rawAccelNoG {:1} LIFT {:.0} Kg",
             cur_weight_kg / 1000.,
             accel_y,
             raw_accel_no_grav,
@@ -82,14 +197,17 @@ impl WingFlex {
     }
 }
 impl SimulationElement for WingFlex {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.gear_weight_on_wheels.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         // writer.write(&self.tilt_animation_id, self.tilt_position.get::<ratio>());
     }
 
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.left_comp = reader.read(&self.left_compression_id);
-        self.right_comp = reader.read(&self.right_compression_id);
-    }
+    fn read(&mut self, reader: &mut SimulatorReader) {}
 }
 
 #[cfg(test)]
