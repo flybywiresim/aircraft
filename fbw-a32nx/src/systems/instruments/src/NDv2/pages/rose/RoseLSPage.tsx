@@ -1,7 +1,6 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode } from '@shared/NavigationDisplay';
 import { RoseMode, RoseModeProps } from './RoseMode';
-import { TrackBug } from '../../shared/TrackBug';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { NDControlEvents } from '../../NDControlEvents';
 import { IlsInfoIndicator } from './IlsInfoIndicator';

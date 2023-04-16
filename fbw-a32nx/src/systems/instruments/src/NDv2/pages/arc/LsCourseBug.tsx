@@ -2,7 +2,6 @@ import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscr
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
-import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface LsCourseBugProps {
