@@ -271,6 +271,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         aircraftTrueHeading={this.trueHeadingWord}
                     />
 
+                    <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
                     <ToWaypointIndicator bus={this.props.bus} />
@@ -312,9 +315,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                 {/* ND Vector graphics - top layer */}
                 <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768">
-                    <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
-                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
-
                     <Airplane bus={this.props.bus} />
 
                     <Chrono bus={this.props.bus} />
