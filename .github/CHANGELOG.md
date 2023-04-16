@@ -123,6 +123,8 @@
 1. [LIGHTS] Redid all cockpit interior lighting and fixed exterior wing lights - @FinalLightNL (FinalLight#2113)
 1. [BLEED] Add pressure sensors to bleed system - @BlueberryKing (BlueberryKing#6641)
 1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
+1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
+1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
 
 
 ## 0.9.0
