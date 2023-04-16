@@ -223,7 +223,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         return (
             <DisplayUnit bus={this.props.bus} failed={this.displayFailed} powered={this.displayPowered} brightness={this.displayBrightness} normDmc={getDisplayIndex()}>
                 {/* ND Vector graphics - bottom layer */}
-                <svg class="nd-svg" viewBox="0 0 768 768">
+                <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
                     <RoseLSPage
                         bus={this.props.bus}
                         ref={this.roseLSPage}
@@ -314,7 +314,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                 />
 
                 {/* ND Vector graphics - top layer */}
-                <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768">
+                <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
                     <Airplane bus={this.props.bus} />
 
                     <Chrono bus={this.props.bus} />
