@@ -15,6 +15,7 @@ import { RunwayLayer } from './RunwayLayer';
 import { TrafficLayer } from './TrafficLayer';
 import { FixInfoLayer } from './FixInfoLayer';
 import { NDControlEvents } from '../../NDControlEvents';
+import { PseudoWaypointLayer } from './PseudoWaypointLayer';
 
 const ARC_CLIP = new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312');
 
@@ -79,6 +80,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly fixInfoLayer = new FixInfoLayer();
 
     private readonly runwayLayer = new RunwayLayer();
+
+    private readonly pwpLayer = new PseudoWaypointLayer();
 
     private readonly trafficLayer = new TrafficLayer(this);
 
@@ -210,6 +213,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         const runways = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Runway);
 
         this.runwayLayer.data = runways;
+
+        const pseudoWaypoints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.PwpDecel);
+
+        this.pwpLayer.data = pseudoWaypoints;
     }
 
     private handleNewTraffic(newTraffic: NdTraffic[]) {
@@ -290,9 +297,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         }
         context.resetTransform();
 
-        this.constraintsLayer.paintShadowLayer(context, size, size, this.mapParams);
-        this.constraintsLayer.paintColorLayer(context, size, size, this.mapParams);
-
         for (const key in this.vectors) {
             if (this.vectors[key].length > 0) {
                 context.beginPath();
@@ -303,6 +307,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             }
         }
 
+        this.constraintsLayer.paintShadowLayer(context, size, size, this.mapParams);
+        this.constraintsLayer.paintColorLayer(context, size, size, this.mapParams);
+
         this.waypointLayer.paintShadowLayer(context, size, size, this.mapParams);
         this.waypointLayer.paintColorLayer(context, size, size, this.mapParams);
 
@@ -311,6 +318,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.runwayLayer.paintShadowLayer(context, size, size, this.mapParams);
         this.runwayLayer.paintColorLayer(context, size, size, this.mapParams);
+
+        this.pwpLayer.paintShadowLayer(context, size, size, this.mapParams);
+        this.pwpLayer.paintColorLayer(context, size, size, this.mapParams);
 
         this.trafficLayer.paintShadowLayer(context, size, size);
         this.trafficLayer.paintColorLayer(context, size, size);
@@ -372,7 +382,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             break;
         }
         default:
-            throw new Error(`Unknown path vector type: ${vector.type}`);
+            break;
         }
     }
 

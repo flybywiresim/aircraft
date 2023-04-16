@@ -81,7 +81,7 @@ export class PseudoWaypoints implements GuidanceComponent {
                     sequencingType: PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE,
                     alongLegIndex,
                     distanceFromLegTermination,
-                    efisSymbolFlag: NdSymbolTypeFlags.PwpDecel,
+                    efisSymbolFlag: NdSymbolTypeFlags.PwpDecel & NdSymbolTypeFlags.MagentaColor,
                     efisSymbolLla,
                     displayedOnMcdu: true,
                     stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_DECEL, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
