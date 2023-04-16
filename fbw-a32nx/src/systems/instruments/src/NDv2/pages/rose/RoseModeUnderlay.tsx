@@ -70,9 +70,9 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
                 <RoseMoveOverlayDefs />
 
                 {/* C = 384,384 */}
-                <g transform="rotateX(0deg)" class={this.ringColor} stroke-width={2} fill="none">
+                <g transform="rotateX(0deg)" stroke-width={2} fill="none">
                     <g clip-path="url(#rose-mode-overlay-clip)">
-                        <g transform={this.headingRingTransform}>
+                        <g transform={this.headingRingTransform} class={this.ringColor}>
                             <RoseModeOverlayHeadingRing headingValid={this.headingValid} />
                         </g>
                     </g>
@@ -80,6 +80,7 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
                     {/* R = 125, middle range ring */}
                     <g ref={this.middleRingNoTcasShown}>
                         <path
+                            class={this.ringColor}
                             d="M 509 384 A 125 125 0 0 1 259 384 M 259 384 A 125 125 180 0 1 509 384"
                             stroke-dasharray="15 10"
                             stroke-dashoffset="-4.2"
@@ -87,7 +88,7 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
                     </g>
 
                     {/* middle range ring replaced with tcas range ticks */}
-                    <g ref={this.middleRingTcasShown}>
+                    <g ref={this.middleRingTcasShown} class={this.ringColor}>
                         <line x1={384} x2={384} y1={264} y2={254} class="rounded White" transform="rotate(0 384 384)" />
                         <line x1={384} x2={384} y1={264} y2={254} class="rounded White" transform="rotate(30 384 384)" />
                         <line x1={384} x2={384} y1={264} y2={254} class="rounded White" transform="rotate(60 384 384)" />
@@ -103,7 +104,7 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
                     </g>
 
                     {/* R = 62, tcas range ticks */}
-                    <g ref={this.smallRingNoTcasShown}>
+                    <g ref={this.smallRingNoTcasShown} class={this.ringColor}>
                         <line x1={384} x2={384} y1={327} y2={317} class="rounded White" transform="rotate(0 384 384)" />
                         <line x1={384} x2={384} y1={327} y2={317} class="rounded White" transform="rotate(30 384 384)" />
                         <line x1={384} x2={384} y1={327} y2={317} class="rounded White" transform="rotate(60 384 384)" />
@@ -119,14 +120,14 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
                     </g>
 
                     <text x={212} y={556} class="Cyan" font-size={22}>
-                        { this.rangeValue.get() / 2}
+                        {this.rangeValue.map((it) => (it / 2).toString())}
                     </text>
                     <text x={310} y={474} class="Cyan" font-size={22}>
-                        { this.rangeValue.get() / 4 }
+                        {this.rangeValue.map((it) => (it / 4).toString())}
                     </text>
 
                     {/* fixed triangle markers every 45 deg except 12 o'clock */}
-                    <g visibility={this.headingValid.map((valid) => (valid ? 'inherit' : 'hidden'))}>
+                    <g class={this.ringColor} visibility={this.headingValid.map((valid) => (valid ? 'inherit' : 'hidden'))}>
                         <path d="M384,132 L379,123 L389,123 L384,132" transform="rotate(45 384 384)" fill="white" />
                         <path d="M384,132 L379,123 L389,123 L384,132" transform="rotate(90 384 384)" fill="white" />
                         <path d="M384,132 L379,123 L389,123 L384,132" transform="rotate(135 384 384)" fill="white" />
