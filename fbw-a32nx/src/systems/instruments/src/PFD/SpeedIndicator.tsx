@@ -1000,25 +1000,25 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
 }
 
 class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
-    private componentVisibilty = Subject.create<'visible' | 'hidden'>('hidden');
+    private shouldShowMargins = false;
 
-    private currentSpeed = Subject.create(new Arinc429Word(0));
+    private currentSpeed = Subject.create(Arinc429Word.empty());
 
     private upperSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
     private lowerSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
-    private upperMarginTransform = Subject.create('translate3d(0px, 0px, 0px)');
+    private upperMarginTransform = Subject.create('translate(0 0)');
 
-    private lowerMarginTransform = Subject.create('translate3d(0px, 0px, 0px)');
+    private lowerMarginTransform = Subject.create('translate(0 0)');
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-        const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values & FmsVars>();
 
-        sub.on('showSpeedMargins').whenChanged().handle((active) => this.componentVisibilty.set(active ? 'visible' : 'hidden'));
+        sub.on('showSpeedMargins').whenChanged().handle((active) => this.shouldShowMargins = active);
 
-        sub.on('speedAr').withPrecision(1).handle((s) => this.currentSpeed.set(s));
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => this.currentSpeed.set(s));
 
         sub.on('upperSpeedMargin').handle(this.updateMargin(this.upperSpeedMarginVisibility, this.upperMarginTransform));
         sub.on('lowerSpeedMargin').handle(this.updateMargin(this.lowerSpeedMarginVisibility, this.lowerMarginTransform));
@@ -1026,29 +1026,46 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 
     render(): VNode {
         return (
-            <g id="SpeedMargins" visibility={this.componentVisibilty}>
-                <path id="UpperSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" visibility={this.upperSpeedMarginVisibility} transform={this.upperMarginTransform} />
-                <path id="LowerSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" visibility={this.lowerSpeedMarginVisibility} transform={this.lowerMarginTransform} />
+            <g id="SpeedMargins">
+                <path
+                    id="UpperSpeedMargin"
+                    class="Fill Magenta"
+                    d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z"
+                    visibility={this.upperSpeedMarginVisibility}
+                    transform={this.upperMarginTransform}
+                />
+                <path
+                    id="UpperSpeedMargin"
+                    class="Fill Magenta"
+                    d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z"
+                    visibility={this.lowerSpeedMarginVisibility}
+                    transform={this.lowerMarginTransform}
+                />
             </g>
         );
     }
 
     private updateMargin(visibility: Subject<'visible' | 'hidden'>, transform: Subject<string>) {
         return (speed: number) => {
-            if (!this.componentVisibilty) {
+            const shouldForceHideMargins = !this.shouldShowMargins || !this.currentSpeed.get().isNormalOperation();
+            const marginIsVisible = visibility.get() === 'visible';
+
+            if (shouldForceHideMargins) {
+                if (marginIsVisible) {
+                    visibility.set('hidden');
+                }
+
                 return;
             }
 
-            if (!this.currentSpeed.get().isNormalOperation()) {
-                visibility.set('hidden');
-            }
-
             const isInRange = Math.abs(this.currentSpeed.get().value - speed) < DisplayRange;
-            visibility.set(isInRange ? 'visible' : 'hidden');
-
             if (isInRange) {
                 const offset = (Math.round(100 * (this.currentSpeed.get().value - speed) * DistanceSpacing / ValueSpacing) / 100).toFixed(2);
-                transform.set(`translate3d(0px, ${offset}px, 0px)`);
+                transform.set(`translate(0 ${offset})`);
+            }
+
+            if (isInRange !== marginIsVisible) {
+                visibility.set(isInRange ? 'visible' : 'hidden');
             }
         };
     }

@@ -7,11 +7,9 @@ type LinearDeviationIndicatorProps = {
 }
 
 export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIndicatorProps> {
-    private lastIsActive: boolean = false;
+    private shouldShowLinearDeviation = false;
 
-    private componentVisibility = Subject.create<'visible' | 'hidden'>('hidden');
-
-    private componentTransform = Subject.create('translate3d(0px, 0px, 0px)');
+    private componentTransform = Subject.create('');
 
     private upperLinearDeviationReadoutText = Subject.create('00');
 
@@ -38,20 +36,20 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
 
         sub.on('altitudeAr').handle((alt) => {
-            if (!alt.isNormalOperation()) {
-                this.componentVisibility.set('hidden');
-                return;
-            }
+            if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
+                this.upperLinearDeviationReadoutVisibility.set('hidden');
+                this.lowerLinearDeviationReadoutVisibility.set('hidden');
+                this.linearDeviationDotLowerHalfVisibility.set('hidden');
+                this.linearDeviationDotUpperHalfVisibility.set('hidden');
+                this.linearDeviationDotVisibility.set('hidden');
 
-            // Only update this if it's actually active
-            if (!this.lastIsActive) {
                 return;
             }
 
             const deviation = alt.value - this.flightPathAltitude;
             const pixelOffset = this.pixelOffsetFromDeviation(Math.max(Math.min(deviation, 500), -500));
 
-            this.componentTransform.set(`translate3d(0px, ${pixelOffset}px, 0px)`);
+            this.componentTransform.set(`translate(0 ${pixelOffset})`);
 
             const linearDeviationReadoutText = Math.min(99, Math.round(Math.abs(deviation) / 100)).toFixed(0).padStart(2, '0');
 
@@ -90,13 +88,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
             }
         });
 
-        sub.on('linearDeviationActive').whenChanged().handle((isActive) => {
-            this.lastIsActive = isActive;
-
-            this.componentVisibility.set(isActive ? 'visible' : 'hidden');
-            this.upperLinearDeviationReadoutVisibility.set(isActive ? 'visible' : 'hidden');
-            this.lowerLinearDeviationReadoutVisibility.set(isActive ? 'visible' : 'hidden');
-        });
+        sub.on('linearDeviationActive').whenChanged().handle((isActive) => this.shouldShowLinearDeviation = isActive);
 
         sub.on('verticalProfileLatched').whenChanged().handle((s) => this.latchSymbolVisibility.set(s ? 'visible' : 'hidden'));
 
@@ -109,8 +101,13 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         return (
             <g id="LinearDeviationIndicator">
                 <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontSmallest Green">{this.upperLinearDeviationReadoutText}</text>
-                <g visibility={this.componentVisibility} id="LinearDeviationDot" transform={this.componentTransform}>
-                    <path id="EntireDot" visibility={this.linearDeviationDotVisibility} d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z" class="Fill Green" />
+                <g id="LinearDeviationDot" transform={this.componentTransform}>
+                    <path
+                        id="EntireDot"
+                        visibility={this.linearDeviationDotVisibility}
+                        d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z"
+                        class="Fill Green"
+                    />
                     <path
                         id="DotUpperHalf"
                         visibility={this.linearDeviationDotUpperHalfVisibility}
