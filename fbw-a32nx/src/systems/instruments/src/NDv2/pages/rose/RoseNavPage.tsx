@@ -32,10 +32,38 @@ export class RoseNavPage extends RoseMode {
         sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.setWord(v));
         sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.setWord(v));
 
+        this.props.isUsingTrackUpMode.sub(() => this.handleRotateMap());
+        this.props.trueHeadingWord.sub(() => {
+            if (!this.props.isUsingTrackUpMode.get()) {
+                this.handleRotateMap();
+            }
+        });
+        this.props.trueTrackWord.sub(() => {
+            if (this.props.isUsingTrackUpMode.get()) {
+                this.handleRotateMap();
+            }
+        });
+
         this.pposLatWord.sub(() => this.handleMoveMap());
         this.pposLonWord.sub(() => this.handleMoveMap());
 
         this.mapRangeSub.sub(() => this.handleScaleMap());
+    }
+
+    private handleRotateMap() {
+        if (!this.isVisible.get()) {
+            return;
+        }
+
+        const publisher = this.props.bus.getPublisher<NDControlEvents>();
+
+        const rotation = this.props.isUsingTrackUpMode.get() ? this.props.trueTrackWord.get() : this.props.trueHeadingWord.get();
+
+        if (rotation.isNormalOperation()) {
+            publisher.pub('set_map_up_course', rotation.value);
+        } else {
+            publisher.pub('set_show_map', false);
+        }
     }
 
     private handleMoveMap() {

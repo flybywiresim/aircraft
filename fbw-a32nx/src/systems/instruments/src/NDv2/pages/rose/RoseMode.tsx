@@ -7,8 +7,10 @@ import { NDControlEvents } from '../../NDControlEvents';
 export interface RoseModeProps extends ComponentProps {
     bus: EventBus,
     rangeValue: Subscribable<EfisNdRangeValue>,
-    headingWord: Subscribable<Arinc429WordData>
+    headingWord: Subscribable<Arinc429WordData>,
+    trueHeadingWord: Subscribable<Arinc429WordData>,
     trackWord: Subscribable<Arinc429WordData>
+    trueTrackWord: Subscribable<Arinc429WordData>
     isUsingTrackUpMode: Subscribable<boolean>,
 }
 

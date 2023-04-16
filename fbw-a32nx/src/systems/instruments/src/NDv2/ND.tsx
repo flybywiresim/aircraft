@@ -228,7 +228,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         bus={this.props.bus}
                         ref={this.roseLSPage}
                         headingWord={this.headingWord}
+                        trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
+                        trueTrackWord={this.trueTrackWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'L' ? 2 : 1}
@@ -237,7 +239,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         bus={this.props.bus}
                         ref={this.roseVorPage}
                         headingWord={this.headingWord}
+                        trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
+                        trueTrackWord={this.trueTrackWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'R' ? 2 : 1}
@@ -246,7 +250,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         bus={this.props.bus}
                         ref={this.roseNavPage}
                         headingWord={this.headingWord}
+                        trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
+                        trueTrackWord={this.trueTrackWord}
                         rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
@@ -270,7 +276,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <ToWaypointIndicator bus={this.props.bus} />
                     <TopMessages bus={this.props.bus} />
 
-                    <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
+                    <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
+                        DISPLAY SYSTEM VERSION
+                        INCONSISTENCY
+                    </Flag>
                     <Flag visible={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
                     <Flag visible={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
                     <Flag visible={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
