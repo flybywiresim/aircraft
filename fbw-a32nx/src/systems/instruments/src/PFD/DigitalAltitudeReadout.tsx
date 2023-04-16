@@ -1,3 +1,4 @@
+import { Arinc429Word } from '@shared/arinc429';
 import { DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -53,7 +54,7 @@ interface DigitalAltitudeReadoutProps {
 }
 
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
-    private mda = 0;
+    private mda = new Arinc429Word(0);
 
     private altitude = 0;
 
@@ -80,9 +81,9 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('mda').whenChanged().handle((mda) => {
+        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
             this.mda = mda;
             this.updateColor();
         });
@@ -133,7 +134,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     }
 
     private updateColor() {
-        const color = (this.mda !== 0 && this.altitude < this.mda) ? 'Amber' : 'Green';
+        const color = ((!this.mda.isNoComputedData() && !this.mda.isFailureWarning()) && this.mda.value !== 0 && this.altitude < this.mda.value) ? 'Amber' : 'Green';
         this.colorSub.set(color);
     }
 
