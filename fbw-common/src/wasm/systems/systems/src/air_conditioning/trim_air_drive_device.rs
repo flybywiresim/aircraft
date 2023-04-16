@@ -1,48 +1,22 @@
 use crate::{
     shared::{
-        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineStartState, PackFlowValveState, PneumaticBleed,
+        ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1, EngineStartState,
+        PackFlowValveState, PneumaticBleed,
     },
-    simulation::{SimulationElement, UpdateContext},
+    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use super::{
     acs_controller::TrimAirValveController, AirConditioningOverheadShared, DuctTemperature,
-    OperatingChannel, OperatingChannelFault, TrimAirControllers,
+    OperatingChannel, TrimAirControllers,
 };
 
 use uom::si::{f64::*, ratio::percent};
-
-enum TaddOperatingChannel {
-    TADDChannelOne(OperatingChannelFault),
-    TADDChannelTwo(OperatingChannelFault),
-}
-
-impl OperatingChannel for TaddOperatingChannel {
-    fn has_fault(&self) -> bool {
-        matches!(
-            self,
-            TaddOperatingChannel::TADDChannelOne(OperatingChannelFault::Fault)
-                | TaddOperatingChannel::TADDChannelTwo(OperatingChannelFault::Fault)
-        )
-    }
-
-    fn switch(&mut self) {
-        // At the moment switching channels always clears the fault in the second channel
-        // TODO: This needs to be improved so we can have dual channel failures
-        *self = if matches!(self, TaddOperatingChannel::TADDChannelOne(_)) {
-            TaddOperatingChannel::TADDChannelTwo(OperatingChannelFault::NoFault)
-        } else {
-            TaddOperatingChannel::TADDChannelOne(OperatingChannelFault::NoFault)
-        };
-    }
-}
 
 #[derive(Debug)]
 enum TaddFault {
     OneChannelFault,
     BothChannelsFault,
-    PowerLoss,
 }
 
 pub trait TaddShared {
@@ -51,25 +25,24 @@ pub trait TaddShared {
 }
 
 pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
-    active_channel: TaddOperatingChannel,
+    active_channel: OperatingChannel,
+    stand_by_channel: OperatingChannel,
     hot_air_is_enabled: [bool; 2],
     should_open_taprv: [bool; 2],
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 
-    powered_by: Vec<ElectricalBusType>,
-    is_powered: bool,
     fault: Option<TaddFault>,
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES> {
     pub fn new(powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
-            active_channel: TaddOperatingChannel::TADDChannelOne(OperatingChannelFault::NoFault),
+            active_channel: OperatingChannel::new(1, powered_by[0]),
+            stand_by_channel: OperatingChannel::new(2, powered_by[1]),
             hot_air_is_enabled: [false; 2],
             should_open_taprv: [false; 2],
             trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
-            powered_by,
-            is_powered: false,
+
             fault: None,
         }
     }
@@ -127,8 +100,8 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
                 )
             });
 
-        if !matches!(self.fault, Some(TaddFault::PowerLoss))
-            && !matches!(self.fault, Some(TaddFault::BothChannelsFault))
+        if !matches!(self.fault, Some(TaddFault::BothChannelsFault))
+            && !self.active_channel.has_fault()
         {
             for (id, tav_controller) in self.trim_air_valve_controllers.iter_mut().enumerate() {
                 tav_controller.update(
@@ -142,20 +115,27 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
     }
 
     fn fault_determination(&mut self) {
-        self.fault = {
-            if !self.is_powered {
-                Some(TaddFault::PowerLoss)
-            } else if self.active_channel.has_fault() {
-                self.active_channel.switch();
-                if self.active_channel.has_fault() {
+        self.fault = match self.active_channel.has_fault() {
+            true => {
+                if self.stand_by_channel.has_fault() {
                     Some(TaddFault::BothChannelsFault)
                 } else {
+                    self.switch_active_channel();
                     Some(TaddFault::OneChannelFault)
                 }
-            } else {
-                None
             }
-        }
+            false => {
+                if self.stand_by_channel.has_fault() {
+                    Some(TaddFault::OneChannelFault)
+                } else {
+                    None
+                }
+            }
+        };
+    }
+
+    fn switch_active_channel(&mut self) {
+        std::mem::swap(&mut self.stand_by_channel, &mut self.active_channel);
     }
 
     fn trim_air_pressure_regulating_valve_status_determination(
@@ -165,7 +145,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
         hot_air_id: usize,
     ) -> bool {
         acs_overhead.hot_air_pushbutton_is_on(hot_air_id)
-            && !matches!(self.fault, Some(TaddFault::PowerLoss))
+            && !self.active_channel.has_fault()
             && !matches!(self.fault, Some(TaddFault::BothChannelsFault))
             && !should_close_taprv
     }
@@ -221,7 +201,10 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirControllers
 impl<const ZONES: usize, const ENGINES: usize> SimulationElement
     for TrimAirDriveDevice<ZONES, ENGINES>
 {
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = self.powered_by.iter().all(|&p| buses.is_powered(p));
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.active_channel.accept(visitor);
+        self.stand_by_channel.accept(visitor);
+
+        visitor.visit(self);
     }
 }

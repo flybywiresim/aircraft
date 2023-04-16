@@ -1,16 +1,16 @@
 use crate::{
     pneumatic::{EngineState, PneumaticValveSignal},
     shared::{
-        pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
-        EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-        PackFlowValveState, PneumaticBleed,
+        pid::PidController, ControllerSignal, ElectricalBusType, EngineBleedPushbutton,
+        EngineCorrectedN1, EngineFirePushButtons, EngineStartState, PackFlowValveState,
+        PneumaticBleed,
     },
-    simulation::{SimulationElement, UpdateContext},
+    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use super::{
-    acs_controller::Pack, AirConditioningOverheadShared, OperatingChannel, OperatingChannelFault,
-    PackFlow, PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
+    acs_controller::Pack, AirConditioningOverheadShared, OperatingChannel, PackFlow,
+    PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
 };
 
 use uom::si::{
@@ -23,7 +23,6 @@ use uom::si::{
 enum FdacFault {
     OneChannelFault,
     BothChannelsFault,
-    PowerLoss,
 }
 
 #[derive(Clone, Copy)]
@@ -32,48 +31,21 @@ enum FcvFault {
     //More to be added
 }
 
-enum FdacOperatingChannel {
-    FDACChannelOne(OperatingChannelFault),
-    FDACChannelTwo(OperatingChannelFault),
-}
-
-impl OperatingChannel for FdacOperatingChannel {
-    fn has_fault(&self) -> bool {
-        matches!(
-            self,
-            FdacOperatingChannel::FDACChannelOne(OperatingChannelFault::Fault)
-                | FdacOperatingChannel::FDACChannelTwo(OperatingChannelFault::Fault)
-        )
-    }
-
-    fn switch(&mut self) {
-        // At the moment switching channels always clears the fault in the second channel
-        // TODO: This needs to be improved so we can have dual channel failures
-        *self = if matches!(self, FdacOperatingChannel::FDACChannelOne(_)) {
-            FdacOperatingChannel::FDACChannelTwo(OperatingChannelFault::NoFault)
-        } else {
-            FdacOperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault)
-        };
-    }
-}
-
 pub struct FullDigitalAGUController<const ENGINES: usize> {
-    active_channel: FdacOperatingChannel,
+    active_channel: OperatingChannel,
+    stand_by_channel: OperatingChannel,
     flow_control: FDACFlowControl<ENGINES>,
     // agu_control
-    powered_by: Vec<ElectricalBusType>,
-    is_powered: bool,
     fault: Option<FdacFault>,
 }
 
 impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     pub fn new(fdac_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
-            active_channel: FdacOperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault),
+            active_channel: OperatingChannel::new(1, powered_by[0]),
+            stand_by_channel: OperatingChannel::new(2, powered_by[1]),
             flow_control: FDACFlowControl::new(fdac_id),
             // agu_control
-            powered_by,
-            is_powered: false,
             fault: None,
         }
     }
@@ -92,10 +64,9 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     ) {
         self.fault_determination();
 
-        if !matches!(
-            self.fault,
-            Some(FdacFault::PowerLoss) | Some(FdacFault::BothChannelsFault)
-        ) {
+        if !matches!(self.fault, Some(FdacFault::BothChannelsFault))
+            && !self.active_channel.has_fault()
+        {
             self.flow_control.update(
                 context,
                 acs_overhead,
@@ -111,20 +82,27 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     }
 
     fn fault_determination(&mut self) {
-        self.fault = {
-            if !self.is_powered {
-                Some(FdacFault::PowerLoss)
-            } else if self.active_channel.has_fault() {
-                self.active_channel.switch();
-                if self.active_channel.has_fault() {
+        self.fault = match self.active_channel.has_fault() {
+            true => {
+                if self.stand_by_channel.has_fault() {
                     Some(FdacFault::BothChannelsFault)
                 } else {
+                    self.switch_active_channel();
                     Some(FdacFault::OneChannelFault)
                 }
-            } else {
-                None
             }
-        }
+            false => {
+                if self.stand_by_channel.has_fault() {
+                    Some(FdacFault::OneChannelFault)
+                } else {
+                    None
+                }
+            }
+        };
+    }
+
+    fn switch_active_channel(&mut self) {
+        std::mem::swap(&mut self.stand_by_channel, &mut self.active_channel);
     }
 
     pub fn fcv_status_determination(&self, fcv_id: usize) -> bool {
@@ -151,8 +129,11 @@ impl<const ENGINES: usize> PackFlowControllers for FullDigitalAGUController<ENGI
 }
 
 impl<const ENGINES: usize> SimulationElement for FullDigitalAGUController<ENGINES> {
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = self.powered_by.iter().any(|&p| buses.is_powered(p));
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.active_channel.accept(visitor);
+        self.stand_by_channel.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 

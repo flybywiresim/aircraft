@@ -103,18 +103,6 @@ pub trait PressurizationOverheadShared {
     fn ldg_elev_knob_value(&self) -> f64;
 }
 
-trait OperatingChannel {
-    fn has_fault(&self) -> bool;
-    fn switch(&mut self);
-}
-
-// Future work this can be different types of failure. Dead code for now since `Fault` is never constructed
-#[allow(dead_code)]
-enum OperatingChannelFault {
-    NoFault,
-    Fault,
-}
-
 /// Cabin Zones with double digit IDs are specific to the A380
 /// 1X is main deck, 2X is upper deck
 pub enum ZoneType {
@@ -217,6 +205,59 @@ impl OutflowValveSignal {
 pub trait CabinPressure {
     fn exterior_pressure(&self) -> Pressure;
     fn cabin_pressure(&self) -> Pressure;
+}
+
+// Future work this can be different types of failure. Dead code for now since `Fault` is never constructed
+enum OperatingChannelFault {
+    NoFault,
+    Fault,
+}
+
+enum Channel {
+    ChannelOne,
+    ChannelTwo,
+}
+
+struct OperatingChannel {
+    // Channel ID is not read anywhere right now but it will be when failures are implemented
+    _channel_id: Channel,
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+    fault: OperatingChannelFault,
+}
+
+impl OperatingChannel {
+    fn new(id: usize, powered_by: ElectricalBusType) -> Self {
+        let channel_id: Channel = {
+            match id {
+                1 => Channel::ChannelOne,
+                2 => Channel::ChannelTwo,
+                _ => panic!("Operating Channel out of bounds"),
+            }
+        };
+        Self {
+            _channel_id: channel_id,
+            powered_by,
+            is_powered: false,
+            fault: OperatingChannelFault::NoFault,
+        }
+    }
+
+    fn has_fault(&self) -> bool {
+        matches!(self.fault, OperatingChannelFault::Fault)
+    }
+}
+
+impl SimulationElement for OperatingChannel {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+        // For now the channel faults only when it's unpowered. In the future we can add other types of failure
+        if !self.is_powered {
+            self.fault = OperatingChannelFault::Fault;
+        } else {
+            self.fault = OperatingChannelFault::NoFault;
+        }
+    }
 }
 
 pub trait PressurizationConstants {

@@ -349,13 +349,10 @@ impl A380AirConditioningSystem {
                     ],
                 ),
             ],
-            tadd: TrimAirDriveDevice::new(
-                // TODO: Each of these should power one of the channels
-                vec![
-                    ElectricalBusType::AlternatingCurrent(2), // 403XP
-                    ElectricalBusType::AlternatingCurrent(4), // 117XP
-                ],
-            ),
+            tadd: TrimAirDriveDevice::new(vec![
+                ElectricalBusType::AlternatingCurrent(2), // 403XP
+                ElectricalBusType::AlternatingCurrent(4), // 117XP
+            ]),
             cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
@@ -1670,12 +1667,12 @@ mod tests {
             self.powered_ac_source_2.power();
         }
 
-        fn unpower_ac_4_bus(&mut self) {
-            self.powered_ac_source_4.unpower();
-        }
-
         fn power_ac_4_bus(&mut self) {
             self.powered_ac_source_4.power();
+        }
+
+        fn unpower_ac_4_bus(&mut self) {
+            self.powered_ac_source_4.unpower();
         }
 
         fn set_pressure_based_on_vs(&mut self, alt_diff: Length) {
@@ -3574,7 +3571,7 @@ mod tests {
             }
 
             #[test]
-            fn pack_flow_valve_is_unresponsive_when_unpowered() {
+            fn pack_flow_valve_is_unresponsive_when_fdac_unpowered() {
                 let mut test_bed = test_bed()
                     .with()
                     .command_packs_on_off(true)
@@ -3623,6 +3620,25 @@ mod tests {
                         && !test_bed.pack_flow_valve_is_open(3)
                         && !test_bed.pack_flow_valve_is_open(4)
                 );
+            }
+
+            #[test]
+            fn unpowering_one_channel_doesnt_unpower_system() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(4);
+
+                assert!(test_bed.pack_flow() > MassRate::default());
+
+                test_bed = test_bed
+                    .unpowered_ac_ess_bus()
+                    .command_ditching_pb_on()
+                    .iterate(4);
+
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
             }
 
             #[test]
