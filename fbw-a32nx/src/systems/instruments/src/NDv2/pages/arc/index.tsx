@@ -54,9 +54,10 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
         return 0;
     }, this.props.isUsingTrackUpMode, this.props.headingWord, this.props.trackWord);
 
-    private readonly mapFlagShown = MappedSubject.create(([headingWord]) => {
-        return !headingWord.isNormalOperation();
-    }, this.props.headingWord);
+    // TODO in the future, this should be looking at stuff like FM position invalid or not map frames transmitted
+    private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord]) => {
+        return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
+    }, this.props.headingWord, this.pposLatWord, this.pposLonWord);
 
     onShow() {
         super.onShow();
