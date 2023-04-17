@@ -31,6 +31,7 @@ set(INCLUDE_FILES
     lib/logging.h
     lib/math_utils.hpp
     lib/quantity.hpp
+    lib/ScopedTimer.hpp
     lib/simple_assert.h
     )
 

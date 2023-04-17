@@ -1,0 +1,53 @@
+// Copyright (c) 2023 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+#ifndef FLYBYWIRE_AIRCRAFT_SCOPEDTIMER_HPP
+#define FLYBYWIRE_AIRCRAFT_SCOPEDTIMER_HPP
+
+#include <chrono>
+#include <iostream>
+#include <iomanip>
+#include <string_view>
+
+#if USE_TIMER
+#define SCOPED_TIMER(name) ScopedTimer timer{name};
+#else
+#define SCOPED_TIMER(name) void(0);
+#endif
+
+/**
+ * Simple scoped timer to measure the execution time of a function.
+ * Use in the following way:
+ *
+ * void foo() {
+ *   ScopedTimer timer{"foo"};
+ *   // do something
+ * }
+ *
+ * Output will be printed to std::cout.
+ */
+class ScopedTimer {
+  using ClockType = std::chrono::high_resolution_clock;
+
+ private:
+  const std::string_view _timerName{};
+  const ClockType::time_point _start{};
+
+ public:
+  ScopedTimer(const std::string_view timerName) : _timerName{timerName}, _start{ClockType::now()} {}
+
+  ~ScopedTimer() {
+    using namespace std::chrono;
+    const auto stop = ClockType::now();
+    const auto duration = (stop - _start);
+    const auto duration_micro = duration_cast<microseconds>(duration).count();
+    std::cout << "Timer: " << std::setw(10) << std::right << duration_micro << " microseconds" << " for " << _timerName << std::endl;
+  }
+
+  ScopedTimer(const ScopedTimer&) = delete;
+  ScopedTimer(ScopedTimer&&) = delete;
+  auto operator=(const ScopedTimer&) -> ScopedTimer& = delete;
+  auto operator=(const ScopedTimer&&) -> ScopedTimer& = delete;
+};
+
+#endif  // FLYBYWIRE_AIRCRAFT_SCOPEDTIMER_HPP
