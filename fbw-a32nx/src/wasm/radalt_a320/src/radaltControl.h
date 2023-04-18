@@ -5,47 +5,53 @@
 HANDLE  hSimConnect;
 SimVars* simVars;
 
-double  devState = 0.0;
-bool	debug = true;
-double	radarAltitude = 0.0;
-double	snrMax = 0.0;
-double	beamActual = 0.0;
-double	beamMin = 0.0;   // Debug
-double  snrActual = 0.0;
-double	planeAltitude = 0.0; // Debug
-double	probeAltitude = 0.0; // Debug
-double	planeAboveGround = 0.0; // Debug
-int		testIndex = 0;		 // Debug
-int		interval = 1;	 // Debug
-int     quit = 0;
+// Debug
+double devState = 0.0;
+bool debug = true;
+double planeAltitude = 0.0;
+double probeAltitude = 0.0;
+double planeAboveGround = 0.0;
+int interval = 1;
 
-static bool	radarActive = false;
+// Non-debug
+int probeBest = 0;
+int preSample = 1;
+int quit = 0;
+double radarAltitude = 0.0;
+double snrMax = 0.0;
+double beamActual = 0.0;
+double snrActual = 0.0;
 
-constexpr int	 MAX_AI = 100;
+// Static
+static bool radarActive = false;
+
+// Constants
+constexpr int MAX_AI = 15;
+constexpr int PROBE_COLUMNS = 5;
+constexpr int PROBE_ROWS = 3;
+constexpr double X_MAX = 0.35;
+constexpr double Y_MAX = 0.35;
 constexpr double PI = 3.141592653589790;
 constexpr double PI_FOURTH = 97.4090910340024;
 constexpr double DEG_TO_RAD = PI / 180.0;
 constexpr double RAD_TO_DEG = 180.0 / PI;
-constexpr double PHI_2D = 1.32471795724474602596;		// 2D golden ratio
+constexpr double PHI_2D = 1.32471795724474602596;
 constexpr double ALPHA_0 = 1 / PHI_2D;
 constexpr double ALPHA_1 = ALPHA_0 * ALPHA_0;
-constexpr double EARTH_RAD = 20888156.17;				// earth's radius in feet
-constexpr double LIGHT_SPEED = 299792458;				// speed of light in m/s
-constexpr double POWER_TX = 0.1;						// peak transmit power in Watts (20 dBm)
-constexpr double GAIN_ANTENNA = 10;						// transmit/ receive antenna gain (unitless)
-constexpr double WAVELENGTH_SQUARED = 4.8607635E-03;	// wavelength in meters for a 4.3 GHz signal
-constexpr double RCS = 16709011;						// radar cross section in meter^2 for a 1 x 1 meter terrain sample
-constexpr double NOISE_FLOOR = -140;					// noise floor in dBm
-
-constexpr double MAX_ANGLE = 1.56;						// around 90 degree limit
-constexpr double H_ANGLE = 40;							// in degrees
-constexpr double V_ANGLE = 20;							// in degrees
-constexpr double MAX_BEAM_DISTANCE = 8192;						// in feet
-
+constexpr double EARTH_RAD = 20888156.17;
+constexpr double LIGHT_SPEED = 299792458;
+constexpr double POWER_TX = 0.1;
+constexpr double GAIN_ANTENNA = 10;
+constexpr double WAVELENGTH_SQUARED = 4.8607635E-03;
+constexpr double RCS = 16709011;
+constexpr double NOISE_FLOOR = -140;
+constexpr double MAX_ANGLE = 1.56;
+constexpr double H_ANGLE = 40;
+constexpr double V_ANGLE = 20;
+constexpr double MAX_BEAM_DISTANCE = 8192;
 constexpr double GAIN_FACTOR = 2.0 * POWER_TX * GAIN_ANTENNA * WAVELENGTH_SQUARED * RCS;
 constexpr double PI_FACTOR = 4.0 * PI_FOURTH;
 constexpr double K = GAIN_FACTOR / PI_FACTOR;
-
 const double TAN_H_ANGLE = tan(H_ANGLE * DEG_TO_RAD);
 const double TAN_V_ANGLE = tan(V_ANGLE * DEG_TO_RAD);
 
@@ -129,54 +135,60 @@ ProbeStruct probePosition;
 ProbeInfo	probeIndexnfo[MAX_AI];
 
 double probeSNR(double beamActual) {
-	return (10 * std::log10(K / std::pow(beamActual, 4))) - NOISE_FLOOR;
+	return 10 * std::log10(K / std::pow(beamActual, 4));
 }
 
 // Returns new lat/ long probe coordinates for each probe
 // Beam distance coded as pitch
 // TO BE CHECKED
-ProbeStruct distanceAndBearing(UserStruct user, int probeIndex) {
-	double probeX, probeY, bearing, distance;
-	double lat1, lon1, lat2, lon2, xDist, yDist;
+ProbeStruct distanceAndBearing(const UserStruct& user, int probeIndex, int preSample, int probeBest) {
+	ProbeStruct probe;
+
 	double altitudeAboveGround = user.altitudeAboveGround;
 	double bank = user.bank;
 	double pitch = user.pitch;
+	double probeX = 0;
+	double probeY = 0;
 
 	/* Setting constrains */
 	altitudeAboveGround = (altitudeAboveGround > MAX_BEAM_DISTANCE) ? MAX_BEAM_DISTANCE : altitudeAboveGround;
 	bank = (bank > MAX_ANGLE) ? MAX_ANGLE : ((bank < -MAX_ANGLE) ? -MAX_ANGLE : bank);
 	pitch = (pitch > MAX_ANGLE) ? MAX_ANGLE : ((pitch < -MAX_ANGLE) ? -MAX_ANGLE : pitch);
 
-	ProbeStruct probe;
-	
-	xDist = TAN_H_ANGLE * altitudeAboveGround;
-	yDist = TAN_V_ANGLE * altitudeAboveGround;
+	double xDist = TAN_H_ANGLE * altitudeAboveGround;
+	double yDist = TAN_V_ANGLE * altitudeAboveGround;
 
-	// Quasi-random R2 
-	probeX = (0.5 + (ALPHA_0 * probeIndex));
-	probeY = (0.5 + (ALPHA_1 * probeIndex));
-
-	probeX = 2 * xDist * (probeX - (int)probeX - 0.5) + (tan(bank) * altitudeAboveGround);
-	probeY = 2 * yDist * (probeY - (int)probeY - 0.5) - (tan(pitch) * altitudeAboveGround);
-
-	bearing = atan(probeX / probeY);				  // 2D top-down bearing (degrees)
-	distance = sqrt(pow(probeX, 2) + pow(probeY, 2)); // 2D top-down distance (feet)
-
-	if (probeY < 0) {
-		bearing = bearing + PI;
+	if (preSample == 1) {
+		probeX = -X_MAX + ((X_MAX * 2 / (PROBE_COLUMNS - 1)) * (probeIndex % PROBE_COLUMNS));
+		probeY = -Y_MAX + ((Y_MAX * 2 / (PROBE_ROWS - 1)) * (probeIndex / PROBE_COLUMNS));
 	}
-	else if (probeX < 0 && probeY > 0) {
-		bearing = (2 * PI) + bearing;
+	else {
+		double dx = -X_MAX + ((X_MAX * 2 / (PROBE_COLUMNS - 1)) * (probeBest % PROBE_COLUMNS));
+		double dy = -Y_MAX + ((Y_MAX * 2 / (PROBE_ROWS - 1)) * (probeBest / PROBE_COLUMNS));
+
+		probeX = -(X_MAX / 5) + (((X_MAX / 5) * 2 / (PROBE_COLUMNS - 1)) * (probeIndex % PROBE_COLUMNS)) + dx;
+		probeY = -(Y_MAX / 2) + (((Y_MAX / 2) * 2 / (PROBE_ROWS - 1)) * (probeIndex / PROBE_COLUMNS)) + dy;
 	}
 
-	// LAT/LON Translation
-	lat1 = deg2rad(user.latitude);
-	lon1 = deg2rad(user.longitude);
-	bearing = user.heading + bearing;
+	probeX = 2 * xDist * (probeX - (int)(probeX)) + (tan(bank) * altitudeAboveGround);
+	probeY = 2 * xDist * (probeY - (int)(probeY)) + (tan(pitch) * altitudeAboveGround);
 
-	// New Coordinates
-	lat2 = asin((sin(lat1) * cos(distance / EARTH_RAD)) + (cos(lat1) * sin(distance / EARTH_RAD) * cos(bearing)));
-	lon2 = lon1 + (atan2(sin(bearing) * sin(distance / EARTH_RAD) * cos(lat1), cos(distance / EARTH_RAD) - sin(lat1) * sin(lat2)));
+	double bearing = atan2(probeY, probeX);  // 2D top-down bearing (degrees)
+
+	//bearing += (probeY < 0) ? PI : ((probeX < 0 && probeY > 0) ? (2 * PI) : 0);
+	bearing += user.heading;
+
+	double distance = sqrt(probeX * probeX + probeY * probeY); // 2D top-down distance (feet)
+
+	// Lat/Lon Translation variables
+	double sinLat1 = sin(deg2rad(user.latitude));
+	double cosLat1 = cos(deg2rad(user.latitude));
+	double sinDistanceRad = sin(distance / EARTH_RAD);
+	double cosDistanceRad = cos(distance / EARTH_RAD);
+
+	// New Lat/Lon Coordinates
+	double lat2 = asin((sinLat1 * cosDistanceRad) + (cosLat1 * sinDistanceRad * cos(bearing)));
+	double lon2 = deg2rad(user.longitude) + (atan2(sin(bearing) * sinDistanceRad * cosLat1, cosDistanceRad - sinLat1 * sin(lat2)));
 
 	probe.latitude = rad2deg(lat2);
 	probe.longitude = rad2deg(lon2);
@@ -195,7 +207,7 @@ void createProbeMesh(int probeIndex)
 
 	devState = simVars->getDeveloperState();
 
-	ProbeStruct probeResult = distanceAndBearing(userPosition, probeIndex);
+	ProbeStruct probeResult = distanceAndBearing(userPosition, probeIndex, preSample, probeBest);
 
 	if (debug) std::cout << "RADALT: Creating Probe (" << probeIndex << ") .." << std::endl;
 
@@ -312,10 +324,10 @@ void getUpdatedProbe(int probeIndex) {
 }
 
 // Sets new probe mesh position. Called by REQUEST_PROBE_DATA
-void updateProbeMesh(int probeIndex) {
+void updateProbeMesh(int probeIndex, int preSample, int probeBest) {
 	HRESULT hr;
 
-	ProbeStruct probe = distanceAndBearing(userPosition, probeIndex);
+	ProbeStruct probe = distanceAndBearing(userPosition, probeIndex, preSample, probeBest);
 
 	probePosition.latitude = probe.latitude;
 	probePosition.longitude = probe.longitude;
@@ -344,26 +356,16 @@ void readProbeData(int probeIndex, ProbeStruct probePosition) {
 	if (isNewSnrMax(snrActual, snrMax)) {
 		radarAltitude = userPosition.altitude - probePosition.altitude;
 		snrMax = snrActual;
+		if (preSample == 1)
+			probeBest = probeIndex;
 		planeAltitude = userPosition.altitude; // Debug
 		probeAltitude = probePosition.altitude; // Debug
 		planeAboveGround = userPosition.altitudeAboveGround; // Debug
-		testIndex = probeIndex; // Debug
 	}
 
 	if (probeIndex == MAX_AI - 1) {
 		if (radarAltitude > MAX_BEAM_DISTANCE || snrMax < NOISE_FLOOR)
 			radarAltitude = 99999;
-
-		simVars->setRadarAltitude(radarAltitude);
-
-		if (debug) {
-			std::cout << "RADALT: SNR Probe (" << testIndex <<
-				") Plane_Alt: " << planeAltitude <<
-				" Probe_Alt: " << probeAltitude <<
-				" Plane_AltAbv: " << planeAboveGround <<
-				" SNR: " << snrMax <<
-				" RA: " << radarAltitude << std::endl;
-		}
 	}
 }
 
@@ -496,9 +498,27 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 			probePosition.pitch = pS->pitch;            // ground distance
 			probePosition.heading = pS->heading;        // ground bearing
 
-			updateProbeMesh(probeIndex);
+			updateProbeMesh(probeIndex, preSample, probeBest);
 			readProbeData(probeIndex, probePosition);
 
+			if (probeIndex == MAX_AI - 1) {
+				if (preSample == 0) {
+					simVars->setRadarAltitude(radarAltitude);
+
+					if (debug) {
+						std::cout << "RADALT: SNR Probe (" << probeBest <<
+							") Plane_Alt: " << planeAltitude <<
+							" Probe_Alt: " << probeAltitude <<
+							" Plane_AltAbv: " << planeAboveGround <<
+							" SNR: " << snrMax <<
+							" RA: " << radarAltitude << std::endl;
+					}
+
+					preSample = 1;
+				} else {
+					preSample = 0;
+				}
+			}
 		}
 		else if (pObjData->dwRequestID == (UINT)REQUEST_USER_DATA) {
 			UserStruct* uS = (UserStruct*)&pObjData->dwData;
