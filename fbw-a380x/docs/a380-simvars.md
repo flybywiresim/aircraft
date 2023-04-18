@@ -4,8 +4,10 @@
 
 - [A380 Local SimVars](#a380-local-simvars)
   - [Uncategorized](#uncategorized)
+  - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
+  - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
 
 ## Uncategorized
@@ -67,6 +69,86 @@
 - A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
+
+## Air Conditioning Pressurisation Ventilation ATA 21
+
+- A32NX_COND_{id}_TEMP
+    - Degree Celsius
+    - Temperature as measured in each of the cabin zones and cockpit
+    - {id}
+        - CKPT
+        - MAIN_DECK_1
+        - MAIN_DECK_2
+        - MAIN_DECK_3
+        - MAIN_DECK_4
+        - MAIN_DECK_5
+        - MAIN_DECK_6
+        - MAIN_DECK_7
+        - MAIN_DECK_8
+        - UPPER_DECK_1
+        - UPPER_DECK_2
+        - UPPER_DECK_3
+        - UPPER_DECK_4
+        - UPPER_DECK_5
+        - UPPER_DECK_6
+        - UPPER_DECK_7
+
+- A32NX_COND_{id}_DUCT_TEMP
+    - Degree Celsius
+    - Temperature of trim air coming out of the ducts in the cabin and cockpit
+    - {id}
+        - Same as A32NX_COND_{id}_TEMP
+
+- A32NX_COND_{id}_TRIM_AIR_VALVE_POSITION
+    - Percentage
+    - Percentage opening of each trim air valve (hot air)
+    - {id}
+        - Same as A32NX_COND_{id}_TEMP
+
+- A32NX_OVHD_COND_{id}_SELECTOR_KNOB
+    - Number (0 to 300)
+    - Rotation amount of the overhead temperature selectors for the cockpit and the cabin
+    - To transform the value into degree celsius use this formula: this * 0.04 + 18
+    - {id}
+        - CKPT
+        - CABIN
+
+- A32NX_OVHD_COND_HOT_AIR_{index}_PB_IS_ON
+    - Bool
+    - True if the hot air pushbutton {1 or 2} is pressed in the on position (no white light)
+
+- A32NX_OVHD_COND_HOT_AIR_{index}_PB_HAS_FAULT
+    - Bool
+    - True if the hot air {1 or 2} trim system has a fault
+
+- A32NX_OVHD_COND_RAM_AIR_PB_IS_ON
+    - Bool
+    - True if the ram air pushbutton is pressed in the on position
+  (on light iluminates)
+
+- A32NX_OVHD_CARGO_AIR_{id}_SELECTOR_KNOB
+    - Number (0 to 300)
+    - Rotation amount of the overhead temperature selectors for the cockpit and the cabin
+    - To transform the value into degree celsius use this formula: this * 0.0667 + 5
+    - {id}
+        - FWD
+        - BULK
+
+- A32NX_OVHD_CARGO_AIR_ISOL_VALVES_{id}_PB_IS_ON
+    - Bool
+    - True if the {BULK or FWD} isolation valves are open (no white light)
+
+- A32NX_OVHD_CARGO_AIR_ISOL_VALVES_{id}_PB_HAS_FAULT
+    - Bool
+    - True if the {BULK or FWD} isolation valves are failed
+
+- A32NX_OVHD_CARGO_AIR_HEATER_PB_IS_ON
+    - Bool
+    - True if the bulk cargo heater is operating automatically
+
+- A32NX_OVHD_CARGO_AIR_HEATER_PB_HAS_FAULT
+    - Bool
+    - True if the bulk cargo heater is failed
 
 ## Electrical ATA 24
 
@@ -328,6 +410,12 @@
 - A32NX_CDS_CAN_BUS_2_2
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
+
+## Bleed Air ATA 36
+
+- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE
+  - Psi
+  - Pressure measured at the intermediate pressure transducer at engine {number}, -1 if no output
 
 ## Integrated Modular Avionics ATA 42
 
