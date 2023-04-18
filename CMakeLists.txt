@@ -45,8 +45,8 @@ add_definitions(
     -DLOG_LEVEL=4
     # EXAMPLES | NO_EXAMPLES
     -DNO_EXAMPLES
-    # USE_TIMER | NO_TIMER - for logging of profiling information of pre-, post-, update() calls
-    -DUSE_TIMER
+    #PROFILING | NO_PROFILING - for logging of profiling information of pre-, post-, update() calls
+    -DPROFILING
 )
 
 # add the common components

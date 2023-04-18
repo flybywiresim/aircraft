@@ -1,0 +1,100 @@
+// Copyright (c) 2023 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+#ifndef FLYBYWIRE_AIRCRAFT_SIMPLEPROFILER_HPP
+#define FLYBYWIRE_AIRCRAFT_SIMPLEPROFILER_HPP
+
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <locale>
+#include <numeric>
+#include <sstream>
+
+#include "ProfileBuffer.hpp"
+#include "string_utils.hpp"
+
+/**
+ * @brief Simple profiler to measure the execution time of a section of code by collecting a certain
+ * number of samples and averaging them to provide the average execution time.
+ *
+ * @usage
+ * Use in the following way:<br/>
+ *   - Create a SimpleProfiler instance with a name and the number of samples to collect. (e.g. SimpleProfiler profiler{"foo", 1000};)<br/>
+ *   - Start the profiler. (e.g. profiler.start();)<br/>
+ *   - Execute the code to be profiled. (e.g. doSomething(); doSomethingElse();)<br/>
+ *   - Stop the profiler. (e.g. profiler.stop();)<br/>
+ *   - Print the average execution time. (e.g. profiler.print();)<br/>
+ *     - the average will always be re-calculated from the available samples everytime this method is called.<br/>
+ *     - Output will be printed to std::cout: "Profiler:     33,052 (32,898) nanoseconds for MsfsHandler::update() (avg of 120 samples)"<br/>
+ *     - The first number is the average execution time of the collected samples at the time of calling this method.<br/>
+ *     - The second number is the avg of the 5-95% samples at the time of calling this method.<br/>
+ */
+class SimpleProfiler {
+  using Clock = std::chrono::high_resolution_clock;
+
+ private:
+  const std::string _name;
+  ProfileBuffer<std::chrono::nanoseconds> _samples;
+  Clock::time_point _start;
+
+ public:
+  /**
+   * @brief Construct a new Simple Profiler object
+   * @param name Name of the profiler for the output
+   * @param sampleCount Maximum number of samples to collect
+   */
+  SimpleProfiler(const std::string& name, size_t sampleCount) : _name{name}, _samples{sampleCount} {}
+
+  /**
+   * @brief Start the profiler
+   */
+  void start() { _start = Clock::now(); }
+
+  /**
+   * @brief Stop the profiler and add the sample to the buffer
+   */
+  void stop() {
+    using namespace std::chrono;
+    _samples.push((Clock::now() - _start));
+  }
+
+  /**
+   * @brief Return the average execution time of the collected samples at the time of calling this method
+   * @return Average execution time of the collected samples at the time of calling this method
+   */
+  std::uint64_t getAverage() { return _samples.avg().count(); }
+
+  /**
+   * @brief Return the sum of all collected samples at the time of calling this method
+   * @return Sum of all collected samples at the time of calling this method
+   */
+  std::uint64_t getSum() { return _samples.sum().count(); }
+
+  /**
+   * @brief Return the number of collected samples at the time of calling this method
+   * @return Number of collected samples at the time of calling this method
+   */
+  std::size_t getSampleCount() { return _samples.size(); }
+
+  /**
+   * @brief Return a string with the average execution time of the collected samples at the time of calling this method
+   * @return String with the average execution time of the collected samples at the time of calling this method
+   */
+  std::string str() {
+    auto avg = _samples.avg();
+    std::stringstream os{};
+    os << "Profiler: " << std::setw(15) << std::right << helper::StringUtils::insertThousandsSeparator(avg.count())
+       << " (" << std::setw(15) << std::right << helper::StringUtils::insertThousandsSeparator(_samples.trimmedAverage(0.1).count()) << ")"
+       << " nanoseconds"
+       << " for " << _name << " (avg of " << _samples.size() << " samples) " << std::endl;
+    return os.str();
+  }
+
+  /**
+   * @brief Print the average execution time of the collected samples at the time of calling this method to std::cout
+   */
+  void print() { std::cout << str() << std::endl; }
+};
+
+#endif  // FLYBYWIRE_AIRCRAFT_SIMPLEPROFILER_HPP

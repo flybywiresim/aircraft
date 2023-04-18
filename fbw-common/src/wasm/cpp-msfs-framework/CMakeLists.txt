@@ -30,10 +30,12 @@ set(INCLUDE_FILES
     lib/inih/ini_type_conversion.h
     lib/logging.h
     lib/math_utils.hpp
-    lib/quantity.hpp
+    lib/ProfileBuffer.hpp
     lib/ScopedTimer.hpp
+    lib/SimpleProfiler.hpp
     lib/simple_assert.h
-    )
+    lib/string_utils.hpp
+    lib/quantity.hpp)
 
 # create the targets for all aircrafts
 add_library(cpp-msfs-framework-a32nx OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})

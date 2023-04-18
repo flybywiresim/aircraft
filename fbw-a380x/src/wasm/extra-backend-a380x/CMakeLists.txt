@@ -1,12 +1,7 @@
 # extra-backend-a380x CMakeLists.txt
 
 # add additional compiler definitions for the a380x extra-backend build
-add_definitions(
-    # ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
-    -DLOG_LEVEL=4
-    # EXAMPLES | NO_EXAMPLES
-    -DNO_EXAMPLES
-)
+add_definitions()
 
 # add the local include directories
 include_directories(

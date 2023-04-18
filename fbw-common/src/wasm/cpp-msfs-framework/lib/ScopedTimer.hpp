@@ -9,7 +9,7 @@
 #include <iomanip>
 #include <string_view>
 
-#if USE_TIMER
+#if PROFILING
 #define SCOPED_TIMER(name) ScopedTimer timer{name};
 #else
 #define SCOPED_TIMER(name) void(0);

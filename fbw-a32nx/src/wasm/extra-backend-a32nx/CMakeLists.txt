@@ -1,9 +1,7 @@
 # extra-backend-a32nx CMakeLists.txt
 
 # add additional compiler definitions for the a32nx extra-backend build
-add_definitions(
-
-)
+add_definitions()
 
 # add the local include directories
 include_directories(
