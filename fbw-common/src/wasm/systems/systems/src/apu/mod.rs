@@ -238,7 +238,7 @@ impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureTemperatu
         self.turbine.as_ref().map(|s| {
             TargetPressureTemperatureSignal::new(
                 s.bleed_air_pressure(),
-                ThermodynamicTemperature::new::<degree_celsius>(390.),
+                ThermodynamicTemperature::new::<degree_celsius>(165.),
             )
         })
     }

@@ -46,6 +46,7 @@ class Units {
   ENUM Psi = get_units_enum("Psi");
   ENUM Pph = get_units_enum("Pounds per hour");
   ENUM Gallons = get_units_enum("Gallons");
+  ENUM Gph = get_units_enum("Gallons per hour");
   ENUM Feet = get_units_enum("Feet");
   ENUM FootPounds = get_units_enum("Foot pounds");
   ENUM FeetMin = get_units_enum("Feet per minute");
@@ -92,23 +93,20 @@ class SimVars {
   ENUM EngineCombustion = get_aircraft_var_enum("GENERAL ENG COMBUSTION");
   ENUM animDeltaTime = get_aircraft_var_enum("ANIMATION DELTA TIME");
 
-  ENUM TankLeftAuxCapacity = get_aircraft_var_enum("FUEL TANK LEFT AUX CAPACITY");
-  ENUM TankRightAuxCapacity = get_aircraft_var_enum("FUEL TANK RIGHT AUX CAPACITY");
-  ENUM TankLeftCapacity = get_aircraft_var_enum("FUEL TANK LEFT MAIN CAPACITY");
-  ENUM TankRightCapacity = get_aircraft_var_enum("FUEL TANK RIGHT MAIN CAPACITY");
-  ENUM TankCenterCapacity = get_aircraft_var_enum("FUEL TANK CENTER CAPACITY");
-
-  ENUM TankLeftAuxQuantity = get_aircraft_var_enum("FUEL TANK LEFT AUX QUANTITY");
-  ENUM TankRightAuxQuantity = get_aircraft_var_enum("FUEL TANK RIGHT AUX QUANTITY");
-  ENUM TankLeftQuantity = get_aircraft_var_enum("FUEL TANK LEFT MAIN QUANTITY");
-  ENUM TankRightQuantity = get_aircraft_var_enum("FUEL TANK RIGHT MAIN QUANTITY");
-  ENUM TankCenterQuantity = get_aircraft_var_enum("FUEL TANK CENTER QUANTITY");
-  ENUM FuelTotalQuantity = get_aircraft_var_enum("FUEL TOTAL QUANTITY");
+  ENUM FuelTankQuantity = get_aircraft_var_enum("FUELSYSTEM TANK QUANTITY");
   ENUM EmptyWeight = get_aircraft_var_enum("EMPTY WEIGHT");
   ENUM TotalWeight = get_aircraft_var_enum("TOTAL WEIGHT");
+  ENUM FuelTotalQuantity = get_aircraft_var_enum("FUEL TOTAL QUANTITY");
   ENUM FuelWeightGallon = get_aircraft_var_enum("FUEL WEIGHT PER GALLON");
 
+  ENUM FuelPump = get_aircraft_var_enum("FUELSYSTEM PUMP ACTIVE");
+  ENUM FuelValve = get_aircraft_var_enum("FUELSYSTEM VALVE OPEN");
+  ENUM FuelLineFlow = get_aircraft_var_enum("FUELSYSTEM LINE FUEL FLOW");
+  ENUM FuelJunctionSetting = get_aircraft_var_enum("FUELSYSTEM JUNCTION SETTING");
+
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
+
+  ENUM PayloadStationWeights = get_aircraft_var_enum("PAYLOAD STATION WEIGHT");
 
   /// <summary>
   /// Collection of LVars for the A32NX
@@ -154,24 +152,6 @@ class SimVars {
   ID Engine2Timer;
   ID PumpStateLeft;
   ID PumpStateRight;
-  ID ConversionFactor;
-  ID PerPaxWeight;
-  ID PaxRows1to6Actual;
-  ID PaxRows7to13Actual;
-  ID PaxRows14to21Actual;
-  ID PaxRows22to29Actual;
-  ID PaxRows1to6Desired;
-  ID PaxRows7to13Desired;
-  ID PaxRows14to21Desired;
-  ID PaxRows22to29Desired;
-  ID CargoFwdContainerActual;
-  ID CargoAftContainerActual;
-  ID CargoAftBaggageActual;
-  ID CargoAftBulkActual;
-  ID CargoFwdContainerDesired;
-  ID CargoAftContainerDesired;
-  ID CargoAftBaggageDesired;
-  ID CargoAftBulkDesired;
   ID ThrustLimitType;
   ID ThrustLimitIdle;
   ID ThrustLimitToga;
@@ -222,24 +202,6 @@ class SimVars {
     Engine2Timer = register_named_variable("A32NX_ENGINE_TIMER:2");
     PumpStateLeft = register_named_variable("A32NX_PUMP_STATE:1");
     PumpStateRight = register_named_variable("A32NX_PUMP_STATE:2");
-    ConversionFactor = register_named_variable("A32NX_EFB_UNIT_CONVERSION_FACTOR");
-    PerPaxWeight = register_named_variable("A32NX_WB_PER_PAX_WEIGHT");
-    PaxRows1to6Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_1_6");
-    PaxRows7to13Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_7_13");
-    PaxRows14to21Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_14_21");
-    PaxRows22to29Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_22_29");
-    PaxRows1to6Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_1_6_DESIRED");
-    PaxRows7to13Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_7_13_DESIRED");
-    PaxRows14to21Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_14_21_DESIRED");
-    PaxRows22to29Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_22_29_DESIRED");
-    CargoFwdContainerActual = register_named_variable("A32NX_CARGO_FWD_BAGGAGE_CONTAINER");
-    CargoAftContainerActual = register_named_variable("A32NX_CARGO_AFT_CONTAINER");
-    CargoAftBaggageActual = register_named_variable("A32NX_CARGO_AFT_BAGGAGE");
-    CargoAftBulkActual = register_named_variable("A32NX_CARGO_AFT_BULK_LOOSE");
-    CargoFwdContainerDesired = register_named_variable("A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED");
-    CargoAftContainerDesired = register_named_variable("A32NX_CARGO_AFT_CONTAINER_DESIRED");
-    CargoAftBaggageDesired = register_named_variable("A32NX_CARGO_AFT_BAGGAGE_DESIRED");
-    CargoAftBulkDesired = register_named_variable("A32NX_CARGO_AFT_BULK_LOOSE_DESIRED");
 
     ThrustLimitType = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
     ThrustLimitIdle = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
@@ -368,24 +330,6 @@ class SimVars {
   FLOAT64 getRefuelStartedByUser() { return get_named_variable_value(RefuelStartedByUser); }
   FLOAT64 getPumpStateLeft() { return get_named_variable_value(PumpStateLeft); }
   FLOAT64 getPumpStateRight() { return get_named_variable_value(PumpStateRight); }
-  FLOAT64 getPerPaxWeight() { return get_named_variable_value(PerPaxWeight); }
-  FLOAT64 getConversionFactor() { return get_named_variable_value(ConversionFactor); }
-  FLOAT64 getPaxRows1to6Actual() { return get_named_variable_value(PaxRows1to6Actual); }
-  FLOAT64 getPaxRows7to13Actual() { return get_named_variable_value(PaxRows7to13Actual); }
-  FLOAT64 getPaxRows14to21Actual() { return get_named_variable_value(PaxRows14to21Actual); }
-  FLOAT64 getPaxRows22to29Actual() { return get_named_variable_value(PaxRows22to29Actual); }
-  FLOAT64 getPaxRows1to6Desired() { return get_named_variable_value(PaxRows1to6Desired); }
-  FLOAT64 getPaxRows7to13Desired() { return get_named_variable_value(PaxRows7to13Desired); }
-  FLOAT64 getPaxRows14to21Desired() { return get_named_variable_value(PaxRows14to21Desired); }
-  FLOAT64 getPaxRows22to29Desired() { return get_named_variable_value(PaxRows22to29Desired); }
-  FLOAT64 getCargoFwdContainerActual() { return get_named_variable_value(CargoFwdContainerActual); }
-  FLOAT64 getCargoAftContainerActual() { return get_named_variable_value(CargoAftContainerActual); }
-  FLOAT64 getCargoAftBaggageActual() { return get_named_variable_value(CargoAftBaggageActual); }
-  FLOAT64 getCargoAftBulkActual() { return get_named_variable_value(CargoAftBulkActual); }
-  FLOAT64 getCargoFwdContainerDesired() { return get_named_variable_value(CargoFwdContainerDesired); }
-  FLOAT64 getCargoAftContainerDesired() { return get_named_variable_value(CargoAftContainerDesired); }
-  FLOAT64 getCargoAftBaggageDesired() { return get_named_variable_value(CargoAftBaggageDesired); }
-  FLOAT64 getCargoAftBulkDesired() { return get_named_variable_value(CargoAftBulkDesired); }
   FLOAT64 getPacksState1() { return get_named_variable_value(PacksState1); }
   FLOAT64 getPacksState2() { return get_named_variable_value(PacksState2); }
   FLOAT64 getThrustLimitType() { return get_named_variable_value(ThrustLimitType); }
@@ -411,16 +355,7 @@ class SimVars {
   FLOAT64 getAmbientPressure() { return aircraft_varget(AmbientPressure, m_Units->Millibars, 0); }
   FLOAT64 getStdTemperature() { return aircraft_varget(StdTemp, m_Units->Celsius, 0); }
   FLOAT64 getSimOnGround() { return aircraft_varget(SimOnGround, m_Units->Bool, 0); }
-  FLOAT64 getTankLeftAuxCapacity() { return aircraft_varget(TankLeftAuxCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightAuxCapacity() { return aircraft_varget(TankRightAuxCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftCapacity() { return aircraft_varget(TankLeftCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightCapacity() { return aircraft_varget(TankRightCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankCenterCapacity() { return aircraft_varget(TankCenterCapacity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftAuxQuantity() { return aircraft_varget(TankLeftAuxQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightAuxQuantity() { return aircraft_varget(TankRightAuxQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankLeftQuantity() { return aircraft_varget(TankLeftQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankRightQuantity() { return aircraft_varget(TankRightQuantity, m_Units->Gallons, 0); }
-  FLOAT64 getTankCenterQuantity() { return aircraft_varget(TankCenterQuantity, m_Units->Gallons, 0); }
+  FLOAT64 getFuelTankQuantity(int index) { return aircraft_varget(FuelTankQuantity, m_Units->Gallons, index); }
   FLOAT64 getFuelTotalQuantity() { return aircraft_varget(FuelTotalQuantity, m_Units->Gallons, 0); }
   FLOAT64 getEmptyWeight() { return aircraft_varget(EmptyWeight, m_Units->Pounds, 0); }
   FLOAT64 getTotalWeight() { return aircraft_varget(TotalWeight, m_Units->Pounds, 0); }
@@ -431,4 +366,9 @@ class SimVars {
   FLOAT64 getEngineCombustion(int index) { return aircraft_varget(EngineCombustion, m_Units->Bool, index); }
   FLOAT64 getAnimDeltaTime() { return aircraft_varget(animDeltaTime, m_Units->Seconds, 0); }
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
+  FLOAT64 getPayloadStationWeight(int index) { return aircraft_varget(PayloadStationWeights, m_Units->Pounds, index); }
+  FLOAT64 getPump(int index) { return aircraft_varget(FuelPump, m_Units->Number, index); }
+  FLOAT64 getValve(int index) { return aircraft_varget(FuelValve, m_Units->Number, index); }
+  FLOAT64 getLineFlow(int index) { return aircraft_varget(FuelLineFlow, m_Units->Gph, index); }
+  FLOAT64 getJunctionSetting(int index) { return aircraft_varget(FuelJunctionSetting, m_Units->Number, index); }
 };

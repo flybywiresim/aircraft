@@ -23,7 +23,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
     const [engineHPValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_HP_VALVE_OPEN`, 'bool', 500);
     const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_OUTLET_TEMPERATURE`, 'celsius', 100);
     const precoolerOutletTempFive = Math.round(precoolerOutletTemp / 5) * 5;
-    const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_INLET_PRESSURE`, 'psi', 10);
+    const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_REGULATED_TRANSDUCER_PRESSURE`, 'psi', 10);
     const precoolerInletPressTwo = Math.round(precoolerInletPress / 2) * 2;
 
     const [wingAntiIceValveClosed] = useSimVar(`L:A32NX_PNEU_WING_ANTI_ICE_${engine}_VALVE_CLOSED`, 'bool', 500);

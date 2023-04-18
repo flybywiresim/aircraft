@@ -2,6 +2,7 @@ const imagePlugin = require('esbuild-plugin-inline-image');
 const postCssPlugin = require('esbuild-style-plugin');
 const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
+const postCssInset = require('postcss-inset');
 
 /** @type { import('@synaptic-simulations/mach').MachConfig } */
 module.exports = {
@@ -14,7 +15,12 @@ module.exports = {
             postcss: {
                 plugins: [
                     tailwind('src/systems/instruments/src/EFB/tailwind.config.js'),
+
+                    // transform: hsl(x y z / alpha) -> hsl(x, y, z, alpha)
                     postCssColorFunctionalNotation(),
+
+                    // transform: inset: 0; -> top/right/left/bottom: 0;
+                    postCssInset(),
                 ],
             }
         }),
@@ -45,7 +51,7 @@ function msfsAvionicsInstrument(name) {
             templateId: `A32NX_${name}`,
             mountElementId: `${name}_CONTENT`,
             fileName: name.toLowerCase(),
-            imports: ['/JS/dataStorage.js','/JS/fbw-a32nx/A32NX_Simvars.js'],
+            imports: ['/JS/dataStorage.js'],
         },
     };
 }

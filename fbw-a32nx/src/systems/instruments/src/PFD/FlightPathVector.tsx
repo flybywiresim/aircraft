@@ -1,5 +1,6 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -14,7 +15,7 @@ interface FlightPathVectorData {
     da: Arinc429Word;
 }
 
-export class FlightPathVector extends DisplayComponent<{bus: EventBus}> {
+export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
     private bird = FSComponent.createRef<SVGGElement>();
 
     private fpvFlag = FSComponent.createRef<SVGGElement>();

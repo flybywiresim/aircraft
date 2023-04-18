@@ -107,7 +107,7 @@
 
             <TOGGLE_VAR>L:A32NX_FIRE_GUARD_#TYPE##ID#</TOGGLE_VAR>
         </DefaultTemplateParameters>
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+        <Component ID="#NODE_ID#_MOUSE" Node="#NODE_ID#_MOUSE">
 
             <Update Frequency = "10">
                 (#TOGGLE_VAR#) if{
@@ -118,6 +118,21 @@
             </Update>
 
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <NODE_ID>#NODE_ID#</NODE_ID>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <Condition Check="OVERRIDE_ANIM_CODE">
+                    <True>
+                        <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+                    </True>
+                    <False>
+                        <ANIM_CODE>#ANIM_LENGTH# (O:_ButtonAnimVar) *</ANIM_CODE>
+                    </False>
+                </Condition>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <NODE_ID>#NODE_ID#_MOUSE</NODE_ID>
+                <ANIM_NAME>#NODE_ID#_MOUSE</ANIM_NAME>
                 <Condition Check="OVERRIDE_ANIM_CODE">
                     <True>
                         <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
@@ -129,12 +144,15 @@
             </UseTemplate>
 
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <NODE_ID>#NODE_ID#_MOUSE</NODE_ID>
+                <ANIM_NAME>#NODE_ID#_MOUSE</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     (L:A32NX_FIRE_BUTTON_#TYPE##ID#) 0 == if{
                         (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
                     } #LEFT_SINGLE_CODE#
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE />
+                <HIGHLIGHT_NODE_ID>#NODE_ID#</HIGHLIGHT_NODE_ID>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">

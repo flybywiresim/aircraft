@@ -35,20 +35,26 @@ void DisplayBase::render(sGaugeDrawData* pDrawData) {
   const float ratio = static_cast<float>(pDrawData->fbWidth) / static_cast<float>(pDrawData->fbHeight);
   nvgBeginFrame(this->_context, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight), ratio);
   {
-    // fill the background
-    if (this->_nanovgImage == 0 || helper::Math::almostEqual(this->_configuration.potentiometer, 0.0f)) {
-      nvgFillColor(this->_context, nvgRGBA(4, 4, 5, 255));
-      nvgBeginPath(this->_context);
-      nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
-      nvgFill(this->_context);
+    if (this->_configuration.powered) {
+      if ((this->_nanovgImage == 0 || helper::Math::almostEqual(this->_configuration.potentiometer, 0.0f))) {
+        nvgFillColor(this->_context, nvgRGBA(4, 4, 4, 255));
+        nvgBeginPath(this->_context);
+        nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
+        nvgFill(this->_context);
+      } else {
+        // draw the image
+        nvgBeginPath(this->_context);
+        NVGpaint imagePaint =
+            nvgImagePattern(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight),
+                            0.0, this->_nanovgImage, this->_configuration.potentiometer);
+        nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
+        nvgFillPaint(this->_context, imagePaint);
+        nvgFill(this->_context);
+      }
     } else {
-      // draw the image
+      nvgFillColor(this->_context, nvgRGBA(0, 0, 0, 255));
       nvgBeginPath(this->_context);
-      NVGpaint imagePaint =
-          nvgImagePattern(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight),
-                          0.0, this->_nanovgImage, this->_configuration.potentiometer);
       nvgRect(this->_context, 0.0f, 0.0f, static_cast<float>(pDrawData->winWidth), static_cast<float>(pDrawData->winHeight));
-      nvgFillPaint(this->_context, imagePaint);
       nvgFill(this->_context);
     }
   }

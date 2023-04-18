@@ -835,10 +835,8 @@ mod cabin_air_tests {
             self
         }
 
-        fn passengers(mut self, passengers: u8) -> Self {
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), passengers / 2);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), passengers / 2);
-            self.command(|a| a.set_passengers(passengers));
+        fn passengers(mut self, pax_quantity: u8) -> Self {
+            self.command(|a| a.set_passengers(pax_quantity));
             self
         }
 

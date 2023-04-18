@@ -1032,7 +1032,7 @@ export class FlightPlanManager {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public truncateWaypoints(index: number, thenSetActive = false, callback = () => { }): void {
         const fp = this._flightPlans[this._currentFlightPlanIndex];
-        for (let i = fp.length; i >= index; i--) {
+        for (let i = fp.length; i > index; i--) {
             fp.removeWaypoint(index);
         }
 

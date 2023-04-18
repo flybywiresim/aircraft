@@ -1,19 +1,20 @@
-import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from 'msfssdk';
+import { SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
 import {
     AdirsSimVarDefinitions,
     AdirsSimVars,
     SwitchingPanelSimVarsDefinitions, SwitchingPanelVSimVars,
 } from '../../MsfsAvionicsCommon/SimVarTypes';
+import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
+import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     coldDark: number;
-    elec: number;
-    elecFo: number;
+    elec: boolean;
+    elecFo: boolean;
     potentiometerCaptain: number;
     potentiometerFo: number;
     pitch: number;
     roll: number;
-    magHeadingRaw: number;
     baroCorrectedAltitude: number;
     speed: number;
     noseGearCompressed: boolean;
@@ -63,7 +64,6 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     flapHandleIndex: number;
     transAlt: number;
     transAltAppr: number;
-    magTrackRaw: number;
     selectedHeading: number;
     showSelectedHeading: number;
     altConstraint: number;
@@ -146,8 +146,6 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fac2BetaTargetRaw: number;
     trueRefPushbutton: number;
     irMaintWordRaw: number;
-    trueHeadingRaw: number;
-    trueTrackRaw: number;
     slatPosLeft: number;
     fm1NavDiscrete: number;
   }
@@ -183,8 +181,8 @@ export enum PFDVars {
     athrModeMessage = 'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
     machPreselVal = 'L:A32NX_MachPreselVal',
     speedPreselVal = 'L:A32NX_SpeedPreselVal',
-    mda = 'L:AIRLINER_MINIMUM_DESCENT_ALTITUDE',
-    dh = 'L:AIRLINER_DECISION_HEIGHT',
+    mda = 'L:A32NX_FM1_MINIMUM_DESCENT_ALTITUDE',
+    dh = 'L:A32NX_FM1_DECISION_HEIGHT',
     attHdgKnob = 'L:A32NX_ATT_HDG_SWITCHING_KNOB',
     airKnob = 'L:A32NX_AIR_DATA_SWITCHING_KNOB',
     vsBaro = 'L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED',
@@ -300,7 +298,7 @@ export enum PFDVars {
   }
 
 /** A publisher to poll and publish nav/com simvars. */
-export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
+export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     private static simvars = new Map<keyof PFDSimvars, SimVarDefinition>([
         ...AdirsSimVarDefinitions,
         ...SwitchingPanelSimVarsDefinitions,
@@ -311,7 +309,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['potentiometerFo', { name: PFDVars.potentiometerFo, type: SimVarValueType.Number }],
         ['pitch', { name: PFDVars.pitch, type: SimVarValueType.Number }],
         ['roll', { name: PFDVars.roll, type: SimVarValueType.Number }],
-        ['magHeadingRaw', { name: PFDVars.magHeadingRaw, type: SimVarValueType.Number }],
         ['baroCorrectedAltitude', { name: PFDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
         ['speed', { name: PFDVars.speed, type: SimVarValueType.Number }],
         ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
@@ -444,13 +441,11 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fac2BetaTargetRaw', { name: PFDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
         ['trueRefPushbutton', { name: PFDVars.trueRefPushbutton, type: SimVarValueType.Bool }],
         ['irMaintWordRaw', { name: PFDVars.irMaintWordRaw, type: SimVarValueType.Number }],
-        ['trueHeadingRaw', { name: PFDVars.trueHeadingRaw, type: SimVarValueType.Number }],
-        ['trueTrackRaw', { name: PFDVars.trueTrackRaw, type: SimVarValueType.Number }],
         ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
         ['fm1NavDiscrete', { name: PFDVars.fm1NavDiscrete, type: SimVarValueType.Number }],
     ])
 
-    public constructor(bus: EventBus) {
+    public constructor(bus: ArincEventBus) {
         super(PFDSimvarPublisher.simvars, bus);
     }
 }

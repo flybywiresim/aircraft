@@ -1,4 +1,4 @@
-import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType, Subject } from 'msfssdk';
+import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 
 export interface SwitchableSimVarDefinition<TState> {
     name: (state: TState) => string;

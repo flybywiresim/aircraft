@@ -1,4 +1,4 @@
-import { EventBus, KeyEvents, KeyInterceptManager } from 'msfssdk';
+import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
 
 let nxNotificationsListener: ViewListener.ViewListener;
 
@@ -29,14 +29,14 @@ export type NotificationData = {
 export class NotificationManager {
     eventBus: EventBus;
 
-    manager: KeyInterceptManager;
+    manager: KeyEventManager;
 
     notifications: Notification[];
 
     constructor() {
         this.notifications = [];
         this.eventBus = new EventBus();
-        KeyInterceptManager.getManager(this.eventBus).then((man) => {
+        KeyEventManager.getManager(this.eventBus).then((man) => {
             this.manager = man;
             this.registerIntercepts();
         });
