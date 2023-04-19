@@ -34,8 +34,16 @@ class ScopedTimer {
   const ClockType::time_point _start{};
 
  public:
+  /**
+   * @brief Construct a new Scoped Timer object. Will immediately start the timer and will print the
+   * execution time when the object goes out of scope.
+   * @param timerName Name of the timer for the output
+   */
   ScopedTimer(const std::string_view timerName) : _timerName{timerName}, _start{ClockType::now()} {}
 
+  /**
+   * @brief Destroy the Scoped Timer object. Will print the execution time to std::cout.
+   */
   ~ScopedTimer() {
     using namespace std::chrono;
     const auto stop = ClockType::now();
