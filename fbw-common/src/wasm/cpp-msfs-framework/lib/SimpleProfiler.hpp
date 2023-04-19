@@ -26,7 +26,8 @@
  *   - Stop the profiler. (e.g. profiler.stop();)<br/>
  *   - Print the average execution time. (e.g. profiler.print();)<br/>
  *     - the average will always be re-calculated from the available samples everytime this method is called.<br/>
- *     - Output will be printed to std::cout: "Profiler:     33,052 (32,898) nanoseconds for MsfsHandler::update() (avg of 120 samples)"<br/>
+ *     - Output will be printed to std::cout: "Profiler:     33,052 (32,898) nanoseconds for MsfsHandler::update() (avg of 120
+ * samples)"<br/>
  *     - The first number is the average execution time of the collected samples at the time of calling this method.<br/>
  *     - The second number is the avg of the 5-95% samples at the time of calling this method.<br/>
  */
@@ -59,7 +60,8 @@ class SimpleProfiler {
    * @brief Stop the profiler and add the sample to the buffer
    */
   void stop() {
-    if (!_started) return;
+    if (!_started)
+      return;
     _samples.push((Clock::now() - _start));
     _started = false;
   }
@@ -68,29 +70,29 @@ class SimpleProfiler {
    * @brief Return the average execution time of the collected samples at the time of calling this method
    * @return Average execution time of the collected samples at the time of calling this method
    */
-  std::uint64_t getAverage() { return _samples.avg().count(); }
+  [[nodiscard]] std::uint64_t getAverage() { return _samples.avg().count(); }
 
   /**
    * @brief Return the sum of all collected samples at the time of calling this method
    * @return Sum of all collected samples at the time of calling this method
    */
-  std::uint64_t getSum() { return _samples.sum().count(); }
+  [[nodiscard]] std::uint64_t getSum() { return _samples.sum().count(); }
 
   /**
    * @brief Return the number of collected samples at the time of calling this method
    * @return Number of collected samples at the time of calling this method
    */
-  std::size_t getSampleCount() { return _samples.size(); }
+  [[nodiscard]] std::size_t getSampleCount() { return _samples.size(); }
 
   /**
    * @brief Return a string with the average execution time of the collected samples at the time of calling this method
    * @return String with the average execution time of the collected samples at the time of calling this method
    */
-  std::string str() {
+  [[nodiscard]] std::string str() {
     auto avg = _samples.avg();
     std::stringstream os{};
-    os << "Profiler: " << std::setw(15) << std::right << helper::StringUtils::insertThousandsSeparator(avg.count())
-       << " (" << std::setw(15) << std::right << helper::StringUtils::insertThousandsSeparator(_samples.trimmedAverage(0.1).count()) << ")"
+    os << "Profiler: " << std::setw(15) << std::right << helper::StringUtils::insertThousandsSeparator(avg.count()) << " (" << std::setw(15)
+       << std::right << helper::StringUtils::insertThousandsSeparator(_samples.trimmedAverage(0.1).count()) << ")"
        << " nanoseconds"
        << " for " << _name << " (avg of " << _samples.size() << " samples) " << std::endl;
     return os.str();
