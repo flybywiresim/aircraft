@@ -129,6 +129,7 @@ export default new TaskOfTasks("all", [
                 "fbw-common/src/wasm/terronnd/build.sh",
                 "wasm-opt -O1 -o fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
             ], [
+                "fbw-common/src/wasm/cxx_msfs_abstraction_layer",
                 "fbw-common/src/wasm/terronnd",
                 "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm",
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
