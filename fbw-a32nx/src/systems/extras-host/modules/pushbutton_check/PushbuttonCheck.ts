@@ -25,10 +25,7 @@ export class PushbuttonCheck {
 
     private toConfMessageShown = false;
 
-    constructor(private readonly bus: EventBus, private readonly notification: NotificationManager) {
-        this.notification = new NotificationManager();
-        console.log('KeyInterceptor: Created');
-    }
+    constructor(private readonly bus: EventBus, private readonly notification: NotificationManager) {}
 
     public connectedCallback(): void {
         this.toConfButtonInCruise.sub(this.onToConfigPushbutton.bind(this));
