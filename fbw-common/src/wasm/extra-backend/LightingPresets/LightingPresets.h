@@ -30,7 +30,17 @@ class LightingPresets : public Module {
   NamedVariablePtr loadLightingPresetRequest;
   NamedVariablePtr saveLightingPresetRequest;
 
-  LightingPresets(MsfsHandler& handler) : Module(handler) {}
+  // create ini file and data structure
+  mINI::INIStructure ini;
+  mINI::INIFile iniFile;
+  // Flag to indicate if the ini file should be read - only read it when loading a new preset
+  // but don't read it again during the loading process of one preset
+  // This way we avoid reading the ini file multiple times when loading a single preset but still read it
+  // when loading a new preset which allows to manually change the ini file while the sim is running
+  // for testing manually configured presets.
+  bool readIniFile = true;
+
+  LightingPresets(MsfsHandler& handler) : Module(handler), iniFile(CONFIGURATION_FILEPATH) {}
 
   virtual bool initialize() override = 0; // this needs to be implemented by the derived class
   bool preUpdate([[maybe_unused]] sGaugeDrawData* pData) override { return true; }; // not required for this module

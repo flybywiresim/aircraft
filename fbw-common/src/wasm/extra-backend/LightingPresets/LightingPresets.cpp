@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include "LightingPresets.h"
+#include "ScopedTimer.hpp"
 
 bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!_isInitialized) {
@@ -18,6 +19,7 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (loadLightingPresetRequest->getAsBool()) {
     const INT64 presetRequest = loadLightingPresetRequest->getAsInt64();
     if (loadLightingPreset(presetRequest)) {
+      readIniFile = true;
       loadLightingPresetRequest->setAsInt64(0);
       LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " successfully loaded.");
     }
@@ -36,6 +38,9 @@ bool LightingPresets::shutdown() {
 }
 
 bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
+  // throttle the load process so animation can keep up
+  if (msfsHandler.getTickCounter() % 2 != 0) return false;
+
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
   readFromAircraft();
@@ -59,29 +64,23 @@ void LightingPresets::saveLightingPreset(INT64 savePresetRequest) {
 }
 
 bool LightingPresets::readFromStore(INT64 presetNr) {
-  // create ini file and data structure
-  mINI::INIStructure ini;
-  mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
-  // load file
-  if (!iniFile.read(ini)) {
-    LOG_ERROR("LightingPresets_A32NX: Could not read ini file");
-    return false;
-  };
+  // only read ini file from disk if we load a new preset
+  if (readIniFile) {
+    if (!iniFile.read(ini)) {
+      LOG_ERROR("LightingPresets_A32NX: Could not read ini file");
+      return false;
+    };
+    readIniFile = false;
+  }
   loadFromIni(ini, "preset " + std::to_string(presetNr));
   return true;
 }
 
 bool LightingPresets::saveToStore(INT64 presetNr) {
-  // create ini file and data structure
-  mINI::INIStructure ini;
-  mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
-  // load file
-  bool result = iniFile.read(ini);
   // add/update iniSectionName
-  const std::string iniSectionName = "iniSectionName " + std::to_string(presetNr);
+  const std::string iniSectionName = "preset " + std::to_string(presetNr);
   saveToIni(ini, iniSectionName);
-  result &= iniFile.write(ini, true);
-  return result;
+  return iniFile.write(ini, true);
 }
 
 std::shared_ptr<AircraftVariable> LightingPresets::getLightPotentiometerVar(int index) const {
@@ -106,13 +105,13 @@ FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
   return defaultValue;
 }
 
-FLOAT64 LightingPresets::convergeValue(FLOAT64 target, FLOAT64 momentary) {
-  if (target > momentary) {
+FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, FLOAT64 target) {
+  if (momentary < target) {
     momentary += STEP_SIZE;
     if (momentary > target) {
       momentary = target;
     }
-  } else if (target < momentary) {
+  } else if (momentary > target) {
     momentary -= STEP_SIZE;
     if (momentary < target) {
       momentary = target;
