@@ -36,7 +36,8 @@ class SimpleProfiler {
  private:
   const std::string _name;
   ProfileBuffer<std::chrono::nanoseconds> _samples;
-  Clock::time_point _start;
+  Clock::time_point _start{};
+  bool _started = false;
 
  public:
   /**
@@ -47,16 +48,20 @@ class SimpleProfiler {
   SimpleProfiler(const std::string& name, size_t sampleCount) : _name{name}, _samples{sampleCount} {}
 
   /**
-   * @brief Start the profiler
+   * @brief Start the profiler - will reset the start time if it was already started
    */
-  void start() { _start = Clock::now(); }
+  void start() {
+    _started = true;
+    _start = Clock::now();
+  }
 
   /**
    * @brief Stop the profiler and add the sample to the buffer
    */
   void stop() {
-    using namespace std::chrono;
+    if (!_started) return;
     _samples.push((Clock::now() - _start));
+    _started = false;
   }
 
   /**
