@@ -10,7 +10,7 @@
 #include <list>
 #include <string>
 
-#include "../base/changeable.hpp"
+#include <base/changeable.hpp>
 
 namespace simconnect {
 

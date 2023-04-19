@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "../base/changeable.hpp"
+#include <base/changeable.hpp>
 
 namespace simconnect {
 

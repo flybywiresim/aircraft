@@ -12,10 +12,10 @@
 #include <memory>
 #include <string>
 
-#include "clientdataarea.hpp"
-#include "facility.hpp"
-#include "lvarobject.hpp"
-#include "simobject.hpp"
+#include <simconnect/clientdataarea.hpp>
+#include <simconnect/facility.hpp>
+#include <simconnect/lvarobject.hpp>
+#include <simconnect/simobject.hpp>
 
 namespace simconnect {
 

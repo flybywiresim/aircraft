@@ -11,9 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include "../base/changeable.hpp"
-#include "../helper/stringconcat.hpp"
-#include "../types/quantity.hpp"
+#include <base/changeable.hpp>
+#include <helper/stringconcat.hpp>
+#include <types/quantity.hpp>
 
 namespace simconnect {
 
