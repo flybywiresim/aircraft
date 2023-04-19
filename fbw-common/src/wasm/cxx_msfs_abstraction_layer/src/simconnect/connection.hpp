@@ -49,7 +49,7 @@ class Connection {
     if (object != this->_simObjects.end()) {
       object->second->receivedData((void*)&data->dwData);
     } else {
-      std::cout << "MSFSAL: Unknown request ID in SimConnect connection: " << std::to_string(data->dwRequestID) << std::endl;
+      std::cerr << "MSFSAL: Unknown request ID for sim object data: " << std::to_string(data->dwRequestID) << std::endl;
     }
   }
 
@@ -58,7 +58,7 @@ class Connection {
     if (area != this->_clientDataAreas.end()) {
       area->second->receivedData((void*)&data->dwData);
     } else {
-      std::cout << "MSFSAL: Unknown request ID in SimConnect connection: " << std::to_string(data->dwRequestID) << std::endl;
+      std::cerr << "MSFSAL: Unknown request ID for client data: " << std::to_string(data->dwRequestID) << std::endl;
     }
   }
 
