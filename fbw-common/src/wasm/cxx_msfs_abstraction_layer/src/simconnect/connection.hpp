@@ -62,9 +62,98 @@ class Connection {
     }
   }
 
-  void processFacilityData(const SIMCONNECT_RECV_FACILITY_DATA* data) {}
+  void processFacilityData(const SIMCONNECT_RECV_FACILITY_DATA* data) {
+    FacilityDataTypes facilityType = FacilityDataTypes::Undefined;
+    switch (data->Type) {
+      case SIMCONNECT_FACILITY_DATA_AIRPORT:
+        facilityType = FacilityDataTypes::Airport;
+        break;
+      case SIMCONNECT_FACILITY_DATA_RUNWAY:
+        facilityType = FacilityDataTypes::Runway;
+        break;
+      case SIMCONNECT_FACILITY_DATA_START:
+        facilityType = FacilityDataTypes::Start;
+        break;
+      case SIMCONNECT_FACILITY_DATA_FREQUENCY:
+        facilityType = FacilityDataTypes::Frequency;
+        break;
+      case SIMCONNECT_FACILITY_DATA_HELIPAD:
+        facilityType = FacilityDataTypes::Helipad;
+        break;
+      case SIMCONNECT_FACILITY_DATA_APPROACH:
+        facilityType = FacilityDataTypes::Approach;
+        break;
+      case SIMCONNECT_FACILITY_DATA_APPROACH_TRANSITION:
+        facilityType = FacilityDataTypes::ApproachTransition;
+        break;
+      case SIMCONNECT_FACILITY_DATA_APPROACH_LEG:
+        facilityType = FacilityDataTypes::ApproachLeg;
+        break;
+      case SIMCONNECT_FACILITY_DATA_FINAL_APPROACH_LEG:
+        facilityType = FacilityDataTypes::FinalApproachLeg;
+        break;
+      case SIMCONNECT_FACILITY_DATA_MISSED_APPROACH_LEG:
+        facilityType = FacilityDataTypes::MissedApproachLeg;
+        break;
+      case SIMCONNECT_FACILITY_DATA_DEPARTURE:
+        facilityType = FacilityDataTypes::Departure;
+        break;
+      case SIMCONNECT_FACILITY_DATA_ARRIVAL:
+        facilityType = FacilityDataTypes::Arrival;
+        break;
+      case SIMCONNECT_FACILITY_DATA_RUNWAY_TRANSITION:
+        facilityType = FacilityDataTypes::RunwayTransition;
+        break;
+      case SIMCONNECT_FACILITY_DATA_ENROUTE_TRANSITION:
+        facilityType = FacilityDataTypes::EnrouteTranisition;
+        break;
+      case SIMCONNECT_FACILITY_DATA_TAXI_POINT:
+        facilityType = FacilityDataTypes::TaxiPoint;
+        break;
+      case SIMCONNECT_FACILITY_DATA_TAXI_PARKING:
+        facilityType = FacilityDataTypes::TaxiParking;
+        break;
+      case SIMCONNECT_FACILITY_DATA_TAXI_PATH:
+        facilityType = FacilityDataTypes::TaxiPath;
+        break;
+      case SIMCONNECT_FACILITY_DATA_TAXI_NAME:
+        facilityType = FacilityDataTypes::TaxiName;
+        break;
+      case SIMCONNECT_FACILITY_DATA_JETWAY:
+        facilityType = FacilityDataTypes::Jetway;
+        break;
+      case SIMCONNECT_FACILITY_DATA_VOR:
+        facilityType = FacilityDataTypes::VOR;
+        break;
+      case SIMCONNECT_FACILITY_DATA_NDB:
+        facilityType = FacilityDataTypes::NDB;
+        break;
+      case SIMCONNECT_FACILITY_DATA_WAYPOINT:
+        facilityType = FacilityDataTypes::Waypoint;
+        break;
+      case SIMCONNECT_FACILITY_DATA_ROUTE:
+        facilityType = FacilityDataTypes::Route;
+        break;
+      default:
+        break;
+    }
 
-  void processFacilityDataEnd(const SIMCONNECT_RECV_FACILITY_DATA_END* data) {}
+    auto facility = this->_facilities.find(data->UserRequestId);
+    if (facility != this->_facilities.end()) {
+      facility->second->receivedData(facilityType, reinterpret_cast<const std::uint8_t*>(&data->Data));
+    } else {
+      std::cerr << "MSFSAL: Unknown request ID for facilities: " << std::to_string(data->UserRequestId) << std::endl;
+    }
+  }
+
+  void processFacilityDataEnd(const SIMCONNECT_RECV_FACILITY_DATA_END* data) {
+    auto facility = this->_facilities.find(data->RequestId);
+    if (facility != this->_facilities.end()) {
+      facility->second->receivedAllData();
+    } else {
+      std::cerr << "MSFSAL: Unknown request ID for facilities: " << std::to_string(data->RequestId) << std::endl;
+    }
+  }
 
   void processDispatchMessage(SIMCONNECT_RECV* pData) {
     switch (static_cast<SIMCONNECT_RECV_ID>(pData->dwID)) {
