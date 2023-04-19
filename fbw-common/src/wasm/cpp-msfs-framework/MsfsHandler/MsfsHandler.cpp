@@ -180,6 +180,7 @@ bool MsfsHandler::shutdown() {
   modules.clear();
   result &= dataManager.shutdown();
   unregister_key_event_handler_EX1(reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(keyEventHandlerEx1), nullptr);
+  unregister_all_named_vars();
   return result;
 }
 
