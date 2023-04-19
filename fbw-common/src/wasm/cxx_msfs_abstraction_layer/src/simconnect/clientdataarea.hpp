@@ -45,9 +45,9 @@ class ClientDataAreaBase : public base::Changeable {
     result &= SimConnect_MapClientDataNameToID(*this->_connection, name.c_str(), this->_dataId);
     result &= SimConnect_AddToClientDataDefinition(*this->_connection, this->_definitionId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, size);
     if (SUCCEEDED(result)) {
-      std::cout << "TERR ON ND: Defined client area: " << name << std::endl;
+      std::cout << "MSFSAL: Defined client area: " << name << std::endl;
     } else {
-      std::cerr << "TERR ON ND: Unable to to create client area: " << name << std::endl;
+      std::cerr << "MSFSAL: Unable to to create client area: " << name << std::endl;
     }
 
     return SUCCEEDED(result);

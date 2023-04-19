@@ -7,8 +7,9 @@
 #include <map>
 #include <memory>
 
-#include "../simconnect/connection.hpp"
-#include "../types/quantity.hpp"
+#include <simconnect/connection.hpp>
+#include <types/quantity.hpp>
+
 #include "configuration.h"
 #include "display.h"
 

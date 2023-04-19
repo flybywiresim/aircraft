@@ -13,12 +13,13 @@
 
 #include <iostream>
 
-#include "../simconnect/clientdataarea.hpp"
-#include "../simconnect/connection.hpp"
-#include "../simconnect/lvarobject.hpp"
-#include "../simconnect/simobject.hpp"
-#include "../types/arinc429.hpp"
-#include "../types/quantity.hpp"
+#include <simconnect/clientdataarea.hpp>
+#include <simconnect/connection.hpp>
+#include <simconnect/lvarobject.hpp>
+#include <simconnect/simobject.hpp>
+#include <types/arinc429.hpp>
+#include <types/quantity.hpp>
+
 #include "../types/simbridge.h"
 #include "configuration.h"
 

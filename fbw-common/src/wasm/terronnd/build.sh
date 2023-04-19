@@ -50,11 +50,11 @@ clang++ \
   -O2 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
+  -I "${DIR}/../cxx_msfs_abstraction_layer/src" \
   "${DIR}/src/main.cpp" \
   "${DIR}/src/nanovg/nanovg.cpp" \
   "${DIR}/src/navigationdisplay/collection.cpp" \
-  "${DIR}/src/navigationdisplay/displaybase.cpp" \
-  "${DIR}/src/simconnect/connection.cpp" \
+  "${DIR}/src/navigationdisplay/displaybase.cpp"
 
 # restore directory
 popd
