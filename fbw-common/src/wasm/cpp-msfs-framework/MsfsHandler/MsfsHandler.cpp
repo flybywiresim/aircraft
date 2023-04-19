@@ -117,6 +117,10 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
     return false;
   }
 
+#ifdef PROFILING
+  profiler.start();
+#endif
+
   aircraftIsReady->readFromSim();
   aircraftDevelopmentState->readFromSim();
 
@@ -130,6 +134,9 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   // and run a separate pair of getRequestedData() and requestPeriodicDataFromSim() for it
   if ((baseSimData->data().simulationTime) == timeStamp) {
     // LOG_DEBUG(simConnectName + ": Pause detected");
+#ifdef PROFILING
+    profiler.stop();
+#endif
     return true;
   }
 
@@ -157,6 +164,13 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   if (!result) {
     LOG_ERROR(simConnectName + ": MsfsHandler::update() - failed");
   }
+
+#ifdef PROFILING
+  profiler.stop();
+  if (tickCounter % 120 == 0) {
+    profiler.print();
+  }
+#endif
 
   return result;
 }

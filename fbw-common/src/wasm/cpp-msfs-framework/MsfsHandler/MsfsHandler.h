@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataManager.h"
+#include "SimpleProfiler.hpp"
 
 class Module;
 
@@ -89,6 +90,12 @@ class MsfsHandler {
 
   // Callback function for register_key_event_handler_EX1
   GAUGE_KEY_EVENT_HANDLER_EX1 keyEventHandlerEx1 = nullptr;
+
+  // Allows immediate view on runtime performance issue. Add additional instances into
+  // Modules while developing and profiling a module's performance.
+#ifdef PROFILING
+  SimpleProfiler profiler{"MsfsHandler::update()", 120};
+#endif
 
  public:
   /**
