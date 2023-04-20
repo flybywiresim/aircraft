@@ -24,7 +24,7 @@ struct is_numeric<std::chrono::duration<T>> : std::true_type {};
  * @brief A buffer to collect a fixed number of values for profiling purposes.
  * @details The buffer will collect the last n values and provide methods to
  * calculate the sum, average and trimmed average of the collected values.
- * @tparam T the type of the values to collect - must be numeric or a duration
+ * @tparam T the type of the values to collect - must be numeric or a std::chrono::duration
  */
 template <typename T>
 class ProfileBuffer {
@@ -46,7 +46,7 @@ class ProfileBuffer {
    * @details If the buffer is full, the oldest value will be removed.
    * @param value the value to push
    */
-  void push(T value) {
+  inline void push(T value) {
     if (_buffer.size() == _capacity) {
       _buffer.pop_front();
     }
@@ -58,12 +58,7 @@ class ProfileBuffer {
    * @return sum of all values
    */
   T sum() {
-    // std::accumulate can't be used here because it doesn't work with std::chrono::duration
-    T sum{};
-    for (const auto& value : _buffer) {
-      sum += value;
-    }
-    return sum;
+    return std::accumulate(_buffer.begin(), _buffer.end(), T(0));
   }
 
   /**
@@ -75,19 +70,17 @@ class ProfileBuffer {
 
   /**
    * @brief Calculate the trimmed average of all values in the buffer at the time of the call.
+   * The trimmed average is calculated by creating a sorted copy of the buffer and removing the
+   * lowest and highest values before calculating the average.
    * @param trimPercent the percentage of values to trim from the buffer before calculating the average (default: 5%)
    * @return trimmed average of all values
    */
   [[nodiscard]]
   T trimmedAverage(float trimPercent = 0.05) {
-    std::sort(_buffer.begin(), _buffer.end());
-    const int bufferSize = _buffer.size();
-    const int trimSize = bufferSize * trimPercent;
-    T sum{};
-    for (int i = trimSize; i < bufferSize - trimSize; i++) {
-      sum += _buffer[i];
-    }
-    return sum / (bufferSize - trimSize * 2);
+    std::deque<T> sorted = _buffer;
+    std::sort(sorted.begin(), sorted.end());
+    const int trimSize = sorted.size() * trimPercent;
+    return std::accumulate(sorted.begin() + trimSize, sorted.end() - trimSize, T(0)) / (sorted.size() - trimSize * 2);
   }
 
   /**
@@ -95,14 +88,14 @@ class ProfileBuffer {
    * @return Current number of values in the buffer.
    */
   [[nodiscard]]
-  size_t size() const { return _buffer.size(); }
+  inline size_t size() const { return _buffer.size(); }
 
   /**
    * @brief Get the capacity of the buffer.
    * @return Capacity of the buffer.
    */
   [[nodiscard]]
-  size_t capacity() const { return _capacity; }
+  inline size_t capacity() const { return _capacity; }
 
 };
 
