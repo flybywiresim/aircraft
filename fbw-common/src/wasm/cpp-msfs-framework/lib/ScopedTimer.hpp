@@ -9,6 +9,9 @@
 #include <iomanip>
 #include <string_view>
 
+/**
+ * @brief Macro to create a scoped timer. Will only create the timer if profiling is enabled.
+ */
 #if PROFILING
 #define SCOPED_TIMER(name) ScopedTimer timer{name};
 #else
@@ -24,7 +27,7 @@
  *   // do something
  * }
  *
- * Output will be printed to std::cout.
+ * Output will be printed to std::cout as soon as the timer goes out of scope.
  */
 class ScopedTimer {
   using ClockType = std::chrono::high_resolution_clock;
