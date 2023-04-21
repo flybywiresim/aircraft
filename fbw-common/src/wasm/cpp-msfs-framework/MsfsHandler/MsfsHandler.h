@@ -73,9 +73,9 @@ class MsfsHandler {
   std::shared_ptr<DataDefinitionVariable<BaseSimData>> baseSimData;
 
   // Pause detection - not working because of sim issue - see initialize() for details
-  //  NamedVariablePtr a32nxPauseDetected;
-  //  ClientEventPtr pauseDetectedEvent;
-  //  [[maybe_unused]] CallbackID pauseDetectedEventCallbackId;
+  NamedVariablePtr a32nxPauseDetected;
+  ClientEventPtr pauseDetectedEvent;
+  [[maybe_unused]] CallbackID pauseDetectedEventCallbackId;
 
   /**
    * Current simulation time used for pause detection and time stamping variable updates
@@ -104,8 +104,7 @@ class MsfsHandler {
    * @param aircraftPrefix string containing the prefix for all named variables (LVARs).
    *                       E.g. "A32NX_" for the A32NX aircraft or "A380X_" for the A380X aircraft.
    */
-  explicit MsfsHandler(std::string&& name, const std::string& aircraftPrefix)
-      : dataManager(this), simConnectName(std::move(name)) {
+  explicit MsfsHandler(std::string&& name, const std::string& aircraftPrefix) : dataManager(this), simConnectName(std::move(name)) {
     LOG_INFO("Creating MsfsHandler instance with Simconnect name " + simConnectName + " and aircraft prefix " + aircraftPrefix);
     NamedVariable::setAircraftPrefix(aircraftPrefix);
   }

@@ -76,27 +76,18 @@ bool MsfsHandler::initialize() {
   // #define PAUSE_STATE_FLAG_PAUSE_WITH_SOUND 2 // FSX Legacy Pause (not used anymore)
   // #define PAUSE_STATE_FLAG_ACTIVE_PAUSE 4 // Pause was activated using the "Active Pause" Button
   // #define PAUSE_STATE_FLAG_SIM_PAUSE 8 // Pause the player sim but traffic, multi, etc... will still run
-  /*
-    a32nxPauseDetected = dataManager.make_named_var("A32NX_PAUSE_DETECTED", UNITS.Number, true, true);
-    pauseDetectedEvent = dataManager.make_client_event("A32NX.PAUSE_DETECTED_EVENT", false);
-    pauseDetectedEventCallbackId = pauseDetectedEvent->addCallback(
-        [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
-          LOG_DEBUG(simConnectName + ": Pause detected"
-                          + " number: " + std::to_string(number)
-                          + " param0: " + std::to_string(param0)
-                          + " param1: " + std::to_string(param1)
-                          + " param2: " + std::to_string(param2)
-                          + " param3: " + std::to_string(param3)
-                          + " param4: " + std::to_string(param4));
-          a32nxPauseDetected->set(1);
-        }
-   );
-    if (!SUCCEEDED(SimConnect_SubscribeToSystemEvent(hSimConnect, pauseDetectedEvent->getClientEventId(), "Pause_EX1"))) {
-      LOG_ERROR(simConnectName + ": Failed to subscribe to PAUSE_EX1 event");
-      return false;
-    }
-    LOG_INFO(simConnectName + ": Subscribed to PAUSE_EX1 event");
-  */
+  a32nxPauseDetected = dataManager.make_named_var("PAUSE_DETECTED", UNITS.Number, true, true);
+  pauseDetectedEvent = dataManager.make_client_event("A32NX.PAUSE_DETECTED_EVENT", false);
+  pauseDetectedEventCallbackId =
+      pauseDetectedEvent->addCallback([&](const int, const DWORD param0, const DWORD, const DWORD, const DWORD, const DWORD) {
+        LOG_INFO(simConnectName + ": Pause detected: " + std::to_string(param0));
+        a32nxPauseDetected->setAndWriteToSim(param0);
+      });
+  if (!SUCCEEDED(SimConnect_SubscribeToSystemEvent(hSimConnect, pauseDetectedEvent->getClientEventId(), "Pause_EX1"))) {
+    LOG_ERROR(simConnectName + ": Failed to subscribe to PAUSE_EX1 event");
+    return false;
+  }
+  LOG_INFO(simConnectName + ": Subscribed to PAUSE_EX1 event");
 
   // Initialize modules
   result = std::all_of(modules.begin(), modules.end(), [](Module* pModule) { return pModule->initialize(); });
@@ -117,32 +108,35 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
     return false;
   }
 
-#ifdef PROFILING
-  profiler.start();
-#endif
-
-  aircraftIsReady->readFromSim();
-  aircraftDevelopmentState->readFromSim();
-
   // initial request of data from sim to retrieve all requests which have
   // periodic updates enabled. This includes the base sim data for pause detection.
   // Other data without periodic updates are requested either in the data manager or
   // in the modules.
   dataManager.getRequestedData();
 
-  // detect pause - uses the base sim data definition to retrieve the SIMULATION TIME
-  // and run a separate pair of getRequestedData() and requestPeriodicDataFromSim() for it
-  if ((baseSimData->data().simulationTime) == timeStamp) {
-    // LOG_DEBUG(simConnectName + ": Pause detected");
-#ifdef PROFILING
-    profiler.stop();
-#endif
-    return true;
+  // Pause detection
+  // In all pause states except active pause return immediately.
+  // Active pause can be handled by the modules but usually simulation should run normally in
+  // active pause with just the aircraft not moving.
+  if (a32nxPauseDetected->readFromSim()) {
+    if (a32nxPauseDetected->getAsInt64() > 0) {
+      if (a32nxPauseDetected->getAsInt64() != 4) {
+        // LOG_DEBUG(simConnectName + ": Pause detected = " + std::to_string(a32nxPauseDetected->getAsInt64()));
+        return true;
+      }
+      // LOG_DEBUG(simConnectName + ": Active Pause detected = " + std::to_string(a32nxPauseDetected->getAsInt64()));
+    }
   }
 
-  // get a new timestamp and increase the tick counter
+  // read and update base data from sim
+  aircraftIsReady->readFromSim();
+  aircraftDevelopmentState->readFromSim();
   timeStamp = baseSimData->data().simulationTime;
   tickCounter++;
+
+#ifdef PROFILING
+  profiler.start();
+#endif
 
   // Call preUpdate(), update() and postUpdate() for all modules
   // Datamanager is always called first to ensure that all variables are updated before the modules
