@@ -28,7 +28,7 @@
 
 MsfsHandler msfsHandler("Gauge_Extra_Backend_A32NX", "A32NX_");
 #ifdef EXAMPLES
-ExampleModule exampleModule(msfsHandlerPtr);
+ExampleModule exampleModule(msfsHandler);
 #endif
 
 // ADD ADDITIONAL MODULES HERE

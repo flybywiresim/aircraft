@@ -16,7 +16,7 @@
 #include "fingerprint.hpp"
 
 bool ExampleModule::initialize() {
-  dataManager = &msfsHandlerPtr.getDataManager();
+  dataManager = &msfsHandler.getDataManager();
 
   /*
    * Update mode of a variable - last 4 optional parameters of the make_... calls:
@@ -290,11 +290,11 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
   // Do not do anything if the sim is not running - this is not required but is a good idea
   // It is ready after the click on "READY TO FLY"
-  if (!msfsHandlerPtr.getAircraftIsReadyVar())
+  if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
+  // Un-throttled tests
 #ifdef STREAM_RECEIVE_EXAMPLE
-    // Un-throttled tests
     //  if (streamReceiverMetaDataPtr->hasChanged()) {
     //    // STREAM RECEIVER DATA Meta Data
     //    LOG_INFO("--- HUGE CLIENT META DATA (External - reading)");
@@ -316,11 +316,14 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 #endif
 
   // Use this to throttle output frequency while you are debugging
-  if (msfsHandlerPtr.getTickCounter() % 100 == 0) {
-    [[maybe_unused]] const FLOAT64 timeStamp = msfsHandlerPtr.getTimeStamp();
-    [[maybe_unused]] const UINT64 tickCounter = msfsHandlerPtr.getTickCounter();
+  if (msfsHandler.getTickCounter() % 100 == 0) {
+    [[maybe_unused]] const FLOAT64 timeStamp = msfsHandler.getTimeStamp();
+    [[maybe_unused]] const UINT64 tickCounter = msfsHandler.getTickCounter();
 
     std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
+
+    //    LOG_DEBUG("A32NX_IS_READY = " + std::string(msfsHandler.getAircraftIsReadyVar() ? "true" : "false"));
+    //    LOG_DEBUG("A32NX_DEVELOPER_STATE = " + std::to_string(msfsHandler.getAircraftDevelopmentStateVar()));
 
 #ifdef CUSTOM_EVENT_EXAMPLE
     // ======================
