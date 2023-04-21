@@ -50,13 +50,11 @@ bool MsfsHandler::initialize() {
   // Register as key event handler
   register_key_event_handler_EX1(keyEventHandlerEx1, nullptr);
 
-  // initialize all data variables needed for the MsfsHandler itself
-  aircraftDevelopmentState = dataManager.make_named_var("DEVELOPER_STATE", UNITS.Number);
-  aircraftIsReady = dataManager.make_named_var("IS_READY", UNITS.Bool);
-
   // base sim data mainly for pause detection
   std::vector<DataDefinition> baseDataDef = {
       {"SIMULATION TIME", 0, UNITS.Number},
+      {"L:A32NX_IS_READY", 0, UNITS.Number},
+      {"L:A32NX_DEVELOPER_STATE", 0, UNITS.Number}
   };
   baseSimData = dataManager.make_datadefinition_var<BaseSimData>("BASE DATA", baseDataDef);
   if (!SUCCEEDED(baseSimData->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME))) {
@@ -78,11 +76,10 @@ bool MsfsHandler::initialize() {
   // #define PAUSE_STATE_FLAG_SIM_PAUSE 8 // Pause the player sim but traffic, multi, etc... will still run
   a32nxPauseDetected = dataManager.make_named_var("PAUSE_DETECTED", UNITS.Number, true, true);
   pauseDetectedEvent = dataManager.make_client_event("A32NX.PAUSE_DETECTED_EVENT", false);
-  pauseDetectedEventCallbackId =
-      pauseDetectedEvent->addCallback([&](const int, const DWORD param0, const DWORD, const DWORD, const DWORD, const DWORD) {
-        LOG_INFO(simConnectName + ": Pause detected: " + std::to_string(param0));
-        a32nxPauseDetected->setAndWriteToSim(param0);
-      });
+  pauseDetectedEvent->addCallback([&](const int, const DWORD param0, const DWORD, const DWORD, const DWORD, const DWORD) {
+    LOG_INFO(simConnectName + ": Pause detected: " + std::to_string(param0));
+    a32nxPauseDetected->setAndWriteToSim(param0);
+  });
   if (!SUCCEEDED(SimConnect_SubscribeToSystemEvent(hSimConnect, pauseDetectedEvent->getClientEventId(), "Pause_EX1"))) {
     LOG_ERROR(simConnectName + ": Failed to subscribe to PAUSE_EX1 event");
     return false;
@@ -108,6 +105,10 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
     return false;
   }
 
+#ifdef PROFILING
+  profiler.start();
+#endif
+
   // initial request of data from sim to retrieve all requests which have
   // periodic updates enabled. This includes the base sim data for pause detection.
   // Other data without periodic updates are requested either in the data manager or
@@ -129,14 +130,8 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   }
 
   // read and update base data from sim
-  aircraftIsReady->readFromSim();
-  aircraftDevelopmentState->readFromSim();
   timeStamp = baseSimData->data().simulationTime;
   tickCounter++;
-
-#ifdef PROFILING
-  profiler.start();
-#endif
 
   // Call preUpdate(), update() and postUpdate() for all modules
   // Datamanager is always called first to ensure that all variables are updated before the modules
@@ -179,9 +174,9 @@ bool MsfsHandler::shutdown() {
 }
 
 bool MsfsHandler::getAircraftIsReadyVar() const {
-  return aircraftIsReady->getAsBool();
+  return static_cast<bool>(baseSimData->data().aircraftIsReady);
 }
 
 FLOAT64 MsfsHandler::getAircraftDevelopmentStateVar() const {
-  return aircraftDevelopmentState->get();
+  return baseSimData->data().aircraftDevelopmentState;
 }

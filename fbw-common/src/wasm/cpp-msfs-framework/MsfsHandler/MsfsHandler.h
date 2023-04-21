@@ -65,11 +65,9 @@ class MsfsHandler {
    */
   struct BaseSimData {
     FLOAT64 simulationTime;
+    FLOAT64 aircraftIsReady;
+    FLOAT64 aircraftDevelopmentState;
   };
-
-  // Common variables required by the MsfsHandler itself
-  NamedVariablePtr aircraftIsReady;
-  NamedVariablePtr aircraftDevelopmentState;
   std::shared_ptr<DataDefinitionVariable<BaseSimData>> baseSimData;
 
   // Pause detection - not working because of sim issue - see initialize() for details
