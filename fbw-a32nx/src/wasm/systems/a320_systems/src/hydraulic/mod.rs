@@ -5822,14 +5822,14 @@ impl Debug for A320ReverserController {
 }
 
 struct A320Reversers {
-    reverser1_position_id: VariableIdentifier,
-    reverser2_position_id: VariableIdentifier,
+    reverser_1_position_id: VariableIdentifier,
+    reverser_2_position_id: VariableIdentifier,
 
-    reverser1_in_transition_id: VariableIdentifier,
-    reverser2_in_transition_id: VariableIdentifier,
+    reverser_1_in_transition_id: VariableIdentifier,
+    reverser_2_in_transition_id: VariableIdentifier,
 
-    reverser1_deployed_id: VariableIdentifier,
-    reverser2_deployed_id: VariableIdentifier,
+    reverser_1_deployed_id: VariableIdentifier,
+    reverser_2_deployed_id: VariableIdentifier,
 
     reversers: [ReverserAssembly; 2],
 
@@ -5838,29 +5838,29 @@ struct A320Reversers {
 }
 impl A320Reversers {
     // TODO Check busses and power, placeholder only for now
-    const REVERSER1_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
-    const REVERSER2_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
+    const REVERSER_1_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
+    const REVERSER_2_SUPPLY_POWER_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(2);
 
-    const REVERSER1_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER_1_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
-    const REVERSER1_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER_1_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
 
-    const REVERSER2_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER_2_PRIMARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
-    const REVERSER2_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
+    const REVERSER_2_SECONDARY_VALVES_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            reverser1_position_id: context.get_identifier("REVERSER1_POSITION".to_owned()),
-            reverser2_position_id: context.get_identifier("REVERSER2_POSITION".to_owned()),
+            reverser_1_position_id: context.get_identifier("REVERSER_1_POSITION".to_owned()),
+            reverser_2_position_id: context.get_identifier("REVERSER_2_POSITION".to_owned()),
 
-            reverser1_in_transition_id: context.get_identifier("REVERSER1_DEPLOYING".to_owned()),
-            reverser2_in_transition_id: context.get_identifier("REVERSER2_DEPLOYING".to_owned()),
+            reverser_1_in_transition_id: context.get_identifier("REVERSER_1_DEPLOYING".to_owned()),
+            reverser_2_in_transition_id: context.get_identifier("REVERSER_2_DEPLOYING".to_owned()),
 
-            reverser1_deployed_id: context.get_identifier("REVERSER1_DEPLOYED".to_owned()),
-            reverser2_deployed_id: context.get_identifier("REVERSER2_DEPLOYED".to_owned()),
+            reverser_1_deployed_id: context.get_identifier("REVERSER_1_DEPLOYED".to_owned()),
+            reverser_2_deployed_id: context.get_identifier("REVERSER_2_DEPLOYED".to_owned()),
 
             reversers: [
                 ReverserAssembly::new(
@@ -5873,9 +5873,9 @@ impl A320Reversers {
                     Pressure::new::<psi>(
                         A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
                     ),
-                    Self::REVERSER1_SUPPLY_POWER_BUS,
-                    Self::REVERSER1_PRIMARY_VALVES_SUPPLY_POWER_BUS,
-                    Self::REVERSER1_SECONDARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER_1_SUPPLY_POWER_BUS,
+                    Self::REVERSER_1_PRIMARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER_1_SECONDARY_VALVES_SUPPLY_POWER_BUS,
                 ),
                 ReverserAssembly::new(
                     Pressure::new::<psi>(
@@ -5887,9 +5887,9 @@ impl A320Reversers {
                     Pressure::new::<psi>(
                         A320HydraulicCircuitFactory::MIN_PRESS_PRESSURISED_LO_HYST,
                     ),
-                    Self::REVERSER2_SUPPLY_POWER_BUS,
-                    Self::REVERSER2_PRIMARY_VALVES_SUPPLY_POWER_BUS,
-                    Self::REVERSER2_SECONDARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER_2_SUPPLY_POWER_BUS,
+                    Self::REVERSER_2_PRIMARY_VALVES_SUPPLY_POWER_BUS,
+                    Self::REVERSER_2_SECONDARY_VALVES_SUPPLY_POWER_BUS,
                 ),
             ],
             reversers_in_transition: [false, false],
@@ -5953,25 +5953,25 @@ impl SimulationElement for A320Reversers {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            &self.reverser1_position_id,
+            &self.reverser_1_position_id,
             self.reversers[0].reverser_position().get::<ratio>(),
         );
         writer.write(
-            &self.reverser2_position_id,
+            &self.reverser_2_position_id,
             self.reversers[1].reverser_position().get::<ratio>(),
         );
 
         writer.write(
-            &self.reverser1_in_transition_id,
+            &self.reverser_1_in_transition_id,
             self.reversers_in_transition[0],
         );
         writer.write(
-            &self.reverser2_in_transition_id,
+            &self.reverser_2_in_transition_id,
             self.reversers_in_transition[1],
         );
 
-        writer.write(&self.reverser1_deployed_id, self.reversers_deployed[0]);
-        writer.write(&self.reverser2_deployed_id, self.reversers_deployed[1]);
+        writer.write(&self.reverser_1_deployed_id, self.reversers_deployed[0]);
+        writer.write(&self.reverser_2_deployed_id, self.reversers_deployed[1]);
     }
 }
 
@@ -6701,11 +6701,11 @@ mod tests {
             }
 
             fn get_reverser_1_position(&mut self) -> Ratio {
-                Ratio::new::<ratio>(self.read_by_name("REVERSER1_POSITION"))
+                Ratio::new::<ratio>(self.read_by_name("REVERSER_1_POSITION"))
             }
 
             fn get_reverser_2_position(&mut self) -> Ratio {
-                Ratio::new::<ratio>(self.read_by_name("REVERSER2_POSITION"))
+                Ratio::new::<ratio>(self.read_by_name("REVERSER_2_POSITION"))
             }
 
             fn rat_deploy_commanded(&self) -> bool {

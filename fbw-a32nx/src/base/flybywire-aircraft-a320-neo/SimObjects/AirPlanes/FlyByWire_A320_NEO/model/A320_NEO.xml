@@ -238,12 +238,12 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_1</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_REVERSER1_POSITION) 100 *</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_REVERSER_1_POSITION) 100 *</ANIM_CODE>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_2</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_REVERSER2_POSITION) 100 *</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_REVERSER_2_POSITION) 100 *</ANIM_CODE>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
         </Component>
