@@ -10,7 +10,7 @@ set(FBW_COMMON ${FBW_ROOT}/fbw-common/src/wasm)
 include("${FBW_COMMON}/cpp-msfs-framework/cmake/TargetDefinition.cmake")
 
 # compiler refinement
-set(COMPILER_FLAGS "-Wall -Wextra -Werror -Wno-unused-function -Wno-unused-command-line-argument -Wno-ignored-attributes -Wno-macro-redefined -target wasm32-unknown-wasi --sysroot \"${MSFS_SDK}/WASM/wasi-sysroot\" -mthread-model single -fno-exceptions -fms-extensions -fvisibility=hidden -ffunction-sections -fdata-sections -fno-stack-protector")
+set(COMPILER_FLAGS "-Wall -Wextra -Wno-unused-function -Wno-unused-command-line-argument -Wno-ignored-attributes -Wno-macro-redefined -target wasm32-unknown-wasi --sysroot \"${MSFS_SDK}/WASM/wasi-sysroot\" -mthread-model single -fno-exceptions -fms-extensions -fvisibility=hidden -ffunction-sections -fdata-sections -fno-stack-protector")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILER_FLAGS}")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -flto=full -DNDEBUG")
@@ -42,7 +42,7 @@ add_definitions(
     -D_WINDLL
     -D_MBCS
     # ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
-    -DLOG_LEVEL=4
+    -DLOG_LEVEL=5
     # EXAMPLES | NO_EXAMPLES
     -DNO_EXAMPLES
     #PROFILING | NO_PROFILING - for logging of profiling information of pre-, post-, update() calls
