@@ -257,14 +257,6 @@ pub enum GearWheel {
     RIGHT = 2,
 }
 
-pub enum GearWheelHeavy {
-    NOSE = 0,
-    LEFT = 1,
-    RIGHT = 2,
-    LEFT_BODY = 3,
-    RIGHT_BODY = 4,
-}
-
 pub trait SectionPressure {
     fn pressure(&self) -> Pressure;
     fn pressure_downstream_leak_valve(&self) -> Pressure;

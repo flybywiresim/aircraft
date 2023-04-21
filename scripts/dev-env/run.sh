@@ -13,6 +13,13 @@ export MSYS_NO_PATHCONV=1
 
 docker image inspect $IMAGE 1> /dev/null || docker system prune --filter label=flybywiresim=true -f
 
+ARCH='uname -m'
+if [ "$ARCH" == 'arm64' ]; then
+    PLATFORM='--platform=linux/amd64'
+else
+    PLATFORM=' '
+fi
+
 docker run \
     --rm $TTY_PARAM \
     -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
@@ -20,5 +27,6 @@ docker run \
     -e GITHUB_REF="${GITHUB_REF}" \
     -e GITHUB_SHA="${GITHUB_SHA}" \
     -v "$(pwd)":/external \
+    $PLATFORM \
     $IMAGE \
     "$@"

@@ -28,7 +28,7 @@ use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
 use uom::si::{f64::Length, length::nautical_mile};
 
-use systems::wing_flex::WingFlex;
+use systems::wing_flex::WingFlexA380;
 
 use systems::{
     apu::{
@@ -78,7 +78,7 @@ pub struct A380 {
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
-    wing_flex: WingFlex,
+    wing_flex: WingFlexA380,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -136,7 +136,7 @@ impl A380 {
                 ],
                 1,
             ),
-            wing_flex: WingFlex::new(context),
+            wing_flex: WingFlexA380::new(context),
         }
     }
 }

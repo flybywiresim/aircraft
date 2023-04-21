@@ -179,6 +179,7 @@ pub struct UpdateContext {
     vertical_speed: Velocity,
 
     local_acceleration: LocalAcceleration,
+    local_acceleration_plane_reference: Vector3<f64>,
     local_acceleration_plane_reference_filtered: LowPassFilter<Vector3<f64>>,
 
     world_ambient_wind: Velocity3D,
@@ -300,6 +301,7 @@ impl UpdateContext {
                 vertical_acceleration,
                 longitudinal_acceleration,
             ),
+            local_acceleration_plane_reference: Vector3::new(0., -9.8, 0.),
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
                     Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
@@ -374,7 +376,7 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
-
+            local_acceleration_plane_reference: Vector3::new(0., -9.8, 0.),
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
                     Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
@@ -484,12 +486,12 @@ impl UpdateContext {
 
         // Total acceleration in plane reference is the gravity in world reference rotated to plane reference. To this we substract
         // the local plane reference to get final local acceleration (if plane falling at 1G final local accel is 1G of gravity - 1G local accel = 0G)
-        let total_acceleration_plane_reference = (pitch_rotation
+        self.local_acceleration_plane_reference = (pitch_rotation
             * (bank_rotation * gravity_acceleration_world_reference))
             - plane_acceleration_plane_reference;
 
         self.local_acceleration_plane_reference_filtered
-            .update(delta, total_acceleration_plane_reference);
+            .update(delta, self.local_acceleration_plane_reference);
     }
 
     /// Relative wind could be directly read from simvar RELATIVE WIND VELOCITY XYZ.
@@ -619,6 +621,10 @@ impl UpdateContext {
 
     pub fn acceleration_plane_reference_filtered_ms2_vector(&self) -> Vector3<f64> {
         self.local_acceleration_plane_reference_filtered.output()
+    }
+
+    pub fn acceleration_plane_reference_unfiltered_ms2_vector(&self) -> Vector3<f64> {
+        self.local_acceleration_plane_reference
     }
 
     pub fn pitch(&self) -> Angle {

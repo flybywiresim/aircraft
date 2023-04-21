@@ -1,9 +1,12 @@
 use crate::shared::interpolation;
 use crate::shared::low_pass_filter::LowPassFilter;
+use crate::shared::update_iterator::MaxStepLoop;
+
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
+use nalgebra::{Rotation3, Vector3};
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::{degree, radian},
@@ -11,6 +14,8 @@ use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     area::square_meter,
     f64::*,
+    force::newton,
+    length::meter,
     mass::kilogram,
     mass_density::kilogram_per_cubic_meter,
     power::watt,
@@ -19,18 +24,20 @@ use uom::si::{
     torque::newton_meter,
     velocity::knot,
     velocity::meter_per_second,
+    volume::{gallon, liter},
 };
 
+use std::fmt;
 use std::time::Duration;
 
 pub enum GearWheelHeavy {
-    NOSE = 0,
-    LEFT_BODY = 1,
-    RIGHT_BODY = 2,
-    LEFT_WING = 3,
-    RIGHT_WING = 4,
+    Nose = 0,
+    LeftBody = 1,
+    RightBody = 2,
+    LeftWing = 3,
+    RightWing = 4,
 }
-pub struct LandingGearHeavy {
+pub struct LandingGearCompression {
     center_compression_id: VariableIdentifier,
 
     left_wing_compression_id: VariableIdentifier,
@@ -45,14 +52,12 @@ pub struct LandingGearHeavy {
     left_body_compression: Ratio,
     right_body_compression: Ratio,
 }
-impl LandingGearHeavy {
-    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.01;
-
-    pub const GEAR_CENTER_COMPRESSION: &'static str = "GEAR ANIMATION POSITION";
-    pub const GEAR_LEFT_BODY_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
-    pub const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:2";
-    pub const GEAR_LEFT_WING_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:3";
-    pub const GEAR_RIGHT_WING_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:4";
+impl LandingGearCompression {
+    pub const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
+    pub const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
+    pub const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
+    pub const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
+    pub const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -74,129 +79,94 @@ impl LandingGearHeavy {
         }
     }
 
-    fn is_any_on_ground(&self) -> bool {
-        self.wheel_id_compression(GearWheelHeavy::NOSE)
-            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-            || self.wheel_id_compression(GearWheelHeavy::LEFT_BODY)
-                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-            || self.wheel_id_compression(GearWheelHeavy::RIGHT_BODY)
-                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-            || self.wheel_id_compression(GearWheelHeavy::LEFT_WING)
-                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-            || self.wheel_id_compression(GearWheelHeavy::RIGHT_WING)
-                > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-    }
-
-    fn wheel_id_compression(&self, wheel_id: GearWheelHeavy) -> Ratio {
-        match wheel_id {
-            GearWheelHeavy::NOSE => self.center_compression,
-            GearWheelHeavy::LEFT_WING => self.left_wing_compression,
-            GearWheelHeavy::RIGHT_WING => self.right_wing_compression,
-            GearWheelHeavy::LEFT_BODY => self.left_body_compression,
-            GearWheelHeavy::RIGHT_BODY => self.right_body_compression,
-        }
-    }
-
     fn total_weight_on_wheels(&self) -> Mass {
-        println!(
-            "WoW = c{:.0} lwrw{:.0}/{:.0} lbrb{:.0}/{:.0} TOT{:.0}",
-            self.weight_on_wheel(GearWheelHeavy::NOSE).get::<kilogram>(),
-            self.weight_on_wheel(GearWheelHeavy::LEFT_WING)
-                .get::<kilogram>(),
-            self.weight_on_wheel(GearWheelHeavy::RIGHT_WING)
-                .get::<kilogram>(),
-            self.weight_on_wheel(GearWheelHeavy::LEFT_BODY)
-                .get::<kilogram>(),
-            self.weight_on_wheel(GearWheelHeavy::RIGHT_BODY)
-                .get::<kilogram>(),
-            (self.weight_on_wheel(GearWheelHeavy::NOSE)
-                + self.weight_on_wheel(GearWheelHeavy::LEFT_WING)
-                + self.weight_on_wheel(GearWheelHeavy::RIGHT_WING)
-                + self.weight_on_wheel(GearWheelHeavy::LEFT_BODY)
-                + self.weight_on_wheel(GearWheelHeavy::RIGHT_BODY))
-            .get::<kilogram>()
-        );
-        self.weight_on_wheel(GearWheelHeavy::NOSE)
-            + self.weight_on_wheel(GearWheelHeavy::LEFT_WING)
-            + self.weight_on_wheel(GearWheelHeavy::RIGHT_WING)
-            + self.weight_on_wheel(GearWheelHeavy::LEFT_BODY)
-            + self.weight_on_wheel(GearWheelHeavy::RIGHT_BODY)
+        self.weight_on_wheel(GearWheelHeavy::Nose)
+            + self.weight_on_wheel(GearWheelHeavy::LeftWing)
+            + self.weight_on_wheel(GearWheelHeavy::RightWing)
+            + self.weight_on_wheel(GearWheelHeavy::LeftBody)
+            + self.weight_on_wheel(GearWheelHeavy::RightBody)
     }
 
     fn weight_on_wheel(&self, wheel_id: GearWheelHeavy) -> Mass {
         match wheel_id {
-            GearWheelHeavy::NOSE => {
-                Mass::new::<kilogram>(4.5 * self.center_compression.get::<percent>().powi(2))
+            GearWheelHeavy::Nose => {
+                Mass::new::<kilogram>(1.45 * self.center_compression.get::<percent>().powf(2.4))
             }
-            GearWheelHeavy::LEFT_WING => {
-                Mass::new::<kilogram>(9. * self.left_wing_compression.get::<percent>().powi(2))
+            GearWheelHeavy::LeftWing => {
+                Mass::new::<kilogram>(5.5 * self.left_wing_compression.get::<percent>().powf(2.6))
             }
-            GearWheelHeavy::RIGHT_WING => {
-                Mass::new::<kilogram>(9. * self.right_wing_compression.get::<percent>().powi(2))
+            GearWheelHeavy::RightWing => {
+                Mass::new::<kilogram>(5.5 * self.right_wing_compression.get::<percent>().powf(2.6))
             }
-            GearWheelHeavy::LEFT_BODY => {
-                Mass::new::<kilogram>(9. * self.left_body_compression.get::<percent>().powi(2))
+            GearWheelHeavy::LeftBody => {
+                Mass::new::<kilogram>(7.5 * self.left_body_compression.get::<percent>().powf(2.5))
             }
-            GearWheelHeavy::RIGHT_BODY => {
-                Mass::new::<kilogram>(9. * self.right_body_compression.get::<percent>().powi(2))
+            GearWheelHeavy::RightBody => {
+                Mass::new::<kilogram>(7.5 * self.right_body_compression.get::<percent>().powf(2.5))
             }
         }
     }
 }
-impl SimulationElement for LandingGearHeavy {
+impl SimulationElement for LandingGearCompression {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let center: f64 = reader.read(&self.center_compression_id);
-        let left_body: f64 = reader.read(&self.left_body_compression_id);
-        let right_body: f64 = reader.read(&self.right_body_compression_id);
-        let left_wing: f64 = reader.read(&self.left_wing_compression_id);
-        let right_wing: f64 = reader.read(&self.right_wing_compression_id);
-
-        self.center_compression = Ratio::new::<ratio>((center - 0.5) * 2.);
-        self.left_wing_compression = Ratio::new::<ratio>((left_wing - 0.5) * 2.);
-        self.right_wing_compression = Ratio::new::<ratio>((right_wing - 0.5) * 2.);
-        self.left_body_compression = Ratio::new::<ratio>((left_body - 0.5) * 2.);
-        self.right_body_compression = Ratio::new::<ratio>((right_body - 0.5) * 2.);
-
-        println!(
-            "center raw read {:.2} Center comp read {:.2}  lw{:.2} lb{:.2}",
-            center,
-            self.center_compression.get::<percent>(),
-            self.left_wing_compression.get::<percent>(),
-            self.left_body_compression.get::<percent>()
-        );
+        self.center_compression = reader.read(&self.center_compression_id);
+        self.left_wing_compression = reader.read(&self.left_body_compression_id);
+        self.right_wing_compression = reader.read(&self.right_body_compression_id);
+        self.left_body_compression = reader.read(&self.left_wing_compression_id);
+        self.right_body_compression = reader.read(&self.right_wing_compression_id);
     }
 }
 
-pub struct WingFlex {
-    gear_weight_on_wheels: LandingGearHeavy,
+struct WingLift {
+    gear_weight_on_wheels: LandingGearCompression,
+
+    total_lift: Force,
 }
-impl WingFlex {
-    pub fn new(context: &mut InitContext) -> Self {
+impl WingLift {
+    fn new(context: &mut InitContext) -> Self {
         Self {
-            gear_weight_on_wheels: LandingGearHeavy::new(context),
+            gear_weight_on_wheels: LandingGearCompression::new(context),
+            total_lift: Force::default(),
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    fn update(&mut self, context: &UpdateContext) {
         let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
-        let accel_y = context.acceleration_plane_reference_filtered_ms2_vector()[1];
+        let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
         let cur_weight_kg = context.total_weight().get::<kilogram>();
 
-        let lift = 9.8 * cur_weight_kg + raw_accel_no_grav * cur_weight_kg
-            - 9.8 * total_weight_on_wheels.get::<kilogram>();
+        let lift_delta_from_accel_n = raw_accel_no_grav * cur_weight_kg;
+        let lift_1g = 9.8 * cur_weight_kg;
+        let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
 
-        println!(
-            " Weight:{:.1}Tons AccelY {:.3}  rawAccelNoG {:1} LIFT {:.0} Kg",
-            cur_weight_kg / 1000.,
-            accel_y,
-            raw_accel_no_grav,
-            lift / 9.8
-        );
+        let lift = if total_weight_on_wheels.get::<kilogram>() > 5000. {
+            println!(
+                "GROUNDMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+                cur_weight_kg / 1000.,
+                accel_y,
+                lift_1g /9.8 / 1000.,
+                lift_wow/9.8 / 1000.,
+                (lift_1g + lift_wow) /9.8 / 1000.
+            );
+            lift_1g + lift_wow
+        } else {
+            println!(
+                "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
+                cur_weight_kg / 1000.,
+                accel_y,
+                lift_1g /9.8 / 1000.,
+                lift_delta_from_accel_n/9.8 / 1000.,
+                (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
+            );
+            lift_1g + lift_delta_from_accel_n
+        };
+
+        self.total_lift = Force::new::<newton>(lift);
     }
 }
-impl SimulationElement for WingFlex {
+impl SimulationElement for WingLift {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.gear_weight_on_wheels.accept(visitor);
 
@@ -210,48 +180,497 @@ impl SimulationElement for WingFlex {
     fn read(&mut self, reader: &mut SimulatorReader) {}
 }
 
+struct WingFuelNodeMapper<const FuelTankNumber: usize, const NodeNumber: usize> {
+    fuel_tank_mapping: [usize; FuelTankNumber],
+}
+impl<const FuelTankNumber: usize, const NodeNumber: usize>
+    WingFuelNodeMapper<FuelTankNumber, NodeNumber>
+{
+    // For each fuel tank, gives the index of the wing node where fuel mass is added
+    // const FUEL_MAPPING: [usize; FuelTankNumber] = [1, 1, 2, 2, 3];
+
+    fn new(fuel_tank_mapping: [usize; FuelTankNumber]) -> Self {
+        Self { fuel_tank_mapping }
+    }
+
+    fn fuel_masses(&self, fuel_tanks_masses: [Mass; FuelTankNumber]) -> [Mass; NodeNumber] {
+        let mut masses = [Mass::default(); NodeNumber];
+        for (idx, fuel) in fuel_tanks_masses.iter().enumerate() {
+            masses[self.fuel_tank_mapping[idx]] += *fuel;
+        }
+        masses
+    }
+}
+
+enum A380fuelTanks {
+    LeftInner,
+    LeftFeed2,
+    LeftMid,
+    LeftFeed1,
+    LeftOutter,
+    RightInner,
+    RightFeed3,
+    RightMid,
+    RightFeed4,
+    RightOutter,
+}
+impl fmt::Display for A380fuelTanks {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            A380fuelTanks::LeftInner => write!(f, "FUELSYSTEM TANK QUANTITY:4"),
+            A380fuelTanks::LeftFeed2 => write!(f, "FUELSYSTEM TANK QUANTITY:5"),
+            A380fuelTanks::LeftMid => write!(f, "FUELSYSTEM TANK QUANTITY:3"),
+            A380fuelTanks::LeftFeed1 => write!(f, "FUELSYSTEM TANK QUANTITY:2"),
+            A380fuelTanks::LeftOutter => write!(f, "FUELSYSTEM TANK QUANTITY:1"),
+            A380fuelTanks::RightInner => write!(f, "FUELSYSTEM TANK QUANTITY:7"),
+            A380fuelTanks::RightFeed3 => write!(f, "FUELSYSTEM TANK QUANTITY:6"),
+            A380fuelTanks::RightMid => write!(f, "FUELSYSTEM TANK QUANTITY:8"),
+            A380fuelTanks::RightFeed4 => write!(f, "FUELSYSTEM TANK QUANTITY:9"),
+            A380fuelTanks::RightOutter => write!(f, "FUELSYSTEM TANK QUANTITY:10"),
+        }
+    }
+}
+
+struct WingMassA380 {
+    left_tank_1_id: VariableIdentifier,
+    left_tank_2_id: VariableIdentifier,
+    left_tank_3_id: VariableIdentifier,
+    left_tank_4_id: VariableIdentifier,
+    left_tank_5_id: VariableIdentifier,
+
+    right_tank_1_id: VariableIdentifier,
+    right_tank_2_id: VariableIdentifier,
+    right_tank_3_id: VariableIdentifier,
+    right_tank_4_id: VariableIdentifier,
+    right_tank_5_id: VariableIdentifier,
+
+    left_tank_volumes: [Volume; 5],
+    right_tank_volumes: [Volume; 5],
+
+    left_fuel_mass: Mass,
+    right_fuel_mass: Mass,
+}
+impl WingMassA380 {
+    const FUEL_MASS_DENSITY_KG_M3: f64 = 800.;
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            //Trying to map tanks from inner to outer tanks. WARNING Indexes are reversed for right wing
+            left_tank_1_id: context.get_identifier(A380fuelTanks::LeftInner.to_string()),
+            left_tank_2_id: context.get_identifier(A380fuelTanks::LeftFeed2.to_string()),
+            left_tank_3_id: context.get_identifier(A380fuelTanks::LeftMid.to_string()),
+            left_tank_4_id: context.get_identifier(A380fuelTanks::LeftFeed1.to_string()),
+            left_tank_5_id: context.get_identifier(A380fuelTanks::LeftOutter.to_string()),
+
+            right_tank_1_id: context.get_identifier(A380fuelTanks::RightInner.to_string()),
+            right_tank_2_id: context.get_identifier(A380fuelTanks::RightFeed3.to_string()),
+            right_tank_3_id: context.get_identifier(A380fuelTanks::RightMid.to_string()),
+            right_tank_4_id: context.get_identifier(A380fuelTanks::RightFeed4.to_string()),
+            right_tank_5_id: context.get_identifier(A380fuelTanks::RightOutter.to_string()),
+
+            left_tank_volumes: [Volume::default(); 5],
+            right_tank_volumes: [Volume::default(); 5],
+
+            left_fuel_mass: Mass::new::<kilogram>(0.),
+            right_fuel_mass: Mass::new::<kilogram>(0.),
+        }
+    }
+
+    fn left_tanks_masses(&self) -> [Mass; 5] {
+        let mut masses = [Mass::default(); 5];
+
+        for idx in 0..5 {
+            masses[idx] = self.left_tank_volumes[idx]
+                * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3);
+        }
+
+        masses
+    }
+
+    fn right_tanks_masses(&self) -> [Mass; 5] {
+        let mut masses = [Mass::default(); 5];
+
+        for idx in 0..5 {
+            masses[idx] = self.right_tank_volumes[idx]
+                * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3);
+        }
+
+        masses
+    }
+}
+impl SimulationElement for WingMassA380 {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.left_tank_volumes[0] = reader.read(&self.left_tank_1_id);
+        self.left_tank_volumes[1] = reader.read(&self.left_tank_2_id);
+        self.left_tank_volumes[2] = reader.read(&self.left_tank_3_id);
+        self.left_tank_volumes[3] = reader.read(&self.left_tank_4_id);
+        self.left_tank_volumes[4] = reader.read(&self.left_tank_5_id);
+
+        self.right_tank_volumes[0] = reader.read(&self.right_tank_1_id);
+        self.right_tank_volumes[1] = reader.read(&self.right_tank_2_id);
+        self.right_tank_volumes[2] = reader.read(&self.right_tank_3_id);
+        self.right_tank_volumes[3] = reader.read(&self.right_tank_4_id);
+        self.right_tank_volumes[4] = reader.read(&self.right_tank_5_id);
+
+        self.left_fuel_mass = MassDensity::new::<kilogram_per_cubic_meter>(800.)
+            * (self.left_tank_volumes[0]
+                + self.left_tank_volumes[1]
+                + self.left_tank_volumes[2]
+                + self.left_tank_volumes[3]
+                + self.left_tank_volumes[4]);
+
+        self.right_fuel_mass = MassDensity::new::<kilogram_per_cubic_meter>(800.)
+            * (self.right_tank_volumes[0]
+                + self.right_tank_volumes[1]
+                + self.right_tank_volumes[2]
+                + self.right_tank_volumes[3]
+                + self.right_tank_volumes[4]);
+
+        println!(
+            "left tank mass{:.1} right tank mass{:.1}",
+            self.left_fuel_mass.get::<kilogram>(),
+            self.right_fuel_mass.get::<kilogram>()
+        );
+    }
+}
+
+use nalgebra::Vector5;
+
+const WING_FLEX_NODE_NUMBER: usize = 5;
+const WING_FLEX_LINK_NUMBER: usize = WING_FLEX_NODE_NUMBER - 1;
+
+const FUEL_TANKS_NUMBER: usize = 5;
+
+pub struct WingFlexA380 {
+    left_flex_id: VariableIdentifier,
+    right_flex_id: VariableIdentifier,
+
+    wing_lift: WingLift,
+    wing_mass: WingMassA380,
+
+    fuel_mapper: WingFuelNodeMapper<5, WING_FLEX_NODE_NUMBER>,
+
+    flex_physics: [FlexPhysicsNG<WING_FLEX_NODE_NUMBER, WING_FLEX_LINK_NUMBER>; 2],
+}
+impl WingFlexA380 {
+    const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
+        [20187500., 9937500., 1312500., 187500.];
+    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [1009875., 496875., 65625., 4687.5];
+    const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 22000., 3000., 500.];
+
+    const FUEL_MAPPING: [usize; FUEL_TANKS_NUMBER] = [1, 1, 2, 2, 3];
+
+    pub fn new(context: &mut InitContext) -> Self {
+        let empty_mass = [
+            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[0]),
+            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[1]),
+            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[2]),
+            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[3]),
+            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[4]),
+        ];
+
+        Self {
+            left_flex_id: context.get_identifier("WING_FLEX_LEFT".to_owned()),
+            right_flex_id: context.get_identifier("WING_FLEX_RIGHT".to_owned()),
+
+            wing_lift: WingLift::new(context),
+            wing_mass: WingMassA380::new(context),
+
+            fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
+
+            flex_physics: [
+                FlexPhysicsNG::new(
+                    empty_mass,
+                    Self::FLEX_COEFFICIENTS,
+                    Self::DAMNPING_COEFFICIENTS,
+                ),
+                FlexPhysicsNG::new(
+                    empty_mass,
+                    Self::FLEX_COEFFICIENTS,
+                    Self::DAMNPING_COEFFICIENTS,
+                ),
+            ],
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        let standard_lift_spread = Vector5::new(0., 0.45, 0.35, 0.17, 0.03);
+
+        let lift_table_newton =
+            standard_lift_spread * self.wing_lift.total_lift.get::<newton>() * 0.5;
+
+        println!(
+            "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            lift_table_newton.x,
+            lift_table_newton.y,
+            lift_table_newton.z,
+            lift_table_newton.w,
+            lift_table_newton.a
+        );
+
+        self.wing_lift.update(context);
+
+        self.flex_physics[0].update(
+            context,
+            lift_table_newton.as_slice(),
+            self.fuel_mapper
+                .fuel_masses(self.wing_mass.left_tanks_masses()),
+        );
+
+        self.flex_physics[1].update(
+            context,
+            lift_table_newton.as_slice(),
+            self.fuel_mapper
+                .fuel_masses(self.wing_mass.right_tanks_masses()),
+        );
+    }
+}
+impl SimulationElement for WingFlexA380 {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.wing_lift.accept(visitor);
+        self.wing_mass.accept(visitor);
+        // self.flex_physics[0].accept(visitor);
+        // self.flex_physics[1].accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        const MIN_FLEX: f64 = -1.;
+        const MAX_FLEX: f64 = 2.;
+
+        let left = (self.flex_physics[0].wing_tip_position().get::<meter>() - MIN_FLEX) * 100.
+            / (MAX_FLEX - MIN_FLEX);
+        let right = (self.flex_physics[1].wing_tip_position().get::<meter>() - MIN_FLEX) * 100.
+            / (MAX_FLEX - MIN_FLEX);
+
+        writer.write(&self.left_flex_id, left);
+        writer.write(&self.right_flex_id, right);
+    }
+}
+
+struct FlexibleConstraint {
+    springiness: f64,
+    damping: f64,
+
+    previous_length: Length,
+    damping_force: LowPassFilter<Force>,
+
+    total_force: Force,
+}
+impl FlexibleConstraint {
+    // Damping is low pass filtered which results in improved numerical stability
+    const DAMPING_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(10);
+
+    fn new(springiness: f64, damping: f64) -> Self {
+        Self {
+            springiness,
+            damping,
+            previous_length: Length::default(),
+            damping_force: LowPassFilter::new(Self::DAMPING_FILTERING_TIME_CONSTANT),
+            total_force: Force::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        node1: &WingSectionNode,
+        node2: &WingSectionNode,
+    ) {
+        let length = node2.position() - node1.position();
+
+        let spring_force = Force::new::<newton>(length.get::<meter>() * self.springiness);
+
+        let speed = (self.previous_length - length) / context.delta_as_time();
+
+        let raw_damping_force =
+            Force::new::<newton>(-speed.get::<meter_per_second>() * self.damping);
+
+        self.damping_force
+            .update(context.delta(), raw_damping_force);
+
+        self.total_force = spring_force + self.damping_force.output();
+
+        self.previous_length = length;
+    }
+}
+
+struct WingSectionNode {
+    empty_mass: Mass,
+    fuel_mass: Mass,
+    speed: Velocity,
+    position: Length,
+
+    sum_of_forces: Force,
+}
+impl WingSectionNode {
+    fn new(empty_mass: Mass) -> Self {
+        Self {
+            empty_mass,
+            fuel_mass: Mass::default(),
+            speed: Velocity::default(),
+            position: Length::default(),
+            sum_of_forces: Force::default(),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        self.apply_gravity_force(context);
+        self.solve_physics(context);
+    }
+
+    fn apply_gravity_force(&mut self, context: &UpdateContext) {
+        self.sum_of_forces += Force::new::<newton>(
+            context.acceleration_plane_reference_unfiltered_ms2_vector()[1]
+                * self.total_mass().get::<kilogram>(),
+        );
+    }
+
+    fn solve_physics(&mut self, context: &UpdateContext) {
+        if self.empty_mass.get::<kilogram>() > 0. {
+            let acceleration = self.sum_of_forces / self.total_mass();
+
+            self.speed += acceleration * context.delta_as_time();
+
+            self.position += self.speed * context.delta_as_time();
+        }
+
+        self.sum_of_forces = Force::default();
+    }
+
+    fn total_mass(&self) -> Mass {
+        self.empty_mass + self.fuel_mass
+    }
+
+    fn apply_force(&mut self, force: Force) {
+        self.sum_of_forces += force;
+    }
+
+    fn position(&self) -> Length {
+        self.position
+    }
+
+    fn set_fuel_mass(&mut self, fuel_mass: Mass) {
+        self.fuel_mass = fuel_mass;
+    }
+}
+
+struct FlexPhysicsNG<const NodeNumber: usize, const LinkNumber: usize> {
+    updater_max_step: MaxStepLoop,
+
+    nodes: [WingSectionNode; NodeNumber],
+    flex_constraints: [FlexibleConstraint; LinkNumber],
+}
+impl<const NodeNumber: usize, const LinkNumber: usize> FlexPhysicsNG<NodeNumber, LinkNumber> {
+    const MIN_PHYSICS_SOLVER_TIME_STEP: Duration = Duration::from_millis(10);
+
+    fn new(
+        empty_mass: [Mass; NodeNumber],
+        springness: [f64; LinkNumber],
+        damping: [f64; LinkNumber],
+    ) -> Self {
+        let mut nodes_array = vec![];
+        for idx in 0..NodeNumber {
+            nodes_array.push(WingSectionNode::new(empty_mass[idx]));
+        }
+
+        let mut links_array = vec![];
+        for idx in 0..LinkNumber {
+            links_array.push(FlexibleConstraint::new(springness[idx], damping[idx]));
+        }
+
+        Self {
+            updater_max_step: MaxStepLoop::new(Self::MIN_PHYSICS_SOLVER_TIME_STEP),
+
+            nodes: nodes_array
+                .try_into()
+                .unwrap_or_else(|v: Vec<WingSectionNode>| {
+                    panic!(
+                        "Expected a Vec of length {} but it was {}",
+                        NodeNumber,
+                        v.len()
+                    )
+                }),
+            flex_constraints: links_array.try_into().unwrap_or_else(
+                |v: Vec<FlexibleConstraint>| {
+                    panic!(
+                        "Expected a Vec of length {} but it was {}",
+                        LinkNumber,
+                        v.len()
+                    )
+                },
+            ),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        lift_forces: &[f64],
+        fuel_masses: [Mass; NodeNumber],
+    ) {
+        self.updater_max_step.update(context);
+
+        for cur_time_step in &mut self.updater_max_step {
+            for idx in 0..LinkNumber {
+                self.nodes[idx].set_fuel_mass(fuel_masses[idx]);
+                self.nodes[idx].apply_force(Force::new::<newton>(lift_forces[idx]));
+                self.nodes[idx].update(&context.with_delta(cur_time_step));
+                self.flex_constraints[idx].update(
+                    &context.with_delta(cur_time_step),
+                    &self.nodes[idx],
+                    &self.nodes[idx + 1],
+                );
+                self.nodes[idx].apply_force(self.flex_constraints[idx].total_force);
+                self.nodes[idx + 1].apply_force(-self.flex_constraints[idx].total_force);
+            }
+            self.nodes[NodeNumber - 1].set_fuel_mass(fuel_masses[NodeNumber - 1]);
+            self.nodes[NodeNumber - 1]
+                .apply_force(Force::new::<newton>(lift_forces[NodeNumber - 1]));
+            self.nodes[NodeNumber - 1].update(&context.with_delta(cur_time_step));
+        }
+    }
+
+    fn wing_tip_position(&self) -> Length {
+        self.nodes[NodeNumber - 1].position()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::electrical;
-    use crate::hydraulic;
-    use crate::shared::update_iterator::MaxStepLoop;
+
+    use crate::simulation::test::WriteByName;
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
-    use uom::si::{
-        angular_velocity::{radian_per_second, revolution_per_minute},
-        length::meter,
-        mass_density::slug_per_cubic_foot,
-        power::kilowatt,
-        power::watt,
-        thermodynamic_temperature::degree_celsius,
-        torque::newton_meter,
-        velocity::knot,
-    };
+    use uom::si::{length::meter, velocity::knot};
 
     struct TestAircraft {
-        updater_max_step: MaxStepLoop,
-
-        wing_flex: WingFlex,
+        wing_flex: WingFlexA380,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                updater_max_step: MaxStepLoop::new(Duration::from_millis(10)),
-
-                wing_flex: WingFlex::new(context),
+                wing_flex: WingFlexA380::new(context),
             }
         }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.updater_max_step.update(context);
+            self.wing_flex.update(context);
 
-            for cur_time_step in &mut self.updater_max_step {
-                self.wing_flex.update(&context.with_delta(cur_time_step));
-            }
+            println!(
+                "WING TIPS {:.2} / {:.2} ",
+                self.wing_flex.flex_physics[0]
+                    .wing_tip_position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[1]
+                    .wing_tip_position()
+                    .get::<meter>()
+            );
         }
     }
     impl SimulationElement for TestAircraft {
@@ -269,5 +688,240 @@ mod tests {
         test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
 
         test_bed.run_with_delta(Duration::from_secs(1));
+    }
+
+    #[test]
+    fn fuel_mapping_tanks_1_2_left_wing() {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        let mut node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        let mut node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        let mut node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        let mut node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        let mut node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        println!(
+            "FUELMASSES empty: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node1_mass.get::<kilogram>()
+                + node2_mass.get::<kilogram>()
+                + node3_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+
+        test_bed.write_by_name(A380fuelTanks::LeftInner.to_string().as_str(), 1000.);
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        println!(
+            "FUELMASSES after fueling inner: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node2_mass.get::<kilogram>()
+                + node3_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+        assert!(node1_mass.get::<kilogram>() >= 3000. && node1_mass.get::<kilogram>() <= 3100.);
+
+        test_bed.write_by_name(A380fuelTanks::LeftFeed2.to_string().as_str(), 1000.);
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        //Second tank should map to same node
+
+        println!(
+            "FUELMASSES after fueling feed 2: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node2_mass.get::<kilogram>()
+                + node3_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+        assert!(node1_mass.get::<kilogram>() >= 6000. && node1_mass.get::<kilogram>() <= 6200.);
+    }
+
+    #[test]
+    fn fuel_mapping_tanks_3_4_left_wing() {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        let mut node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        let mut node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        let mut node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        let mut node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        let mut node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        println!(
+            "FUELMASSES empty: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node1_mass.get::<kilogram>()
+                + node2_mass.get::<kilogram>()
+                + node3_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+
+        test_bed.write_by_name(A380fuelTanks::LeftMid.to_string().as_str(), 1000.);
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        println!(
+            "FUELMASSES after fueling left mid: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node1_mass.get::<kilogram>()
+                + node3_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+        assert!(node2_mass.get::<kilogram>() >= 3000. && node2_mass.get::<kilogram>() <= 3100.);
+
+        test_bed.write_by_name(A380fuelTanks::LeftFeed1.to_string().as_str(), 1000.);
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        //Second tank should map to same node
+
+        println!(
+            "FUELMASSES after fueling left feed 1: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node1_mass.get::<kilogram>()
+                + node3_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+        assert!(node2_mass.get::<kilogram>() >= 6000. && node1_mass.get::<kilogram>() <= 6200.);
+    }
+
+    #[test]
+    fn fuel_mapping_tanks_5_left_wing() {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        let mut node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        let mut node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        let mut node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        let mut node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        let mut node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        println!(
+            "FUELMASSES empty: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node1_mass.get::<kilogram>()
+                + node2_mass.get::<kilogram>()
+                + node3_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+
+        test_bed.write_by_name(A380fuelTanks::LeftOutter.to_string().as_str(), 1000.);
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
+        node1_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[1].fuel_mass);
+        node2_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[2].fuel_mass);
+        node3_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[3].fuel_mass);
+        node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
+
+        println!(
+            "FUELMASSES after fueling left outter: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            node0_mass.get::<kilogram>(),
+            node1_mass.get::<kilogram>(),
+            node2_mass.get::<kilogram>(),
+            node3_mass.get::<kilogram>(),
+            node4_mass.get::<kilogram>(),
+        );
+
+        assert!(
+            node0_mass.get::<kilogram>()
+                + node1_mass.get::<kilogram>()
+                + node2_mass.get::<kilogram>()
+                + node4_mass.get::<kilogram>()
+                <= 0.1
+        );
+        assert!(node3_mass.get::<kilogram>() >= 3000. && node2_mass.get::<kilogram>() <= 3100.);
     }
 }
