@@ -53,8 +53,8 @@ bool MsfsHandler::initialize() {
   // base sim data mainly for pause detection
   std::vector<DataDefinition> baseDataDef = {
       {"SIMULATION TIME", 0, UNITS.Number},
-      {"L:A32NX_IS_READY", 0, UNITS.Number},
-      {"L:A32NX_DEVELOPER_STATE", 0, UNITS.Number}
+      {"L:"+ NamedVariable::getAircraftPrefix() + "IS_READY", 0, UNITS.Number},
+      {"L:"+ NamedVariable::getAircraftPrefix() + "DEVELOPER_STATE", 0, UNITS.Number}
   };
   baseSimData = dataManager.make_datadefinition_var<BaseSimData>("BASE DATA", baseDataDef);
   if (!SUCCEEDED(baseSimData->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME))) {
