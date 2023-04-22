@@ -1,4 +1,3 @@
-use crate::shared::interpolation;
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::shared::update_iterator::MaxStepLoop;
 
@@ -6,25 +5,16 @@ use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
-use nalgebra::{Rotation3, Vector3};
+
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::{degree, radian},
-    angular_acceleration::radian_per_second_squared,
-    angular_velocity::{radian_per_second, revolution_per_minute},
-    area::square_meter,
     f64::*,
     force::newton,
     length::meter,
     mass::kilogram,
     mass_density::kilogram_per_cubic_meter,
-    power::watt,
     ratio::{percent, ratio},
-    thermodynamic_temperature::kelvin,
-    torque::newton_meter,
-    velocity::knot,
     velocity::meter_per_second,
-    volume::{gallon, liter},
 };
 
 use std::fmt;
@@ -249,6 +239,9 @@ impl SimulationElement for A380WingLiftModifier {
             reader.read(&self.aileron_right_3_position_id),
         ];
 
+        let left_flaps_position: Ratio = reader.read(&self.flaps_left_position_id);
+        let right_flaps_position: Ratio = reader.read(&self.flaps_right_position_id);
+
         let wing_base_left_spoilers = (spoilers_left[0] + spoilers_left[1]) / 2.;
         let wing_mid_left_spoilers = (spoilers_left[2]
             + spoilers_left[3]
@@ -287,19 +280,19 @@ impl SimulationElement for A380WingLiftModifier {
             / 4.;
         println!("LIFT OFFSET ESTIMATED {:.2}", self.lateral_offset);
 
-        let left_node1 = 1. - (wing_base_left_spoilers * 0.5);
-        let left_node2 = 1. - (wing_mid_left_spoilers * 0.5);
-        let left_node3 = 1. - (left_ailerons_mid * 0.5);
-        let left_node4 = 1. - (left_ailerons_tip * 0.5);
+        // let left_node1 = 1. - (wing_base_left_spoilers * 0.5);
+        // let left_node2 = 1. - (wing_mid_left_spoilers * 0.5);
+        // let left_node3 = 1. - (left_ailerons_mid * 0.5);
+        // let left_node4 = 1. - (left_ailerons_tip * 0.5);
 
-        let left_lift_dynamic_coeff = [left_node1, left_node2, left_node3, left_node4];
+        // let left_lift_dynamic_coeff = [left_node1, left_node2, left_node3, left_node4];
 
-        let right_node1 = 1. - (wing_base_right_spoilers * 0.5);
-        let right_node2 = 1. - (wing_mid_right_spoilers * 0.5);
-        let right_node3 = 1. - (right_ailerons_mid * 0.5);
-        let right_node4 = 1. - (right_ailerons_tip * 0.5);
+        // let right_node1 = 1. - (wing_base_right_spoilers * 0.5);
+        // let right_node2 = 1. - (wing_mid_right_spoilers * 0.5);
+        // let right_node3 = 1. - (right_ailerons_mid * 0.5);
+        // let right_node4 = 1. - (right_ailerons_tip * 0.5);
 
-        let right_lift_dynamic_coeff = [right_node1, right_node2, right_node3, right_node4];
+        // let right_lift_dynamic_coeff = [right_node1, right_node2, right_node3, right_node4];
     }
 }
 struct WingLift {
@@ -357,29 +350,21 @@ impl SimulationElement for WingLift {
 
         visitor.visit(self);
     }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        // writer.write(&self.tilt_animation_id, self.tilt_position.get::<ratio>());
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {}
 }
 
-struct WingFuelNodeMapper<const FuelTankNumber: usize, const NodeNumber: usize> {
-    fuel_tank_mapping: [usize; FuelTankNumber],
+struct WingFuelNodeMapper<const FUEL_TANK_NUMBER: usize, const NODE_NUMBER: usize> {
+    fuel_tank_mapping: [usize; FUEL_TANK_NUMBER],
 }
-impl<const FuelTankNumber: usize, const NodeNumber: usize>
-    WingFuelNodeMapper<FuelTankNumber, NodeNumber>
+impl<const FUEL_TANK_NUMBER: usize, const NODE_NUMBER: usize>
+    WingFuelNodeMapper<FUEL_TANK_NUMBER, NODE_NUMBER>
 {
     // For each fuel tank, gives the index of the wing node where fuel mass is added
-    // const FUEL_MAPPING: [usize; FuelTankNumber] = [1, 1, 2, 2, 3];
-
-    fn new(fuel_tank_mapping: [usize; FuelTankNumber]) -> Self {
+    fn new(fuel_tank_mapping: [usize; FUEL_TANK_NUMBER]) -> Self {
         Self { fuel_tank_mapping }
     }
 
-    fn fuel_masses(&self, fuel_tanks_masses: [Mass; FuelTankNumber]) -> [Mass; NodeNumber] {
-        let mut masses = [Mass::default(); NodeNumber];
+    fn fuel_masses(&self, fuel_tanks_masses: [Mass; FUEL_TANK_NUMBER]) -> [Mass; NODE_NUMBER] {
+        let mut masses = [Mass::default(); NODE_NUMBER];
         for (idx, fuel) in fuel_tanks_masses.iter().enumerate() {
             masses[self.fuel_tank_mapping[idx]] += *fuel;
         }
@@ -697,10 +682,10 @@ impl FlexibleConstraint {
     fn update(
         &mut self,
         context: &UpdateContext,
-        node1: &WingSectionNode,
-        node2: &WingSectionNode,
+        nodes: &mut [WingSectionNode], // node1: &WingSectionNode,
+                                       // node2: &WingSectionNode,
     ) {
-        let length = node2.position() - node1.position();
+        let length = nodes[1].position() - nodes[0].position();
 
         let spring_force = Force::new::<newton>(length.get::<meter>() * self.springiness);
 
@@ -715,6 +700,10 @@ impl FlexibleConstraint {
         self.total_force = spring_force + self.damping_force.output();
 
         self.previous_length = length;
+
+        // Spring force is computed, we apply it back to left and right nodes: same but opposite force
+        nodes[0].apply_force(self.total_force);
+        nodes[1].apply_force(-self.total_force);
     }
 }
 
@@ -778,27 +767,27 @@ impl WingSectionNode {
     }
 }
 
-struct FlexPhysicsNG<const NodeNumber: usize, const LinkNumber: usize> {
+struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     updater_max_step: MaxStepLoop,
 
-    nodes: [WingSectionNode; NodeNumber],
-    flex_constraints: [FlexibleConstraint; LinkNumber],
+    nodes: [WingSectionNode; NODE_NUMBER],
+    flex_constraints: [FlexibleConstraint; LINK_NUMBER],
 }
-impl<const NodeNumber: usize, const LinkNumber: usize> FlexPhysicsNG<NodeNumber, LinkNumber> {
+impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMBER, LINK_NUMBER> {
     const MIN_PHYSICS_SOLVER_TIME_STEP: Duration = Duration::from_millis(10);
 
     fn new(
-        empty_mass: [Mass; NodeNumber],
-        springness: [f64; LinkNumber],
-        damping: [f64; LinkNumber],
+        empty_mass: [Mass; NODE_NUMBER],
+        springness: [f64; LINK_NUMBER],
+        damping: [f64; LINK_NUMBER],
     ) -> Self {
         let mut nodes_array = vec![];
-        for idx in 0..NodeNumber {
+        for idx in 0..NODE_NUMBER {
             nodes_array.push(WingSectionNode::new(empty_mass[idx]));
         }
 
         let mut links_array = vec![];
-        for idx in 0..LinkNumber {
+        for idx in 0..LINK_NUMBER {
             links_array.push(FlexibleConstraint::new(springness[idx], damping[idx]));
         }
 
@@ -810,7 +799,7 @@ impl<const NodeNumber: usize, const LinkNumber: usize> FlexPhysicsNG<NodeNumber,
                 .unwrap_or_else(|v: Vec<WingSectionNode>| {
                     panic!(
                         "Expected a Vec of length {} but it was {}",
-                        NodeNumber,
+                        NODE_NUMBER,
                         v.len()
                     )
                 }),
@@ -818,7 +807,7 @@ impl<const NodeNumber: usize, const LinkNumber: usize> FlexPhysicsNG<NodeNumber,
                 |v: Vec<FlexibleConstraint>| {
                     panic!(
                         "Expected a Vec of length {} but it was {}",
-                        LinkNumber,
+                        LINK_NUMBER,
                         v.len()
                     )
                 },
@@ -830,32 +819,29 @@ impl<const NodeNumber: usize, const LinkNumber: usize> FlexPhysicsNG<NodeNumber,
         &mut self,
         context: &UpdateContext,
         lift_forces: &[f64],
-        fuel_masses: [Mass; NodeNumber],
+        fuel_masses: [Mass; NODE_NUMBER],
     ) {
         self.updater_max_step.update(context);
 
         for cur_time_step in &mut self.updater_max_step {
-            for idx in 0..LinkNumber {
+            for idx in 0..LINK_NUMBER {
                 self.nodes[idx].set_fuel_mass(fuel_masses[idx]);
                 self.nodes[idx].apply_force(Force::new::<newton>(lift_forces[idx]));
                 self.nodes[idx].update(&context.with_delta(cur_time_step));
                 self.flex_constraints[idx].update(
                     &context.with_delta(cur_time_step),
-                    &self.nodes[idx],
-                    &self.nodes[idx + 1],
+                    &mut self.nodes[idx..=idx + 1],
                 );
-                self.nodes[idx].apply_force(self.flex_constraints[idx].total_force);
-                self.nodes[idx + 1].apply_force(-self.flex_constraints[idx].total_force);
             }
-            self.nodes[NodeNumber - 1].set_fuel_mass(fuel_masses[NodeNumber - 1]);
-            self.nodes[NodeNumber - 1]
-                .apply_force(Force::new::<newton>(lift_forces[NodeNumber - 1]));
-            self.nodes[NodeNumber - 1].update(&context.with_delta(cur_time_step));
+            self.nodes[NODE_NUMBER - 1].set_fuel_mass(fuel_masses[NODE_NUMBER - 1]);
+            self.nodes[NODE_NUMBER - 1]
+                .apply_force(Force::new::<newton>(lift_forces[NODE_NUMBER - 1]));
+            self.nodes[NODE_NUMBER - 1].update(&context.with_delta(cur_time_step));
         }
     }
 
     fn wing_tip_position(&self) -> Length {
-        self.nodes[NodeNumber - 1].position()
+        self.nodes[NODE_NUMBER - 1].position()
     }
 }
 
@@ -1154,6 +1140,8 @@ mod tests {
         test_bed.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
         test_bed.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
         test_bed.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
+
+        test_bed.write_by_name("LEFT_FLAPS_POSITION_PERCENT", 50.);
 
         test_bed.run_with_delta(Duration::from_secs(1));
         test_bed.run_with_delta(Duration::from_secs(1));
