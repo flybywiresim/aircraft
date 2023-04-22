@@ -117,6 +117,191 @@ impl SimulationElement for LandingGearCompression {
     }
 }
 
+struct A380WingLiftModifier {
+    spoiler_left_1_position_id: VariableIdentifier,
+    spoiler_left_2_position_id: VariableIdentifier,
+    spoiler_left_3_position_id: VariableIdentifier,
+    spoiler_left_4_position_id: VariableIdentifier,
+    spoiler_left_5_position_id: VariableIdentifier,
+    spoiler_left_6_position_id: VariableIdentifier,
+    spoiler_left_7_position_id: VariableIdentifier,
+    spoiler_left_8_position_id: VariableIdentifier,
+
+    spoiler_right_1_position_id: VariableIdentifier,
+    spoiler_right_2_position_id: VariableIdentifier,
+    spoiler_right_3_position_id: VariableIdentifier,
+    spoiler_right_4_position_id: VariableIdentifier,
+    spoiler_right_5_position_id: VariableIdentifier,
+    spoiler_right_6_position_id: VariableIdentifier,
+    spoiler_right_7_position_id: VariableIdentifier,
+    spoiler_right_8_position_id: VariableIdentifier,
+
+    aileron_left_1_position_id: VariableIdentifier,
+    aileron_left_2_position_id: VariableIdentifier,
+    aileron_left_3_position_id: VariableIdentifier,
+
+    aileron_right_1_position_id: VariableIdentifier,
+    aileron_right_2_position_id: VariableIdentifier,
+    aileron_right_3_position_id: VariableIdentifier,
+
+    flaps_left_position_id: VariableIdentifier,
+    flaps_right_position_id: VariableIdentifier,
+
+    lateral_offset: f64,
+}
+impl A380WingLiftModifier {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            spoiler_left_1_position_id: context
+                .get_identifier("HYD_SPOILER_1_LEFT_DEFLECTION".to_owned()),
+            spoiler_left_2_position_id: context
+                .get_identifier("HYD_SPOILER_2_LEFT_DEFLECTION".to_owned()),
+            spoiler_left_3_position_id: context
+                .get_identifier("HYD_SPOILER_3_LEFT_DEFLECTION".to_owned()),
+            spoiler_left_4_position_id: context
+                .get_identifier("HYD_SPOILER_4_LEFT_DEFLECTION".to_owned()),
+            spoiler_left_5_position_id: context
+                .get_identifier("HYD_SPOILER_5_LEFT_DEFLECTION".to_owned()),
+            spoiler_left_6_position_id: context
+                .get_identifier("HYD_SPOILER_6_LEFT_DEFLECTION".to_owned()),
+            spoiler_left_7_position_id: context
+                .get_identifier("HYD_SPOILER_7_LEFT_DEFLECTION".to_owned()),
+            spoiler_left_8_position_id: context
+                .get_identifier("HYD_SPOILER_8_LEFT_DEFLECTION".to_owned()),
+
+            spoiler_right_1_position_id: context
+                .get_identifier("HYD_SPOILER_1_RIGHT_DEFLECTION".to_owned()),
+            spoiler_right_2_position_id: context
+                .get_identifier("HYD_SPOILER_2_RIGHT_DEFLECTION".to_owned()),
+            spoiler_right_3_position_id: context
+                .get_identifier("HYD_SPOILER_3_RIGHT_DEFLECTION".to_owned()),
+            spoiler_right_4_position_id: context
+                .get_identifier("HYD_SPOILER_4_RIGHT_DEFLECTION".to_owned()),
+            spoiler_right_5_position_id: context
+                .get_identifier("HYD_SPOILER_5_RIGHT_DEFLECTION".to_owned()),
+            spoiler_right_6_position_id: context
+                .get_identifier("HYD_SPOILER_6_RIGHT_DEFLECTION".to_owned()),
+            spoiler_right_7_position_id: context
+                .get_identifier("HYD_SPOILER_7_RIGHT_DEFLECTION".to_owned()),
+            spoiler_right_8_position_id: context
+                .get_identifier("HYD_SPOILER_8_RIGHT_DEFLECTION".to_owned()),
+
+            aileron_left_1_position_id: context
+                .get_identifier("HYD_AIL_LEFT_INWARD_DEFLECTION".to_owned()),
+            aileron_left_2_position_id: context
+                .get_identifier("HYD_AIL_LEFT_MIDDLE_DEFLECTION".to_owned()),
+            aileron_left_3_position_id: context
+                .get_identifier("HYD_AIL_LEFT_OUTWARD_DEFLECTION".to_owned()),
+
+            aileron_right_1_position_id: context
+                .get_identifier("HYD_AIL_RIGHT_INWARD_DEFLECTION".to_owned()),
+            aileron_right_2_position_id: context
+                .get_identifier("HYD_AIL_RIGHT_MIDDLE_DEFLECTION".to_owned()),
+            aileron_right_3_position_id: context
+                .get_identifier("HYD_AIL_RIGHT_OUTWARD_DEFLECTION".to_owned()),
+
+            flaps_left_position_id: context
+                .get_identifier("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
+            flaps_right_position_id: context
+                .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
+
+            lateral_offset: 0.,
+        }
+    }
+
+    fn lateral_offset(&self) -> f64 {
+        self.lateral_offset
+    }
+}
+impl SimulationElement for A380WingLiftModifier {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let spoilers_left: [f64; 8] = [
+            reader.read(&self.spoiler_left_1_position_id),
+            reader.read(&self.spoiler_left_2_position_id),
+            reader.read(&self.spoiler_left_3_position_id),
+            reader.read(&self.spoiler_left_4_position_id),
+            reader.read(&self.spoiler_left_5_position_id),
+            reader.read(&self.spoiler_left_6_position_id),
+            reader.read(&self.spoiler_left_7_position_id),
+            reader.read(&self.spoiler_left_8_position_id),
+        ];
+
+        let spoilers_right: [f64; 8] = [
+            reader.read(&self.spoiler_right_1_position_id),
+            reader.read(&self.spoiler_right_2_position_id),
+            reader.read(&self.spoiler_right_3_position_id),
+            reader.read(&self.spoiler_right_4_position_id),
+            reader.read(&self.spoiler_right_5_position_id),
+            reader.read(&self.spoiler_right_6_position_id),
+            reader.read(&self.spoiler_right_7_position_id),
+            reader.read(&self.spoiler_right_8_position_id),
+        ];
+
+        let ailerons_left: [f64; 3] = [
+            reader.read(&self.aileron_left_1_position_id),
+            reader.read(&self.aileron_left_2_position_id),
+            reader.read(&self.aileron_left_3_position_id),
+        ];
+
+        let ailerons_right: [f64; 3] = [
+            reader.read(&self.aileron_right_1_position_id),
+            reader.read(&self.aileron_right_2_position_id),
+            reader.read(&self.aileron_right_3_position_id),
+        ];
+
+        let wing_base_left_spoilers = (spoilers_left[0] + spoilers_left[1]) / 2.;
+        let wing_mid_left_spoilers = (spoilers_left[2]
+            + spoilers_left[3]
+            + spoilers_left[4]
+            + spoilers_left[5]
+            + spoilers_left[6]
+            + spoilers_left[7])
+            / 6.;
+
+        let wing_base_right_spoilers = (spoilers_right[0] + spoilers_right[1]) / 2.;
+        let wing_mid_right_spoilers = (spoilers_right[2]
+            + spoilers_right[3]
+            + spoilers_right[4]
+            + spoilers_right[5]
+            + spoilers_right[6]
+            + spoilers_right[7])
+            / 6.;
+
+        let left_ailerons_mid =
+            ((ailerons_left[0] - 0.5) * 2. + (ailerons_left[1] - 0.5) * 2.) / 2.;
+        let right_ailerons_mid =
+            ((ailerons_right[0] - 0.5) * 2. + (ailerons_right[1] - 0.5) * 2.) / 2.;
+
+        let left_ailerons_tip = (ailerons_left[2] - 0.5) * 2.;
+        let right_ailerons_tip = (ailerons_right[2] - 0.5) * 2.;
+
+        println!(
+            "LIFTMOD: SPOILIN {:.1} SPOILmid {:.1} AILmid {:.1} AILtip {:.1}",
+            wing_base_left_spoilers, wing_mid_left_spoilers, left_ailerons_mid, left_ailerons_tip,
+        );
+
+        self.lateral_offset = ((wing_base_right_spoilers - wing_base_left_spoilers)
+            + (wing_mid_right_spoilers - wing_mid_left_spoilers)
+            + (right_ailerons_mid - left_ailerons_mid)
+            + (right_ailerons_tip - left_ailerons_tip))
+            / 4.;
+        println!("LIFT OFFSET ESTIMATED {:.2}", self.lateral_offset);
+
+        let left_node1 = 1. - (wing_base_left_spoilers * 0.5);
+        let left_node2 = 1. - (wing_mid_left_spoilers * 0.5);
+        let left_node3 = 1. - (left_ailerons_mid * 0.5);
+        let left_node4 = 1. - (left_ailerons_tip * 0.5);
+
+        let left_lift_dynamic_coeff = [left_node1, left_node2, left_node3, left_node4];
+
+        let right_node1 = 1. - (wing_base_right_spoilers * 0.5);
+        let right_node2 = 1. - (wing_mid_right_spoilers * 0.5);
+        let right_node3 = 1. - (right_ailerons_mid * 0.5);
+        let right_node4 = 1. - (right_ailerons_tip * 0.5);
+
+        let right_lift_dynamic_coeff = [right_node1, right_node2, right_node3, right_node4];
+    }
+}
 struct WingLift {
     gear_weight_on_wheels: LandingGearCompression,
 
@@ -255,7 +440,6 @@ impl WingMassA380 {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            //Trying to map tanks from inner to outer tanks. WARNING Indexes are reversed for right wing
             left_tank_1_id: context.get_identifier(A380fuelTanks::LeftInner.to_string()),
             left_tank_2_id: context.get_identifier(A380fuelTanks::LeftFeed2.to_string()),
             left_tank_3_id: context.get_identifier(A380fuelTanks::LeftMid.to_string()),
@@ -326,11 +510,11 @@ impl SimulationElement for WingMassA380 {
                 + self.right_tank_volumes[3]
                 + self.right_tank_volumes[4]);
 
-        println!(
-            "left tank mass{:.1} right tank mass{:.1}",
-            self.left_fuel_mass.get::<kilogram>(),
-            self.right_fuel_mass.get::<kilogram>()
-        );
+        // println!(
+        //     "left tank mass{:.1} right tank mass{:.1}",
+        //     self.left_fuel_mass.get::<kilogram>(),
+        //     self.right_fuel_mass.get::<kilogram>()
+        // );
     }
 }
 
@@ -346,6 +530,7 @@ pub struct WingFlexA380 {
     right_flex_id: VariableIdentifier,
 
     wing_lift: WingLift,
+    wing_lift_dynamic: A380WingLiftModifier,
     wing_mass: WingMassA380,
 
     fuel_mapper: WingFuelNodeMapper<5, WING_FLEX_NODE_NUMBER>,
@@ -374,6 +559,7 @@ impl WingFlexA380 {
             right_flex_id: context.get_identifier("WING_FLEX_RIGHT".to_owned()),
 
             wing_lift: WingLift::new(context),
+            wing_lift_dynamic: A380WingLiftModifier::new(context),
             wing_mass: WingMassA380::new(context),
 
             fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
@@ -395,6 +581,24 @@ impl WingFlexA380 {
 
     pub fn update(&mut self, context: &UpdateContext) {
         let standard_lift_spread = Vector5::new(0., 0.45, 0.35, 0.17, 0.03);
+
+        let right_lift_split = 0.5
+            * (self.wing_lift.total_lift.get::<newton>()
+                + self.wing_lift_dynamic.lateral_offset()
+                    * self.wing_lift.total_lift.get::<newton>());
+
+        let left_lift_split = 0.5
+            * (self.wing_lift.total_lift.get::<newton>()
+                + (1. - self.wing_lift_dynamic.lateral_offset())
+                    * self.wing_lift.total_lift.get::<newton>());
+
+        println!(
+            "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
+            self.wing_lift.total_lift.get::<newton>(),
+            self.wing_lift_dynamic.lateral_offset(),
+            left_lift_split,
+            right_lift_split
+        );
 
         let lift_table_newton =
             standard_lift_spread * self.wing_lift.total_lift.get::<newton>() * 0.5;
@@ -423,11 +627,26 @@ impl WingFlexA380 {
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
         );
+
+        println!(
+            "WING HEIGHTS {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",
+            self.flex_physics[0].nodes[4].position().get::<meter>(),
+            self.flex_physics[0].nodes[3].position().get::<meter>(),
+            self.flex_physics[0].nodes[2].position().get::<meter>(),
+            self.flex_physics[0].nodes[1].position().get::<meter>(),
+            self.flex_physics[0].nodes[0].position().get::<meter>(),
+            self.flex_physics[1].nodes[0].position().get::<meter>(),
+            self.flex_physics[1].nodes[1].position().get::<meter>(),
+            self.flex_physics[1].nodes[2].position().get::<meter>(),
+            self.flex_physics[1].nodes[3].position().get::<meter>(),
+            self.flex_physics[1].nodes[4].position().get::<meter>(),
+        );
     }
 }
 impl SimulationElement for WingFlexA380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.wing_lift.accept(visitor);
+        self.wing_lift_dynamic.accept(visitor);
         self.wing_mass.accept(visitor);
         // self.flex_physics[0].accept(visitor);
         // self.flex_physics[1].accept(visitor);
