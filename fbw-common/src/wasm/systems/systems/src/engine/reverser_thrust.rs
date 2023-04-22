@@ -109,15 +109,6 @@ impl ReverserForce {
             acceleration.get::<meter_per_second_squared>() * context.delta_as_secs_f64(),
         );
 
-        println!("REVERSER OBJECT: Pos {:.1}/{:.1} totalForceN{:.0} Weight{:.2} totalAccel{:.5} deltaVel (fps) {:.5}",
-        reverser_position[0].reverser_position().get::<ratio>(),
-        reverser_position[1].reverser_position().get::<ratio>(),
-        total_force.get::<newton>(),
-        context.total_weight().get::<kilogram>(),
-        acceleration.get::<meter_per_second_squared>(),
-        self.plane_delta_speed_due_to_reverse_thrust.get::<foot_per_second>()
-        );
-
         let total_dissimetry =
             self.reversers[1].current_thrust() - self.reversers[0].current_thrust();
 
