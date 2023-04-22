@@ -587,10 +587,7 @@ impl WingFlexA380 {
                 + self.wing_lift_dynamic.lateral_offset()
                     * self.wing_lift.total_lift.get::<newton>());
 
-        let left_lift_split = 0.5
-            * (self.wing_lift.total_lift.get::<newton>()
-                + (1. - self.wing_lift_dynamic.lateral_offset())
-                    * self.wing_lift.total_lift.get::<newton>());
+        let left_lift_split = self.wing_lift.total_lift.get::<newton>() - right_lift_split;
 
         println!(
             "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
@@ -600,30 +597,36 @@ impl WingFlexA380 {
             right_lift_split
         );
 
-        let lift_table_newton =
-            standard_lift_spread * self.wing_lift.total_lift.get::<newton>() * 0.5;
+        let lift_left_table_newton = standard_lift_spread * left_lift_split;
+
+        let lift_right_table_newton = standard_lift_spread * right_lift_split;
 
         println!(
-            "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
-            lift_table_newton.x,
-            lift_table_newton.y,
-            lift_table_newton.z,
-            lift_table_newton.w,
-            lift_table_newton.a
+            "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}  {:.0}\\{:.0}\\{:.0}\\{:.0}\\{:.0}",
+            lift_left_table_newton.a,
+            lift_left_table_newton.w,
+            lift_left_table_newton.z,
+            lift_left_table_newton.y,
+            lift_left_table_newton.x,
+            lift_right_table_newton.x,
+            lift_right_table_newton.y,
+            lift_right_table_newton.z,
+            lift_right_table_newton.w,
+            lift_right_table_newton.a
         );
 
         self.wing_lift.update(context);
 
         self.flex_physics[0].update(
             context,
-            lift_table_newton.as_slice(),
+            lift_left_table_newton.as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.left_tanks_masses()),
         );
 
         self.flex_physics[1].update(
             context,
-            lift_table_newton.as_slice(),
+            lift_right_table_newton.as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
         );
@@ -1142,5 +1145,17 @@ mod tests {
                 <= 0.1
         );
         assert!(node3_mass.get::<kilogram>() >= 3000. && node2_mass.get::<kilogram>() <= 3100.);
+    }
+
+    #[test]
+    fn with_some_lift_on_ground_rotation() {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+
+        test_bed.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
+        test_bed.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
+        test_bed.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+        test_bed.run_with_delta(Duration::from_secs(1));
     }
 }
