@@ -2007,18 +2007,17 @@ export class FlightPlanManager {
         return FlightArea.Enroute;
     }
 
-    public tryAddOrUpdateCruiseStep(waypointIdent: string, toAltitude: Feet): boolean {
-        const stepAltModificationSuccessful = this._flightPlans[this._currentFlightPlanIndex].tryAddOrUpdateCruiseStep(waypointIdent, toAltitude)
-        if (stepAltModificationSuccessful) {
-            this.updateFlightPlanVersion().catch(console.error);
-            return true;
-        }
-
-        return false;
+    public addOrUpdateCruiseStep(waypoint: WayPoint, toAltitude: Feet, waypointIndex?: number): void {
+        this._flightPlans[this._currentFlightPlanIndex].addOrUpdateCruiseStep(waypoint, toAltitude, waypointIndex)
+        this.updateFlightPlanVersion().catch(console.error);
     }
 
-    public tryRemoveCruiseStep(waypointIndex: number): void {
-        this._flightPlans[this._currentFlightPlanIndex].tryRemoveCruiseStep(waypointIndex);
+    public removeCruiseStep(waypoint: WayPoint): void {
+        this._flightPlans[this._currentFlightPlanIndex].removeCruiseStep(waypoint);
         this.updateFlightPlanVersion().catch(console.error);
+    }
+
+    public findWaypointIndexByIdent(ident: string): number {
+        return this._flightPlans[this._currentFlightPlanIndex].findWaypointIndexByIdent(ident);
     }
 }

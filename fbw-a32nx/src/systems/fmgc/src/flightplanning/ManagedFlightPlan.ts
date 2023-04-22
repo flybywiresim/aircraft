@@ -23,7 +23,7 @@
  * SOFTWARE.
  */
 
-import { HoldData, StepData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
@@ -324,6 +324,17 @@ export class ManagedFlightPlan {
         }
 
         return waypoints;
+    }
+
+    public get cruiseStepWaypoints(): WayPoint[] {
+        return this.waypoints.reduce((waypoints, wp, index) => {
+            if (wp.additionalData.cruiseStep) {
+                wp.additionalData.cruiseStep.waypointIndex = index;
+                waypoints.push(wp);
+            }
+
+            return waypoints;
+        }, []);
     }
 
     /**
@@ -1916,35 +1927,24 @@ export class ManagedFlightPlan {
         return false;
     }
 
-    public tryAddOrUpdateCruiseStep(ident: string, toAltitude: Feet): boolean {
+    public addOrUpdateCruiseStep(waypoint: WayPoint, toAltitude: Feet, waypointIndex?: number): void {
+        if (!waypointIndex) {
+            waypointIndex = this.findWaypointIndexByIdent(waypoint.ident)
+        }
+
         // TODO: Handle optimum steps
-        const waypointIndex = this.findWaypointIndexByIdent(ident);
-        const waypoint = this.getWaypoint(waypointIndex);
-        if (waypointIndex > 0) {
-            waypoint.additionalData.cruiseStep = {
-                distanceBeforeTermination: 0,
-                toAltitude,
-                waypointIndex: waypointIndex,
-            };
-
-            return true;
-        }
-
-        return false;
+        waypoint.additionalData.cruiseStep = {
+            distanceBeforeTermination: 0,
+            toAltitude,
+            waypointIndex: waypointIndex,
+        };
     }
 
-    public tryRemoveCruiseStep(waypointIndex: number): boolean {
-        const waypoint = this.getWaypoint(waypointIndex);
-
-        if (waypoint) {
-            waypoint.additionalData.cruiseStep = undefined;
-            return true;
-        }
-
-        return false
+    public removeCruiseStep(waypoint: WayPoint): void {
+        waypoint.additionalData.cruiseStep = undefined;
     }
 
-    private findWaypointIndexByIdent(ident: string): number {
+    public findWaypointIndexByIdent(ident: string): number {
         return this.waypoints.findIndex(waypoint => waypoint.ident === ident);
     }
 }

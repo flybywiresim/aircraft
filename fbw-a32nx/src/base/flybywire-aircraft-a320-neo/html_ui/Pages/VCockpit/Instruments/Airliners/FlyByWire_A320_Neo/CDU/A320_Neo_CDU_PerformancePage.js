@@ -526,9 +526,8 @@ class CDUPerformancePage {
         const [toUtcLabel, toDistLabel] = isFlying ? ["UTC", "DIST"] : ["", ""];
         const [toReasonCell, toDistCell, toTimeCell] = isFlying ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu) : ["", "", ""];
         const desCabinRateCell = "{small}-350{end}";
-        const shouldShowStepAltsOption = mcdu.flightPhaseManager.phase <= FmgcFlightPhases.CRUISE
-            && mcdu.guidanceController.vnavDriver.mcduProfile
-            && mcdu.guidanceController.vnavDriver.mcduProfile.isReadyToDisplay;
+        const shouldShowStepAltsOption = mcdu._cruiseEntered && mcdu._cruiseFlightLevel
+            && (mcdu.flightPhaseManager.phase < FmgcFlightPhases.DESCENT || mcdu.flightPhaseManager.phase > FmgcFlightPhases.GOAROUND);
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];

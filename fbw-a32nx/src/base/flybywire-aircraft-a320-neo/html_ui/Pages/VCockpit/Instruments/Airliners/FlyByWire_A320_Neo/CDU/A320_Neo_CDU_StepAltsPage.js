@@ -11,28 +11,38 @@ class CDUStepAltsPage {
             }
         }, mcdu.PageTimeout.Medium);
 
+        const plan = mcdu.flightPlanManager.getCurrentFlightPlan();
+        if (!plan) {
+            return;
+        }
+
+        const steps = plan.cruiseStepWaypoints;
+
         const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF && mcdu.flightPhaseManager.phase < FmgcFlightPhases.DONE;
         const transitionAltitude = mcdu.flightPlanManager.originTransitionAltitude;
-        const predictions = mcdu.guidanceController.vnavDriver.mcduProfile.waypointPredictions;
+
+        const predictions = mcdu.guidanceController.vnavDriver.mcduProfile && mcdu.guidanceController.vnavDriver.mcduProfile.isReadyToDisplay
+            ? mcdu.guidanceController.vnavDriver.mcduProfile.waypointPredictions
+            : null;
 
         mcdu.setTemplate([
             ["STEP ALTS {small}FROM{end} {green}FL" + mcdu._cruiseFlightLevel + "{end}"],
             ["\xa0ALT\xa0/\xa0WPT", "DIST\xa0TIME"],
-            CDUStepAltsPage.formatStepClimbLine(mcdu, 0, predictions, isFlying, transitionAltitude),
+            CDUStepAltsPage.formatStepClimbLine(mcdu, steps, 0, predictions, isFlying, transitionAltitude),
             [""],
-            CDUStepAltsPage.formatStepClimbLine(mcdu, 1, predictions, isFlying, transitionAltitude),
+            CDUStepAltsPage.formatStepClimbLine(mcdu, steps, 1, predictions, isFlying, transitionAltitude),
             [""],
-            CDUStepAltsPage.formatStepClimbLine(mcdu, 2, predictions, isFlying, transitionAltitude),
+            CDUStepAltsPage.formatStepClimbLine(mcdu, steps, 2, predictions, isFlying, transitionAltitude),
             [""],
-            CDUStepAltsPage.formatStepClimbLine(mcdu, 3, predictions, isFlying, transitionAltitude),
+            CDUStepAltsPage.formatStepClimbLine(mcdu, steps, 3, predictions, isFlying, transitionAltitude),
             [""],
-            CDUStepAltsPage.formatOptStepLine(mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps),
+            CDUStepAltsPage.formatOptStepLine(steps),
             [""],
             ["<RETURN"]
         ]);
 
         for (let i = 0; i < 4; i++) {
-            mcdu.onLeftInput[i] = (value) => CDUStepAltsPage.tryAddOrUpdateCruiseStepFromLeftInput(mcdu, i, value);
+            mcdu.onLeftInput[i] = (value, scratchpadCallback) => CDUStepAltsPage.tryAddOrUpdateCruiseStepFromLeftInput(mcdu, scratchpadCallback, steps, i, value);
         }
 
         mcdu.onLeftInput[4] = () => { };
@@ -64,53 +74,68 @@ class CDUStepAltsPage {
         return ["{small}OPT STEP:{end}", "{small}ENTER ALT ONLY{end}"];
     }
 
-    static formatStepClimbLine(mcdu, index, predictions, isFlying, transitionAltitude) {
+    // TODO: I think it should not allow entries of step climbs after step descents, but I'm not sure if it rejects it entirely
+    // or gives you an IGNORED.
+    static formatStepClimbLine(mcdu, steps, index, predictions, isFlying, transitionAltitude) {
         const emptyField = "[\xa0".padEnd(4, "\xa0") + "]";
-        const enteredStepAlts = mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps;
 
-        if (index > enteredStepAlts.length) {
+
+        if (!steps || index > steps.length) {
             return [""];
-        } else if (index === enteredStepAlts.length) {
+        } else if (index === steps.length) {
             return ["{cyan}" + emptyField + "/" + emptyField + "{end}"];
         } else {
-            const step = enteredStepAlts[index];
-            const waypoint = mcdu.flightPlanManager.getWaypoint(step.waypointIndex);
+            const waypoint = steps[index];
+            const step = steps[index].additionalData.cruiseStep;
 
-            let distanceCell = "----";
-            let timeCell = "----";
+            const prediction = predictions ? predictions.get(step.waypointIndex) : null;
 
-            const prediction = predictions.get(step.waypointIndex);
-            if (prediction) {
+            // Cases:
+            // 1. Step above MAX FL (on PROG page)
+            // 2. IGNORED (If too close to T/D or before T/C)
+            // 3. STEP AHEAD
+            // 4. Distance and time
+
+            let lastColumn = "----\xa0----";
+            if (this.checkIfStepAboveMaxFl(mcdu, step.toAltitude)) {
+                lastColumn = "ABOVE\xa0MAX";
+            } else if (step.isIgnored) {
+                lastColumn = "IGNORED";
+            } else if (prediction) {
                 const { distanceFromStart, secondsFromPresent } = prediction;
 
-                if (isFinite(distanceFromStart)) {
-                    distanceCell = "{green}" + Math.round(distanceFromStart).toFixed(0) + "{end}";
-                }
+                if (Number.isFinite(distanceFromStart) && Number.isFinite(secondsFromPresent)) {
+                    if (distanceFromStart < 20) {
+                        lastColumn = "{green}STEP\xa0AHEAD{end}";
+                    } else {
+                        const distanceCell = "{green}" + Math.round(distanceFromStart).toFixed(0) + "{end}";
 
-                if (isFinite(secondsFromPresent)) {
-                    const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        const timeCell = isFlying
+                            ? `{green}${FMCMainDisplay.secondsToUTC(utcTime + secondsFromPresent)}[s-text]{end}`
+                            : `{green}${FMCMainDisplay.secondsTohhmm(secondsFromPresent)}[s-text]{end}`;
 
-                    timeCell = isFlying
-                        ? `{green}${FMCMainDisplay.secondsToUTC(utcTime + secondsFromPresent)}[s-text]{end}`
-                        : `{green}${FMCMainDisplay.secondsTohhmm(secondsFromPresent)}[s-text]{end}`;
+                        lastColumn = distanceCell + "\xa0" + timeCell;
+                    }
                 }
             }
-
-            const lastColumn = step.isIgnored ? "IGNORED" : distanceCell + "\xa0" + timeCell;
 
             return ["{cyan}" + CDUStepAltsPage.formatFl(step.toAltitude, transitionAltitude) + "/" + waypoint.ident + "{end}", lastColumn];
         }
     }
 
-    static tryAddOrUpdateCruiseStepFromLeftInput(mcdu, index, input) {
-        if (index < mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps.length) {
-            return this.onClickExistingStepClimb(mcdu, index, input);
+    static tryAddOrUpdateCruiseStepFromLeftInput(mcdu, scratchpadCallback, stepWaypoints, index, input) {
+        if (index < stepWaypoints.length) {
+            this.onClickExistingStepClimb(mcdu, scratchpadCallback, stepWaypoints, index, input);
+
+            return;
         }
 
         // Create new step altitude
-        if (mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps.length >= 4) {
+        if (stepWaypoints.length >= 4) {
             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-            return false;
+            scratchpadCallback();
+            return;
         }
 
         const splitInputs = input.split("/");
@@ -123,92 +148,176 @@ class CDUStepAltsPage {
             return false;
         }
 
-        const alt = this.tryParseAltitude(mcdu, rawAltitudeInput);
+        const alt = this.tryParseAltitude(rawAltitudeInput);
         if (!alt) {
-            return false;
-        }
-
-        const stepAltModificationSuccessful = mcdu.flightPlanManager.tryAddOrUpdateCruiseStep(rawIdentInput, alt);
-        if (!stepAltModificationSuccessful) {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-            return false;
+            scratchpadCallback();
+            return;
         }
 
-        return true;
+        const waypointIndex = mcdu.flightPlanManager.findWaypointIndexByIdent(rawIdentInput);
+        if (waypointIndex < 0) {
+            // Waypoint ident not found in flightplan
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            scratchpadCallback();
+            return;
+        } else if (waypointIndex < mcdu.flightPlanManager.getActiveWaypointIndex()) {
+            // Don't allow step on FROM waypoint
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return;
+        } else if (!this.checkStepInsertionRules(mcdu, stepWaypoints, waypointIndex, alt)) {
+            // Step too small or step descent after step climb
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return;
+        }
+
+        const waypoint = mcdu.flightPlanManager.getWaypoint(waypointIndex);
+        // It is not allowed to have two steps on the same waypoint (FCOM)
+        if (waypoint.additionalData.cruiseStep !== undefined) {
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return;
+        }
+
+        mcdu.flightPlanManager.addOrUpdateCruiseStep(waypoint, alt);
+
+        if (CDUStepAltsPage.checkIfStepAboveMaxFl(mcdu, alt)) {
+            mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
+        }
     }
 
-    static tryParseAltitude(mcdu, altitudeInput) {
-        let altValue = parseInt(altitudeInput);
-        if (altitudeInput.startsWith("FL")) {
-            altValue = parseInt(100 * altitudeInput.slice(2));
-        }
-
-        if (!isFinite(altValue) || !/^\d{4,5}$/.test(altitudeInput) && !/^FL\d{1,3}$/.test(altitudeInput)) {
-            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+    static tryParseAltitude(altitudeInput) {
+        if (!altitudeInput) {
             return false;
         }
 
-        altValue = Math.round(altValue / 10) * 10;
-        if (altValue < 1000 || altValue > 45000) {
-            mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+        const match = altitudeInput.match(/^(FL)?(\d{1,3})$/);
+
+        if (!match) {
             return false;
-        } else if (altValue > 39800) {
-            mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
+        }
+
+        const altValue = parseInt(match[2]) * 100;
+        if (altValue < 1000 || altValue > 39000) {
             return false;
         }
 
         return altValue;
     }
 
-    static onClickExistingStepClimb(mcdu, index, input) {
-        const existingStep = mcdu.guidanceController.vnavDriver.mcduProfile.cruiseSteps[index];
+    static onClickExistingStepClimb(mcdu, scratchpadCallback, stepWaypoints, index, input) {
+        const stepWaypoint = stepWaypoints[index];
+        const clickedStep = stepWaypoint.additionalData.cruiseStep;
 
         if (input === FMCMainDisplay.clrValue) {
-            mcdu.flightPlanManager.tryRemoveCruiseStep(existingStep.waypointIndex);
+            mcdu.flightPlanManager.removeCruiseStep(stepWaypoint);
 
             return true;
         }
 
         // Edit step
         const splitInputs = input.split("/");
-        if (splitInputs.length === 1) {
+        if (splitInputs.length === 1 || splitInputs.length === 2 && splitInputs[1] === "") {
             // Altitude
-            const altitude = this.tryParseAltitude(mcdu, splitInputs[0]);
+            const altitude = this.tryParseAltitude(splitInputs[0]);
+            if (!altitude) {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                scratchpadCallback();
+                return;
+            }
 
-            if (altitude && mcdu.flightPlanManager.tryAddOrUpdateCruiseStep(existingStep, altitude)) {
-                mcdu.flightPlanManager.tryRemoveCruiseStep(existingStep.waypointIndex);
+            mcdu.flightPlanManager.addOrUpdateCruiseStep(stepWaypoint, altitude, clickedStep.waypointIndex);
 
-                return true;
+            if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
+                mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
             }
         } else if (splitInputs.length === 2) {
             const rawAltitudeInput = splitInputs[0];
             const rawIdentInput = splitInputs[1];
 
+            const waypointIndex = mcdu.flightPlanManager.findWaypointIndexByIdent(rawIdentInput)
+            if (waypointIndex < 0) {
+                // Waypoint ident not found in flightplan
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                scratchpadCallback();
+                return;
+            }
+
+            const waypoint = mcdu.flightPlanManager.getWaypoint(waypointIndex);
+
             if (rawAltitudeInput === "") {
                 // /Waypoint
-                if (mcdu.flightPlanManager.tryAddOrUpdateCruiseStep(rawIdentInput, existingStep.toAltitude)) {
-                    mcdu.flightPlanManager.tryRemoveCruiseStep(existingStep.waypointIndex);
-
-                    return true;
-                }
+                mcdu.flightPlanManager.addOrUpdateCruiseStep(waypoint, clickedStep.toAltitude, waypointIndex);
+                mcdu.flightPlanManager.removeCruiseStep(stepWaypoint);
             } else {
                 // Altitude/waypoint
-                const altitude = this.tryParseAltitude(mcdu, rawAltitudeInput);
+                const altitude = this.tryParseAltitude(rawAltitudeInput);
+                if (!altitude) {
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                    scratchpadCallback();
+                    return;
+                }
 
-                if (altitude && mcdu.flightPlanManager.tryAddOrUpdateCruiseStep(rawIdentInput, altitude)) {
-                    mcdu.flightPlanManager.tryRemoveCruiseStep(existingStep.waypointIndex);
+                mcdu.flightPlanManager.addOrUpdateCruiseStep(waypoint, altitude, waypointIndex);
+                mcdu.flightPlanManager.removeCruiseStep(stepWaypoint);
 
-                    return true;
+                if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
+                    mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
                 }
             }
         } else if (splitInputs.length === 3) {
             // Altitude/place/distance or
             // /Place/distance
             mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+            scratchpadCallback();
+        }
+    }
+
+    static checkIfStepAboveMaxFl(mcdu, altitude) {
+        const maxFl = mcdu.getMaxFlCorrected()
+        return Number.isFinite(maxFl) && altitude > maxFl * 100;
+    }
+
+    /**
+     * Check a couple of rules about insertion of step:
+     * - Minimum step size is 1000ft
+     * - S/C follows step descent
+     * TODO: It's possible that the insertion of a step in between already inserted steps causes a step descent after step climb
+     * I don't know how the plane handles this.
+     * @param {*} mcdu
+     * @param {*} stepWaypoints Existing steps
+     * @param {*} insertAtIndex Index of waypoint to insert step at
+     * @param {*} toAltitude Altitude of step
+     */
+    static checkStepInsertionRules(mcdu, stepWaypoints, insertAtIndex, toAltitude) {
+        let altitude = mcdu._cruiseFlightLevel * 100;
+        let doesHaveStepDescent = false;
+
+        for (let i = 0; i < stepWaypoints.length; i++) {
+            const stepWaypoint = stepWaypoints[i];
+            const step = stepWaypoint.additionalData.cruiseStep;
+
+            if (insertAtIndex >= stepWaypoints.waypointIndex) {
+                break;
+            }
+
+            if (step.toAltitude < altitude) {
+                doesHaveStepDescent = true;
+            }
+
+            altitude = step.toAltitude;
+        }
+
+        const isStepSizeValid = Math.abs(toAltitude - altitude) >= 1000;
+        if (!isStepSizeValid) {
             return false;
         }
 
-        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-        return false;
+        const isClimbVsDescent = toAltitude > altitude;
+        const hasStepClimbAfterDescent = isClimbVsDescent && doesHaveStepDescent;
+
+        return !hasStepClimbAfterDescent;
     }
 }
