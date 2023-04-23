@@ -10,10 +10,10 @@
 #include "ClientEvent.h"
 #include "ExampleModule.h"
 #include "NamedVariable.h"
+#include "fingerprint.hpp"
 #include "logging.h"
 #include "longtext.h"
 #include "math_utils.hpp"
-#include "fingerprint.hpp"
 
 bool ExampleModule::initialize() {
   dataManager = &msfsHandler.getDataManager();
@@ -293,7 +293,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!msfsHandler.getAircraftIsReadyVar())
     return true;
 
-  // Un-throttled tests
+    // Un-throttled tests
 #ifdef STREAM_RECEIVE_EXAMPLE
     //  if (streamReceiverMetaDataPtr->hasChanged()) {
     //    // STREAM RECEIVER DATA Meta Data
@@ -322,8 +322,8 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     std::cout << "==== tickCounter = " << tickCounter << " timeStamp = " << timeStamp << " =============================" << std::endl;
 
-    //    LOG_DEBUG("A32NX_IS_READY = " + std::string(msfsHandler.getAircraftIsReadyVar() ? "true" : "false"));
-    //    LOG_DEBUG("A32NX_DEVELOPER_STATE = " + std::to_string(msfsHandler.getAircraftDevelopmentStateVar()));
+    LOG_DEBUG("A32NX_IS_READY = " + std::string(msfsHandler.getAircraftIsReadyVar() ? "true" : "false") +
+              " A32NX_DEVELOPER_STATE = " + std::to_string(msfsHandler.getAircraftDevelopmentStateVar()));
 
 #ifdef CUSTOM_EVENT_EXAMPLE
     // ======================
@@ -362,7 +362,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
     // difference if using different units
     LOG_INFO("--- LVAR EXAMPLE");
-    LOG_INFO("timeStamp = " + std::to_string(timeStamp) + " / ticks = " + std::to_string(msfsHandlerPtr.getTickCounter()));
+    LOG_INFO("timeStamp = " + std::to_string(timeStamp) + " / ticks = " + std::to_string(msfsHandler.getTickCounter()));
 
     LOG_INFO("debugLVARPtr  DEBUG_LVAR (hours)   = " + std::to_string(debugLVARPtr->get()));
     LOG_INFO("debugLVAR2Ptr DEBUG_LVAR (minutes) = " + std::to_string(debugLVAR2Ptr->get()));
@@ -393,15 +393,15 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 #ifdef AIRCRAFT_VAR_EXAMPLE
     // Read vars which auto update each tick
     std::cout << "beaconLightSwitchPtr =  " << beaconLightSwitchPtr->get() << " changed? "
-              << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no") << " beaconLightSwitchPtr  time = " << msfsHandlerPtr.getTimeStamp()
-              << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
+              << (beaconLightSwitchPtr->hasChanged() ? "yes" : "no") << " beaconLightSwitchPtr  time = " << msfsHandler.getTimeStamp()
+              << " tick = " << msfsHandler.getTickCounter() << std::endl;
     std::cout << "beaconLightSwitch2Ptr = " << beaconLightSwitch2Ptr->get() << " changed? "
-              << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch2Ptr time = " << msfsHandlerPtr.getTimeStamp()
-              << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
+              << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch2Ptr time = " << msfsHandler.getTimeStamp()
+              << " tick = " << msfsHandler.getTickCounter() << std::endl;
 
     std::cout << "beaconLightSwitch3Ptr = " << beaconLightSwitch3Ptr->updateFromSim(timeStamp, tickCounter) << " changed? "
-              << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch3Ptr time = " << msfsHandlerPtr.getTimeStamp()
-              << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
+              << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch3Ptr time = " << msfsHandler.getTimeStamp()
+              << " tick = " << msfsHandler.getTickCounter() << std::endl;
 
     // Test writing an aircraft variable by toggling the beacon light switch
     // Immediate write
@@ -413,10 +413,10 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
 
 #ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
     std::cout << "fuelPumpSwitch1Ptr = " << fuelPumpSwitch1Ptr->get() << " changed? " << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-              << " time = " << msfsHandlerPtr.getTimeStamp() << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
+              << " time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
 
     std::cout << "fuelPumpSwitch2Ptr = " << fuelPumpSwitch2Ptr->get() << " changed? " << (fuelPumpSwitch2Ptr->hasChanged() ? "yes" : "no")
-              << " time = " << msfsHandlerPtr.getTimeStamp() << " tick = " << msfsHandlerPtr.getTickCounter() << std::endl;
+              << " time = " << msfsHandler.getTimeStamp() << " tick = " << msfsHandler.getTickCounter() << std::endl;
 #endif
 
 #ifdef DATA_DEFINITION_EXAMPLE
