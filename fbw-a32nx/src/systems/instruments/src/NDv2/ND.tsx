@@ -639,7 +639,7 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
     }
 
     private handleToWptDistance(value: number) {
-        if (!value) {
+        if (value < 0) {
             this.distanceSmallContainerVisible.set(false);
             this.distanceLargeContainerVisible.set(false);
             this.distanceNmUnitVisible.set(false);
