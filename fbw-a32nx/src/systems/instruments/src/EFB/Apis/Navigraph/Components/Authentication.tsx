@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
-import { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
+import { useNavigraph } from '../Navigraph';
 
 const Loading = () => {
     const navigraph = useNavigraph();
@@ -28,7 +28,7 @@ const Loading = () => {
     return (
         <div className="flex flex-col justify-center items-center">
             <div
-                className="flex justify-center items-center bg-theme-secondary rounded-md"
+                className="flex justify-center items-center rounded-md bg-theme-secondary"
                 style={{ width: '400px', height: '400px' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
@@ -68,7 +68,7 @@ export const NavigraphAuthUI = () => {
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-content-section-reduced bg-theme-accent rounded-lg">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg h-content-section-reduced bg-theme-accent">
             <div className="flex flex-col justify-center items-center">
                 <ShieldLock className="mr-2" size={40} />
 
@@ -85,7 +85,7 @@ export const NavigraphAuthUI = () => {
                 </p>
 
                 <h1
-                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider bg-theme-secondary rounded-md border-2 border-theme-highlight"
+                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider rounded-md border-2 bg-theme-secondary border-theme-highlight"
                     style={{ minWidth: '200px' }}
                 >
                     {displayAuthCode}
