@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { BitFlags, ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode, EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags, NdTraffic } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { Coordinates, distanceTo } from 'msfs-geo';
@@ -198,7 +198,15 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.symbols.length = 0;
         this.symbols.push(...symbols);
 
-        const waypoints = this.symbols.filter((it) => it.type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Dme) && !(it.type & NdSymbolTypeFlags.Runway));
+        const waypoints = this.symbols.filter((it) => BitFlags.isAny(it.type,
+            NdSymbolTypeFlags.Waypoint
+            | NdSymbolTypeFlags.FlightPlan
+            | NdSymbolTypeFlags.FixInfo
+            | NdSymbolTypeFlags.VorDme
+            | NdSymbolTypeFlags.Vor
+            | NdSymbolTypeFlags.Dme
+            | NdSymbolTypeFlags.Ndb
+            | NdSymbolTypeFlags.Airport) && !(it.type & NdSymbolTypeFlags.Runway));
 
         this.waypointLayer.data = waypoints;
 

@@ -1,5 +1,6 @@
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { MathUtils } from '@shared/MathUtils';
+import { BitFlags } from '@microsoft/msfs-sdk';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
@@ -21,11 +22,11 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             const rx = x + mapWidth / 2;
             const ry = y + mapHeight / 2;
 
-            if (symbol.type & NdSymbolTypeFlags.FlightPlan) {
+            if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
                 this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
-            } else if (symbol.type & NdSymbolTypeFlags.Airport || symbol.type & NdSymbolTypeFlags.Runway) {
+            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
                 this.paintAirport(false, context, rx, ry, symbol);
-            } else if (symbol.type & (NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
+            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(false, context, rx, ry, symbol);
             } else {
                 this.paintWaypoint(false, context, rx, ry, symbol);
@@ -39,11 +40,11 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             const rx = x + mapWidth / 2;
             const ry = y + mapHeight / 2;
 
-            if (symbol.type & NdSymbolTypeFlags.FlightPlan) {
+            if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
                 this.paintFlightPlanWaypoint(true, context, rx, ry, symbol);
-            } else if (symbol.type & NdSymbolTypeFlags.Airport || symbol.type & NdSymbolTypeFlags.Runway) {
+            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
                 this.paintAirport(true, context, rx, ry, symbol);
-            } else if (symbol.type & (NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme)) {
+            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(true, context, rx, ry, symbol);
             } else {
                 this.paintWaypoint(true, context, rx, ry, symbol);
