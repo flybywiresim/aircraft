@@ -67,6 +67,20 @@ export const NavigraphAuthUI = () => {
         }
     }, (navigraph.auth.interval * 1000));
 
+    useInterval(async () => {
+        try {
+            await navigraph.getToken();
+        } catch (e) {
+            toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
+        }
+    }, (navigraph.tokenRefreshInterval * 1000));
+
+    useEffect(() => {
+        if (!navigraph.hasToken) {
+            navigraph.authenticate();
+        }
+    }, []);
+
     return (
         <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg h-content-section-reduced bg-theme-accent">
             <div className="flex flex-col justify-center items-center">
