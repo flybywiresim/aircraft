@@ -91,7 +91,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
   StreamingClientDataAreaVariable<T, ChunkSize>(StreamingClientDataAreaVariable<T, ChunkSize>&&) = delete;  // no move constructor
   StreamingClientDataAreaVariable<T, ChunkSize>& operator=(StreamingClientDataAreaVariable<T, ChunkSize>&&) = delete;  // no move assignment
 
-  bool allocateClientDataArea(bool readOnlyForOthers) override {
+  bool allocateClientDataArea(bool readOnlyForOthers = false) override {
     const DWORD readOnlyFlag =
         readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
     if (!SUCCEEDED(SimConnect_CreateClientData(this->hSimConnect, this->clientDataId, ChunkSize, readOnlyFlag))) {

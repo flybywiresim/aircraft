@@ -160,7 +160,7 @@ class ClientDataAreaVariable : public SimObjectBase {
    * @param readOnlyForOthers (optional) If true, the data area is read-only for other clients.
    * @return true if the allocation was successful, false otherwise
    */
-  virtual bool allocateClientDataArea(bool readOnlyForOthers) {
+  virtual bool allocateClientDataArea(bool readOnlyForOthers = false) {
     const DWORD readOnlyFlag =
         readOnlyForOthers ? SIMCONNECT_CREATE_CLIENT_DATA_FLAG_READ_ONLY : SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT;
     if (!SUCCEEDED(SimConnect_CreateClientData(hSimConnect, clientDataId, sizeof(T), readOnlyFlag))) {
