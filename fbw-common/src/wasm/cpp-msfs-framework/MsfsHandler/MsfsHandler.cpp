@@ -62,12 +62,6 @@ bool MsfsHandler::initialize() {
     return false;
   }
 
-  // OBS
-  // Pause events are unfortunately broken in the current sim version 1.30.12
-  // the code below is a prototype for pause detection via system events which is not yet working
-  // because of this sim issue:
-  // https://devsupport.flightsimulator.com/questions/12506/pause-ex1-system-event-has-issues-with-active-paus.html
-  //
   // Pause detection via System Events
   // #define PAUSE_STATE_FLAG_OFF 0 // No Pause
   // #define PAUSE_STATE_FLAG_PAUSE 1 // "full" Pause (sim + traffic + etc...)
@@ -119,6 +113,7 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
   // In all pause states except active pause return immediately.
   // Active pause can be handled by the modules but usually simulation should run normally in
   // active pause with just the aircraft not moving.
+  // See comments above for the different pause states.
   if (a32nxPauseDetected->readFromSim()) {
     if (a32nxPauseDetected->getAsInt64() > 0) {
       if (a32nxPauseDetected->getAsInt64() != 4) {
@@ -166,8 +161,8 @@ bool MsfsHandler::update(sGaugeDrawData* pData) {
 
 bool MsfsHandler::shutdown() {
   bool result = std::all_of(modules.begin(), modules.end(), [](Module* pModule) { return pModule->shutdown(); });
-  modules.clear();
   result &= dataManager.shutdown();
+  modules.clear();
   unregister_key_event_handler_EX1(reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(keyEventHandlerEx1), nullptr);
   unregister_all_named_vars();
   return result;
