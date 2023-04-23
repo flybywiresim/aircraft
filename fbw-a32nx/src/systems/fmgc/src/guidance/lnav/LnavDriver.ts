@@ -230,7 +230,10 @@ export class LnavDriver implements GuidanceComponent {
 
                     break;
                 case ControlLaw.HEADING:
-                    const { heading, phiCommand: forcedPhiHeading } = params;
+                    const { heading } = params;
+
+                    // reset turn state from lateral path law
+                    this.turnState = LnavTurnState.Normal;
 
                     if (!this.lastAvail) {
                         SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
@@ -246,45 +249,22 @@ export class LnavDriver implements GuidanceComponent {
                     const currentHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees');
                     const deltaHeading = MathUtils.diffAngle(currentHeading, heading);
 
-                    // Update and take into account turn state; only guide using phi during a forced turn
+                    if (deltaHeading !== this.lastTAE) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', deltaHeading);
+                        this.lastTAE = deltaHeading;
+                    }
 
-                    if (this.turnState !== LnavTurnState.Normal) {
-                        if (Math.abs(deltaHeading) < GuidanceConstants.FORCED_TURN_TKAE_THRESHOLD) {
-                            // Stop forcing turn
-                            this.turnState = LnavTurnState.Normal;
-                        }
-
-                        const forcedTurnPhi = this.turnState === LnavTurnState.ForceLeftTurn ? -maxBank(tas, true) : maxBank(tas, true);
-
-                        if (forcedTurnPhi !== this.lastPhi) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', forcedTurnPhi);
-                            this.lastPhi = forcedTurnPhi;
-                        }
-
-                        if (this.lastTAE !== 0) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', 0);
-                            this.lastTAE = 0;
-                        }
-                    } else {
-                        if (deltaHeading !== this.lastTAE) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', deltaHeading);
-                            this.lastTAE = deltaHeading;
-                        }
-
-                        if (forcedPhiHeading !== undefined) {
-                            if (forcedPhiHeading !== this.lastPhi) {
-                                SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', forcedPhiHeading);
-                                this.lastPhi = forcedPhiHeading;
-                            }
-                        } else if (this.lastPhi !== 0) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
-                            this.lastPhi = 0;
-                        }
+                    if (this.lastPhi !== 0) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
+                        this.lastPhi = 0;
                     }
 
                     break;
                 case ControlLaw.TRACK:
-                    const { course, phiCommand: forcedPhiCourse } = params;
+                    const { course } = params;
+
+                    // reset turn state from lateral path law
+                    this.turnState = LnavTurnState.Normal;
 
                     if (!this.lastAvail) {
                         SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
@@ -297,39 +277,14 @@ export class LnavDriver implements GuidanceComponent {
                     }
 
                     const deltaCourse = MathUtils.diffAngle(trueTrack, course);
+                    if (deltaCourse !== this.lastTAE) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', deltaCourse);
+                        this.lastTAE = deltaCourse;
+                    }
 
-                    if (this.turnState !== LnavTurnState.Normal) {
-                        if (Math.abs(deltaCourse) < GuidanceConstants.FORCED_TURN_TKAE_THRESHOLD) {
-                            // Stop forcing turn
-                            this.turnState = LnavTurnState.Normal;
-                        }
-
-                        const forcedTurnPhi = this.turnState === LnavTurnState.ForceLeftTurn ? -maxBank(tas, true) : maxBank(tas, true);
-
-                        if (forcedTurnPhi !== this.lastPhi) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', forcedTurnPhi);
-                            this.lastPhi = forcedTurnPhi;
-                        }
-
-                        if (this.lastTAE !== 0) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', 0);
-                            this.lastTAE = 0;
-                        }
-                    } else {
-                        if (deltaCourse !== this.lastTAE) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', deltaCourse);
-                            this.lastTAE = deltaCourse;
-                        }
-
-                        if (forcedPhiCourse !== undefined) {
-                            if (forcedPhiCourse !== this.lastPhi) {
-                                SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', forcedPhiCourse);
-                                this.lastPhi = forcedPhiCourse;
-                            }
-                        } else if (this.lastPhi !== 0) {
-                            SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
-                            this.lastPhi = 0;
-                        }
+                    if (this.lastPhi !== 0) {
+                        SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
+                        this.lastPhi = 0;
                     }
                     break;
                 default:
