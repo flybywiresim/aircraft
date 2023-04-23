@@ -73,6 +73,29 @@ class SimpleProfiler {
   [[nodiscard]] std::uint64_t getAverage() { return _samples.avg().count(); }
 
   /**
+   * @brief Return the average execution time of the collected samples at the time of calling this method
+   * @return Average execution time of the collected samples at the time of calling this method
+   */
+  [[nodiscard]] std::uint64_t getTrimmedAverage(double trim) { return _samples.trimmedAverage(trim).count(); }
+
+  /**
+   * @brief Return the avg minimum execution time of a percentile of the collected samples at the time of calling this method.
+   * If no percentile is given, the minimum of all samples is returned.
+   * @param percentile Percentile to return, e.g. 0.05 for the 5% minimum. If no percentile is given, the minimum of all samples is returned.
+   * @return Average execution time of the minimum percentile of the collected samples at the time of calling this method or the minimum of
+   * all samples if no percentile is given
+   */
+  std::uint64_t getMinimum(float percentile = 0.0f) { return _samples.minimum(percentile).count(); }
+
+  /**
+   * @brief Return the avg maximum execution time of a percentile of the collected samples at the time of calling this method.
+   * @param percentile Percentile to return, e.g. 0.95 for the 95% maximum. If no percentile is given, the maximum of all samples is returned.
+   * @return Average execution time of the maximum percentile of the collected samples at the time of calling this method or the maximum of
+   * all samples if no percentile is given
+   */
+  std::uint64_t getMaximum(float percentile = 1.0f) { return _samples.maximum(percentile).count(); }
+
+  /**
    * @brief Return the sum of all collected samples at the time of calling this method
    * @return Sum of all collected samples at the time of calling this method
    */
@@ -91,10 +114,11 @@ class SimpleProfiler {
   [[nodiscard]] std::string str() {
     auto avg = _samples.avg();
     std::stringstream os{};
-    os << "Profiler: " << std::setw(15) << std::right << helper::StringUtils::insertThousandsSeparator(avg.count()) << " (" << std::setw(15)
-       << std::right << helper::StringUtils::insertThousandsSeparator(_samples.trimmedAverage(0.1).count()) << ")"
-       << " nanoseconds"
-       << " for " << _name << " (avg of " << _samples.size() << " samples) " << std::endl;
+    os << "Profiler: " << std::setw(10) << std::right << helper::StringUtils::insertThousandsSeparator(avg.count()) << " (" << std::setw(10)
+       << std::right << helper::StringUtils::insertThousandsSeparator(_samples.minimum().count()) << " / " << std::setw(10) << std::right
+       << helper::StringUtils::insertThousandsSeparator(_samples.trimmedAverage(0.1).count()) << " / " << std::setw(10) << std::right
+       << helper::StringUtils::insertThousandsSeparator(_samples.maximum().count()) << ")"
+       << " nanoseconds for " << _name << " (avg of " << _samples.size() << " samples) " << std::endl;
     return os.str();
   }
 
