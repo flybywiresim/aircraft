@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useInterval } from '@flybywiresim/react-components';
-import { toast } from 'react-toastify';
 import NavigraphClient, { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
 import { NavigraphAuthUI } from '../../../Apis/Navigraph/Components/Authentication';
 import { NavigraphChartUI } from './NavigraphChartUI';
@@ -8,20 +7,6 @@ import { NavigraphChartUI } from './NavigraphChartUI';
 export const NavigraphPage = () => {
     const [tokenAvail, setTokenAvail] = useState(false);
     const navigraph = useNavigraph();
-
-    useInterval(async () => {
-        try {
-            await navigraph.getToken();
-        } catch (e) {
-            toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-        }
-    }, (navigraph.tokenRefreshInterval * 1000));
-
-    useEffect(() => {
-        if (!navigraph.hasToken) {
-            navigraph.authenticate();
-        }
-    }, []);
 
     useInterval(() => {
         setTokenAvail(navigraph.hasToken);
