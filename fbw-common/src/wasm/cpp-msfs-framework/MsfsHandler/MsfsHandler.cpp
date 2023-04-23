@@ -51,11 +51,9 @@ bool MsfsHandler::initialize() {
   register_key_event_handler_EX1(keyEventHandlerEx1, nullptr);
 
   // base sim data mainly for pause detection
-  std::vector<DataDefinition> baseDataDef = {
-      {"SIMULATION TIME", 0, UNITS.Number},
-      {"L:"+ NamedVariable::getAircraftPrefix() + "IS_READY", 0, UNITS.Number},
-      {"L:"+ NamedVariable::getAircraftPrefix() + "DEVELOPER_STATE", 0, UNITS.Number}
-  };
+  std::vector<DataDefinition> baseDataDef = {{"SIMULATION TIME", 0, UNITS.Number},
+                                             {"L:" + NamedVariable::getAircraftPrefix() + "IS_READY", 0, UNITS.Number},
+                                             {"L:" + NamedVariable::getAircraftPrefix() + "DEVELOPER_STATE", 0, UNITS.Number}};
   baseSimData = dataManager.make_datadefinition_var<BaseSimData>("BASE DATA", baseDataDef);
   if (!SUCCEEDED(baseSimData->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME))) {
     LOG_ERROR(simConnectName + ": Failed to request periodic data for base sim data");
@@ -63,11 +61,11 @@ bool MsfsHandler::initialize() {
   }
 
   // Pause detection via System Events
-  // #define PAUSE_STATE_FLAG_OFF 0 // No Pause
-  // #define PAUSE_STATE_FLAG_PAUSE 1 // "full" Pause (sim + traffic + etc...)
-  // #define PAUSE_STATE_FLAG_PAUSE_WITH_SOUND 2 // FSX Legacy Pause (not used anymore)
-  // #define PAUSE_STATE_FLAG_ACTIVE_PAUSE 4 // Pause was activated using the "Active Pause" Button
-  // #define PAUSE_STATE_FLAG_SIM_PAUSE 8 // Pause the player sim but traffic, multi, etc... will still run
+  // PAUSE_STATE_FLAG_OFF 0               // No Pause
+  // PAUSE_STATE_FLAG_PAUSE 1             // "full" Pause (sim + traffic + etc...)
+  // PAUSE_STATE_FLAG_PAUSE_WITH_SOUND 2  // FSX Legacy Pause (not used anymore)
+  // PAUSE_STATE_FLAG_ACTIVE_PAUSE 4      // Pause was activated using the "Active Pause" Button
+  // PAUSE_STATE_FLAG_SIM_PAUSE 8         // Pause the player sim but traffic, multi, etc... will still run
   a32nxPauseDetected = dataManager.make_named_var("PAUSE_DETECTED", UNITS.Number, true, true);
   pauseDetectedEvent = dataManager.make_client_event("A32NX.PAUSE_DETECTED_EVENT", false);
   pauseDetectedEvent->addCallback([&](const int, const DWORD param0, const DWORD, const DWORD, const DWORD, const DWORD) {
