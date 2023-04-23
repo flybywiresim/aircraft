@@ -9,13 +9,13 @@
 /**
  * @brief The IDGenerator class is used to generate unique IDs for the modules.
  *
- * Largest possible value is 2^64 - 1 then it wraps around.
+ * Largest possible value is 2^64 - 1 (uint_64_t) then it wraps around.
  * Uniqueness is only guaranteed within the same instance of this class.
  * It is used to identify the modules in the MSFS gauges system.
  */
 class IDGenerator {
  private:
-  uint64_t nextId = 1;
+  uint64_t nextId = 0;
 
  public:
   inline uint64_t getNextId() { return nextId++; };
