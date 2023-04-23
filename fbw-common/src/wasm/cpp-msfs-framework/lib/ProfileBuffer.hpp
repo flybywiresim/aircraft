@@ -4,20 +4,20 @@
 #ifndef FLYBYWIRE_AIRCRAFT_PROFILEBUFFER_HPP
 #define FLYBYWIRE_AIRCRAFT_PROFILEBUFFER_HPP
 
+#include <algorithm>
 #include <deque>
 #include <iostream>
 #include <numeric>
-#include <algorithm>
 #include <type_traits>
 
 // required to check valid template parameters - numeric types and std::chrono::duration
-template<typename T>
+template <typename T>
 struct is_duration : std::false_type {};
-template<typename Rep, typename Period>
+template <typename Rep, typename Period>
 struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type {};
-template<typename T>
+template <typename T>
 struct is_numeric : std::integral_constant<bool, std::is_arithmetic<T>::value> {};
-template<typename T>
+template <typename T>
 struct is_numeric<std::chrono::duration<T>> : std::true_type {};
 
 /**
@@ -57,16 +57,13 @@ class ProfileBuffer {
    * @brief Calculate the sum of all values in the buffer at the time of the call.
    * @return sum of all values
    */
-  T sum() {
-    return std::accumulate(_buffer.begin(), _buffer.end(), T(0));
-  }
+  T sum() { return std::accumulate(_buffer.begin(), _buffer.end(), T(0)); }
 
   /**
    * @brief Calculate the average of all values in the buffer at the time of the call.
    * @return average of all values with type T
    */
-  [[nodiscard]]
-  inline T avg() { return sum() / _buffer.size(); }
+  [[nodiscard]] inline T avg() { return sum() / _buffer.size(); }
 
   /**
    * @brief Calculate the trimmed average of all values in the buffer at the time of the call.
@@ -75,8 +72,7 @@ class ProfileBuffer {
    * @param trimPercent the percentage of values to trim from the buffer before calculating the average (default: 5%)
    * @return trimmed average of all values
    */
-  [[nodiscard]]
-  T trimmedAverage(float trimPercent = 0.05) {
+  [[nodiscard]] T trimmedAverage(float trimPercent = 0.05f) {
     std::deque<T> sorted = _buffer;
     std::sort(sorted.begin(), sorted.end());
     const int trimSize = sorted.size() * trimPercent;
@@ -84,19 +80,50 @@ class ProfileBuffer {
   }
 
   /**
+   * @brief Get the minimum value in the buffer. If percentile is set, the minimum value will be calculated by
+   *        averaging the lowest percentile values in the buffer.
+   * @param percentile Percentile to return, e.g. 0.05 for the 5% minimum. If no percentile is given, the minimum of all values is returned.
+   * @return Average value of the minimum percentile of the collected samples at the time of calling this method or the minimum of
+    * all samples if no percentile is given
+   */
+  [[nodiscard]] T minimum(float percentile = 0.0f) {
+    if (percentile > 0.0) {
+      std::deque<T> sorted = _buffer;
+      std::sort(sorted.begin(), sorted.end());
+      const int trimSize = sorted.size() * percentile;
+      return std::accumulate(sorted.begin(), sorted.begin() + trimSize, T(0)) / trimSize;
+    }
+    return *std::min_element(_buffer.begin(), _buffer.end());
+  }
+
+  /**
+   * @brief Get the maximum value in the buffer. If percentile is set, the maximum value will be calculated by
+   *        averaging the highest percentile values in the buffer.
+   * @param percentile Percentile to return, e.g. 0.05 for the 5% maximum. If no percentile is given, the maximum of all values is returned.
+   * @return Average value of the maximum percentile of the collected samples at the time of calling this method or the maximum of
+    * all samples if no percentile is given
+   */
+  [[nodiscard]] T maximum(float percentile =0.0f) {
+    if (percentile > 0.0) {
+      std::deque<T> sorted = _buffer;
+      std::sort(sorted.begin(), sorted.end());
+      const int trimSize = sorted.size() * percentile;
+      return std::accumulate(sorted.end() - trimSize, sorted.end(), T(0)) / trimSize;
+    }
+    return *std::max_element(_buffer.begin(), _buffer.end());
+  }
+
+  /**
    * @brief Get the current number of values in the buffer.
    * @return Current number of values in the buffer.
    */
-  [[nodiscard]]
-  inline size_t size() const { return _buffer.size(); }
+  [[nodiscard]] inline size_t size() const { return _buffer.size(); }
 
   /**
    * @brief Get the capacity of the buffer.
    * @return Capacity of the buffer.
    */
-  [[nodiscard]]
-  inline size_t capacity() const { return _capacity; }
-
+  [[nodiscard]] inline size_t capacity() const { return _capacity; }
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_PROFILEBUFFER_HPP
