@@ -65,7 +65,7 @@ Read [Contributing.md](.github/Contributing.md) and join our Discord to get star
 
 ### Is the A32NX payware?
 
-No, it is a completely free aircraft, open-source.
+No, it is a completely free aircraft,and open-source.
 
 ### How do we report bugs?
 
@@ -77,7 +77,7 @@ While many in the team dislike the term "study-level" as its use is mostly appli
 
 ### Is feature X from the A320neo going to be implemented?
 
-Chances are, yes! While we do not guarantee every single detail of the aircraft will eventually be represented, our goal is to produce an extremely accurate simulation based on technical data and real-world testing. This means you can be almost certain every feature of the aircraft will eventually be simulated to the best of the simulator's ability as long as the technical data backs it up.
+Chances are, yes! While we do not guarantee every single detail of the aircraft will eventually be represented, our goal is to produce an extremely accurate simulation based on technical data and real-world testing. This means you can be almost certain every feature of the aircraft will eventually be simulated to the best of the simulator's ability as long as the technical data backs it up. This project is constantly getting updated, don't believe me then just look at our pull requests, so if you just suggest your idea either on the issues section of this repository or on our discord, we will try our best to include it.
 
 ### Why has feature X not been implemented yet?
 
