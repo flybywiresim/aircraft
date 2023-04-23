@@ -6,6 +6,8 @@ export interface CrossTrackErrorProps {
     x: number,
     y: number,
     isPlanMode: Subscribable<boolean>,
+
+    isNormalOperation: Subscribable<boolean>, // TODO replace with ARINC429 word
 }
 
 export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
@@ -14,6 +16,8 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
     private readonly crossTrackX = Subject.create(0);
 
     private readonly crossTrackAnchor = Subject.create('');
+
+    private readonly crossTrackVisibility = this.props.isNormalOperation.map((it) => (it ? 'inherit' : 'hidden'));
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -54,6 +58,7 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
                 y={this.props.y}
                 text-anchor={MappedSubject.create(([isPlanMode, crossTrackAnchor]) => (isPlanMode ? 'start' : crossTrackAnchor), this.props.isPlanMode, this.crossTrackAnchor)}
                 class="shadow Green FontSmall"
+                visibility={this.crossTrackVisibility}
             >
                 {this.crossTrackText}
             </text>

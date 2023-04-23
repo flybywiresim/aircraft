@@ -225,7 +225,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
 
                 <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
 
-                <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} />
+                <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
             </g>
         );
     }
