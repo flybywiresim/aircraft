@@ -263,18 +263,20 @@ export const FuelPage = () => {
 
         if (usingMetric) {
             if (units === 'kgs') {
-                fuelToLoad = planRamp;
+                fuelToLoad = roundUpNearest100(planRamp);
             } else {
-                fuelToLoad = Units.poundToKilogram(planRamp);
+                fuelToLoad = roundUpNearest100(Units.poundToKilogram(planRamp));
             }
         } else if (units === 'kgs') {
-            fuelToLoad = Units.kilogramToPound(planRamp);
+            fuelToLoad = roundUpNearest100(Units.kilogramToPound(planRamp));
         } else {
-            fuelToLoad = planRamp;
+            fuelToLoad = roundUpNearest100(planRamp);
         }
 
         updateDesiredFuel(fuelToLoad.toString());
     };
+
+    const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
 
     return (
         <div className="flex relative flex-col justify-between mt-6 h-content-section-reduced">
@@ -306,7 +308,7 @@ export const FuelPage = () => {
                     />
                 </div>
                 <div className="flex absolute inset-x-0 top-40 flex-row justify-between">
-                    <div className="overflow-hidden w-min rounded-2xl border-2 border-theme-accent divide-y divide-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
                         <TankReadoutWidget
                             title={t('Ground.Fuel.LeftInnerTank')}
                             current={LInnCurrent}
@@ -326,7 +328,7 @@ export const FuelPage = () => {
                             convertedFuelValue={convertFuelValueCenter(LOutCurrent)}
                         />
                     </div>
-                    <div className="overflow-hidden w-min rounded-2xl border-2 border-theme-accent divide-y divide-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
                         <TankReadoutWidget
                             title={t('Ground.Fuel.RightInnerTank')}
                             current={RInnCurrent}
@@ -375,22 +377,22 @@ export const FuelPage = () => {
                     />
                     {/* tl overlay */}
                     <div
-                        className="absolute bottom-overlay-t-y left-overlay-tl z-10 bg-theme-body -rotate-26.5"
+                        className="absolute z-10 bottom-overlay-t-y left-overlay-tl bg-theme-body -rotate-26.5"
                         style={{ transform: 'rotate(-26.5deg)', width: '490px', height: '140px', bottom: '240px', left: '82px' }}
                     />
                     {/* tr overlay */}
                     <div
-                        className="absolute right-overlay-tr bottom-overlay-t-y z-10 bg-theme-body rotate-26.5"
+                        className="absolute z-10 right-overlay-tr bottom-overlay-t-y bg-theme-body rotate-26.5"
                         style={{ transform: 'rotate(26.5deg)', width: '490px', height: '140px', bottom: '240px', right: '82px' }}
                     />
                     {/* bl overlay */}
                     <div
-                        className="absolute bottom-overlay-b-y left-overlay-bl z-10 bg-theme-body -rotate-18.5"
+                        className="absolute z-10 bottom-overlay-b-y left-overlay-bl bg-theme-body -rotate-18.5"
                         style={{ transform: 'rotate(-18.5deg)', width: '484px', height: '101px', bottom: '78px', left: '144px' }}
                     />
                     {/* br overlay */}
                     <div
-                        className="absolute right-overlay-br bottom-overlay-b-y z-10 bg-theme-body rotate-18.5"
+                        className="absolute z-10 right-overlay-br bottom-overlay-b-y bg-theme-body rotate-18.5"
                         style={{ transform: 'rotate(18.5deg)', width: '484px', height: '101px', bottom: '78px', right: '144px' }}
                     />
                 </div>
@@ -426,7 +428,7 @@ export const FuelPage = () => {
                                 {simbriefDataLoaded && (
                                     <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
                                         <div
-                                            className="flex justify-center items-center px-2 h-auto text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md rounded-l-none border-2 border-theme-highlight transition duration-100"
+                                            className="flex justify-center items-center px-2 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                             onClick={simbriefDataLoaded ? handleFuelAutoFill : undefined}
                                         >
                                             <CloudArrowDown size={26} />
