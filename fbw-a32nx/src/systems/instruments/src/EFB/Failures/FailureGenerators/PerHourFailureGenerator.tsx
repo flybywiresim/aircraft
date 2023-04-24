@@ -82,9 +82,9 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
             const tempSettings : number[] = Array.from(settings);
             let change = false;
             for (let i = 0; i < nbGenerator; i++) {
-                const tempSetting = settings[i * numberOfSettingsPerGenerator + 1];
-                if (failureGeneratorArmed[i] && tempSetting > 0) {
-                    const chancePerSecond = tempSetting / 3600;
+                const chanceSetting = settings[i * numberOfSettingsPerGenerator + 2];
+                if (failureGeneratorArmed[i] && chanceSetting > 0) {
+                    const chancePerSecond = chanceSetting / 3600;
                     const rollDice = Math.random();
                     if (rollDice < chancePerSecond * 5) {
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
