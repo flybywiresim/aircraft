@@ -97,7 +97,7 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID : strin
     if (listOfSelectedFailures.length === failureGenContext.allFailures.length) {
         return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.AllFailures')}</div>;
     }
-    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">t('Failures.Generators.NoFailure')</div>;
+    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.NoFailure')}</div>;
 
     const chaptersFullySelected : AtaChapterNumber[] = [];
     failureGenContext.chapters.forEach((chapter) => {
