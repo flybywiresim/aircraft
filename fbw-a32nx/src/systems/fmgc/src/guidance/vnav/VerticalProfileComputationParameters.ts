@@ -93,7 +93,7 @@ export class VerticalProfileComputationParametersObserver {
             perfFactor: 0, // FIXME: Use actual value,
             departureElevation: this.fmgc.getDepartureElevation() ?? 0,
             /**
-             * This differes from the altitude I use to start building the descent profile.
+             * This differs from the altitude I use to start building the descent profile.
              * This one one is the altitude of the destination airport, the other one is the final procedure altitude.
              */
             destinationElevation: this.fmgc.getDestinationElevation(),

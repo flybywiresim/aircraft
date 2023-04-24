@@ -480,7 +480,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             };
         case VerticalCheckpointReason.StepDescent:
             return {
-                ident: PWP_IDENT_STEP_DESCENT,
+                ident: PWP_IDENT_TOD,
                 alongLegIndex,
                 distanceFromLegTermination,
                 efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
@@ -489,6 +489,7 @@ export class PseudoWaypoints implements GuidanceComponent {
                 displayedOnMcdu: true,
                 flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometry, alongLegIndex, distanceFromLegTermination),
                 displayedOnNd: this.guidanceController.vnavDriver.isLatAutoControlActive(),
+                mcduIdent: PWP_IDENT_STEP_DESCENT,
             };
         case VerticalCheckpointReason.ContinueDescent:
             return {

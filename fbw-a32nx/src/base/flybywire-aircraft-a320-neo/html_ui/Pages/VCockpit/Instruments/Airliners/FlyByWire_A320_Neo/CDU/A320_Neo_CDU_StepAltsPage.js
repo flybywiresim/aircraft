@@ -77,13 +77,10 @@ class CDUStepAltsPage {
     // TODO: I think it should not allow entries of step climbs after step descents, but I'm not sure if it rejects it entirely
     // or gives you an IGNORED.
     static formatStepClimbLine(mcdu, steps, index, predictions, isFlying, transitionAltitude) {
-        const emptyField = "[\xa0".padEnd(4, "\xa0") + "]";
-
-
         if (!steps || index > steps.length) {
             return [""];
         } else if (index === steps.length) {
-            return ["{cyan}" + emptyField + "/" + emptyField + "{end}"];
+            return ["{cyan}[\xa0\xa0\xa0]/[\xa0\xa0\xa0\xa0\xa0]{end}"];
         } else {
             const waypoint = steps[index];
             const step = steps[index].additionalData.cruiseStep;
@@ -94,21 +91,21 @@ class CDUStepAltsPage {
             // 1. Step above MAX FL (on PROG page)
             // 2. IGNORED (If too close to T/D or before T/C)
             // 3. STEP AHEAD
-            // 4. Distance and time
+            // 4. Distance and time<
 
             let lastColumn = "----\xa0----";
             if (this.checkIfStepAboveMaxFl(mcdu, step.toAltitude)) {
-                lastColumn = "ABOVE\xa0MAX";
+                lastColumn = "ABOVE\xa0MAX[s-text]";
             } else if (step.isIgnored) {
-                lastColumn = "IGNORED";
+                lastColumn = "IGNORED\xa0[s-text]";
             } else if (prediction) {
-                const { distanceFromStart, secondsFromPresent } = prediction;
+                const { distanceFromAircraft, secondsFromPresent } = prediction;
 
-                if (Number.isFinite(distanceFromStart) && Number.isFinite(secondsFromPresent)) {
-                    if (distanceFromStart < 20) {
-                        lastColumn = "{green}STEP\xa0AHEAD{end}";
+                if (Number.isFinite(distanceFromAircraft) && Number.isFinite(secondsFromPresent)) {
+                    if (distanceFromAircraft < 20) {
+                        lastColumn = "STEP\xa0AHEAD[s-text]";
                     } else {
-                        const distanceCell = "{green}" + Math.round(distanceFromStart).toFixed(0) + "{end}";
+                        const distanceCell = "{green}" + Math.round(distanceFromAircraft).toFixed(0) + "{end}";
 
                         const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                         const timeCell = isFlying
@@ -295,19 +292,19 @@ class CDUStepAltsPage {
         let altitude = mcdu._cruiseFlightLevel * 100;
         let doesHaveStepDescent = false;
 
-        for (let i = 0; i < stepWaypoints.length; i++) {
-            const stepWaypoint = stepWaypoints[i];
-            const step = stepWaypoint.additionalData.cruiseStep;
-
-            if (insertAtIndex >= stepWaypoints.waypointIndex) {
+        let i = 0;
+        for (; i < stepWaypoints.length; i++) {
+            const step = stepWaypoints[i].additionalData.cruiseStep;
+            if (step.waypointIndex > insertAtIndex) {
                 break;
             }
 
-            if (step.toAltitude < altitude) {
+            const stepAltitude = step.toAltitude;
+            if (stepAltitude < altitude) {
                 doesHaveStepDescent = true;
             }
 
-            altitude = step.toAltitude;
+            altitude = stepAltitude;
         }
 
         const isStepSizeValid = Math.abs(toAltitude - altitude) >= 1000;
@@ -315,9 +312,23 @@ class CDUStepAltsPage {
             return false;
         }
 
-        const isClimbVsDescent = toAltitude > altitude;
-        const hasStepClimbAfterDescent = isClimbVsDescent && doesHaveStepDescent;
+        const isClimbVsDescent = toAltitude > altitude
+        if (!isClimbVsDescent) {
+            doesHaveStepDescent = true;
+        } else if (doesHaveStepDescent) {
+            return false;
+        }
 
-        return !hasStepClimbAfterDescent;
+        if (i < stepWaypoints.length) {
+            const stepAfter = stepWaypoints[i].additionalData.cruiseStep;
+            const isStepSizeValid = Math.abs(stepAfter.toAltitude - toAltitude) >= 1000;
+            const isClimbVsDescent = stepAfter.toAltitude - toAltitude;
+
+            const isClimbAfterDescent = isClimbVsDescent && doesHaveStepDescent;
+
+            return isStepSizeValid && !isClimbAfterDescent
+        }
+
+        return true;
     }
 }

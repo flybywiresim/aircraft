@@ -34,6 +34,7 @@ import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
 import { NXDataStore } from '@shared/persistence';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -1932,12 +1933,15 @@ export class ManagedFlightPlan {
             waypointIndex = this.findWaypointIndexByIdent(waypoint.ident)
         }
 
-        // TODO: Handle optimum steps
-        waypoint.additionalData.cruiseStep = {
+        const step: CruiseStepEntry = {
             distanceBeforeTermination: 0,
             toAltitude,
-            waypointIndex: waypointIndex,
-        };
+            waypointIndex,
+            isIgnored: false,
+        }
+
+        // TODO: Handle optimum steps
+        waypoint.additionalData.cruiseStep = step;
     }
 
     public removeCruiseStep(waypoint: WayPoint): void {

@@ -28,6 +28,7 @@ export interface VerticalWaypointPrediction {
     altError: number,
     distanceToTopOfDescent: NauticalMiles | null,
     estimatedFuelOnBoard: Pounds
+    distanceFromAircraft: NauticalMiles,
 }
 
 export enum VerticalCheckpointReason {
@@ -131,8 +132,7 @@ export interface ApproachPathAngleConstraint {
 export interface GeographicCruiseStep {
     distanceFromStart: NauticalMiles,
     toAltitude: Feet,
-    waypointIndex: string,
-    isIgnored: boolean,
+    waypointIndex: number,
 }
 
 export class NavGeometryProfile extends BaseGeometryProfile {
@@ -210,6 +210,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         }
 
         const topOfDescent = this.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
+        const distanceToPresentPosition = this.distanceToPresentPosition;
 
         for (let i = this.guidanceController.activeLegIndex - 1; i < fpm.getWaypointsCount(FlightPlans.Active); i++) {
             const waypoint = fpm.getWaypoint(i, FlightPlans.Active);
@@ -236,6 +237,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
                 altError: this.computeAltError(altitude, altitudeConstraint),
                 distanceToTopOfDescent: topOfDescent ? topOfDescent.distanceFromStart - distanceFromStart : null,
                 estimatedFuelOnBoard: remainingFuelOnBoard,
+                distanceFromAircraft: distanceFromStart - distanceToPresentPosition,
             });
         }
 

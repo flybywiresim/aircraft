@@ -10,6 +10,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MathUtils } from '@shared/MathUtils';
 import { FixTypeFlags } from '@fmgc/types/fstypes/FSEnums';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 /**
  * This entire class essentially represents an interface to the flightplan.
@@ -55,15 +56,14 @@ export class ConstraintReader {
         for (let i = 0; i < fpm.getWaypointsCount(FlightPlans.Active); i++) {
             const waypoint = fpm.getWaypoint(i, FlightPlans.Active);
 
-            if (waypoint.additionalData.cruiseStep) {
+            if (waypoint.additionalData.cruiseStep && !waypoint.additionalData.cruiseStep.isIgnored) {
                 if (i >= fpm.getActiveWaypointIndex()) {
-                    const { waypointIndex, toAltitude, distanceBeforeTermination } = waypoint.additionalData.cruiseStep;
+                    const { waypointIndex, toAltitude, distanceBeforeTermination } = waypoint.additionalData.cruiseStep as CruiseStepEntry;
 
                     this.cruiseSteps.push({
                         distanceFromStart: this.totalFlightPlanDistance - waypoint.additionalData.distanceToEnd - distanceBeforeTermination,
                         toAltitude,
                         waypointIndex,
-                        isIgnored: false,
                     });
                 } else {
                     // We've already passed the waypoint
