@@ -177,6 +177,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincLandingElevation = FmArinc429OutputWord.empty("LANDING_ELEVATION");
         this.arincDestinationLatitude = FmArinc429OutputWord.empty("DEST_LAT");
         this.arincDestinationLongitude = FmArinc429OutputWord.empty("DEST_LONG");
+        this.arincMDA = FmArinc429OutputWord.empty("MINIMUM_DESCENT_ALTITUDE");
+        this.arincDH = FmArinc429OutputWord.empty("DECISION_HEIGHT");
         this.arincThrustReductionAltitude = FmArinc429OutputWord.empty("THR_RED_ALT");
         this.arincAccelerationAltitude = FmArinc429OutputWord.empty("ACC_ALT");
         this.arincEoAccelerationAltitude = FmArinc429OutputWord.empty("EO_ACC_ALT");
@@ -192,6 +194,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.arincLandingElevation,
             this.arincDestinationLatitude,
             this.arincDestinationLongitude,
+            this.arincMDA,
+            this.arincDH,
             this.arincThrustReductionAltitude,
             this.arincAccelerationAltitude,
             this.arincEoAccelerationAltitude,
@@ -200,7 +204,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.arincMissedEoAccelerationAltitude,
         ];
     }
-
     Init() {
         super.Init();
         this.initVariables();
@@ -589,7 +592,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.toSpeedsChecks();
             this.thrustReductionAccelerationChecks();
             this.updateThrustReductionAcceleration();
-
+            this.updateMinimums();
             this.updateIlsCourse();
         }
 
@@ -1595,6 +1598,20 @@ class FMCMainDisplay extends BaseAirliners {
 
             this.arincDestinationLongitude.setBnrValue(longitude ? longitude : 0, ssm, 18, 180, -180);
         }
+    }
+
+    updateMinimums() {
+        const inRange = this.shouldTransmitMinimums();
+        const MDAssm = inRange && this.perfApprMDA ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+        const DHssm = inRange && this.perfApprDH ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData
+
+        this.arincMDA.setBnrValue(this.perfApprMDA ? this.perfApprMDA : 0, MDAssm, 17, 131072, 0);
+        this.arincDH.setBnrValue(this.perfApprDH ? this.perfApprDH : 0, DHssm, 16, 8192, 0);
+    }
+
+    shouldTransmitMinimums() {
+        const phase = this.flightPhaseManager.phase;
+        return (phase > FmgcFlightPhases.CRUISE || (phase === FmgcFlightPhases.CRUISE && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250));
     }
 
     getClbManagedSpeedFromCostIndex() {

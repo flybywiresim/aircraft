@@ -4,11 +4,11 @@
     "ChangeATISATCSourceButton": "Zamenjaj vir ATIS/ATC",
     "ConnectHoppieACARS": "Povežite Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "ZA TO FREKVENCO NI NA VOLJO NOBENIH INFORMACIJ",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "Iskanje",
     "SelectCorrectATISATCSource": "Ta stran je na voljo le, če je IVAO ali VATSIM izbran kot vir ATIS/ATC na strani z nastavitvami.",
     "SetActive": "Nastavi kot aktivno",
     "SetStandby": "Nastavi v pripravljenost",
-    "ShowAll": "All",
+    "ShowAll": "Vsi",
     "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
@@ -18,8 +18,8 @@
     "ShowTower": "Tower",
     "Standby": "V pripravljenosti",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "Iskanje ATC klicnega znaka",
+      "AtcTypeFilter": "Filtriraj za"
     },
     "Title": "Kontrola zračnega prometa"
   },
@@ -151,11 +151,11 @@
       "BoardingTime": "Čas vkrcanja",
       "Cargo": "Cargo",
       "Current": "Current",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationBody": "Prosimo potrdite izkrcanje vseh potnikov",
+      "DeboardConfirmationCancel": "Prekliči",
+      "DeboardConfirmationConfirm": "Izkrcanje",
+      "DeboardConfirmationTitle": "Izkrcanje vseh potnikov?",
+      "EstimatedDurationUnit": "minute",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -165,15 +165,15 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "Največji GW",
+        "MaxGWCG": "Največji GW CG",
         "MaxPassengers": "Največje število potnikov",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
         "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "Začnite z izkrcanjem"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -207,10 +207,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Zapri celozaslonski način",
     "From": "Od",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
-    "LoadingPdf": "Loading PDF",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingImage": "Nalaganje slike",
+    "LoadingImageFailed": "Nalaganje slike ni uspelo",
+    "LoadingPdf": "Nalaganje PDF-a",
+    "LoadingPdfFailed": "Nalaganje PDF-ja ni uspelo",
     "LocalFiles": {
       "Both": "Oboje",
       "EstablishingConnection": "Vzpostavljanje povezave",
@@ -370,7 +370,7 @@
       "ConfirmationDialogMsg": "Prosimo, potrdite nalaganje prednastavitve.",
       "CurrentProcedureStep": "Trenutni korak postopka",
       "PleaseConfirmLoadingOfPreset": "Prosimo, potrdite nalaganje prednastavitve.",
-      "Powered": "Powered",
+      "Powered": "Napajano",
       "ReadyPushback": "Pripravljen na vleko",
       "ReadyTakeoff": "Pripravljen na vzlet",
       "ReadyTaxi": "Pripravljen na taksiranje",
@@ -383,12 +383,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Za nalaganje prednastavitev zrakoplov potrebuje napajanje",
       "AircraftNeedsToBePoweredToSavePresets": "Za shranjevanje prednastavitev zrakoplov potrebuje napajanje",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "Zora/mrak:",
+      "AutoLoadDay": "Dan:",
+      "AutoLoadLightingHelpTitle": "Samodejno nalaganje prednastavitev",
+      "AutoLoadLightingPreset": "Omogoči samodejno nalaganje prednastavitev osvetlitve:",
+      "AutoLoadNight": "Noč:",
+      "AutoLoadNoneSelection": "Brez",
       "LoadPreset": "Naloži prednastavitev",
       "LoadingPreset": "Nalaganje prednastavitve",
       "NewNameConfirmationDialogMsg": "Prosimo, potrdite novo ime za prednastavitev osvetlitve",
@@ -442,7 +442,7 @@
       "SliderSpeed": "Premakni za želeno hitrost",
       "SystemEnabledOff": "Kliknite, če želite vklopiti sistem vleke.",
       "SystemEnabledOn": "Kliknite, če želite popolnoma izklopiti sistem vleke.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Vklop/izklop vnosov smernega in višinskega krmila",
       "ZoomIn": "Povečaj",
       "ZoomOut": "Pomanjšaj"
     },
@@ -450,29 +450,29 @@
     "TugDirection": "Smer vlačilca",
     "TugInTransit": "Čakam na vlačilca/pin",
     "TugSpeed": "Hitrost vlačilca",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Uporaba vnosa kontrolerja"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Uskladi ADIRS",
+    "FinishBoarding": "Zaključi vkrcanje",
+    "OnScreenKeyboard": "Zaslonska tipkovnica",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Povezano",
+    "SimBridgeConnecting": "Povezovanje ...",
+    "SimBridgeOff": "Izklop",
+    "SimBridgeOffline": "Ni na voljo",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "Takoj uskladi ADIRS",
+      "AutoBrightness": "Vklop/izklop samodejne svetlosti",
+      "Brightness": "Nastavi svetlost flyPada",
+      "FinishBoarding": "Takoj končaj vkrcanje",
+      "OnScreenKeyboard": "Vklop/izklop zaslonske tipkovnice",
+      "PowerButton": "Izklop",
+      "Settings": "Pojdi na stran z nastavitvami flyPada",
+      "SimBridge": "Nadzor povezave SimBridge",
+      "Sleep": "V pripravljenosti"
     },
-    "Title": "Quick Controls"
+    "Title": "Hitri nadzor"
   },
   "Settings": {
     "About": {
@@ -532,13 +532,13 @@
       "AutofillChecklists": "Samodejno izpolni kontrolne sezname",
       "BoardingTime": "Čas vkrcanja",
       "DmcSelfTestTime": "DMC samopreizkusni čas",
-      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "FirstOfficerAvatar": "Prikaži kopilotov avatar",
       "HomeCockpitMode": "Način \"Home Cockpit\"",
       "McduFocusTimeout": "MCDU časovna omejitev fokusa (sekunde)",
       "McduKeyboardInput": "MCDU vnos s tipkovnico",
       "PauseAtTod": "T/D pavza",
       "PauseAtTodDistance": "T/D Razdalja pavze (nm)",
-      "PilotAvatar": "Show Pilot Avatar",
+      "PilotAvatar": "Prikaži avatar pilota",
       "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
       "SyncEfis": "Sinhronizacija EFIS-a med CP in FO",
       "Title": "Realizem"
@@ -546,15 +546,15 @@
     "SimOptions": {
       "Active": "Aktivno",
       "Auto": "Samodejno",
-      "Both": "Synchronized",
+      "Both": "Sinhronizirano",
       "Calibrate": "Kalibracija",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "Kapitan",
+      "CockpitSeatUsedToControl": "Sedež v pilotski kabini uporabljen za nadzor",
       "ConesEnabled": "Varnostni stožci",
-      "Copilot": "Copilot",
+      "Copilot": "Kopilot",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
-      "EnableSimBridge": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
+      "EnableSimBridge": "Omogoči SimBridge povezavo (Samodejno de-aktivira po 5 minutah, če ni uspešne povezave)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
       "ExternalMcduServerPort": "Zunanji MCDU Port",
       "Hpa": "hPa",
@@ -564,7 +564,7 @@
       "Off": "Izklopljeno",
       "Save": "Shrani",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Zunanji naslov gostitelja SimBridge",
       "SimBridgePort": "Zunanji SimBridge Port",
       "SyncMsfsFlightPlan": "Sinhroniziraj z MSFS načrtom leta",
       "ThrottleDetents": "Odkloni plinske ročke",
@@ -574,9 +574,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX sinhronizacija goriva",
+      "GsxPayloadEnabled": "GSX sinhronizacija tovora",
+      "Title": "Nastavitve tretjih strank"
     },
     "ThrottleConfig": {
       "Apply": "Potrdi",
@@ -643,9 +643,9 @@
     "Sun": "Ned",
     "TT": {
       "Brightness": "Click to change Brightness",
-      "ConnectedToLocalApi": "Povezan na lokalni API",
-      "DisconnectedFromLocalApi": "Odklopljen iz lokalnega API",
-      "QuickControls": "Click to open Quick Controls",
+      "ConnectedToLocalApi": "Povezan s SimBridge-om",
+      "DisconnectedFromLocalApi": "Prekinjena povezava s SimBridge-om",
+      "QuickControls": "Kliknite, da odprete hitri nadzor",
       "TurnOffOrShutdownEfb": "Izklopi ali zaustavi EFB"
     },
     "Thu": "Čet",
@@ -653,13 +653,13 @@
     "Wed": "Sre"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "Uporabljate različico $edition verzije:",
+    "LatestVersionText": "Najnovejša različica $edition je",
+    "RecommendationText": "Posodobite svoje letalo z namestitvenim programom FlyByWire.",
+    "StatusBarWarning": "Zastarela različica letala",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Posodobite svoje letalo z namestitvenim programom FlyByWire."
     },
-    "Title": "New Version Available"
+    "Title": "Na voljo je nova različica"
   }
 }
