@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { t } from '../../../translation';
-import { useNavigraph } from '../Navigraph';
+import NavigraphClient, { useNavigraph } from '../Navigraph';
 
 const Loading = () => {
     const navigraph = useNavigraph();
@@ -119,5 +119,32 @@ export const NavigraphAuthUI = () => {
                 </div>
             </div>
         </div>
+    );
+};
+
+export const NavigraphAuthUIWrapper = (props) => {
+    const { children } = props;
+    const [tokenAvail, setTokenAvail] = useState(false);
+
+    const navigraph = useNavigraph();
+
+    useInterval(() => {
+        setTokenAvail(navigraph.hasToken);
+    }, 1000, { runOnStart: true });
+
+    return (
+        NavigraphClient.hasSufficientEnv
+            ? (
+                <>
+                    {tokenAvail
+                        ? children
+                        : <NavigraphAuthUI />}
+                </>
+            )
+            : (
+                <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg h-content-section-reduced bh-theme-secondard">
+                    <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
+                </div>
+            )
     );
 };
