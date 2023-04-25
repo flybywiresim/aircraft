@@ -1,34 +1,9 @@
-import React, { useState } from 'react';
-import { useInterval } from '@flybywiresim/react-components';
-import NavigraphClient, { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
-import { NavigraphAuthUI } from '../../../Apis/Navigraph/Components/Authentication';
+import React from 'react';
+import { NavigraphAuthUIWrapper } from '../../../Apis/Navigraph/Components/Authentication';
 import { NavigraphChartUI } from './NavigraphChartUI';
 
-export const NavigraphPage = () => {
-    const [tokenAvail, setTokenAvail] = useState(false);
-    const navigraph = useNavigraph();
-
-    useInterval(() => {
-        setTokenAvail(navigraph.hasToken);
-    }, 1000, { runOnStart: true });
-
-    return (
-        <>
-            {NavigraphClient.hasSufficientEnv
-                ? (
-                    <>
-                        {tokenAvail
-                            ? (
-                                <NavigraphChartUI />
-                            )
-                            : <NavigraphAuthUI />}
-                    </>
-                )
-                : (
-                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg h-content-section-reduced bg-theme-secondary">
-                        <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
-                    </div>
-                )}
-        </>
-    );
-};
+export const NavigraphPage = () => (
+    <NavigraphAuthUIWrapper>
+        <NavigraphChartUI />
+    </NavigraphAuthUIWrapper>
+);
