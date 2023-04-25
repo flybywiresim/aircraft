@@ -12,10 +12,8 @@ use crate::{
 use nalgebra::Vector3;
 use std::fmt::Debug;
 
-/// Solves a basic mass connected to a static point through a spring damper system
-/// Mass center of gravity position reacting to external accelerations is then used to model engine wobbling movement
-pub struct EngineFlexPhysics {
-    x_position_id: VariableIdentifier,
+pub struct ElevatorFlexPhysics {
+    y_position_id: VariableIdentifier,
 
     spring_const_id: VariableIdentifier,
     damping_const_id: VariableIdentifier,
@@ -31,33 +29,32 @@ pub struct EngineFlexPhysics {
 
     animation_position: f64,
 }
-impl EngineFlexPhysics {
-    pub fn new(context: &mut InitContext, engine_number: usize) -> Self {
+impl ElevatorFlexPhysics {
+    pub fn new(context: &mut InitContext, side: &str) -> Self {
         Self {
-            x_position_id: context
-                .get_identifier(format!("ENGINE_{}_WOBBLE_X_POSITION", engine_number)),
-            spring_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_K_CONST".to_owned()),
-            damping_const_id: context.get_identifier("ENGINE_WOBBLE_DEV_DAMP_CONST".to_owned()),
-            mass_id: context.get_identifier("ENGINE_WOBBLE_DEV_MASS".to_owned()),
-            output_gain_id: context.get_identifier("ENGINE_WOBBLE_DEV_OUT_GAIN".to_owned()),
-            lateral_damping_id: context.get_identifier("ENGINE_WOBBLE_DEV_XDAMP".to_owned()),
-            vertical_damping_id: context.get_identifier("ENGINE_WOBBLE_DEV_YDAMP".to_owned()),
-            dev_mode_enable_id: context.get_identifier("ENGINE_WOBBLE_DEV_ENABLE".to_owned()),
+            y_position_id: context.get_identifier(format!("ELEVATOR_{}_WOBBLE_Y_POSITION", side)),
+            spring_const_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_K_CONST".to_owned()),
+            damping_const_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_DAMP_CONST".to_owned()),
+            mass_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_MASS".to_owned()),
+            output_gain_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_OUT_GAIN".to_owned()),
+            lateral_damping_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_XDAMP".to_owned()),
+            vertical_damping_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_YDAMP".to_owned()),
+            dev_mode_enable_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_ENABLE".to_owned()),
 
             wobble_physics: WobblePhysics::new(
                 GravityEffect::NoGravity,
                 Vector3::default(),
-                2000.,
+                300.,
+                5.,
+                40000.,
                 100.,
-                800000.,
-                50000.,
-                500.,
-                20.,
-                Vector3::new(500., 500., 500.),
-                50.,
+                150.,
+                10.,
+                Vector3::new(200., 50., 200.),
+                5.,
             ),
 
-            position_output_gain: 90.,
+            position_output_gain: 5.,
 
             animation_position: 0.5,
         }
@@ -72,14 +69,14 @@ impl EngineFlexPhysics {
     fn update_animation_position(&mut self) {
         let cg_position = self.wobble_physics.position();
 
-        let limited_pos = (self.position_output_gain * (cg_position[0] + cg_position[1]))
+        let limited_pos = (self.position_output_gain * cg_position[1])
             .min(1.)
             .max(-1.);
 
         self.animation_position = (limited_pos + 1.) / 2.;
     }
 }
-impl SimulationElement for EngineFlexPhysics {
+impl SimulationElement for ElevatorFlexPhysics {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let activate_dev_mode: f64 = reader.read(&self.dev_mode_enable_id);
 
@@ -101,14 +98,14 @@ impl SimulationElement for EngineFlexPhysics {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.x_position_id, self.animation_position);
+        writer.write(&self.y_position_id, self.animation_position);
     }
 }
-impl Debug for EngineFlexPhysics {
+impl Debug for ElevatorFlexPhysics {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "\nEngine Flex=> CG [{:.2};{:.2};{:.2}]",
+            "\nElevator Flex=> CG [{:.2};{:.2};{:.2}]",
             self.wobble_physics.position()[0] * self.position_output_gain,
             self.wobble_physics.position()[1] * self.position_output_gain,
             self.wobble_physics.position()[2] * self.position_output_gain
@@ -116,35 +113,36 @@ impl Debug for EngineFlexPhysics {
     }
 }
 
-pub struct EnginesFlexiblePhysics<const N: usize> {
-    engines_flex_updater: MaxStepLoop,
-    engines_flex: Vec<EngineFlexPhysics>,
+pub struct FlexibleElevators {
+    flex_updater: MaxStepLoop,
+    elevators_flex: [ElevatorFlexPhysics; 2],
 }
-impl<const N: usize> EnginesFlexiblePhysics<N> {
-    const ENGINES_FLEX_SIM_TIME_STEP: Duration = Duration::from_millis(10);
+impl FlexibleElevators {
+    const ELEVATOR_FLEX_SIM_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            engines_flex_updater: MaxStepLoop::new(Self::ENGINES_FLEX_SIM_TIME_STEP),
-            engines_flex: (1..=N)
-                .map(|engine_number| EngineFlexPhysics::new(context, engine_number))
-                .collect(),
+            flex_updater: MaxStepLoop::new(Self::ELEVATOR_FLEX_SIM_TIME_STEP),
+            elevators_flex: [
+                ElevatorFlexPhysics::new(context, "LEFT"),
+                ElevatorFlexPhysics::new(context, "RIGHT"),
+            ],
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.engines_flex_updater.update(context);
+        self.flex_updater.update(context);
 
-        for cur_time_step in self.engines_flex_updater {
-            for engine_flex in &mut self.engines_flex {
-                engine_flex.update(&context.with_delta(cur_time_step));
+        for cur_time_step in self.flex_updater {
+            for elevator_flex in &mut self.elevators_flex {
+                elevator_flex.update(&context.with_delta(cur_time_step));
             }
         }
     }
 }
-impl SimulationElement for EnginesFlexiblePhysics<4> {
+impl SimulationElement for FlexibleElevators {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.engines_flex, visitor);
+        accept_iterable!(self.elevators_flex, visitor);
 
         visitor.visit(self);
     }
@@ -163,17 +161,17 @@ mod tests {
     use std::time::Duration;
 
     struct EngineFlexTestAircraft {
-        engines_flex: EnginesFlexiblePhysics<4>,
+        elevators_flex: FlexibleElevators,
     }
     impl EngineFlexTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                engines_flex: EnginesFlexiblePhysics::new(context),
+                elevators_flex: FlexibleElevators::new(context),
             }
         }
 
         fn update(&mut self, context: &UpdateContext) {
-            self.engines_flex.update(context);
+            self.elevators_flex.update(context);
         }
     }
     impl Aircraft for EngineFlexTestAircraft {
@@ -183,21 +181,16 @@ mod tests {
     }
     impl SimulationElement for EngineFlexTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.engines_flex.accept(visitor);
+            self.elevators_flex.accept(visitor);
             visitor.visit(self);
         }
     }
 
     fn show_animation_positions(test_bed: &mut SimulationTestBed<EngineFlexTestAircraft>) {
-        let engine_1_position: f64 = test_bed.read_by_name("ENGINE_1_WOBBLE_X_POSITION");
-        let engine_2_position: f64 = test_bed.read_by_name("ENGINE_2_WOBBLE_X_POSITION");
-        let engine_3_position: f64 = test_bed.read_by_name("ENGINE_3_WOBBLE_X_POSITION");
-        let engine_4_position: f64 = test_bed.read_by_name("ENGINE_4_WOBBLE_X_POSITION");
+        let left_position: f64 = test_bed.read_by_name("ELEVATOR_LEFT_WOBBLE_Y_POSITION");
+        let right_position: f64 = test_bed.read_by_name("ELEVATOR_RIGHT_WOBBLE_Y_POSITION");
 
-        println!(
-            "E1 {:.2} E2 {:.2} E3 {:.2} E4 {:.2}",
-            engine_1_position, engine_2_position, engine_3_position, engine_4_position
-        );
+        println!("Eleft {:.2} Eright {:.2}", left_position, right_position);
     }
 
     #[test]
@@ -206,29 +199,25 @@ mod tests {
 
         test_bed.run();
 
-        let engine_1_position: f64 = test_bed.read_by_name("ENGINE_1_WOBBLE_X_POSITION");
-        let engine_2_position: f64 = test_bed.read_by_name("ENGINE_2_WOBBLE_X_POSITION");
-        let engine_3_position: f64 = test_bed.read_by_name("ENGINE_3_WOBBLE_X_POSITION");
-        let engine_4_position: f64 = test_bed.read_by_name("ENGINE_4_WOBBLE_X_POSITION");
+        let left_position: f64 = test_bed.read_by_name("ELEVATOR_LEFT_WOBBLE_Y_POSITION");
+        let right_position: f64 = test_bed.read_by_name("ELEVATOR_RIGHT_WOBBLE_Y_POSITION");
 
-        assert_about_eq!(engine_1_position, 0.5);
-        assert_about_eq!(engine_2_position, 0.5);
-        assert_about_eq!(engine_3_position, 0.5);
-        assert_about_eq!(engine_4_position, 0.5);
+        assert_about_eq!(left_position, 0.5);
+        assert_about_eq!(right_position, 0.5);
     }
 
     // Following test is ignored because it's hard to set static boundaries to desired results
     // Tuning is better done visually using dev mode to edit physical properties
     #[test]
     #[ignore]
-    fn check_engines_move_in_light_turbulances() {
+    fn check_elevators_move_in_light_turbulances() {
         let mut test_bed = SimulationTestBed::new(EngineFlexTestAircraft::new);
 
         for _ in 0..500 {
-            test_bed.write_by_name("ACCELERATION BODY X", 5.);
+            test_bed.write_by_name("ACCELERATION BODY Y", 5.);
             test_bed.run_with_delta(Duration::from_secs_f64(0.5));
             show_animation_positions(&mut test_bed);
-            test_bed.write_by_name("ACCELERATION BODY X", -5.);
+            test_bed.write_by_name("ACCELERATION BODY Y", -5.);
             test_bed.run_with_delta(Duration::from_secs_f64(0.5));
             show_animation_positions(&mut test_bed);
         }
@@ -238,14 +227,14 @@ mod tests {
     // Tuning is better done visually using dev mode to edit physical properties
     #[test]
     #[ignore]
-    fn check_engines_move_in_strong_turbulances() {
+    fn check_elevators_move_in_strong_turbulances() {
         let mut test_bed = SimulationTestBed::new(EngineFlexTestAircraft::new);
 
         for _ in 0..500 {
-            test_bed.write_by_name("ACCELERATION BODY X", 15.);
+            test_bed.write_by_name("ACCELERATION BODY Y", 15.);
             test_bed.run_with_delta(Duration::from_secs_f64(0.5));
             show_animation_positions(&mut test_bed);
-            test_bed.write_by_name("ACCELERATION BODY X", -15.);
+            test_bed.write_by_name("ACCELERATION BODY Y", -15.);
             test_bed.run_with_delta(Duration::from_secs_f64(0.5));
             show_animation_positions(&mut test_bed);
         }
