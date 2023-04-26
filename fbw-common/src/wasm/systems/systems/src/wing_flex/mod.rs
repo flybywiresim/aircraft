@@ -141,6 +141,8 @@ struct A380WingLiftModifier {
     lateral_offset: f64,
 }
 impl A380WingLiftModifier {
+    const LATERAL_OFFSET_GAIN: f64 = 0.7;
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             spoiler_left_1_position_id: context
@@ -269,17 +271,20 @@ impl SimulationElement for A380WingLiftModifier {
         let left_ailerons_tip = (ailerons_left[2] - 0.5) * 2.;
         let right_ailerons_tip = (ailerons_right[2] - 0.5) * 2.;
 
-        println!(
-            "LIFTMOD: SPOILIN {:.1} SPOILmid {:.1} AILmid {:.1} AILtip {:.1}",
-            wing_base_left_spoilers, wing_mid_left_spoilers, left_ailerons_mid, left_ailerons_tip,
-        );
+        // println!(
+        //     "LIFTMOD: SPOILIN {:.1} SPOILmid {:.1} AILmid {:.1} AILtip {:.1}",
+        //     wing_base_left_spoilers, wing_mid_left_spoilers, left_ailerons_mid, left_ailerons_tip,
+        // );
 
         self.lateral_offset = ((wing_base_right_spoilers - wing_base_left_spoilers)
             + (wing_mid_right_spoilers - wing_mid_left_spoilers)
             + (right_ailerons_mid - left_ailerons_mid)
             + (right_ailerons_tip - left_ailerons_tip))
             / 4.;
-        println!("LIFT OFFSET ESTIMATED {:.2}", self.lateral_offset);
+
+        self.lateral_offset *= Self::LATERAL_OFFSET_GAIN;
+
+        // println!("LIFT OFFSET ESTIMATED {:.2}", self.lateral_offset);
 
         // let left_node1 = 1. - (wing_base_left_spoilers * 0.5);
         // let left_node2 = 1. - (wing_mid_left_spoilers * 0.5);
@@ -321,24 +326,24 @@ impl WingLift {
         let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
 
         let lift = if total_weight_on_wheels.get::<kilogram>() > 5000. {
-            println!(
-                "GROUNDMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
-                cur_weight_kg / 1000.,
-                accel_y,
-                lift_1g /9.8 / 1000.,
-                lift_wow/9.8 / 1000.,
-                (lift_1g + lift_wow) /9.8 / 1000.
-            );
+            // println!(
+            //     "GROUNDMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+            //     cur_weight_kg / 1000.,
+            //     accel_y,
+            //     lift_1g /9.8 / 1000.,
+            //     lift_wow/9.8 / 1000.,
+            //     (lift_1g + lift_wow) /9.8 / 1000.
+            // );
             lift_1g + lift_wow
         } else {
-            println!(
-                "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
-                cur_weight_kg / 1000.,
-                accel_y,
-                lift_1g /9.8 / 1000.,
-                lift_delta_from_accel_n/9.8 / 1000.,
-                (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
-            );
+            // println!(
+            //     "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
+            //     cur_weight_kg / 1000.,
+            //     accel_y,
+            //     lift_1g /9.8 / 1000.,
+            //     lift_delta_from_accel_n/9.8 / 1000.,
+            //     (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
+            // );
             lift_1g + lift_delta_from_accel_n
         };
 
@@ -533,8 +538,9 @@ impl WingFlexA380 {
     //     [20187500., 9937500., 1312500., 187500.];
     // const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [504937., 248437., 32812., 2343.5];
 
-    const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [10000000., 5000000., 600000., 150000.];
-    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [300000., 180000., 8000., 1500.];
+    const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
+        [10000000., 2500000., 1000000., 150000.];
+    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [600000., 400000., 50000., 3000.];
 
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 22000., 3000., 500.];
 
@@ -595,31 +601,31 @@ impl WingFlexA380 {
 
         let right_lift_split = self.wing_lift.total_lift.get::<newton>() - left_lift_split;
 
-        println!(
-            "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
-            self.wing_lift.total_lift.get::<newton>(),
-            self.wing_lift_dynamic.lateral_offset(),
-            left_lift_split,
-            right_lift_split
-        );
+        // println!(
+        //     "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
+        //     self.wing_lift.total_lift.get::<newton>(),
+        //     self.wing_lift_dynamic.lateral_offset(),
+        //     left_lift_split,
+        //     right_lift_split
+        // );
 
         let lift_left_table_newton = standard_lift_spread * left_lift_split;
 
         let lift_right_table_newton = standard_lift_spread * right_lift_split;
 
-        println!(
-            "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}  {:.0}\\{:.0}\\{:.0}\\{:.0}\\{:.0}",
-            lift_left_table_newton.a,
-            lift_left_table_newton.w,
-            lift_left_table_newton.z,
-            lift_left_table_newton.y,
-            lift_left_table_newton.x,
-            lift_right_table_newton.x,
-            lift_right_table_newton.y,
-            lift_right_table_newton.z,
-            lift_right_table_newton.w,
-            lift_right_table_newton.a
-        );
+        // println!(
+        //     "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}  {:.0}\\{:.0}\\{:.0}\\{:.0}\\{:.0}",
+        //     lift_left_table_newton.a,
+        //     lift_left_table_newton.w,
+        //     lift_left_table_newton.z,
+        //     lift_left_table_newton.y,
+        //     lift_left_table_newton.x,
+        //     lift_right_table_newton.x,
+        //     lift_right_table_newton.y,
+        //     lift_right_table_newton.z,
+        //     lift_right_table_newton.w,
+        //     lift_right_table_newton.a
+        // );
 
         self.wing_lift.update(context);
 
@@ -637,19 +643,19 @@ impl WingFlexA380 {
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
         );
 
-        println!(
-            "WING HEIGHTS {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",
-            self.flex_physics[0].nodes[4].position().get::<meter>(),
-            self.flex_physics[0].nodes[3].position().get::<meter>(),
-            self.flex_physics[0].nodes[2].position().get::<meter>(),
-            self.flex_physics[0].nodes[1].position().get::<meter>(),
-            self.flex_physics[0].nodes[0].position().get::<meter>(),
-            self.flex_physics[1].nodes[0].position().get::<meter>(),
-            self.flex_physics[1].nodes[1].position().get::<meter>(),
-            self.flex_physics[1].nodes[2].position().get::<meter>(),
-            self.flex_physics[1].nodes[3].position().get::<meter>(),
-            self.flex_physics[1].nodes[4].position().get::<meter>(),
-        );
+        // println!(
+        //     "WING HEIGHTS {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",
+        //     self.flex_physics[0].nodes[4].position().get::<meter>(),
+        //     self.flex_physics[0].nodes[3].position().get::<meter>(),
+        //     self.flex_physics[0].nodes[2].position().get::<meter>(),
+        //     self.flex_physics[0].nodes[1].position().get::<meter>(),
+        //     self.flex_physics[0].nodes[0].position().get::<meter>(),
+        //     self.flex_physics[1].nodes[0].position().get::<meter>(),
+        //     self.flex_physics[1].nodes[1].position().get::<meter>(),
+        //     self.flex_physics[1].nodes[2].position().get::<meter>(),
+        //     self.flex_physics[1].nodes[3].position().get::<meter>(),
+        //     self.flex_physics[1].nodes[4].position().get::<meter>(),
+        // );
     }
 }
 impl SimulationElement for WingFlexA380 {
@@ -681,13 +687,13 @@ impl SimulationElement for WingFlexA380 {
         writer.write(&self.left_flex_outboard_mid_id, bones_angles_left[3]);
         writer.write(&self.left_flex_outboard_id, bones_angles_left[4]);
 
-        println!(
-            "LEFT WING ANIM ANGLES FROM FRONT {:.2}_{:.2}_{:.2}_{:.2}",
-            bones_angles_left[1].get::<degree>(),
-            bones_angles_left[2].get::<degree>(),
-            bones_angles_left[3].get::<degree>(),
-            bones_angles_left[4].get::<degree>(),
-        );
+        // println!(
+        //     "LEFT WING ANIM ANGLES FROM FRONT {:.2}_{:.2}_{:.2}_{:.2}",
+        //     bones_angles_left[1].get::<degree>(),
+        //     bones_angles_left[2].get::<degree>(),
+        //     bones_angles_left[3].get::<degree>(),
+        //     bones_angles_left[4].get::<degree>(),
+        // );
 
         writer.write(&self.right_flex_id, right);
     }
