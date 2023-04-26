@@ -1,8 +1,6 @@
 import { NXDataStore } from '@shared/persistence';
 
-export const getSimBridgeIp = (): string => {
-    return (NXDataStore.get('CONFIG_SIMBRIDGE_REMOTE', 'local') === 'local' ? 'localhost' : NXDataStore.get('CONFIG_SIMBRIDGE_IP', 'localhost'));
-}
+export const getSimBridgeIp = (): string => (NXDataStore.get('CONFIG_SIMBRIDGE_REMOTE', 'local') === 'local' ? 'localhost' : NXDataStore.get('CONFIG_SIMBRIDGE_IP', 'localhost'));
 
 export const getSimBridgeUrl = (): string => `http://${getSimBridgeIp()}:${NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380')}`;
 
