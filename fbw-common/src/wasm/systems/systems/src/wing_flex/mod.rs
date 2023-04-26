@@ -28,7 +28,7 @@ pub enum GearWheelHeavy {
     LeftWing = 3,
     RightWing = 4,
 }
-pub struct LandingGearCompression {
+struct LandingGearCompression {
     center_compression_id: VariableIdentifier,
 
     left_wing_compression_id: VariableIdentifier,
@@ -44,13 +44,13 @@ pub struct LandingGearCompression {
     right_body_compression: Ratio,
 }
 impl LandingGearCompression {
-    pub const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
-    pub const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
-    pub const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
-    pub const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
-    pub const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
+    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
+    const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
+    const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
+    const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
+    const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
-    pub fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
             center_compression_id: context.get_identifier(Self::GEAR_CENTER_COMPRESSION.to_owned()),
             left_wing_compression_id: context
@@ -301,6 +301,8 @@ impl SimulationElement for A380WingLiftModifier {
         // let right_lift_dynamic_coeff = [right_node1, right_node2, right_node3, right_node4];
     }
 }
+
+// Computes a global lift force from anything we can use from the sim
 struct WingLift {
     gear_weight_on_wheels: LandingGearCompression,
 
@@ -317,7 +319,7 @@ impl WingLift {
     fn update(&mut self, context: &UpdateContext) {
         let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
-        let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
+        //let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
         let cur_weight_kg = context.total_weight().get::<kilogram>();
 
@@ -358,6 +360,7 @@ impl SimulationElement for WingLift {
     }
 }
 
+// Map that gives the mass of each wingflex node given the masses of the plane fuel tanks
 struct WingFuelNodeMapper<const FUEL_TANK_NUMBER: usize, const NODE_NUMBER: usize> {
     fuel_tank_mapping: [usize; FUEL_TANK_NUMBER],
 }
