@@ -8,6 +8,7 @@ use crate::simulation::{
 
 use uom::si::{
     acceleration::meter_per_second_squared,
+    angle::{degree, radian},
     f64::*,
     force::newton,
     length::meter,
@@ -503,7 +504,7 @@ impl SimulationElement for WingMassA380 {
     }
 }
 
-use nalgebra::Vector5;
+use nalgebra::{Vector2, Vector5};
 
 const WING_FLEX_NODE_NUMBER: usize = 5;
 const WING_FLEX_LINK_NUMBER: usize = WING_FLEX_NODE_NUMBER - 1;
@@ -511,7 +512,11 @@ const WING_FLEX_LINK_NUMBER: usize = WING_FLEX_NODE_NUMBER - 1;
 const FUEL_TANKS_NUMBER: usize = 5;
 
 pub struct WingFlexA380 {
-    left_flex_id: VariableIdentifier,
+    left_flex_inboard_id: VariableIdentifier,
+    left_flex_inboard_mid_id: VariableIdentifier,
+    left_flex_outboard_mid_id: VariableIdentifier,
+    left_flex_outboard_id: VariableIdentifier,
+
     right_flex_id: VariableIdentifier,
 
     wing_lift: WingLift,
@@ -519,16 +524,19 @@ pub struct WingFlexA380 {
     wing_mass: WingMassA380,
 
     fuel_mapper: WingFuelNodeMapper<5, WING_FLEX_NODE_NUMBER>,
+    animation_mapper: WingAnimationMapper<WING_FLEX_NODE_NUMBER>,
 
     flex_physics: [FlexPhysicsNG<WING_FLEX_NODE_NUMBER, WING_FLEX_LINK_NUMBER>; 2],
 }
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
         [20187500., 9937500., 1312500., 187500.];
-    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [1009875., 496875., 65625., 4687.5];
+    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [504937., 248437., 32812., 2343.5];
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 22000., 3000., 500.];
 
     const FUEL_MAPPING: [usize; FUEL_TANKS_NUMBER] = [1, 1, 2, 2, 3];
+
+    const WING_NODES_X_COORDINATES: [f64; WING_FLEX_NODE_NUMBER] = [0., 11.5, 22.05, 29., 36.85];
 
     pub fn new(context: &mut InitContext) -> Self {
         let empty_mass = [
@@ -540,7 +548,13 @@ impl WingFlexA380 {
         ];
 
         Self {
-            left_flex_id: context.get_identifier("WING_FLEX_LEFT".to_owned()),
+            left_flex_inboard_id: context.get_identifier("WING_FLEX_LEFT_INBOARD".to_owned()),
+            left_flex_inboard_mid_id: context
+                .get_identifier("WING_FLEX_LEFT_INBOARD_MID".to_owned()),
+            left_flex_outboard_mid_id: context
+                .get_identifier("WING_FLEX_LEFT_OUTBOARD_MID".to_owned()),
+            left_flex_outboard_id: context.get_identifier("WING_FLEX_LEFT_OUTBOARD".to_owned()),
+
             right_flex_id: context.get_identifier("WING_FLEX_RIGHT".to_owned()),
 
             wing_lift: WingLift::new(context),
@@ -548,14 +562,17 @@ impl WingFlexA380 {
             wing_mass: WingMassA380::new(context),
 
             fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
+            animation_mapper: WingAnimationMapper::new(Self::WING_NODES_X_COORDINATES),
 
             flex_physics: [
                 FlexPhysicsNG::new(
+                    context,
                     empty_mass,
                     Self::FLEX_COEFFICIENTS,
                     Self::DAMNPING_COEFFICIENTS,
                 ),
                 FlexPhysicsNG::new(
+                    context,
                     empty_mass,
                     Self::FLEX_COEFFICIENTS,
                     Self::DAMNPING_COEFFICIENTS,
@@ -636,8 +653,8 @@ impl SimulationElement for WingFlexA380 {
         self.wing_lift.accept(visitor);
         self.wing_lift_dynamic.accept(visitor);
         self.wing_mass.accept(visitor);
-        // self.flex_physics[0].accept(visitor);
-        // self.flex_physics[1].accept(visitor);
+
+        self.flex_physics[0].accept(visitor);
 
         visitor.visit(self);
     }
@@ -646,12 +663,28 @@ impl SimulationElement for WingFlexA380 {
         const MIN_FLEX: f64 = -1.;
         const MAX_FLEX: f64 = 2.;
 
-        let left = (self.flex_physics[0].wing_tip_position().get::<meter>() - MIN_FLEX) * 100.
-            / (MAX_FLEX - MIN_FLEX);
+        // let left = (self.flex_physics[0].wing_tip_position().get::<meter>() - MIN_FLEX) * 100.
+        //     / (MAX_FLEX - MIN_FLEX);
         let right = (self.flex_physics[1].wing_tip_position().get::<meter>() - MIN_FLEX) * 100.
             / (MAX_FLEX - MIN_FLEX);
 
-        writer.write(&self.left_flex_id, left);
+        let bones_angles_left = self
+            .animation_mapper
+            .animation_angles(self.flex_physics[0].nodes_height_meters());
+
+        writer.write(&self.left_flex_inboard_id, bones_angles_left[1]);
+        writer.write(&self.left_flex_inboard_mid_id, bones_angles_left[2]);
+        writer.write(&self.left_flex_outboard_mid_id, bones_angles_left[3]);
+        writer.write(&self.left_flex_outboard_id, bones_angles_left[4]);
+
+        println!(
+            "LEFT WING ANIM ANGLES FROM FRONT {:.2}_{:.2}_{:.2}_{:.2}",
+            bones_angles_left[1].get::<degree>(),
+            bones_angles_left[2].get::<degree>(),
+            bones_angles_left[3].get::<degree>(),
+            bones_angles_left[4].get::<degree>(),
+        );
+
         writer.write(&self.right_flex_id, right);
     }
 }
@@ -772,11 +805,23 @@ struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
 
     nodes: [WingSectionNode; NODE_NUMBER],
     flex_constraints: [FlexibleConstraint; LINK_NUMBER],
+
+    // DEV
+    wing_dev_spring_1_id: VariableIdentifier,
+    wing_dev_spring_2_id: VariableIdentifier,
+    wing_dev_spring_3_id: VariableIdentifier,
+    wing_dev_spring_4_id: VariableIdentifier,
+
+    wing_dev_damping_1_id: VariableIdentifier,
+    wing_dev_damping_2_id: VariableIdentifier,
+    wing_dev_damping_3_id: VariableIdentifier,
+    wing_dev_damping_4_id: VariableIdentifier,
 }
 impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMBER, LINK_NUMBER> {
     const MIN_PHYSICS_SOLVER_TIME_STEP: Duration = Duration::from_millis(10);
 
     fn new(
+        context: &mut InitContext,
         empty_mass: [Mass; NODE_NUMBER],
         springness: [f64; LINK_NUMBER],
         damping: [f64; LINK_NUMBER],
@@ -812,6 +857,16 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
                     )
                 },
             ),
+
+            wing_dev_spring_1_id: context.get_identifier("WING_FLEX_DEV_SPRING_1".to_owned()),
+            wing_dev_spring_2_id: context.get_identifier("WING_FLEX_DEV_SPRING_2".to_owned()),
+            wing_dev_spring_3_id: context.get_identifier("WING_FLEX_DEV_SPRING_3".to_owned()),
+            wing_dev_spring_4_id: context.get_identifier("WING_FLEX_DEV_SPRING_4".to_owned()),
+
+            wing_dev_damping_1_id: context.get_identifier("WING_FLEX_DEV_DAMPING_1".to_owned()),
+            wing_dev_damping_2_id: context.get_identifier("WING_FLEX_DEV_DAMPING_2".to_owned()),
+            wing_dev_damping_3_id: context.get_identifier("WING_FLEX_DEV_DAMPING_3".to_owned()),
+            wing_dev_damping_4_id: context.get_identifier("WING_FLEX_DEV_DAMPING_4".to_owned()),
         }
     }
 
@@ -843,15 +898,113 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
     fn wing_tip_position(&self) -> Length {
         self.nodes[NODE_NUMBER - 1].position()
     }
+
+    fn nodes_height_meters(&self) -> [f64; NODE_NUMBER] {
+        let mut all_heights_meters = [0.; NODE_NUMBER];
+
+        for idx in 1..NODE_NUMBER {
+            all_heights_meters[idx] = self.nodes[idx].position().get::<meter>();
+        }
+        all_heights_meters
+    }
+}
+impl SimulationElement for FlexPhysicsNG<5, 4> {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let node1_spring = reader.read(&self.wing_dev_spring_1_id);
+        if node1_spring > 0. {
+            self.flex_constraints[0].springiness = node1_spring;
+        }
+
+        let node2_spring = reader.read(&self.wing_dev_spring_2_id);
+        if node2_spring > 0. {
+            self.flex_constraints[1].springiness = node2_spring;
+        }
+
+        let node3_spring = reader.read(&self.wing_dev_spring_3_id);
+        if node3_spring > 0. {
+            self.flex_constraints[2].springiness = node3_spring;
+        }
+
+        let node4_spring = reader.read(&self.wing_dev_spring_4_id);
+        if node4_spring > 0. {
+            self.flex_constraints[3].springiness = node4_spring;
+        }
+
+        let node1_damp = reader.read(&self.wing_dev_damping_1_id);
+        if node1_damp > 0. {
+            self.flex_constraints[0].damping = node1_damp;
+        }
+
+        let node2_damp = reader.read(&self.wing_dev_damping_2_id);
+        if node2_damp > 0. {
+            self.flex_constraints[1].damping = node2_damp;
+        }
+
+        let node3_damp = reader.read(&self.wing_dev_damping_3_id);
+        if node3_damp > 0. {
+            self.flex_constraints[2].damping = node3_damp;
+        }
+
+        let node4_damp = reader.read(&self.wing_dev_damping_4_id);
+        if node4_damp > 0. {
+            self.flex_constraints[3].damping = node4_damp;
+        }
+    }
+}
+
+// Takes height of each node and returns the angles between last nodes from wing root to tip
+//      This is used because animation bones are parent/child from root to tip
+struct WingAnimationMapper<const NODE_NUMBER: usize> {
+    x_positions: [f64; NODE_NUMBER],
+}
+impl<const NODE_NUMBER: usize> WingAnimationMapper<NODE_NUMBER> {
+    fn new(x_positions: [f64; NODE_NUMBER]) -> Self {
+        Self { x_positions }
+    }
+
+    fn animation_angles(&self, wing_node_heights: [f64; NODE_NUMBER]) -> [Angle; NODE_NUMBER] {
+        let mut animation_angles = [Angle::default(); NODE_NUMBER];
+
+        let mut previous_node_coord = Vector2::new(1., 0.);
+
+        for idx in 1..NODE_NUMBER {
+            let cur_node_coord = Vector2::new(
+                self.x_positions[idx] - self.x_positions[idx - 1],
+                wing_node_heights[idx] - wing_node_heights[idx - 1],
+            );
+            let dot_prod = previous_node_coord
+                .normalize()
+                .dot(&cur_node_coord.normalize());
+
+            animation_angles[idx] =
+                if Self::is_positive_angle(&previous_node_coord, &cur_node_coord) {
+                    Angle::new::<radian>(dot_prod.acos())
+                } else {
+                    -Angle::new::<radian>(dot_prod.acos())
+                };
+
+            previous_node_coord = cur_node_coord;
+        }
+
+        animation_angles
+    }
+
+    fn is_positive_angle(v1: &Vector2<f64>, v2: &Vector2<f64>) -> bool {
+        Self::cross(v1, v2) >= 0.
+    }
+
+    fn cross(v1: &Vector2<f64>, v2: &Vector2<f64>) -> f64 {
+        (v1[0] * v2[1]) - (v1[1] * v2[0])
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use crate::simulation::test::WriteByName;
+    use crate::simulation::test::{ElementCtorFn, WriteByName};
     use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
+    use crate::simulation::{Aircraft, Simulation, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
     use uom::si::{length::meter, velocity::knot};
@@ -888,6 +1041,8 @@ mod tests {
             visitor.visit(self);
         }
     }
+
+    impl SimulationElement for WingAnimationMapper<5> {}
 
     #[test]
     fn init() {
@@ -1145,5 +1300,80 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(1));
         test_bed.run_with_delta(Duration::from_secs(1));
+    }
+
+    #[test]
+    fn animation_angles_with_0_heights_gives_zero_angles() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            WingAnimationMapper::<5>::new([0., 1., 2., 3., 4.])
+        }));
+
+        let anim_angles = test_bed.query_element(|e| e.animation_angles([0.0, 0.0, 0.0, 0., 0.]));
+
+        assert!(anim_angles[0] == Angle::default());
+        assert!(anim_angles[1] == Angle::default());
+        assert!(anim_angles[2] == Angle::default());
+        assert!(anim_angles[3] == Angle::default());
+        assert!(anim_angles[4] == Angle::default());
+    }
+
+    #[test]
+    fn animation_angles_with_last_node_moved_1_up_gives_correct_angles() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            WingAnimationMapper::<5>::new([0., 1., 2., 3., 4.])
+        }));
+
+        let anim_angles = test_bed.query_element(|e| e.animation_angles([0.0, 0.0, 0.0, 0., 1.]));
+
+        assert!(anim_angles[0] == Angle::default());
+        assert!(anim_angles[1] == Angle::default());
+        assert!(anim_angles[2] == Angle::default());
+        assert!(anim_angles[3] == Angle::default());
+        assert!(anim_angles[4].get::<degree>() >= 44. && anim_angles[4].get::<degree>() <= 46.);
+    }
+
+    #[test]
+    fn animation_angles_with_last_node_moved_1_down_gives_correct_angles() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            WingAnimationMapper::<5>::new([0., 1., 2., 3., 4.])
+        }));
+
+        let anim_angles = test_bed.query_element(|e| e.animation_angles([0.0, 0.0, 0.0, 0., -1.]));
+
+        assert!(anim_angles[0] == Angle::default());
+        assert!(anim_angles[1] == Angle::default());
+        assert!(anim_angles[2] == Angle::default());
+        assert!(anim_angles[3] == Angle::default());
+        assert!(anim_angles[4].get::<degree>() >= -46. && anim_angles[4].get::<degree>() <= -44.);
+    }
+
+    #[test]
+    fn animation_angles_with_first_node_moved_1_up_gives_correct_angles() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            WingAnimationMapper::<5>::new([0., 1., 2., 3., 4.])
+        }));
+
+        let anim_angles = test_bed.query_element(|e| e.animation_angles([0., 1., 1., 1., 1.]));
+
+        assert!(anim_angles[0] == Angle::default());
+        assert!(anim_angles[1].get::<degree>() >= 44. && anim_angles[0].get::<degree>() <= 46.);
+        assert!(anim_angles[2].get::<degree>() <= -44. && anim_angles[1].get::<degree>() >= -46.);
+        assert!(anim_angles[3] == Angle::default());
+        assert!(anim_angles[4] == Angle::default());
+    }
+
+    #[test]
+    fn animation_angles_with_first_node_moved_1_down_gives_correct_angles() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            WingAnimationMapper::<5>::new([0., 1., 2., 3., 4.])
+        }));
+
+        let anim_angles = test_bed.query_element(|e| e.animation_angles([0., -1., -1., -1., -1.]));
+
+        assert!(anim_angles[0] == Angle::default());
+        assert!(anim_angles[1].get::<degree>() <= -44. && anim_angles[1].get::<degree>() >= -46.);
+        assert!(anim_angles[2].get::<degree>() >= 44. && anim_angles[0].get::<degree>() <= 46.);
+        assert!(anim_angles[3] == Angle::default());
+        assert!(anim_angles[4] == Angle::default());
     }
 }
