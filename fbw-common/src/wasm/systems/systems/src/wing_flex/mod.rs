@@ -529,9 +529,13 @@ pub struct WingFlexA380 {
     flex_physics: [FlexPhysicsNG<WING_FLEX_NODE_NUMBER, WING_FLEX_LINK_NUMBER>; 2],
 }
 impl WingFlexA380 {
-    const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
-        [20187500., 9937500., 1312500., 187500.];
-    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [504937., 248437., 32812., 2343.5];
+    // const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
+    //     [20187500., 9937500., 1312500., 187500.];
+    // const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [504937., 248437., 32812., 2343.5];
+
+    const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [10000000., 5000000., 600000., 150000.];
+    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [300000., 180000., 8000., 1500.];
+
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 22000., 3000., 500.];
 
     const FUEL_MAPPING: [usize; FUEL_TANKS_NUMBER] = [1, 1, 2, 2, 3];
@@ -582,14 +586,14 @@ impl WingFlexA380 {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        let standard_lift_spread = Vector5::new(0., 0.45, 0.35, 0.17, 0.03);
+        let standard_lift_spread = Vector5::new(0., 0.42, 0.31, 0.22, 0.05);
 
-        let right_lift_split = 0.5
+        let left_lift_split = 0.5
             * (self.wing_lift.total_lift.get::<newton>()
                 + self.wing_lift_dynamic.lateral_offset()
                     * self.wing_lift.total_lift.get::<newton>());
 
-        let left_lift_split = self.wing_lift.total_lift.get::<newton>() - right_lift_split;
+        let right_lift_split = self.wing_lift.total_lift.get::<newton>() - left_lift_split;
 
         println!(
             "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
