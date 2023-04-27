@@ -655,7 +655,7 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
             this.largeDistanceNumberRef.instance.textContent = Math.round(value).toString();
         } else {
             const integerPart = Math.trunc(value);
-            const decimalPart = (value - integerPart).toString()[2];
+            const decimalPart = (value - integerPart).toFixed(1).toString()[2];
 
             this.distanceSmallContainerVisible.set(true);
             this.distanceLargeContainerVisible.set(false);
