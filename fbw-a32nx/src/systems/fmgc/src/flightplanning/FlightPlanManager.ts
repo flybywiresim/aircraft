@@ -2009,15 +2009,24 @@ export class FlightPlanManager {
 
     public addOrUpdateCruiseStep(waypoint: WayPoint, toAltitude: Feet, waypointIndex?: number): void {
         this._flightPlans[this._currentFlightPlanIndex].addOrUpdateCruiseStep(waypoint, toAltitude, waypointIndex)
+        // Unignore all of them, so a new VNAV computation with all steps is done
+        this.unignoreAllCruiseSteps();
         this.updateFlightPlanVersion().catch(console.error);
     }
 
     public removeCruiseStep(waypoint: WayPoint): void {
         this._flightPlans[this._currentFlightPlanIndex].removeCruiseStep(waypoint);
+        // Unignore all of them, so a new VNAV computation with all steps is done
+        this.unignoreAllCruiseSteps()
         this.updateFlightPlanVersion().catch(console.error);
     }
 
     public findWaypointIndexByIdent(ident: string): number {
         return this._flightPlans[this._currentFlightPlanIndex].findWaypointIndexByIdent(ident);
+    }
+
+    private unignoreAllCruiseSteps(): void {
+        this._flightPlans[this._currentFlightPlanIndex].unignoreAllCruiseSteps();
+        this.updateFlightPlanVersion().catch(console.error);
     }
 }

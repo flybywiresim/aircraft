@@ -25,7 +25,7 @@ export class StepAhead implements FMMessageSelector {
         let newState = false;
         for (let i = fpm.getActiveWaypointIndex(); i < fpm.getWaypointsCount(FlightPlans.Active); i++) {
             const waypoint = fpm.getWaypoint(i, FlightPlans.Active);
-            if (!waypoint || !waypoint.additionalData.cruiseStep) {
+            if (!waypoint || !waypoint.additionalData.cruiseStep || waypoint.additionalData.cruiseStep.isIgnored) {
                 continue;
             }
 

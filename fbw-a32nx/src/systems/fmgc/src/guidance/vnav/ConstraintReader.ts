@@ -64,6 +64,7 @@ export class ConstraintReader {
                         distanceFromStart: this.totalFlightPlanDistance - waypoint.additionalData.distanceToEnd - distanceBeforeTermination,
                         toAltitude,
                         waypointIndex,
+                        isIgnored: false,
                     });
                 } else {
                     // We've already passed the waypoint
@@ -264,6 +265,13 @@ export class ConstraintReader {
             const totalLegLength = legDistance + correctedInboundLength + outboundLength;
 
             this.totalFlightPlanDistance += totalLegLength;
+        }
+    }
+
+    ignoreCruiseStep(waypointIndex: number) {
+        const waypoint = this.guidanceController.flightPlanManager.getWaypoint(waypointIndex, FlightPlans.Active);
+        if (waypoint?.additionalData?.cruiseStep) {
+            waypoint.additionalData.cruiseStep.isIgnored = true;
         }
     }
 }

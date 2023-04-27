@@ -223,6 +223,11 @@ class CDUStepAltsPage {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;
+            } else if (!this.checkStepInsertionRules(mcdu, stepWaypoints, clickedStep.wapyointIndex, clickedStep.toAltitude)) {
+                // Step too small or step descent after step climb
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                scratchpadCallback();
+                return;
             }
 
             mcdu.flightPlanManager.addOrUpdateCruiseStep(stepWaypoint, altitude, clickedStep.waypointIndex);
@@ -269,6 +274,7 @@ class CDUStepAltsPage {
             // /Place/distance
             mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
             scratchpadCallback();
+            return;
         }
     }
 
@@ -322,7 +328,7 @@ class CDUStepAltsPage {
         if (i < stepWaypoints.length) {
             const stepAfter = stepWaypoints[i].additionalData.cruiseStep;
             const isStepSizeValid = Math.abs(stepAfter.toAltitude - toAltitude) >= 1000;
-            const isClimbVsDescent = stepAfter.toAltitude - toAltitude;
+            const isClimbVsDescent = stepAfter.toAltitude > toAltitude;
 
             const isClimbAfterDescent = isClimbVsDescent && doesHaveStepDescent;
 

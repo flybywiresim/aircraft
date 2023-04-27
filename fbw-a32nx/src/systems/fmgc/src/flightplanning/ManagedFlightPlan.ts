@@ -1951,4 +1951,8 @@ export class ManagedFlightPlan {
     public findWaypointIndexByIdent(ident: string): number {
         return this.waypoints.findIndex(waypoint => waypoint.ident === ident);
     }
+
+    public unignoreAllCruiseSteps(): void {
+        this.cruiseStepWaypoints.forEach((step) => step.additionalData.cruiseStep.isIgnored = false);
+    }
 }

@@ -133,6 +133,7 @@ export interface GeographicCruiseStep {
     distanceFromStart: NauticalMiles,
     toAltitude: Feet,
     waypointIndex: number,
+    isIgnored: boolean,
 }
 
 export class NavGeometryProfile extends BaseGeometryProfile {
@@ -311,5 +312,9 @@ export class NavGeometryProfile extends BaseGeometryProfile {
     override resetSpeedConstraints() {
         this.constraintReader.climbSpeedConstraints = [];
         this.constraintReader.descentSpeedConstraints = [];
+    }
+
+    ignoreCruiseStep(waypointIndex: number) {
+        this.constraintReader.ignoreCruiseStep(waypointIndex);
     }
 }

@@ -2,14 +2,13 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { ClimbStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
-import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { Predictions, StepResults } from '../Predictions';
-import { GeographicCruiseStep, MaxSpeedConstraint, VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
+import { GeographicCruiseStep, MaxSpeedConstraint, NavGeometryProfile, VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
 import { AtmosphericConditions } from '../AtmosphericConditions';
 
 export class CruisePathBuilder {
@@ -17,7 +16,7 @@ export class CruisePathBuilder {
         private atmosphericConditions: AtmosphericConditions) { }
 
     computeCruisePath(
-        profile: BaseGeometryProfile,
+        profile: NavGeometryProfile,
         startOfCruise: VerticalCheckpoint,
         targetDistanceFromStart: NauticalMiles,
         stepClimbStrategy: ClimbStrategy,
@@ -28,15 +27,13 @@ export class CruisePathBuilder {
         const sequence = new TemporaryCheckpointSequence(startOfCruise);
 
         for (const step of profile.cruiseSteps) {
+            if (step.isIgnored) {
+                continue;
+            }
+
             // If the step is too close to T/D
             if (step.distanceFromStart < startOfCruise.distanceFromStart || step.distanceFromStart > targetDistanceFromStart) {
-                if (VnavConfig.DEBUG_PROFILE) {
-                    console.warn(
-                        `[FMS/VNAV] Cruise step is not within cruise segment \
-                        (${step.distanceFromStart.toFixed(2)} NM, T/C: ${startOfCruise.distanceFromStart.toFixed(2)} NM, T/D: ${targetDistanceFromStart.toFixed(2)} NM)`,
-                    );
-                }
-
+                this.ignoreCruiseStep(profile, step);
                 continue;
             }
 
@@ -56,7 +53,11 @@ export class CruisePathBuilder {
             const segmentToStep = this.computeCruiseSegment(altitude, step.distanceFromStart - distanceFromStart, remainingFuelOnBoard, speed, headwind);
             sequence.addCheckpointFromStep(segmentToStep, VerticalCheckpointReason.AtmosphericConditions);
 
-            this.addStepFromLastCheckpoint(sequence, step, stepClimbStrategy, stepDescentStrategy);
+            const addingStepSuccessful = this.tryAddStepFromLastCheckpoint(sequence, step, stepClimbStrategy, stepDescentStrategy, targetDistanceFromStart);
+            if (!addingStepSuccessful) {
+                this.ignoreCruiseStep(profile, step);
+                continue;
+            }
         }
 
         // Once again, we check if there are any speed constraints before the T/D
@@ -126,10 +127,20 @@ export class CruisePathBuilder {
         sequence.addCheckpointFromStep(segmentResult, VerticalCheckpointReason.SpeedConstraint);
     }
 
-    private addStepFromLastCheckpoint(sequence: TemporaryCheckpointSequence, step: GeographicCruiseStep, stepClimbStrategy: ClimbStrategy, stepDescentStrategy: DescentStrategy) {
-        // TODO: What happens if the step is at cruise altitude?
+    /**
+     * Compute a cruise step segment and add it unless it is too close to T/D.
+     * @param sequence
+     * @param step
+     * @param stepClimbStrategy
+     * @param stepDescentStrategy
+     * @param maxDistance
+     * @returns
+     */
+    private tryAddStepFromLastCheckpoint(
+        sequence: TemporaryCheckpointSequence, step: GeographicCruiseStep, stepClimbStrategy: ClimbStrategy, stepDescentStrategy: DescentStrategy, maxDistance: NauticalMiles,
+    ) {
         const { managedCruiseSpeed, managedCruiseSpeedMach } = this.computationParametersObserver.get();
-        const { altitude, remainingFuelOnBoard } = sequence.lastCheckpoint;
+        const { altitude, distanceFromStart, remainingFuelOnBoard } = sequence.lastCheckpoint;
 
         const isClimbVsDescent = step.toAltitude > altitude;
         // Instead of just atmospheric conditions, the last checkpoint is now a step climb point
@@ -143,7 +154,14 @@ export class CruisePathBuilder {
             ? stepClimbStrategy.predictToAltitude(altitude, step.toAltitude, managedCruiseSpeed, managedCruiseSpeedMach, remainingFuelOnBoard, WindComponent.zero())
             : stepDescentStrategy.predictToAltitude(altitude, step.toAltitude, managedCruiseSpeed, managedCruiseSpeed, remainingFuelOnBoard, WindComponent.zero());
 
+        // If the step end is closer than 50 NM to T/D, the step is ignored.
+        if (distanceFromStart + stepResults.distanceTraveled - maxDistance > -50) {
+            return false;
+        }
+
         sequence.addCheckpointFromStep(stepResults, isClimbVsDescent ? VerticalCheckpointReason.TopOfStepClimb : VerticalCheckpointReason.BottomOfStepDescent);
+
+        return true;
     }
 
     private computeCruiseSegment(altitude: Feet, distance: NauticalMiles, remainingFuelOnBoard: number, speed: Knots, headwind: WindComponent): StepResults {
@@ -184,11 +202,15 @@ export class CruisePathBuilder {
     getFinalCruiseAltitude(cruiseSteps: GeographicCruiseStep[]): Feet {
         const { cruiseAltitude } = this.computationParametersObserver.get();
 
-        if (cruiseSteps.length === 0) {
-            return cruiseAltitude;
+        let altitude = cruiseAltitude;
+        for (let i = 0; i < cruiseSteps.length; i++) {
+            const step = cruiseSteps[i];
+            if (!step.isIgnored) {
+                altitude = step.toAltitude;
+            }
         }
 
-        return cruiseSteps[cruiseSteps.length - 1].toAltitude;
+        return altitude;
     }
 
     private getClimbThrustN1Limit(atmosphericConditions: AtmosphericConditions, altitude: Feet, speed: Knots) {
@@ -197,5 +219,10 @@ export class CruisePathBuilder {
         const estimatedTat = atmosphericConditions.totalAirTemperatureFromMach(altitude, climbSpeedMach);
 
         return EngineModel.tableInterpolation(EngineModel.maxClimbThrustTableLeap, estimatedTat, altitude);
+    }
+
+    private ignoreCruiseStep(profile: NavGeometryProfile, step: GeographicCruiseStep) {
+        step.isIgnored = true;
+        profile.ignoreCruiseStep(step.waypointIndex);
     }
 }
