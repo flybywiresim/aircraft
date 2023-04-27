@@ -21,7 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
-  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
+  - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
 
@@ -1852,6 +1852,25 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_FM{number}_TO_PITCH_TRIM
     - Takeoff pitch trim set by the pilot on the PERF TO MCDU page
     - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_DECISION_HEIGHT
+    - ARINC429<number>
+    - The decision height for an approach in feet, as entered on the PERF page.
+    - Value | Meaning
+       --- | ---
+       0 or greater | The decision height in feet
+       -1 | The pilot has not entered a decision height
+       -2 | The special value "NO" has been explicitly entered as the decision deight
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
+    - ARINC429<number>
+    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC

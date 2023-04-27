@@ -44,6 +44,8 @@ export interface Arinc429Values {
     irMaintWord: Arinc429Word;
     trueHeading: Arinc429Word;
     trueTrack: Arinc429Word;
+    mdaAr: Arinc429Word;
+    dhAr: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -479,6 +481,14 @@ export class ArincValueProvider {
 
         subscriber.on('trueTrackRaw').handle((word) => {
             publisher.pub('trueTrack', new Arinc429Word(word));
+        });
+
+        subscriber.on('mda').handle((word) => {
+            publisher.pub('mdaAr', new Arinc429Word(word));
+        });
+
+        subscriber.on('dh').handle((word) => {
+            publisher.pub('dhAr', new Arinc429Word(word));
         });
     }
 
