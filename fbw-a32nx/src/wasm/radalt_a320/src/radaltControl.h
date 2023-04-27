@@ -18,9 +18,9 @@ int probeBest = 0;
 int preSample = 1;
 int quit = 0;
 double radarAltitude = 0.0;
-double snrMax = 0.0;
+double rxMax = 0.0;
 double beamActual = 0.0;
-double snrActual = 0.0;
+double rxActual = 0.0;
 
 // Static
 static bool radarActive = false;
@@ -32,7 +32,7 @@ constexpr int PROBE_ROWS = 3;
 constexpr double X_MAX = 0.35;
 constexpr double Y_MAX = 0.35;
 constexpr double PI = 3.141592653589790;
-constexpr double PI_FOURTH = 97.4090910340024;
+constexpr double PI_THIRD = 31.00627668030;
 constexpr double DEG_TO_RAD = PI / 180.0;
 constexpr double RAD_TO_DEG = 180.0 / PI;
 constexpr double PHI_2D = 1.32471795724474602596;
@@ -41,7 +41,7 @@ constexpr double ALPHA_1 = ALPHA_0 * ALPHA_0;
 constexpr double EARTH_RAD = 20888156.17;
 constexpr double LIGHT_SPEED = 299792458;
 constexpr double POWER_TX = 0.1;
-constexpr double GAIN_ANTENNA = 10;
+constexpr double GAIN_TX_RX = 100;
 constexpr double WAVELENGTH_SQUARED = 4.8607635E-03;
 constexpr double RCS = 16709011;
 constexpr double NOISE_FLOOR = -140;
@@ -49,8 +49,8 @@ constexpr double MAX_ANGLE = 1.56;
 constexpr double H_ANGLE = 40;
 constexpr double V_ANGLE = 20;
 constexpr double MAX_BEAM_DISTANCE = 8192;
-constexpr double GAIN_FACTOR = 2.0 * POWER_TX * GAIN_ANTENNA * WAVELENGTH_SQUARED * RCS;
-constexpr double PI_FACTOR = 4.0 * PI_FOURTH;
+constexpr double GAIN_FACTOR = POWER_TX * GAIN_TX_RX * WAVELENGTH_SQUARED;
+constexpr double PI_FACTOR = 64.0 * PI_THIRD;
 constexpr double K = GAIN_FACTOR / PI_FACTOR;
 const double TAN_H_ANGLE = tan(H_ANGLE * DEG_TO_RAD);
 const double TAN_V_ANGLE = tan(V_ANGLE * DEG_TO_RAD);
@@ -68,7 +68,7 @@ inline double rad2deg(double rad)
 }
 
 // finds maximum of two values
-bool isNewSnrMax(double newSnr, double maxSnr)
+bool isNewRxMax(double newSnr, double maxSnr)
 {
 	return newSnr > maxSnr;
 }
@@ -134,8 +134,12 @@ UserStruct	userPosition;
 ProbeStruct probePosition;
 ProbeInfo	probeIndexnfo[MAX_AI];
 
-double probeSNR(double beamActual) {
-	return 10 * std::log10(K / std::pow(beamActual, 4));
+double probeRX(double beamActual) {
+	double alpha = 0.01;
+	beamActual = beamActual / 3.28084;
+	double sigmaFactor = PI * TAN_H_ANGLE * TAN_V_ANGLE * ((0.0021529922 * beamActual) + 1.9649909) / beamActual;
+	double noiseFactor = std::exp(-2 * beamActual * alpha / 1000);
+	return 10 * std::log10(K * sigmaFactor * noiseFactor * 1000);
 }
 
 // Returns new lat/ long probe coordinates for each probe
@@ -346,16 +350,16 @@ void updateProbeMesh(int probeIndex, int preSample, int probeBest) {
 
 void readProbeData(int probeIndex, ProbeStruct probePosition) {
 	if (probeIndex == 0) {
-		snrMax = -99999;
+		rxMax = -140;
 		radarAltitude = 99999;
 	}
 
 	beamActual = sqrt(pow(probePosition.pitch * 100, 2) + pow(userPosition.altitude - probePosition.altitude, 2));
-	snrActual = probeSNR(beamActual);
+	rxActual = probeRX(beamActual);
 
-	if (isNewSnrMax(snrActual, snrMax)) {
+	if (isNewRxMax(rxActual, rxMax)) {
 		radarAltitude = userPosition.altitude - probePosition.altitude;
-		snrMax = snrActual;
+		rxMax = rxActual;
 		if (preSample == 1)
 			probeBest = probeIndex;
 		planeAltitude = userPosition.altitude; // Debug
@@ -364,7 +368,7 @@ void readProbeData(int probeIndex, ProbeStruct probePosition) {
 	}
 
 	if (probeIndex == MAX_AI - 1) {
-		if (radarAltitude > MAX_BEAM_DISTANCE || snrMax < NOISE_FLOOR)
+		if (radarAltitude > MAX_BEAM_DISTANCE || rxMax < NOISE_FLOOR)
 			radarAltitude = 99999;
 	}
 }
@@ -506,12 +510,13 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 					simVars->setRadarAltitude(radarAltitude);
 
 					if (debug) {
-						std::cout << "RADALT: SNR Probe (" << probeBest <<
+						std::cout << "RADALT: Probe# (" << probeBest <<
 							") Plane_Alt: " << planeAltitude <<
 							" Probe_Alt: " << probeAltitude <<
 							" Plane_AltAbv: " << planeAboveGround <<
-							" SNR: " << snrMax <<
-							" RA: " << radarAltitude << std::endl;
+							" Prx: " << rxMax <<
+							" RA: " << radarAltitude <<
+							" pct_diff: " << 100 * (planeAboveGround - radarAltitude) / planeAboveGround << std::endl;
 					}
 
 					preSample = 1;
