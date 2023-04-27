@@ -7,21 +7,15 @@ use crate::simulation::{
 };
 
 use uom::si::{
-    acceleration::meter_per_second_squared,
-    angle::{degree, radian},
-    f64::*,
-    force::newton,
-    length::meter,
-    mass::kilogram,
-    mass_density::kilogram_per_cubic_meter,
-    ratio::{percent, ratio},
+    acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
+    mass::kilogram, mass_density::kilogram_per_cubic_meter, ratio::percent,
     velocity::meter_per_second,
 };
 
 use std::fmt;
 use std::time::Duration;
 
-pub enum GearWheelHeavy {
+enum GearStrutId {
     Nose = 0,
     LeftBody = 1,
     RightBody = 2,
@@ -71,28 +65,28 @@ impl LandingGearCompression {
     }
 
     fn total_weight_on_wheels(&self) -> Mass {
-        self.weight_on_wheel(GearWheelHeavy::Nose)
-            + self.weight_on_wheel(GearWheelHeavy::LeftWing)
-            + self.weight_on_wheel(GearWheelHeavy::RightWing)
-            + self.weight_on_wheel(GearWheelHeavy::LeftBody)
-            + self.weight_on_wheel(GearWheelHeavy::RightBody)
+        self.weight_on_wheel(GearStrutId::Nose)
+            + self.weight_on_wheel(GearStrutId::LeftWing)
+            + self.weight_on_wheel(GearStrutId::RightWing)
+            + self.weight_on_wheel(GearStrutId::LeftBody)
+            + self.weight_on_wheel(GearStrutId::RightBody)
     }
 
-    fn weight_on_wheel(&self, wheel_id: GearWheelHeavy) -> Mass {
+    fn weight_on_wheel(&self, wheel_id: GearStrutId) -> Mass {
         match wheel_id {
-            GearWheelHeavy::Nose => {
+            GearStrutId::Nose => {
                 Mass::new::<kilogram>(1.45 * self.center_compression.get::<percent>().powf(2.4))
             }
-            GearWheelHeavy::LeftWing => {
+            GearStrutId::LeftWing => {
                 Mass::new::<kilogram>(5.5 * self.left_wing_compression.get::<percent>().powf(2.6))
             }
-            GearWheelHeavy::RightWing => {
+            GearStrutId::RightWing => {
                 Mass::new::<kilogram>(5.5 * self.right_wing_compression.get::<percent>().powf(2.6))
             }
-            GearWheelHeavy::LeftBody => {
+            GearStrutId::LeftBody => {
                 Mass::new::<kilogram>(7.5 * self.left_body_compression.get::<percent>().powf(2.5))
             }
-            GearWheelHeavy::RightBody => {
+            GearStrutId::RightBody => {
                 Mass::new::<kilogram>(7.5 * self.right_body_compression.get::<percent>().powf(2.5))
             }
         }
@@ -135,9 +129,8 @@ struct A380WingLiftModifier {
     aileron_right_2_position_id: VariableIdentifier,
     aileron_right_3_position_id: VariableIdentifier,
 
-    flaps_left_position_id: VariableIdentifier,
-    flaps_right_position_id: VariableIdentifier,
-
+    // flaps_left_position_id: VariableIdentifier,
+    // flaps_right_position_id: VariableIdentifier,
     lateral_offset: f64,
 }
 impl A380WingLiftModifier {
@@ -193,11 +186,10 @@ impl A380WingLiftModifier {
             aileron_right_3_position_id: context
                 .get_identifier("HYD_AIL_RIGHT_OUTWARD_DEFLECTION".to_owned()),
 
-            flaps_left_position_id: context
-                .get_identifier("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
-            flaps_right_position_id: context
-                .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
-
+            // flaps_left_position_id: context
+            //     .get_identifier("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
+            // flaps_right_position_id: context
+            //     .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
             lateral_offset: 0.,
         }
     }
@@ -242,8 +234,8 @@ impl SimulationElement for A380WingLiftModifier {
             reader.read(&self.aileron_right_3_position_id),
         ];
 
-        let left_flaps_position: Ratio = reader.read(&self.flaps_left_position_id);
-        let right_flaps_position: Ratio = reader.read(&self.flaps_right_position_id);
+        //let left_flaps_position: Ratio = reader.read(&self.flaps_left_position_id);
+        //let right_flaps_position: Ratio = reader.read(&self.flaps_right_position_id);
 
         let wing_base_left_spoilers = (spoilers_left[0] + spoilers_left[1]) / 2.;
         let wing_mid_left_spoilers = (spoilers_left[2]
@@ -457,8 +449,8 @@ impl WingMassA380 {
     fn left_tanks_masses(&self) -> [Mass; 5] {
         let mut masses = [Mass::default(); 5];
 
-        for idx in 0..5 {
-            masses[idx] = self.left_tank_volumes[idx]
+        for (idx, mass) in masses.iter_mut().enumerate() {
+            *mass = self.left_tank_volumes[idx]
                 * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3);
         }
 
@@ -468,8 +460,8 @@ impl WingMassA380 {
     fn right_tanks_masses(&self) -> [Mass; 5] {
         let mut masses = [Mass::default(); 5];
 
-        for idx in 0..5 {
-            masses[idx] = self.right_tank_volumes[idx]
+        for (idx, mass) in masses.iter_mut().enumerate() {
+            *mass = self.right_tank_volumes[idx]
                 * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3);
         }
 
@@ -842,8 +834,9 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         damping: [f64; LINK_NUMBER],
     ) -> Self {
         let mut nodes_array = vec![];
-        for idx in 0..NODE_NUMBER {
-            nodes_array.push(WingSectionNode::new(empty_mass[idx]));
+
+        for mass in empty_mass.iter().take(NODE_NUMBER) {
+            nodes_array.push(WingSectionNode::new(*mass));
         }
 
         let mut links_array = vec![];
@@ -913,8 +906,13 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
     fn nodes_height_meters(&self) -> [f64; NODE_NUMBER] {
         let mut all_heights_meters = [0.; NODE_NUMBER];
 
-        for idx in 1..NODE_NUMBER {
-            all_heights_meters[idx] = self.nodes[idx].position().get::<meter>();
+        for (idx, height) in all_heights_meters
+            .iter_mut()
+            .enumerate()
+            .take(NODE_NUMBER)
+            .skip(1)
+        {
+            *height = self.nodes[idx].position().get::<meter>();
         }
         all_heights_meters
     }
@@ -1015,10 +1013,10 @@ mod tests {
 
     use crate::simulation::test::{ElementCtorFn, WriteByName};
     use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, Simulation, SimulationElement, SimulationElementVisitor};
+    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
-    use uom::si::{length::meter, velocity::knot};
+    use uom::si::{angle::degree, length::meter, velocity::knot};
 
     struct TestAircraft {
         wing_flex: WingFlexA380,
@@ -1081,7 +1079,7 @@ mod tests {
 
     #[test]
     fn init() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
 
@@ -1090,7 +1088,7 @@ mod tests {
 
     #[test]
     fn fuel_mapping_tanks_1_2_left_wing() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1178,7 +1176,7 @@ mod tests {
 
     #[test]
     fn fuel_mapping_tanks_3_4_left_wing() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1266,7 +1264,7 @@ mod tests {
 
     #[test]
     fn fuel_mapping_tanks_5_left_wing() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1325,7 +1323,7 @@ mod tests {
 
     #[test]
     fn with_some_lift_on_ground_rotation() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
         test_bed.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
