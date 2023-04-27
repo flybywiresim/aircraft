@@ -345,9 +345,11 @@ mod tests {
 
         let left_position: f64 = test_bed.read_by_name("ELEVATOR_LEFT_WOBBLE_Y_POSITION");
         let right_position: f64 = test_bed.read_by_name("ELEVATOR_RIGHT_WOBBLE_Y_POSITION");
+        let aft_position: f64 = test_bed.read_by_name("AFT_FLEX_POSITION");
 
         assert_about_eq!(left_position, 0.5);
         assert_about_eq!(right_position, 0.5);
+        assert_about_eq!(aft_position, 0.5);
     }
 
     // Following test is ignored because it's hard to set static boundaries to desired results
