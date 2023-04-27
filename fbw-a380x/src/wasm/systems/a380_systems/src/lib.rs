@@ -43,7 +43,7 @@ use systems::{
     },
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
-    wing_flex::FlexibleElevators,
+    structural_flex::elevator_flex::FlexibleElevators,
 };
 
 pub struct A380 {
