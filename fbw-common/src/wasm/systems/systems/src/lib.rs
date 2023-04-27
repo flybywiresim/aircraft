@@ -24,5 +24,5 @@ pub mod physics;
 pub mod pneumatic;
 pub mod shared;
 pub mod simulation;
+pub mod structural_flex;
 pub mod wind_turbine;
-pub mod wing_flex;
