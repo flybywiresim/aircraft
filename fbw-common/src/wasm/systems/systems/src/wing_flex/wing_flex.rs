@@ -525,7 +525,10 @@ pub struct WingFlexA380 {
     left_flex_outboard_mid_id: VariableIdentifier,
     left_flex_outboard_id: VariableIdentifier,
 
-    right_flex_id: VariableIdentifier,
+    right_flex_inboard_id: VariableIdentifier,
+    right_flex_inboard_mid_id: VariableIdentifier,
+    right_flex_outboard_mid_id: VariableIdentifier,
+    right_flex_outboard_id: VariableIdentifier,
 
     wing_lift: WingLift,
     wing_lift_dynamic: A380WingLiftModifier,
@@ -564,7 +567,12 @@ impl WingFlexA380 {
                 .get_identifier("WING_FLEX_LEFT_OUTBOARD_MID".to_owned()),
             left_flex_outboard_id: context.get_identifier("WING_FLEX_LEFT_OUTBOARD".to_owned()),
 
-            right_flex_id: context.get_identifier("WING_FLEX_RIGHT".to_owned()),
+            right_flex_inboard_id: context.get_identifier("WING_FLEX_RIGHT_INBOARD".to_owned()),
+            right_flex_inboard_mid_id: context
+                .get_identifier("WING_FLEX_RIGHT_INBOARD_MID".to_owned()),
+            right_flex_outboard_mid_id: context
+                .get_identifier("WING_FLEX_RIGHT_OUTBOARD_MID".to_owned()),
+            right_flex_outboard_id: context.get_identifier("WING_FLEX_RIGHT_OUTBOARD".to_owned()),
 
             wing_lift: WingLift::new(context),
             wing_lift_dynamic: A380WingLiftModifier::new(context),
@@ -669,14 +677,6 @@ impl SimulationElement for WingFlexA380 {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        const MIN_FLEX: f64 = -1.;
-        const MAX_FLEX: f64 = 2.;
-
-        // let left = (self.flex_physics[0].wing_tip_position().get::<meter>() - MIN_FLEX) * 100.
-        //     / (MAX_FLEX - MIN_FLEX);
-        let right = (self.flex_physics[1].wing_tip_position().get::<meter>() - MIN_FLEX) * 100.
-            / (MAX_FLEX - MIN_FLEX);
-
         let bones_angles_left = self
             .animation_mapper
             .animation_angles(self.flex_physics[0].nodes_height_meters());
@@ -686,6 +686,14 @@ impl SimulationElement for WingFlexA380 {
         writer.write(&self.left_flex_outboard_mid_id, bones_angles_left[3]);
         writer.write(&self.left_flex_outboard_id, bones_angles_left[4]);
 
+        let bones_angles_right = self
+            .animation_mapper
+            .animation_angles(self.flex_physics[1].nodes_height_meters());
+
+        writer.write(&self.right_flex_inboard_id, bones_angles_right[1]);
+        writer.write(&self.right_flex_inboard_mid_id, bones_angles_right[2]);
+        writer.write(&self.right_flex_outboard_mid_id, bones_angles_right[3]);
+        writer.write(&self.right_flex_outboard_id, bones_angles_right[4]);
         // println!(
         //     "LEFT WING ANIM ANGLES FROM FRONT {:.2}_{:.2}_{:.2}_{:.2}",
         //     bones_angles_left[1].get::<degree>(),
@@ -693,8 +701,6 @@ impl SimulationElement for WingFlexA380 {
         //     bones_angles_left[3].get::<degree>(),
         //     bones_angles_left[4].get::<degree>(),
         // );
-
-        writer.write(&self.right_flex_id, right);
     }
 }
 
@@ -904,10 +910,6 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         }
     }
 
-    fn wing_tip_position(&self) -> Length {
-        self.nodes[NODE_NUMBER - 1].position()
-    }
-
     fn nodes_height_meters(&self) -> [f64; NODE_NUMBER] {
         let mut all_heights_meters = [0.; NODE_NUMBER];
 
@@ -1033,13 +1035,37 @@ mod tests {
             self.wing_flex.update(context);
 
             println!(
-                "WING TIPS {:.2} / {:.2} ",
-                self.wing_flex.flex_physics[0]
-                    .wing_tip_position()
+                "WING HEIGHTS L/O\\R => {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",
+                self.wing_flex.flex_physics[0].nodes[4]
+                    .position()
                     .get::<meter>(),
-                self.wing_flex.flex_physics[1]
-                    .wing_tip_position()
-                    .get::<meter>()
+                self.wing_flex.flex_physics[0].nodes[3]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[0].nodes[2]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[0].nodes[1]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[0].nodes[0]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[1].nodes[0]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[1].nodes[1]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[1].nodes[2]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[1].nodes[3]
+                    .position()
+                    .get::<meter>(),
+                self.wing_flex.flex_physics[1].nodes[4]
+                    .position()
+                    .get::<meter>(),
             );
         }
     }
