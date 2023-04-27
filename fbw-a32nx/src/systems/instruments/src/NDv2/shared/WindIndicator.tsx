@@ -73,7 +73,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
         } else if (direction.isNoComputedData() || speed.isNoComputedData()) {
             this.windSpeedText.set('---');
         } else {
-            const text = Math.round(speed.value).toString().padStart(3, '0');
+            const text = Math.round(speed.value).toString().padStart(3, ' ');
 
             this.windSpeedText.set(text);
         }
