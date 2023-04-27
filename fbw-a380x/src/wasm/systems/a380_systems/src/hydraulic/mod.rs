@@ -1966,6 +1966,18 @@ impl A380Hydraulic {
         self.yellow_circuit.reservoir()
     }
 
+    pub fn left_elevator_aero_torques(&self) -> (Torque, Torque) {
+        self.left_elevator.aerodynamic_torques_outter_inner()
+    }
+
+    pub fn right_elevator_aero_torques(&self) -> (Torque, Torque) {
+        self.right_elevator.aerodynamic_torques_outter_inner()
+    }
+
+    pub fn up_down_rudder_aero_torques(&self) -> (Torque, Torque) {
+        self.rudder.aerodynamic_torques_up_down()
+    }
+
     #[cfg(test)]
     fn nose_wheel_steering_pin_is_inserted(&self) -> bool {
         self.pushback_tug.is_nose_wheel_steering_pin_inserted()
@@ -5927,7 +5939,6 @@ struct ElevatorAssembly {
     hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 2],
 
     position_out_id: VariableIdentifier,
-
     position_in_id: VariableIdentifier,
 
     positions: [Ratio; 2],
@@ -5961,6 +5972,7 @@ impl ElevatorAssembly {
                     context.get_identifier("HYD_ELEV_RIGHT_INWARD_DEFLECTION".to_owned())
                 }
             },
+
             positions: [Ratio::new::<ratio>(0.); 2],
             aerodynamic_models: [aerodynamic_model_outter, aerodynamic_model_inner],
         }
@@ -5985,6 +5997,7 @@ impl ElevatorAssembly {
         for idx in 0..2 {
             self.aerodynamic_models[idx]
                 .update_body(context, self.hydraulic_assemblies[idx].body());
+
             self.hydraulic_assemblies[idx].update(
                 context,
                 elevator_controllers[idx],
@@ -5996,6 +6009,14 @@ impl ElevatorAssembly {
 
             self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
         }
+    }
+
+    // Returns aerodynamic torques for (outter,inner) control surfaces
+    fn aerodynamic_torques_outter_inner(&self) -> (Torque, Torque) {
+        (
+            self.hydraulic_assemblies[0].aerodynamic_torque(),
+            self.hydraulic_assemblies[1].aerodynamic_torque(),
+        )
     }
 }
 impl SimulationElement for ElevatorAssembly {
@@ -6089,6 +6110,14 @@ impl RudderAssembly {
 
             self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
         }
+    }
+
+    // Returns aerodynamic torques for (upper,lower) control surfaces
+    fn aerodynamic_torques_up_down(&self) -> (Torque, Torque) {
+        (
+            self.hydraulic_assemblies[0].aerodynamic_torque(),
+            self.hydraulic_assemblies[1].aerodynamic_torque(),
+        )
     }
 }
 impl SimulationElement for RudderAssembly {
