@@ -45,6 +45,7 @@ use systems::{
     },
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
+    wing_flex::FlexibleElevators,
 };
 
 pub struct A380 {
@@ -76,6 +77,7 @@ pub struct A380 {
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
+    elevators_flex_physics: FlexibleElevators,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
     wing_flex: WingFlexA380,
@@ -121,6 +123,7 @@ impl A380 {
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
+            elevators_flex_physics: FlexibleElevators::new(context),
             cds: A380ControlDisplaySystem::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
@@ -254,6 +257,7 @@ impl Aircraft for A380 {
         );
 
         self.engines_flex_physics.update(context);
+        self.elevators_flex_physics.update(context);
         self.cds.update();
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
@@ -290,6 +294,7 @@ impl SimulationElement for A380 {
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
+        self.elevators_flex_physics.accept(visitor);
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
         self.egpwc.accept(visitor);

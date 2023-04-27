@@ -20,6 +20,7 @@ pub mod landing_gear;
 pub mod navigation;
 pub mod overhead;
 pub mod payload;
+pub mod physics;
 pub mod pneumatic;
 pub mod shared;
 pub mod simulation;

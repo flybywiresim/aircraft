@@ -1,5 +1,6 @@
 import React, { FC, useState, useEffect, memo } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
+import { MathUtils } from '@shared/MathUtils';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -31,7 +32,7 @@ export const PressPage: FC = () => {
         }
     }, [cabinAlt]);
 
-    const deltaPress = splitDecimals(deltaPsi);
+    const deltaPress = splitDecimals(MathUtils.clamp(deltaPsi, -9.9, 9.9));
     const cax = 455;
     const dpx = 110;
     const y = 165;
@@ -86,7 +87,7 @@ export const PressPage: FC = () => {
                         textNudgeX={5}
                     />
                     <GaugeMarkerComponent
-                        value={deltaPsi}
+                        value={MathUtils.clamp(MathUtils.round(deltaPsi, 1), -1, 9)}
                         x={dpx}
                         y={y}
                         min={-1}
@@ -112,7 +113,7 @@ export const PressPage: FC = () => {
                     x={cax + 85}
                     y={y + 25}
                 >
-                    {Math.round(cabinAlt / 50) * 50}
+                    {Math.round(MathUtils.clamp(cabinAlt, -9950, 32750) / 50) * 50}
                 </text>
                 <GaugeComponent
                     x={cax}
@@ -174,7 +175,7 @@ export const PressPage: FC = () => {
                         textNudgeX={5}
                     />
                     <GaugeMarkerComponent
-                        value={Math.round(cabinAlt / 25) * 25 / 1000 > -0.625 ? Math.round(cabinAlt / 25) * 25 / 1000 : -0.625}
+                        value={MathUtils.clamp(Math.round(cabinAlt / 25) * 25 / 1000, -0.625, 10.625)}
                         x={cax}
                         y={y}
                         min={-0.625}
@@ -251,7 +252,9 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx,
             <g id="VsIndicator">
                 <text className="Large Center" x={vsx + 15} y="80">V/S</text>
                 <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
-                <text className={`Huge End ${Math.abs(Math.round(cabinVs / 50) * 50) > 1750 ? 'GreenTextPulse' : 'Green'}`} x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
+                <text className={`Huge End ${Math.abs(Math.round(cabinVs / 50) * 50) > 1750 ? 'GreenTextPulse' : 'Green'}`} x={vsx + 85} y={y + 5}>
+                    {Math.round(MathUtils.clamp(cabinVs, -6350, 6350) / 50) * 50}
+                </text>
                 <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="GaugeComponent Gauge">
                     <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
                     <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
@@ -259,7 +262,7 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx,
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
                     <GaugeMarkerComponent
-                        value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
+                        value={MathUtils.clamp(Math.round(cabinVs / 50) * 50 / 1000, -2.25, 2.25)}
                         x={vsx}
                         y={y}
                         min={-2}
