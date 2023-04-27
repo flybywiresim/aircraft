@@ -22,12 +22,12 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             const rx = x + mapWidth / 2;
             const ry = y + mapHeight / 2;
 
-            if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-                this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
-            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
+            if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
                 this.paintAirport(false, context, rx, ry, symbol);
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(false, context, rx, ry, symbol);
+            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
+                this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
             } else {
                 this.paintWaypoint(false, context, rx, ry, symbol);
             }
@@ -40,12 +40,12 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             const rx = x + mapWidth / 2;
             const ry = y + mapHeight / 2;
 
-            if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-                this.paintFlightPlanWaypoint(true, context, rx, ry, symbol);
-            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
+            if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
                 this.paintAirport(true, context, rx, ry, symbol);
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(true, context, rx, ry, symbol);
+            } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
+                this.paintFlightPlanWaypoint(true, context, rx, ry, symbol);
             } else {
                 this.paintWaypoint(true, context, rx, ry, symbol);
             }
