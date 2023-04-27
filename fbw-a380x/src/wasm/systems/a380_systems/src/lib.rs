@@ -28,7 +28,7 @@ use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
 use uom::si::{f64::Length, length::nautical_mile};
 
-use systems::wing_flex::WingFlexA380;
+use systems::wing_flex::wing_flex::WingFlexA380;
 
 use systems::{
     apu::{
