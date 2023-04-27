@@ -28,7 +28,7 @@ use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 use systems::simulation::InitContext;
 use uom::si::{f64::Length, length::nautical_mile};
 
-use systems::wing_flex::wing_flex::WingFlexA380;
+use systems::structural_flex::wing_flex::WingFlexA380;
 
 use systems::{
     apu::{
@@ -45,7 +45,7 @@ use systems::{
     },
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
-    wing_flex::FlexibleElevators,
+    structural_flex::elevator_flex::FlexibleElevators,
 };
 
 pub struct A380 {
