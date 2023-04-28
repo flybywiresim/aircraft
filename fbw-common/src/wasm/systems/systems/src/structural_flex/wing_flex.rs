@@ -141,6 +141,10 @@ struct A380WingLiftModifier {
 
     left_wing_lift: Force,
     right_wing_lift: Force,
+
+    standard_lift_spread: Vector5<f64>,
+    lift_left_table_newton: Vector5<f64>,
+    lift_right_table_newton: Vector5<f64>,
 }
 impl A380WingLiftModifier {
     const LATERAL_OFFSET_GAIN: f64 = 0.5;
@@ -209,11 +213,21 @@ impl A380WingLiftModifier {
 
             left_wing_lift: Force::default(),
             right_wing_lift: Force::default(),
+
+            standard_lift_spread: Vector5::new(0., 0.42, 0.31, 0.22, 0.05),
+            lift_left_table_newton: Vector5::default(),
+            lift_right_table_newton: Vector5::default(),
         }
     }
 
     fn update(&mut self, total_lift: Force) {
         self.compute_lift_modifiers(total_lift);
+
+        self.lift_left_table_newton =
+            self.standard_lift_spread * self.left_wing_lift.get::<newton>();
+
+        self.lift_right_table_newton =
+            self.standard_lift_spread * self.right_wing_lift.get::<newton>();
     }
 
     fn compute_lift_modifiers(&mut self, total_lift: Force) {
@@ -276,6 +290,14 @@ impl A380WingLiftModifier {
 
     fn lateral_offset(&self) -> Ratio {
         self.lateral_offset
+    }
+
+    fn per_node_lift_left_wing_newton(&self) -> Vector5<f64> {
+        self.lift_left_table_newton
+    }
+
+    fn per_node_lift_right_wing_newton(&self) -> Vector5<f64> {
+        self.lift_right_table_newton
     }
 }
 impl SimulationElement for A380WingLiftModifier {
@@ -1131,6 +1153,22 @@ mod tests {
         //     self.command(|a| a.trim_body(angle));
         // }
 
+        fn left_wing_lift_per_node(&self) -> Vector5<f64> {
+            self.query(|a| {
+                a.wing_flex
+                    .wing_lift_dynamic
+                    .per_node_lift_left_wing_newton()
+            })
+        }
+
+        fn right_wing_lift_per_node(&self) -> Vector5<f64> {
+            self.query(|a| {
+                a.wing_flex
+                    .wing_lift_dynamic
+                    .per_node_lift_right_wing_newton()
+            })
+        }
+
         fn current_total_lift(&self) -> Force {
             self.query(|a| a.wing_flex.wing_lift.total_lift)
         }
@@ -1660,6 +1698,68 @@ mod tests {
         assert!(
             test_bed.current_left_wing_lift().get::<newton>()
                 > test_bed.current_right_wing_lift().get::<newton>()
+        );
+    }
+
+    #[test]
+    fn in_straight_flight_all_left_lifts_all_right_lifts_equals_total_lift() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        // One percent precision check on total lift value
+        assert!(
+            test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
+                <= test_bed.current_total_lift().get::<newton>() * 1.01
+        );
+
+        assert!(
+            test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
+                >= test_bed.current_total_lift().get::<newton>() * 0.99
+        );
+    }
+
+    #[test]
+    fn in_right_turn_all_left_lifts_all_right_lifts_equals_total_lift() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .in_1g_flight()
+            .right_turn_ailerons()
+            .spoilers_right_turn();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        // One percent precision check on total lift value
+        assert!(
+            test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
+                <= test_bed.current_total_lift().get::<newton>() * 1.01
+        );
+
+        assert!(
+            test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
+                >= test_bed.current_total_lift().get::<newton>() * 0.99
+        );
+    }
+
+    #[test]
+    fn in_left_turn_all_left_lifts_all_right_lifts_equals_total_lift() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .in_1g_flight()
+            .left_turn_ailerons()
+            .spoilers_left_turn();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        // One percent precision check on total lift value
+        assert!(
+            test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
+                <= test_bed.current_total_lift().get::<newton>() * 1.01
+        );
+
+        assert!(
+            test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
+                >= test_bed.current_total_lift().get::<newton>() * 0.99
         );
     }
 }
