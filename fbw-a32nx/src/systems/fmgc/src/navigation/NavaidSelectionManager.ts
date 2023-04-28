@@ -7,7 +7,7 @@ import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { arrayFlat } from '@flybywiresim/fbw-sdk';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';
-import { ApproachType, NavaidSubsectionCode, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
+import { ApproachType, NavaidSubsectionCode, NdbNavaid, SectionCode, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
 
 type VorFacilityWithDistance = VhfNavaid & { distance: number };
 
@@ -408,7 +408,7 @@ export class NavaidSelectionManager {
                 const leg = element as FlightPlanLeg;
 
                 // eslint-disable-next-line no-underscore-dangle
-                const facility = leg.definition.recommendedNavaid ?? null;
+                const facility = leg.definition.waypoint ?? null;
                 if (facility !== null && facility.subSectionCode === NavaidSubsectionCode.VhfNavaid && this.isVor(facility) && this.isWithinFom(facility)) {
                     this.setDisplayVor(facility, VorSelectionReason.Route);
                     return;

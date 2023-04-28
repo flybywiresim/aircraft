@@ -9,7 +9,7 @@ import {
     SpeedDescriptor,
     TurnDirection, WaypointDescriptor,
 } from 'msfs-navdata/dist/shared/types/ProcedureLeg';
-import { Waypoint, VhfNavaid, NdbNavaid } from 'msfs-navdata';
+import { Waypoint, VhfNavaid, NdbNavaid, Fix } from 'msfs-navdata';
 import { Minutes } from 'msfs-geo';
 
 export interface FlightPlanLegDefinition {
@@ -29,7 +29,7 @@ export interface FlightPlanLegDefinition {
      * The waypoint assocaited with the termination of this leg
      * For VM legs at the end of a STAR, this shall be the airport reference point
      */
-    waypoint?: Waypoint;
+    waypoint?: Fix;
 
     /**
      * Radio navaid to be used for this leg
