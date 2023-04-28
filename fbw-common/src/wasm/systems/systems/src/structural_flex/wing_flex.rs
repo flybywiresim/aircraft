@@ -8,7 +8,7 @@ use crate::simulation::{
 
 use uom::si::{
     acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
-    mass::kilogram, mass_density::kilogram_per_cubic_meter, ratio::percent,
+    mass::kilogram, mass_density::kilogram_per_cubic_meter, ratio::percent, ratio::ratio,
     velocity::meter_per_second,
 };
 
@@ -131,13 +131,16 @@ struct A380WingLiftModifier {
 
     // flaps_left_position_id: VariableIdentifier,
     // flaps_right_position_id: VariableIdentifier,
-    lateral_offset: f64,
+    lateral_offset: Ratio,
 
     spoilers_left_position: [f64; 8],
     spoilers_right_position: [f64; 8],
 
     ailerons_left_position: [f64; 3],
     ailerons_right_position: [f64; 3],
+
+    left_wing_lift: Force,
+    right_wing_lift: Force,
 }
 impl A380WingLiftModifier {
     const LATERAL_OFFSET_GAIN: f64 = 0.5;
@@ -196,17 +199,24 @@ impl A380WingLiftModifier {
             //     .get_identifier("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
             // flaps_right_position_id: context
             //     .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
-            lateral_offset: 0.,
+            lateral_offset: Ratio::default(),
 
             spoilers_left_position: [0.; 8],
             spoilers_right_position: [0.; 8],
 
             ailerons_left_position: [0.5; 3],
             ailerons_right_position: [0.5; 3],
+
+            left_wing_lift: Force::default(),
+            right_wing_lift: Force::default(),
         }
     }
 
-    fn compute_lift_modifiers(&mut self) {
+    fn update(&mut self, total_lift: Force) {
+        self.compute_lift_modifiers(total_lift);
+    }
+
+    fn compute_lift_modifiers(&mut self, total_lift: Force) {
         let wing_base_left_spoilers =
             (self.spoilers_left_position[0] + self.spoilers_left_position[1]) / 2.;
         let wing_mid_left_spoilers = (self.spoilers_left_position[2]
@@ -242,16 +252,29 @@ impl A380WingLiftModifier {
         //     wing_base_left_spoilers, wing_mid_left_spoilers, left_ailerons_mid, left_ailerons_tip,
         // );
 
-        self.lateral_offset = ((wing_base_right_spoilers - wing_base_left_spoilers)
-            + (wing_mid_right_spoilers - wing_mid_left_spoilers)
-            + (right_ailerons_mid - left_ailerons_mid)
-            + (right_ailerons_tip - left_ailerons_tip))
-            / 4.;
+        self.lateral_offset = Ratio::new::<ratio>(
+            ((wing_base_right_spoilers - wing_base_left_spoilers)
+                + (wing_mid_right_spoilers - wing_mid_left_spoilers)
+                + (right_ailerons_mid - left_ailerons_mid)
+                + (right_ailerons_tip - left_ailerons_tip))
+                / 4.,
+        );
 
         self.lateral_offset *= Self::LATERAL_OFFSET_GAIN;
+
+        self.left_wing_lift = 0.5 * (total_lift + self.lateral_offset() * total_lift);
+        self.right_wing_lift = total_lift - self.left_wing_lift;
+
+        println!(
+            "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
+            total_lift.get::<newton>(),
+            self.lateral_offset().get::<ratio>(),
+            self.left_wing_lift.get::<newton>(),
+            self.right_wing_lift.get::<newton>(),
+        );
     }
 
-    fn lateral_offset(&self) -> f64 {
+    fn lateral_offset(&self) -> Ratio {
         self.lateral_offset
     }
 }
@@ -291,7 +314,6 @@ impl SimulationElement for A380WingLiftModifier {
             reader.read(&self.aileron_right_3_position_id),
         ];
 
-        self.compute_lift_modifiers();
         //let left_flaps_position: Ratio = reader.read(&self.flaps_left_position_id);
         //let right_flaps_position: Ratio = reader.read(&self.flaps_right_position_id);
 
@@ -361,6 +383,10 @@ impl WingLift {
         };
 
         self.total_lift = Force::new::<newton>(lift);
+    }
+
+    fn total_plane_lift(&self) -> Force {
+        self.total_lift
     }
 }
 impl SimulationElement for WingLift {
@@ -610,26 +636,17 @@ impl WingFlexA380 {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
+        self.wing_lift.update(context);
+        self.wing_lift_dynamic
+            .update(self.wing_lift.total_plane_lift());
+
         let standard_lift_spread = Vector5::new(0., 0.42, 0.31, 0.22, 0.05);
 
-        let left_lift_split = 0.5
-            * (self.wing_lift.total_lift.get::<newton>()
-                + self.wing_lift_dynamic.lateral_offset()
-                    * self.wing_lift.total_lift.get::<newton>());
+        let lift_left_table_newton =
+            standard_lift_spread * self.wing_lift_dynamic.left_wing_lift.get::<newton>();
 
-        let right_lift_split = self.wing_lift.total_lift.get::<newton>() - left_lift_split;
-
-        // println!(
-        //     "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
-        //     self.wing_lift.total_lift.get::<newton>(),
-        //     self.wing_lift_dynamic.lateral_offset(),
-        //     left_lift_split,
-        //     right_lift_split
-        // );
-
-        let lift_left_table_newton = standard_lift_spread * left_lift_split;
-
-        let lift_right_table_newton = standard_lift_spread * right_lift_split;
+        let lift_right_table_newton =
+            standard_lift_spread * self.wing_lift_dynamic.right_wing_lift.get::<newton>();
 
         // println!(
         //     "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}  {:.0}\\{:.0}\\{:.0}\\{:.0}\\{:.0}",
@@ -644,8 +661,6 @@ impl WingFlexA380 {
         //     lift_right_table_newton.w,
         //     lift_right_table_newton.a
         // );
-
-        self.wing_lift.update(context);
 
         self.flex_physics[0].update(
             context,
@@ -1120,6 +1135,14 @@ mod tests {
             self.query(|a| a.wing_flex.wing_lift.total_lift)
         }
 
+        fn current_left_wing_lift(&self) -> Force {
+            self.query(|a| a.wing_flex.wing_lift_dynamic.left_wing_lift)
+        }
+
+        fn current_right_wing_lift(&self) -> Force {
+            self.query(|a| a.wing_flex.wing_lift_dynamic.right_wing_lift)
+        }
+
         fn with_nominal_weight(mut self) -> Self {
             self.write_by_name(
                 "TOTAL WEIGHT",
@@ -1144,6 +1167,96 @@ mod tests {
             self.write_by_name("CONTACT POINT COMPRESSION:3", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:4", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:5", 0.);
+
+            self
+        }
+
+        fn left_turn_ailerons(mut self) -> Self {
+            self.write_by_name("HYD_AIL_LEFT_INWARD_DEFLECTION", 0.8);
+            self.write_by_name("HYD_AIL_LEFT_MIDDLE_DEFLECTION", 0.8);
+            self.write_by_name("HYD_AIL_LEFT_OUTWARD_DEFLECTION", 0.8);
+
+            self.write_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION", 0.2);
+            self.write_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION", 0.2);
+            self.write_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION", 0.2);
+
+            self
+        }
+
+        fn right_turn_ailerons(mut self) -> Self {
+            self.write_by_name("HYD_AIL_LEFT_INWARD_DEFLECTION", 0.2);
+            self.write_by_name("HYD_AIL_LEFT_MIDDLE_DEFLECTION", 0.2);
+            self.write_by_name("HYD_AIL_LEFT_OUTWARD_DEFLECTION", 0.2);
+
+            self.write_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION", 0.8);
+            self.write_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION", 0.8);
+            self.write_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION", 0.8);
+
+            self
+        }
+
+        fn spoilers_retracted(mut self) -> Self {
+            self.write_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_6_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_7_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_8_RIGHT_DEFLECTION", 0.);
+
+            self.write_by_name("HYD_SPOILER_1_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_2_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_3_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_4_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_5_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_6_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_7_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_8_LEFT_DEFLECTION", 0.);
+
+            self
+        }
+
+        fn spoilers_left_turn(mut self) -> Self {
+            self.write_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_6_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_7_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_8_RIGHT_DEFLECTION", 0.);
+
+            self.write_by_name("HYD_SPOILER_1_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_2_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_3_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_4_LEFT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_5_LEFT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_6_LEFT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_7_LEFT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_8_LEFT_DEFLECTION", 0.5);
+
+            self
+        }
+
+        fn spoilers_right_turn(mut self) -> Self {
+            self.write_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_6_RIGHT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_7_RIGHT_DEFLECTION", 0.5);
+            self.write_by_name("HYD_SPOILER_8_RIGHT_DEFLECTION", 0.5);
+
+            self.write_by_name("HYD_SPOILER_1_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_2_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_3_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_4_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_5_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_6_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_7_LEFT_DEFLECTION", 0.);
+            self.write_by_name("HYD_SPOILER_8_LEFT_DEFLECTION", 0.);
 
             self
         }
@@ -1410,40 +1523,6 @@ mod tests {
     }
 
     #[test]
-    fn with_some_lift_on_ground_rotation() {
-        let mut test_bed = WingFlexTestBed::new()
-            .with_nominal_weight()
-            .rotate_for_takeoff();
-
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-
-        assert!(
-            test_bed.current_total_lift().get::<newton>() / 9.8
-                < WingFlexTestBed::NOMINAL_WEIGHT_KG
-        );
-        assert!(
-            test_bed.current_total_lift().get::<newton>() / 9.8
-                > WingFlexTestBed::NOMINAL_WEIGHT_KG * 0.5
-        );
-    }
-
-    #[test]
-    fn in_straight_flight_has_plane_lift_equal_to_weight() {
-        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
-
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-
-        assert!(
-            test_bed.current_total_lift().get::<newton>() / 9.8
-                < WingFlexTestBed::NOMINAL_WEIGHT_KG * 1.1
-        );
-        assert!(
-            test_bed.current_total_lift().get::<newton>() / 9.8
-                > WingFlexTestBed::NOMINAL_WEIGHT_KG * 0.9
-        );
-    }
-
-    #[test]
     fn animation_angles_with_0_heights_gives_zero_angles() {
         let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
             WingAnimationMapper::<5>::new([0., 1., 2., 3., 4.])
@@ -1516,5 +1595,71 @@ mod tests {
         assert!(anim_angles[2].get::<degree>() >= 44. && anim_angles[0].get::<degree>() <= 46.);
         assert!(anim_angles[3] == Angle::default());
         assert!(anim_angles[4] == Angle::default());
+    }
+
+    #[test]
+    fn with_some_lift_on_ground_rotation() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .rotate_for_takeoff();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                < WingFlexTestBed::NOMINAL_WEIGHT_KG
+        );
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                > WingFlexTestBed::NOMINAL_WEIGHT_KG * 0.5
+        );
+    }
+
+    #[test]
+    fn in_straight_flight_has_plane_lift_equal_to_weight() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                < WingFlexTestBed::NOMINAL_WEIGHT_KG * 1.1
+        );
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                > WingFlexTestBed::NOMINAL_WEIGHT_KG * 0.9
+        );
+    }
+
+    #[test]
+    fn in_left_turn_flight_has_more_right_lift() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .in_1g_flight()
+            .left_turn_ailerons()
+            .spoilers_left_turn();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        assert!(
+            test_bed.current_left_wing_lift().get::<newton>()
+                < test_bed.current_right_wing_lift().get::<newton>()
+        );
+    }
+
+    #[test]
+    fn in_right_turn_flight_has_more_left_lift() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .in_1g_flight()
+            .right_turn_ailerons()
+            .spoilers_right_turn();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        assert!(
+            test_bed.current_left_wing_lift().get::<newton>()
+                > test_bed.current_right_wing_lift().get::<newton>()
+        );
     }
 }
