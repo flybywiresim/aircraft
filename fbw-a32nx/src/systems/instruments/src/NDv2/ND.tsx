@@ -50,6 +50,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private displayPowered = Subject.create(false);
 
+    private readonly pposLatWord = Arinc429RegisterSubject.createEmpty()
+
     private readonly isUsingTrackUpMode = Subject.create(false);
 
     private readonly trueHeadingWord = Arinc429RegisterSubject.createEmpty();
@@ -138,6 +140,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
         sub.on('trueTrackRaw').whenChanged().handle((value) => {
             this.trueTrackWord.setWord(value);
+        });
+
+        sub.on('latitude').whenChanged().handle((value) => {
+            this.pposLatWord.setWord(value);
         });
 
         this.headingWord.setConsumer(sub.on('heading'));
@@ -276,7 +282,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
-                    <ToWaypointIndicator bus={this.props.bus} />
+                    <ToWaypointIndicator bus={this.props.bus} isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())} />
                     <TopMessages bus={this.props.bus} />
 
                     <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
@@ -549,7 +555,12 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
     }
 }
 
-class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
+interface ToWaypointIndicatorProps {
+    bus: EventBus,
+    isNormalOperation: Subscribable<boolean>, // TODO replace with ARINC429 word
+}
+
+class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private readonly sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & EcpSimVars & NDSimvars>();
 
     private readonly trueRefActive = Subject.create(false);
@@ -605,6 +616,10 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
             this.handleVisibility();
         });
 
+        this.props.isNormalOperation.sub(() => {
+            this.handleVisibility();
+        });
+
         this.sub.on('toWptIdent0Captain').whenChanged().handle((value) => {
             this.topWptIdent0 = value;
         });
@@ -633,7 +648,7 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
     }
 
     private handleVisibility() {
-        const visible = this.efisMode === EfisNdMode.ROSE_NAV || this.efisMode === EfisNdMode.ARC || this.efisMode === EfisNdMode.PLAN;
+        const visible = this.props.isNormalOperation.get() && (this.efisMode === EfisNdMode.ROSE_NAV || this.efisMode === EfisNdMode.ARC || this.efisMode === EfisNdMode.PLAN);
 
         this.visibleSub.set(visible);
     }
@@ -692,7 +707,8 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode | null {
         return (
             <Layer x={690} y={25} visible={this.visibleSub}>
-                <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
+                {/* This is always visible */}
+                <text x={-13} y={0} class="White FontIntermediate EndAlign" visibility="visible">{this.toWptIdentValue}</text>
 
                 <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
                     <text x={54} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
