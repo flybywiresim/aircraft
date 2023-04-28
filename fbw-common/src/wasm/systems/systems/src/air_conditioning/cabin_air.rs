@@ -97,11 +97,10 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
         self.air_in
             .set_pressure(air_conditioning_system.outlet_air().pressure());
         self.air_in
-            .set_temperature(air_conditioning_system.duct_temperature().iter().average());
+            .set_temperature(air_conditioning_system.outlet_air().temperature());
 
         // Calculate zone temperatures
-        let flow_rate_per_cubic_meter =
-            self.air_in.flow_rate() / (C::CABIN_VOLUME_CUBIC_METER + C::COCKPIT_VOLUME_CUBIC_METER);
+        let flow_rate_per_cubic_meter = self.flow_rate_per_cubic_meter();
 
         for zone in self.cabin_zones.iter_mut() {
             zone.update(
@@ -109,10 +108,18 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
                 air_conditioning_system,
                 flow_rate_per_cubic_meter,
                 self.internal_air.pressure(),
-                passengers[zone.zone_id()],
+                passengers[zone.zone_id().id()],
                 number_of_open_doors,
             );
         }
+
+        // println!(
+        //     "Flow rate: {}, zone 1 temp: {}",
+        //     flow_rate_per_cubic_meter.get::<kilogram_per_second>(),
+        //     self.cabin_zones[1]
+        //         .zone_air_temperature()
+        //         .get::<degree_celsius>()
+        // );
 
         let average_temperature: ThermodynamicTemperature = self
             .cabin_zones
@@ -173,6 +180,29 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             self.command_cabin_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             ThermodynamicTemperature::new::<degree_celsius>(24.)
         }
+    }
+
+    fn flow_rate_per_cubic_meter(&self) -> MassRate {
+        self.air_in.flow_rate()
+            / (C::COCKPIT_VOLUME_CUBIC_METER
+                + C::CABIN_ZONE_VOLUME_CUBIC_METER
+                    * self
+                        .cabin_zones
+                        .iter()
+                        .filter(|zone| matches!(&zone.zone_id(), &ZoneType::Cabin(_)))
+                        .count() as f64
+                + C::FWD_CARGO_ZONE_VOLUME_CUBIC_METER
+                    * self
+                        .cabin_zones
+                        .iter()
+                        .any(|zone| matches!(&zone.zone_id(), &ZoneType::Cargo(1)))
+                        as usize as f64
+                + C::BULK_CARGO_ZONE_VOLUME_CUBIC_METER
+                    * self
+                        .cabin_zones
+                        .iter()
+                        .any(|zone| matches!(&zone.zone_id(), &ZoneType::Cargo(2)))
+                        as usize as f64)
     }
 
     fn calculate_cabin_flow_in(&self, context: &UpdateContext, flow_in: MassRate) -> MassRate {
@@ -341,7 +371,7 @@ impl<C: PressurizationConstants, const ZONES: usize> SimulationElement
 pub struct CabinZone<C> {
     zone_identifier: VariableIdentifier,
 
-    zone_id: usize,
+    zone_id: ZoneType,
     zone_air: ZoneAir,
     zone_volume: Volume,
     passengers: u8,
@@ -351,16 +381,27 @@ pub struct CabinZone<C> {
 
 impl<C: PressurizationConstants> CabinZone<C> {
     pub fn new(context: &mut InitContext, zone_id: &ZoneType) -> Self {
-        let (passengers, zone_volume) = if matches!(zone_id, &ZoneType::Cockpit) {
-            (2, Volume::new::<cubic_meter>(C::COCKPIT_VOLUME_CUBIC_METER))
-        } else {
-            (0, Volume::new::<cubic_meter>(C::CABIN_VOLUME_CUBIC_METER))
+        let (passengers, zone_volume) = match *zone_id {
+            ZoneType::Cockpit => (2, Volume::new::<cubic_meter>(C::COCKPIT_VOLUME_CUBIC_METER)),
+            ZoneType::Cabin(_) => (
+                0,
+                Volume::new::<cubic_meter>(C::CABIN_ZONE_VOLUME_CUBIC_METER),
+            ),
+            ZoneType::Cargo(1) => (
+                0,
+                Volume::new::<cubic_meter>(C::FWD_CARGO_ZONE_VOLUME_CUBIC_METER),
+            ),
+            ZoneType::Cargo(2) => (
+                0,
+                Volume::new::<cubic_meter>(C::BULK_CARGO_ZONE_VOLUME_CUBIC_METER),
+            ),
+            _ => panic!("Something went wrong with assigning volume to zone"),
         };
 
         Self {
             zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
 
-            zone_id: zone_id.id(),
+            zone_id: *zone_id,
             zone_air: ZoneAir::new(),
             zone_volume,
             passengers,
@@ -379,7 +420,7 @@ impl<C: PressurizationConstants> CabinZone<C> {
         number_of_open_doors: u8,
     ) {
         let mut air_in = Air::new();
-        air_in.set_temperature(duct_temperature.duct_temperature()[self.zone_id]);
+        air_in.set_temperature(duct_temperature.duct_temperature()[self.zone_id.id()]);
         air_in.set_flow_rate(pack_flow_per_cubic_meter * self.zone_volume.get::<cubic_meter>());
         self.passengers = passengers;
 
@@ -391,9 +432,18 @@ impl<C: PressurizationConstants> CabinZone<C> {
             number_of_open_doors,
             cabin_pressure,
         );
+
+        // if self.zone_id.id() == 1 {
+        //     println!(
+        //         "Duct temp: {}, flow rate: {}, zone temp: {}",
+        //         air_in.temperature().get::<degree_celsius>(),
+        //         air_in.flow_rate().get::<kilogram_per_second>(),
+        //         self.zone_air_temperature().get::<degree_celsius>()
+        //     );
+        // }
     }
 
-    fn zone_id(&self) -> usize {
+    fn zone_id(&self) -> ZoneType {
         self.zone_id
     }
 
@@ -497,7 +547,7 @@ impl ZoneAir {
             .heat_transfer_through_wall_calculation(context, zone_volume)
             .get::<kilowatt>();
         // For the cockpit we reduce the effect of opening doors to 20%
-        if zone_volume < Volume::new::<cubic_meter>(100.) {
+        if zone_volume < Volume::new::<cubic_meter>(20.) {
             inlet_door_air_energy *= 0.2;
             outlet_door_air_energy *= 0.2;
         }
@@ -719,8 +769,10 @@ mod cabin_air_tests {
     struct TestConstants;
 
     impl PressurizationConstants for TestConstants {
-        const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+        const CABIN_ZONE_VOLUME_CUBIC_METER: f64 = 139.; // m3
         const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+        const FWD_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 89.4; // m3
+        const BULK_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 14.3; // m3
         const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
         const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2

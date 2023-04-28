@@ -361,6 +361,8 @@ impl OutletAir for A320AirConditioningSystem {
         outlet_air.set_temperature(self.duct_temperature().iter().average());
 
         outlet_air
+
+        // TODO: This should use self.trim_air_system.outlet_air()
     }
 }
 
@@ -622,8 +624,10 @@ struct A320PressurizationConstants;
 
 impl PressurizationConstants for A320PressurizationConstants {
     // Volume data from A320 AIRCRAFT CHARACTERISTICS - AIRPORT AND MAINTENANCE PLANNING
-    const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+    const CABIN_ZONE_VOLUME_CUBIC_METER: f64 = 139.; // m3
     const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+    const FWD_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 89.4; // m3
+    const BULK_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 14.3; // m3
     const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
     const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
     const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2

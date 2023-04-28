@@ -103,6 +103,7 @@ pub trait PressurizationOverheadShared {
     fn ldg_elev_knob_value(&self) -> f64;
 }
 
+#[derive(Clone, Copy)]
 /// Cabin Zones with double digit IDs are specific to the A380
 /// 1X is main deck, 2X is upper deck
 pub enum ZoneType {
@@ -261,8 +262,10 @@ impl SimulationElement for OperatingChannel {
 }
 
 pub trait PressurizationConstants {
-    const CABIN_VOLUME_CUBIC_METER: f64;
+    const CABIN_ZONE_VOLUME_CUBIC_METER: f64;
     const COCKPIT_VOLUME_CUBIC_METER: f64;
+    const FWD_CARGO_ZONE_VOLUME_CUBIC_METER: f64;
+    const BULK_CARGO_ZONE_VOLUME_CUBIC_METER: f64;
     const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64;
     const CABIN_LEAKAGE_AREA: f64;
     const OUTFLOW_VALVE_SIZE: f64;
@@ -535,7 +538,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             duct_temperature_id,
             trim_air_valves,
             pack_mixer_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(4.),
+                Volume::new::<cubic_meter>(7.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -599,7 +602,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             / (pack_container[0].mass().get::<kilogram>()
                 + pack_container[1].mass().get::<kilogram>());
         self.pack_mixer_container = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(4.),
+            pack_container[0].volume() + pack_container[1].volume(),
             Pressure::new::<hectopascal>(combined_pressure),
             ThermodynamicTemperature::new::<kelvin>(combined_temperature),
         );
@@ -630,6 +633,12 @@ impl<const ZONES: usize, const ENGINES: usize> DuctTemperature for TrimAirSystem
             .iter()
             .map(|tam| tam.outlet_temperature())
             .collect::<Vec<ThermodynamicTemperature>>()
+    }
+}
+
+impl<const ZONES: usize, const ENGINES: usize> OutletAir for TrimAirSystem<ZONES, ENGINES> {
+    fn outlet_air(&self) -> Air {
+        self.outlet_air
     }
 }
 
