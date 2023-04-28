@@ -10,7 +10,8 @@ import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
 import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { VhfNavaid, VhfNavaidType } from 'msfs-navdata';
+import { IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
+import { Icao } from '@shared/Icao';
 
 export enum SelectedNavaidType {
     None,
@@ -35,7 +36,7 @@ export interface SelectedNavaid {
     mode: SelectedNavaidMode,
     ident: string | null,
     frequency: number | null,
-    facility: RawVor | null,
+    facility: VhfNavaid | NdbNavaid | IlsNavaid | null,
 }
 
 export class Navigation implements NavigationProvider {
@@ -235,8 +236,8 @@ export class Navigation implements NavigationProvider {
                 const selected = this.selectedNavaids[1];
                 selected.type = this.getSelectedNavaidType(navaid);
                 selected.mode = SelectedNavaidMode.Auto;
-                selected.ident = WayPoint.formatIdentFromIcao(navaid.icao);
-                selected.frequency = navaid.freqMHz;
+                selected.ident = Icao.getIdent(navaid.databaseId);
+                selected.frequency = navaid.frequency;
                 selected.facility = navaid;
                 this.resetSelectedNavaid(2);
             } else {

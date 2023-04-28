@@ -1,11 +1,8 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightArea } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { FlightPlanManager } from '@fmgc/index';
+import { FlightPlanManager, FlightPlanService, getFlightPhaseManager } from '@fmgc/index';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 const rnpDefaults: Record<FlightArea, number> = {
@@ -22,8 +19,6 @@ const rnpDefaults: Record<FlightArea, number> = {
 // FIXME RNP-related scratchpad messages
 
 export class RequiredPerformance {
-    activeArea: FlightArea = FlightArea.Enroute;
-
     activeRnp: number | undefined;
 
     requestLDev = false;
@@ -32,9 +27,7 @@ export class RequiredPerformance {
 
     constructor(private flightPlanManager: FlightPlanManager) {}
 
-    update(activeArea: FlightArea, _deltaTime: number): void {
-        this.activeArea = activeArea;
-
+    update(_deltaTime: number): void {
         this.updateAutoRnp();
 
         this.updateLDev();
@@ -66,18 +59,8 @@ export class RequiredPerformance {
             }
         }
 
-        let rnp;
-
-        const activeLeg = FlightPlanService.active.activeLeg;
-        if (activeLeg instanceof FlightPlanLeg) {
-            if (activeLeg.rnp) {
-                rnp = activeLeg.definition.rnp;
-            }
-        }
-
-        if (!rnp) {
-            rnp = rnpDefaults[this.activeArea] ?? 2;
-        }
+        const area = FlightPlanService.active.calculateActiveArea();
+        const rnp = rnpDefaults[area];
 
         if (rnp !== this.activeRnp) {
             this.setActiveRnp(rnp);
@@ -91,11 +74,11 @@ export class RequiredPerformance {
     }
 
     private updateLDev(): void {
-        const ldev = this.activeArea !== FlightArea.Enroute
-            && this.activeArea !== FlightArea.Oceanic
+        const area = FlightPlanService.active.calculateActiveArea();
+        const ldev = area !== FlightArea.Enroute
+            && area !== FlightArea.Oceanic
             && this.activeRnp < 0.305
             && getFlightPhaseManager().phase >= FmgcFlightPhase.Takeoff;
-
         if (ldev !== this.requestLDev) {
             this.requestLDev = ldev;
             SimVar.SetSimVarValue('L:A32NX_FMGC_L_LDEV_REQUEST', 'bool', this.requestLDev);

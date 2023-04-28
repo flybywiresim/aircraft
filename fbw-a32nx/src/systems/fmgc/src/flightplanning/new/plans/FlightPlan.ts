@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Fix, LegType } from 'msfs-navdata';
+import { Airport, ApproachType, Fix, LegType } from 'msfs-navdata';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { EventBus } from '@microsoft/msfs-sdk';
