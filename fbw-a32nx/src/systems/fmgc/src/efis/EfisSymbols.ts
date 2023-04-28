@@ -8,7 +8,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { bearingTo, distanceTo } from 'msfs-geo';
-import { FlowEventSync } from '@shared/FlowEventSync';
+import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { Airport, AltitudeDescriptor, LegType, Runway, RunwaySurfaceType, VhfNavaidType, WaypointDescriptor } from 'msfs-navdata';
@@ -29,7 +29,7 @@ export class EfisSymbols {
 
     private nearby: NearbyFacilities;
 
-    private syncer: FlowEventSync = new FlowEventSync();
+    private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
     private static sides = ['L', 'R'];
 
@@ -143,9 +143,7 @@ export class EfisSymbols {
         const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
         this.lastNavaidVersion = this.navaidTuner.navaidVersion;
 
-        const hasSuitableRunway = (airport: Airport): boolean => {
-            return airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
-        };
+        const hasSuitableRunway = (airport: Airport): boolean => airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
         for (const side of EfisSymbols.sides) {
             const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
