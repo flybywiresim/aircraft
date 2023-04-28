@@ -6,7 +6,6 @@ export interface CrossTrackErrorProps {
     x: number,
     y: number,
     isPlanMode: Subscribable<boolean>,
-
     isNormalOperation: Subscribable<boolean>, // TODO replace with ARINC429 word
 }
 
