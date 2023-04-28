@@ -132,9 +132,15 @@ struct A380WingLiftModifier {
     // flaps_left_position_id: VariableIdentifier,
     // flaps_right_position_id: VariableIdentifier,
     lateral_offset: f64,
+
+    spoilers_left_position: [f64; 8],
+    spoilers_right_position: [f64; 8],
+
+    ailerons_left_position: [f64; 3],
+    ailerons_right_position: [f64; 3],
 }
 impl A380WingLiftModifier {
-    const LATERAL_OFFSET_GAIN: f64 = 0.7;
+    const LATERAL_OFFSET_GAIN: f64 = 0.5;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -191,77 +197,45 @@ impl A380WingLiftModifier {
             // flaps_right_position_id: context
             //     .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
             lateral_offset: 0.,
+
+            spoilers_left_position: [0.; 8],
+            spoilers_right_position: [0.; 8],
+
+            ailerons_left_position: [0.5; 3],
+            ailerons_right_position: [0.5; 3],
         }
     }
 
-    fn lateral_offset(&self) -> f64 {
-        self.lateral_offset
-    }
-}
-impl SimulationElement for A380WingLiftModifier {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        let spoilers_left: [f64; 8] = [
-            reader.read(&self.spoiler_left_1_position_id),
-            reader.read(&self.spoiler_left_2_position_id),
-            reader.read(&self.spoiler_left_3_position_id),
-            reader.read(&self.spoiler_left_4_position_id),
-            reader.read(&self.spoiler_left_5_position_id),
-            reader.read(&self.spoiler_left_6_position_id),
-            reader.read(&self.spoiler_left_7_position_id),
-            reader.read(&self.spoiler_left_8_position_id),
-        ];
-
-        let spoilers_right: [f64; 8] = [
-            reader.read(&self.spoiler_right_1_position_id),
-            reader.read(&self.spoiler_right_2_position_id),
-            reader.read(&self.spoiler_right_3_position_id),
-            reader.read(&self.spoiler_right_4_position_id),
-            reader.read(&self.spoiler_right_5_position_id),
-            reader.read(&self.spoiler_right_6_position_id),
-            reader.read(&self.spoiler_right_7_position_id),
-            reader.read(&self.spoiler_right_8_position_id),
-        ];
-
-        let ailerons_left: [f64; 3] = [
-            reader.read(&self.aileron_left_1_position_id),
-            reader.read(&self.aileron_left_2_position_id),
-            reader.read(&self.aileron_left_3_position_id),
-        ];
-
-        let ailerons_right: [f64; 3] = [
-            reader.read(&self.aileron_right_1_position_id),
-            reader.read(&self.aileron_right_2_position_id),
-            reader.read(&self.aileron_right_3_position_id),
-        ];
-
-        //let left_flaps_position: Ratio = reader.read(&self.flaps_left_position_id);
-        //let right_flaps_position: Ratio = reader.read(&self.flaps_right_position_id);
-
-        let wing_base_left_spoilers = (spoilers_left[0] + spoilers_left[1]) / 2.;
-        let wing_mid_left_spoilers = (spoilers_left[2]
-            + spoilers_left[3]
-            + spoilers_left[4]
-            + spoilers_left[5]
-            + spoilers_left[6]
-            + spoilers_left[7])
+    fn compute_lift_modifiers(&mut self) {
+        let wing_base_left_spoilers =
+            (self.spoilers_left_position[0] + self.spoilers_left_position[1]) / 2.;
+        let wing_mid_left_spoilers = (self.spoilers_left_position[2]
+            + self.spoilers_left_position[3]
+            + self.spoilers_left_position[4]
+            + self.spoilers_left_position[5]
+            + self.spoilers_left_position[6]
+            + self.spoilers_left_position[7])
             / 6.;
 
-        let wing_base_right_spoilers = (spoilers_right[0] + spoilers_right[1]) / 2.;
-        let wing_mid_right_spoilers = (spoilers_right[2]
-            + spoilers_right[3]
-            + spoilers_right[4]
-            + spoilers_right[5]
-            + spoilers_right[6]
-            + spoilers_right[7])
+        let wing_base_right_spoilers =
+            (self.spoilers_right_position[0] + self.spoilers_right_position[1]) / 2.;
+        let wing_mid_right_spoilers = (self.spoilers_right_position[2]
+            + self.spoilers_right_position[3]
+            + self.spoilers_right_position[4]
+            + self.spoilers_right_position[5]
+            + self.spoilers_right_position[6]
+            + self.spoilers_right_position[7])
             / 6.;
 
-        let left_ailerons_mid =
-            ((ailerons_left[0] - 0.5) * 2. + (ailerons_left[1] - 0.5) * 2.) / 2.;
-        let right_ailerons_mid =
-            ((ailerons_right[0] - 0.5) * 2. + (ailerons_right[1] - 0.5) * 2.) / 2.;
+        let left_ailerons_mid = ((self.ailerons_left_position[0] - 0.5) * 2.
+            + (self.ailerons_left_position[1] - 0.5) * 2.)
+            / 2.;
+        let right_ailerons_mid = ((self.ailerons_right_position[0] - 0.5) * 2.
+            + (self.ailerons_right_position[1] - 0.5) * 2.)
+            / 2.;
 
-        let left_ailerons_tip = (ailerons_left[2] - 0.5) * 2.;
-        let right_ailerons_tip = (ailerons_right[2] - 0.5) * 2.;
+        let left_ailerons_tip = (self.ailerons_left_position[2] - 0.5) * 2.;
+        let right_ailerons_tip = (self.ailerons_right_position[2] - 0.5) * 2.;
 
         // println!(
         //     "LIFTMOD: SPOILIN {:.1} SPOILmid {:.1} AILmid {:.1} AILtip {:.1}",
@@ -275,6 +249,51 @@ impl SimulationElement for A380WingLiftModifier {
             / 4.;
 
         self.lateral_offset *= Self::LATERAL_OFFSET_GAIN;
+    }
+
+    fn lateral_offset(&self) -> f64 {
+        self.lateral_offset
+    }
+}
+impl SimulationElement for A380WingLiftModifier {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.spoilers_left_position = [
+            reader.read(&self.spoiler_left_1_position_id),
+            reader.read(&self.spoiler_left_2_position_id),
+            reader.read(&self.spoiler_left_3_position_id),
+            reader.read(&self.spoiler_left_4_position_id),
+            reader.read(&self.spoiler_left_5_position_id),
+            reader.read(&self.spoiler_left_6_position_id),
+            reader.read(&self.spoiler_left_7_position_id),
+            reader.read(&self.spoiler_left_8_position_id),
+        ];
+
+        self.spoilers_right_position = [
+            reader.read(&self.spoiler_right_1_position_id),
+            reader.read(&self.spoiler_right_2_position_id),
+            reader.read(&self.spoiler_right_3_position_id),
+            reader.read(&self.spoiler_right_4_position_id),
+            reader.read(&self.spoiler_right_5_position_id),
+            reader.read(&self.spoiler_right_6_position_id),
+            reader.read(&self.spoiler_right_7_position_id),
+            reader.read(&self.spoiler_right_8_position_id),
+        ];
+
+        self.ailerons_left_position = [
+            reader.read(&self.aileron_left_1_position_id),
+            reader.read(&self.aileron_left_2_position_id),
+            reader.read(&self.aileron_left_3_position_id),
+        ];
+
+        self.ailerons_right_position = [
+            reader.read(&self.aileron_right_1_position_id),
+            reader.read(&self.aileron_right_2_position_id),
+            reader.read(&self.aileron_right_3_position_id),
+        ];
+
+        self.compute_lift_modifiers();
+        //let left_flaps_position: Ratio = reader.read(&self.flaps_left_position_id);
+        //let right_flaps_position: Ratio = reader.read(&self.flaps_right_position_id);
 
         // println!("LIFT OFFSET ESTIMATED {:.2}", self.lateral_offset);
 
@@ -1018,17 +1037,17 @@ mod tests {
 
     use uom::si::{angle::degree, length::meter, velocity::knot};
 
-    struct TestAircraft {
+    struct WingFlexTestAircraft {
         wing_flex: WingFlexA380,
     }
-    impl TestAircraft {
+    impl WingFlexTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 wing_flex: WingFlexA380::new(context),
             }
         }
     }
-    impl Aircraft for TestAircraft {
+    impl Aircraft for WingFlexTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.wing_flex.update(context);
 
@@ -1067,7 +1086,7 @@ mod tests {
             );
         }
     }
-    impl SimulationElement for TestAircraft {
+    impl SimulationElement for WingFlexTestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.wing_flex.accept(visitor);
 
@@ -1077,9 +1096,78 @@ mod tests {
 
     impl SimulationElement for WingAnimationMapper<5> {}
 
+    struct WingFlexTestBed {
+        test_bed: SimulationTestBed<WingFlexTestAircraft>,
+    }
+    impl WingFlexTestBed {
+        const NOMINAL_WEIGHT_KG: f64 = 400000.;
+
+        fn new() -> Self {
+            Self {
+                test_bed: SimulationTestBed::new(WingFlexTestAircraft::new),
+            }
+        }
+
+        // fn rotate_body(&mut self, angle: Angle) {
+        //     self.command(|a| a.rotate_body(angle));
+        // }
+
+        // fn trim_body(&mut self, angle: Angle) {
+        //     self.command(|a| a.trim_body(angle));
+        // }
+
+        fn current_total_lift(&self) -> Force {
+            self.query(|a| a.wing_flex.wing_lift.total_lift)
+        }
+
+        fn with_nominal_weight(mut self) -> Self {
+            self.write_by_name(
+                "TOTAL WEIGHT",
+                Mass::new::<kilogram>(Self::NOMINAL_WEIGHT_KG),
+            );
+            self
+        }
+
+        fn rotate_for_takeoff(mut self) -> Self {
+            self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
+            self.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
+            self.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
+
+            self.write_by_name("LEFT_FLAPS_POSITION_PERCENT", 50.);
+            self
+        }
+
+        fn in_1g_flight(mut self) -> Self {
+            self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
+            self.write_by_name("CONTACT POINT COMPRESSION:1", 0.);
+            self.write_by_name("CONTACT POINT COMPRESSION:2", 0.);
+            self.write_by_name("CONTACT POINT COMPRESSION:3", 0.);
+            self.write_by_name("CONTACT POINT COMPRESSION:4", 0.);
+            self.write_by_name("CONTACT POINT COMPRESSION:5", 0.);
+
+            self
+        }
+
+        fn run_waiting_for(mut self, delta: Duration) -> Self {
+            self.test_bed.run_multiple_frames(delta);
+            self
+        }
+    }
+    impl TestBed for WingFlexTestBed {
+        type Aircraft = WingFlexTestAircraft;
+
+        fn test_bed(&self) -> &SimulationTestBed<WingFlexTestAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<WingFlexTestAircraft> {
+            &mut self.test_bed
+        }
+    }
+
     #[test]
     fn init() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = SimulationTestBed::new(WingFlexTestAircraft::new);
 
         test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
 
@@ -1088,7 +1176,7 @@ mod tests {
 
     #[test]
     fn fuel_mapping_tanks_1_2_left_wing() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = SimulationTestBed::new(WingFlexTestAircraft::new);
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1176,7 +1264,7 @@ mod tests {
 
     #[test]
     fn fuel_mapping_tanks_3_4_left_wing() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = SimulationTestBed::new(WingFlexTestAircraft::new);
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1264,7 +1352,7 @@ mod tests {
 
     #[test]
     fn fuel_mapping_tanks_5_left_wing() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = SimulationTestBed::new(WingFlexTestAircraft::new);
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1323,16 +1411,36 @@ mod tests {
 
     #[test]
     fn with_some_lift_on_ground_rotation() {
-        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .rotate_for_takeoff();
 
-        test_bed.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
-        test_bed.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
-        test_bed.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
 
-        test_bed.write_by_name("LEFT_FLAPS_POSITION_PERCENT", 50.);
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                < WingFlexTestBed::NOMINAL_WEIGHT_KG
+        );
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                > WingFlexTestBed::NOMINAL_WEIGHT_KG * 0.5
+        );
+    }
 
-        test_bed.run_with_delta(Duration::from_secs(1));
-        test_bed.run_with_delta(Duration::from_secs(1));
+    #[test]
+    fn in_straight_flight_has_plane_lift_equal_to_weight() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                < WingFlexTestBed::NOMINAL_WEIGHT_KG * 1.1
+        );
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                > WingFlexTestBed::NOMINAL_WEIGHT_KG * 0.9
+        );
     }
 
     #[test]
