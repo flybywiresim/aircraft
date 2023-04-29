@@ -109,7 +109,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
   const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
 
   const double turnSpeedHdgFactor = parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_FACTOR / 10) : TURN_SPEED_FACTOR;
-  const FLOAT64 computedRotationVelocity = helper::Math::sgn(tugCmdSpd) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
+  const FLOAT64 computedRotationVelocity = helper::Math::sign(tugCmdSpd) * tugCommandedHeadingFactor->get() * turnSpeedHdgFactor;
 
   // As we might use the elevator for taxiing we compensate for wind to avoid
   // the aircraft lifting any gears. The hard coded values are based on testing

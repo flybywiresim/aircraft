@@ -49,9 +49,9 @@ class Math {
    * @param val
    * @return sign of value or 0 when value==0
    */
-  template <typename T>
-  static int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
+  template <class T>
+  static inline int sign(T x) {
+    return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
   }
 
 };
