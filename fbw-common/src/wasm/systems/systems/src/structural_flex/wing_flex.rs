@@ -15,6 +15,8 @@ use uom::si::{
 use std::fmt;
 use std::time::Duration;
 
+use nalgebra::{Vector2, Vector5};
+
 enum GearStrutId {
     Nose = 0,
     LeftBody = 1,
@@ -147,9 +149,18 @@ struct A380WingLiftModifier {
     lift_right_table_newton: Vector5<f64>,
 }
 impl A380WingLiftModifier {
-    const LATERAL_OFFSET_GAIN: f64 = 0.5;
+    const LATERAL_OFFSET_GAIN: f64 = 0.25;
+
+    // Ratio of the total lift on each wing section.
+    // Sum shall be 1.
+    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.31, 0.22, 0.05];
+
+    // GAIN to determine how much a surface spoils lift when deployed. 0.3 means a fully deployed surface reduce lift by 30%
+    const GLOBAL_SURFACES_SPOIL_GAIN: f64 = 0.3;
 
     fn new(context: &mut InitContext) -> Self {
+        assert!(Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS).sum() == 1.);
+
         Self {
             spoiler_left_1_position_id: context
                 .get_identifier("HYD_SPOILER_1_LEFT_DEFLECTION".to_owned()),
@@ -214,7 +225,7 @@ impl A380WingLiftModifier {
             left_wing_lift: Force::default(),
             right_wing_lift: Force::default(),
 
-            standard_lift_spread: Vector5::new(0., 0.42, 0.31, 0.22, 0.05),
+            standard_lift_spread: Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS),
             lift_left_table_newton: Vector5::default(),
             lift_right_table_newton: Vector5::default(),
         }
@@ -222,12 +233,6 @@ impl A380WingLiftModifier {
 
     fn update(&mut self, total_lift: Force) {
         self.compute_lift_modifiers(total_lift);
-
-        self.lift_left_table_newton =
-            self.standard_lift_spread * self.left_wing_lift.get::<newton>();
-
-        self.lift_right_table_newton =
-            self.standard_lift_spread * self.right_wing_lift.get::<newton>();
     }
 
     fn compute_lift_modifiers(&mut self, total_lift: Force) {
@@ -261,11 +266,6 @@ impl A380WingLiftModifier {
         let left_ailerons_tip = (self.ailerons_left_position[2] - 0.5) * 2.;
         let right_ailerons_tip = (self.ailerons_right_position[2] - 0.5) * 2.;
 
-        // println!(
-        //     "LIFTMOD: SPOILIN {:.1} SPOILmid {:.1} AILmid {:.1} AILtip {:.1}",
-        //     wing_base_left_spoilers, wing_mid_left_spoilers, left_ailerons_mid, left_ailerons_tip,
-        // );
-
         self.lateral_offset = Ratio::new::<ratio>(
             ((wing_base_right_spoilers - wing_base_left_spoilers)
                 + (wing_mid_right_spoilers - wing_mid_left_spoilers)
@@ -279,13 +279,47 @@ impl A380WingLiftModifier {
         self.left_wing_lift = 0.5 * (total_lift + self.lateral_offset() * total_lift);
         self.right_wing_lift = total_lift - self.left_wing_lift;
 
-        println!(
-            "LIFT CHECK TOTAL {:.2}  offset {:.2}  final {:.2}/{:.2}",
-            total_lift.get::<newton>(),
-            self.lateral_offset().get::<ratio>(),
-            self.left_wing_lift.get::<newton>(),
-            self.right_wing_lift.get::<newton>(),
-        );
+        // Lift factor is 1 - spoil factor. We consider positive position for a surface is spoiling lift
+        // Spoiler panel deployed will be 1. Aileron Up will be 1. Aileron down will be -1 thus (1 - -1) = 2 adds lift
+        let left_wing_lift_factor = Vector5::from([
+            0.,
+            1. - wing_base_left_spoilers * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+            1. - wing_mid_left_spoilers * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+            1. - left_ailerons_mid * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+            1. - left_ailerons_tip * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+        ]);
+        let right_wing_lift_factor = Vector5::from([
+            0.,
+            1. - wing_base_right_spoilers * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+            1. - wing_mid_right_spoilers * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+            1. - right_ailerons_mid * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+            1. - right_ailerons_tip * Self::GLOBAL_SURFACES_SPOIL_GAIN,
+        ]);
+
+        let raw_left_total_factor = left_wing_lift_factor.component_mul(&self.standard_lift_spread);
+        let raw_right_total_factor =
+            right_wing_lift_factor.component_mul(&self.standard_lift_spread);
+
+        let left_lift_factor_normalized = raw_left_total_factor / raw_left_total_factor.sum();
+        let right_lift_factor_normalized = raw_right_total_factor / raw_right_total_factor.sum();
+
+        self.lift_left_table_newton =
+            left_lift_factor_normalized * self.left_wing_lift.get::<newton>();
+
+        self.lift_right_table_newton =
+            right_lift_factor_normalized * self.right_wing_lift.get::<newton>();
+
+        // println!(
+        //     "LEFT/RIGHT WING {:.0}_{:.0}_{:.0}_{:.0}/O\\{:.0}_{:.0}_{:.0}_{:.0}",
+        //     self.lift_left_table_newton[4],
+        //     self.lift_left_table_newton[3],
+        //     self.lift_left_table_newton[2],
+        //     self.lift_left_table_newton[1],
+        //     self.lift_right_table_newton[1],
+        //     self.lift_right_table_newton[2],
+        //     self.lift_right_table_newton[3],
+        //     self.lift_right_table_newton[4],
+        // );
     }
 
     fn lateral_offset(&self) -> Ratio {
@@ -335,25 +369,6 @@ impl SimulationElement for A380WingLiftModifier {
             reader.read(&self.aileron_right_2_position_id),
             reader.read(&self.aileron_right_3_position_id),
         ];
-
-        //let left_flaps_position: Ratio = reader.read(&self.flaps_left_position_id);
-        //let right_flaps_position: Ratio = reader.read(&self.flaps_right_position_id);
-
-        // println!("LIFT OFFSET ESTIMATED {:.2}", self.lateral_offset);
-
-        // let left_node1 = 1. - (wing_base_left_spoilers * 0.5);
-        // let left_node2 = 1. - (wing_mid_left_spoilers * 0.5);
-        // let left_node3 = 1. - (left_ailerons_mid * 0.5);
-        // let left_node4 = 1. - (left_ailerons_tip * 0.5);
-
-        // let left_lift_dynamic_coeff = [left_node1, left_node2, left_node3, left_node4];
-
-        // let right_node1 = 1. - (wing_base_right_spoilers * 0.5);
-        // let right_node2 = 1. - (wing_mid_right_spoilers * 0.5);
-        // let right_node3 = 1. - (right_ailerons_mid * 0.5);
-        // let right_node4 = 1. - (right_ailerons_tip * 0.5);
-
-        // let right_lift_dynamic_coeff = [right_node1, right_node2, right_node3, right_node4];
     }
 }
 
@@ -571,8 +586,6 @@ impl SimulationElement for WingMassA380 {
     }
 }
 
-use nalgebra::{Vector2, Vector5};
-
 const WING_FLEX_NODE_NUMBER: usize = 5;
 const WING_FLEX_LINK_NUMBER: usize = WING_FLEX_NODE_NUMBER - 1;
 
@@ -662,13 +675,13 @@ impl WingFlexA380 {
         self.wing_lift_dynamic
             .update(self.wing_lift.total_plane_lift());
 
-        let standard_lift_spread = Vector5::new(0., 0.42, 0.31, 0.22, 0.05);
+        //let standard_lift_spread = Vector5::new(0., 0.42, 0.31, 0.22, 0.05);
 
-        let lift_left_table_newton =
-            standard_lift_spread * self.wing_lift_dynamic.left_wing_lift.get::<newton>();
+        // let lift_left_table_newton =
+        //     standard_lift_spread * self.wing_lift_dynamic.left_wing_lift.get::<newton>();
 
-        let lift_right_table_newton =
-            standard_lift_spread * self.wing_lift_dynamic.right_wing_lift.get::<newton>();
+        // let lift_right_table_newton =
+        //     standard_lift_spread * self.wing_lift_dynamic.right_wing_lift.get::<newton>();
 
         // println!(
         //     "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}  {:.0}\\{:.0}\\{:.0}\\{:.0}\\{:.0}",
@@ -686,14 +699,18 @@ impl WingFlexA380 {
 
         self.flex_physics[0].update(
             context,
-            lift_left_table_newton.as_slice(),
+            self.wing_lift_dynamic
+                .per_node_lift_left_wing_newton()
+                .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.left_tanks_masses()),
         );
 
         self.flex_physics[1].update(
             context,
-            lift_right_table_newton.as_slice(),
+            self.wing_lift_dynamic
+                .per_node_lift_right_wing_newton()
+                .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
         );
@@ -1199,6 +1216,8 @@ mod tests {
         }
 
         fn in_1g_flight(mut self) -> Self {
+            self = self.neutral_ailerons();
+            self = self.spoilers_retracted();
             self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
             self.write_by_name("CONTACT POINT COMPRESSION:1", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:2", 0.);
@@ -1229,6 +1248,18 @@ mod tests {
             self.write_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION", 0.8);
             self.write_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION", 0.8);
             self.write_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION", 0.8);
+
+            self
+        }
+
+        fn neutral_ailerons(mut self) -> Self {
+            self.write_by_name("HYD_AIL_LEFT_INWARD_DEFLECTION", 0.5);
+            self.write_by_name("HYD_AIL_LEFT_MIDDLE_DEFLECTION", 0.5);
+            self.write_by_name("HYD_AIL_LEFT_OUTWARD_DEFLECTION", 0.5);
+
+            self.write_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION", 0.5);
+            self.write_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION", 0.5);
+            self.write_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION", 0.5);
 
             self
         }
