@@ -49,6 +49,12 @@
   z-index: 99;
 }
 
+.oanc-label:hover {
+  outline: 3px solid $display-magenta;
+  pointer-events: auto;
+  outline-offset: 4px;
+}
+
 .oanc-label-style-taxiway {
   color: $display-yellow;
 }
@@ -72,6 +78,10 @@
   background-size: cover;
 }
 
+.oanc-label-style-runway-axis {
+  color: $display-white;
+}
+
 .oanc-button {
   padding: 10px 6px;
   background-color: gray;
@@ -81,6 +91,21 @@
   justify-content: center;
   align-items: center;
   pointer-events: auto;
+}
+
+.oanc-top-mask {
+  width: 100%;
+  height: 52px;
+  background-color: $display-background;
+}
+
+.oanc-bottom-mask {
+  position: absolute;
+  bottom: 0;
+
+  width: 100%;
+  height: 32px;
+  background-color: $display-background;
 }
 
 .oanc-airport-info {

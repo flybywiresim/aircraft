@@ -13,6 +13,7 @@ import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusSimVarPublisher';
 import { OancAircraftIcon } from './OancAircraftIcon';
+import { OancLabelManager } from './OancLabelManager';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -46,21 +47,21 @@ const LAYER_VISIBILITY_RULES = [
     [false, true, false, false, true, true, false],
 ];
 
-const LABEL_VISIBILITY_RULES = [
+export const LABEL_VISIBILITY_RULES = [
     true,
     true,
     true,
     false,
 ];
 
-enum LabelStyle {
+export enum LabelStyle {
     Taxiway= 'taxiway',
     TerminalBuilding = 'terminal-building',
     RunwayAxis = 'runway-axis',
     RunwayEnd = 'runway-end',
 }
 
-interface Label {
+export interface Label {
     text: string,
     style: LabelStyle
     position: Position,
@@ -99,7 +100,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         FSComponent.createRef<HTMLCanvasElement>(),
     ];
 
-    private labelContainerRef = FSComponent.createRef<HTMLDivElement>();
+    public labelContainerRef = FSComponent.createRef<HTMLDivElement>();
 
     private cursorSurfaceRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -135,11 +136,11 @@ export class Oanc extends DisplayComponent<OancProps> {
         featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
     ];
 
-    private labels: Label[] = [];
+    private labelManager = new OancLabelManager(this);
 
     private showLabels = true;
 
-    private doneDrawing = false;
+    public doneDrawing = false;
 
     private isPanning = false;
 
@@ -147,9 +148,9 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private lastPanY = 0;
 
-    private panOffsetX = Subject.create(0);
+    public panOffsetX = Subject.create(0);
 
-    private panOffsetY = Subject.create(0);
+    public panOffsetY = Subject.create(0);
 
     private readonly isMapPanned = MappedSubject.create(([panX, panY]) => panX !== 0 || panY !== 0, this.panOffsetX, this.panOffsetY);
 
@@ -167,29 +168,25 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly aircraftRotation = Subject.create(0);
 
-    private visibleLabels = ArraySubject.create<Label>([]);
-
-    private visibleLabelElements = new Map<Label, HTMLSpanElement>();
-
     private canvasWidth = Subject.create(0);
 
     private canvasHeight = Subject.create(0);
 
     private readonly viewBbox: BBox = [0, 0, 0, 0];
 
-    private readonly ppos: Coordinates = { lat: 0, long: 0 };
+    public readonly ppos: Coordinates = { lat: 0, long: 0 };
 
     private readonly planeTrueHeading = Subject.create(0);
 
     private readonly mapHeading = Subject.create(0);
 
-    private readonly interpolatedMapHeading = Subject.create(0);
+    public readonly interpolatedMapHeading = Subject.create(0);
 
     private readonly planeMagneticHeading = Subject.create(0);
 
-    private readonly zoomLevelIndex = Subject.create(0);
+    public readonly zoomLevelIndex = Subject.create(0);
 
-    private readonly mapParams = new MapParameters();
+    public readonly mapParams = new MapParameters();
 
     private readonly efisNDModeSub = ConsumerSubject.create<EfisNdMode>(null, EfisNdMode.PLAN);
 
@@ -197,7 +194,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly ndMOdeSwitchDelayDebouncer = new DebounceTimer();
 
-    private getZoomLevelInverseScale() {
+    public getZoomLevelInverseScale() {
         const multiplier = this.efisNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
         return ZOOM_LEVEL_SCALES[this.zoomLevelIndex.get()] * multiplier;
@@ -210,8 +207,8 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.cursorSurfaceRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
         this.cursorSurfaceRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
-        this.zoomOutButtonRef.instance.addEventListener('click', this.handleZoomOut.bind(this));
-        this.zoomInButtonRef.instance.addEventListener('click', this.handleZoomIn.bind(this));
+        // this.zoomOutButtonRef.instance.addEventListener('click', this.handleZoomOut.bind(this));
+        // this.zoomInButtonRef.instance.addEventListener('click', this.handleZoomIn.bind(this));
 
         const subs = this.props.bus.getSubscriber<FcuSimVars>();
 
@@ -219,7 +216,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         this.efisNDModeSub.sub((mode) => this.handleNDModeChange(mode), true);
 
-        this.loadAirportMap('KORD');
+        this.loadAirportMap('YSSY');
 
         // MappedSubject.create(([width, height]) => {
         //     for (let i = 0; i < this.layerCanvasRefs.length; i++) {
@@ -230,7 +227,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         //     }
         // }, this.canvasWidth, this.canvasHeight);
 
-        this.visibleLabels.sub((index, type, item) => {
+        this.labelManager.visibleLabels.sub((index, type, item) => {
             switch (type) {
             case SubscribableArrayEventType.Added: {
                 if (Array.isArray(item)) {
@@ -238,13 +235,13 @@ export class Oanc extends DisplayComponent<OancProps> {
                         const element = this.createLabelElement(label);
 
                         this.labelContainerRef.instance.appendChild(element);
-                        this.visibleLabelElements.set(label, element);
+                        this.labelManager.visibleLabelElements.set(label, element);
                     }
                 } else {
                     const element = this.createLabelElement(item as Label);
 
                     this.labelContainerRef.instance.appendChild(element);
-                    this.visibleLabelElements.set(item as Label, element);
+                    this.labelManager.visibleLabelElements.set(item as Label, element);
                 }
                 break;
             }
@@ -253,15 +250,17 @@ export class Oanc extends DisplayComponent<OancProps> {
         });
 
         this.zoomLevelIndex.sub(() => {
-            this.showLabels = false;
+            this.labelManager.showLabels = false;
 
             this.handleLayerVisibilities();
 
-            setTimeout(() => this.showLabels = true, ZOOM_TRANSITION_TIME_MS + 200);
+            setTimeout(() => this.labelManager.showLabels = true, ZOOM_TRANSITION_TIME_MS + 200);
         }, true);
 
         MappedSubject.create(this.panOffsetX, this.panOffsetY).sub(([x, y]) => {
             this.panContainerRef.instance.style.transform = `translate(${x}px, ${y}px)`;
+
+            this.labelManager.reflowLabels();
         });
 
         MappedSubject.create(this.modeAnimationOffsetX, this.modeAnimationOffsetY, this.modeAnimationMapNorthUp).sub(([x, y]) => {
@@ -301,8 +300,8 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.dataCenterCoordinates = { lat: refPointLat, long: refPointLong };
         this.dataScale = projectionScale;
 
-        const width = (this.dataBbox[2] - this.dataBbox[0]) * 5.1;
-        const height = (this.dataBbox[3] - this.dataBbox[1]) * 5.1;
+        const width = (this.dataBbox[2] - this.dataBbox[0]) * 3;
+        const height = (this.dataBbox[3] - this.dataBbox[1]) * 3;
 
         this.canvasWidth.set(width);
         this.canvasHeight.set(height);
@@ -312,7 +311,7 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     private createLabelElement(label: Label): HTMLSpanElement {
-        const element = document.createElement('span');
+        const element = document.createElement('div');
 
         element.classList.add('oanc-label');
         element.classList.add(`oanc-label-style-${label.style}`);
@@ -431,9 +430,18 @@ export class Oanc extends DisplayComponent<OancProps> {
                     associatedFeature: feature,
                 };
 
-                this.labels.push(label1, label2);
-                this.visibleLabels.insert(label1);
-                this.visibleLabels.insert(label2);
+                const label3: Label = {
+                    text: `${designators[0]}-${designators[1]}`,
+                    style: LabelStyle.RunwayAxis,
+                    position: runwayLineEnd,
+                    rotation: runwayLineBearing,
+                    associatedFeature: feature,
+                };
+
+                this.labelManager.labels.push(label1, label2, label3);
+                this.labelManager.visibleLabels.insert(label1);
+                this.labelManager.visibleLabels.insert(label2);
+                this.labelManager.visibleLabels.insert(label3);
             } else {
                 const text = feature.properties.idlin ?? feature.properties.ident ?? undefined;
 
@@ -448,8 +456,8 @@ export class Oanc extends DisplayComponent<OancProps> {
                         associatedFeature: feature,
                     };
 
-                    this.labels.push(label);
-                    this.visibleLabels.insert(label);
+                    this.labelManager.labels.push(label);
+                    this.labelManager.visibleLabels.insert(label);
                 }
             }
         }
@@ -532,49 +540,6 @@ export class Oanc extends DisplayComponent<OancProps> {
             context.resetTransform();
 
             context.translate((this.canvasWidth.get() / 2), (this.canvasHeight.get() / 2));
-        }
-
-        // Transform labels
-        if (this.doneDrawing && this.showLabels && LABEL_VISIBILITY_RULES[this.zoomLevelIndex.get()]) {
-            this.labelContainerRef.instance.style.visibility = 'visible';
-
-            for (const label of this.visibleLabels.getArray()) {
-                const element = this.visibleLabelElements.get(label);
-
-                if (!element) {
-                    continue;
-                }
-
-                const [labelY, labelX] = label.position;
-
-                const hypotenuse = Math.sqrt(labelX ** 2 + labelY ** 2) * this.getZoomLevelInverseScale();
-                const angle = clampAngle(Math.atan2(labelY, labelX) * MathUtils.RADIANS_TO_DEGREES);
-
-                const rotationAdjustX = hypotenuse * Math.cos((angle - rotate) * MathUtils.DEGREES_TO_RADIANS);
-                const rotationAdjustY = hypotenuse * Math.sin((angle - rotate) * MathUtils.DEGREES_TO_RADIANS);
-
-                const scaledOffsetX = offsetX * this.getZoomLevelInverseScale();
-                const scaledOffsetY = offsetY * this.getZoomLevelInverseScale();
-
-                const labelScreenX = (OANC_RENDER_WIDTH / 2) + -rotationAdjustX + -scaledOffsetX;
-                const labelScreenY = (OANC_RENDER_HEIGHT / 2) + rotationAdjustY + scaledOffsetY;
-
-                if (labelScreenX < 0 || labelScreenX > OANC_RENDER_WIDTH || labelScreenY < 0 || labelScreenY > OANC_RENDER_HEIGHT) {
-                    element.style.visibility = 'hidden';
-                    continue;
-                } else {
-                    element.style.visibility = 'inherit';
-                }
-
-                element.style.left = `${labelScreenX}px`;
-                element.style.top = `${labelScreenY}px`;
-
-                if (label.style === LabelStyle.RunwayEnd) {
-                    element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg)`;
-                }
-            }
-        } else {
-            this.labelContainerRef.instance.style.visibility = 'hidden';
         }
 
         // Transform airplane
@@ -747,9 +712,6 @@ export class Oanc extends DisplayComponent<OancProps> {
                         <div ref={this.layerCanvasScaleContainerRefs[6]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
                             <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
                         </div>
-
-                        <div ref={this.labelContainerRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px;`} />
-
                         <OancMovingModeOverlay
                             bus={this.props.bus}
                             oansRange={this.zoomLevelIndex.map((it) => ZOOM_LEVELS[it])}
@@ -762,14 +724,18 @@ export class Oanc extends DisplayComponent<OancProps> {
                     </div>
                 </div>
 
+                <div ref={this.labelContainerRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`} />
+
                 <div
                     style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; z-index: 99; pointer-events: none`}
                 >
-                    <span class="oanc-airport-info" id="oanc-airport-info-line1">{this.airportInfoLine1}</span>
-                    <span class="oanc-airport-info" id="oanc-airport-info-line2">{this.airportInfoLine2}</span>
+                    <div class="oanc-top-mask" />
+                    <div class="oanc-bottom-mask" />
+                    {/* <span class="oanc-airport-info" id="oanc-airport-info-line1">{this.airportInfoLine1}</span> */}
+                    {/* <span class="oanc-airport-info" id="oanc-airport-info-line2">{this.airportInfoLine2}</span> */}
 
-                    <button ref={this.zoomInButtonRef} type="button" class="oanc-button">+</button>
-                    <button ref={this.zoomOutButtonRef} type="button" class="oanc-button">-</button>
+                    {/* <button ref={this.zoomInButtonRef} type="button" class="oanc-button">+</button> */}
+                    {/* <button ref={this.zoomOutButtonRef} type="button" class="oanc-button">-</button> */}
                 </div>
 
                 <OancStaticModeOverlay
