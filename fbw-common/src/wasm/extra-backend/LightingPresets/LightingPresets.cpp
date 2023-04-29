@@ -1,6 +1,8 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+#include <algorithm>
+
 #include "LightingPresets.h"
 #include "ScopedTimer.hpp"
 
@@ -16,8 +18,7 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   }
 
   // load becomes priority in case both vars are set.
-  if (loadLightingPresetRequest->getAsBool()) {
-    const INT64 presetRequest = loadLightingPresetRequest->getAsInt64();
+  if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
     if (loadLightingPreset(presetRequest)) {
       readIniFile = true;
       loadLightingPresetRequest->setAsInt64(0);
@@ -39,7 +40,8 @@ bool LightingPresets::shutdown() {
 
 bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
   // throttle the load process so animation can keep up
-  if (msfsHandler.getTickCounter() % 2 != 0) return false;
+  if (msfsHandler.getTickCounter() % 2 != 0)
+    return false;
 
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
@@ -84,38 +86,25 @@ bool LightingPresets::saveToStore(INT64 presetNr) {
 }
 
 std::shared_ptr<AircraftVariable> LightingPresets::getLightPotentiometerVar(int index) const {
-  return dataManager->make_aircraft_var("LIGHT POTENTIOMETER", index, "", lightPotentiometerSetEvent, UNITS.Percent, false, false, 0.0, 0);
+  return dataManager->make_aircraft_var("LIGHT POTENTIOMETER", index, "", lightPotentiometerSetEvent, UNITS.Percent);
 }
 
 FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
                                          const std::string& section,
                                          const std::string& key,
                                          const double defaultValue) {
-  if (ini.get(section).has(key)) {
+  if (auto value = ini.get(section).get(key); !value.empty()) {
     // As MSFS wasm does not support exceptions (try/catch) we can't use
     // std::stof here. Workaround with std::stringstreams.
-    std::stringstream input(ini.get(section).get(key));
-    double value = defaultValue;
-    if (input >> value) {
-      return value;
-    } else {
-      LOG_WARN("LightingPresets: reading ini value for [" + section + "] " + key + " = " + ini.get(section).get(key) + " failed.");
+    std::stringstream input(value);
+    if (double result; input >> result) {
+      return result;
     }
+    LOG_WARN("LightingPresets: reading ini value for [" + section + "] " + key + " = " + ini.get(section).get(key) + " failed.");
   }
   return defaultValue;
 }
 
-FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, FLOAT64 target) {
-  if (momentary < target) {
-    momentary += STEP_SIZE;
-    if (momentary > target) {
-      momentary = target;
-    }
-  } else if (momentary > target) {
-    momentary -= STEP_SIZE;
-    if (momentary < target) {
-      momentary = target;
-    }
-  }
-  return momentary;
+FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, const FLOAT64 target) {
+  return momentary < target ? (std::min)(momentary + STEP_SIZE, target) : (std::max)(momentary - STEP_SIZE, target);
 }
