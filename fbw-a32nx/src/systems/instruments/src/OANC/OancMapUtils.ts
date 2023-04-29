@@ -1,3 +1,5 @@
+// Code adapted from https://www.jeffreythompson.org/collision-detection/line-rect.php
+
 export function intersectLineWithRectangle(x1: number, y1: number, x2: number, y2: number, rx: number, ry: number, rw: number, rh: number): [number, number][] {
     // check if the line has hit any of the rectangle's sides
     // uses the Line/Line function below
