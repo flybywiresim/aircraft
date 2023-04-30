@@ -234,8 +234,6 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string& var
 ClientEventPtr DataManager::make_client_event(const std::string& clientEventName,
                                               bool registerToSim,
                                               SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
-  static_assert(std::is_same<decltype(registerToSim), bool>::value, "Parameter 'registerToSim' must be boolean.");
-
   // find existing event instance for this event
   for (const auto& event : clientEvents) {
     if (event.second->getClientEventName() == clientEventName) {
