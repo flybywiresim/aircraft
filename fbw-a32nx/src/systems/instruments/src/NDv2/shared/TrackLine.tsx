@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, EventBus, VNode, MappedSubject, Subscribable, ConsumerSubject } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, EventBus, VNode, MappedSubject, Subscribable, ConsumerSubject, Subject } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@shared/MathUtils';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
@@ -33,6 +33,8 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
 
     private lateralArmedSub = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask').whenChanged(), null);
 
+    private readonly visibility = Subject.create('hidden');
+
     private readonly rotate = MappedSubject.create(([heading, track]) => {
         if (this.props.isUsingTrackUpMode.get()) {
             return 0;
@@ -57,11 +59,11 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
         this.headingWord.setConsumer(this.sub.on('heading'));
         this.trackWord.setConsumer(this.sub.on('track'));
 
-        this.headingWord.sub(() => this.handleLineVisibility());
-        this.trackWord.sub(() => this.handleLineVisibility());
-        this.lateralModeSub.sub(() => this.handleLineVisibility());
-        this.lateralArmedSub.sub(() => this.handleLineVisibility());
-        this.ndMode.sub(() => this.handleLineVisibility());
+        this.headingWord.sub(() => this.handleLineVisibility(), true);
+        this.trackWord.sub(() => this.handleLineVisibility(), true);
+        this.lateralModeSub.sub(() => this.handleLineVisibility(), true);
+        this.lateralArmedSub.sub(() => this.handleLineVisibility(), true);
+        this.ndMode.sub(() => this.handleLineVisibility(), true);
     }
 
     private handleLineVisibility() {
@@ -77,15 +79,15 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
             && !isArmed(lateralArmed, ArmedLateralMode.NAV);
 
         if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {
-            this.lineRef.instance.style.visibility = 'hidden';
+            this.visibility.set('hidden');
         } else {
-            this.lineRef.instance.style.visibility = 'inherit';
+            this.visibility.set('inherit');
         }
     }
 
     render(): VNode | null {
         return (
-            <g ref={this.lineRef} transform={this.transform}>
+            <g ref={this.lineRef} transform={this.transform} visibility={this.visibility}>
                 <line x1={384} y1={149} x2={384} y2={this.y} class="rounded shadow" stroke-width={3.0} />
                 <line x1={384} y1={149} x2={384} y2={this.y} class="rounded Green" stroke-width={2.5} />
             </g>

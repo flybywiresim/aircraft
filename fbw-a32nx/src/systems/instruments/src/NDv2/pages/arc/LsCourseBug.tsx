@@ -58,7 +58,6 @@ export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
                     visibility={this.bugShown.map((v) => (v ? '' : 'hidden'))}
                     transform={this.diffSubject.map((diff) => `rotate(${diff} 384 620)`)}
                 >
-
                     <line x1={376} y1={114} x2={392} y2={114} class="rounded shadow" stroke-width={2.5} />
                     <line x1={384} y1={122} x2={384} y2={74} class="rounded shadow" stroke-width={2.5} />
 
