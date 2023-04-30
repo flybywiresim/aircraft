@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "SimObjectBase.h"
+#include "UpdateMode.h"
 #include "logging.h"
 
 #define quote(x) #x
@@ -81,10 +82,7 @@ class ClientDataAreaVariable : public SimObjectBase {
    *                     the request ID in the response (message SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
    * @param dataSize The size of the data struct in bytes. This is used to define the client data area
    *                 in the sim. It defaults to the size of the template parameter type.
-   * @param autoReading Used by the DataManager to determine if the variable should be updated from
-   *                    the sim when a sim update call occurs.
-   * @param autoWriting Used by the DataManager to determine if the variable should written to the
-   *                    sim when a sim update call occurs.
+   * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by
    *                   the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by
@@ -96,16 +94,14 @@ class ClientDataAreaVariable : public SimObjectBase {
                             SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
                             SIMCONNECT_DATA_REQUEST_ID requestId,
                             std::size_t dataSize = sizeof(T),
-                            bool autoRead = false,
-                            bool autoWrite = false,
+                            UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                             FLOAT64 maxAgeTime = 0.0,
                             UINT64 maxAgeTicks = 0)
       : SimObjectBase(hSimConnect,
                       clientDataName,
                       clientDataDefinitionId,
                       requestId,
-                      autoRead,
-                      autoWrite,
+                      updateMode,
                       maxAgeTime,
                       maxAgeTicks),
         clientDataId(clientDataId) {
@@ -211,7 +207,7 @@ class ClientDataAreaVariable : public SimObjectBase {
       DWORD origin = 0,
       DWORD interval = 0,
       DWORD limit = 0) const {
-    if (autoRead && period >= SIMCONNECT_CLIENT_DATA_PERIOD_ONCE) {
+    if (this->isAutoRead() && period >= SIMCONNECT_CLIENT_DATA_PERIOD_ONCE) {
       LOG_ERROR("ClientDataAreaVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;
     }
@@ -276,8 +272,8 @@ class ClientDataAreaVariable : public SimObjectBase {
     ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
     ss << ", skipChangeCheckFlag: " << skipChangeCheckFlag;
     ss << ", dataChanged: " << hasChanged();
-    ss << ", autoRead: " << autoRead;
-    ss << ", autoWrite: " << autoWrite;
+    ss << ", autoRead: " << isAutoRead();
+    ss << ", autoWrite: " << isAutoWrite();
     ss << ", maxAgeTime: " << maxAgeTime;
     ss << ", maxAgeTicks: " << maxAgeTicks;
     ss << ", dataType=" << typeid(dataStruct).name() << "::" << quote(dataStruct);

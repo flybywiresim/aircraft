@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "SimObjectBase.h"
+#include "UpdateMode.h"
 #include "logging.h"
 
 #define quote(x) #x
@@ -99,8 +100,7 @@ class DataDefinitionVariable : public SimObjectBase {
    * definitions.
    * @param requestId Each request for sim object data requires a unique id so the sim can provide the request ID in the response (message
    * SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
-   * @param autoReading Used by external classes to determine if the variable should updated from the sim when a sim update call occurs.
-   * @param autoWriting Used by external classes to determine if the variable should written to the sim when a sim update call occurs.
+   * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
    */
@@ -109,11 +109,10 @@ class DataDefinitionVariable : public SimObjectBase {
                             const std::vector<DataDefinition>& dataDefinitions,
                             SIMCONNECT_DATA_DEFINITION_ID dataDefId,
                             SIMCONNECT_DATA_REQUEST_ID requestId,
-                            bool autoRead = false,
-                            bool autoWrite = false,
+                            UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                             FLOAT64 maxAgeTime = 0.0,
                             UINT64 maxAgeTicks = 0)
-      : SimObjectBase(hSimConnect, varName, dataDefId, requestId, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
+      : SimObjectBase(hSimConnect, varName, dataDefId, requestId, updateMode, maxAgeTime, maxAgeTicks),
         dataDefinitions(dataDefinitions),
         dataStruct{} {
     for (const auto& definition : dataDefinitions) {
@@ -184,7 +183,7 @@ class DataDefinitionVariable : public SimObjectBase {
                                   DWORD origin = 0,
                                   DWORD interval = 0,
                                   DWORD limit = 0) const {
-    if (autoRead && period >= SIMCONNECT_PERIOD_ONCE) {
+    if (isAutoRead() && period >= SIMCONNECT_PERIOD_ONCE) {
       LOG_ERROR("DataDefinitionVariable: Requested periodic data update from sim is ignored as autoRead is enabled.");
       return false;
     }
@@ -263,8 +262,8 @@ class DataDefinitionVariable : public SimObjectBase {
     ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
     ss << ", skipChangeCheckFlag: " << skipChangeCheckFlag;
     ss << ", dataChanged: " << hasChanged();
-    ss << ", autoRead: " << autoRead;
-    ss << ", autoWrite: " << autoWrite;
+    ss << ", autoRead: " << isAutoRead();
+    ss << ", autoWrite: " << isAutoWrite();
     ss << ", maxAgeTime: " << maxAgeTime;
     ss << ", maxAgeTicks: " << maxAgeTicks;
     ss << ", dataType=" << typeid(dataStruct).name() << "::" << quote(dataStruct);

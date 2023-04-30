@@ -45,7 +45,7 @@ void AircraftVariable::setAutoWrite(bool autoWriting) {
     LOG_ERROR("AircraftVariable::setAutoWrite() called on [" + name + "] but no setter event name is set");
     return;
   }
-  CacheableVariable::setAutoWrite(autoWriting);
+  this->setAutoWrite(autoWriting);
 }
 
 // =================================================================================================
@@ -95,8 +95,8 @@ std::string AircraftVariable::str() const {
   ss << ", nextUpdateTimeStamp: " << nextUpdateTimeStamp;
   ss << ", tickStamp: " << tickStamp;
   ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
-  ss << ", autoRead: " << autoRead;
-  ss << ", autoWrite: " << autoWrite;
+  ss << ", autoRead: " << isAutoRead();
+  ss << ", autoWrite: " << isAutoWrite();
   ss << ", maxAgeTime: " << maxAgeTime;
   ss << ", maxAgeTicks: " << maxAgeTicks;
   ss << "]";

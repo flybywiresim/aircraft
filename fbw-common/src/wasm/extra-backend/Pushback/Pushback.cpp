@@ -8,6 +8,7 @@
 #include "NamedVariable.h"
 #include "Pushback.h"
 #include "SimUnits.h"
+#include "UpdateMode.h"
 #include "logging.h"
 #include "math_utils.hpp"
 
@@ -38,7 +39,7 @@ bool Pushback::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // LVARs
-  pushbackSystemEnabled = dataManager->make_named_var("PUSHBACK_SYSTEM_ENABLED", UNITS.Bool, true);
+  pushbackSystemEnabled = dataManager->make_named_var("PUSHBACK_SYSTEM_ENABLED", UNITS.Bool, UpdateMode::AUTO_READ);
   parkingBrakeEngaged = dataManager->make_named_var("PARK_BRAKE_LEVER_POS");
   tugCommandedSpeedFactor = dataManager->make_named_var("PUSHBACK_SPD_FACTOR");
   tugCommandedHeadingFactor = dataManager->make_named_var("PUSHBACK_HDG_FACTOR");

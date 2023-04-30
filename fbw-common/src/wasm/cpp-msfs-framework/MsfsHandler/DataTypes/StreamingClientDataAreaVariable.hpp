@@ -5,6 +5,7 @@
 #define FLYBYWIRE_AIRCRAFT_STREAMINGCLIENTDATAAREAVARIABLE_HPP
 
 #include "ClientDataAreaVariable.hpp"
+#include "UpdateMode.h"
 
 class DataManager;
 
@@ -53,10 +54,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
    * @param clientDataId the ID of the client data area
    * @param clientDataDefinitionId  the definition ID of the client data area
    * @param requestId the request ID of the client data area
-   * @param autoReading Used by the DataManager to determine if the variable should be updated from
-   *                    the sim when a sim update call occurs.
-   * @param autoWriting Used by the DataManager to determine if the variable should written to the
-   *                    sim when a sim update call occurs.
+   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by
    *                    the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by
@@ -67,8 +65,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
                                                 SIMCONNECT_CLIENT_DATA_ID clientDataId,
                                                 SIMCONNECT_CLIENT_DATA_DEFINITION_ID clientDataDefinitionId,
                                                 SIMCONNECT_DATA_REQUEST_ID requestId,
-                                                bool autoRead = false,
-                                                bool autoWrite = false,
+                                                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                                                 FLOAT64 maxAgeTime = 0.0,
                                                 UINT64 maxAgeTicks = 0)
       : ClientDataAreaVariable<T>(hSimConnect,
@@ -77,8 +74,7 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
                                   clientDataDefinitionId,
                                   requestId,
                                   ChunkSize,
-                                  autoRead,
-                                  autoWrite,
+                                  updateMode,
                                   maxAgeTime,
                                   maxAgeTicks),
         content() {}
@@ -220,8 +216,8 @@ class StreamingClientDataAreaVariable : public ClientDataAreaVariable<T> {
     ss << ", nextUpdateTickStamp: " << this->nextUpdateTickStamp;
     ss << ", skipChangeCheckFlag: " << this->skipChangeCheckFlag;
     ss << ", dataChanged: " << this->hasChanged();
-    ss << ", autoRead: " << this->autoRead;
-    ss << ", autoWrite: " << this->autoWrite;
+    ss << ", autoRead: " << this->isAutoRead();
+    ss << ", autoWrite: " << this->isAutoWrite();
     ss << ", maxAgeTime: " << this->maxAgeTime;
     ss << ", maxAgeTicks: " << this->maxAgeTicks;
     ss << ", dataType=" << typeid(T).name() << "::" << quote(content);

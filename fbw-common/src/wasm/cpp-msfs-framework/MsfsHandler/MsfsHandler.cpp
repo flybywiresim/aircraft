@@ -9,6 +9,7 @@
 #include "Module.h"
 #include "MsfsHandler.h"
 #include "NamedVariable.h"
+#include "UpdateMode.h"
 
 // =================================================================================================
 // PUBLIC METHODS
@@ -66,7 +67,7 @@ bool MsfsHandler::initialize() {
   // PAUSE_STATE_FLAG_PAUSE_WITH_SOUND 2  // FSX Legacy Pause (not used anymore)
   // PAUSE_STATE_FLAG_ACTIVE_PAUSE 4      // Pause was activated using the "Active Pause" Button
   // PAUSE_STATE_FLAG_SIM_PAUSE 8         // Pause the player sim but traffic, multi, etc... will still run
-  a32nxPauseDetected = dataManager.make_named_var("PAUSE_DETECTED", UNITS.Number, true, true);
+  a32nxPauseDetected = dataManager.make_named_var("PAUSE_DETECTED", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   pauseDetectedEvent = dataManager.make_client_event("A32NX.PAUSE_DETECTED_EVENT", false);
   pauseDetectedEvent->addCallback([&](const int, const DWORD param0, const DWORD, const DWORD, const DWORD, const DWORD) {
     LOG_INFO(simConnectName + ": Pause detected: " + std::to_string(param0));

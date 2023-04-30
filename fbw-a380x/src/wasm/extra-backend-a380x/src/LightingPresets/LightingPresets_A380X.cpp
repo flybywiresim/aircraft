@@ -1,10 +1,10 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include <MSFS/Legacy/gauges.h>
 #include <iostream>
 
 #include "LightingPresets_A380X.h"
+#include "UpdateMode.h"
 #include "logging.h"
 
 ///
@@ -33,20 +33,20 @@ bool LightingPresets_A380X::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // Events for setting the aircraft variables
-  lightPotentiometerSetEvent = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
+  lightPotentiometerSetEvent = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", true, NOTIFICATION_GROUP_1);
   cabinLightSetEvent = dataManager->make_client_event("CABIN_LIGHTS_SET", NOTIFICATION_GROUP_1);
 
   // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
-  elecAC1Powered = dataManager->make_named_var("ELEC_AC_1_BUS_IS_POWERED", UNITS.Number, true, false);
-  loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, true, true);
-  saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, true, true);
+  elecAC1Powered = dataManager->make_named_var("ELEC_AC_1_BUS_IS_POWERED", UNITS.Number, UpdateMode::AUTO_READ);
+  loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
+  saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
 
   // Lighting LVARs - manual update and write when load/saving is requested
-  efbBrightness = dataManager->make_named_var("EFB_BRIGHTNESS", UNITS.Number, false, false);
-  dcduLeftLightLevel = dataManager->make_named_var("PANEL_DCDU_L_BRIGHTNESS", UNITS.Number, false, false);
-  dcduRightLightLevel = dataManager->make_named_var("PANEL_DCDU_R_BRIGHTNESS", UNITS.Number, false, false);
-  mcduLeftLightLevel = dataManager->make_named_var("MCDU_L_BRIGHTNESS", UNITS.Number, false, false);
-  mcduRightLightLevel = dataManager->make_named_var("MCDU_R_BRIGHTNESS", UNITS.Number, false, false);
+  efbBrightness = dataManager->make_named_var("EFB_BRIGHTNESS", UNITS.Number);
+  dcduLeftLightLevel = dataManager->make_named_var("PANEL_DCDU_L_BRIGHTNESS", UNITS.Number);
+  dcduRightLightLevel = dataManager->make_named_var("PANEL_DCDU_R_BRIGHTNESS", UNITS.Number);
+  mcduLeftLightLevel = dataManager->make_named_var("MCDU_L_BRIGHTNESS", UNITS.Number);
+  mcduRightLightLevel = dataManager->make_named_var("MCDU_R_BRIGHTNESS", UNITS.Number);
 
   // Light Potentiometers - manual update and write when load/saving is requested
   lightCabin = dataManager->make_aircraft_var("LIGHT CABIN", 0, "", cabinLightSetEvent, UNITS.Percent);

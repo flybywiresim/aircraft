@@ -12,6 +12,7 @@
 
 #include "IDGenerator.h"
 #include "ManagedDataObjectBase.h"
+#include "UpdateMode.h"
 #include "simple_assert.h"
 
 /**
@@ -44,8 +45,7 @@ class SimObjectBase : public ManagedDataObjectBase {
    * definitions.
    * @param requestId Each request for sim object data requires a unique id so the sim can provide the request ID in the response (message
    * SIMCONNECT_RECV_ID_SIMOBJECT_DATA).
-   * @param autoReading Used by external classes to determine if the variable should updated from the sim when a sim update call occurs.
-   * @param autoWriting Used by external classes to determine if the variable should written to the sim when a sim update call occurs.
+   * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
    */
@@ -53,11 +53,10 @@ class SimObjectBase : public ManagedDataObjectBase {
                 const std::string& varName,
                 DWORD dataDefId,
                 DWORD requestId,
-                bool autoRead = false,
-                bool autoWrite = false,
+                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                 FLOAT64 maxAgeTime = 0.0,
                 UINT64 maxAgeTicks = 0)
-      : ManagedDataObjectBase(varName, autoRead, autoWrite, maxAgeTime, maxAgeTicks),
+      : ManagedDataObjectBase(varName, updateMode, maxAgeTime, maxAgeTicks),
         hSimConnect(hSimConnect),
         dataDefId(dataDefId),
         requestId(requestId) {}

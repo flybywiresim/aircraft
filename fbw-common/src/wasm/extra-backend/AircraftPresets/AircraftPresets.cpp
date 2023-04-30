@@ -5,6 +5,7 @@
 
 #include "AircraftPresets.h"
 #include "SimUnits.h"
+#include "UpdateMode.h"
 #include "logging.h"
 #include "math_utils.hpp"
 
@@ -37,8 +38,8 @@ bool AircraftPresets::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // LVARs
-  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, true);
-  loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, true, true);
+  aircraftPresetVerbose = dataManager->make_named_var("AIRCRAFT_PRESET_VERBOSE", UNITS.Bool, UpdateMode::AUTO_READ);
+  loadAircraftPresetRequest = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   progressAircraftPreset = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_PROGRESS");
   progressAircraftPresetId = dataManager->make_named_var("AIRCRAFT_PRESET_LOAD_CURRENT_ID");
   loadAircraftPresetRequest->setAndWriteToSim(0);  // reset to 0 on startup

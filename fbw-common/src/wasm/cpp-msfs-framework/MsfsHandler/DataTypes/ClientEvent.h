@@ -18,14 +18,14 @@
 class DataManager;
 
 // Used for callback registration to allow removal of callbacks
-typedef uint64_t CallbackID;
+using CallbackID = uint64_t;
 
 /**
  * Defines a callback function for an event
  * @param number of parameters to use - TODO: maybe remove this
  * @param parameters 0-4 to pass to the callback function
  */
-typedef std::function<void(int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> EventCallbackFunction;
+using EventCallbackFunction = std::function<void(int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)>;
 
 /**
  * @brief The ClientEvent class represents a client event which can be used to create a custom event,

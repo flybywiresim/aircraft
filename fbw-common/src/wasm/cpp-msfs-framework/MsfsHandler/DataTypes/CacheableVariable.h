@@ -11,6 +11,7 @@
 
 #include "ManagedDataObjectBase.h"
 #include "SimUnits.h"
+#include "UpdateMode.h"
 
 /**
  * @brief Virtual base class for sim variables like named variables, aircraft variables that support value caching.
@@ -64,14 +65,12 @@ class CacheableVariable : public ManagedDataObjectBase {
    * Constructor
    * @param name The name of the variable in the sim
    * @param unit The unit of the variable as per the sim (see SimUnit.h)
-   * @param autoReading Used by external classes to determine if the variable should be automatically updated from the
-   * sim
-   * @param autoWriting Used by external classes to determine if the variable should be automatically written to the sim
+   * @param updateMode The update mode for the variable
    * @param maxAgeTime The maximum age of the variable in seconds when using requestUpdateFromSim()
    * @param maxAgeTicks The maximum age of the variable in ticks when using updateDataToSim()
    */
-  CacheableVariable(const std::string& varName, const SimUnit& unit, bool autoRead, bool autoWrite, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
-      : ManagedDataObjectBase(varName, autoRead, autoWrite, maxAgeTime, maxAgeTicks), unit(unit) {}
+  CacheableVariable(const std::string& varName, const SimUnit& unit, UpdateMode updateMode, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
+      : ManagedDataObjectBase(varName, updateMode, maxAgeTime, maxAgeTicks), unit(unit) {}
 
  public:
   CacheableVariable() = delete;                                     // no default constructor

@@ -1,7 +1,6 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include <algorithm>
 #include <sstream>
 #include <utility>
 

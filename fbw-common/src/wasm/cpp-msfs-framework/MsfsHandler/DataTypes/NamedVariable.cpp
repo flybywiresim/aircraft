@@ -26,8 +26,8 @@ std::string NamedVariable::str() const {
   ss << ", nextUpdateTimeStamp: " << nextUpdateTimeStamp;
   ss << ", tickStamp: " << tickStamp;
   ss << ", nextUpdateTickStamp: " << nextUpdateTickStamp;
-  ss << ", autoRead: " << autoRead;
-  ss << ", autoWrite: " << autoWrite;
+  ss << ", autoRead: " << isAutoRead();
+  ss << ", autoWrite: " << isAutoWrite();
   ss << ", maxAgeTime: " << std::to_string(maxAgeTime);
   ss << ", maxAgeTicks: " << maxAgeTicks;
   ss << "]";

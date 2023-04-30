@@ -4,6 +4,7 @@
 #include "DataManager.h"
 #include "MsfsHandler.h"
 #include "SimconnectExceptionStrings.h"
+#include "UpdateMode.h"
 
 bool DataManager::initialize(HANDLE simConnectHandle) {
   hSimConnect = simConnectHandle;
@@ -106,8 +107,7 @@ void DataManager::getRequestedData() const {
 
 NamedVariablePtr DataManager::make_named_var(const std::string& varName,
                                              SimUnit unit,
-                                             bool autoReading,
-                                             bool autoWriting,
+                                             UpdateMode updateMode,
                                              FLOAT64 maxAgeTime,
                                              UINT64 maxAgeTicks) {
   // The uniqueName is used in the map of all named variables and needs to
@@ -122,7 +122,7 @@ NamedVariablePtr DataManager::make_named_var(const std::string& varName,
   // update frequency
   const auto pair = variables.find(uniqueName);
   if (pair != variables.end()) {
-    if (!pair->second->isAutoRead() && autoReading) {
+    if (!pair->second->isAutoRead() && (updateMode & UpdateMode::AUTO_READ)) {
       pair->second->setAutoRead(true);
     }
     if (pair->second->getMaxAgeTime() > maxAgeTime) {
@@ -131,7 +131,7 @@ NamedVariablePtr DataManager::make_named_var(const std::string& varName,
     if (pair->second->getMaxAgeTicks() > maxAgeTicks) {
       pair->second->setMaxAgeTicks(maxAgeTicks);
     }
-    if (!pair->second->isAutoWrite() && autoWriting) {
+    if (!pair->second->isAutoWrite() & (updateMode & UpdateMode::AUTO_WRITE)) {
       pair->second->setAutoWrite(true);
     }
     LOG_DEBUG("DataManager::make_named_var(): already exists: " + pair->second->str());
@@ -139,7 +139,7 @@ NamedVariablePtr DataManager::make_named_var(const std::string& varName,
   }
 
   // Create new var and store it in the map
-  NamedVariablePtr var = NamedVariablePtr(new NamedVariable(varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+  NamedVariablePtr var = NamedVariablePtr(new NamedVariable(varName, unit, updateMode, maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_named_var(): created variable " + var->str());
@@ -151,8 +151,7 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
                                                    std::string setterEventName,
                                                    const ClientEventPtr& setterEvent,
                                                    SimUnit unit,
-                                                   bool autoReading,
-                                                   bool autoWriting,
+                                                   UpdateMode updateMode,
                                                    FLOAT64 maxAgeTime,
                                                    UINT64 maxAgeTicks) {
   // The uniqueName is used in the map of all named variables and needs to
@@ -166,7 +165,7 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
   // use the update method and frequency of the automated one with faster update frequency
   const auto pair = variables.find(uniqueName);
   if (pair != variables.end()) {
-    if (!pair->second->isAutoRead() && autoReading) {
+    if (!pair->second->isAutoRead() && (updateMode & UpdateMode::AUTO_READ)) {
       pair->second->setAutoRead(true);
     }
     if (pair->second->getMaxAgeTime() > maxAgeTime) {
@@ -175,21 +174,19 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
     if (pair->second->getMaxAgeTicks() > maxAgeTicks) {
       pair->second->setMaxAgeTicks(maxAgeTicks);
     }
-    if (!pair->second->isAutoWrite() && autoWriting) {
+    if (!pair->second->isAutoWrite() & (updateMode & UpdateMode::AUTO_WRITE)) {
       pair->second->setAutoWrite(true);
     }
-
     LOG_DEBUG("DataManager::make_aircraft_var(): already exists: " + pair->second->str());
-
     return std::dynamic_pointer_cast<AircraftVariable>(pair->second);
   }
 
   // Create new var and store it in the map
   AircraftVariablePtr var =
       setterEventName.empty()
-          ? AircraftVariablePtr(new AircraftVariable(varName, index, setterEvent, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks))
+          ? AircraftVariablePtr(new AircraftVariable(varName, index, setterEvent, unit, updateMode, maxAgeTime, maxAgeTicks))
           : AircraftVariablePtr(
-                new AircraftVariable(varName, index, std::move(setterEventName), unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+                new AircraftVariable(varName, index, std::move(setterEventName), unit, updateMode, maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_aircraft_var(): created variable " + var->str());
@@ -225,7 +222,9 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string& var
   }
 
   // Create new var and store it in the map
-  AircraftVariablePtr var = AircraftVariablePtr(new AircraftVariable(varName, 0, "", unit, autoReading, false, maxAgeTime, maxAgeTicks));
+  AircraftVariablePtr var = AircraftVariablePtr(new AircraftVariable(
+      varName, 0, "", unit, (autoReading ? UpdateMode::AUTO_READ : UpdateMode::NO_AUTO_UPDATE),
+      maxAgeTime, maxAgeTicks));
   variables[uniqueName] = var;
 
   LOG_DEBUG("DataManager::make_simple_aircraft_var(): created variable " + var->str());
@@ -235,6 +234,8 @@ AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string& var
 ClientEventPtr DataManager::make_client_event(const std::string& clientEventName,
                                               bool registerToSim,
                                               SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {
+  static_assert(std::is_same<decltype(registerToSim), bool>::value, "Parameter 'registerToSim' must be boolean.");
+
   // find existing event instance for this event
   for (const auto& event : clientEvents) {
     if (event.second->getClientEventName() == clientEventName) {
@@ -242,6 +243,7 @@ ClientEventPtr DataManager::make_client_event(const std::string& clientEventName
       return event.second;
     }
   }
+
   // create a new event instance
   ClientEventPtr clientEvent = ClientEventPtr(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), clientEventName));
   if (registerToSim) {

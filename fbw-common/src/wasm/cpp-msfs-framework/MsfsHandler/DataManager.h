@@ -22,6 +22,7 @@
 #include "DataDefinitionVariable.hpp"
 #include "NamedVariable.h"
 #include "StreamingClientDataAreaVariable.hpp"
+#include "UpdateMode.h"
 
 // Forward declarations
 class MsfsHandler;
@@ -50,7 +51,7 @@ using KeyEventCallbackID = UINT64;
  * @param number of parameters to use
  * @param parameters 0-4 to pass to the callback function
  */
-using KeyEventCallbackFunction = std::function<void(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)> ;
+using KeyEventCallbackFunction = std::function<void(DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4)>;
 
 /**
  * @brief The DataManager class is responsible for managing all variables and events.
@@ -176,8 +177,7 @@ class DataManager {
    *
    * @param varName Name of the variable in the sim
    * @param optional unit SimUnit of the variable (default=Number)
-   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
-   * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
+   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
@@ -185,8 +185,7 @@ class DataManager {
    */
   [[nodiscard]] NamedVariablePtr make_named_var(const std::string& varName,
                                                 SimUnit unit = UNITS.Number,
-                                                bool autoReading = false,
-                                                bool autoWriting = false,
+                                                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                                                 FLOAT64 maxAgeTime = 0.0,
                                                 UINT64 maxAgeTicks = 0);
 
@@ -204,8 +203,7 @@ class DataManager {
    * @param setterEventName the name of the event to set the variable with an event or calculator code (default="")
    * @param setterEvent an instance of an event variable to set the variable with an event or calculator code (default=nullptr)
    * @param unit SimUnit of the variable (default=Number)
-   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
-   * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
+   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
@@ -216,8 +214,7 @@ class DataManager {
                                                       std::string setterEventName = "",
                                                       const ClientEventPtr& setterEvent = nullptr,
                                                       SimUnit unit = UNITS.Number,
-                                                      bool autoReading = false,
-                                                      bool autoWriting = false,
+                                                      UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                                                       FLOAT64 maxAgeTime = 0.0,
                                                       UINT64 maxAgeTicks = 0);
 
@@ -228,7 +225,7 @@ class DataManager {
    *
    * @param varName Name of the variable in the sim
    * @param unit SimUnit of the variable (default=Number)
-   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
+   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
@@ -251,8 +248,7 @@ class DataManager {
    * @typename T Type of the data structure to use to store the data
    * @param name An arbitrary name for the data definition variable for debugging purposes
    * @param dataDefinitions A vector of data definitions for the data definition variable
-   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
-   * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
+   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
@@ -260,13 +256,11 @@ class DataManager {
   template <typename T>
   [[nodiscard]] DataDefinitionVariablePtr<T> make_datadefinition_var(const std::string& name,
                                                                      const std::vector<DataDefinition>& dataDefinitions,
-                                                                     bool autoReading = false,
-                                                                     bool autoWriting = false,
+                                                                     UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                                                                      FLOAT64 maxAgeTime = 0.0,
                                                                      UINT64 maxAgeTicks = 0) {
-    DataDefinitionVariablePtr<T> var = DataDefinitionVariablePtr<T>(
-        new DataDefinitionVariable<T>(hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), autoReading,
-                                      autoWriting, maxAgeTime, maxAgeTicks));
+    DataDefinitionVariablePtr<T> var = DataDefinitionVariablePtr<T>(new DataDefinitionVariable<T>(
+        hSimConnect, name, dataDefinitions, dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), updateMode, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + name);
     return var;
@@ -287,21 +281,19 @@ class DataManager {
    * @param readOnlyForOthers Specify if the data area can only be written to by this client (the
    *                          client creating the data area). By default other clients can write to
    *                          this data area (default=false).
-   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
-   * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
+   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
    */
   template <typename T>
   [[nodiscard]] ClientDataAreaVariablePtr<T> make_clientdataarea_var(const std::string& clientDataName,
-                                                                     bool autoReading = false,
-                                                                     bool autoWriting = false,
+                                                                     UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                                                                      FLOAT64 maxAgeTime = 0.0,
                                                                      UINT64 maxAgeTicks = 0) {
     ClientDataAreaVariablePtr<T> var = ClientDataAreaVariablePtr<T>(
         new ClientDataAreaVariable<T>(hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(),
-                                      dataReqIDGen.getNextId(), sizeof(T), autoReading, autoWriting, maxAgeTime, maxAgeTicks));
+                                      dataReqIDGen.getNextId(), sizeof(T), updateMode, maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_datadefinition_var(): " + clientDataName);
     return var;
@@ -332,22 +324,21 @@ class DataManager {
    *                      client will use to specify the data area. The name is not case-sensitive.
    *                      If the name requested is already in use by another addon, a error will be
    *                      printed to the console.
-   * @param autoReading optional flag to indicate if the variable should be read automatically (default=false)
-   * @param autoWriting optional flag to indicate if the variable should be written automatically (default=false)
+   * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
    * @return A shared pointer to the variable
    */
   template <typename T, std::size_t ChunkSize = SIMCONNECT_CLIENTDATA_MAX_SIZE>
-  [[nodiscard]] StreamingClientDataAreaVariablePtr<T, ChunkSize> make_streamingclientdataarea_var(const std::string& clientDataName,
-                                                                                                  bool autoReading = false,
-                                                                                                  bool autoWriting = false,
-                                                                                                  FLOAT64 maxAgeTime = 0.0,
-                                                                                                  UINT64 maxAgeTicks = 0) {
+  [[nodiscard]] StreamingClientDataAreaVariablePtr<T, ChunkSize> make_streamingclientdataarea_var(
+      const std::string& clientDataName,
+      UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
+      FLOAT64 maxAgeTime = 0.0,
+      UINT64 maxAgeTicks = 0) {
     StreamingClientDataAreaVariablePtr<T, ChunkSize> var =
         StreamingClientDataAreaVariablePtr<T, ChunkSize>(new StreamingClientDataAreaVariable<T, ChunkSize>(
-            hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), autoReading,
-            autoWriting, maxAgeTime, maxAgeTicks));
+            hSimConnect, clientDataName, clientDataIDGen.getNextId(), dataDefIDGen.getNextId(), dataReqIDGen.getNextId(), updateMode,
+            maxAgeTime, maxAgeTicks));
     simObjects.insert({var->getRequestId(), var});
     LOG_DEBUG("DataManager::make_clientdataarea_buffered_var(): " + clientDataName);
     return var;

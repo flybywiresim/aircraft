@@ -21,8 +21,8 @@ bool ExampleModule::initialize() {
   /*
    * Update mode of a variable - last 4 optional parameters of the make_... calls:
    *
-   * autoRead: automatically update from sim at every tick when update criteria are met
-   * autoWrite: automatically write to sim at every tick
+   * UpdateMode::AUTO_READ: automatically update from sim at every tick when update criteria are met
+   * UpdateMode::AUTO_WRITE: automatically write to sim at every tick
    * maxAgeTime: maximum age of the variable in seconds (influences update reads)
    * maxAgeTicks: maximum age of the variable in ticks (influences update reads)
    *
@@ -46,7 +46,7 @@ bool ExampleModule::initialize() {
       });
 
   // Event with callback example
-  lightPotentiometerSetEventPtr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
+  lightPotentiometerSetEventPtr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", true, NOTIFICATION_GROUP_0);
   lightPotentiometerSetCallbackID =
       lightPotentiometerSetEventPtr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
         if (param0 == 99)
@@ -57,7 +57,7 @@ bool ExampleModule::initialize() {
       });
 
   // Second event with the same name - this should be de-duplicated
-  lightPotentiometerSetEvent2Ptr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
+  lightPotentiometerSetEvent2Ptr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", true, NOTIFICATION_GROUP_0);
   lightPotentiometerSetCallback2ID =
       lightPotentiometerSetEvent2Ptr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
         if (param0 == 99)
@@ -72,22 +72,24 @@ bool ExampleModule::initialize() {
   // LVARS
   // requested multiple times to demonstrate de-duplication - also shows optional parameters
   // use this to familiarise yourself with the different parameters
-  debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, true, true, 0, 0);
+  debugLVARPtr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, UpdateMode::AUTO_READ_WRITE, 0, 0);
   //  debugLVARPtr->setEpsilon(1.0);  // only read when difference is >1.0
   //  debugLVARPtr->addCallback([&, this]() { LOG_INFO("Callback: DEBUG_LVAR value changed to " + std::to_string(debugLVARPtr->get())); });
   // these are unique and not the same as the first
-  debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, true, false, 0, 1000);
-  debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, true, false, 5.0, 0);
+  debugLVAR2Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Minutes, UpdateMode::AUTO_READ, 0, 1000);
+  debugLVAR3Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Seconds, UpdateMode::AUTO_READ, 5.0, 0);
   // this is a duplicate of the first one, so should be the same pointer
-  debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, false, false, 0, 0);
+  debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, UpdateMode::NO_AUTO_UPDATE, 0, 0);
 #endif
 
 #ifdef AIRCRAFT_VAR_EXAMPLE
   // Aircraft variables - requested multiple times to demonstrate de-duplication
   // to test change the units to either use the same units (will be deduplicated) or different units
   // in which case the variables will be unique.
-  beaconLightSwitchPtr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Percent, true, false, 0, 0);
-  beaconLightSwitch2Ptr = dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
+  beaconLightSwitchPtr =
+      dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Percent, UpdateMode::AUTO_READ, 0, 0);
+  beaconLightSwitch2Ptr =
+      dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
   // using make_simple_aircraft_var() to demonstrate the same thing
   beaconLightSwitch3Ptr = dataManager->make_simple_aircraft_var("LIGHT BEACON", UNITS.PercentOver100);
 #endif
@@ -95,8 +97,8 @@ bool ExampleModule::initialize() {
 #ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
   // A:FUELSYSTEM PUMP SWITCH:#ID#  - demonstrates variable with index
   // clang-format off
-  fuelPumpSwitch1Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 1, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
-  fuelPumpSwitch2Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 2, "", beaconLightSetEventPtr, UNITS.Bool, true, false, 0, 0);
+  fuelPumpSwitch1Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 1, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
+  fuelPumpSwitch2Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 2, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
   // clang-format on
 #endif
 
@@ -112,7 +114,7 @@ bool ExampleModule::initialize() {
       // The sim crashes if the string datatype is too short for the string
       {"TITLE", 0, UNITS.None, SIMCONNECT_DATATYPE_STRING256},
   };
-  exampleDataPtr = dataManager->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, true, false, 0, 0);
+  exampleDataPtr = dataManager->make_datadefinition_var<ExampleData>("EXAMPLE DATA", exampleDataDef, UpdateMode::AUTO_READ, 0, 0);
   // Alternative to use autoRead it is possible to set the SIMCONNECT_PERIOD.
   // this is probably very efficient for data definitions areas if every change needs to be read
   // or if the sim should only send data when it has changed.
@@ -126,7 +128,7 @@ bool ExampleModule::initialize() {
 #ifdef CLIENT_DATA_AREA_EXAMPLE
   // ========================================
   // Client data area owned by this module
-  exampleClientDataPtr = dataManager->make_clientdataarea_var<ExampleClientData>("EXAMPLE CLIENT DATA", false, true);
+  exampleClientDataPtr = dataManager->make_clientdataarea_var<ExampleClientData>("EXAMPLE CLIENT DATA", UpdateMode::AUTO_WRITE);
   exampleClientDataPtr->allocateClientDataArea(sizeof(ExampleClientData));
 
   // Client data area owned by an external module

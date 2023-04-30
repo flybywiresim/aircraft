@@ -7,6 +7,7 @@
 #include <string>
 
 #include "CacheableVariable.h"
+#include "UpdateMode.h"
 #include "simple_assert.h"
 
 class DataManager;
@@ -37,20 +38,16 @@ class NamedVariable : public CacheableVariable {
    *
    * @param varName The varName of the variable in the sim. An aircraft prefix (e.g. A32NX_) will be added automatically.
    * @param unit The unit  of the variable as per the sim. See SimUnits.h
-   * @param autoReading Used by external classes to determine if the variable should be updated
-   * automatically from the sim.
-   * @param autoWriting Used by external classes to determine if the variable should be written
-   * back to the sim automatically.
+   * @param updateMode The DataManager update mode of the variable. (default: UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime The maximum age of an auto updated variable in seconds.
    * @param maxAgeTicks The maximum age of an auto updated variable in sim ticks.
    */
   explicit NamedVariable(const std::string& varName,
                          SimUnit unit = UNITS.Number,
-                         bool autoReading = false,
-                         bool autoWriting = false,
+                         UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
                          FLOAT64 maxAgeTime = 0.0,
                          UINT64 maxAgeTicks = 0)
-      : CacheableVariable(NamedVariable::AIRCRAFT_PREFIX + varName, unit, autoReading, autoWriting, maxAgeTime, maxAgeTicks) {
+      : CacheableVariable(NamedVariable::AIRCRAFT_PREFIX + varName, unit, updateMode, maxAgeTime, maxAgeTicks) {
     // this makes sure to quickly spot an issue with the prefix
     SIMPLE_ASSERT(NamedVariable::AIRCRAFT_PREFIX == "A32NX_" || NamedVariable::AIRCRAFT_PREFIX == "A380X_",
                   "Aircraft prefix is not set correctly!");
