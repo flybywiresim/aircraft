@@ -132,6 +132,7 @@ export class ISISDisplayUnit extends DisplayComponent<({ bus: EventBus })> {
         );
     }
 
+
     /*     const [state, setState] = useState(isColdAndDark ? DisplayUnitState.Off : DisplayUnitState.Standby);
 
     const hasElectricity = indicatedAirspeed > 50 && dcHotLive || dcEssLive; */
@@ -149,7 +150,6 @@ export class ISISDisplayUnit extends DisplayComponent<({ bus: EventBus })> {
             }
         }
 
-        // override MSFS menu animations setting for this instrument
 
     });
  */

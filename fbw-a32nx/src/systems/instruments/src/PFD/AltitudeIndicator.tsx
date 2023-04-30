@@ -1,5 +1,5 @@
 import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
@@ -181,10 +181,9 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
             this.updateIndication();
         });
 
-        sub.on('mda').whenChanged().handle((mda) => {
-            // TODO get a real word
-            this.mda.value = mda;
-            this.mda.ssm = mda > 0 ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
+        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
+            this.mda.value = mda.value;
+            this.mda.ssm = mda.ssm;
             this.updateIndication();
         });
 
@@ -664,7 +663,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
  interface MetricAltIndicatorState {
     altitude: Arinc429Word;
-    MDA: number;
+    MDA: Arinc429Word;
     targetAlt: number;
     altitudeColor: TargetAltitudeColor;
     metricAltToggle: boolean;
@@ -687,7 +686,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
 
     private state: MetricAltIndicatorState = {
         altitude: new Arinc429Word(0),
-        MDA: 0,
+        MDA: new Arinc429Word(0),
         altitudeColor: TargetAltitudeColor.Cyan,
         targetAlt: 0,
         metricAltToggle: false,
@@ -696,9 +695,9 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
 
-        sub.on('mda').whenChanged().handle((mda) => {
+        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
             this.state.MDA = mda;
             this.needsUpdate = true;
         });
@@ -748,7 +747,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
 
                 this.updateAltitudeColor();
 
-                if (this.state.altitude.value < this.state.MDA) {
+                if (!this.state.MDA.isNoComputedData() && !this.state.MDA.isFailureWarning() && this.state.altitude.value < this.state.MDA.value) {
                     this.metricAltText.instance.classList.replace('Green', 'Amber');
                 } else {
                     this.metricAltText.instance.classList.replace('Amber', 'Green');
