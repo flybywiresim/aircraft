@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { SimVarString } from '@shared/simvar';
 import { EfisNdMode, EfisNdRangeValue, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
@@ -563,17 +563,21 @@ interface ToWaypointIndicatorProps {
 class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private readonly sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & EcpSimVars & NDSimvars>();
 
-    private readonly trueRefActive = Subject.create(false);
+    private readonly trueRefActive = ConsumerSubject.create(null, false);
 
-    private readonly bearing = Subject.create(NaN);
+    private readonly bearing = ConsumerSubject.create(null, NaN);
 
-    private readonly trueBearing = Subject.create(NaN);
+    private readonly trueBearing = ConsumerSubject.create(null, NaN);
 
-    private efisMode: EfisNdMode = EfisNdMode.ARC;
+    private readonly efisMode = ConsumerSubject.create(null, EfisNdMode.ARC);
 
-    private topWptIdent0: number;
+    private readonly topWptIdent0 = ConsumerSubject.create(null, -1);
 
-    private topWptIdent1: number;
+    private readonly topWptIdent1 = ConsumerSubject.create(null, -1);
+
+    private readonly toWptDistanceCaptain = ConsumerSubject.create(null, -1);
+
+    private readonly toWptEtaCaptain = ConsumerSubject.create(null, -1);
 
     private readonly largeDistanceNumberRef = FSComponent.createRef<SVGTextElement>();
 
@@ -584,10 +588,13 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private readonly visibleSub = Subject.create(false);
 
     private readonly bearingContainerVisible = MappedSubject.create(
-        ([trueRef, bearing, trueBearing]) => Number.isFinite(trueRef ? trueBearing : bearing),
+        ([trueRef, bearing, trueBearing, isNormalOperation]) => {
+            return isNormalOperation && Number.isFinite(trueRef ? trueBearing : bearing);
+        },
         this.trueRefActive,
         this.bearing,
         this.trueBearing,
+        this.props.isNormalOperation,
     );
 
     private readonly bearingText = MappedSubject.create(
@@ -610,51 +617,47 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        this.sub.on('ndMode').whenChanged().handle((value) => {
-            this.efisMode = value;
+        this.efisMode.setConsumer(this.sub.on('ndMode').whenChanged());
 
-            this.handleVisibility();
-        });
+        this.efisMode.sub(() => this.handleVisibility(), true);
 
-        this.props.isNormalOperation.sub(() => {
-            this.handleVisibility();
-        });
+        this.topWptIdent0.setConsumer(this.sub.on('toWptIdent0Captain').whenChanged());
 
-        this.sub.on('toWptIdent0Captain').whenChanged().handle((value) => {
-            this.topWptIdent0 = value;
-        });
+        this.topWptIdent1.setConsumer(this.sub.on('toWptIdent1Captain').whenChanged());
 
-        this.sub.on('toWptIdent1Captain').whenChanged().handle((value) => {
-            this.topWptIdent1 = value;
-        });
+        this.toWptDistanceCaptain.setConsumer(this.sub.on('toWptDistanceCaptain').whenChanged());
 
-        this.sub.on('toWptDistanceCaptain').whenChanged().handle((value) => {
-            this.handleToWptDistance(value);
-        });
+        this.toWptDistanceCaptain.sub(() => this.handleToWptDistance(), true);
+        this.props.isNormalOperation.sub(() => this.handleToWptDistance(), true);
 
-        this.sub.on('toWptEtaCaptain').whenChanged().handle((value) => {
-            this.handleToWptEta(value);
-        });
+        this.toWptEtaCaptain.setConsumer(this.sub.on('toWptEtaCaptain').whenChanged());
 
-        this.sub.on('toWptBearingCaptain').handle((v) => this.bearing.set(v));
+        this.toWptEtaCaptain.sub(() => this.handleToWptEta(), true);
+        this.props.isNormalOperation.sub(() => this.handleToWptEta(), true);
 
-        this.sub.on('toWptTrueBearingCaptain').handle((v) => this.trueBearing.set(v));
+        this.bearing.setConsumer(this.sub.on('toWptBearingCaptain'));
+
+        this.trueBearing.setConsumer(this.sub.on('toWptTrueBearingCaptain'));
+
+        this.trueRefActive.setConsumer(this.sub.on('trueRefActive').whenChanged());
 
         this.sub.on('realTime').whenChangedBy(100).handle(() => {
             this.refreshToWptIdent();
         });
-
-        this.sub.on('trueRefActive').handle((v) => this.trueRefActive.set(!!v));
     }
 
     private handleVisibility() {
-        const visible = this.props.isNormalOperation.get() && (this.efisMode === EfisNdMode.ROSE_NAV || this.efisMode === EfisNdMode.ARC || this.efisMode === EfisNdMode.PLAN);
+        const efisMode = this.efisMode.get();
+
+        const visible = efisMode === EfisNdMode.ROSE_NAV || efisMode === EfisNdMode.ARC || efisMode === EfisNdMode.PLAN;
 
         this.visibleSub.set(visible);
     }
 
-    private handleToWptDistance(value: number) {
-        if (value < 0) {
+    private handleToWptDistance() {
+        const value = this.toWptDistanceCaptain.get();
+
+        if (value < 0 || !this.props.isNormalOperation.get()) {
             this.distanceSmallContainerVisible.set(false);
             this.distanceLargeContainerVisible.set(false);
             this.distanceNmUnitVisible.set(false);
@@ -680,8 +683,10 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         }
     }
 
-    private handleToWptEta(eta: Seconds) {
-        if (eta === -1) {
+    private handleToWptEta() {
+        const eta = this.toWptEtaCaptain.get();
+
+        if (eta === -1 || !this.props.isNormalOperation.get()) {
             this.etaValue.set('');
             return;
         }
@@ -695,7 +700,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     }
 
     private refreshToWptIdent(): void {
-        const ident = SimVarString.unpack([this.topWptIdent0, this.topWptIdent1]);
+        const ident = SimVarString.unpack([this.topWptIdent0.get(), this.topWptIdent1.get()]);
 
         this.toWptIdentValue.set(ident);
     }
@@ -708,7 +713,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         return (
             <Layer x={690} y={25} visible={this.visibleSub}>
                 {/* This is always visible */}
-                <text x={-13} y={0} class="White FontIntermediate EndAlign" visibility="visible">{this.toWptIdentValue}</text>
+                <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
 
                 <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
                     <text x={54} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>

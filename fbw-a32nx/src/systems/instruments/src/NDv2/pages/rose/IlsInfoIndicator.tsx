@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, VNode, Subject, EventBus } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, VNode, Subject, EventBus, ConsumerSubject, MappedSubject } from '@microsoft/msfs-sdk';
 import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
 
@@ -8,13 +8,17 @@ export interface IlsInfoIndicatorProps {
 }
 
 export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
-    private readonly ilsIdent = Subject.create('');
+    private readonly ilsIdent = ConsumerSubject.create(null, '');
 
-    private readonly ilsFrequency = Subject.create(-1);
+    private readonly ilsFrequency = ConsumerSubject.create(null, -1);
 
-    private readonly locCourse = Subject.create(-1);
+    private readonly locAvailable = ConsumerSubject.create(null, false);
 
-    private readonly locAvailable = Subject.create(false);
+    private readonly ilsCourse = ConsumerSubject.create(null, -1);
+
+    private readonly ilsFrequencyValid = Subject.create(false);
+
+    private readonly ilsCourseValid = Subject.create(false);
 
     private readonly frequencyIntTextSub = Subject.create('');
 
@@ -31,30 +35,28 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
 
         // TODO select correct MMR
 
-        subs.on('nav3Ident').whenChanged().handle((value) => {
-            this.ilsIdent.set(value);
-        });
+        this.ilsIdent.setConsumer(subs.on('nav3Ident').whenChanged());
 
-        subs.on('nav3Frequency').whenChanged().handle((value) => {
-            this.ilsFrequency.set(value);
-        });
+        this.ilsFrequency.setConsumer(subs.on('nav3Frequency').whenChanged());
 
-        subs.on('nav3Localizer').whenChanged().handle((value) => {
-            this.locCourse.set(value);
-        });
+        this.ilsCourse.setConsumer(subs.on('nav3Obs').whenChanged());
 
-        subs.on('localizerValid').whenChanged().handle((value) => {
-            this.locAvailable.set(value);
-        });
+        this.ilsFrequency.sub((freq) => this.ilsFrequencyValid.set(freq >= 108 && freq <= 112), true);
+        this.ilsFrequencyValid.sub((valid) => this.ilsCourseValid.set(valid), true);
 
-        this.ilsFrequency.sub((frequency) => {
-            const [int, dec] = frequency.toFixed(2).split('.', 2);
+        MappedSubject.create(([freq, valid]) => {
+            if (valid) {
+                const [int, dec] = freq.toFixed(2).split('.', 2);
 
-            this.frequencyIntTextSub.set(int);
-            this.frequencyDecimalTextSub.set(dec);
-        }, true);
+                this.frequencyIntTextSub.set(int);
+                this.frequencyDecimalTextSub.set(dec);
+            } else {
+                this.frequencyIntTextSub.set('---');
+                this.frequencyDecimalTextSub.set('--');
+            }
+        }, this.ilsFrequency, this.ilsFrequencyValid);
 
-        this.locCourse.sub((course) => {
+        this.ilsCourse.sub((course) => {
             this.courseTextSub.set(course > 0 ? Math.round(course).toString().padStart(3, '0') : '---');
         }, true);
     }
