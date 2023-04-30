@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "math_utils.hpp"
+
 /**
  * The InertialDampener provides a dampened output based on the current input
  * and an internal state value. The output value increases or decreases from the
@@ -12,6 +14,7 @@ class InertialDampener {
  private:
   double lastValue{};
   double accelStepSize{};
+  double epsilon{};
 
  public:
   /**
@@ -19,13 +22,15 @@ class InertialDampener {
    * @param startValue initial value to avoid a too large delta for the first usage
    * @param accelStepSize value which will be added/subtracted to/from the internal
    *                    state towards the input value.
+   * @param epsilon the epsilon value used to compare the input value with the internal
+   *               state value. If the difference is smaller than epsilon the input value
+   *               is returned.
    */
-  InertialDampener(double startValue, double accelStepSize);
-
-  /**
-   * Destructor
-   */
-  ~InertialDampener() = default;
+  InertialDampener(double startValue, double accelStepSize, double epsilon) {
+    this->lastValue = startValue;
+    this->accelStepSize = accelStepSize;
+    this->epsilon = epsilon;
+  };
 
   /**
    * Given a target value this returns a value increased or decreased from the last
@@ -34,8 +39,11 @@ class InertialDampener {
    * @param newTargetValue
    * @return new value loser to newTarget value by accelStepSize
    */
-  double updateSpeed(double newTargetValue);
-
- private:
-  static double round(double value, int decimalPrecision);
+  double updateSpeed(double newTargetValue) {
+    if (helper::Math::almostEqual(lastValue, newTargetValue, epsilon)) {
+      return newTargetValue;
+    }
+    lastValue += (newTargetValue > lastValue ? accelStepSize : -accelStepSize);
+    return lastValue;
+  }
 };

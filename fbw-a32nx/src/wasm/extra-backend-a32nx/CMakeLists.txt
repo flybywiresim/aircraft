@@ -17,7 +17,6 @@ set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Gauge_Extra_Backend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets_A32NX.cpp
     ${FBW_COMMON}/cpp-msfs-framework/Example/ExampleModule.cpp
-    ${FBW_COMMON}/extra-backend/Pushback/InertialDampener.cpp
     ${FBW_COMMON}/extra-backend/Pushback/Pushback.cpp
     ${FBW_COMMON}/extra-backend/AircraftPresets/AircraftPresets.cpp
     ${FBW_COMMON}/extra-backend/LightingPresets/LightingPresets.cpp
@@ -27,7 +26,7 @@ set(INCLUDE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LightingPresets/LightingPresets_A32NX.h
     ${FBW_COMMON}/cpp-msfs-framework/Example/ExampleModule.h
     ${FBW_COMMON}/cpp-msfs-framework/Example/longtext.h
-    ${FBW_COMMON}/extra-backend/Pushback/InertialDampener.h
+    ${FBW_COMMON}/extra-backend/Pushback/InertialDampener.hpp
     ${FBW_COMMON}/extra-backend/Pushback/Pushback.h
     ${FBW_COMMON}/extra-backend/AircraftPresets/AircraftPresets.h
     ${FBW_COMMON}/extra-backend/AircraftPresets/PresetProcedures.h
