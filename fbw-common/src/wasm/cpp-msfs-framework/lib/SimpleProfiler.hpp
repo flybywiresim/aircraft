@@ -116,7 +116,7 @@ class SimpleProfiler {
     std::stringstream os{};
     os << "Profiler: " << std::setw(10) << std::right << helper::StringUtils::insertThousandsSeparator(avg.count()) << " (" << std::setw(10)
        << std::right << helper::StringUtils::insertThousandsSeparator(_samples.minimum().count()) << " / " << std::setw(10) << std::right
-       << helper::StringUtils::insertThousandsSeparator(_samples.trimmedAverage(0.1).count()) << " / " << std::setw(10) << std::right
+       << helper::StringUtils::insertThousandsSeparator(_samples.trimmedAverage().count()) << " / " << std::setw(10) << std::right
        << helper::StringUtils::insertThousandsSeparator(_samples.maximum().count()) << ")"
        << " nanoseconds for " << _name << " (avg of " << _samples.size() << " samples) " << std::endl;
     return os.str();
