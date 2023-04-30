@@ -32,8 +32,8 @@
 // be dormant most of the time, this is saving a lot of unnecessary reads/writes.
 ///
 
-static constexpr FLOAT64 SPEED_FACTOR = 18.0;      // ft/sec for "VELOCITY BODY Z"
-static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.16; // ft/sec for "ROTATION VELOCITY BODY Y"
+static constexpr FLOAT64 SPEED_FACTOR = 18.0;       // ft/sec for "VELOCITY BODY Z"
+static constexpr FLOAT64 TURN_SPEED_FACTOR = 0.16;  // ft/sec for "ROTATION VELOCITY BODY Y"
 
 bool Pushback::initialize() {
   dataManager = &msfsHandler.getDataManager();
@@ -86,11 +86,9 @@ bool Pushback::update(sGaugeDrawData* pData) {
     return false;
   }
 
-  if (!msfsHandler.getAircraftIsReadyVar())
-    return true;
-
   // Check if the pushback system is enabled and conditions are met
-  if (!pushbackSystemEnabled->getAsBool() || !pushbackAttached->getAsBool() || !simOnGround->getAsBool()) {
+  if (!msfsHandler.getAircraftIsReadyVar() || !pushbackSystemEnabled->getAsBool() || !pushbackAttached->getAsBool() ||
+      !simOnGround->getAsBool()) {
     return true;
   }
 
@@ -98,15 +96,14 @@ bool Pushback::update(sGaugeDrawData* pData) {
   const UINT64 tickCounter = msfsHandler.getTickCounter();
 
   // read all data from sim - could be done inline but better readability this way
-  parkingBrakeEngaged->updateFromSim(timeStamp, tickCounter);
-  aircraftHeading->updateFromSim(timeStamp, tickCounter);
   tugCommandedSpeedFactor->updateFromSim(timeStamp, tickCounter);
   tugCommandedHeadingFactor->updateFromSim(timeStamp, tickCounter);
+  parkingBrakeEngaged->updateFromSim(timeStamp, tickCounter);
+  aircraftHeading->updateFromSim(timeStamp, tickCounter);
   windVelBodyZ->updateFromSim(timeStamp, tickCounter);
 
   const double speedFactor = parkingBrakeEngaged->getAsBool() ? (SPEED_FACTOR / 10) : SPEED_FACTOR;
   const FLOAT64 tugCmdSpd = tugCommandedSpeedFactor->get() * speedFactor;
-
   const FLOAT64 inertiaSpeed = inertialDampener.updateSpeed(tugCmdSpd);
 
   const double turnSpeedHdgFactor = parkingBrakeEngaged->getAsBool() ? (TURN_SPEED_FACTOR / 10) : TURN_SPEED_FACTOR;
@@ -115,14 +112,11 @@ bool Pushback::update(sGaugeDrawData* pData) {
   // As we might use the elevator for taxiing we compensate for wind to avoid
   // the aircraft lifting any gears. The hard coded values are based on testing
   // in the sim.
-  const FLOAT64 windCounterRotAccel = windVelBodyZ->get() / 2000.0;
-  FLOAT64 movementCounterRotAccel = windCounterRotAccel;
+  FLOAT64 movementCounterRotAccel = 0.0;
   if (inertiaSpeed > 0) {
-    movementCounterRotAccel -= 0.5;
+    movementCounterRotAccel = (windVelBodyZ->get() / 2000.0) - 0.5;
   } else if (inertiaSpeed < 0) {
-    movementCounterRotAccel += 1.0;
-  } else {
-    movementCounterRotAccel = 0.0;
+    movementCounterRotAccel = (windVelBodyZ->get() / 2000.0) + 1.0;
   }
 
   FLOAT64 aircraftHeadingDeg = aircraftHeading->get() * (180.0 / PI);
@@ -147,7 +141,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
   //  tugSpeedEvent->trigger_ex1(static_cast<DWORD>(inertiaSpeed));
 
   // Update sim data
-  pushbackData->data().pushbackWait = inertiaSpeed == 0 ? 1 : 0;
+  pushbackData->data().pushbackWait = helper::Math::almostEqual(inertiaSpeed, 0.0) ? 1 : 0;
   pushbackData->data().velBodyZ = inertiaSpeed;
   pushbackData->data().rotVelBodyY = computedRotationVelocity;
   pushbackData->data().rotAccelBodyX = movementCounterRotAccel;
