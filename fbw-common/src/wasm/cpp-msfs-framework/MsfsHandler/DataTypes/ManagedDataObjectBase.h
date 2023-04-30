@@ -4,8 +4,9 @@
 #ifndef FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 #define FLYBYWIRE_A32NX_MANAGEDDATAOBJECTBASE_H
 
-#include <string>
+#include <cstdint>
 #include <map>
+#include <string>
 
 #include <MSFS/Legacy/gauges.h>
 
@@ -14,14 +15,10 @@
 #include "logging.h"
 
 // Used for callback registration to allow removal of callbacks
-typedef uint64_t CallbackID;
+using CallbackID = uint64_t;
 
-/**
- * Defines a callback function for an event
- * @param number of parameters to use
- * @param parameters 0-4 to pass to the callback function
- */
-typedef std::function<void()> CallbackFunction;
+// Callback function type
+using CallbackFunction = std::function<void()>;
 
 /**
  * @brief The ManagedDataObjectBase class is the base class for all data objects and provides auto
@@ -123,7 +120,7 @@ class ManagedDataObjectBase : public DataObjectBase {
   void setChanged(bool changed) {
     this->changedFlag = changed;
     if (this->changedFlag) {
-      for (const auto& [id, callback] : callbacks) {
+      for (const auto& [_, callback] : callbacks) {
         callback();
       }
     }
