@@ -16,16 +16,16 @@ export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
 
     private readonly ilsCourse = Subject.create(0);
 
-    private readonly bugShown = MappedSubject.create(([headingWord, ils, diff]) => {
+    private readonly bugShown = MappedSubject.create(([headingWord, lsCourse, diff]) => {
         if (!headingWord.isNormalOperation()) {
             return false;
         }
 
-        if (ils < 0) {
+        if (lsCourse < 0 || Math.abs(diff) > 48) {
             return false;
         }
 
-        return diff < 48;
+        return true;
     }, this.headingWord, this.ilsCourse, this.diffSubject);
 
     onAfterRender(node: VNode) {
