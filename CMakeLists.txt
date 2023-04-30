@@ -42,7 +42,7 @@ add_definitions(
     -D_WINDLL
     -D_MBCS
     # ZERO_LVL=0 CRITICAL_LVL=1 ERROR_LVL=2 WARN_LVL=3 INFO_LVL=4 DEBUG_LVL=5 VERBOSE=6 TRACE_LVL=7
-    -DLOG_LEVEL=5
+    -DLOG_LEVEL=4
     # EXAMPLES | NO_EXAMPLES
     -DNO_EXAMPLES
     #PROFILING | NO_PROFILING - for logging of profiling information of pre-, post-, update() calls
