@@ -57,7 +57,7 @@ class ProfileBuffer {
    * @brief Calculate the sum of all values in the buffer at the time of the call.
    * @return sum of all values
    */
-  T sum() { return std::accumulate(_buffer.begin(), _buffer.end(), T(0)); }
+  T sum() { return std::reduce(_buffer.begin(), _buffer.end(), T(0)); }
 
   /**
    * @brief Calculate the average of all values in the buffer at the time of the call.
@@ -76,7 +76,7 @@ class ProfileBuffer {
     std::deque<T> sorted = _buffer;
     std::sort(sorted.begin(), sorted.end());
     const int trimSize = sorted.size() * trimPercent;
-    return std::accumulate(sorted.begin() + trimSize, sorted.end() - trimSize, T(0)) / (sorted.size() - trimSize * 2);
+    return std::reduce(sorted.begin() + trimSize, sorted.end() - trimSize, T(0)) / (sorted.size() - trimSize * 2);
   }
 
   /**
@@ -84,14 +84,14 @@ class ProfileBuffer {
    *        averaging the lowest percentile values in the buffer.
    * @param percentile Percentile to return, e.g. 0.05 for the 5% minimum. If no percentile is given, the minimum of all values is returned.
    * @return Average value of the minimum percentile of the collected samples at the time of calling this method or the minimum of
-    * all samples if no percentile is given
+   * all samples if no percentile is given
    */
   [[nodiscard]] T minimum(float percentile = 0.0f) {
     if (percentile > 0.0) {
       std::deque<T> sorted = _buffer;
       std::sort(sorted.begin(), sorted.end());
       const int trimSize = sorted.size() * percentile;
-      return std::accumulate(sorted.begin(), sorted.begin() + trimSize, T(0)) / trimSize;
+      return std::reduce(sorted.begin(), sorted.begin() + trimSize, T(0)) / trimSize;
     }
     return *std::min_element(_buffer.begin(), _buffer.end());
   }
@@ -101,9 +101,9 @@ class ProfileBuffer {
    *        averaging the highest percentile values in the buffer.
    * @param percentile Percentile to return, e.g. 0.05 for the 5% maximum. If no percentile is given, the maximum of all values is returned.
    * @return Average value of the maximum percentile of the collected samples at the time of calling this method or the maximum of
-    * all samples if no percentile is given
+   * all samples if no percentile is given
    */
-  [[nodiscard]] T maximum(float percentile =0.0f) {
+  [[nodiscard]] T maximum(float percentile = 0.0f) {
     if (percentile > 0.0) {
       std::deque<T> sorted = _buffer;
       std::sort(sorted.begin(), sorted.end());
