@@ -361,7 +361,10 @@ class DataManager {
    * a SimConnect exception that the event is unknown.<br/>
    * If the ClientEvent is intended to be used as a system event then it must be constructed with the
    * registerToSim parameter set to false. This will prevent the event from being registered to the sim.
-   * The subscribeToSimSystemEvent() method must then be used to subscribe to the system event.
+   * The subscribeToSimSystemEvent() method must then be used to subscribe to the system event.<p/>
+   *
+   * Note: for most cases it is easier to use the special
+   * make_(custom|sim|system)_event methods for the different type of events
    *
    * @param clientEventName The name of the client event.<p/>
    *                        If the intention is to map this client event to a sim event the name
@@ -388,6 +391,8 @@ class DataManager {
 
   /**
    * @brief Creates a new custom client event with a unique ID and adds it to the list of managed events.<br/>
+   * Note: Calls make_client_event(clientEventName, true, notificationGroupId) internally after checking if the
+   * clientEventName contains a period.
    * @param clientEventName The name of the custom client event.<p/>
    *                        The custom client event name must includes one or more periods
    *                        (e.g. "Custom.Event") so the sim can distinguish it from a sim event.
@@ -406,6 +411,8 @@ class DataManager {
 
   /**
    * @brief Creates a new sim client event with a unique ID and adds it to the list of managed events.<br/>
+   * Note: Calls make_client_event(clientEventName, true, notificationGroupId) internally after checking if the
+   * clientEventName does not contain a period.
    * @param clientEventName The name of the sim client event.<p/>
    * @param notificationGroupId Specifies the notification group to which the event is added. If no
    *                          entry is made for this parameter, the event is not added to a
@@ -420,6 +427,8 @@ class DataManager {
 
   /**
    * @brief Creates a new system client event with a unique ID and adds it to the list of managed events.<br/>
+   * Note: Calls make_client_event(clientEventName, false, SIMCONNECT_UNUSED) internally after checking if the
+   * clientEventName contains a period.
    * @param clientEventName The name of the system client event.<p/>
    *                       The system client event name must includes one or more periods (e.g. "System.Event").
    * @param systemEventName The name of the system event to subscribe to. This must be a valid system event name otherwise
