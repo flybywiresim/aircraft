@@ -9,7 +9,7 @@
 
 #include <MSFS/Legacy/gauges.h>
 
-#include "ManagedDataObjectBase.h"
+#include "ManagedDataObjectBase.hpp"
 #include "SimUnits.h"
 #include "UpdateMode.h"
 

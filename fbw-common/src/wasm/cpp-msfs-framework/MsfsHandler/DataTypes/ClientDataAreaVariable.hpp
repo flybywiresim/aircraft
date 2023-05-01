@@ -8,7 +8,7 @@
 #include <sstream>
 #include <vector>
 
-#include "SimObjectBase.h"
+#include "SimObjectBase.hpp"
 #include "UpdateMode.h"
 #include "logging.h"
 

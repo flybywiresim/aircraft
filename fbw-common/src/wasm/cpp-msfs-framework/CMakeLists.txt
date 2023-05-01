@@ -14,10 +14,10 @@ set(INCLUDE_FILES
     MsfsHandler/DataTypes/ClientDataAreaVariable.hpp
     MsfsHandler/DataTypes/ClientEvent.h
     MsfsHandler/DataTypes/DataDefinitionVariable.hpp
-    MsfsHandler/DataTypes/DataObjectBase.h
-    MsfsHandler/DataTypes/ManagedDataObjectBase.h
+    MsfsHandler/DataTypes/DataObjectBase.hpp
+    MsfsHandler/DataTypes/ManagedDataObjectBase.hpp
     MsfsHandler/DataTypes/NamedVariable.h
-    MsfsHandler/DataTypes/SimObjectBase.h
+    MsfsHandler/DataTypes/SimObjectBase.hpp
     MsfsHandler/DataTypes/StreamingClientDataAreaVariable.hpp
     MsfsHandler/Module.h
     MsfsHandler/MsfsHandler.h

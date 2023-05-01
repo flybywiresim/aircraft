@@ -10,7 +10,7 @@
 
 #include <MSFS/Legacy/gauges.h>
 
-#include "DataObjectBase.h"
+#include "DataObjectBase.hpp"
 #include "IDGenerator.h"
 #include "UpdateMode.h"
 #include "logging.h"
@@ -54,7 +54,10 @@ class ManagedDataObjectBase : public DataObjectBase {
    */
   bool skipChangeCheckFlag = false;
 
-  UpdateMode _updateMode = UpdateMode::NO_AUTO_UPDATE;
+  /**
+   * @brief the update mode for auto read and write
+   */
+  UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE;
 
   /**
    * The time stamp of the last update from the sim
@@ -95,7 +98,7 @@ class ManagedDataObjectBase : public DataObjectBase {
    * @param maxAgeTicks the maximum age of the value in ticks before it is updated from the sim
    */
   ManagedDataObjectBase(const std::string& varName, UpdateMode updateMode, FLOAT64 maxAgeTime, UINT64 maxAgeTicks)
-      : DataObjectBase(varName), _updateMode(updateMode), maxAgeTime(maxAgeTime), maxAgeTicks(maxAgeTicks) {}
+      : DataObjectBase(varName), updateMode(updateMode), maxAgeTime(maxAgeTime), maxAgeTicks(maxAgeTicks) {}
 
   /**
    * Sets the changedFlag flag to the given value and triggers the registered callbacks
@@ -103,8 +106,8 @@ class ManagedDataObjectBase : public DataObjectBase {
    * @param changed the new value for the changedFlag flag
    */
   void setChanged(bool changed) {
-    this->changedFlag = changed;
-    if (this->changedFlag) {
+    changedFlag = changed;
+    if (changedFlag) {
       for (const auto& [_, callback] : callbacks) {
         callback();
       }
@@ -117,7 +120,7 @@ class ManagedDataObjectBase : public DataObjectBase {
   ManagedDataObjectBase& operator=(const ManagedDataObjectBase&) = delete;  // no copy assignment
   ManagedDataObjectBase(ManagedDataObjectBase&&) = delete;                  // no move constructor
   ManagedDataObjectBase& operator=(ManagedDataObjectBase&&) = delete;       // no move assignment
-  virtual ~ManagedDataObjectBase() = default;
+  virtual ~ManagedDataObjectBase() = default;                               // so derived classes can be destroyed with base class pointer
 
   /**
    * Adds a callback function to be called when the data object's data changed.<p/>
@@ -197,33 +200,33 @@ class ManagedDataObjectBase : public DataObjectBase {
    * @param autoRead if true the variable will be updated from the sim every time the DataManager::preUpdate() method is called, false otherwise
    */
   virtual void setAutoRead(bool autoRead) {
-    _updateMode = static_cast<UpdateMode>(autoRead ? _updateMode | UpdateMode::AUTO_READ : _updateMode & ~UpdateMode::AUTO_READ);
+    updateMode = static_cast<UpdateMode>(autoRead ? updateMode | UpdateMode::AUTO_READ : updateMode & ~UpdateMode::AUTO_READ);
   }
 
   /**
    * @return true if the variable should be automatically updated from the sim n the DataManagers
    *         postUpdate() method.
    */
-  [[nodiscard]] bool isAutoRead() const { return _updateMode & UpdateMode::AUTO_READ; }
+  [[nodiscard]] bool isAutoRead() const { return updateMode & UpdateMode::AUTO_READ; }
 
   /**
    * @brief Sets the auto write update mode for the variable.
    * @param autoWrite if true the variable will be written to the sim every time the DataManager::postUpdate() method is called, false otherwise
    */
   virtual void setAutoWrite(bool autoWrite) {
-    _updateMode = static_cast<UpdateMode>(autoWrite ? _updateMode | UpdateMode::AUTO_WRITE : _updateMode & ~UpdateMode::AUTO_WRITE);
+    updateMode = static_cast<UpdateMode>(autoWrite ? updateMode | UpdateMode::AUTO_WRITE : updateMode & ~UpdateMode::AUTO_WRITE);
   }
 
   /**
    * @return true if the variable will be written to the sim in the DataManagers postUpdate() method.
    */
-  [[nodiscard]] bool isAutoWrite() const { return _updateMode & UpdateMode::AUTO_WRITE; }
+  [[nodiscard]] bool isAutoWrite() const { return updateMode & UpdateMode::AUTO_WRITE; }
 
   /**
    * @brief Sets the update mode.
    * @param updateMode the new update mode
    */
-  void setUpdateMode(UpdateMode updateMode) { this->_updateMode = updateMode; }
+  void setUpdateMode(UpdateMode updateMode) { this->updateMode = updateMode; }
 
   /**
    * @return the time stamp of the last read from the sim

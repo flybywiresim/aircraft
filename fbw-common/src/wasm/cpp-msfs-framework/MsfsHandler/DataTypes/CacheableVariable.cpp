@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "CacheableVariable.h"
-#include "ManagedDataObjectBase.h"
+#include "ManagedDataObjectBase.hpp"
 #include "logging.h"
 #include "math_utils.hpp"
 

@@ -11,7 +11,7 @@
 #include <SimConnect.h>
 
 #include "IDGenerator.h"
-#include "ManagedDataObjectBase.h"
+#include "ManagedDataObjectBase.hpp"
 #include "UpdateMode.h"
 #include "simple_assert.h"
 
