@@ -15,6 +15,7 @@
  */
 enum UpdateMode {
   // clang-format off
+
   // No automatic updates (default)
   NO_AUTO_UPDATE = 0, // 0x00
   // Automatic read every tick
@@ -23,6 +24,7 @@ enum UpdateMode {
   AUTO_WRITE = 2,     // 0x10
   // Automatic read and write every tick
   AUTO_READ_WRITE = 3 // 0x11
+
   // clang-format on
 };
 namespace ManagedDataObject {}  // namespace ManagedDataObject
