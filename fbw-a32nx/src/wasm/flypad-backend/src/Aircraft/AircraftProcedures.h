@@ -129,8 +129,8 @@ class AircraftProcedures {
     ProcedureStep{"Beacon On",               2130, false, 1000, "(A:LIGHT BEACON, Bool)",                        "0 (>K:BEACON_LIGHTS_ON)"},
     ProcedureStep{"FUEL PUMP 2 On",          2010, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool)",            "2 (>K:FUELSYSTEM_PUMP_ON)"},
     ProcedureStep{"FUEL PUMP 5 On",          2020, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool)",            "5 (>K:FUELSYSTEM_PUMP_ON)"},
-    ProcedureStep{"FUEL PUMP 1 On",          2030, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:1, Bool)",            "1 (>K:FUELSYSTEM_PUMP_ON)"},
-    ProcedureStep{"FUEL PUMP 4 On",          2040, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool)",            "4 (>K:FUELSYSTEM_PUMP_ON)"},
+    ProcedureStep{"FUEL VALVE 9 On",         2030, false, 100,  "(A:FUELSYSTEM VALVE SWITCH:9, Bool)",           "9 (>K:FUELSYSTEM_VALVE_OPEN)"},
+    ProcedureStep{"FUEL VALVE 10 On",        2040, false, 500,  "(A:FUELSYSTEM VALVE SWITCH:10, Bool)",          "10 (>K:FUELSYSTEM_VALVE_OPEN)"},
     ProcedureStep{"FUEL PUMP 3 On",          2050, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool)",            "3 (>K:FUELSYSTEM_PUMP_ON)"},
     ProcedureStep{"FUEL PUMP 6 On",          2060, false, 2000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",            "6 (>K:FUELSYSTEM_PUMP_ON)"},
     ProcedureStep{"COCKPIT DOOR LCK",        2110, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",            "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
@@ -140,14 +140,14 @@ class AircraftProcedures {
 };
 
   static const inline std::vector PUSHBACK_CONFIG_OFF = {
-    ProcedureStep{"COCKPIT DOOR OP", 2250, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",          "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
-    ProcedureStep{"FUEL PUMP 2 Off", 2260, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool) !",        "2 (>K:FUELSYSTEM_PUMP_OFF)"},
-    ProcedureStep{"FUEL PUMP 5 Off", 2270, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool) !",        "5 (>K:FUELSYSTEM_PUMP_OFF)"},
-    ProcedureStep{"FUEL PUMP 1 Off", 2280, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:1, Bool) !",        "1 (>K:FUELSYSTEM_PUMP_OFF)"},
-    ProcedureStep{"FUEL PUMP 4 Off", 2290, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool) !",        "4 (>K:FUELSYSTEM_PUMP_OFF)"},
-    ProcedureStep{"FUEL PUMP 3 Off", 2300, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool) !",        "3 (>K:FUELSYSTEM_PUMP_OFF)"},
-    ProcedureStep{"FUEL PUMP 6 Off", 2310, false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool) !",        "6 (>K:FUELSYSTEM_PUMP_OFF)"},
-    ProcedureStep{"Beacon Off",      2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                    "0 (>K:BEACON_LIGHTS_OFF)"},
+    ProcedureStep{"COCKPIT DOOR OP",  2250, false, 2000, "(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==",          "0 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
+    ProcedureStep{"FUEL PUMP 2 Off",  2260, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool) !",        "2 (>K:FUELSYSTEM_PUMP_OFF)"},
+    ProcedureStep{"FUEL PUMP 5 Off",  2270, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool) !",        "5 (>K:FUELSYSTEM_PUMP_OFF)"},
+    ProcedureStep{"FUEL VALVE 9 Off", 2280, false, 100,  "(A:FUELSYSTEM VALVE SWITCH:9, Bool) !",       "9 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+    ProcedureStep{"FUEL VALVE 10 Off",2290, false, 500,  "(A:FUELSYSTEM VALVE SWITCH:10, Bool) !",      "10 (>K:FUELSYSTEM_VALVE_CLOSE)"},
+    ProcedureStep{"FUEL PUMP 3 Off",  2300, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool) !",        "3 (>K:FUELSYSTEM_PUMP_OFF)"},
+    ProcedureStep{"FUEL PUMP 6 Off",  2310, false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool) !",        "6 (>K:FUELSYSTEM_PUMP_OFF)"},
+    ProcedureStep{"Beacon Off",       2190, false, 1000, "(A:LIGHT BEACON, Bool) !",                    "0 (>K:BEACON_LIGHTS_OFF)"},
 };
 
   static const inline std::vector TAXI_CONFIG_ON = {
