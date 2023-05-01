@@ -29,15 +29,15 @@ struct is_numeric<std::chrono::duration<T>> : std::true_type {};
 template <typename T>
 class ProfileBuffer {
  private:
+  std::size_t _capacity;
   std::deque<T> _buffer;
-  size_t _capacity;
 
  public:
   /**
    * @brief Construct a new Profile Buffer object
    * @param capacity the maximum number of values to collect in the buffer
    */
-  explicit ProfileBuffer(size_t capacity) : _capacity(capacity) {
+  explicit ProfileBuffer(std::size_t capacity) : _capacity{capacity}, _buffer{std::deque<T>(capacity)} {
     static_assert(is_numeric<T>::value || is_duration<T>::value, "T must be numeric or duration type");
   }
 
@@ -46,7 +46,7 @@ class ProfileBuffer {
    * @details If the buffer is full, the oldest value will be removed.
    * @param value the value to push
    */
-  inline void push(T value) {
+  void push(T value) {
     if (_buffer.size() == _capacity) {
       _buffer.pop_front();
     }
@@ -73,9 +73,9 @@ class ProfileBuffer {
    * @return trimmed average of all values
    */
   [[nodiscard]] T trimmedAverage(float trimPercent = 0.05f) {
-    std::deque<T> sorted = _buffer;
+    auto sorted = _buffer;
     std::sort(sorted.begin(), sorted.end());
-    const int trimSize = sorted.size() * trimPercent;
+    const std::size_t trimSize = sorted.size() * trimPercent;
     return std::reduce(sorted.begin() + trimSize, sorted.end() - trimSize, T(0)) / (sorted.size() - trimSize * 2);
   }
 
@@ -88,9 +88,9 @@ class ProfileBuffer {
    */
   [[nodiscard]] T minimum(float percentile = 0.0f) {
     if (percentile > 0.0) {
-      std::deque<T> sorted = _buffer;
+      auto sorted = _buffer;
       std::sort(sorted.begin(), sorted.end());
-      const int trimSize = sorted.size() * percentile;
+      const std::size_t trimSize = sorted.size() * percentile;
       return std::reduce(sorted.begin(), sorted.begin() + trimSize, T(0)) / trimSize;
     }
     return *std::min_element(_buffer.begin(), _buffer.end());
@@ -105,9 +105,9 @@ class ProfileBuffer {
    */
   [[nodiscard]] T maximum(float percentile = 0.0f) {
     if (percentile > 0.0) {
-      std::deque<T> sorted = _buffer;
+      auto sorted = _buffer;
       std::sort(sorted.begin(), sorted.end());
-      const int trimSize = sorted.size() * percentile;
+      const std::size_t trimSize = sorted.size() * percentile;
       return std::accumulate(sorted.end() - trimSize, sorted.end(), T(0)) / trimSize;
     }
     return *std::max_element(_buffer.begin(), _buffer.end());
@@ -117,13 +117,13 @@ class ProfileBuffer {
    * @brief Get the current number of values in the buffer.
    * @return Current number of values in the buffer.
    */
-  [[nodiscard]] inline size_t size() const { return _buffer.size(); }
+  [[nodiscard]] std::size_t size() const { return _buffer.size(); }
 
   /**
    * @brief Get the capacity of the buffer.
    * @return Capacity of the buffer.
    */
-  [[nodiscard]] inline size_t capacity() const { return _capacity; }
+  [[nodiscard]] std::size_t capacity() const { return _capacity; }
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_PROFILEBUFFER_HPP

@@ -42,7 +42,7 @@ class ScopedTimer {
    * execution time when the object goes out of scope.
    * @param timerName Name of the timer for the output
    */
-  ScopedTimer(const std::string_view timerName) : _timerName{timerName}, _start{ClockType::now()} {}
+  ScopedTimer(const std::string_view& timerName) : _timerName{timerName}, _start{ClockType::now()} {}
 
   /**
    * @brief Destroy the Scoped Timer object. Will print the execution time to std::cout.
