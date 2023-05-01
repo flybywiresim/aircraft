@@ -178,7 +178,8 @@ class AircraftProcedures {
     ProcedureStep{"TCAS TRAFFIC ABV",     2100, false, 2000,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",      "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
     ProcedureStep{"Autobrake Max",        3080, false, 2000,  "(L:A32NX_AUTOBRAKES_ARMED_MODE) 3 ==",             "3 (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)"},
     ProcedureStep{"TERR ON ND Capt. On",  3080, false, 2000,  "(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==",                "1 (>L:A32NX_EFIS_TERR_L_ACTIVE)"},
-    ProcedureStep{"T.O. Config",          3085, false, 2000,  "",                                                 "1 (>L:A32NX_TO_CONFIG_NORMAL)"},
+    ProcedureStep{"T.O Config",           3085, false, 200,   "",                                                 "1 (>L:A32NX_BTN_TOCONFIG)"},
+    ProcedureStep{"T.O Config",           3085, false, 2000,  "",                                                 "0 (>L:A32NX_BTN_TOCONFIG)"},
 };
 
   static const inline std::vector TAXI_CONFIG_OFF = {

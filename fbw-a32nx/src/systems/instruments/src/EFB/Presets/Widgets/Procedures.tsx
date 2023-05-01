@@ -102,7 +102,7 @@ export const StepDescription = new Map([
     [3080, 'Autobrake Max'],
     [3080, 'TERR ON ND Capt. Off'],
     [3080, 'TERR ON ND Capt. On'],
-    [3085, 'T.O. Config'],
+    [3085, 'T.O Config'],
     [3090, 'Spoiler Arm'],
     [3100, 'Rudder Trim Reset'],
     [3110, 'Flaps 1'],
