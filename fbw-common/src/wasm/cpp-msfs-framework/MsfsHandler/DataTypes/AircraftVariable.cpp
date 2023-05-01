@@ -45,7 +45,7 @@ void AircraftVariable::setAutoWrite(bool autoWriting) {
     LOG_ERROR("AircraftVariable::setAutoWrite() called on [" + name + "] but no setter event name is set");
     return;
   }
-  this->setAutoWrite(autoWriting);
+  CacheableVariable::setAutoWrite(autoWriting);
 }
 
 // =================================================================================================
@@ -56,13 +56,13 @@ void AircraftVariable::useEventSetter() {
   const auto data = static_cast<DWORD>(cachedValue.value());
   if (index != 0) {
     setterEvent->trigger_ex1(index, data, 0, 0, 0);
-  } else {
-    setterEvent->trigger_ex1(data, 0, 0, 0, 0);
+    return;
   }
+  setterEvent->trigger_ex1(data, 0, 0, 0, 0);
 }
 
 void AircraftVariable::useCalculatorCodeSetter() {
-  std::string calculator_code;
+  std::string calculator_code{};
   calculator_code += std::to_string(cachedValue.value());
   calculator_code += " ";
   if (index != 0) {
@@ -72,15 +72,8 @@ void AircraftVariable::useCalculatorCodeSetter() {
   } else {
     calculator_code += " (>K:" + setterEventName + ")";
   }
-
-  PCSTRINGZ pCompiled{};
-  UINT32 pCompiledSize{};
-  if (gauge_calculator_code_precompile(&pCompiled, &pCompiledSize, calculator_code.c_str())) {
-    if (!execute_calculator_code(pCompiled, nullptr, nullptr, nullptr)) {
-      LOG_ERROR("AircraftVariable::setAndWriteToSim() failed to execute calculator code: [" + calculator_code + "]");
-    }
-  } else {
-    LOG_ERROR("Failed to precompile calculator code for " + name);
+  if (!execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr)) {
+    LOG_ERROR("AircraftVariable::setAndWriteToSim() failed to execute calculator code: [" + calculator_code + "]");
   }
 }
 
