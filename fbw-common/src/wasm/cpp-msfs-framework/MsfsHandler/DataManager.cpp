@@ -244,10 +244,10 @@ ClientEventPtr DataManager::make_client_event(const std::string& clientEventName
 
   // create a new event instance
   ClientEventPtr clientEvent = ClientEventPtr(new ClientEvent(hSimConnect, clientEventIDGen.getNextId(), clientEventName));
+  clientEvents[clientEvent->getClientEventId()] = clientEvent;
   if (registerToSim) {
     clientEvent->mapToSimEvent();
   }
-  clientEvents[clientEvent->getClientEventId()] = clientEvent;
   if (notificationGroupId != SIMCONNECT_UNUSED) {
     clientEvent->addClientEventToNotificationGroup(notificationGroupId);
   }

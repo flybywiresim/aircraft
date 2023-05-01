@@ -16,6 +16,7 @@
 #include "IDGenerator.h"
 #include "SimUnits.h"
 #include "logging.h"
+#include "simple_assert.h"
 
 #include "AircraftVariable.h"
 #include "ClientDataAreaVariable.hpp"
@@ -362,9 +363,6 @@ class DataManager {
    * registerToSim parameter set to false. This will prevent the event from being registered to the sim.
    * The subscribeToSimSystemEvent() method must then be used to subscribe to the system event.
    *
-   * TODO: Consider splitting this up into 3 methods:
-   *  make_custom_event, make_sim_event, make_system_event
-   *
    * @param clientEventName The name of the client event.<p/>
    *                        If the intention is to map this client event to a sim event the name
    *                        needs to be the same as the sim event name.<p/>
@@ -381,12 +379,61 @@ class DataManager {
    *                       to a system event with ClientEvent::subscribeToSystemEvent() afterwards.
    * @param notificationGroupId Specifies the notification group to which the event is added. If no
    *                           entry is made for this parameter, the event is not added to a
-   *                           notification group.
+   *                           notification group (default=SIMCONNECT_UNUSED).
    * @return A shared pointer to the ClientEvent
    */
   [[nodiscard]] ClientEventPtr make_client_event(const std::string& clientEventName,
-                                                 bool registerToSim = true,
+                                                 bool registerToSim,
                                                  SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED);
+
+  /**
+   * @brief Creates a new custom client event with a unique ID and adds it to the list of managed events.<br/>
+   * @param clientEventName The name of the custom client event.<p/>
+   *                        The custom client event name must includes one or more periods
+   *                        (e.g. "Custom.Event") so the sim can distinguish it from a sim event.
+   *                        Custom events will only be recognized by another client (and not Microsoft
+   *                        Flight Simulator) that has been coded to receive such events.<p/>
+   * @param notificationGroupId Specifies the notification group to which the event is added. If no
+*                           entry is made for this parameter, the event is not added to a
+*                           notification group (default=SIMCONNECT_UNUSED).
+   * @return A shared pointer to the custom ClientEvent
+   */
+  [[nodiscard]] ClientEventPtr make_custom_event(const std::string& clientEventName,
+                                                 SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED) {
+    SIMPLE_ASSERT(clientEventName.find('.') != std::string::npos, "Custom event name must contain a period in the name.");
+    return make_client_event(clientEventName, true, notificationGroupId);
+  }
+
+  /**
+   * @brief Creates a new sim client event with a unique ID and adds it to the list of managed events.<br/>
+   * @param clientEventName The name of the sim client event.<p/>
+   * @param notificationGroupId Specifies the notification group to which the event is added. If no
+   *                          entry is made for this parameter, the event is not added to a
+   *                          notification group (default=SIMCONNECT_UNUSED).
+   * @return A shared pointer to the sim ClientEvent
+   */
+  [[nodiscard]] ClientEventPtr make_sim_event(const std::string& clientEventName,
+                                              SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId = SIMCONNECT_UNUSED) {
+    SIMPLE_ASSERT(clientEventName.find('.') == std::string::npos, "Sim event name must not contain a period in the name.");
+    return make_client_event(clientEventName, true, notificationGroupId);
+  }
+
+  /**
+   * @brief Creates a new system client event with a unique ID and adds it to the list of managed events.<br/>
+   * @param clientEventName The name of the system client event.<p/>
+   *                       The system client event name must includes one or more periods (e.g. "System.Event").
+   * @param systemEventName The name of the system event to subscribe to. This must be a valid system event name otherwise
+   *                       SimConnect will throw an exception error.
+   * @return A shared pointer to the system ClientEvent
+   */
+  [[nodiscard]] ClientEventPtr make_system_event(const std::string& clientEventName,
+                                                 const std::string& systemEventName) {
+    SIMPLE_ASSERT(clientEventName.find('.') != std::string::npos, "Client event name for system events must contain a period in the name.");
+    auto event = make_client_event(clientEventName, false, SIMCONNECT_UNUSED);
+    event->subscribeToSimSystemEvent(systemEventName);
+    SIMPLE_ASSERT(event->isRegisteredToSim(), "Client event not registered to sim. This should not happen.");
+    return event;
+  }
 
   // ===============================================================================================
   // Key Event Handling
