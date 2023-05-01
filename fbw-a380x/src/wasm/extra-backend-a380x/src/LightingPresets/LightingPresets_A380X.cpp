@@ -33,8 +33,8 @@ bool LightingPresets_A380X::initialize() {
   dataManager = &msfsHandler.getDataManager();
 
   // Events for setting the aircraft variables
-  lightPotentiometerSetEvent = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", true, NOTIFICATION_GROUP_1);
-  cabinLightSetEvent = dataManager->make_client_event("CABIN_LIGHTS_SET", NOTIFICATION_GROUP_1);
+  lightPotentiometerSetEvent = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
+  cabinLightSetEvent = dataManager->make_sim_event("CABIN_LIGHTS_SET", NOTIFICATION_GROUP_1);
 
   // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
   elecAC1Powered = dataManager->make_named_var("ELEC_AC_1_BUS_IS_POWERED", UNITS.Number, UpdateMode::AUTO_READ);

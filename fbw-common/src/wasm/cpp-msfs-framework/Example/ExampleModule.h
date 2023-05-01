@@ -23,6 +23,7 @@
 //#define BIG_CLIENT_DATA_EXAMPLE
 //#define STREAM_RECEIVE_EXAMPLE
 //#define STREAM_SEND_EXAMPLE
+//#define SIM_EVENT_EXAMPLE
 //#define KEY_EVENT_EXAMPLE
 //#define CUSTOM_EVENT_EXAMPLE
 //#define SYSTEM_EVENT_EXAMPLE
@@ -60,6 +61,7 @@ class ExampleModule : public Module {
   AircraftVariablePtr beaconLightSwitchPtr;
   AircraftVariablePtr beaconLightSwitch2Ptr;
   AircraftVariablePtr beaconLightSwitch3Ptr;
+  AircraftVariablePtr strobeLightSwitchPtr;
 #endif
 
 #ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE

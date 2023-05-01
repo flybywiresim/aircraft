@@ -29,44 +29,6 @@ bool ExampleModule::initialize() {
    * default is "false, false, 0, 0"
    */
 
-#if defined(SIM_EVENT_EXAMPLE) || defined(AIRCRAFT_VAR_EXAMPLE) || defined(INDEXED_AIRCRAFT_VAR_EXAMPLE)
-  // Sim Events
-  beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", NOTIFICATION_GROUP_0);
-  beaconLightSetCallbackID = beaconLightSetEventPtr->addCallback(
-      [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
-        LOG_INFO("Callback: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
-                 " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
-                 " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4) + " beaconLt: " + this->beaconLightSetEventPtr->str());
-      });
-  beaconLightSetCallback2ID = beaconLightSetEventPtr->addCallback(
-      [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
-        LOG_INFO("Callback 2: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
-                 " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
-                 " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4) + " beaconLt: " + this->beaconLightSetEventPtr->str());
-      });
-
-  // Event with callback example
-  lightPotentiometerSetEventPtr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", true, NOTIFICATION_GROUP_0);
-  lightPotentiometerSetCallbackID =
-      lightPotentiometerSetEventPtr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
-        if (param0 == 99)
-          return;
-        LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number) +
-                  " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
-                  " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4));
-      });
-
-  // Second event with the same name - this should be de-duplicated
-  lightPotentiometerSetEvent2Ptr = dataManager->make_client_event("LIGHT_POTENTIOMETER_SET", true, NOTIFICATION_GROUP_0);
-  lightPotentiometerSetCallback2ID =
-      lightPotentiometerSetEvent2Ptr->addCallback([=](int number, DWORD param0, DWORD param1, DWORD param2, DWORD param3, DWORD param4) {
-        if (param0 == 99)
-          return;
-        LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number) +
-                  " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
-                  " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4));
-      });
-#endif
 
 #ifdef LVAR_EXAMPLES
   // LVARS
@@ -82,6 +44,55 @@ bool ExampleModule::initialize() {
   debugLVAR4Ptr = dataManager->make_named_var("DEBUG_LVAR", UNITS.Hours, UpdateMode::NO_AUTO_UPDATE, 0, 0);
 #endif
 
+#if defined(SIM_EVENT_EXAMPLE) || defined(AIRCRAFT_VAR_EXAMPLE) || defined(INDEXED_AIRCRAFT_VAR_EXAMPLE)
+  // Sim Events
+  beaconLightSetEventPtr = dataManager->make_client_event("BEACON_LIGHTS_SET", true, NOTIFICATION_GROUP_0);
+  beaconLightSetCallbackID = beaconLightSetEventPtr->addCallback(
+      [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
+        LOG_INFO("Callback: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
+                 " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
+                 " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4) + " beaconLt: " + this->beaconLightSetEventPtr->str());
+      });
+  beaconLightSetCallback2ID = beaconLightSetEventPtr->addCallback(
+      [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
+        LOG_INFO("Callback 2: BEACON_LIGHTS_SET event received with " + std::to_string(number) +
+                 " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
+                 " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4) + " beaconLt: " + this->beaconLightSetEventPtr->str());
+      });
+
+  // Event with callback example
+  lightPotentiometerSetEventPtr = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
+  lightPotentiometerSetCallbackID =
+      lightPotentiometerSetEventPtr->addCallback([=]([[maybe_unused]] int number,
+                                                     [[maybe_unused]] DWORD param0,
+                                                     [[maybe_unused]] DWORD param1,
+                                                     [[maybe_unused]] DWORD param2,
+                                                     [[maybe_unused]] DWORD param3,
+                                                     [[maybe_unused]] DWORD param4) {
+        if (param0 == 99)
+          return;
+        LOG_DEBUG("Callback 1: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number) +
+                  " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
+                  " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4));
+      });
+
+  // Second event with the same name - this should be de-duplicated
+  lightPotentiometerSetEvent2Ptr = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_0);
+  lightPotentiometerSetCallback2ID =
+      lightPotentiometerSetEvent2Ptr->addCallback([=]([[maybe_unused]] int number,
+                                                      [[maybe_unused]] DWORD param0,
+                                                      [[maybe_unused]] DWORD param1,
+                                                      [[maybe_unused]] DWORD param2,
+                                                      [[maybe_unused]] DWORD param3,
+                                                      [[maybe_unused]] DWORD param4) {
+        if (param0 == 99)
+          return;
+        LOG_DEBUG("Callback 2: LIGHT_POTENTIOMETER_SET event received with " + std::to_string(number) +
+                  " params:" + " 0: " + std::to_string(param0) + " 1: " + std::to_string(param1) + " 2: " + std::to_string(param2) +
+                  " 3: " + std::to_string(param3) + " 4: " + std::to_string(param4));
+      });
+#endif
+
 #ifdef AIRCRAFT_VAR_EXAMPLE
   // Aircraft variables - requested multiple times to demonstrate de-duplication
   // to test change the units to either use the same units (will be deduplicated) or different units
@@ -89,16 +100,20 @@ bool ExampleModule::initialize() {
   beaconLightSwitchPtr =
       dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Percent, UpdateMode::AUTO_READ, 0, 0);
   beaconLightSwitch2Ptr =
-      dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
+      dataManager->make_aircraft_var("LIGHT BEACON", 0, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 5.0, 0);
   // using make_simple_aircraft_var() to demonstrate the same thing
   beaconLightSwitch3Ptr = dataManager->make_simple_aircraft_var("LIGHT BEACON", UNITS.PercentOver100);
+
+  // using event name for execute_calculator_code example
+  strobeLightSwitchPtr =
+      dataManager->make_aircraft_var("LIGHT STROBE", 0, "STROBES_SET", nullptr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
 #endif
 
 #ifdef INDEXED_AIRCRAFT_VAR_EXAMPLE
   // A:FUELSYSTEM PUMP SWITCH:#ID#  - demonstrates variable with index
   // clang-format off
-  fuelPumpSwitch1Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 1, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
-  fuelPumpSwitch2Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 2, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
+  fuelPumpSwitch1Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 2, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
+  fuelPumpSwitch2Ptr = dataManager->make_aircraft_var("FUELSYSTEM PUMP SWITCH", 3, "", beaconLightSetEventPtr, UNITS.Bool, UpdateMode::AUTO_READ, 0, 0);
   // clang-format on
 #endif
 
@@ -234,7 +249,7 @@ bool ExampleModule::initialize() {
   // ======================
   // Client Event tests
   // Simple custom client event - no mappings
-  clientEventPtr = dataManager->make_client_event("A32NX.MY_CUSTOM_EVENT", false);
+  clientEventPtr = dataManager->make_custom_event("A32NX.MY_CUSTOM_EVENT");
 #endif
 
 #ifdef SYSTEM_EVENT_EXAMPLE
@@ -244,7 +259,7 @@ bool ExampleModule::initialize() {
   // client event to system event. When this is set to true (default) the client event
   // will be registered to the sim either as a custom event or a mapped event (if the event name exists) and an
   // error will be thrown if you try to register the system event to the sim.
-  systemEventPtr = dataManager->make_client_event("A32NX.SYSTEM_EVENT_VIEW", false);
+  systemEventPtr = dataManager->make_system_event("A32NX.SYSTEM_EVENT_VIEW", "View");
   systemEventCallbackId = systemEventPtr->addCallback(
       [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         std::cout << "--- CALLBACK: A32NX.SYSTEM_EVENT_VIEW" << std::endl;
@@ -254,11 +269,10 @@ bool ExampleModule::initialize() {
                   << " param3 = " << param3 << " param4 = " << param4 << std::endl;
         std::cout << std::endl;
       });
-  systemEventPtr->subscribeToSimSystemEvent("View");
 #endif
 
 #ifdef MASK_KEYBOARD_EXAMPLE
-  inputEventPtr = dataManager->make_client_event("A32NX.MASK_KEYBOARD", true, NOTIFICATION_GROUP_0);
+  inputEventPtr = dataManager->make_custom_event("A32NX.MASK_KEYBOARD", NOTIFICATION_GROUP_0);
   inputEventCallbackId = inputEventPtr->addCallback(
       [&](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
         std::cout << "--- CALLBACK: A32NX.MASK_KEYBOARD" << std::endl;
@@ -332,7 +346,8 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     // Client Event Tests
 
     if (tickCounter % 2000 == 1000) {
-      clientEventPtr->mapToSimEvent();
+      if (!clientEventPtr->isRegisteredToSim()) clientEventPtr->mapToSimEvent();
+      // this will trigger an SimConnect error if the event is already registered to this group
       clientEventPtr->addClientEventToNotificationGroup(NOTIFICATION_GROUP_0);
       clientEventCallbackId = clientEventPtr->addCallback(
           [&, this](const int number, const DWORD param0, const DWORD param1, const DWORD param2, const DWORD param3, const DWORD param4) {
@@ -356,7 +371,7 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
       clientEventPtr->unmapInputEvent("joystick:1:button:7", INPUT_GROUP_0);
       clientEventPtr->removeClientEventFromNotificationGroup(NOTIFICATION_GROUP_0);
     }
-    // clientEventPtr->trigger(999);
+    clientEventPtr->trigger(999);
 #endif
 
 #ifdef LVAR_EXAMPLES
@@ -400,16 +415,20 @@ bool ExampleModule::update([[maybe_unused]] sGaugeDrawData* pData) {
     std::cout << "beaconLightSwitch2Ptr = " << beaconLightSwitch2Ptr->get() << " changed? "
               << (beaconLightSwitch2Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch2Ptr time = " << msfsHandler.getTimeStamp()
               << " tick = " << msfsHandler.getTickCounter() << std::endl;
-
     std::cout << "beaconLightSwitch3Ptr = " << beaconLightSwitch3Ptr->updateFromSim(timeStamp, tickCounter) << " changed? "
               << (beaconLightSwitch3Ptr->hasChanged() ? "yes" : "no") << " beaconLightSwitch3Ptr time = " << msfsHandler.getTimeStamp()
               << " tick = " << msfsHandler.getTickCounter() << std::endl;
+    std::cout << "strobeLightSwitchPtr =  " << strobeLightSwitchPtr->get() << " changed? "
+              << (strobeLightSwitchPtr->hasChanged() ? "yes" : "no") << " strobeLightSwitchPtr  time = " << msfsHandler.getTimeStamp()
+              << " tick = " << msfsHandler.getTickCounter() << std::endl;
 
-    // Test writing an aircraft variable by toggling the beacon light switch
+    // Test writing an aircraft variable by toggling the strobe light switch
     // Immediate write
-    // beaconLightSwitchPtr->setAndWriteToSim(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
+    // strobeLightSwitchPtr->setAndWriteToSim(strobeLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
+
+    // Trigger event
     // beaconLightSetKeyEventPtr->trigger_ex1(beaconLightSwitchPtr->get() == 0.0 ? 1.0 : 0.0);
-    // // autoWrite in postUpdate
+    // autoWrite in postUpdate
     // beaconLightSwitch2Ptr->set(beaconLightSwitch2Ptr->get() == 0.0 ? 1.0 : 0.0);
 #endif
 
