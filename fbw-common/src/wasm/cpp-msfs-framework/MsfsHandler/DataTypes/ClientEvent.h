@@ -58,11 +58,16 @@ class ClientEvent {
   // the name of the client event - for custom events this should contain a period
   const std::string clientEventName;
 
+  // used for client event ID generation
   IDGenerator callbackIdGen{};
+
+  // the callbacks for the event when the sim sends the event
   std::map<CallbackID, EventCallbackFunction> callbacks;
 
-  bool isRegisteredToSim = false;
+  // flag to indicate if the event is registered to the sim
+  bool registeredToSim = false;
 
+ private:
   /**
    * Creates a new ClientEvent instance with the given name and a given id. The id must be unique
    * for all client events within a SimConnect session. The name can be used to map the event to a
@@ -143,7 +148,9 @@ class ClientEvent {
 
   /**
    * Adds the ClientEvent to the given notification group of the event.<br/>
-   * Prints an error message if the event is already subscribed to a notification group.
+   * Prints an error message if the event is already subscribed to a notification group.<br/>
+   *
+   * OBS: If this client event is mapped to a system event this function will fail with a SimConnect exception.
    *
    * @param notificationGroupId The ID of the notification group to subscribe to. (default: 0)
    * @param maskEvent Flag to indicate if the event should be masked.
@@ -320,7 +327,7 @@ class ClientEvent {
    *
    * @see https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_RemoveInputEvent.htm
    */
-  void unmapInputEvent(const std::string& inputDefinition, SIMCONNECT_INPUT_GROUP_ID inputGroupId) const;
+  void unmapInputEvent(const std::string& inputDefinition, SIMCONNECT_INPUT_GROUP_ID inputGroupId);
 
   /**
    * Removes the input group ID and all event ID mapped to it.
@@ -385,7 +392,7 @@ class ClientEvent {
    * @return True if the client event is registered to the sim either as a custom event, or
    * mapped to a sim event or mapped to a system event.
    */
-  [[nodiscard]] bool isRegisteredToSim1() const { return isRegisteredToSim; }
+  [[nodiscard]] bool isRegisteredToSim() const { return registeredToSim; }
 
   /**
    * @return True if the client event has callbacks registered to it.

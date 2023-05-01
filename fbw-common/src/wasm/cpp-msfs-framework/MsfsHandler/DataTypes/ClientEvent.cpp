@@ -24,7 +24,7 @@ void ClientEvent::mapToSimEvent() {
     return;
   }
   LOG_DEBUG("Mapped client event " + clientEventName + " with client ID " + std::to_string(clientEventId));
-  isRegisteredToSim = true;
+  registeredToSim = true;
 }
 
 // =================================================================================================
@@ -39,7 +39,7 @@ void ClientEvent::subscribeToSimSystemEvent(const std::string& eventName) {
   }
   LOG_DEBUG("Mapped client event " + clientEventName + " with client ID " + std::to_string(clientEventId) + " to sim system event " +
             eventName);
-  isRegisteredToSim = true;
+  registeredToSim = true;
 }
 
 void ClientEvent::unsubscribeFromSimSystemEvent() {
@@ -50,7 +50,7 @@ void ClientEvent::unsubscribeFromSimSystemEvent() {
   }
   LOG_DEBUG("Unsubscribed client event " + clientEventName + " with client ID " + std::to_string(clientEventId) +
             " from sim system event: " + clientEventName);
-  isRegisteredToSim = false;
+  registeredToSim = false;
 }
 
 void ClientEvent::setSystemEventState(SIMCONNECT_STATE state) {
@@ -104,7 +104,7 @@ void ClientEvent::setNotificationGroupPriority(SIMCONNECT_NOTIFICATION_GROUP_ID 
 // =================================================================================================
 
 void ClientEvent::trigger(DWORD data0) const {
-  if (!isRegisteredToSim) {
+  if (!registeredToSim) {
     LOG_ERROR("Cannot trigger event " + clientEventName + " as it is not registered to the sim");
     return;
   }
@@ -118,7 +118,7 @@ void ClientEvent::trigger(DWORD data0) const {
 }
 
 void ClientEvent::trigger_ex1(DWORD data0, DWORD data1, DWORD data2, DWORD data3, DWORD data4) const {
-  if (!isRegisteredToSim) {
+  if (!registeredToSim) {
     LOG_ERROR("Cannot trigger_ex1 event " + clientEventName + " as it is not registered to the sim");
     return;
   }
@@ -219,11 +219,12 @@ void ClientEvent::mapInputUpEvent(const std::string& inputDefinition,
             std::to_string(getClientEventId()) + ")");
 }
 
-void ClientEvent::unmapInputEvent(const std::string& inputDefinition, SIMCONNECT_INPUT_GROUP_ID inputGroupId) const {
+void ClientEvent::unmapInputEvent(const std::string& inputDefinition, SIMCONNECT_INPUT_GROUP_ID inputGroupId) {
   if (!SUCCEEDED(SimConnect_RemoveInputEvent(hSimConnect, inputGroupId, inputDefinition.c_str()))) {
     LOG_ERROR("Failed to unmap input event " + inputDefinition + " from notification group " + std::to_string(inputGroupId));
     return;
   }
+  registeredToSim = false;
   LOG_DEBUG("Unmapped input event " + inputDefinition + " from notification group " + std::to_string(inputGroupId));
 }
 
@@ -260,7 +261,7 @@ std::string ClientEvent::str() const {
   std::stringstream ss;
   ss << "Event: [" << clientEventName;
   ss << ", ClientID:" << clientEventId;
-  ss << ", Registered:" << (isRegisteredToSim);
+  ss << ", Registered:" << (registeredToSim);
   ss << ", Callbacks:" << callbacks.size();
   ss << "]";
   return ss.str();
