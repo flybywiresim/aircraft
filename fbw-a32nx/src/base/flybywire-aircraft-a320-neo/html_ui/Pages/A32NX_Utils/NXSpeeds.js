@@ -523,9 +523,9 @@ class NXSpeedsApp {
      * Calculates VLS and Vapp for selected landing configuration
      * @param {number} m Projected landing mass in t
      * @param {boolean} isConf3 CONF3 if true, else FULL
-     * @param {number} [wind=live measured] tower headwind component
+     * @param {number} [wind=0] tower headwind component
      */
-    constructor(m, isConf3, wind = (SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1)) {
+    constructor(m, isConf3, wind = 0) {
         const cm = _correctMass(m);
         this.vls = vls[isConf3 ? 3 : 4][cm](m, 1);
         this.vapp = this.vls + NXSpeedsUtils.addWindComponent(wind / 3);

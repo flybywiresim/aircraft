@@ -56,6 +56,9 @@
 /fbw-a32nx/src/systems/instruments/src/EFB/dist
 /fbw-a32nx/src/systems/instruments/src/EFB/web/
 
+/fbw-a32nx/src/wasm/systems/a320_hydraulic_simulation_graphs/*.png
+/fbw-a32nx/src/wasm/systems/a320_pneumatic_simulation_graph_data/*.txt
+
 /fbw-a380x/*
 !/fbw-a380x/README.md
 !/fbw-a380x/docs/
@@ -84,6 +87,9 @@
 
 # avoid issues when switching branches during transistion from old to new structure
 /src/
+/fbw-common/msfs-avionics-mirror/src/sdk/build
+/fbw-common/msfs-avionics-mirror/src/sdk/build/**
+/msfs-avionics-mirror/
 /flybywire-aircraft-a320-neo/
 /flybywire-aircraft-a320-neo-lock-highlight/
 

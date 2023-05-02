@@ -1332,6 +1332,10 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
         &mut self.rigid_body
     }
 
+    pub fn aerodynamic_torque(&self) -> Torque {
+        self.rigid_body.aerodynamic_torque()
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -1540,6 +1544,8 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     angular_acceleration: AngularAcceleration,
     sum_of_torques: Torque,
 
+    aerodynamic_torque: Torque,
+
     position_normalized: Ratio,
     position_normalized_prev: Ratio,
 
@@ -1605,15 +1611,16 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             actuator_extension_gives_positive_angle: false,
             anchor_point,
             angular_position: init_angle,
-            angular_speed: AngularVelocity::new::<radian_per_second>(0.),
-            angular_acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
-            sum_of_torques: Torque::new::<newton_meter>(0.),
-            position_normalized: Ratio::new::<ratio>(0.),
-            position_normalized_prev: Ratio::new::<ratio>(0.),
+            angular_speed: AngularVelocity::default(),
+            angular_acceleration: AngularAcceleration::default(),
+            sum_of_torques: Torque::default(),
+            aerodynamic_torque: Torque::default(),
+            position_normalized: Ratio::default(),
+            position_normalized_prev: Ratio::default(),
             mass,
             inertia_at_hinge,
             natural_damping_constant,
-            lock_position_request: Ratio::new::<ratio>(0.),
+            lock_position_request: Ratio::default(),
             is_lock_requested: locked,
             is_locked: locked,
             axis_direction,
@@ -1666,9 +1673,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             aerodynamic_force[2].get::<newton>(),
         ));
 
-        let torque_value = Torque::new::<newton_meter>(self.axis_direction.dot(&torque));
+        self.aerodynamic_torque = Torque::new::<newton_meter>(self.axis_direction.dot(&torque));
 
-        self.sum_of_torques += torque_value;
+        self.sum_of_torques += self.aerodynamic_torque;
     }
 
     pub fn apply_global_angle_offset(&mut self, offset: Angle) {
@@ -1700,6 +1707,10 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         } else {
             -self.lock_position_request.get::<ratio>() * self.total_travel + self.max_angle
         }
+    }
+
+    pub fn aerodynamic_torque(&self) -> Torque {
+        self.aerodynamic_torque
     }
 
     pub fn position_normalized(&self) -> Ratio {
