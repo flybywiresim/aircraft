@@ -165,6 +165,7 @@ pub struct UpdateContext {
     latitude_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
     total_yaw_inertia_id: VariableIdentifier,
+    aoa_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -191,6 +192,8 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
+
+    aoa: Angle,
 
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
@@ -223,6 +226,7 @@ impl UpdateContext {
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
+    pub(crate) const AOA_KEY: &'static str = "INCIDENCE ALPHA";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -284,6 +288,7 @@ impl UpdateContext {
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
+            aoa_id: context.get_identifier(Self::AOA_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -329,6 +334,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude,
+            aoa: Angle::default(),
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 10.,
         }
@@ -363,6 +369,7 @@ impl UpdateContext {
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
+            aoa_id: context.get_identifier("INCIDENCE ALPHA".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -404,6 +411,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
+            aoa: Angle::default(),
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 1.,
         }
@@ -463,6 +471,8 @@ impl UpdateContext {
         self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.latitude = reader.read(&self.latitude_id);
+
+        self.aoa = reader.read(&self.aoa_id);
 
         self.total_weight = reader.read(&self.total_weight_id);
 
@@ -665,6 +675,10 @@ impl UpdateContext {
     pub fn total_yaw_inertia_kg_m2(&self) -> f64 {
         self.total_yaw_inertia_slug_foot_squared
             * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
+    }
+
+    pub fn aoa(&self) -> Angle {
+        self.aoa
     }
 }
 

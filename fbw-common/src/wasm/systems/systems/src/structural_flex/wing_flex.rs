@@ -6,6 +6,7 @@ use crate::simulation::{
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
+use uom::si::angle::degree;
 use uom::si::{
     acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
     mass::kilogram, mass_density::kilogram_per_cubic_meter, ratio::percent, ratio::ratio,
@@ -153,7 +154,7 @@ impl A380WingLiftModifier {
 
     // Ratio of the total lift on each wing section.
     // Sum shall be 1.
-    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.31, 0.22, 0.05];
+    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.31, 0.24, 0.03];
 
     // GAIN to determine how much a surface spoils lift when deployed. 0.3 means a fully deployed surface reduce lift by 30%
     const GLOBAL_SURFACES_SPOIL_GAIN: f64 = 0.3;
@@ -303,11 +304,17 @@ impl A380WingLiftModifier {
         let left_lift_factor_normalized = raw_left_total_factor / raw_left_total_factor.sum();
         let right_lift_factor_normalized = raw_right_total_factor / raw_right_total_factor.sum();
 
+        // self.lift_left_table_newton =
+        //     left_lift_factor_normalized * self.left_wing_lift.get::<newton>();
+
+        // self.lift_right_table_newton =
+        //     right_lift_factor_normalized * self.right_wing_lift.get::<newton>();
+
         self.lift_left_table_newton =
-            left_lift_factor_normalized * self.left_wing_lift.get::<newton>();
+            self.standard_lift_spread * self.left_wing_lift.get::<newton>();
 
         self.lift_right_table_newton =
-            right_lift_factor_normalized * self.right_wing_lift.get::<newton>();
+            self.standard_lift_spread * self.right_wing_lift.get::<newton>();
 
         // println!(
         //     "LEFT/RIGHT WING {:.0}_{:.0}_{:.0}_{:.0}/O\\{:.0}_{:.0}_{:.0}_{:.0}",
@@ -396,6 +403,21 @@ impl WingLift {
         let lift_delta_from_accel_n = raw_accel_no_grav * cur_weight_kg;
         let lift_1g = 9.8 * cur_weight_kg;
         let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
+
+        let aoa = context.aoa();
+
+        let lift_from_aoa = 0.5
+            * context
+                .ambient_air_density()
+                .get::<kilogram_per_cubic_meter>()
+            * context.local_relative_wind().to_ms_vector()[2]
+            * 840.;
+
+        println!(
+            "AOA {:.2} lift =  {:0}N",
+            aoa.get::<degree>(),
+            lift_from_aoa
+        );
 
         let lift = if total_weight_on_wheels.get::<kilogram>() > 5000. {
             // println!(
@@ -613,7 +635,7 @@ pub struct WingFlexA380 {
 }
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
-        [10000000., 2500000., 1000000., 150000.];
+        [12000000., 3000000., 1000000., 165000.];
     const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [600000., 400000., 50000., 3000.];
 
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 22000., 3000., 500.];
@@ -759,13 +781,14 @@ impl SimulationElement for WingFlexA380 {
         writer.write(&self.right_flex_inboard_mid_id, bones_angles_right[2]);
         writer.write(&self.right_flex_outboard_mid_id, bones_angles_right[3]);
         writer.write(&self.right_flex_outboard_id, bones_angles_right[4]);
-        // println!(
-        //     "LEFT WING ANIM ANGLES FROM FRONT {:.2}_{:.2}_{:.2}_{:.2}",
-        //     bones_angles_left[1].get::<degree>(),
-        //     bones_angles_left[2].get::<degree>(),
-        //     bones_angles_left[3].get::<degree>(),
-        //     bones_angles_left[4].get::<degree>(),
-        // );
+
+        println!(
+            "LEFT WING ANIM ANGLES FROM FRONT {:.2}_{:.2}_{:.2}_{:.2}",
+            bones_angles_left[1].get::<uom::si::angle::degree>(),
+            bones_angles_left[2].get::<uom::si::angle::degree>(),
+            bones_angles_left[3].get::<uom::si::angle::degree>(),
+            bones_angles_left[4].get::<uom::si::angle::degree>(),
+        );
     }
 }
 
@@ -1089,6 +1112,7 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
+    use uom::si::volume::liter;
     use uom::si::{angle::degree, length::meter, velocity::knot};
 
     struct WingFlexTestAircraft {
@@ -1203,6 +1227,57 @@ mod tests {
                 "TOTAL WEIGHT",
                 Mass::new::<kilogram>(Self::NOMINAL_WEIGHT_KG),
             );
+            self
+        }
+
+        fn with_max_fuel(mut self) -> Self {
+            self.write_by_name(
+                A380fuelTanks::LeftInner.to_string().as_str(),
+                Volume::new::<liter>(40000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::LeftFeed2.to_string().as_str(),
+                Volume::new::<liter>(25000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::LeftMid.to_string().as_str(),
+                Volume::new::<liter>(35000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::LeftFeed1.to_string().as_str(),
+                Volume::new::<liter>(25000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::LeftOutter.to_string().as_str(),
+                Volume::new::<liter>(9000.),
+            );
+
+            self.write_by_name(
+                A380fuelTanks::RightInner.to_string().as_str(),
+                Volume::new::<liter>(40000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::RightFeed3.to_string().as_str(),
+                Volume::new::<liter>(25000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::RightMid.to_string().as_str(),
+                Volume::new::<liter>(35000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::RightFeed4.to_string().as_str(),
+                Volume::new::<liter>(25000.),
+            );
+            self.write_by_name(
+                A380fuelTanks::RightOutter.to_string().as_str(),
+                Volume::new::<liter>(9000.),
+            );
+
+            self.write_by_name(
+                "TOTAL WEIGHT",
+                Mass::new::<kilogram>(Self::NOMINAL_WEIGHT_KG + 215000.),
+            );
+
             self
         }
 
@@ -1687,6 +1762,22 @@ mod tests {
     #[test]
     fn in_straight_flight_has_plane_lift_equal_to_weight() {
         let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                < WingFlexTestBed::NOMINAL_WEIGHT_KG * 1.1
+        );
+        assert!(
+            test_bed.current_total_lift().get::<newton>() / 9.8
+                > WingFlexTestBed::NOMINAL_WEIGHT_KG * 0.9
+        );
+    }
+
+    #[test]
+    fn in_straight_flight_at_max_fuel_has_plane_lift_equal_to_weight() {
+        let mut test_bed = WingFlexTestBed::new().with_max_fuel().in_1g_flight();
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
 
