@@ -154,7 +154,7 @@ impl A380WingLiftModifier {
 
     // Ratio of the total lift on each wing section.
     // Sum shall be 1.
-    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.31, 0.24, 0.03];
+    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.32, 0.24, 0.02];
 
     // GAIN to determine how much a surface spoils lift when deployed. 0.3 means a fully deployed surface reduce lift by 30%
     const GLOBAL_SURFACES_SPOIL_GAIN: f64 = 0.3;
@@ -304,17 +304,17 @@ impl A380WingLiftModifier {
         let left_lift_factor_normalized = raw_left_total_factor / raw_left_total_factor.sum();
         let right_lift_factor_normalized = raw_right_total_factor / raw_right_total_factor.sum();
 
-        // self.lift_left_table_newton =
-        //     left_lift_factor_normalized * self.left_wing_lift.get::<newton>();
-
-        // self.lift_right_table_newton =
-        //     right_lift_factor_normalized * self.right_wing_lift.get::<newton>();
-
         self.lift_left_table_newton =
-            self.standard_lift_spread * self.left_wing_lift.get::<newton>();
+            left_lift_factor_normalized * self.left_wing_lift.get::<newton>();
 
         self.lift_right_table_newton =
-            self.standard_lift_spread * self.right_wing_lift.get::<newton>();
+            right_lift_factor_normalized * self.right_wing_lift.get::<newton>();
+
+        // self.lift_left_table_newton =
+        //     self.standard_lift_spread * self.left_wing_lift.get::<newton>();
+
+        // self.lift_right_table_newton =
+        //     self.standard_lift_spread * self.right_wing_lift.get::<newton>();
 
         // println!(
         //     "LEFT/RIGHT WING {:.0}_{:.0}_{:.0}_{:.0}/O\\{:.0}_{:.0}_{:.0}_{:.0}",
@@ -386,6 +386,27 @@ struct WingLift {
     total_lift: Force,
 }
 impl WingLift {
+    const DEFAULT_LIFT_ANGLE_MAP_DEGREES: [f64; 14] = [
+        -180.481705466209,
+        -45.8366236104659,
+        -22.9183118052329,
+        -11.4591559026165,
+        -5.72957795130823,
+        0.,
+        11.4591559026165,
+        13.1780292880089,
+        14.8969026734014,
+        16.6157760587939,
+        17.7616916490555,
+        22.9183118052329,
+        45.8366236104659,
+        180.481705466209,
+    ];
+    const DEFAULT_LIFT_COEFF_MAP: [f64; 14] = [
+        0., -0.870, -0.732, -0.82, -0.564, 0.112, 1.259, 1.353, 1.426, 1.473, 1.403, 0.917, 0.891,
+        0.,
+    ];
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             gear_weight_on_wheels: LandingGearCompression::new(context),
@@ -404,31 +425,33 @@ impl WingLift {
         let lift_1g = 9.8 * cur_weight_kg;
         let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
 
-        let aoa = context.aoa();
+        // let aoa = context.aoa();
+        // let lift_coef = crate::shared::interpolation(
+        //     &Self::DEFAULT_LIFT_ANGLE_MAP_DEGREES,
+        //     &Self::DEFAULT_LIFT_COEFF_MAP,
+        //     aoa.get::<degree>(),
+        // );
 
-        let lift_from_aoa = 0.5
-            * context
-                .ambient_air_density()
-                .get::<kilogram_per_cubic_meter>()
-            * context.local_relative_wind().to_ms_vector()[2]
-            * 840.;
-
-        println!(
-            "AOA {:.2} lift =  {:0}N",
-            aoa.get::<degree>(),
-            lift_from_aoa
-        );
+        // let lift_from_aoa = 0.5
+        //     * context
+        //         .ambient_air_density()
+        //         .get::<kilogram_per_cubic_meter>()
+        //     * -context.local_relative_wind().to_ms_vector()[2]
+        //     * 840.
+        //     * lift_coef
+        //     * 150.; //magic coeff
 
         let lift = if total_weight_on_wheels.get::<kilogram>() > 5000. {
-            // println!(
-            //     "GROUNDMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
-            //     cur_weight_kg / 1000.,
-            //     accel_y,
-            //     lift_1g /9.8 / 1000.,
-            //     lift_wow/9.8 / 1000.,
-            //     (lift_1g + lift_wow) /9.8 / 1000.
-            // );
-            lift_1g + lift_wow
+            println!(
+                "GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+                cur_weight_kg / 1000.,
+                lift_1g /9.8 / 1000.,
+                lift_wow/9.8 / 1000.,
+                ((lift_1g + lift_wow) /9.8 / 1000.).max(0.)
+            );
+
+            //println!("LIFT FROM WOOOOOW MODE");
+            (lift_1g + lift_wow).max(0.)
         } else {
             // println!(
             //     "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
@@ -438,6 +461,7 @@ impl WingLift {
             //     lift_delta_from_accel_n/9.8 / 1000.,
             //     (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
             // );
+            // println!("FLIGHT  LIFT MODE");
             lift_1g + lift_delta_from_accel_n
         };
 
@@ -635,8 +659,8 @@ pub struct WingFlexA380 {
 }
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
-        [12000000., 3000000., 1000000., 165000.];
-    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [600000., 400000., 50000., 3000.];
+        [20000000., 17000000., 4000000., 200000.];
+    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [600000., 500000., 75000., 3000.];
 
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 22000., 3000., 500.];
 
@@ -1075,7 +1099,7 @@ impl<const NODE_NUMBER: usize> WingAnimationMapper<NODE_NUMBER> {
         for idx in 1..NODE_NUMBER {
             let cur_node_coord = Vector2::new(
                 self.x_positions[idx] - self.x_positions[idx - 1],
-                wing_node_heights[idx] - wing_node_heights[idx - 1],
+                wing_node_heights[idx],
             );
             let dot_prod = previous_node_coord
                 .normalize()
@@ -1091,6 +1115,14 @@ impl<const NODE_NUMBER: usize> WingAnimationMapper<NODE_NUMBER> {
             previous_node_coord = cur_node_coord;
         }
 
+        // println!(
+        //     "ANGLES {:.5}/{:.5}/{:.5}/{:.5}/{:.5}",
+        //     animation_angles[0].get::<degree>(),
+        //     animation_angles[1].get::<degree>(),
+        //     animation_angles[2].get::<degree>(),
+        //     animation_angles[3].get::<degree>(),
+        //     animation_angles[4].get::<degree>()
+        // );
         animation_angles
     }
 
@@ -1114,6 +1146,8 @@ mod tests {
 
     use uom::si::volume::liter;
     use uom::si::{angle::degree, length::meter, velocity::knot};
+
+    use ntest::assert_about_eq;
 
     struct WingFlexTestAircraft {
         wing_flex: WingFlexA380,
@@ -1719,11 +1753,27 @@ mod tests {
 
         let anim_angles = test_bed.query_element(|e| e.animation_angles([0., 1., 1., 1., 1.]));
 
-        assert!(anim_angles[0] == Angle::default());
+        assert_about_eq!(
+            anim_angles[0].get::<degree>(),
+            Angle::default().get::<degree>(),
+            1.0e-3
+        );
         assert!(anim_angles[1].get::<degree>() >= 44. && anim_angles[0].get::<degree>() <= 46.);
-        assert!(anim_angles[2].get::<degree>() <= -44. && anim_angles[1].get::<degree>() >= -46.);
-        assert!(anim_angles[3] == Angle::default());
-        assert!(anim_angles[4] == Angle::default());
+        assert_about_eq!(
+            anim_angles[2].get::<degree>(),
+            Angle::default().get::<degree>(),
+            1.0e-3
+        );
+        assert_about_eq!(
+            anim_angles[3].get::<degree>(),
+            Angle::default().get::<degree>(),
+            1.0e-3
+        );
+        assert_about_eq!(
+            anim_angles[4].get::<degree>(),
+            Angle::default().get::<degree>(),
+            1.0e-3
+        );
     }
 
     #[test]
@@ -1736,9 +1786,21 @@ mod tests {
 
         assert!(anim_angles[0] == Angle::default());
         assert!(anim_angles[1].get::<degree>() <= -44. && anim_angles[1].get::<degree>() >= -46.);
-        assert!(anim_angles[2].get::<degree>() >= 44. && anim_angles[0].get::<degree>() <= 46.);
-        assert!(anim_angles[3] == Angle::default());
-        assert!(anim_angles[4] == Angle::default());
+        assert_about_eq!(
+            anim_angles[2].get::<degree>(),
+            Angle::default().get::<degree>(),
+            1.0e-3
+        );
+        assert_about_eq!(
+            anim_angles[3].get::<degree>(),
+            Angle::default().get::<degree>(),
+            1.0e-3
+        );
+        assert_about_eq!(
+            anim_angles[4].get::<degree>(),
+            Angle::default().get::<degree>(),
+            1.0e-3
+        );
     }
 
     #[test]
