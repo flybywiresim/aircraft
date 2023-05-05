@@ -6,11 +6,17 @@ use crate::simulation::{
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
-use uom::si::angle::degree;
 use uom::si::{
-    acceleration::meter_per_second_squared, angle::radian, f64::*, force::newton, length::meter,
-    mass::kilogram, mass_density::kilogram_per_cubic_meter, ratio::percent, ratio::ratio,
-    velocity::meter_per_second,
+    acceleration::meter_per_second_squared,
+    angle::radian,
+    f64::*,
+    force::newton,
+    length::meter,
+    mass::kilogram,
+    mass_density::kilogram_per_cubic_meter,
+    ratio::percent,
+    ratio::ratio,
+    velocity::{knot, meter_per_second},
 };
 
 use std::fmt;
@@ -386,27 +392,6 @@ struct WingLift {
     total_lift: Force,
 }
 impl WingLift {
-    const DEFAULT_LIFT_ANGLE_MAP_DEGREES: [f64; 14] = [
-        -180.481705466209,
-        -45.8366236104659,
-        -22.9183118052329,
-        -11.4591559026165,
-        -5.72957795130823,
-        0.,
-        11.4591559026165,
-        13.1780292880089,
-        14.8969026734014,
-        16.6157760587939,
-        17.7616916490555,
-        22.9183118052329,
-        45.8366236104659,
-        180.481705466209,
-    ];
-    const DEFAULT_LIFT_COEFF_MAP: [f64; 14] = [
-        0., -0.870, -0.732, -0.82, -0.564, 0.112, 1.259, 1.353, 1.426, 1.473, 1.403, 0.917, 0.891,
-        0.,
-    ];
-
     fn new(context: &mut InitContext) -> Self {
         Self {
             gear_weight_on_wheels: LandingGearCompression::new(context),
@@ -442,16 +427,27 @@ impl WingLift {
         //     * 150.; //magic coeff
 
         let lift = if total_weight_on_wheels.get::<kilogram>() > 5000. {
-            println!(
-                "GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
-                cur_weight_kg / 1000.,
-                lift_1g /9.8 / 1000.,
-                lift_wow/9.8 / 1000.,
-                ((lift_1g + lift_wow) /9.8 / 1000.).max(0.)
-            );
-
-            //println!("LIFT FROM WOOOOOW MODE");
-            (lift_1g + lift_wow).max(0.)
+            // Assuming no lift at low wind speed avoids glitches with ground when braking hard for a full stop
+            if context.true_airspeed().get::<knot>().abs() > 25. {
+                // println!(
+                //     "GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+                //     cur_weight_kg / 1000.,
+                //     lift_1g /9.8 / 1000.,
+                //     lift_wow/9.8 / 1000.,
+                //     ((lift_1g + lift_wow) /9.8 / 1000.).max(0.)
+                // );
+                //println!("LIFT FROM WOOOOOW MODE");
+                (lift_1g + lift_wow).max(0.)
+            } else {
+                // println!(
+                //     "GROUNDMODE LOW SPEED PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+                //     cur_weight_kg / 1000.,
+                //     lift_1g /9.8 / 1000.,
+                //     lift_wow/9.8 / 1000.,
+                //     0.
+                // );
+                0.
+            }
         } else {
             // println!(
             //     "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
@@ -660,9 +656,9 @@ pub struct WingFlexA380 {
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
         [20000000., 17000000., 4000000., 200000.];
-    const DAMNPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [600000., 500000., 75000., 3000.];
+    const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 600000., 100000., 1000.];
 
-    const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 22000., 3000., 500.];
+    const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 20000., 5000., 800.];
 
     const FUEL_MAPPING: [usize; FUEL_TANKS_NUMBER] = [1, 1, 2, 2, 3];
 
@@ -704,13 +700,13 @@ impl WingFlexA380 {
                     context,
                     empty_mass,
                     Self::FLEX_COEFFICIENTS,
-                    Self::DAMNPING_COEFFICIENTS,
+                    Self::DAMPING_COEFFICIENTS,
                 ),
                 FlexPhysicsNG::new(
                     context,
                     empty_mass,
                     Self::FLEX_COEFFICIENTS,
-                    Self::DAMNPING_COEFFICIENTS,
+                    Self::DAMPING_COEFFICIENTS,
                 ),
             ],
         }
@@ -820,6 +816,9 @@ struct FlexibleConstraint {
     springiness: f64,
     damping: f64,
 
+    negative_springiness_coeff: f64,
+    is_linear: bool,
+
     previous_length: Length,
     damping_force: LowPassFilter<Force>,
 
@@ -829,10 +828,21 @@ impl FlexibleConstraint {
     // Damping is low pass filtered which results in improved numerical stability
     const DAMPING_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(10);
 
-    fn new(springiness: f64, damping: f64) -> Self {
+    fn new(
+        springiness: f64,
+        damping: f64,
+        is_linear: bool,
+        negative_springiness_coeff: Option<f64>,
+    ) -> Self {
         Self {
             springiness,
             damping,
+            negative_springiness_coeff: if let Some(coeff) = negative_springiness_coeff {
+                coeff
+            } else {
+                1.
+            },
+            is_linear,
             previous_length: Length::default(),
             damping_force: LowPassFilter::new(Self::DAMPING_FILTERING_TIME_CONSTANT),
             total_force: Force::default(),
@@ -847,7 +857,25 @@ impl FlexibleConstraint {
     ) {
         let length = nodes[1].position() - nodes[0].position();
 
-        let spring_force = Force::new::<newton>(length.get::<meter>() * self.springiness);
+        let spring_force = if length.get::<meter>() < 0. {
+            if self.is_linear {
+                Force::new::<newton>(
+                    length.get::<meter>() * self.springiness * self.negative_springiness_coeff,
+                )
+            } else {
+                -Force::new::<newton>(
+                    (-length.get::<meter>()).exp() * self.springiness - self.springiness,
+                ) * self.negative_springiness_coeff
+            }
+        } else {
+            if self.is_linear {
+                Force::new::<newton>(length.get::<meter>() * self.springiness)
+            } else {
+                Force::new::<newton>(
+                    length.get::<meter>().exp() * self.springiness - self.springiness,
+                )
+            }
+        };
 
         let speed = (self.previous_length - length) / context.delta_as_time();
 
@@ -943,6 +971,9 @@ struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     wing_dev_damping_2_id: VariableIdentifier,
     wing_dev_damping_3_id: VariableIdentifier,
     wing_dev_damping_4_id: VariableIdentifier,
+
+    neg_flex_coeff_id: VariableIdentifier,
+    exponent_flex_id: VariableIdentifier,
 }
 impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMBER, LINK_NUMBER> {
     const MIN_PHYSICS_SOLVER_TIME_STEP: Duration = Duration::from_millis(10);
@@ -961,7 +992,12 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
 
         let mut links_array = vec![];
         for idx in 0..LINK_NUMBER {
-            links_array.push(FlexibleConstraint::new(springness[idx], damping[idx]));
+            links_array.push(FlexibleConstraint::new(
+                springness[idx],
+                damping[idx],
+                false,
+                Some(1.15),
+            ));
         }
 
         Self {
@@ -995,6 +1031,8 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
             wing_dev_damping_2_id: context.get_identifier("WING_FLEX_DEV_DAMPING_2".to_owned()),
             wing_dev_damping_3_id: context.get_identifier("WING_FLEX_DEV_DAMPING_3".to_owned()),
             wing_dev_damping_4_id: context.get_identifier("WING_FLEX_DEV_DAMPING_4".to_owned()),
+            neg_flex_coeff_id: context.get_identifier("WING_FLEX_DEV_NEG_STIFF_COEFF".to_owned()),
+            exponent_flex_id: context.get_identifier("WING_FLEX_STIFF_EXPO_ENA".to_owned()),
         }
     }
 
@@ -1077,6 +1115,32 @@ impl SimulationElement for FlexPhysicsNG<5, 4> {
         let node4_damp = reader.read(&self.wing_dev_damping_4_id);
         if node4_damp > 0. {
             self.flex_constraints[3].damping = node4_damp;
+        }
+
+        let neg_coeff = reader.read(&self.neg_flex_coeff_id);
+        if neg_coeff > 0. {
+            self.flex_constraints[0].negative_springiness_coeff = neg_coeff;
+            self.flex_constraints[1].negative_springiness_coeff = neg_coeff;
+            self.flex_constraints[2].negative_springiness_coeff = neg_coeff;
+            self.flex_constraints[3].negative_springiness_coeff = neg_coeff;
+        } else {
+            self.flex_constraints[0].negative_springiness_coeff = 1.;
+            self.flex_constraints[1].negative_springiness_coeff = 1.;
+            self.flex_constraints[2].negative_springiness_coeff = 1.;
+            self.flex_constraints[3].negative_springiness_coeff = 1.;
+        }
+
+        let is_expo: f64 = reader.read(&self.exponent_flex_id);
+        if is_expo > 0.1 {
+            self.flex_constraints[0].is_linear = false;
+            self.flex_constraints[1].is_linear = false;
+            self.flex_constraints[2].is_linear = false;
+            self.flex_constraints[3].is_linear = false;
+        } else {
+            self.flex_constraints[0].is_linear = true;
+            self.flex_constraints[1].is_linear = true;
+            self.flex_constraints[2].is_linear = true;
+            self.flex_constraints[3].is_linear = true;
         }
     }
 }
@@ -1333,6 +1397,17 @@ mod tests {
             self.write_by_name("CONTACT POINT COMPRESSION:3", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:4", 0.);
             self.write_by_name("CONTACT POINT COMPRESSION:5", 0.);
+
+            self
+        }
+
+        fn steady_on_ground(mut self) -> Self {
+            self.write_by_name("TOTAL WEIGHT", Mass::new::<kilogram>(400000.));
+            self.write_by_name("CONTACT POINT COMPRESSION:1", 70.);
+            self.write_by_name("CONTACT POINT COMPRESSION:2", 70.);
+            self.write_by_name("CONTACT POINT COMPRESSION:3", 70.);
+            self.write_by_name("CONTACT POINT COMPRESSION:4", 70.);
+            self.write_by_name("CONTACT POINT COMPRESSION:5", 70.);
 
             self
         }
@@ -1801,6 +1876,54 @@ mod tests {
             Angle::default().get::<degree>(),
             1.0e-3
         );
+    }
+
+    #[test]
+    fn steady_on_ground() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .steady_on_ground();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
+
+        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
+        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
+    }
+
+    #[test]
+    fn steady_on_ground_full_fuel() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .with_max_fuel()
+            .steady_on_ground();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
+
+        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
+        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
+
+        test_bed.write_by_name("WING_FLEX_DEV_NEG_STIFF_COEFF", 1.5);
+
+        println!("************NEEEEG COEEF");
+        test_bed.run_waiting_for(Duration::from_secs(1));
+    }
+
+    #[test]
+    fn steady_on_ground_exponent_forces_with_full_fuel() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .with_max_fuel()
+            .steady_on_ground();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
+
+        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
+        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
+
+        test_bed.write_by_name("WING_FLEX_STIFF_EXPO_ENA", 1.);
+
+        println!("************EXPO SPRINGS");
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
     }
 
     #[test]
