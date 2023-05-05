@@ -1,4 +1,7 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { PitchScale } from 'instruments/src/ISIS/PitchScale';
+import { RollIndex } from 'instruments/src/ISIS/RollIndex';
+import { RollScale } from 'instruments/src/ISIS/RollScale';
 import { ISISSimvars } from './shared/ISISSimvarPublisher';
 /* import { PitchScale } from './PitchScale';
 import { RollScale } from './RollScale';
@@ -36,12 +39,12 @@ export class ArtificialHorizon extends DisplayComponent<{bus: EventBus}> {
                     <g id="PitchGroup" ref={this.pitchRef}>
                         <rect id="Sky" x={-256} y={-498} width={1024} height={768} class="sky" />
                         <rect id="Earth" x={-256} y={270} width={1024} height={768} class="earth" />
-                        {/*     <PitchScale pitchDegPixels={pitchDegPixels} /> */}
+                        <PitchScale />
                     </g>
-                    {/*  <RollIndex /> */}
+                    <RollIndex bus={this.props.bus} />
                     <rect x={-256} y={400} width={1024} height={396} class="earth" />
                 </g>
-                {/* <RollScale /> */}
+                <RollScale />
                 <path id="Mask" class="mask" d="M 0 0 h 512 v 512 h -512 z M 108 120.5 c 50 -30 246 -30 296 0 v 271 c -50 30 -246 30 -296 0 z" />
             </g>
         /*   </Att10sFlag> */

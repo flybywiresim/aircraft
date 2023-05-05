@@ -7,6 +7,7 @@ export type ISISSimvars = {
     dcHotLive: boolean;
     coldDark: boolean;
     ias: number;
+    latAcc: number;
 }
 
 export enum ISISVars {
@@ -16,6 +17,7 @@ export enum ISISVars {
     dcHotLive = 'L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED',
     coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
     ias = 'AIRSPEED INDICATED',
+    latAcc = 'ACCELERATION BODY X',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -27,6 +29,7 @@ export class ISISSimvarPublisher extends SimVarPublisher<ISISSimvars> {
         ['dcHotLive', { name: ISISVars.dcHotLive, type: SimVarValueType.Bool }],
         ['coldDark', { name: ISISVars.coldDark, type: SimVarValueType.Bool }],
         ['ias', { name: ISISVars.ias, type: SimVarValueType.Knots }],
+        ['latAcc', { name: ISISVars.latAcc, type: SimVarValueType.Number }],
 
     ])
 
