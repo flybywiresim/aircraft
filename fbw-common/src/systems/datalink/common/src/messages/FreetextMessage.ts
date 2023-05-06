@@ -14,7 +14,7 @@ export class FreetextMessage extends AtsuMessage {
         this.Direction = AtsuMessageDirection.Downlink;
     }
 
-    public serialize(format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat): string {
         let message = '';
 
         if (format === AtsuMessageSerializationFormat.FmsDisplay || format === AtsuMessageSerializationFormat.FmsDisplayMonitored) {

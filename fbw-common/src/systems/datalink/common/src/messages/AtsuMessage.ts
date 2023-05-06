@@ -63,7 +63,7 @@ export class AtsuMessage {
 
     public Message = '';
 
-    public serialize(_format: AtsuMessageSerializationFormat) : string {
+    public serialize(_format: AtsuMessageSerializationFormat): string {
         throw new Error('No valid implementation');
     }
 
