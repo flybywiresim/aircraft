@@ -18,7 +18,7 @@ export class FlightPlanService {
     private constructor() {
     }
 
-    private static flightPlanManager = new FlightPlanManager(new EventBus(), Math.round(Math.random() * 10_000));
+    private static flightPlanManager = new FlightPlanManager(new EventBus(), Math.round(Math.random() * 10_000), true);
 
     private static config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3
 

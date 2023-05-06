@@ -59,7 +59,7 @@ export class OriginSegment extends FlightPlanSegment {
         const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
         this.allLegs.length = 0;
-        this.allLegs.push(FlightPlanLeg.fromAirportAndRunway(this, this.flightPlan.departureSegment.originDeparture?.ident ?? '', this.originAirport, this.runway));
+        this.allLegs.push(FlightPlanLeg.fromAirportAndRunway(this, this.flightPlan.departureSegment.procedure?.ident ?? '', this.originAirport, this.runway));
 
         if (this.runway) {
             const newRunwayCompatibleSids = await db.getDepartures(this.runway.airportIdent, this.runway.ident);
@@ -70,9 +70,7 @@ export class OriginSegment extends FlightPlanSegment {
                 const currentSidNewRunwayTransition = this.flightPlan.originDeparture.runwayTransitions.find((transition) => transition.ident === this.runway.ident);
 
                 if (currentSidNewRunwayTransition && this.flightPlan.departureRunwayTransition.ident !== currentSidNewRunwayTransition.ident) {
-                    const mappedTransitionLegs = currentSidNewRunwayTransition.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, this.flightPlan.originDeparture.ident));
-
-                    await this.flightPlan.departureRunwayTransitionSegment.setOriginRunwayTransitionSegment(currentSidNewRunwayTransition, mappedTransitionLegs);
+                    await this.flightPlan.departureRunwayTransitionSegment.setProcedure(currentSidNewRunwayTransition.ident);
 
                     this.strung = true;
                 }

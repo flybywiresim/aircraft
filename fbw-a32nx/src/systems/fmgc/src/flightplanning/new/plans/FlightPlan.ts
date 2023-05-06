@@ -15,7 +15,10 @@ import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
-import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData'; import { BaseFlightPlan, FlightPlanQueuedOperation } from './BaseFlightPlan';
+import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData'; import {
+    BaseFlightPlan, FlightPlanQueuedOperation,
+    SerializedFlightPlan,
+} from './BaseFlightPlan';
 
 export class FlightPlan extends BaseFlightPlan {
     static empty(index: number, bus: EventBus): FlightPlan {
@@ -330,5 +333,24 @@ export class FlightPlan extends BaseFlightPlan {
         }
 
         return FlightArea.Enroute;
+    }
+
+    static fromSerializedFlightPlan(index: number, serialized: SerializedFlightPlan, bus: EventBus): FlightPlan {
+        const newPlan = FlightPlan.empty(index, bus);
+
+        newPlan.activeLegIndex = serialized.activeLegIndex;
+        newPlan.fixInfos = serialized.fixInfo;
+
+        newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
+        newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.departureRunwayTransitionSegment);
+        newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.departureEnrouteTransitionSegment);
+        // TODO enroute
+        newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
+        newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalRunwayTransitionSegment);
+        newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalEnrouteTransitionSegment);
+        newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
+        newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
+
+        return newPlan;
     }
 }

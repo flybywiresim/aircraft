@@ -4,35 +4,39 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, Runway, WaypointDescriptor } from 'msfs-navdata';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
-export class ApproachSegment extends FlightPlanSegment {
+export class ApproachSegment extends ProcedureSegment<Approach> {
     class = SegmentClass.Arrival
 
     allLegs: FlightPlanElement[] = []
 
-    private approach: Approach | undefined
-
-    get approachProcedure() {
+    get procedure(): Approach | undefined {
         return this.approach;
     }
 
-    async setApproachProcedure(procedureIdent: string | undefined) {
+    private approach: Approach | undefined
+
+    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
         const oldApproachName = this.flightPlan.approach?.ident;
 
         const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-        if (procedureIdent === undefined) {
-            this.flightPlan.approachViaSegment.setApproachVia(undefined);
+        if (ident === undefined) {
             this.approach = undefined;
-            this.allLegs = this.createLegSet([]);
 
-            this.flightPlan.syncSegmentLegsChange(this);
-            this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+            if (!skipUpdateLegs) {
+                await this.flightPlan.approachViaSegment.setProcedure(undefined);
+
+                this.allLegs = this.createLegSet([]);
+
+                this.flightPlan.syncSegmentLegsChange(this);
+                this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+            }
 
             return;
         }
@@ -45,13 +49,18 @@ export class ApproachSegment extends FlightPlanSegment {
 
         const approaches = await db.getApproaches(destinationAirport.ident);
 
-        const matchingProcedure = approaches.find((approach) => approach.ident === procedureIdent);
+        const matchingProcedure = approaches.find((approach) => approach.ident === ident);
 
         if (!matchingProcedure) {
-            throw new Error(`[FMS/FPM] Can't find approach procedure '${procedureIdent}' for ${destinationAirport.ident}`);
+            throw new Error(`[FMS/FPM] Can't find approach procedure '${ident}' for ${destinationAirport.ident}`);
         }
 
         this.approach = matchingProcedure;
+
+        if (skipUpdateLegs) {
+            return;
+        }
+
         this.allLegs = this.createLegSet(matchingProcedure.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingProcedure.ident)));
         this.strung = false;
 
@@ -68,7 +77,7 @@ export class ApproachSegment extends FlightPlanSegment {
 
         // Clear flight plan approach via if the new approach is different
         if (oldApproachName !== matchingProcedure.ident) {
-            await this.flightPlan.approachViaSegment.setApproachVia(undefined);
+            await this.flightPlan.approachViaSegment.setProcedure(undefined);
         }
 
         this.flightPlan.availableApproachVias = matchingProcedure.transitions;
@@ -102,7 +111,7 @@ export class ApproachSegment extends FlightPlanSegment {
                 const runway = this.findRunwayFromRunwayLeg(lastLeg);
 
                 if (lastLeg?.isDiscontinuity === false && lastLeg.waypointDescriptor === WaypointDescriptor.Runway) {
-                    const mappedLeg = FlightPlanLeg.fromAirportAndRunway(this, this.approachProcedure?.ident ?? '', airport, runway);
+                    const mappedLeg = FlightPlanLeg.fromAirportAndRunway(this, this.procedure?.ident ?? '', airport, runway);
 
                     if (approachLegs.length > 1) {
                         mappedLeg.type = lastLeg.type;

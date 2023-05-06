@@ -6,6 +6,11 @@
 import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+
+export interface FlightPlanSyncResponsePacket {
+    plans: Record<number, SerializedFlightPlan>,
+}
 
 export interface FlightPlanSyncEvent {
     planIndex: number,
@@ -39,6 +44,9 @@ export interface FlightPlanSetFixInfoEntryEvent extends FlightPlanEditSyncEvent 
 }
 
 export interface FlightPlanSyncEvents {
+    'flightPlanManager.syncRequest': undefined,
+    'flightPlanManager.syncResponse': FlightPlanSyncResponsePacket,
+
     'flightPlanManager.create': FlightPlanManagerEvent,
     'flightPlanManager.delete': FlightPlanManagerEvent,
     'flightPlanManager.deleteAll': undefined,

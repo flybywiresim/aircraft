@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2023 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -12,7 +12,7 @@ import { ApproachSegment } from '@fmgc/flightplanning/new/segments/ApproachSegme
 import { DestinationSegment } from '@fmgc/flightplanning/new/segments/DestinationSegment';
 import { DepartureEnrouteTransitionSegment } from '@fmgc/flightplanning/new/segments/DepartureEnrouteTransitionSegment';
 import { DepartureRunwayTransitionSegment } from '@fmgc/flightplanning/new/segments/DepartureRunwayTransitionSegment';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
+import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
 import { ArrivalEnrouteTransitionSegment } from '@fmgc/flightplanning/new/segments/ArrivalEnrouteTransitionSegment';
 import { MissedApproachSegment } from '@fmgc/flightplanning/new/segments/MissedApproachSegment';
@@ -144,11 +144,11 @@ export abstract class BaseFlightPlan {
 
             // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
 
-            this.arrivalEnrouteTransitionSegment.setArrivalEnrouteTransition(undefined);
-            this.arrivalSegment.setArrivalProcedure(undefined);
+            this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
+            this.arrivalSegment.setProcedure(undefined);
 
-            this.approachSegment.setApproachProcedure(this.approachSegment.approachProcedure?.ident);
-            this.approachViaSegment.setApproachVia(this.approachViaSegment.approachViaProcedure?.ident);
+            this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
+            this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
 
             this.enqueueOperation(FlightPlanQueuedOperation.Restring);
             this.flushOperationQueue().then(() => {
@@ -217,7 +217,17 @@ export abstract class BaseFlightPlan {
 
         const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
 
+        console.log(`[FpSync] SyncSegmentLegs(${segment.constructor.name})`);
+
         this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: false, segmentIndex, legs });
+    }
+
+    syncLegDefinitionChange(atIndex: number) {
+        const leg = this.elementAt(atIndex);
+
+        if (leg.isDiscontinuity === false) {
+            this.sendEvent('flightPlan.legDefinitionEdit', { planIndex: this.index, atIndex, forAlternate: this instanceof AlternateFlightPlan, newDefinition: leg.definition });
+        }
     }
 
     originSegment = new OriginSegment(this);
@@ -505,10 +515,10 @@ export abstract class BaseFlightPlan {
 
     async setOriginAirport(icao: string) {
         await this.originSegment.setOriginIcao(icao);
-        await this.departureSegment.setDepartureProcedure(undefined);
+        await this.departureSegment.setProcedure(undefined);
         this.enrouteSegment.allLegs.length = 0;
-        await this.arrivalSegment.setArrivalProcedure(undefined);
-        await this.approachSegment.setApproachProcedure(undefined);
+        await this.arrivalSegment.setProcedure(undefined);
+        await this.approachSegment.setProcedure(undefined);
 
         if (this instanceof FlightPlan) {
             this.performanceData.databaseTransitionAltitude.set(this.originAirport.transitionAltitude);
@@ -530,7 +540,7 @@ export abstract class BaseFlightPlan {
     }
 
     get departureRunwayTransition(): ProcedureTransition {
-        return this.departureRunwayTransitionSegment.departureRunwayTransitionProcedure;
+        return this.departureRunwayTransitionSegment.procedure;
     }
 
     get originDeparture(): Departure {
@@ -538,14 +548,14 @@ export abstract class BaseFlightPlan {
     }
 
     async setDeparture(procedureIdent: string | undefined) {
-        await this.departureSegment.setDepartureProcedure(procedureIdent).then(() => this.incrementVersion());
+        await this.departureSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
     }
 
     get departureEnrouteTransition(): ProcedureTransition {
-        return this.departureEnrouteTransitionSegment.departureEnrouteTransitionProcedure;
+        return this.departureEnrouteTransitionSegment.procedure;
     }
 
     /**
@@ -554,14 +564,14 @@ export abstract class BaseFlightPlan {
      * @param transitionIdent the transition ident or `undefined` for NONE
      */
     async setDepartureEnrouteTransition(transitionIdent: string | undefined) {
-        this.departureEnrouteTransitionSegment.setDepartureEnrouteTransition(transitionIdent);
+        await this.departureEnrouteTransitionSegment.setProcedure(transitionIdent);
 
         await this.flushOperationQueue();
         this.incrementVersion();
     }
 
     get arrivalEnrouteTransition(): ProcedureTransition {
-        return this.arrivalEnrouteTransitionSegment.arrivalEnrouteTransitionProcedure;
+        return this.arrivalEnrouteTransitionSegment.procedure;
     }
 
     /**
@@ -570,29 +580,29 @@ export abstract class BaseFlightPlan {
      * @param transitionIdent the transition ident or `undefined` for NONE
      */
     async setArrivalEnrouteTransition(transitionIdent: string | undefined) {
-        await this.arrivalEnrouteTransitionSegment.setArrivalEnrouteTransition(transitionIdent);
+        await this.arrivalEnrouteTransitionSegment.setProcedure(transitionIdent);
 
         await this.flushOperationQueue();
         this.incrementVersion();
     }
 
     get arrival() {
-        return this.arrivalSegment.arrivalProcedure;
+        return this.arrivalSegment.procedure;
     }
 
     async setArrival(procedureIdent: string | undefined) {
-        await this.arrivalSegment.setArrivalProcedure(procedureIdent).then(() => this.incrementVersion());
+        await this.arrivalSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
     }
 
     get arrivalRunwayTransition() {
-        return this.arrivalRunwayTransitionSegment.arrivalRunwayTransitionProcedure;
+        return this.arrivalRunwayTransitionSegment.procedure;
     }
 
     get approachVia() {
-        return this.approachViaSegment.approachViaProcedure;
+        return this.approachViaSegment.procedure;
     }
 
     /**
@@ -601,18 +611,18 @@ export abstract class BaseFlightPlan {
      * @param transitionIdent the transition ident or `undefined` for NONE
      */
     async setApproachVia(transitionIdent: string | undefined) {
-        await this.approachViaSegment.setApproachVia(transitionIdent);
+        await this.approachViaSegment.setProcedure(transitionIdent);
 
         await this.flushOperationQueue();
         this.incrementVersion();
     }
 
     get approach() {
-        return this.approachSegment.approachProcedure;
+        return this.approachSegment.procedure;
     }
 
     async setApproach(procedureIdent: string | undefined) {
-        await this.approachSegment.setApproachProcedure(procedureIdent).then(() => this.incrementVersion());
+        await this.approachSegment.setProcedure(procedureIdent).then(() => this.incrementVersion());
 
         await this.flushOperationQueue();
         this.incrementVersion();
@@ -839,6 +849,8 @@ export abstract class BaseFlightPlan {
         leg.definition.overfly = overfly;
 
         this.incrementVersion();
+
+        this.syncLegDefinitionChange(index);
     }
 
     toggleOverflyAt(index: number): void {
@@ -847,6 +859,8 @@ export abstract class BaseFlightPlan {
         leg.definition.overfly = !leg.definition.overfly;
 
         this.incrementVersion();
+
+        this.syncLegDefinitionChange(index);
     }
 
     private findDuplicate(waypoint: Fix, afterIndex?: number): [FlightPlanSegment, number, number] | null {
@@ -1241,19 +1255,19 @@ export abstract class BaseFlightPlan {
         this.arrivalAndApproachSegmentsBeingRebuilt = true;
 
         if (this.approach) {
-            await this.approachSegment.setApproachProcedure(this.approach.ident);
+            await this.approachSegment.setProcedure(this.approach.ident);
         }
 
         if (this.approachVia) {
-            await this.approachViaSegment.setApproachVia(this.approachVia.ident);
+            await this.approachViaSegment.setProcedure(this.approachVia.ident);
         }
 
         if (this.arrival) {
-            await this.arrivalSegment.setArrivalProcedure(this.arrival.ident);
+            await this.arrivalSegment.setProcedure(this.arrival.ident);
         }
 
         if (this.arrivalEnrouteTransition) {
-            await this.arrivalEnrouteTransitionSegment.setArrivalEnrouteTransition(this.arrivalEnrouteTransition.ident);
+            await this.arrivalEnrouteTransitionSegment.setProcedure(this.arrivalEnrouteTransition.ident);
         }
 
         const previousSegmentToArrival = this.previousSegment(this.arrivalEnrouteTransitionSegment);
@@ -1297,4 +1311,52 @@ export abstract class BaseFlightPlan {
             }
         }
     }
+
+    serialize(): SerializedFlightPlan {
+        return {
+            activeLegIndex: this.activeLegIndex,
+
+            fixInfo: this instanceof FlightPlan ? this.fixInfos : [],
+
+            segments: {
+                originSegment: this.originSegment.serialize(),
+                departureRunwayTransitionSegment: this.departureRunwayTransitionSegment.serialize(),
+                departureSegment: this.departureSegment.serialize(),
+                departureEnrouteTransitionSegment: this.departureEnrouteTransitionSegment.serialize(),
+                enrouteSegment: this.enrouteSegment.serialize(),
+                arrivalEnrouteTransitionSegment: this.arrivalEnrouteTransitionSegment.serialize(),
+                arrivalSegment: this.arrivalSegment.serialize(),
+                arrivalRunwayTransitionSegment: this.arrivalRunwayTransitionSegment.serialize(),
+                approachViaSegment: this.approachViaSegment.serialize(),
+                approachSegment: this.approachSegment.serialize(),
+                destinationSegment: this.destinationSegment.serialize(),
+                missedApproachSegment: this.missedApproachSegment.serialize(),
+            },
+
+            alternateFlightPlan: this instanceof FlightPlan ? this.alternateFlightPlan.serialize() : undefined,
+        };
+    }
+}
+
+export interface SerializedFlightPlan {
+    activeLegIndex: number,
+
+    fixInfo: readonly FixInfoEntry[],
+
+    segments: {
+        originSegment: SerializedFlightPlanSegment,
+        departureRunwayTransitionSegment: SerializedFlightPlanSegment,
+        departureSegment: SerializedFlightPlanSegment,
+        departureEnrouteTransitionSegment: SerializedFlightPlanSegment,
+        enrouteSegment: SerializedFlightPlanSegment,
+        arrivalEnrouteTransitionSegment: SerializedFlightPlanSegment,
+        arrivalSegment: SerializedFlightPlanSegment,
+        arrivalRunwayTransitionSegment: SerializedFlightPlanSegment,
+        approachViaSegment: SerializedFlightPlanSegment,
+        approachSegment: SerializedFlightPlanSegment,
+        destinationSegment: SerializedFlightPlanSegment,
+        missedApproachSegment: SerializedFlightPlanSegment,
+    },
+
+    alternateFlightPlan?: SerializedFlightPlan,
 }

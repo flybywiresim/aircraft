@@ -1,34 +1,43 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { ProcedureTransition } from 'msfs-navdata';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
-import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 
-export class ArrivalRunwayTransitionSegment extends FlightPlanSegment {
+export class ArrivalRunwayTransitionSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Arrival
 
     allLegs: FlightPlanElement[] = []
 
-    private arrivalRunwayTransition: ProcedureTransition | undefined = undefined
-
-    get arrivalRunwayTransitionProcedure() {
+    public get procedure(): ProcedureTransition | undefined {
         return this.arrivalRunwayTransition;
     }
 
-    setArrivalRunwayTransition(transition: ProcedureTransition, legs: FlightPlanElement[]) {
-        this.allLegs.length = 0;
-        this.allLegs.push(...legs);
-        this.strung = false;
+    private arrivalRunwayTransition: ProcedureTransition | undefined = undefined
 
-        this.arrivalRunwayTransition = transition;
+    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        const existingArrival = this.flightPlan.arrival;
 
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        if (existingArrival) {
+            const matchingTransition = ident !== undefined ? existingArrival.runwayTransitions.find((it) => it.ident === ident) : undefined;
+
+            this.arrivalRunwayTransition = matchingTransition;
+        }
+
+        if (!skipUpdateLegs) {
+            const legs = this.arrivalRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, this.arrivalRunwayTransition.ident)) ?? [];
+
+            this.allLegs.length = 0;
+            this.allLegs.push(...legs);
+            this.strung = false;
+
+            this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
+            this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        }
     }
 
     clone(forPlan: BaseFlightPlan): ArrivalRunwayTransitionSegment {

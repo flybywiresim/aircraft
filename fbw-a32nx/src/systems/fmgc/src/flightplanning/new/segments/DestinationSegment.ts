@@ -86,7 +86,7 @@ export class DestinationSegment extends FlightPlanSegment {
 
         // We remove the approach if the runway ident changed and the runway was not set by the approach
         if (doRemoveApproach) {
-            await approachSegment.setApproachProcedure(undefined);
+            await approachSegment.setProcedure(undefined);
         }
 
         if (this.airport && approachSegment.allLegs.length === 0) {

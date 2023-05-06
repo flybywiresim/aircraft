@@ -23,7 +23,7 @@ export class CoarsePredictions {
                 continue;
             }
 
-            // TODO port over
+            // TODO port over (fms-v2)
 
             // if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
             //     geomLeg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
