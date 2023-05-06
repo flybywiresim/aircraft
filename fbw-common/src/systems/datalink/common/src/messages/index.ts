@@ -11,6 +11,7 @@ export * from './DclMessage';
 export * from './FlightPlanMessage';
 export * from './FreetextMessage';
 export * from './MetarMessage';
+export * from './NotamMessage';
 export * from './OclMessage';
 export * from './TafMessage';
 export * from './WeatherMessage';
