@@ -15,10 +15,8 @@ import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
-import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData'; import {
-    BaseFlightPlan, FlightPlanQueuedOperation,
-    SerializedFlightPlan,
-} from './BaseFlightPlan';
+import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
+import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
 export class FlightPlan extends BaseFlightPlan {
     static empty(index: number, bus: EventBus): FlightPlan {
