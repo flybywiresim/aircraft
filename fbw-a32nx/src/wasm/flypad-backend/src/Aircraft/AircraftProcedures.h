@@ -63,7 +63,7 @@ class AircraftProcedures {
     ProcedureStep{"ADIRS 2 Nav",              1090, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
     ProcedureStep{"ADIRS 3 Nav",              1100, false, 1500, "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
 
-    ProcedureStep{"Strobe Auto",              2120, false, 1000, "(A:LIGHT STROBE, Bool)",                               "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
+    ProcedureStep{"Strobe Auto",              2122, false, 1000, "(L:LIGHTING_STROBE_0) 1 ==",                           "1 (>L:LIGHTING_STROBE_0)"},
     ProcedureStep{"Nav & Logo Lt On",         1070, false, 1000, "(A:LIGHT LOGO, Bool) (A:LIGHT NAV, Bool) &&",          "1 (>K:2:LOGO_LIGHTS_SET) 1 (>K:2:NAV_LIGHTS_SET)"},
 
     ProcedureStep{"SEAT BELTS On",            2140, false, 1000, "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)",             "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
@@ -104,7 +104,7 @@ class AircraftProcedures {
     ProcedureStep{"EMER EXT Lt Off",       1180, false, 1500, "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==",  "2 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
     ProcedureStep{"GND CTL Off",           1200, false, 1000, "(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==",                "0 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
     ProcedureStep{"SEAT BELTS Off",        2200, false, 2000, "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) !",           "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
-    ProcedureStep{"Strobe Off",            2180, false, 1000, "(A:LIGHT STROBE, Bool) !",                             "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
+    ProcedureStep{"Strobe Off",            2121, false, 1000, "(L:LIGHTING_STROBE_0) 2 ==",                           "2 (>L:LIGHTING_STROBE_0)"},
     ProcedureStep{"Nav & Logo Lt Off",     1240, false, 500,  "(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &&",      "0 (>K:2:LOGO_LIGHTS_SET) 0 (>K:2:NAV_LIGHTS_SET)"},
     ProcedureStep{"Crew Oxy Off",          1190, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 1 ==",                       "1 (>L:PUSH_OVHD_OXYGEN_CREW)"},
     ProcedureStep{"ADIRS 3 Off",           1210, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
@@ -203,26 +203,27 @@ class AircraftProcedures {
 
   static const inline std::vector TAKEOFF_CONFIG_ON = {
     // SOP: TAXI
-    ProcedureStep{"WX Radar On",       4000, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 0 ==",  "0 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
-    ProcedureStep{"WX Radar Mode",     4010, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==", "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
+    ProcedureStep{"WX Radar On",       4000, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 0 ==",         "0 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
+    ProcedureStep{"WX Radar Mode",     4010, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==",        "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
     // SOP: BEFORE TAKEOFF
-    ProcedureStep{"TCAS Switch TA/RA", 4020, false, 2000, "(L:A32NX_SWITCH_TCAS_POSITION) 2 ==",    "2 (>L:A32NX_SWITCH_TCAS_POSITION)"},
-    ProcedureStep{"Strobe On",         2120, false, 1000, "(A:LIGHT STROBE, Bool)",                 "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
-    ProcedureStep{"Cabin Ready",       2125, false, 1000, "",                                       "1 (>L:A32NX_CABIN_READY)"},
+    ProcedureStep{"TCAS Switch TA/RA", 4020, false, 2000, "(L:A32NX_SWITCH_TCAS_POSITION) 2 ==",           "2 (>L:A32NX_SWITCH_TCAS_POSITION)"},
+    ProcedureStep{"Strobe On",         2120, false, 1000, "(L:LIGHTING_STROBE_0) 0 ==",                    "0 (>L:LIGHTING_STROBE_0)"},
+    ProcedureStep{"Cabin Ready",       2125, false, 1000, "",                                              "1 (>L:A32NX_CABIN_READY)"},
     // SOP: TAKE OFF
-    ProcedureStep{"NOSE Lt Takeoff",   4030, false, 1000, "(A:CIRCUIT SWITCH ON:17, Bool)",         "(A:CIRCUIT SWITCH ON:17, Bool) ! if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-    ProcedureStep{"LL Lt L On",        4040, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool)",         "0 (>L:LIGHTING_LANDING_2) 0 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) ! if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-    ProcedureStep{"LL Lt R On",        4050, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool)",         "0 (>L:LIGHTING_LANDING_3) 0 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) ! if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+    ProcedureStep{"NOSE Lt Takeoff",   4030, false, 1000, "(A:CIRCUIT SWITCH ON:17, Bool)",                "(A:CIRCUIT SWITCH ON:17, Bool) ! if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+    ProcedureStep{"LL Lt L On",        4040, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool)",                "0 (>L:LIGHTING_LANDING_2) 0 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) ! if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+    ProcedureStep{"LL Lt R On",        4050, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool)",                "0 (>L:LIGHTING_LANDING_3) 0 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) ! if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
 };
 
   static const inline std::vector TAKEOFF_CONFIG_OFF = {
-    ProcedureStep{"LL Lt L Off",       4060, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool) ! (L:LANDING_2_RETRACTED) &&", "2 (>L:LIGHTING_LANDING_2) 1 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-    ProcedureStep{"LL Lt R Off",       4070, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool) ! (L:LANDING_3_RETRACTED) &&", "2 (>L:LIGHTING_LANDING_3) 1 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-    ProcedureStep{"NOSE Lt Takeoff",   4080, false, 2000, "(A:CIRCUIT SWITCH ON:17, Bool) !",                            "(A:CIRCUIT SWITCH ON:17, Bool) if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
-    ProcedureStep{"Strobe Auto",       2180, false, 1000, "(A:LIGHT STROBE, Bool) !",                                    "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
-    ProcedureStep{"TCAS Switch TA/RA", 4090, false, 1000, "(L:A32NX_SWITCH_TCAS_POSITION) 0 ==",                         "0 (>L:A32NX_SWITCH_TCAS_POSITION)"},
-    ProcedureStep{"WX Radar Mode",     4110, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==",                      "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
-    ProcedureStep{"WX Radar Off",      4100, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 1 ==",                       "1 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
+    ProcedureStep{"LL Lt L Off",       4060, false, 0,    "(A:CIRCUIT SWITCH ON:18, Bool) ! (L:LANDING_2_RETRACTED) &&",     "2 (>L:LIGHTING_LANDING_2) 1 (>L:LANDING_2_RETRACTED) (A:CIRCUIT SWITCH ON:18, Bool) if{ 18 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+    ProcedureStep{"LL Lt R Off",       4070, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool) ! (L:LANDING_3_RETRACTED) &&",     "2 (>L:LIGHTING_LANDING_3) 1 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+    ProcedureStep{"NOSE Lt Takeoff",   4080, false, 2000, "(A:CIRCUIT SWITCH ON:17, Bool) !",                                "(A:CIRCUIT SWITCH ON:17, Bool) if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
+    ProcedureStep{"Strobe Auto",       2122, false, 1000, "(L:A32NX_ENGINE_STATE:1) 0 == (L:A32NX_ENGINE_STATE:2) 0 == && "
+                                                          "(L:LIGHTING_STROBE_0) 1 == ||",                                   "1 (>L:LIGHTING_STROBE_0)"},
+    ProcedureStep{"TCAS Switch TA/RA", 4090, false, 1000, "(L:A32NX_SWITCH_TCAS_POSITION) 0 ==",                             "0 (>L:A32NX_SWITCH_TCAS_POSITION)"},
+    ProcedureStep{"WX Radar Mode",     4110, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_MODE) 1 ==",                          "1 (>L:XMLVAR_A320_WEATHERRADAR_MODE)"},
+    ProcedureStep{"WX Radar Off",      4100, false, 1000, "(L:XMLVAR_A320_WEATHERRADAR_SYS) 1 ==",                           "1 (>L:XMLVAR_A320_WEATHERRADAR_SYS)"},
 };
 
   std::vector<const ProcedureStep*> coldAndDark;
