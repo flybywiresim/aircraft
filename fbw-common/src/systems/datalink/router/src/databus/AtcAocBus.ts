@@ -6,6 +6,7 @@ import {
     AtsuStatusCodes,
     CpdlcMessage,
     DclMessage,
+    FlightPlanMessage,
     FreetextMessage,
     OclMessage,
     WeatherMessage,
@@ -20,10 +21,12 @@ export interface AtcAocRouterMessages {
     routerSendMessageResponse: { requestId: number, status: AtsuStatusCodes };
 
     // streams to request specific data
+    routerRequestFlightplan: { requestId: number };
     routerRequestAtis: { requestId: number, icao: string, type: AtisType };
     routerRequestMetar: { requestId: number, icaos: string[] };
     routerRequestTaf: { requestId: number, icaos: string[] };
     routerRequestSent: number;
+    routerReceivedFlightplan: { requestId: number, response: [AtsuStatusCodes, FlightPlanMessage] };
     routerReceivedWeather: { requestId: number, response: [AtsuStatusCodes, WeatherMessage] };
 }
 
