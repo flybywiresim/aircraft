@@ -14,9 +14,11 @@ import {
     TafMessage,
     WeatherMessage,
     FreetextMessage,
+    FlightPlanMessage,
 } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { SimbriefConnector } from 'datalink/router/src/webinterfaces/SimbriefConnector';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
@@ -106,6 +108,15 @@ export class Router {
         this.digitalInputs.addDataCallback('sendCpdlcMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendDclMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendOclMessage', (message, force) => this.sendMessage(message, force));
+        this.digitalInputs.addDataCallback('requestFlightPlan', (requestSent): Promise<[AtsuStatusCodes, FlightPlanMessage]> => {
+            if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
+                return [AtsuStatusCodes.ComFailed, null];
+            }
+
+            return SimbriefConnector.receiveFlightplan()
+                .then((message) => this.simulateFlightplanResponse([AtsuStatusCodes.Ok, message], requestSent))
+                .catch((_err) => [AtsuStatusCodes.ComFailed, null]);
+        });
         this.digitalInputs.addDataCallback('requestAtis', async (icao, type, requestSent): Promise<[AtsuStatusCodes, WeatherMessage]> => {
             if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
                 return [AtsuStatusCodes.ComFailed, null];
@@ -237,6 +248,43 @@ export class Router {
         }
 
         return retval;
+    }
+
+    private async simulateFlightplanResponse(data: [AtsuStatusCodes, FlightPlanMessage], sentCallback: () => void): Promise<[AtsuStatusCodes, FlightPlanMessage]> {
+        return new Promise((resolve, _reject) => {
+            // simulate the request transmission
+            const requestTimeout = this.vdl.enqueueOutboundPacket();
+            let timeout = setTimeout(() => {
+                this.vdl.dequeueOutboundMessage(requestTimeout);
+                this.removeTransmissionTimeout(timeout);
+
+                if (!this.poweredUp) return;
+
+                sentCallback();
+
+                const processingTimeout = 300 + Math.floor(Math.random() * 500);
+
+                // simulate some remote processing time
+                timeout = setTimeout(() => {
+                    this.removeTransmissionTimeout(timeout);
+
+                    // simulate the response transmission
+                    const responseTimeout = this.vdl.enqueueInboundMessage(data[1]);
+                    timeout = setTimeout(() => {
+                        this.vdl.dequeueInboundMessage(responseTimeout);
+                        this.removeTransmissionTimeout(timeout);
+
+                        if (this.poweredUp) resolve(data);
+                    }, responseTimeout);
+
+                    this.transmissionSimulationTimeouts.push(timeout);
+                }, processingTimeout);
+
+                this.transmissionSimulationTimeouts.push(timeout);
+            }, requestTimeout);
+
+            this.transmissionSimulationTimeouts.push(timeout);
+        });
     }
 
     private async simulateWeatherRequestResponse(data: [AtsuStatusCodes, WeatherMessage], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
