@@ -99,7 +99,7 @@ export class CpdlcMessage extends AtsuMessage {
             && this.Response.Content[0]?.TypeId !== 'UM4' && this.Response.Content[0]?.TypeId !== 'UM5';
     }
 
-    public serialize(format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat): string {
         const lineLength = format === AtsuMessageSerializationFormat.Mailbox ? 30 : 25;
         const lines: string[] = [];
         let message: string = '';

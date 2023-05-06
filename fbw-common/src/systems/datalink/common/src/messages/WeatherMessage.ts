@@ -15,7 +15,7 @@ export class WeatherMessage extends AtsuMessage {
         this.Direction = AtsuMessageDirection.Uplink;
     }
 
-    public serialize(format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat): string {
         let type = '';
         switch (this.Type) {
         case AtsuMessageType.METAR:
