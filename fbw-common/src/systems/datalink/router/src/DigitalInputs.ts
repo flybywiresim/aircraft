@@ -12,6 +12,7 @@ import {
     WeatherMessage,
     RmpDataBusTypes,
     Conversion,
+    FlightPlanMessage,
 } from '@datalink/common';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -23,6 +24,7 @@ export type RouterDigitalInputCallbacks = {
     sendCpdlcMessage: (message: CpdlcMessage, force: boolean) => Promise<AtsuStatusCodes>;
     sendDclMessage: (message: DclMessage, force: boolean) => Promise<AtsuStatusCodes>;
     sendOclMessage: (message: OclMessage, force: boolean) => Promise<AtsuStatusCodes>;
+    requestFlightPlan: (requestSent: () => void) => Promise<[AtsuStatusCodes, FlightPlanMessage]>;
     requestAtis: (icao: string, type: AtisType, requestSent: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
     requestWeather: (icaos: string[], metar: boolean, requestSent: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
     connect: (callsign: string) => Promise<AtsuStatusCodes>;
@@ -42,6 +44,7 @@ export class DigitalInputs {
         sendCpdlcMessage: null,
         sendDclMessage: null,
         sendOclMessage: null,
+        requestFlightPlan: null,
         requestAtis: null,
         requestWeather: null,
         connect: null,
@@ -105,6 +108,15 @@ export class DigitalInputs {
                 });
             } else {
                 this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status: AtsuStatusCodes.ComFailed }, this.synchronizedAtc, false);
+            }
+        });
+        this.subscriber.on('routerRequestFlightplan').handle(async (request) => {
+            if (this.callbacks.requestFlightPlan !== null) {
+                this.callbacks.requestFlightPlan(() => this.publisher.pub('routerRequestSent', request.requestId, this.synchronizedAoc, false)).then((response) => {
+                    this.publisher.pub('routerReceivedFlightplan', { requestId: request.requestId, response }, this.synchronizedAoc, false);
+                });
+            } else {
+                this.publisher.pub('routerReceivedFlightplan', { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedAoc, false);
             }
         });
         this.subscriber.on('routerRequestAtis').handle(async (request) => {
