@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Fix, LegType } from 'msfs-navdata';
-import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { Discontinuity, FlightPlanElement, FlightPlanLeg, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 
@@ -176,7 +176,7 @@ export abstract class FlightPlanSegment {
      *
      * @param waypoint the waypoint to look for
      */
-    findIndexOfWaypoint(waypoint: Fix, afterIndex? :number): number {
+    findIndexOfWaypoint(waypoint: Fix, afterIndex?: number): number {
         for (let i = 0; i < this.allLegs.length; i++) {
             if (i <= afterIndex) {
                 continue;
@@ -191,4 +191,14 @@ export abstract class FlightPlanSegment {
 
         return -1;
     }
+
+    serialize(): SerializedFlightPlanSegment {
+        return { allLegs: this.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it)) };
+    }
+}
+
+export interface SerializedFlightPlanSegment {
+    allLegs: (SerializedFlightPlanLeg | Discontinuity)[],
+    facilityDatabaseID?: string,
+    procedureIdent?: string,
 }

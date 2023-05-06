@@ -165,7 +165,7 @@ describe('a base flight plan', () => {
 
             await flightPlan.setOriginAirport('NZQN');
             await flightPlan.setOriginRunway('RW05');
-            await departure.setDepartureProcedure('ANPO3A');
+            await departure.setProcedure('ANPO3A');
 
             await flightPlan.setDepartureEnrouteTransition('SAVLA');
 

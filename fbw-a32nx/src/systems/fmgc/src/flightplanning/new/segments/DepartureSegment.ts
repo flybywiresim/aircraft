@@ -5,24 +5,31 @@
 
 import { Departure } from 'msfs-navdata';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
-export class DepartureSegment extends FlightPlanSegment {
+export class DepartureSegment extends ProcedureSegment<Departure> {
     class = SegmentClass.Departure
+
+    get procedure(): Departure | undefined {
+        return this.originDeparture;
+    }
 
     originDeparture: Departure
 
     allLegs: FlightPlanLeg[] = []
 
-    async setDepartureProcedure(procedureIdent: string | undefined) {
-        if (procedureIdent === undefined) {
+    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        if (ident === undefined) {
             this.originDeparture = undefined;
-            this.allLegs.length = 0;
 
-            await this.flightPlan.departureRunwayTransitionSegment.setOriginRunwayTransitionSegment(undefined, []);
+            if (!skipUpdateLegs) {
+                this.allLegs.length = 0;
+            }
+
+            await this.flightPlan.departureRunwayTransitionSegment.setProcedure(undefined);
             await this.flightPlan.setDepartureEnrouteTransition(undefined);
             await this.flightPlan.originSegment.refreshOriginLegs();
 
@@ -42,21 +49,22 @@ export class DepartureSegment extends FlightPlanSegment {
             throw new Error(`[FMS/FPM] Cannot find procedures at ${this.flightPlan.originAirport.ident}`);
         }
 
-        const matchingProcedure = proceduresAtAirport.find((proc) => proc.ident === procedureIdent);
+        const matchingProcedure = proceduresAtAirport.find((proc) => proc.ident === ident);
 
         if (!matchingProcedure) {
-            throw new Error(`[FMS/FPM] Can't find procedure '${procedureIdent}' for ${this.flightPlan.originAirport.ident}`);
+            throw new Error(`[FMS/FPM] Can't find procedure '${ident}' for ${this.flightPlan.originAirport.ident}`);
         }
 
-        const runwayTransition = matchingProcedure.runwayTransitions.find((transition) => transition.ident === this.flightPlan.originRunway.ident);
-
         this.originDeparture = matchingProcedure;
+
+        if (skipUpdateLegs) {
+            return;
+        }
 
         this.allLegs = matchingProcedure.commonLegs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingProcedure.ident));
         this.strung = false;
 
-        const mappedRunwayTransitionLegs = runwayTransition?.legs?.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingProcedure.ident)) ?? [];
-        await this.flightPlan.departureRunwayTransitionSegment.setOriginRunwayTransitionSegment(runwayTransition, mappedRunwayTransitionLegs);
+        await this.flightPlan.departureRunwayTransitionSegment.setProcedure(this.flightPlan.originRunway.ident);
 
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);

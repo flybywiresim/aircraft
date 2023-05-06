@@ -5,7 +5,8 @@
 
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
-import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
+import { FlightPlanSyncEvents, FlightPlanSyncResponsePacket } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
+import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 
 export enum FlightPlanIndex {
     Active,
@@ -22,8 +23,41 @@ export class FlightPlanManager {
     constructor(
         private readonly bus: EventBus,
         private readonly syncClientID: number,
+        private readonly master: boolean,
     ) {
         const subs = bus.getSubscriber<FlightPlanSyncEvents>();
+
+        subs.on('flightPlanManager.syncRequest').handle(() => {
+            if (!this.ignoreSync) {
+                console.log('[FpmSync] SyncRequest()');
+
+                const plansRecord: Record<number, SerializedFlightPlan> = {};
+
+                for (const plan of this.plans) {
+                    if (plan) {
+                        plansRecord[plan.index] = plan.serialize();
+                    }
+                }
+
+                const response: FlightPlanSyncResponsePacket = { plans: plansRecord };
+
+                this.sendEvent('flightPlanManager.syncResponse', response);
+            }
+        });
+
+        subs.on('flightPlanManager.syncResponse').handle((event) => {
+            console.log('[FpmSync] SyncResponse()');
+
+            for (const [index, serialisedPlan] of Object.entries(event.plans)) {
+                const intIndex = parseInt(index);
+
+                const newPlan = FlightPlan.fromSerializedFlightPlan(intIndex, serialisedPlan, this.bus);
+
+                this.set(intIndex, newPlan);
+            }
+
+            console.log(event);
+        });
 
         subs.on('flightPlanManager.create').handle((event) => {
             if (!this.ignoreSync) {
@@ -59,6 +93,10 @@ export class FlightPlanManager {
                 this.swap(event.planIndex, event.targetPlanIndex, false);
             }
         });
+
+        if (!master) {
+            setTimeout(() => this.sendEvent('flightPlanManager.syncRequest', undefined), 5_000);
+        }
 
         this.syncPub = this.bus.getPublisher<FlightPlanSyncEvents>();
     }
@@ -114,6 +152,8 @@ export class FlightPlanManager {
 
         this.set(to, newPlan);
         this.get(to).incrementVersion();
+
+        console.log(this.get(to).serialize());
 
         if (notify) {
             this.sendEvent('flightPlanManager.copy', { planIndex: from, targetPlanIndex: to });

@@ -3,34 +3,44 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
-import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { ProcedureTransition } from 'msfs-navdata';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 
-export class DepartureRunwayTransitionSegment extends FlightPlanSegment {
+export class DepartureRunwayTransitionSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Departure
 
     allLegs: FlightPlanElement[] = []
 
-    private departureRunwayTransition: ProcedureTransition | undefined = undefined
-
-    get departureRunwayTransitionProcedure() {
+    get procedure(): ProcedureTransition | undefined {
         return this.departureRunwayTransition;
     }
 
-    async setOriginRunwayTransitionSegment(transition: ProcedureTransition | undefined, legs: FlightPlanElement[]) {
-        this.allLegs.length = 0;
-        this.allLegs.push(...legs);
-        this.strung = false;
+    private departureRunwayTransition: ProcedureTransition | undefined = undefined
 
-        this.departureRunwayTransition = transition;
+    async setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        const existingDeparture = this.flightPlan.originDeparture;
 
-        await this.flightPlan.originSegment.refreshOriginLegs();
+        if (existingDeparture) {
+            const matchingTransition = ident !== undefined ? existingDeparture.runwayTransitions.find((it) => it.ident === ident) : undefined;
 
-        this.flightPlan.syncSegmentLegsChange(this);
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+            this.departureRunwayTransition = matchingTransition;
+        }
+
+        if (!skipUpdateLegs) {
+            const legs = this.departureRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, this.departureRunwayTransition.ident)) ?? [];
+
+            this.allLegs.length = 0;
+            this.allLegs.push(...legs);
+            this.strung = false;
+
+            await this.flightPlan.originSegment.refreshOriginLegs();
+
+            this.flightPlan.syncSegmentLegsChange(this);
+            this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        }
     }
 
     clone(forPlan: BaseFlightPlan): DepartureRunwayTransitionSegment {

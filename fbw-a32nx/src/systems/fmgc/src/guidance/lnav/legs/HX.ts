@@ -379,6 +379,8 @@ abstract class HXLeg extends XFLeg {
         if (!isActive) {
             this.updatePrediction();
         }
+
+        this.isComputed = true;
     }
 
     setPredictedTas(tas: Knots) {
@@ -448,10 +450,6 @@ export class HMLeg extends HXLeg {
                 // no default
             }
         }
-
-        // hack to allow f-pln page to see state
-        // this.fix.additionalData.immExit = exit;
-        // TODO port over
 
         this.termConditionMet = exit;
 

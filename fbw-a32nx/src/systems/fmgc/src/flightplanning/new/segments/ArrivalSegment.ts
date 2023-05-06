@@ -1,33 +1,36 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arrival } from 'msfs-navdata';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
-export class ArrivalSegment extends FlightPlanSegment {
+export class ArrivalSegment extends ProcedureSegment<Arrival> {
     class = SegmentClass.Arrival
 
     allLegs: FlightPlanElement[] = []
 
-    private arrival: Arrival | undefined
-
-    get arrivalProcedure() {
+    public get procedure(): Arrival | undefined {
         return this.arrival;
     }
 
-    async setArrivalProcedure(procedureIdent: string | undefined) {
+    private arrival: Arrival | undefined
+
+    async setProcedure(procedureIdent: string, skipUpdateLegs = true) {
         if (procedureIdent === undefined) {
             this.arrival = undefined;
-            this.allLegs.length = 0;
-            this.flightPlan.arrivalEnrouteTransitionSegment.setArrivalEnrouteTransition(undefined);
 
-            this.flightPlan.syncSegmentLegsChange(this);
+            if (!skipUpdateLegs) {
+                this.allLegs.length = 0;
+                await this.flightPlan.arrivalEnrouteTransitionSegment.setProcedure(undefined);
+
+                this.flightPlan.syncSegmentLegsChange(this);
+            }
+
             return;
         }
 
@@ -47,6 +50,10 @@ export class ArrivalSegment extends FlightPlanSegment {
             throw new Error(`[FMS/FPM] Can't find arrival procedure '${procedureIdent}' for ${destinationAirport.ident}`);
         }
 
+        if (skipUpdateLegs) {
+            return;
+        }
+
         const legs = [...matchingArrival.commonLegs];
 
         this.arrival = matchingArrival;
@@ -56,10 +63,7 @@ export class ArrivalSegment extends FlightPlanSegment {
         const mappedArrivalLegs = legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingArrival.ident));
         this.allLegs.push(...mappedArrivalLegs);
 
-        const matchingRunwayTransition = matchingArrival.runwayTransitions.find((transition) => transition.ident === destinationRunway.ident);
-
-        const mappedRunwayTransitionLegs = matchingRunwayTransition?.legs?.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingArrival.ident)) ?? [];
-        this.flightPlan.arrivalRunwayTransitionSegment.setArrivalRunwayTransition(matchingRunwayTransition, mappedRunwayTransitionLegs);
+        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(destinationRunway.ident);
 
         this.flightPlan.syncSegmentLegsChange(this);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);

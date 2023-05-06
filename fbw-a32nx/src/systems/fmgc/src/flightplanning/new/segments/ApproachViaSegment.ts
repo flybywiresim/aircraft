@@ -4,28 +4,32 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { LegType, ProcedureTransition } from 'msfs-navdata';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 
-export class ApproachViaSegment extends FlightPlanSegment {
+export class ApproachViaSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Arrival
 
     allLegs: FlightPlanElement[] = []
 
-    private approachVia: ProcedureTransition | undefined = undefined
-
-    get approachViaProcedure() {
+    get procedure(): ProcedureTransition | undefined {
         return this.approachVia;
     }
 
-    async setApproachVia(transitionIdent: string | undefined): Promise<void> {
-        if (transitionIdent === undefined) {
-            this.approachVia = undefined;
-            this.allLegs.length = 0;
+    private approachVia: ProcedureTransition | undefined = undefined
 
-            this.flightPlan.syncSegmentLegsChange(this);
+    setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        if (ident === undefined) {
+            this.approachVia = undefined;
+
+            if (!skipUpdateLegs) {
+                this.allLegs.length = 0;
+
+                this.flightPlan.syncSegmentLegsChange(this);
+            }
+
             return;
         }
 
@@ -37,13 +41,18 @@ export class ApproachViaSegment extends FlightPlanSegment {
 
         const approachVias = approach.transitions;
 
-        const matchingApproachVia = approachVias.find((transition) => transition.ident === transitionIdent);
+        const matchingApproachVia = approachVias.find((transition) => transition.ident === ident);
 
         if (!matchingApproachVia) {
-            throw new Error(`[FMS/FPM] Can't find arrival approach via '${transitionIdent}' for ${approach.ident}`);
+            throw new Error(`[FMS/FPM] Can't find arrival approach via '${ident}' for ${approach.ident}`);
         }
 
         this.approachVia = matchingApproachVia;
+
+        if (skipUpdateLegs) {
+            return;
+        }
+
         this.allLegs.length = 0;
 
         const mappedApproachViaLegs = matchingApproachVia.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingApproachVia.ident));

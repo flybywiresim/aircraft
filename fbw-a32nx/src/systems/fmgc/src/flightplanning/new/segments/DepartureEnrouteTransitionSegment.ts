@@ -1,30 +1,34 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { ProcedureTransition } from 'msfs-navdata';
-import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
 
-export class DepartureEnrouteTransitionSegment extends FlightPlanSegment {
+export class DepartureEnrouteTransitionSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Departure
 
     allLegs: FlightPlanElement[] = []
 
-    private departureEnrouteTransition: ProcedureTransition | undefined = undefined
-
-    get departureEnrouteTransitionProcedure() {
+    get procedure(): ProcedureTransition | undefined {
         return this.departureEnrouteTransition;
     }
 
-    setDepartureEnrouteTransition(transitionIdent: string | undefined) {
-        if (transitionIdent === undefined) {
+    private departureEnrouteTransition: ProcedureTransition | undefined = undefined
+
+    setProcedure(ident: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
+        if (ident === undefined) {
             this.departureEnrouteTransition = undefined;
-            this.allLegs.length = 0;
-            this.flightPlan.syncSegmentLegsChange(this);
+
+            if (!skipUpdateLegs) {
+                this.allLegs.length = 0;
+
+                this.flightPlan.syncSegmentLegsChange(this);
+            }
+
             return;
         }
 
@@ -36,13 +40,18 @@ export class DepartureEnrouteTransitionSegment extends FlightPlanSegment {
 
         const originEnrouteTransitions = originDeparture.enrouteTransitions;
 
-        const matchingOriginEnrouteTransition = originEnrouteTransitions.find((transition) => transition.ident === transitionIdent);
+        const matchingOriginEnrouteTransition = originEnrouteTransitions.find((transition) => transition.ident === ident);
 
         if (!matchingOriginEnrouteTransition) {
-            throw new Error(`[FMS/FPM] Can't find origin enroute transition '${transitionIdent}' for ${originAirport.ident} ${originDeparture.ident}`);
+            throw new Error(`[FMS/FPM] Can't find origin enroute transition '${ident}' for ${originAirport.ident} ${originDeparture.ident}`);
         }
 
         this.departureEnrouteTransition = matchingOriginEnrouteTransition;
+
+        if (skipUpdateLegs) {
+            return;
+        }
+
         this.allLegs.length = 0;
 
         const mappedOriginEnrouteTransitionLegs = matchingOriginEnrouteTransition.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingOriginEnrouteTransition.ident));
