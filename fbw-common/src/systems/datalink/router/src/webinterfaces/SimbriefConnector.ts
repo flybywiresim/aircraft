@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanMessage } from '@datalink/common';
+import { AtsuTimestamp, FlightPlanMessage, NotamMessage } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
 
 const SimbriefUrl = 'https://www.simbrief.com/api/xml.fetcher.php?json=1&userid=';
@@ -118,6 +118,7 @@ interface IFuel {
     alternate_burn: string,
     reserve: string,
     etops: string,
+    atc: IAtc,
     extra: string,
     min_takeoff: string,
     plan_takeoff: string,
@@ -188,17 +189,20 @@ interface ISimbriefData {
 /* eslint-enable camelcase */
 
 export class SimbriefConnector {
-    private static receiveData(): Promise<ISimbriefData> {
+    private static receiveData(): Promise<[string, ISimbriefData]> {
         const simBriefUserId = NXDataStore.get('CONFIG_SIMBRIEF_USERID', '');
 
         if (simBriefUserId) {
             return fetch(`${SimbriefUrl}&userid=${simBriefUserId}`)
-                .then((response) => {
+                .then(async (response) => {
                     if (!response.ok) {
                         throw new Error(`Simbrief API error: ${response.status}`);
                     }
 
-                    return response.json();
+                    const message = await response.text();
+                    const json = await response.json() as ISimbriefData;
+
+                    return [message, json];
                 });
         }
 
@@ -206,8 +210,8 @@ export class SimbriefConnector {
     }
 
     public static receiveFlightplan(): Promise<FlightPlanMessage> {
-        return SimbriefConnector.receiveData().then((ofp) => {
-            const message = new FlightPlanMessage();
+        return SimbriefConnector.receiveData().then(([data, ofp]) => {
+            const message = new FlightPlanMessage(data);
 
             /* extract the airport data */
             message.Origin.icao = ofp.origin.icao_code;
@@ -253,6 +257,76 @@ export class SimbriefConnector {
             }
 
             return message;
+        });
+    }
+
+    private static convertTimestamp(stamp: string): AtsuTimestamp {
+        const timestamp = new AtsuTimestamp();
+
+        if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/.test(stamp)) {
+            // process: 2023-04-28T10:48:00Z
+            timestamp.Year = parseInt(stamp.substring(0, 4));
+            timestamp.Month = parseInt(stamp.substring(5, 7));
+            timestamp.Day = parseInt(stamp.substring(8, 10));
+            const hours = parseInt(stamp.substring(11, 13)) * 3600;
+            const minutes = parseInt(stamp.substring(14, 16)) * 60;
+            const seconds = parseInt(stamp.substring(17, 19));
+            timestamp.Seconds = hours + minutes + seconds;
+        } else if (/^[0-9]{12}$/.test(stamp)) {
+            // process: 202304141150
+            timestamp.Year = parseInt(stamp.substring(0, 4));
+            timestamp.Month = parseInt(stamp.substring(4, 6));
+            timestamp.Day = parseInt(stamp.substring(6, 8));
+            timestamp.Seconds = parseInt(stamp.substring(8, 10)) * 3600 + parseInt(stamp.substring(10, 12)) * 60;
+        }
+
+        return timestamp;
+    }
+
+    private static convertAirportNotam(notam: IAirportNotam): NotamMessage {
+        const converted = new NotamMessage();
+
+        converted.Identifier = notam.notam_id;
+        converted.Icao = notam.location_icao;
+        converted.Text = notam.notam_text;
+        converted.CreatedTimestamp = SimbriefConnector.convertTimestamp(notam.date_created);
+        converted.EffectiveTimestamp = SimbriefConnector.convertTimestamp(notam.date_effective);
+        converted.ExpireTimestamp = SimbriefConnector.convertTimestamp(notam.date_expire);
+        converted.RawMessage = notam.notam_raw;
+
+        return converted;
+    }
+
+    private static convertNotamRecord(notam: INotamRecord): NotamMessage {
+        const converted = new NotamMessage();
+
+        converted.Identifier = notam.notam_id;
+        converted.Icao = notam.icao_id;
+        converted.Text = notam.notam_text;
+        converted.CreatedTimestamp = SimbriefConnector.convertTimestamp(notam.notam_created_dtg);
+        converted.EffectiveTimestamp = SimbriefConnector.convertTimestamp(notam.notam_effective_dtg);
+        converted.ExpireTimestamp = SimbriefConnector.convertTimestamp(notam.notam_expire_dtg);
+        converted.RawMessage = notam.notam_report;
+
+        return converted;
+    }
+
+    public static receiveNotamMessage(): Promise<NotamMessage[]> {
+        return SimbriefConnector.receiveData().then(([_data, ofp]) => {
+            const notams: NotamMessage[] = [];
+
+            ofp.origin.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
+            ofp.destination.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
+            ofp.alternate.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
+
+            ofp.notams.notamdrec.forEach((notam) => {
+                const index = notams.findIndex((message) => message.Identifier === notam.notam_id);
+                if (index === -1) {
+                    notams.push(SimbriefConnector.convertNotamRecord(notam));
+                }
+            });
+
+            return notams;
         });
     }
 }
