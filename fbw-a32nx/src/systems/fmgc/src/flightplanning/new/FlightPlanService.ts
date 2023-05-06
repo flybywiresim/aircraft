@@ -117,7 +117,10 @@ export class FlightPlanService {
 
         this.flightPlanManager.copy(FlightPlanIndex.Uplink, FlightPlanIndex.Active);
         this.flightPlanManager.delete(FlightPlanIndex.Uplink);
-        this.flightPlanManager.delete(FlightPlanIndex.Temporary);
+
+        if (this.hasTemporary) {
+            this.flightPlanManager.delete(FlightPlanIndex.Temporary);
+        }
     }
 
     static reset() {
