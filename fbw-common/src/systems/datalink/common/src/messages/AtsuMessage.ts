@@ -18,11 +18,12 @@ export enum AtsuMessageType {
     METAR = 1,
     TAF = 2,
     ATIS = 3,
-    AOC = 4,
-    CPDLC = 5,
-    DCL = 6,
-    OCL = 7,
-    ATC = 8
+    FlightPlan = 4,
+    AOC = 5,
+    CPDLC = 10,
+    DCL = 11,
+    OCL = 12,
+    ATC = 13
 }
 
 export enum AtsuMessageComStatus {
