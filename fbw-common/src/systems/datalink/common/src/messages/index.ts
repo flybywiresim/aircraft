@@ -8,6 +8,7 @@ export * from './CpdlcMessage';
 export * from './CpdlcMessageElements';
 export * from './Conversion';
 export * from './DclMessage';
+export * from './FlightPlanMessage';
 export * from './FreetextMessage';
 export * from './MetarMessage';
 export * from './OclMessage';
