@@ -1,14 +1,14 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         full_digital_agu_controller::FullDigitalAGUController,
         pressure_valve::{OutflowValve, SafetyValve},
         trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
+        ventilation_control_module::{VcmId, VentilationControlModule},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
-        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
+        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlow,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
         ZoneType,
     },
@@ -31,8 +31,8 @@ use systems::{
 
 use std::time::Duration;
 use uom::si::{
-    f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
-    velocity::knot,
+    f64::*, mass_rate::kilogram_per_second, pressure::hectopascal, ratio::percent,
+    thermodynamic_temperature::degree_celsius, velocity::knot,
 };
 
 use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
@@ -121,7 +121,6 @@ impl A380AirConditioning {
 
         self.a380_air_conditioning_system.update(
             context,
-            adirs,
             &self.a380_cabin,
             &self.cpiom_b,
             engines,
@@ -129,9 +128,7 @@ impl A380AirConditioning {
             self.a380_cabin.number_of_open_doors(),
             pneumatic,
             pneumatic_overhead,
-            &self.a320_pressurization_system,
             pressurization_overhead,
-            lgciu,
         );
 
         // This is here due to the ADIRS updating at a different rate than the pressurization system
@@ -306,10 +303,12 @@ impl SimulationElement for A380Cabin {
 }
 
 pub(super) struct A380AirConditioningSystem {
-    acsc: AirConditioningSystemController<18, 4>,
+    // Local controllers
     fdac: [FullDigitalAGUController<4>; 2],
     tadd: TrimAirDriveDevice<18, 4>,
-    cabin_fans: [CabinFan; 2],
+    vcm: [VentilationControlModule; 2],
+
+    cabin_fans: [CabinFan; 4],
     mixer_unit: MixerUnit<18>,
     // Temporary structure until packs are simulated
     packs: [AirConditioningPack; 2],
@@ -319,20 +318,10 @@ pub(super) struct A380AirConditioningSystem {
 }
 
 impl A380AirConditioningSystem {
+    const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 550.; // litres/sec
+
     fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
         Self {
-            acsc: AirConditioningSystemController::new(
-                context,
-                cabin_zones,
-                vec![
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::AlternatingCurrent(1),
-                ],
-                vec![
-                    ElectricalBusType::DirectCurrent(2),
-                    ElectricalBusType::AlternatingCurrent(2),
-                ],
-            ),
             fdac: [
                 FullDigitalAGUController::new(
                     1,
@@ -353,7 +342,49 @@ impl A380AirConditioningSystem {
                 ElectricalBusType::AlternatingCurrent(2), // 403XP
                 ElectricalBusType::AlternatingCurrent(4), // 117XP
             ]),
-            cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+            vcm: [
+                VentilationControlModule::new(
+                    VcmId::Fwd,
+                    vec![
+                        ElectricalBusType::DirectCurrent(1),       // 411PP
+                        ElectricalBusType::DirectCurrentEssential, // 109PP
+                    ],
+                ),
+                VentilationControlModule::new(
+                    VcmId::Aft,
+                    vec![
+                        ElectricalBusType::DirectCurrent(2),       // 214PP
+                        ElectricalBusType::DirectCurrentEssential, // 109PP
+                    ],
+                ),
+            ],
+
+            cabin_fans: [
+                CabinFan::new(
+                    MassRate::new::<kilogram_per_second>(
+                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
+                    ),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ), // 100XP1
+                CabinFan::new(
+                    MassRate::new::<kilogram_per_second>(
+                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
+                    ),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ), // 100XP2
+                CabinFan::new(
+                    MassRate::new::<kilogram_per_second>(
+                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
+                    ),
+                    ElectricalBusType::AlternatingCurrent(2),
+                ), // 200XP3
+                CabinFan::new(
+                    MassRate::new::<kilogram_per_second>(
+                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
+                    ),
+                    ElectricalBusType::AlternatingCurrent(2),
+                ), // 200XP4
+            ],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
             trim_air_system: TrimAirSystem::new(context, cabin_zones),
@@ -365,7 +396,6 @@ impl A380AirConditioningSystem {
     fn update(
         &mut self,
         context: &UpdateContext,
-        adirs: &impl AdirsToAirCondInterface,
         cabin_simulation: &impl CabinSimulation,
         cpiom_b: &CoreProcessingInputOutputModuleB,
         engines: [&impl EngineCorrectedN1; 4],
@@ -373,25 +403,8 @@ impl A380AirConditioningSystem {
         number_of_open_doors: u8,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
-        pressurization: &impl CabinAltitude,
         pressurization_overhead: &A380PressurizationOverheadPanel,
-        lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.acsc.update(
-            context,
-            adirs,
-            &self.air_conditioning_overhead,
-            cabin_simulation,
-            engines,
-            engine_fire_push_buttons,
-            pneumatic,
-            pneumatic_overhead,
-            pressurization,
-            pressurization_overhead,
-            lgciu,
-            &self.trim_air_system,
-        );
-
         self.fdac.iter_mut().for_each(|controller| {
             controller.update(
                 context,
@@ -417,14 +430,15 @@ impl A380AirConditioningSystem {
             cpiom_b.should_close_taprv(),
         );
 
+        self.vcm.iter_mut().for_each(|module| {
+            module.update(&self.air_conditioning_overhead, pressurization_overhead)
+        });
+
         for fan in self.cabin_fans.iter_mut() {
-            fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
+            fan.update(cabin_simulation, &self.vcm[0])
         }
 
-        let pack_flow: [MassRate; 2] = [
-            self.fdac[0].individual_pack_flow(Pack(1)),
-            self.fdac[1].individual_pack_flow(Pack(2)),
-        ];
+        let pack_flow: [MassRate; 2] = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
 
         for (id, pack) in self.packs.iter_mut().enumerate() {
             pack.update(pack_flow[id], &cpiom_b.duct_demand_temperature())
@@ -492,9 +506,10 @@ impl TaddShared for A380AirConditioningSystem {
 
 impl SimulationElement for A380AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        self.acsc.accept(visitor);
         accept_iterable!(self.fdac, visitor);
         self.tadd.accept(visitor);
+        accept_iterable!(self.vcm, visitor);
+
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
 
@@ -572,7 +587,7 @@ impl A380AirConditioningSystemOverhead {
 impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
     fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature {
         // The A380 has 16 cabin zones but only one knob
-        let knob = if zone_id > 1 {
+        let knob = if zone_id > 0 {
             &self.temperature_selectors[1]
         } else {
             &self.temperature_selectors[0]
@@ -1641,12 +1656,24 @@ mod tests {
             self.powered_dc_source_1.unpower();
         }
 
+        fn power_dc_ess_bus(&mut self) {
+            self.powered_dc_source_1.power();
+        }
+
+        fn power_dc_1_bus(&mut self) {
+            self.powered_dc_source_1.power();
+        }
+
         fn unpower_dc_2_bus(&mut self) {
             self.powered_dc_source_2.unpower();
         }
 
         fn unpower_dc_ess_bus(&mut self) {
             self.powered_dc_source_ess.unpower();
+        }
+
+        fn power_dc_2_bus(&mut self) {
+            self.powered_dc_source_2.power();
         }
 
         fn unpower_ac_1_bus(&mut self) {
@@ -1948,13 +1975,28 @@ mod tests {
             self
         }
 
+        fn powered_dc_ess_bus(mut self) -> Self {
+            self.command(|a| a.power_dc_ess_bus());
+            self
+        }
+
         fn unpowered_dc_1_bus(mut self) -> Self {
             self.command(|a| a.unpower_dc_1_bus());
             self
         }
 
+        fn powered_dc_1_bus(mut self) -> Self {
+            self.command(|a| a.power_dc_1_bus());
+            self
+        }
+
         fn unpowered_dc_2_bus(mut self) -> Self {
             self.command(|a| a.unpower_dc_2_bus());
+            self
+        }
+
+        fn powered_dc_2_bus(mut self) -> Self {
+            self.command(|a| a.power_dc_2_bus());
             self
         }
 
@@ -2058,9 +2100,38 @@ mod tests {
             self
         }
 
+        fn command_hot_air_pb_on(mut self, on_off: bool, pb_id: usize) -> Self {
+            self.write_by_name(
+                format!("OVHD_COND_HOT_AIR_{}_PB_IS_ON", pb_id).as_str(),
+                on_off,
+            );
+            self
+        }
+
+        fn hot_air_pbs_on(mut self) -> Self {
+            self = self.command_hot_air_pb_on(true, 1);
+            self = self.command_hot_air_pb_on(true, 2);
+            self
+        }
+
+        fn hot_air_pbs_off(mut self) -> Self {
+            self = self.command_hot_air_pb_on(false, 1);
+            self = self.command_hot_air_pb_on(false, 2);
+            self
+        }
+
         fn command_selected_temperature(mut self, temperature: ThermodynamicTemperature) -> Self {
             let knob_value: f64 = (temperature.get::<degree_celsius>() - 18.) / 0.04;
             self.write_by_name("OVHD_COND_CKPT_SELECTOR_KNOB", knob_value);
+            self.write_by_name("OVHD_COND_CABIN_SELECTOR_KNOB", knob_value);
+            self
+        }
+
+        fn command_cabin_selected_temperature(
+            mut self,
+            temperature: ThermodynamicTemperature,
+        ) -> Self {
+            let knob_value: f64 = (temperature.get::<degree_celsius>() - 18.) / 0.04;
             self.write_by_name("OVHD_COND_CABIN_SELECTOR_KNOB", knob_value);
             self
         }
@@ -2265,6 +2336,17 @@ mod tests {
             })
         }
 
+        fn recirculated_air_flow(&self) -> MassRate {
+            MassRate::new::<kilogram_per_second>(self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .cabin_fans
+                    .iter()
+                    .map(|fan| fan.outlet_air().flow_rate().get::<kilogram_per_second>())
+                    .sum()
+            }))
+        }
+
         fn pack_flow_by_pack(&self, pack_id: usize) -> MassRate {
             self.query(|a| {
                 a.a380_cabin_air.a380_air_conditioning_system.fdac[pack_id - 1].pack_flow()
@@ -2277,6 +2359,54 @@ mod tests {
                     .a380_air_conditioning_system
                     .trim_air_system
                     .trim_air_valves_open_amount()[1]
+            })
+        }
+
+        fn hot_air_is_enabled(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .tadd
+                    .hot_air_is_enabled(1)
+                    && a.a380_cabin_air
+                        .a380_air_conditioning_system
+                        .tadd
+                        .hot_air_is_enabled(2)
+            })
+        }
+
+        fn hp_cabin_fans_are_enabled(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air.a380_air_conditioning_system.vcm[0].hp_cabin_fans_are_enabled()
+                    && a.a380_cabin_air.a380_air_conditioning_system.vcm[1]
+                        .hp_cabin_fans_are_enabled()
+            })
+        }
+
+        fn mixer_unit_outlet_air(&self) -> Air {
+            self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .mixer_unit
+                    .outlet_air()
+            })
+        }
+
+        fn trim_air_system_outlet_air(&self, id: usize) -> Air {
+            self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .trim_air_system
+                    .trim_air_system_valve_outlet_air(id)
+            })
+        }
+
+        fn trim_air_outlet_temperature(&self) -> ThermodynamicTemperature {
+            self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .trim_air_system
+                    .duct_temperature()[1]
             })
         }
     }
@@ -3947,6 +4077,389 @@ mod tests {
                 test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
 
                 assert!(test_bed.trim_air_valves_open_amount() < Ratio::new::<percent>(1.))
+            }
+        }
+
+        mod trim_air_drive_device_tests {
+            use super::*;
+
+            #[test]
+            fn hot_air_starts_disabled() {
+                let test_bed = test_bed();
+
+                assert!(!test_bed.hot_air_is_enabled());
+            }
+
+            #[test]
+            fn hot_air_enables_when_all_conditions_met() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .hot_air_pbs_on()
+                    .and()
+                    .engines_idle()
+                    .iterate(32);
+
+                assert!(test_bed.hot_air_is_enabled());
+            }
+
+            #[test]
+            fn hot_air_stays_disabled_if_one_condition_is_not_met() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .hot_air_pbs_on()
+                    .and()
+                    .engines_idle()
+                    .iterate(32);
+                assert!(test_bed.hot_air_is_enabled());
+
+                test_bed = test_bed.hot_air_pbs_off().iterate(4);
+                assert!(!test_bed.hot_air_is_enabled());
+
+                test_bed = test_bed.hot_air_pbs_on().iterate(4);
+                assert!(test_bed.hot_air_is_enabled());
+
+                // Tadd is unpowered
+                test_bed = test_bed
+                    .unpowered_ac_2_bus()
+                    .unpowered_ac_4_bus()
+                    .iterate(4);
+                assert!(!test_bed.hot_air_is_enabled());
+
+                test_bed = test_bed.powered_ac_2_bus().powered_ac_4_bus().iterate(32);
+                assert!(test_bed.hot_air_is_enabled());
+            }
+        }
+
+        mod mixer_unit_tests {
+            use uom::si::mass_rate::kilogram_per_second;
+
+            use super::*;
+
+            #[test]
+            fn hp_cabin_fans_start_disabled() {
+                let test_bed = test_bed();
+
+                assert!(!test_bed.hp_cabin_fans_are_enabled());
+            }
+
+            #[test]
+            fn hp_cabin_fans_enable_when_all_conditions_met() {
+                let test_bed = test_bed().with().command_cab_fans_pb_on(true).iterate(4);
+
+                assert!(test_bed.hp_cabin_fans_are_enabled());
+            }
+
+            #[test]
+            fn cabin_fan_controller_stays_disabled_if_one_condition_is_not_met() {
+                let mut test_bed = test_bed().with().command_cab_fans_pb_on(true).iterate(4);
+                assert!(test_bed.hp_cabin_fans_are_enabled());
+
+                test_bed = test_bed.command_cab_fans_pb_on(false).iterate(4);
+                assert!(!test_bed.hp_cabin_fans_are_enabled());
+
+                // Unpower both channels of both vcm's
+                test_bed = test_bed.command_cab_fans_pb_on(true);
+                test_bed = test_bed
+                    .unpowered_dc_1_bus()
+                    .unpowered_dc_2_bus()
+                    .unpowered_dc_ess_bus()
+                    .iterate(4);
+                assert!(!test_bed.hp_cabin_fans_are_enabled());
+
+                test_bed = test_bed
+                    .powered_dc_1_bus()
+                    .powered_dc_2_bus()
+                    .powered_dc_ess_bus()
+                    .iterate(4);
+                assert!(test_bed.hp_cabin_fans_are_enabled());
+
+                test_bed = test_bed.command_ditching_pb_on().iterate(4);
+                assert!(!test_bed.hp_cabin_fans_are_enabled());
+            }
+
+            #[test]
+            fn mixer_unit_outlet_air_doesnt_move_without_inlets() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(false)
+                    .and()
+                    .command_packs_on_off(false)
+                    .and_run();
+
+                assert_eq!(
+                    test_bed.mixer_unit_outlet_air().flow_rate(),
+                    MassRate::default(),
+                );
+            }
+
+            #[test]
+            fn mixer_unit_outlet_is_same_as_packs_without_cab_fans() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(false)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow()).abs()
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                )
+            }
+
+            #[test]
+            fn changing_pack_flow_changes_mixer_unit_outlet() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(false)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+
+                let initial_flow = test_bed.mixer_unit_outlet_air().flow_rate();
+                test_bed.command_pack_flow_selector_position(3);
+                test_bed = test_bed.iterate(50);
+
+                assert!(test_bed.mixer_unit_outlet_air().flow_rate() > initial_flow);
+            }
+
+            #[test]
+            fn mixer_unit_outlet_is_same_as_fan_without_packs() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(false)
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+
+                assert!(
+                    test_bed.mixer_unit_outlet_air().flow_rate()
+                        > MassRate::new::<kilogram_per_second>(0.)
+                );
+                assert_ne!(
+                    test_bed.mixer_unit_outlet_air().flow_rate(),
+                    test_bed.pack_flow()
+                );
+            }
+
+            #[test]
+            fn mixer_unit_outlet_adds_packs_and_fans() {
+                let test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate()
+                        - (test_bed.recirculated_air_flow() + test_bed.pack_flow()))
+                    .abs()
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                )
+            }
+
+            #[test]
+            fn mixer_unit_flow_outputs_match_amm() {
+                // No data available for A380 so we use the volume of air per pax from A320 as estimation
+                // Total mixed air per cabin occupant: 9.9 g/s -> (for 517 occupants) 5.1183
+                let test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate()
+                        - MassRate::new::<kilogram_per_second>(5.1183))
+                    .abs()
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                )
+            }
+
+            #[test]
+            fn mixer_unit_mixes_air_temperatures() {
+                let test_bed = test_bed()
+                    .with()
+                    .engines_idle()
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        18.,
+                    ))
+                    .iterate(50);
+
+                assert!(
+                    (test_bed
+                        .mixer_unit_outlet_air()
+                        .temperature()
+                        .get::<degree_celsius>()
+                        - test_bed.duct_demand_temperature()[1].get::<degree_celsius>())
+                        > 4.
+                )
+            }
+
+            #[test]
+            fn cabin_fans_dont_work_without_power() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow())
+                        > MassRate::new::<kilogram_per_second>(0.1)
+                );
+
+                test_bed = test_bed
+                    .unpowered_ac_1_bus()
+                    .unpowered_ac_2_bus()
+                    .iterate(50);
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow())
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                )
+            }
+        }
+
+        mod trim_air_tests {
+            use super::*;
+
+            #[test]
+            fn trim_air_system_delivers_mixer_air_temp_if_no_hot_air() {
+                let test_bed = test_bed()
+                    .with()
+                    .hot_air_pbs_off()
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+                assert!(
+                    (test_bed
+                        .trim_air_outlet_temperature()
+                        .get::<degree_celsius>()
+                        - test_bed
+                            .mixer_unit_outlet_air()
+                            .temperature()
+                            .get::<degree_celsius>())
+                    .abs()
+                        < 1.
+                )
+            }
+
+            #[test]
+            fn trim_air_system_delivers_hot_air_if_on() {
+                let test_bed = test_bed()
+                    .with()
+                    .hot_air_pbs_on()
+                    .and()
+                    .engines_idle()
+                    .command_cabin_selected_temperature(ThermodynamicTemperature::new::<
+                        degree_celsius,
+                    >(30.))
+                    .iterate(500);
+
+                // If both zones get the temperature raised at the same time the packs deliver hotter air and the
+                // effect of hot air valves is negligible
+                assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+                assert!(
+                    (test_bed.trim_air_system_outlet_air(1).temperature())
+                        > ThermodynamicTemperature::new::<degree_celsius>(25.)
+                );
+            }
+
+            #[test]
+            fn trim_valves_close_if_selected_temp_below_measured() {
+                let test_bed = test_bed()
+                    .with()
+                    .engines_idle()
+                    .and()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        18.,
+                    ))
+                    .then()
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        30.,
+                    ))
+                    .iterate(100);
+
+                assert!(
+                    (test_bed.trim_air_system_outlet_air(1).flow_rate())
+                        < MassRate::new::<kilogram_per_second>(0.01)
+                );
+            }
+
+            #[test]
+            fn trim_valves_react_to_only_one_pack_operative() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        24.,
+                    ))
+                    .command_cabin_selected_temperature(ThermodynamicTemperature::new::<
+                        degree_celsius,
+                    >(22.))
+                    .iterate(200);
+
+                let initial_open = test_bed.trim_air_valves_open_amount();
+
+                test_bed = test_bed.command_one_pack_on(1).iterate(50);
+
+                assert!(test_bed.trim_air_valves_open_amount() > initial_open);
+            }
+
+            #[test]
+            fn when_engine_in_start_condition_air_is_recirculated() {
+                // This test is redundant but it's to target a specific condition that was failing in sim
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        18.,
+                    ))
+                    .iterate(100)
+                    .then()
+                    .command_engine_in_start_mode()
+                    .iterate(4);
+
+                assert_eq!(test_bed.pack_flow(), MassRate::default());
+                assert!(
+                    (test_bed
+                        .trim_air_outlet_temperature()
+                        .get::<degree_celsius>()
+                        - test_bed
+                            .mixer_unit_outlet_air()
+                            .temperature()
+                            .get::<degree_celsius>())
+                    .abs()
+                        < 1.
+                );
+                assert!(
+                    (test_bed.duct_temperature()[1].get::<degree_celsius>()
+                        - test_bed.measured_temperature().get::<degree_celsius>())
+                    .abs()
+                        < 1.
+                );
             }
         }
     }

@@ -1,4 +1,4 @@
-use self::acs_controller::{CabinFansSignal, Pack, TrimAirValveController};
+use self::acs_controller::{Pack, TrimAirValveController};
 
 use crate::{
     pneumatic::{
@@ -35,6 +35,7 @@ pub mod cabin_pressure_controller;
 pub mod full_digital_agu_controller;
 pub mod pressure_valve;
 pub mod trim_air_drive_device;
+pub mod ventilation_control_module;
 
 pub trait DuctTemperature {
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
@@ -75,6 +76,11 @@ impl PneumaticValveSignal for PackFlowValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
+}
+
+pub enum CabinFansSignal {
+    On,
+    Off,
 }
 
 pub trait OutletAir {
@@ -291,6 +297,7 @@ pub trait PressurizationConstants {
 #[derive(Clone, Copy)]
 /// A320neo fan part number: VD3900-03
 pub struct CabinFan {
+    design_flow_rate: MassRate,
     is_on: bool,
     outlet_air: Air,
 
@@ -299,12 +306,12 @@ pub struct CabinFan {
 }
 
 impl CabinFan {
-    const DESIGN_FLOW_RATE_L_S: f64 = 325.; // litres/sec
     const PRESSURE_RISE_HPA: f64 = 22.; // hPa
-    const FAN_EFFICIENCY: f64 = 0.75; // Ratio - so output matches AMM numbers
+    const FAN_EFFICIENCY: f64 = 0.6; // Ratio - so output matches AMM numbers
 
-    pub fn new(powered_by: ElectricalBusType) -> Self {
+    pub fn new(design_flow_rate: MassRate, powered_by: ElectricalBusType) -> Self {
         Self {
+            design_flow_rate,
             is_on: false,
             outlet_air: Air::new(),
 
@@ -340,9 +347,9 @@ impl CabinFan {
     }
 
     fn mass_flow_calculation(&self) -> MassRate {
-        let mass_flow: f64 =
-            (self.outlet_air.pressure().get::<pascal>() * Self::DESIGN_FLOW_RATE_L_S * 1e-3)
-                / (Air::R * self.outlet_air.temperature().get::<kelvin>());
+        let mass_flow: f64 = (self.outlet_air.pressure().get::<pascal>()
+            * self.design_flow_rate.get::<kilogram_per_second>())
+            / (Air::R * self.outlet_air.temperature().get::<kelvin>());
         MassRate::new::<kilogram_per_second>(mass_flow)
     }
 }
@@ -624,6 +631,10 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             .unwrap_or_else(|v: Vec<Ratio>| {
                 panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
             })
+    }
+
+    pub fn trim_air_system_valve_outlet_air(&self, id: usize) -> Air {
+        self.trim_air_valves[id].outlet_air()
     }
 }
 

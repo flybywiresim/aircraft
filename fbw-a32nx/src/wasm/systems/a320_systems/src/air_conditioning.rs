@@ -29,8 +29,8 @@ use systems::{
 
 use std::time::Duration;
 use uom::si::{
-    f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
-    velocity::knot,
+    f64::*, mass_rate::kilogram_per_second, pressure::hectopascal, ratio::percent,
+    thermodynamic_temperature::degree_celsius, velocity::knot,
 };
 
 use crate::payload::{A320Pax, NumberOfPassengers};
@@ -250,6 +250,8 @@ pub struct A320AirConditioningSystem {
 }
 
 impl A320AirConditioningSystem {
+    const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 325.; // litres/sec
+
     pub(crate) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 3]) -> Self {
         Self {
             acsc: AirConditioningSystemController::new(
@@ -264,7 +266,10 @@ impl A320AirConditioningSystem {
                     ElectricalBusType::AlternatingCurrent(2),
                 ],
             ),
-            cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+            cabin_fans: [CabinFan::new(
+                MassRate::new::<kilogram_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3),
+                ElectricalBusType::AlternatingCurrent(1),
+            ); 2],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
             trim_air_system: TrimAirSystem::new(context, cabin_zones),

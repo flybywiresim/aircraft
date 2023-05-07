@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::{
-    acs_controller::Pack, AirConditioningOverheadShared, OperatingChannel, PackFlow,
-    PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
+    AirConditioningOverheadShared, OperatingChannel, PackFlow, PackFlowControllers,
+    PackFlowValveSignal, PressurizationOverheadShared,
 };
 
 use uom::si::{
@@ -107,10 +107,6 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
 
     pub fn fcv_status_determination(&self, fcv_id: usize) -> bool {
         self.flow_control.fcv_has_fault(fcv_id)
-    }
-
-    pub fn individual_pack_flow(&self, pack_id: Pack) -> MassRate {
-        self.flow_control.individual_pack_flow(pack_id)
     }
 }
 
@@ -270,10 +266,6 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
         self.flow_control_valves_controller[fcv_id - 1 - ((self.fdac_id == 2) as usize * 2)]
             .fault()
             .is_some()
-    }
-
-    pub fn individual_pack_flow(&self, pack_id: Pack) -> MassRate {
-        self.flow_control_valves_controller[pack_id.to_index()].pack_flow()
     }
 }
 

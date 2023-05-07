@@ -12,9 +12,9 @@ use crate::{
 };
 
 use super::{
-    AdirsToAirCondInterface, AirConditioningOverheadShared, DuctTemperature, OverheadFlowSelector,
-    PackFlow, PackFlowControllers, PackFlowValveSignal, PressurizationOverheadShared,
-    TrimAirControllers, TrimAirSystem, ZoneType,
+    AdirsToAirCondInterface, AirConditioningOverheadShared, CabinFansSignal, DuctTemperature,
+    OverheadFlowSelector, PackFlow, PackFlowControllers, PackFlowValveSignal,
+    PressurizationOverheadShared, TrimAirControllers, TrimAirSystem, ZoneType,
 };
 
 use std::time::Duration;
@@ -1055,11 +1055,6 @@ impl ControllerSignal<TrimAirValveSignal> for TrimAirValveController {
     }
 }
 
-pub enum CabinFansSignal {
-    On,
-    Off,
-}
-
 #[derive(Clone, Copy)]
 pub struct CabinFanController<const ZONES: usize> {
     is_enabled: bool,
@@ -1880,6 +1875,8 @@ mod acs_controller_tests {
         ac_2_bus: ElectricalBus,
     }
     impl TestAircraft {
+        const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 325.; // litres/sec
+
         fn new(context: &mut InitContext) -> Self {
             let cabin_zones = [ZoneType::Cockpit, ZoneType::Cabin(1)];
 
@@ -1899,7 +1896,12 @@ mod acs_controller_tests {
                 acs_overhead: TestAcsOverhead::new(context),
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
-                cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+                cabin_fans: [CabinFan::new(
+                    MassRate::new::<kilogram_per_second>(
+                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
+                    ),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ); 2],
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
@@ -3559,6 +3561,7 @@ mod acs_controller_tests {
             assert!(
                 (test_bed.mixer_unit_outlet_air().flow_rate()
                     - MassRate::new::<kilogram_per_second>(1.683))
+                .abs()
                     < MassRate::new::<kilogram_per_second>(0.1)
             )
         }
