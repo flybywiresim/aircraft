@@ -14,6 +14,7 @@ interface IGeneral {
     constindex: string,
     initial_altitude: string,
     stepclimb_string: string,
+    avg_tropopause: string,
     route: string,
     route_ifps: string,
 }
@@ -35,6 +36,8 @@ interface IAirport {
     iata_code: string,
     name: string,
     plan_rwy: string,
+    trans_alt: string,
+    trans_level: string,
     notam: IAirportNotam[],
 }
 
