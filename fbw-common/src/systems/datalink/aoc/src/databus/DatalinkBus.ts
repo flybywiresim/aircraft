@@ -26,10 +26,13 @@ export interface AocDatalinkMessages {
 
 export interface DatalinkAocMessages {
     aocSendFreetextMessage: { message: FreetextMessage; requestId: number };
+
     aocRequestAtis: { icao: string; type: AtisType; requestId: number };
     aocRequestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
+
     aocRegisterWeatherMessages: WeatherMessage[];
     aocRegisterFreetextMessages: FreetextMessage[];
+
     aocMessageRead: number;
     aocRemoveMessage: number;
 }
