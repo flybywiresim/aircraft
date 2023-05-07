@@ -8,6 +8,7 @@ import {
     DclMessage,
     FlightPlanMessage,
     FreetextMessage,
+    NotamMessage,
     OclMessage,
     WeatherMessage,
 } from '@datalink/common';
@@ -22,11 +23,13 @@ export interface AtcAocRouterMessages {
 
     // streams to request specific data
     routerRequestFlightplan: { requestId: number };
+    routerRequestNotams: { requestId: number };
     routerRequestAtis: { requestId: number, icao: string, type: AtisType };
     routerRequestMetar: { requestId: number, icaos: string[] };
     routerRequestTaf: { requestId: number, icaos: string[] };
     routerRequestSent: number;
     routerReceivedFlightplan: { requestId: number, response: [AtsuStatusCodes, FlightPlanMessage] };
+    routerReceivedNotams: { requestId: number, response: [AtsuStatusCodes, NotamMessage[]] };
     routerReceivedWeather: { requestId: number, response: [AtsuStatusCodes, WeatherMessage] };
 }
 

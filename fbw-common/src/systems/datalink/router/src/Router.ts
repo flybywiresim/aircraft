@@ -15,6 +15,7 @@ import {
     WeatherMessage,
     FreetextMessage,
     FlightPlanMessage,
+    NotamMessage,
 } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -110,22 +111,40 @@ export class Router {
         this.digitalInputs.addDataCallback('sendOclMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('requestFlightPlan', (requestSent): Promise<[AtsuStatusCodes, FlightPlanMessage]> => {
             if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-                return [AtsuStatusCodes.ComFailed, null];
+                return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
             }
 
             return SimbriefConnector.receiveFlightplan()
-                .then((message) => this.simulateFlightplanResponse([AtsuStatusCodes.Ok, message], requestSent))
-                .catch((_err) => [AtsuStatusCodes.ComFailed, null]);
+                .then((message) => this.simulateResponse(message, requestSent).then(() => [AtsuStatusCodes.Ok, message]));
+        });
+        this.digitalInputs.addDataCallback('requestNotams', (requestSent): Promise<[AtsuStatusCodes, NotamMessage[]]> => {
+            if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
+                return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
+            }
+
+            return SimbriefConnector.receiveNotams()
+                .then((notams) => {
+                    const promises = [];
+                    notams.forEach((notam, index) => {
+                        if (index === 0) {
+                            promises.push(this.simulateResponse(notam, requestSent));
+                        } else {
+                            promises.push(this.simulateResponse(notam, () => {}));
+                        }
+                    });
+
+                    return Promise.all(promises)
+                        .then((messages) => [AtsuStatusCodes.Ok, messages]);
+                });
         });
         this.digitalInputs.addDataCallback('requestAtis', async (icao, type, requestSent): Promise<[AtsuStatusCodes, WeatherMessage]> => {
             if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-                return [AtsuStatusCodes.ComFailed, null];
+                return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
             }
 
             const message = new AtisMessage();
             return NXApiConnector.receiveAtis(icao, type, message)
-                .then(() => this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], requestSent))
-                .catch((_err) => [AtsuStatusCodes.ComFailed, null]);
+                .then(() => this.simulateResponse(message, requestSent).then(() => [AtsuStatusCodes.Ok, message]));
         });
         this.digitalInputs.addDataCallback('requestWeather', async (icaos, metar, requestSent) => this.receiveWeather(metar, icaos, requestSent));
     }
@@ -250,44 +269,7 @@ export class Router {
         return retval;
     }
 
-    private async simulateFlightplanResponse(data: [AtsuStatusCodes, FlightPlanMessage], sentCallback: () => void): Promise<[AtsuStatusCodes, FlightPlanMessage]> {
-        return new Promise((resolve, _reject) => {
-            // simulate the request transmission
-            const requestTimeout = this.vdl.enqueueOutboundPacket();
-            let timeout = setTimeout(() => {
-                this.vdl.dequeueOutboundMessage(requestTimeout);
-                this.removeTransmissionTimeout(timeout);
-
-                if (!this.poweredUp) return;
-
-                sentCallback();
-
-                const processingTimeout = 300 + Math.floor(Math.random() * 500);
-
-                // simulate some remote processing time
-                timeout = setTimeout(() => {
-                    this.removeTransmissionTimeout(timeout);
-
-                    // simulate the response transmission
-                    const responseTimeout = this.vdl.enqueueInboundMessage(data[1]);
-                    timeout = setTimeout(() => {
-                        this.vdl.dequeueInboundMessage(responseTimeout);
-                        this.removeTransmissionTimeout(timeout);
-
-                        if (this.poweredUp) resolve(data);
-                    }, responseTimeout);
-
-                    this.transmissionSimulationTimeouts.push(timeout);
-                }, processingTimeout);
-
-                this.transmissionSimulationTimeouts.push(timeout);
-            }, requestTimeout);
-
-            this.transmissionSimulationTimeouts.push(timeout);
-        });
-    }
-
-    private async simulateWeatherRequestResponse(data: [AtsuStatusCodes, WeatherMessage], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+    private async simulateResponse<Type extends AtsuMessage>(data: Type, sentCallback: () => void): Promise<Type> {
         return new Promise((resolve, _reject) => {
             // simulate the request transmission
             const requestTimeout = this.vdl.enqueueOutboundPacket();
@@ -336,7 +318,8 @@ export class Router {
             message = new TafMessage();
         }
 
-        return this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => this.simulateWeatherRequestResponse([code, message], requestSent));
+        return this.receiveWeatherData(requestMetar, icaos, 0, message)
+            .then((code) => this.simulateResponse(message, requestSent).then(() => [code, message]));
     }
 
     private async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
