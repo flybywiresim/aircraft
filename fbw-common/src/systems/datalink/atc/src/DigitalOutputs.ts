@@ -2,14 +2,14 @@ import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, AtsuStatusCodes, C
 import { AtcAocRouterMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AtcAocMessages } from './databus/AtcAocBus';
-import { AtcFmsMessages } from './databus/FmsBus';
+import { AtcDatalinkMessages } from './databus/DatalinkBus';
 
 export class DigitalOutputs {
     private requestId: number = 0;
 
     private subscriber: EventSubscriber<AtcAocRouterMessages> = null;
 
-    private publisher: Publisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages> = null;
+    private publisher: Publisher<AtcAocMessages & AtcAocRouterMessages & AtcDatalinkMessages> = null;
 
     private sendMessageCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
@@ -19,7 +19,7 @@ export class DigitalOutputs {
 
     constructor(private readonly bus: EventBus, private readonly synchronizedAoc: boolean, private readonly synchronizedRouter: boolean) {
         this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
-        this.publisher = this.bus.getPublisher<AtcAocMessages & AtcAocRouterMessages & AtcFmsMessages>();
+        this.publisher = this.bus.getPublisher<AtcAocMessages & AtcAocRouterMessages & AtcDatalinkMessages>();
 
         this.subscriber.on('routerSendMessageResponse').handle((response) => {
             this.sendMessageCallbacks.every((callback, index) => {

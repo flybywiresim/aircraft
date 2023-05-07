@@ -9,7 +9,7 @@ import {
     WeatherMessage,
 } from '@datalink/common';
 
-export interface AocFmsMessages {
+export interface AocDatalinkMessages {
     aocResetData: boolean;
 
     aocRequestSentToGround: number;
@@ -24,7 +24,7 @@ export interface AocFmsMessages {
     aocDeleteMessage: number;
 }
 
-export interface FmsAocMessages {
+export interface DatalinkAocMessages {
     aocSendFreetextMessage: { message: FreetextMessage; requestId: number };
     aocRequestAtis: { icao: string; type: AtisType; requestId: number };
     aocRequestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };

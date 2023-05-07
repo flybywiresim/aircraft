@@ -22,7 +22,7 @@ import {
     Conversion,
 } from '@datalink/common';
 import { EventBus } from '@microsoft/msfs-sdk';
-import { FmsRouteData } from './databus/FmsBus';
+import { FmsRouteData } from './databus/DatalinkBus';
 import { MailboxBus } from './databus/MailboxBus';
 import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
 import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';

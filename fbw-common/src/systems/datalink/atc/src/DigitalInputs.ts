@@ -17,7 +17,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AtcMessageButtonBusMessages } from './databus/AtcMessageButtonBus';
 import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
-import { AtcFmsMessages, FmsAtcMessages, FmsRouteData } from './databus/FmsBus';
+import { AtcDatalinkMessages, DatalinkAtcMessages, FmsRouteData } from './databus/DatalinkBus';
 
 export type AtcDigitalInputCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
@@ -47,12 +47,12 @@ export class DigitalInputs {
         AtcMessageButtonBusMessages &
         ClockDataBusTypes &
         FmgcDataBusTypes &
-        FmsAtcMessages &
+        DatalinkAtcMessages &
         RmpDataBusTypes &
         RouterAtcAocMessages
     > = null;
 
-    private publisher: Publisher<AtcFmsMessages>;
+    private publisher: Publisher<AtcDatalinkMessages>;
 
     private poweredUp: boolean = false;
 
@@ -175,11 +175,11 @@ export class DigitalInputs {
             AtcMessageButtonBusMessages &
             ClockDataBusTypes &
             FmgcDataBusTypes &
-            FmsAtcMessages &
+            DatalinkAtcMessages &
             RmpDataBusTypes &
             RouterAtcAocMessages
         >();
-        this.publisher = this.bus.getPublisher<AtcFmsMessages>();
+        this.publisher = this.bus.getPublisher<AtcDatalinkMessages>();
     }
 
     private async requestWithStatusResponse<T>(value: T, requestId: number, callback: (value: T) => Promise<AtsuStatusCodes>): Promise<void> {

@@ -1,8 +1,8 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AocFmsMessages, FmsAocMessages } from '@datalink/aoc';
-import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
+import { AocDatalinkMessages, DatalinkAocMessages } from '@datalink/aoc';
+import { AtcDatalinkMessages, DatalinkAtcMessages } from '@datalink/atc';
 import {
     AtsuStatusCodes,
     FansMode,
@@ -23,7 +23,7 @@ import {
     FlightStateData,
     PositionReportData,
 } from '@datalink/common';
-import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
+import { DatalinkRouterMessages, RouterDatalinkMessages } from '@datalink/router';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
@@ -37,9 +37,9 @@ export class FmsClient {
 
     private readonly flightPlan: FlightPlanSynchronization;
 
-    private readonly publisher: Publisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>;
+    private readonly publisher: Publisher<DatalinkAtcMessages & DatalinkAocMessages & DatalinkRouterMessages>;
 
-    private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages>;
+    private readonly subscriber: EventSubscriber<AtcDatalinkMessages & AocDatalinkMessages & RouterDatalinkMessages & DatalinkRouterMessages>;
 
     private requestId: number = 0;
 
@@ -85,8 +85,8 @@ export class FmsClient {
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
         this.bus = new EventBus();
-        this.publisher = this.bus.getPublisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>();
-        this.subscriber = this.bus.getSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages>();
+        this.publisher = this.bus.getPublisher<DatalinkAtcMessages & DatalinkAocMessages & DatalinkRouterMessages>();
+        this.subscriber = this.bus.getSubscriber<AtcDatalinkMessages & AocDatalinkMessages & RouterDatalinkMessages & DatalinkRouterMessages>();
 
         this.fms = fms;
         this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager, flightPhaseManager);
