@@ -3,7 +3,7 @@
 
 import { AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 
-export interface RouterFmsMessages {
+export interface RouterDatalinkMessages {
     routerDatalinkStatus: {
         vhf: DatalinkStatusCode,
         satellite: DatalinkStatusCode,
@@ -16,7 +16,7 @@ export interface RouterFmsMessages {
     };
 }
 
-export interface FmsRouterMessages {
+export interface DatalinkRouterMessages {
     routerConnect: { requestId: number, callsign: string };
     routerDisconnect: number;
     routerRequestStationAvailable: { requestId: number, callsign: string };

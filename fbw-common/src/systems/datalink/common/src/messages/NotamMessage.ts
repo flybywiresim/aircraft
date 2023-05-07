@@ -1,9 +1,8 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessageSerializationFormat } from 'datalink/common/src/messages/AtsuMessage';
-import { AtsuTimestamp } from 'datalink/common/src/messages/AtsuTimestamp';
-import { AtsuMessage, AtsuMessageType } from './AtsuMessage';
+import { AtsuMessage, AtsuMessageType, AtsuMessageSerializationFormat } from './AtsuMessage';
+import { AtsuTimestamp } from './AtsuTimestamp';
 
 export class NotamMessage extends AtsuMessage {
     public Identifier: string = '';
