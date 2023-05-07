@@ -68,7 +68,6 @@ export const StepDescription = new Map([
     [2090, 'ATC ALT RPTG On'],
     [2100, 'TCAS TRAFFIC ABV'],
     [2110, 'COCKPIT DOOR LCK'],
-    [2120, 'Strobe Auto'],
     [2120, 'Strobe On'],
     [2121, 'Strobe Off'],
     [2122, 'Strobe Auto'],
