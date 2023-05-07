@@ -63,6 +63,7 @@ class AircraftProcedures {
     ProcedureStep{"ADIRS 2 Nav",              1090, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
     ProcedureStep{"ADIRS 3 Nav",              1100, false, 1500, "(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)"},
 
+    ProcedureStep{"Strobe Auto",              2122, false, 50,   "(L:LIGHTING_STROBE_0) 1 ==",                           "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
     ProcedureStep{"Strobe Auto",              2122, false, 1000, "(L:LIGHTING_STROBE_0) 1 ==",                           "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
     ProcedureStep{"Nav & Logo Lt On",         1070, false, 1000, "(A:LIGHT LOGO, Bool) (A:LIGHT NAV, Bool) &&",          "1 (>K:2:LOGO_LIGHTS_SET) 1 (>K:2:NAV_LIGHTS_SET)"},
 
@@ -222,7 +223,7 @@ class AircraftProcedures {
     ProcedureStep{"LL Lt R Off",       4070, false, 1000, "(A:CIRCUIT SWITCH ON:19, Bool) ! (L:LANDING_3_RETRACTED) &&",     "2 (>L:LIGHTING_LANDING_3) 1 (>L:LANDING_3_RETRACTED) (A:CIRCUIT SWITCH ON:19, Bool) if{ 19 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
     ProcedureStep{"NOSE Lt Takeoff",   4080, false, 2000, "(A:CIRCUIT SWITCH ON:17, Bool) !",                                "(A:CIRCUIT SWITCH ON:17, Bool) if{ 17 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"},
     // unfortunately strobe 3-way switch control is weird, so we have to use a workaround and turn it off first
-    ProcedureStep{"Strobe Auto",       2122, false, 50,   "(L:LIGHTING_STROBE_0) 2 == (L:LIGHTING_STROBE_0) 1 == ||",        "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
+    ProcedureStep{"Strobe Auto",       2122, false, 50,   "(L:LIGHTING_STROBE_0) 1 == ||",                                   "0 (>L:STROBE_0_AUTO) 0 (>K:STROBES_OFF)"},
     ProcedureStep{"Strobe Auto",       2122, false, 1000, "(L:A32NX_ENGINE_STATE:1) 0 == (L:A32NX_ENGINE_STATE:2) 0 == && "
                                                           "(L:LIGHTING_STROBE_0) 1 == || ",                                  "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
     ProcedureStep{"TCAS Switch TA/RA", 4090, false, 1000, "(L:A32NX_SWITCH_TCAS_POSITION) 0 ==",                             "0 (>L:A32NX_SWITCH_TCAS_POSITION)"},
