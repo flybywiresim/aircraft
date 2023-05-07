@@ -11,7 +11,7 @@ interface IGeneral {
     icao_airline: string,
     flight_number: string,
     is_etops: string,
-    constinex: string,
+    constindex: string,
     initial_altitude: string,
     stepclimb_string: string,
     route: string,
