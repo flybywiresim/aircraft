@@ -20,6 +20,7 @@ export interface AocDatalinkMessages {
 
     aocResynchronizeWeatherMessage: WeatherMessage;
     aocResynchronizeFreetextMessage: FreetextMessage;
+
     aocPrintMessage: AtsuMessage;
     aocDeleteMessage: number;
 }
