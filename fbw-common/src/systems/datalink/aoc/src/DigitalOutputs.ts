@@ -10,14 +10,14 @@ import {
     SimVarSources,
     WeatherMessage,
 } from '@datalink/common';
-import { AtcAocRouterMessages } from '@datalink/router';
+import { AtcAocRouterMessages, RouterAtcAocMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AocDatalinkMessages } from './databus/DatalinkBus';
 
 export class DigitalOutputs {
     private requestId: number = 0;
 
-    private subscriber: EventSubscriber<AtcAocRouterMessages> = null;
+    private subscriber: EventSubscriber<RouterAtcAocMessages> = null;
 
     private publisher: Publisher<AtcAocRouterMessages & AocDatalinkMessages> = null;
 
@@ -28,7 +28,7 @@ export class DigitalOutputs {
     private weatherResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, WeatherMessage]) => boolean)[] = [];
 
     constructor(private readonly bus: EventBus, private readonly synchronizedRouter: boolean) {
-        this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
+        this.subscriber = this.bus.getSubscriber<RouterAtcAocMessages>();
         this.publisher = this.bus.getPublisher<AtcAocRouterMessages & AocDatalinkMessages>();
 
         this.subscriber.on('routerSendMessageResponse').handle((response) => {

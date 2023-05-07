@@ -18,7 +18,7 @@ import {
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
-import { AtcAocRouterMessages, DatalinkRouterMessages } from './databus';
+import { AtcAocRouterMessages, DatalinkRouterMessages, RouterAtcAocMessages, RouterDatalinkMessages } from './databus';
 
 export type RouterDigitalInputCallbacks = {
     sendFreetextMessage: (message: FreetextMessage, force: boolean) => Promise<AtsuStatusCodes>;
@@ -37,7 +37,7 @@ export type RouterDigitalInputCallbacks = {
 export class DigitalInputs {
     private subscriber: EventSubscriber<AtcAocRouterMessages & FmgcDataBusTypes & DatalinkRouterMessages & RmpDataBusTypes> = null;
 
-    private publisher: Publisher<AtcAocRouterMessages & DatalinkRouterMessages>;
+    private publisher: Publisher<RouterDatalinkMessages & RouterAtcAocMessages>;
 
     private poweredUp: boolean = false;
 
@@ -73,7 +73,7 @@ export class DigitalInputs {
 
     public initialize(): void {
         this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages & FmgcDataBusTypes & DatalinkRouterMessages & RmpDataBusTypes>();
-        this.publisher = this.bus.getPublisher<AtcAocRouterMessages & DatalinkRouterMessages>();
+        this.publisher = this.bus.getPublisher<RouterDatalinkMessages & RouterAtcAocMessages>();
     }
 
     public connectedCallback(): void {

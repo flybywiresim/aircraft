@@ -39,7 +39,7 @@ export class DatalinkClient {
 
     private readonly publisher: Publisher<DatalinkAtcMessages & DatalinkAocMessages & DatalinkRouterMessages>;
 
-    private readonly subscriber: EventSubscriber<AtcDatalinkMessages & AocDatalinkMessages & RouterDatalinkMessages & DatalinkRouterMessages>;
+    private readonly subscriber: EventSubscriber<AtcDatalinkMessages & AocDatalinkMessages & RouterDatalinkMessages>;
 
     private requestId: number = 0;
 
@@ -486,7 +486,7 @@ export class DatalinkClient {
         case 'hf':
             return this.datalinkStatus.hf;
         default:
-            return 99;
+            return DatalinkStatusCode.Inop;
         }
     }
 
@@ -499,7 +499,7 @@ export class DatalinkClient {
         case 'hf':
             return this.datalinkMode.hf;
         default:
-            return 99;
+            return DatalinkModeCode.None;
         }
     }
 }

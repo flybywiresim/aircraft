@@ -14,11 +14,13 @@ export interface RouterDatalinkMessages {
         satellite: DatalinkModeCode,
         hf: DatalinkModeCode,
     };
+
+    routerManagementResponse: { requestId: number, status: AtsuStatusCodes };
 }
 
 export interface DatalinkRouterMessages {
     routerConnect: { requestId: number, callsign: string };
     routerDisconnect: number;
+
     routerRequestStationAvailable: { requestId: number, callsign: string };
-    routerManagementResponse: { requestId: number, status: AtsuStatusCodes };
 }
