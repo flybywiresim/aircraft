@@ -34,7 +34,8 @@ export class AtmosphericConditions {
         // TODO filter?
         this.windSpeedFromSim = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots');
         this.windDirectionFromSim = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'Degrees');
-        this.pressureAltFromSim = SimVar.GetSimVarValue('PRESSURE ALTITUDE', 'feet');
+        // This is what the AP uses
+        this.pressureAltFromSim = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
 
         this.computedIsaDeviation = this.ambientTemperatureFromSim - Common.getIsaTemp(this.altitudeFromSim);
     }
