@@ -22,6 +22,7 @@ import {
     EnvironmentData,
     FlightStateData,
     PositionReportData,
+    DatalinkCommunicationSystems,
 } from '@datalink/common';
 import { DatalinkRouterMessages, RouterDatalinkMessages } from '@datalink/router';
 import { FlightPhaseManager } from '@fmgc/flightphase';
@@ -477,26 +478,26 @@ export class DatalinkClient {
         });
     }
 
-    public getDatalinkStatus(value: string): DatalinkStatusCode {
-        switch (value) {
-        case 'vhf':
+    public getDatalinkStatus(system: DatalinkCommunicationSystems): DatalinkStatusCode {
+        switch (system) {
+        case DatalinkCommunicationSystems.VHF:
             return this.datalinkStatus.vhf;
-        case 'satcom':
+        case DatalinkCommunicationSystems.SATCOM:
             return this.datalinkStatus.satellite;
-        case 'hf':
+        case DatalinkCommunicationSystems.HF:
             return this.datalinkStatus.hf;
         default:
             return DatalinkStatusCode.Inop;
         }
     }
 
-    public getDatalinkMode(value: string): DatalinkModeCode {
-        switch (value) {
-        case 'vhf':
+    public getDatalinkMode(system: DatalinkCommunicationSystems): DatalinkModeCode {
+        switch (system) {
+        case DatalinkCommunicationSystems.VHF:
             return this.datalinkMode.vhf;
-        case 'satcom':
+        case DatalinkCommunicationSystems.SATCOM:
             return this.datalinkMode.satellite;
-        case 'hf':
+        case DatalinkCommunicationSystems.HF:
             return this.datalinkMode.hf;
         default:
             return DatalinkModeCode.None;

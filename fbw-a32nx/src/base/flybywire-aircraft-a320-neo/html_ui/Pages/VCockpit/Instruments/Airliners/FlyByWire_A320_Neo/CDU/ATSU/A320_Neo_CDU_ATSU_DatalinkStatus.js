@@ -16,25 +16,25 @@ class CDUAtsuDatalinkStatus {
         setTimeout(mcdu.requestUpdate.bind(mcdu), 500);
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
-        const vhfStatusCode = mcdu.atsu.getDatalinkStatus('vhf');
-        const vhfModeCode = mcdu.atsu.getDatalinkMode('vhf');
-        const satcomStatusCode = mcdu.atsu.getDatalinkStatus('satcom');
-        const satcomModeCode = mcdu.atsu.getDatalinkMode('satcom');
-        const hfStatusCode = mcdu.atsu.getDatalinkStatus('hf');
-        const hfModeCode = mcdu.atsu.getDatalinkMode('hf');
+        const vhfStatusCode = mcdu.atsu.getDatalinkStatus(AtsuCommon.DatalinkCommunicationSystems.VHF);
+        const vhfModeCode = mcdu.atsu.getDatalinkMode(AtsuCommon.DatalinkCommunicationSystems.VHF);
+        const satcomStatusCode = mcdu.atsu.getDatalinkStatus(AtsuCommon.DatalinkCommunicationSystems.SATCOM);
+        const satcomModeCode = mcdu.atsu.getDatalinkMode(AtsuCommon.DatalinkCommunicationSystems.SATCOM);
+        const hfStatusCode = mcdu.atsu.getDatalinkStatus(AtsuCommon.DatalinkCommunicationSystems.HF);
+        const hfModeCode = mcdu.atsu.getDatalinkMode(AtsuCommon.DatalinkCommunicationSystems.HF);
 
         const statusCodeToString = {
-            [-1]: '{red}INOP{end}',
-            [0]: '{small}NOT INSTALLED{end}',
-            [1]: '{small}DLK NOT AVAIL{end}',
-            [2]: '{green}DLK AVAIL{end}'
+            [AtsuCommon.DatalinkStatusCode.Inop]: '{red}INOP{end}',
+            [AtsuCommon.DatalinkStatusCode.NotInstalled]: '{small}NOT INSTALLED{end}',
+            [AtsuCommon.DatalinkStatusCode.DlkNotAvail]: '{small}DLK NOT AVAIL{end}',
+            [AtsuCommon.DatalinkStatusCode.DlkAvail]: '{green}DLK AVAIL{end}',
         };
 
         const modeCodeToString = {
-            [1]: 'ATC/AOC',
-            [2]: 'AOC ONLY',
-            [3]: 'ATC ONLY',
-            [0]: ' '
+            [AtsuCommon.DatalinkModeCode.None]: ' ',
+            [AtsuCommon.DatalinkModeCode.AtcAoc]: 'ATC/AOC',
+            [AtsuCommon.DatalinkModeCode.Aoc]: 'AOC ONLY',
+            [AtsuCommon.DatalinkModeCode.Atc]: 'ATC ONLY',
         };
 
         const vhfStatus = statusCodeToString[vhfStatusCode] || 'ERROR';
