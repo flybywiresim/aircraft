@@ -19,10 +19,10 @@ import {
 } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
 import { EventBus } from '@microsoft/msfs-sdk';
-import { SimbriefConnector } from 'datalink/router/src/webinterfaces/SimbriefConnector';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
+import { SimbriefConnector } from './webinterfaces/SimbriefConnector';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
 

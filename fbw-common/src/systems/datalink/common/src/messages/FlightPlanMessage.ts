@@ -1,8 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessageSerializationFormat } from 'datalink/common/src/messages/AtsuMessage';
-import { AtsuMessage, AtsuMessageType } from './AtsuMessage';
+import { AtsuMessage, AtsuMessageType, AtsuMessageSerializationFormat } from './AtsuMessage';
 
 export interface IFlightPlanChunkBase {
     instruction: string,

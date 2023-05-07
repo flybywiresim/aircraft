@@ -3,17 +3,17 @@
 
 import { CpdlcMessage, DatalinkModeCode, DatalinkStatusCode, FreetextMessage } from '@datalink/common';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
-import { RouterAtcAocMessages, RouterFmsMessages } from './databus';
+import { RouterAtcAocMessages, RouterDatalinkMessages } from './databus';
 
 export class DigitalOutputs {
-    private publisher: Publisher<RouterAtcAocMessages & RouterFmsMessages>;
+    private publisher: Publisher<RouterAtcAocMessages & RouterDatalinkMessages>;
 
     constructor(
         private readonly bus: EventBus,
         private readonly synchronizedAtc: boolean,
         private readonly synchronizedAoc: boolean,
     ) {
-        this.publisher = this.bus.getPublisher<RouterAtcAocMessages & RouterFmsMessages>();
+        this.publisher = this.bus.getPublisher<RouterAtcAocMessages & RouterDatalinkMessages>();
     }
 
     public receivedFreetextMesage(message: FreetextMessage): void {
