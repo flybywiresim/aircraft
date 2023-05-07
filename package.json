@@ -15,7 +15,7 @@
     "build-a32nx:behavior": "node fbw-a32nx/src/behavior/build.js",
 
     "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",
-    "build-a32nx:atsu-fms-client": "node fbw-a32nx/src/systems/atsu/fmsclient/build.js",
+    "build-a32nx:atsu-datalink-client": "node fbw-a32nx/src/systems/atsu/datalinkclient/build.js",
     "build-a32nx:extras-host": "cd fbw-a32nx/src/systems/extras-host && rollup -c",
     "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
     "build-a32nx:fmgc": "rollup -c fbw-a32nx/src/systems/fmgc/rollup.config.js",

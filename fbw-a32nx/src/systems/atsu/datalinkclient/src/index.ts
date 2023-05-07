@@ -30,7 +30,7 @@ import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanSynchronization } from './FlightPlanSynchronization';
 import { MessageStorage } from './MessageStorage';
 
-export class FmsClient {
+export class DatalinkClient {
     private readonly bus: EventBus;
 
     private readonly messageStorage: MessageStorage;
