@@ -21,7 +21,7 @@ export interface FmsRouteData {
     destination: Waypoint;
 }
 
-export interface AtcFmsMessages {
+export interface AtcDatalinkMessages {
     // data management control
     atcResetData: boolean;
 
@@ -50,7 +50,7 @@ export interface AtcFmsMessages {
     atcDeleteMessage: number;
 }
 
-export interface FmsAtcMessages {
+export interface DatalinkAtcMessages {
     // flight plan synchronizations from FMS to ATC
     atcRouteData: FmsRouteData;
 

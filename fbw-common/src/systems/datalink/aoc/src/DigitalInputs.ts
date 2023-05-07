@@ -14,7 +14,7 @@ import {
 } from '@datalink/common';
 import { RouterAtcAocMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
-import { AocFmsMessages, FmsAocMessages } from './databus/FmsBus';
+import { AocDatalinkMessages, DatalinkAocMessages } from './databus/DatalinkBus';
 
 export type AocDigitalInputCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
@@ -39,9 +39,9 @@ export class DigitalInputs {
         removeMessage: null,
     };
 
-    private subscriber: EventSubscriber<AtcAocMessages & ClockDataBusTypes & FmsAocMessages & FwcDataBusTypes & RouterAtcAocMessages> = null;
+    private subscriber: EventSubscriber<AtcAocMessages & ClockDataBusTypes & DatalinkAocMessages & FwcDataBusTypes & RouterAtcAocMessages> = null;
 
-    private publisher: Publisher<AocFmsMessages> = null;
+    private publisher: Publisher<AocDatalinkMessages> = null;
 
     private poweredUp: boolean = false;
 
@@ -59,8 +59,8 @@ export class DigitalInputs {
     }
 
     public initialize(): void {
-        this.subscriber = this.bus.getSubscriber<AtcAocMessages & ClockDataBusTypes & FmsAocMessages & FwcDataBusTypes & RouterAtcAocMessages>();
-        this.publisher = this.bus.getPublisher<AocFmsMessages>();
+        this.subscriber = this.bus.getSubscriber<AtcAocMessages & ClockDataBusTypes & DatalinkAocMessages & FwcDataBusTypes & RouterAtcAocMessages>();
+        this.publisher = this.bus.getPublisher<AocDatalinkMessages>();
 
         this.subscriber.on('utcYear').handle((year: number) => {
             if (this.poweredUp) this.UtcClock.year = year;

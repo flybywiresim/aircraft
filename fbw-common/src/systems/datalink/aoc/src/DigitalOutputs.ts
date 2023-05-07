@@ -12,14 +12,14 @@ import {
 } from '@datalink/common';
 import { AtcAocRouterMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
-import { AocFmsMessages } from './databus/FmsBus';
+import { AocDatalinkMessages } from './databus/DatalinkBus';
 
 export class DigitalOutputs {
     private requestId: number = 0;
 
     private subscriber: EventSubscriber<AtcAocRouterMessages> = null;
 
-    private publisher: Publisher<AtcAocRouterMessages & AocFmsMessages> = null;
+    private publisher: Publisher<AtcAocRouterMessages & AocDatalinkMessages> = null;
 
     private sendMessageCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
@@ -29,7 +29,7 @@ export class DigitalOutputs {
 
     constructor(private readonly bus: EventBus, private readonly synchronizedRouter: boolean) {
         this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
-        this.publisher = this.bus.getPublisher<AtcAocRouterMessages & AocFmsMessages>();
+        this.publisher = this.bus.getPublisher<AtcAocRouterMessages & AocDatalinkMessages>();
 
         this.subscriber.on('routerSendMessageResponse').handle((response) => {
             this.sendMessageCallbacks.every((callback, index) => {
