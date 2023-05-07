@@ -311,7 +311,7 @@ export class SimbriefConnector {
         return converted;
     }
 
-    public static receiveNotamMessage(): Promise<NotamMessage[]> {
+    public static receiveNotams(): Promise<NotamMessage[]> {
         return SimbriefConnector.receiveData().then(([_data, ofp]) => {
             const notams: NotamMessage[] = [];
 
