@@ -8,7 +8,7 @@ use crate::simulation::{
 
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::radian,
+    angle::{degree, radian},
     f64::*,
     force::newton,
     length::meter,
@@ -427,26 +427,32 @@ impl WingLift {
         //     * 150.; //magic coeff
 
         let lift = if total_weight_on_wheels.get::<kilogram>() > 5000. {
-            // Assuming no lift at low wind speed avoids glitches with ground when braking hard for a full stop
-            if context.true_airspeed().get::<knot>().abs() > 25. {
+            // Assuming no lift at low wind speed and low AoA avoids glitches with ground when braking hard for a full stop
+            if context.true_airspeed().get::<knot>().abs() < 25.
+                || context.aoa().get::<degree>() < 0.
+            {
                 // println!(
-                //     "GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+                //     "GROUNDMODE LOW SPEED/AOA PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} CONDS: aoa {:.2} airspeed {:.2}",
                 //     cur_weight_kg / 1000.,
                 //     lift_1g /9.8 / 1000.,
                 //     lift_wow/9.8 / 1000.,
-                //     ((lift_1g + lift_wow) /9.8 / 1000.).max(0.)
+                //     0.,
+                //     context.aoa().get::<degree>(),
+                //     context.true_airspeed().get::<knot>()
+                // );
+                0.
+            } else {
+                // println!(
+                //     "GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} CONDS: aoa {:.2} airspeed {:.2}",
+                //     cur_weight_kg / 1000.,
+                //     lift_1g /9.8 / 1000.,
+                //     lift_wow/9.8 / 1000.,
+                //     ((lift_1g + lift_wow) /9.8 / 1000.).max(0.),
+                //     context.aoa().get::<degree>(),
+                //     context.true_airspeed().get::<knot>()
                 // );
                 //println!("LIFT FROM WOOOOOW MODE");
                 (lift_1g + lift_wow).max(0.)
-            } else {
-                // println!(
-                //     "GROUNDMODE LOW SPEED PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
-                //     cur_weight_kg / 1000.,
-                //     lift_1g /9.8 / 1000.,
-                //     lift_wow/9.8 / 1000.,
-                //     0.
-                // );
-                0.
             }
         } else {
             // println!(
@@ -1901,30 +1907,8 @@ mod tests {
 
         assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
         assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
-
-        test_bed.write_by_name("WING_FLEX_DEV_NEG_STIFF_COEFF", 1.5);
-
-        println!("************NEEEEG COEEF");
-        test_bed.run_waiting_for(Duration::from_secs(1));
     }
 
-    #[test]
-    fn steady_on_ground_exponent_forces_with_full_fuel() {
-        let mut test_bed = WingFlexTestBed::new()
-            .with_nominal_weight()
-            .with_max_fuel()
-            .steady_on_ground();
-
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
-
-        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
-        assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
-
-        test_bed.write_by_name("WING_FLEX_STIFF_EXPO_ENA", 1.);
-
-        println!("************EXPO SPRINGS");
-        test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
-    }
 
     #[test]
     fn with_some_lift_on_ground_rotation() {
