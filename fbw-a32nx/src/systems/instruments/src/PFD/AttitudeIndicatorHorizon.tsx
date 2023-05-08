@@ -23,14 +23,14 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
     private selectedHeading = 0;
 
-    private heading = new Arinc429Word(0);
+    private heading = 0;
 
     private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
 
     private yOffset = 0;
 
     private calculateAndSetOffset() {
-        const headingDelta = getSmallestAngle(this.selectedHeading, this.heading.value);
+        const headingDelta = getSmallestAngle(this.selectedHeading, this.heading);
 
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
 
@@ -55,7 +55,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
         });
 
         sub.on('heading').handle((h) => {
-            this.heading = h;
+            this.heading = h.value;
             if (this.isActive) {
                 this.calculateAndSetOffset();
             }
@@ -275,7 +275,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         sub.on('chosenRa').handle((ra) => {
             this.tailStrikeConditions.altitude = ra;
@@ -291,7 +291,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             this.needsUpdate = true;
         });
 
-        sub.on('speedAr').whenChanged().handle((speed) => {
+        sub.on('speedAr').withArinc429Precision(2).handle((speed) => {
             this.tailStrikeConditions.speed = speed.value;
             this.needsUpdate = true;
         });
@@ -461,10 +461,6 @@ interface SideslipIndicatorProps {
 class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     private latAccFilter = new LagFilter(0.5);
 
-    private estimatedBetaFilter = new LagFilter(2);
-
-    private betaTargetFilter = new LagFilter(2);
-
     private classNameSub = Subject.create('Yellow');
 
     private filteredLatAccSub = Subject.create(0);
@@ -536,8 +532,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     private determineSlideSlip() {
         const multiplier = 100;
-        const currentValueAtPrecision = Math.round(this.roll.value * multiplier) / multiplier;
-        const verticalOffset = calculateVerticalOffsetFromRoll(currentValueAtPrecision);
+        const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
         let offset = 0;
 
         let betaTargetActive = false;

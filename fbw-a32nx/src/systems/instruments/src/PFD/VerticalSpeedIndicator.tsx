@@ -229,7 +229,7 @@ class VSpeedText extends DisplayComponent<{ bus: ArincEventBus, yOffset: Subscri
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
         sub.on('vs').withArinc429Precision(2).handle((vs) => {
             const absVSpeed = Math.abs(vs.value);

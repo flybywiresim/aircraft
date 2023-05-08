@@ -120,7 +120,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const pf = this.props.bus.getSubscriber<Arinc429Values & DisplayManagementComputerEvents>();
+        const pf = this.props.bus.getArincSubscriber<DisplayManagementComputerEvents>();
 
         this.props.yOffset?.sub((yOffset) => {
             this.yOffset = yOffset;
@@ -128,12 +128,10 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         });
 
         pf.on('heading').withArinc429Precision(2).handle((newVal) => {
-            const multiplier = 100;
-            const currentValueAtPrecision = Math.round(newVal.value * multiplier) / multiplier;
-            const tapeOffset = -currentValueAtPrecision % 10 * this.props.distanceSpacing / this.props.valueSpacing;
+            const tapeOffset = -newVal.value % 10 * this.props.distanceSpacing / this.props.valueSpacing;
 
-            if (currentValueAtPrecision / 10 >= this.currentDrawnHeading + 1 || currentValueAtPrecision / 10 <= this.currentDrawnHeading) {
-                this.currentDrawnHeading = Math.floor(currentValueAtPrecision / 10);
+            if (newVal.value / 10 >= this.currentDrawnHeading + 1 || newVal.value / 10 <= this.currentDrawnHeading) {
+                this.currentDrawnHeading = Math.floor(newVal.value / 10);
 
                 const start = 330 + (this.currentDrawnHeading) * 10;
 

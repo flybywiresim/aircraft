@@ -61,12 +61,12 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values & HEvent>();
+        const sub = this.props.bus.getArincSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values & HEvent>();
 
-        sub.on('heading').handle((h) => {
-            this.heading.set(h.value);
+        sub.on('heading').withArinc429Precision(2).handle((word) => {
+            this.heading.set(word.value);
 
-            if (h.isNormalOperation()) {
+            if (word.isNormalOperation()) {
                 this.normalRef.instance.style.visibility = 'visible';
                 this.abnormalRef.instance.style.visibility = 'hidden';
             } else {
@@ -210,13 +210,13 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
         const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents>();
 
         sub.on('track').handle((groundTrack) => {
-            //  if (groundTrack.isNormalOperation()) {
-            const offset = getSmallestAngle(groundTrack.value, this.props.heading.get()) * DistanceSpacing / ValueSpacing;
-            this.trackIndicator.instance.style.display = 'inline';
-            this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
-            //   } else {
-            //       this.trackIndicator.instance.style.display = 'none';
-            //   }
+            if (groundTrack.isNormalOperation()) {
+                const offset = getSmallestAngle(groundTrack.value, this.props.heading.get()) * DistanceSpacing / ValueSpacing;
+                this.trackIndicator.instance.style.display = 'inline';
+                this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+            } else {
+                this.trackIndicator.instance.style.display = 'none';
+            }
         });
     }
 
