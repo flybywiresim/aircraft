@@ -470,10 +470,10 @@ class EngineControl {
 
     if (engine == 1) {
       simVars->setEngine1N1(simN1);
-      simVars->setEngine1N2(simN2 - paramImbalance);
+      simVars->setEngine1N2(max(0, simN2 - paramImbalance));
     } else {
       simVars->setEngine2N1(simN1);
-      simVars->setEngine2N2(simN2 - paramImbalance);
+      simVars->setEngine2N2(max(0, simN2 - paramImbalance));
     }
   }
 
@@ -551,8 +551,8 @@ class EngineControl {
     if (correctedFuelFlow < 1) {
       outFlow = 0;
     } else {
-      outFlow = (correctedFuelFlow * LBS_TO_KGS * ratios->delta2(mach, ambientPressure) * sqrt(ratios->theta2(mach, ambientTemp))) -
-                paramImbalance;
+      outFlow = max(0, (correctedFuelFlow * LBS_TO_KGS * ratios->delta2(mach, ambientPressure) * sqrt(ratios->theta2(mach, ambientTemp))) -
+                paramImbalance);
     }
 
     if (engine == 1) {
@@ -659,59 +659,6 @@ class EngineControl {
   }
 
   /// <summary>
-  /// FBW Payload checking and UI override function
-  /// </summary>
-  void checkPayload() {
-    double fuelWeightGallon = simVars->getFuelWeightGallon();
-    double aircraftEmptyWeight = simVars->getEmptyWeight();  // in LBS
-    double conversionFactor = simVars->getConversionFactor();
-    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;                   // in LBS
-    double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
-    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
-    double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;  // in LBS
-
-    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * perPaxWeightLbs;                 // in LBS
-    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * perPaxWeightLbs;               // in LBS
-    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * perPaxWeightLbs;             // in LBS
-    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * perPaxWeightLbs;             // in LBS
-    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * perPaxWeightLbs;               // in LBS
-    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * perPaxWeightLbs;             // in LBS
-    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * perPaxWeightLbs;           // in LBS
-    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * perPaxWeightLbs;           // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;    // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;    // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;        // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;              // in LBS
-    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() / conversionFactor;  // in LBS
-    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() / conversionFactor;  // in LBS
-    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() / conversionFactor;      // in LBS
-    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() / conversionFactor;            // in LBS
-    double paxTotalWeightActual = (paxRows1to6Actual + paxRows7to13Actual + paxRows14to21Actual + paxRows22to29Actual);
-    double paxTotalWeightDesired = (paxRows1to6Desired + paxRows7to13Desired + paxRows14to21Desired + paxRows22to29Desired);
-    double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
-    double cargoTotalWeightDesired = (cargoFwdContainerDesired + cargoAftContainerDesired + cargoAftBaggageDesired + cargoAftBulkDesired);
-
-    if (abs(payloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows1to6Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows7to13Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows14to21Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &paxRows22to29Actual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation5, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoFwdContainerActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation6, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftContainerActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation7, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftBaggageActual);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation8, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                    &cargoAftBulkActual);
-    }
-  }
-
-  /// <summary>
   /// FBW Fuel Consumption and Tankering
   /// Updates Fuel Consumption with realistic values
   /// </summary>
@@ -726,6 +673,19 @@ class EngineControl {
     bool uiFuelTamper = false;
     double pumpStateLeft = simVars->getPumpStateLeft();
     double pumpStateRight = simVars->getPumpStateRight();
+    bool xfrCenterLeftManual = simVars->getJunctionSetting(4) > 1.5;
+    bool xfrCenterRightManual = simVars->getJunctionSetting(5) > 1.5;
+    bool xfrCenterLeftAuto = simVars->getValve(11) > 0.0 && !xfrCenterLeftManual;
+    bool xfrCenterRightAuto = simVars->getValve(12) > 0.0 && !xfrCenterRightManual;
+    bool xfrValveCenterLeftOpen = simVars->getValve(9) > 0.0 && (xfrCenterLeftAuto || xfrCenterLeftManual);
+    bool xfrValveCenterRightOpen = simVars->getValve(10) > 0.0 && (xfrCenterRightAuto || xfrCenterRightManual);
+    double xfrValveOuterLeft1 = simVars->getValve(6);
+    double xfrValveOuterLeft2 = simVars->getValve(4);
+    double xfrValveOuterRight1 = simVars->getValve(7);
+    double xfrValveOuterRight2 = simVars->getValve(5);
+    double lineLeftToCenterFlow = simVars->getLineFlow(27);
+    double lineRightToCenterFlow = simVars->getLineFlow(28);
+    double lineFlowRatio = 0;
 
     double engine1PreFF = simVars->getEngine1PreFF();  // KG/H
     double engine2PreFF = simVars->getEngine2PreFF();  // KG/H
@@ -736,22 +696,23 @@ class EngineControl {
     double fuelUsedLeft = simVars->getFuelUsedLeft();    // Kg
     double fuelUsedRight = simVars->getFuelUsedRight();  // Kg
 
-    double fuelLeftPre = simVars->getFuelLeftPre();                                   // LBS
-    double fuelRightPre = simVars->getFuelRightPre();                                 // LBS
-    double fuelAuxLeftPre = simVars->getFuelAuxLeftPre();                             // LBS
-    double fuelAuxRightPre = simVars->getFuelAuxRightPre();                           // LBS
-    double fuelCenterPre = simVars->getFuelCenterPre();                               // LBS
-    double leftQuantity = simVars->getTankLeftQuantity() * fuelWeightGallon;          // LBS
-    double rightQuantity = simVars->getTankRightQuantity() * fuelWeightGallon;        // LBS
-    double leftAuxQuantity = simVars->getTankLeftAuxQuantity() * fuelWeightGallon;    // LBS
-    double rightAuxQuantity = simVars->getTankRightAuxQuantity() * fuelWeightGallon;  // LBS
-    double centerQuantity = simVars->getTankCenterQuantity() * fuelWeightGallon;      // LBS
-    double fuelLeft = 0;                                                              // LBS
+    double fuelLeftPre = simVars->getFuelLeftPre();                                // LBS
+    double fuelRightPre = simVars->getFuelRightPre();                              // LBS
+    double fuelAuxLeftPre = simVars->getFuelAuxLeftPre();                          // LBS
+    double fuelAuxRightPre = simVars->getFuelAuxRightPre();                        // LBS
+    double fuelCenterPre = simVars->getFuelCenterPre();                            // LBS
+    double leftQuantity = simVars->getFuelTankQuantity(2) * fuelWeightGallon;      // LBS
+    double rightQuantity = simVars->getFuelTankQuantity(3) * fuelWeightGallon;     // LBS
+    double leftAuxQuantity = simVars->getFuelTankQuantity(4) * fuelWeightGallon;   // LBS
+    double rightAuxQuantity = simVars->getFuelTankQuantity(5) * fuelWeightGallon;  // LBS
+    double centerQuantity = simVars->getFuelTankQuantity(1) * fuelWeightGallon;    // LBS
+    double fuelLeft = 0;                                                           // LBS
     double fuelRight = 0;
     double fuelLeftAux = 0;
     double fuelRightAux = 0;
     double fuelCenter = 0;
-    double xfrCenter = 0;
+    double xfrCenterToLeft = 0;
+    double xfrCenterToRight = 0;
     double xfrAuxLeft = 0;
     double xfrAuxRight = 0;
     double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
@@ -760,6 +721,13 @@ class EngineControl {
 
     double engine1State = simVars->getEngine1State();
     double engine2State = simVars->getEngine2State();
+
+    int isTankClosed = 0;
+    double xFeedValve = simVars->getValve(3);
+    double leftPump1 = simVars->getPump(2);
+    double leftPump2 = simVars->getPump(5);
+    double rightPump1 = simVars->getPump(3);
+    double rightPump2 = simVars->getPump(6);
 
     // Check Ready & Development State for UI
     isReady = simVars->getIsReady();
@@ -780,7 +748,6 @@ class EngineControl {
       }
     } else if (pumpStateLeft == 1 && timerLeft.elapsed() >= 2100) {
       simVars->setPumpStateLeft(0);
-      //fuelLeftPre = 0;
       timerLeft.reset();
     } else if (pumpStateLeft == 2 && timerLeft.elapsed() >= 2700) {
       simVars->setPumpStateLeft(0);
@@ -800,7 +767,6 @@ class EngineControl {
       }
     } else if (pumpStateRight == 1 && timerRight.elapsed() >= 2100) {
       simVars->setPumpStateRight(0);
-      //fuelRightPre = 0;
       timerRight.reset();
     } else if (pumpStateRight == 2 && timerRight.elapsed() >= 2700) {
       simVars->setPumpStateRight(0);
@@ -814,11 +780,11 @@ class EngineControl {
     }
 
     if (simPaused || uiFuelTamper && devState == 0) {  // Detects whether the Sim is paused or the Fuel UI is being tampered with
-      simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
-      simVars->setFuelRightPre(fuelRightPre);        // in LBS
-      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
-      simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
-      simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
+      simVars->setFuelLeftPre(fuelLeftPre);            // in LBS
+      simVars->setFuelRightPre(fuelRightPre);          // in LBS
+      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);      // in LBS
+      simVars->setFuelAuxRightPre(fuelAuxRightPre);    // in LBS
+      simVars->setFuelCenterPre(fuelCenterPre);        // in LBS
 
       fuelLeft = (fuelLeftPre / fuelWeightGallon);          // USG
       fuelRight = (fuelRightPre / fuelWeightGallon);        // USG
@@ -832,11 +798,11 @@ class EngineControl {
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
-      simVars->setFuelLeftPre(leftQuantity);          // in LBS
-      simVars->setFuelRightPre(rightQuantity);        // in LBS
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(centerQuantity);      // in LBS
+      simVars->setFuelLeftPre(leftQuantity);                 // in LBS
+      simVars->setFuelRightPre(rightQuantity);               // in LBS
+      simVars->setFuelAuxLeftPre(leftAuxQuantity);           // in LBS
+      simVars->setFuelAuxRightPre(rightAuxQuantity);         // in LBS
+      simVars->setFuelCenterPre(centerQuantity);             // in LBS
     } else {
       if (uiFuelTamper == 1) {
         fuelLeftPre = leftQuantity;          // LBS
@@ -845,9 +811,23 @@ class EngineControl {
         fuelAuxRightPre = rightAuxQuantity;  // LBS
         fuelCenterPre = centerQuantity;      // LBS
       }
+      //-----------------------------------------------------------
+      // Cross-feed Logic
+      // isTankClosed = 0, both tanks can supply fuel
+      // isTankClosed = 1, left tank does not supply fuel
+      // isTankClosed = 2, right tank does not supply fuel
+      // isTankClosed = 3, left & right tanks do not supply fuel
+      if (xFeedValve > 0.0) {
+        if (leftPump1 == 0 && leftPump2 == 0)
+          isTankClosed = 1;
+        if (rightPump1 == 0 && rightPump2 == 0)
+          isTankClosed = 2;
+        if (leftPump1 == 0 && leftPump2 == 0 && rightPump1 == 0 && rightPump2 == 0)
+          isTankClosed = 3;
+      }
+
       //--------------------------------------------
       // Left Engine and Wing routine
-      //--------------------------------------------
       if (fuelLeftPre > 0) {
         // Cycle Fuel Burn for Engine 1
         if (devState != 2) {
@@ -855,24 +835,17 @@ class EngineControl {
           b = engine1PreFF;
           fuelBurn1 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
         }
-        // Fuel Used Accumulators - Engine 1
-        fuelUsedLeft += fuelBurn1;
 
         // Fuel transfer routine for Left Wing
-        if (fuelAuxLeftPre > leftAuxQuantity) {
+        if (xfrValveOuterLeft1 > 0.0 || xfrValveOuterLeft2 > 0.0)
           xfrAuxLeft = fuelAuxLeftPre - leftAuxQuantity;
-        }
-      } else if (fuelLeftPre <= 0) {
-        fuelBurn1 = 0;
-        fuelLeftPre = 0;
       } else {
         fuelBurn1 = 0;
-        fuelLeftPre = -10;
+        fuelLeftPre = 0;
       }
 
       //--------------------------------------------
       // Right Engine and Wing routine
-      //--------------------------------------------
       if (fuelRightPre > 0) {
         // Cycle Fuel Burn for Engine 2
         if (devState != 2) {
@@ -880,46 +853,61 @@ class EngineControl {
           b = engine2PreFF;
           fuelBurn2 = (m * pow(deltaTime, 2) / 2) + (b * deltaTime);  // KG
         }
-        // Fuel Used Accumulators - Engine 2
-        fuelUsedRight += fuelBurn2;
-
-        // Fuel transfer routine for Left Wing
-        if (fuelAuxRightPre > rightAuxQuantity) {
+        // Fuel transfer routine for Right Wing
+        if (xfrValveOuterRight1 > 0.0 || xfrValveOuterRight2 > 0.0)
           xfrAuxRight = fuelAuxRightPre - rightAuxQuantity;
-        }
-      } else if (fuelRightPre <= 0) {
-        fuelBurn2 = 0;
-        fuelRightPre = 0;
       } else {
         fuelBurn2 = 0;
-        fuelRightPre = -10;
+        fuelRightPre = 0;
+      }
+
+      //--------------------------------------------
+      // Fuel used accumulators
+      fuelUsedLeft += fuelBurn1;
+      fuelUsedRight += fuelBurn2;
+
+      //--------------------------------------------
+      // Cross-feed fuel burn routine
+      // If fuel pumps for a given tank are closed,
+      // all fuel will be burnt on the other tank
+      switch (isTankClosed) {
+        case 1:
+          fuelBurn2 = fuelBurn1 + fuelBurn2;
+          fuelBurn1 = 0;
+          break;
+        case 2:
+          fuelBurn1 = fuelBurn1 + fuelBurn2;
+          fuelBurn2 = 0;
+          break;
+        case 3:
+          fuelBurn1 = 0;
+          fuelBurn2 = 0;
+          break;
+        default:
+          break;
       }
 
       //--------------------------------------------
       // Center Tank transfer routine
+      if (xfrValveCenterLeftOpen && xfrValveCenterRightOpen) {
+        if (lineLeftToCenterFlow < 0.1 && lineRightToCenterFlow < 0.1)
+          lineFlowRatio = 0.5;
+        else
+          lineFlowRatio = lineLeftToCenterFlow / (lineLeftToCenterFlow + lineRightToCenterFlow);
+
+        xfrCenterToLeft = (fuelCenterPre - centerQuantity) * lineFlowRatio;
+        xfrCenterToRight = (fuelCenterPre - centerQuantity) * (1 - lineFlowRatio);
+      } else if (xfrValveCenterLeftOpen)
+        xfrCenterToLeft = fuelCenterPre - centerQuantity;
+      else if (xfrValveCenterRightOpen)
+        xfrCenterToRight = fuelCenterPre - centerQuantity;
+
       //--------------------------------------------
-      if (fuelCenterPre > centerQuantity) {
-        xfrCenter = fuelCenterPre - centerQuantity;
-      }
+      // Final Fuel levels for left and right inner tanks
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft;      // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;  // LBS
 
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);     // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + (xfrCenter / 2);  // LBS
-
-      // Checking for Inner Tank overflow - Will be taken off with Rust code
-      if (fuelLeft > 12167.1 && fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + (fuelLeft - 12167.1) + (fuelRight - 12167.1);
-        fuelLeft = 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + fuelRight - 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelLeft > 12167.1) {
-        fuelCenter = centerQuantity + fuelLeft - 12167.1;
-        fuelLeft = 12167.1;
-      } else {
-        fuelCenter = centerQuantity;
-      }
-
+      //--------------------------------------------
       // Setting new pre-cycle conditions
       simVars->setEngine1PreFF(engine1FF);
       simVars->setEngine2PreFF(engine2FF);
@@ -927,21 +915,21 @@ class EngineControl {
       simVars->setFuelUsedRight(fuelUsedRight);       // in KG
       simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
       simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(fuelCenter);          // in LBS
+      simVars->setFuelCenterPre(centerQuantity);      // in LBS
 
       simVars->setFuelLeftPre(fuelLeft);    // in LBS
       simVars->setFuelRightPre(fuelRight);  // in LBS
 
-      fuelLeft = (fuelLeft / fuelWeightGallon);      // USG
-      fuelRight = (fuelRight / fuelWeightGallon);    // USG
-      fuelCenter = (fuelCenter / fuelWeightGallon);  // USG
+      fuelLeft = (fuelLeft / fuelWeightGallon);    // USG
+      fuelRight = (fuelRight / fuelWeightGallon);  // USG
 
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
     }
 
-    // Will save the current fuel quantities if on the ground AND engines being shutdown
+    //--------------------------------------------
+    // Will save the current fuel quantities if on
+    // the ground AND engines being shutdown
     if (timerFuel.elapsed() >= 1000 && simVars->getSimOnGround() &&
         (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 || engine2State == 0 || engine2State == 10 ||
          engine2State == 4 || engine2State == 14)) {
@@ -1242,11 +1230,6 @@ class EngineControl {
       // set highest N1 from either engine
       simN1highest = max(simN1highest, simN1);
     }
-
-    // If Development State is 1, UI Payload will be enabled
-    devState = simVars->getDeveloperState();
-    if (devState == 0)
-      checkPayload();
 
     updateFuel(deltaTime);
 

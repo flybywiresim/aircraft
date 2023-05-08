@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent, NodeReference, Subscribable, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, NodeReference, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 interface VerticalTapeProps {
     displayRange: number;

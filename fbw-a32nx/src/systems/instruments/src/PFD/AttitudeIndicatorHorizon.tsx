@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
@@ -12,12 +12,13 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './PFD';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
 
-class HeadingBug extends DisplayComponent<{bus: EventBus, isCaptainSide: boolean, yOffset: Subscribable<number>}> {
+class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: boolean, yOffset: Subscribable<number> }> {
     private isActive = false;
 
     private selectedHeading = 0;
@@ -88,7 +89,7 @@ class HeadingBug extends DisplayComponent<{bus: EventBus, isCaptainSide: boolean
 }
 
 interface HorizonProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     instrument: BaseInstrument;
     isAttExcessive: Subscribable<boolean>;
     filteredRadioAlt: Subscribable<number>;
@@ -112,7 +113,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const apfd = this.props.bus.getSubscriber<Arinc429Values>();
+        const apfd = this.props.bus.getArincSubscriber<Arinc429Values>();
 
         apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
             const multiplier = 1000;
@@ -259,7 +260,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     }
 }
 
-class TailstrikeIndicator extends DisplayComponent<{bus: EventBus}> {
+class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private tailStrike = FSComponent.createRef<SVGPathElement>();
 
     private needsUpdate = false;
@@ -316,12 +317,12 @@ class TailstrikeIndicator extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number>, attExcessive: Subscribable<boolean> }> {
+class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadioAltitude: Subscribable<number>, attExcessive: Subscribable<boolean> }> {
     private daRaGroup = FSComponent.createRef<SVGGElement>();
 
     private roll = new Arinc429Word(0);
 
-    private dh = 0;
+    private dh = new Arinc429Word(0);
 
     private filteredRadioAltitude = 0;
 
@@ -346,13 +347,13 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('rollAr').handle((roll) => {
             this.roll = roll;
         });
 
-        sub.on('dh').whenChanged().handle((dh) => {
+        sub.on('dhAr').withArinc429Precision(0).handle((dh) => {
             this.dh = dh;
         });
 
@@ -382,7 +383,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
                 const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
                 let size = 'FontLarge';
-                const DHValid = this.dh >= 0;
+                const DHValid = this.dh.value >= 0 && (!this.dh.isNoComputedData() && !this.dh.isFailureWarning());
 
                 let text = '';
                 let color = 'Amber';
@@ -390,7 +391,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 if (raHasData) {
                     if (raFailed) {
                         if (raValue < 2500) {
-                            if (raValue > 400 || (raValue > this.dh + 100 && DHValid)) {
+                            if (raValue > 400 || (raValue > this.dh.value + 100 && DHValid)) {
                                 color = 'Green';
                             }
                             if (raValue < 400) {
@@ -400,7 +401,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                                 text = Math.round(raValue).toString();
                             } else if (raValue <= 50) {
                                 text = (Math.round(raValue / 5) * 5).toString();
-                            } else if (raValue > 50 || (raValue > this.dh + 100 && DHValid)) {
+                            } else if (raValue > 50 || (raValue > this.dh.value + 100 && DHValid)) {
                                 text = (Math.round(raValue / 10) * 10).toString();
                             }
                         }
@@ -411,7 +412,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 }
 
                 this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
-                if (raFailed && DHValid && raValue <= this.dh) {
+                if (raFailed && DHValid && raValue <= this.dh.value) {
                     this.attDhText.instance.style.visibility = 'visible';
                 } else {
                     this.attDhText.instance.style.visibility = 'hidden';
@@ -453,7 +454,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
 }
 
 interface SideslipIndicatorProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     instrument: BaseInstrument;
 }
 
@@ -491,7 +492,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         sub.on('leftMainGearCompressed').whenChanged().handle((og) => {
             this.leftMainGearCompressed = og;
@@ -581,7 +582,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     }
 }
 
-class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number> }> {
+class RisingGround extends DisplayComponent<{ bus: ArincEventBus, filteredRadioAltitude: Subscribable<number> }> {
     private radioAlt = new Arinc429Word(0);
 
     private lastPitch = new Arinc429Word(0);

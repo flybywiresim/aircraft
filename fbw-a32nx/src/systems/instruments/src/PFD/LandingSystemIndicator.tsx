@@ -1,12 +1,13 @@
-import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
+import { DisplayComponent, FSComponent, HEvent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 // TODO true ref
-export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument: BaseInstrument }> {
+export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
     private lsButtonPressedVisibility = false;
 
     private xtkValid = Subject.create(false);
@@ -106,7 +107,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
     }
 }
 
-class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
+class LandingSystemInfo extends DisplayComponent<{ bus: ArincEventBus }> {
     private hasDme = false;
 
     private identText = Subject.create('');
@@ -119,7 +120,9 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
     private dme = 0;
 
-    private rmpTuned = false;
+    private fm1NavDiscrete = Arinc429Register.empty();
+
+    private dmeAvailable = false;
 
     private dmeVisibilitySub = Subject.create('hidden');
 
@@ -161,8 +164,11 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
             this.updateContents();
         });
 
-        sub.on('ilsRMPTuned').whenChanged().handle((rmpTuned) => {
-            this.rmpTuned = rmpTuned;
+        // FIXME major hack: when the FM is not tuning the VORs and MMRs, the DME receiver is not tuned (goes into standby)
+        // Since we use the sim radios at the moment we can't tell that... instead we look at the FM tuning state
+        sub.on('fm1NavDiscrete').whenChanged().handle((fm1NavDiscrete) => {
+            this.fm1NavDiscrete.set(fm1NavDiscrete);
+            this.dmeAvailable = this.fm1NavDiscrete.isNormalOperation();
             this.updateContents();
         });
     }
@@ -178,7 +184,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
         let distLeading = '';
         let distTrailing = '';
-        if (this.hasDme && !this.rmpTuned) {
+        if (this.hasDme && this.dmeAvailable) {
             this.dmeVisibilitySub.set('display: inline');
             const dist = Math.round(this.dme * 10) / 10;
 
@@ -215,7 +221,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
     }
 }
 
-class LocalizerIndicator extends DisplayComponent<{bus: EventBus, instrument: BaseInstrument}> {
+class LocalizerIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {
     private lagFilter = new LagFilter(1.5);
 
     private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -286,7 +292,7 @@ class LocalizerIndicator extends DisplayComponent<{bus: EventBus, instrument: Ba
     }
 }
 
-class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: BaseInstrument}> {
+class GlideSlopeIndicator extends DisplayComponent<{bus: ArincEventBus, instrument: BaseInstrument}> {
     private lagFilter = new LagFilter(1.5);
 
     private upperDiamond = FSComponent.createRef<SVGPathElement>();
@@ -363,7 +369,7 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: B
     }
 }
 
-class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
+class VDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private VDevSymbolLower = FSComponent.createRef<SVGPathElement>();
 
     private VDevSymbolUpper = FSComponent.createRef<SVGPathElement>();
@@ -409,7 +415,7 @@ class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class LDevIndicator extends DisplayComponent<{bus: EventBus}> {
+class LDevIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private LDevSymbolLeft = FSComponent.createRef<SVGPathElement>();
 
     private LDevSymbolRight = FSComponent.createRef<SVGPathElement>();
@@ -458,7 +464,7 @@ class LDevIndicator extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
+class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private classNames = Subject.create('HiddenElement');
 
     private markerText = Subject.create('');

@@ -1,7 +1,6 @@
 build*.js
 buildSrc/*
 igniter.config.mjs
-fbw-common/msfs-avionics-mirror/*
 fbw-a32nx/src/base/flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/math.js
 fbw-a32nx/src/systems/fmgc/src/flightplanning/DirectTo.ts
 fbw-a32nx/src/systems/fmgc/src/flightplanning/FixNamingScheme.ts

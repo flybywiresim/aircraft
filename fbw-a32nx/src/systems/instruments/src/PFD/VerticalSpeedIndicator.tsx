@@ -1,11 +1,12 @@
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface VerticalSpeedIndicatorProps {
-    bus: EventBus,
+    bus: ArincEventBus,
     instrument: BaseInstrument,
     filteredRadioAltitude: Subscribable<number>,
 }
@@ -50,7 +51,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         sub.on('tcasState').whenChanged().handle((s) => {
             this.tcasState.tcasState = s;
@@ -218,7 +219,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
     }
 }
 
-class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable<number>, textColour: Subscribable<string> }> {
+class VSpeedText extends DisplayComponent<{ bus: ArincEventBus, yOffset: Subscribable<number>, textColour: Subscribable<string> }> {
     private vsTextRef = FSComponent.createRef<SVGTextElement>();
 
     private groupRef = FSComponent.createRef<SVGGElement>();
@@ -265,7 +266,7 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
 }
 
 interface VSpeedTcasProps extends ComponentProps {
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 class VSpeedTcas extends DisplayComponent<VSpeedTcasProps> {
     private tcasGroup = FSComponent.createRef<SVGGElement>();

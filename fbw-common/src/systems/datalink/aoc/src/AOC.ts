@@ -9,7 +9,7 @@ import {
     AtisType,
     AtsuTimestamp,
 } from '@datalink/common';
-import { EventBus } from 'msfssdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
 

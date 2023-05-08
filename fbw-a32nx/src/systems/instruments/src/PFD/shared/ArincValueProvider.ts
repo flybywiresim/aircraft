@@ -1,7 +1,8 @@
-import { EventBus, Publisher } from 'msfssdk';
+import { Publisher } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from './PFDSimvarPublisher';
+import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
 
 export interface Arinc429Values {
     pitchAr: Arinc429Word;
@@ -43,6 +44,8 @@ export interface Arinc429Values {
     irMaintWord: Arinc429Word;
     trueHeading: Arinc429Word;
     trueTrack: Arinc429Word;
+    mdaAr: Arinc429Word;
+    dhAr: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -99,7 +102,7 @@ export class ArincValueProvider {
 
     private facToUse = 0;
 
-    constructor(private readonly bus: EventBus) {
+    constructor(private readonly bus: ArincEventBus) {
 
     }
 
@@ -478,6 +481,14 @@ export class ArincValueProvider {
 
         subscriber.on('trueTrackRaw').handle((word) => {
             publisher.pub('trueTrack', new Arinc429Word(word));
+        });
+
+        subscriber.on('mda').handle((word) => {
+            publisher.pub('mdaAr', new Arinc429Word(word));
+        });
+
+        subscriber.on('dh').handle((word) => {
+            publisher.pub('dhAr', new Arinc429Word(word));
         });
     }
 

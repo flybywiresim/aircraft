@@ -1,13 +1,14 @@
+import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from '@microsoft/msfs-sdk';
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
-import { EventBus, DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from 'msfssdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface HorizontalTapeProps {
     displayRange: number;
     valueSpacing: number;
     distanceSpacing: number;
     type: 'horizon' | 'headingTape'
-    bus: EventBus;
+    bus: ArincEventBus;
     yOffset?: Subscribable<number>;
 }
 export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {

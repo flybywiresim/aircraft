@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NXDataStore } from '@shared/persistence';
+import { getSupplier } from '@instruments/common/utils';
+
 import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
 
 import './common.scss';
-import './pixels.scss';
 
 type DisplayUnitProps = {
     electricitySimvar: string
     potentiometerIndex: number
+    normDmc: number
     failed?: boolean
 }
 
@@ -16,14 +18,9 @@ enum DisplayUnitState {
     On,
     Off,
     Selftest,
-    Standby
-}
-
-function BacklightBleed(props) {
-    if (props.homeCockpit) {
-        return null;
-    }
-    return <div className="BacklightBleed" />;
+    Standby,
+    MaintenanceMode,
+    EngineeringTest
 }
 
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
@@ -31,9 +28,27 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const timer = useRef<number | null>(null);
 
+    const [dmcSwitching] = useSimVar('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum', 200);
+    const supplyingDmc = getSupplier(props.normDmc, dmcSwitching);
+    // TODO: Fix and reenable
+    /*
+    const [dmcDisplayTestMode] = useSimVar(`L:A32NX_DMC_DISPLAYTEST:${supplyingDmc}`, 'enum');
+    useEffect(() => {
+        switch (dmcDisplayTestMode) {
+        case 1:
+            setState(DisplayUnitState.MaintenanceMode);
+            break;
+        case 2:
+            setState(DisplayUnitState.EngineeringTest);
+            break;
+        default:
+            setState(DisplayUnitState.On);
+        }
+    }, [dmcDisplayTestMode]);
+    */
+
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
-    const [homeCockpit] = useSimVar('L:A32NX_HOME_COCKPIT_ENABLED', 'bool', 200);
 
     useUpdate((deltaTime) => {
         if (timer.current !== null) {
@@ -75,7 +90,6 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     if (state === DisplayUnitState.Selftest) {
         return (
             <>
-                <BacklightBleed homeCockpit={homeCockpit} />
                 <svg className="SelfTest" viewBox="0 0 600 600">
                     <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
@@ -96,6 +110,29 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                 </svg>
             </>
         );
+    } if (state === DisplayUnitState.MaintenanceMode) {
+        return (
+            <svg className="MaintenanceMode" viewBox="0 0 600 600">
+                <text
+                    className="SelfTestText"
+                    x="50%"
+                    y="50%"
+                >
+                    MAINTENANCE MODE
+                </text>
+            </svg>
+        );
+    } if (state === DisplayUnitState.EngineeringTest) {
+        return (
+            <svg className="EngineeringTestMode" viewBox="0 0 600 600">
+                <text x={9} y={250}>P/N : C19755BA01</text>
+                <text x={10} y={270}>{`S/N : C197551733${supplyingDmc}`}</text>
+                <text x={10} y={344}>EIS SW</text>
+                <text x={10} y={366}>P/N : C1975517332</text>
+                <text textAnchor="end" x="90%" y={250}>THALES AVIONICS</text>
+                <text textAnchor="end" x="98%" y={366}>LCDU 725</text>
+            </svg>
+        );
     } if (state === DisplayUnitState.Off) {
         return (
             <></>
@@ -104,7 +141,6 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     return (
         <>
-            <BacklightBleed homeCockpit={homeCockpit} />
             <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
         </>
     );
