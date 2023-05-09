@@ -160,7 +160,7 @@ impl A380WingLiftModifier {
 
     // Ratio of the total lift on each wing section.
     // Sum shall be 1.
-    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.32, 0.24, 0.02];
+    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.40, 0.12, 0.06];
 
     // GAIN to determine how much a surface spoils lift when deployed. 0.3 means a fully deployed surface reduce lift by 30%
     const GLOBAL_SURFACES_SPOIL_GAIN: f64 = 0.3;
@@ -333,6 +333,18 @@ impl A380WingLiftModifier {
         //     self.lift_right_table_newton[3],
         //     self.lift_right_table_newton[4],
         // );
+
+        println!(
+            "LEFT/RIGHT WING LIFT SPRED PERCENT {:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}",
+            left_lift_factor_normalized[4],
+            left_lift_factor_normalized[3],
+            left_lift_factor_normalized[2],
+            left_lift_factor_normalized[1],
+            right_lift_factor_normalized[1],
+            right_lift_factor_normalized[2],
+            right_lift_factor_normalized[3],
+            right_lift_factor_normalized[4],
+        );
     }
 
     fn lateral_offset(&self) -> Ratio {
@@ -1038,7 +1050,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
             wing_dev_damping_3_id: context.get_identifier("WING_FLEX_DEV_DAMPING_3".to_owned()),
             wing_dev_damping_4_id: context.get_identifier("WING_FLEX_DEV_DAMPING_4".to_owned()),
             neg_flex_coeff_id: context.get_identifier("WING_FLEX_DEV_NEG_STIFF_COEFF".to_owned()),
-            exponent_flex_id: context.get_identifier("WING_FLEX_STIFF_EXPO_ENA".to_owned()),
+            exponent_flex_id: context.get_identifier("WING_FLEX_DEV_STIFF_EXPO_ENA".to_owned()),
         }
     }
 
@@ -1908,7 +1920,6 @@ mod tests {
         assert!(test_bed.current_total_lift().get::<newton>() / 9.8 < 1000.);
         assert!(test_bed.current_total_lift().get::<newton>() / 9.8 > -1000.);
     }
-
 
     #[test]
     fn with_some_lift_on_ground_rotation() {
