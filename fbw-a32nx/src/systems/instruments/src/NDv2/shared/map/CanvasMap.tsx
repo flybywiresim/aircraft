@@ -19,6 +19,12 @@ import { PseudoWaypointLayer } from './PseudoWaypointLayer';
 
 const ARC_CLIP = new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312');
 
+const ROSE_CLIP = new Path2D('M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155');
+
+const PLAN_CLIP = new Path2D('M45,112 L140 112 280 56 488 56 628 112 723 112 723 720 114 720 114 633 45 633z');
+
+const DEFAULT_CLIP = new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312');
+
 const DASHES = [15, 12];
 const NO_DASHES = [];
 
@@ -277,9 +283,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.trafficLayer.data = this.traffic; // Populate with new traffic
     }
 
-    private handleFrame(deltaTime: number) {
-        // console.log(`center: lat=${this.props.mapCenterLat.get()}, long=${this.props.mapCenterLong.get()}`);
-
+    private handleFrame(_deltaTime: number) {
         const canvas = this.canvasRef.instance;
         const context = canvas.getContext('2d');
 
@@ -294,13 +298,13 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         case EfisNdMode.ROSE_NAV:
         case EfisNdMode.ROSE_ILS:
         case EfisNdMode.ROSE_VOR:
-            context.clip(new Path2D('M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155'));
+            context.clip(ROSE_CLIP);
             break;
         case EfisNdMode.PLAN:
-            context.clip(new Path2D('M45,112 L140 112 280 56 488 56 628 112 723 112 723 720 114 720 114 633 45 633z'));
+            context.clip(PLAN_CLIP);
             break;
         default:
-            context.clip(new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312'));
+            context.clip(DEFAULT_CLIP);
             break;
         }
         context.resetTransform();

@@ -66,7 +66,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private readonly trueRefActive = Subject.create(false);
 
-    private readonly mapRangeRadius = Subject.create(0);
+    private readonly mapRangeRadius = Subject.create<EfisNdRangeValue>(10);
 
     private readonly roseLSPage = FSComponent.createRef<RoseLSPage>();
 
@@ -237,7 +237,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
+                        rangeValue={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'L' ? 2 : 1}
                     />
@@ -248,7 +248,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
+                        rangeValue={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                         index={this.props.side === 'R' ? 2 : 1}
                     />
@@ -259,7 +259,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueHeadingWord={this.trueHeadingWord}
                         trackWord={this.trackWord}
                         trueTrackWord={this.trueTrackWord}
-                        rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
+                        rangeValue={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
                     <ArcModePage

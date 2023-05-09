@@ -56,12 +56,12 @@ export class DmcPublisher extends SimVarPublisher<DmcDiscreteInputEvents> {
         this.trueHeading.sub(this.handleHeading.bind(this));
         this.trueTrack.sub(this.handleHeading.bind(this));
 
-        sub.on('irMaintWordRaw').whenChanged().handle((v) => this.irMaintWord.setWord(v));
+        sub.on('irMaintWordRaw').handle((v) => this.irMaintWord.setWord(v));
         sub.on('trueRefPushButton').whenChanged().handle((v) => this.trueRefPb.set(v));
-        sub.on('magHeadingRaw').whenChanged().handle((v) => this.magHeading.setWord(v));
-        sub.on('magTrackRaw').whenChanged().handle((v) => this.magTrack.setWord(v));
-        sub.on('trueHeadingRaw').whenChanged().handle((v) => this.trueHeading.setWord(v));
-        sub.on('trueTrackRaw').whenChanged().handle((v) => this.trueTrack.setWord(v));
+        sub.on('magHeadingRaw').handle((v) => this.magHeading.setWord(v));
+        sub.on('magTrackRaw').handle((v) => this.magTrack.setWord(v));
+        sub.on('trueHeadingRaw').handle((v) => this.trueHeading.setWord(v));
+        sub.on('trueTrackRaw').handle((v) => this.trueTrack.setWord(v));
     }
 
     private handleTrueRef(): void {
