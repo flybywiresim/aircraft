@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuTimestamp, FlightPlanMessage, NotamMessage } from '@datalink/common';
+import { AtsuTimestamp, FlightPlanMessage, NotamMessage, FlightPerformanceMessage, FlightFuelMessage, FlightWeightsMessage } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
 
 const SimbriefUrl = 'https://www.simbrief.com/api/xml.fetcher.php?json=1&userid=';
@@ -159,6 +159,7 @@ interface IWeights {
     freight_added: string,
     cargo: string,
     payload: string,
+    est_zfw: string,
 }
 
 interface INotamRecord {
@@ -177,6 +178,36 @@ interface INotams {
     notamdrec: INotamRecord[],
 }
 
+interface IPerformanceImpact {
+    time_enroute: string,
+    time_difference: string,
+    enroute_burn: string,
+    burn_difference: string,
+    ramp_fuel: string,
+    cost_index: string,
+}
+
+interface IImpact {
+    minus_6000ft?: IPerformanceImpact,
+    minus_4000ft?: IPerformanceImpact,
+    minus_2000ft?: IPerformanceImpact,
+    plus_2000ft?: IPerformanceImpact,
+    plus_4000ft?: IPerformanceImpact,
+    plus_6000ft?: IPerformanceImpact,
+    higher_ci?: IPerformanceImpact,
+    lower_ci?: IPerformanceImpact,
+    zfw_plus_1000?: IPerformanceImpact,
+    zfw_minus_1000?: IPerformanceImpact,
+}
+
+interface ICrew {
+    cpt: string,
+    fo: string,
+    dx: string,
+    pu: string,
+    fa: string[],
+}
+
 interface ISimbriefData {
     general: IGeneral,
     origin: IAirport,
@@ -187,12 +218,16 @@ interface ISimbriefData {
     fuel: IFuel,
     times: ITimes,
     weights: IWeights,
+    impacts: IImpact,
+    crew: ICrew,
     notams: INotams
 }
 /* eslint-enable camelcase */
 
 export class SimbriefConnector {
-    private static receiveData(): Promise<[string, ISimbriefData]> {
+    private static ofpData: ISimbriefData = null;
+
+    private static async receiveData(): Promise<[string, ISimbriefData]> {
         const simBriefUserId = NXDataStore.get('CONFIG_SIMBRIEF_USERID', '');
 
         if (simBriefUserId) {
@@ -212,8 +247,9 @@ export class SimbriefConnector {
         throw new Error('No SimBrief pilot ID provided');
     }
 
-    public static receiveFlightplan(): Promise<FlightPlanMessage> {
+    public static async receiveFlightplan(): Promise<FlightPlanMessage> {
         return SimbriefConnector.receiveData().then(([data, ofp]) => {
+            SimbriefConnector.ofpData = ofp;
             const message = new FlightPlanMessage(data);
 
             /* extract the airport data */
@@ -314,22 +350,89 @@ export class SimbriefConnector {
         return converted;
     }
 
-    public static receiveNotams(): Promise<NotamMessage[]> {
-        return SimbriefConnector.receiveData().then(([_data, ofp]) => {
-            const notams: NotamMessage[] = [];
+    public static async receiveNotams(): Promise<NotamMessage[]> {
+        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
 
-            ofp.origin.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
-            ofp.destination.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
-            ofp.alternate.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
+        const notams: NotamMessage[] = [];
 
-            ofp.notams.notamdrec.forEach((notam) => {
-                const index = notams.findIndex((message) => message.Identifier === notam.notam_id);
-                if (index === -1) {
-                    notams.push(SimbriefConnector.convertNotamRecord(notam));
-                }
-            });
+        SimbriefConnector.ofpData.origin.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
+        SimbriefConnector.ofpData.destination.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
+        SimbriefConnector.ofpData.alternate.notam.forEach((notam) => notams.push(SimbriefConnector.convertAirportNotam(notam)));
 
-            return notams;
+        SimbriefConnector.ofpData.notams.notamdrec.forEach((notam) => {
+            const index = notams.findIndex((message) => message.Identifier === notam.notam_id);
+            if (index === -1) {
+                notams.push(SimbriefConnector.convertNotamRecord(notam));
+            }
         });
+
+        return notams;
+    }
+
+    public static async receivePerformance(): Promise<FlightPerformanceMessage> {
+        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
+
+        const performance = new FlightPerformanceMessage();
+
+        performance.CruiseLevel = parseInt(SimbriefConnector.ofpData.general.initial_altitude);
+        performance.PlannedCostIndex = parseInt(SimbriefConnector.ofpData.general.constindex);
+        performance.TropopauseAltitude = parseInt(SimbriefConnector.ofpData.general.avg_tropopause);
+        if (SimbriefConnector.ofpData.impacts.minus_6000ft) {
+            performance.CostIndexMinus6000Feet = parseInt(SimbriefConnector.ofpData.impacts.minus_6000ft.cost_index);
+        }
+        if (SimbriefConnector.ofpData.impacts.minus_4000ft) {
+            performance.CostIndexMinus4000Feet = parseInt(SimbriefConnector.ofpData.impacts.minus_4000ft.cost_index);
+        }
+        if (SimbriefConnector.ofpData.impacts.minus_2000ft) {
+            performance.CostIndexMinus2000Feet = parseInt(SimbriefConnector.ofpData.impacts.minus_2000ft.cost_index);
+        }
+        if (SimbriefConnector.ofpData.impacts.zfw_minus_1000) {
+            performance.CostIndexZfwMinus1000 = parseInt(SimbriefConnector.ofpData.impacts.zfw_minus_1000.cost_index);
+        }
+        if (SimbriefConnector.ofpData.impacts.zfw_plus_1000) {
+            performance.CostIndexZfwPlus1000 = parseInt(SimbriefConnector.ofpData.impacts.zfw_plus_1000.cost_index);
+        }
+
+        return performance;
+    }
+
+    public static async receiveFuel(): Promise<FlightFuelMessage> {
+        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
+
+        const fuel = new FlightFuelMessage();
+
+        fuel.PlannedRamp = parseInt(SimbriefConnector.ofpData.fuel.plan_ramp);
+        fuel.PlannedTakeoff = parseInt(SimbriefConnector.ofpData.fuel.plan_takeoff);
+        fuel.PlannedLanding = parseInt(SimbriefConnector.ofpData.fuel.plan_landing);
+        fuel.Taxi = parseInt(SimbriefConnector.ofpData.fuel.taxi);
+        fuel.Contingency = parseInt(SimbriefConnector.ofpData.fuel.contingency);
+        fuel.Enroute = parseInt(SimbriefConnector.ofpData.fuel.enroute_burn);
+        fuel.Alternate = parseInt(SimbriefConnector.ofpData.fuel.alternate_burn);
+        fuel.Extra = parseInt(SimbriefConnector.ofpData.fuel.extra);
+        fuel.MinimumTakeoff = parseInt(SimbriefConnector.ofpData.fuel.min_takeoff);
+
+        return fuel;
+    }
+
+    public static async receiveWeights(): Promise<FlightWeightsMessage> {
+        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
+
+        const weights = new FlightWeightsMessage();
+
+        weights.CockpitCrewCount = 1;
+        if (SimbriefConnector.ofpData.crew.fo !== '') weights.CockpitCrewCount += 1;
+        if (SimbriefConnector.ofpData.crew.dx !== '') weights.CockpitCrewCount += 1;
+        if (SimbriefConnector.ofpData.crew.pu !== '') weights.CockpitCrewCount += 1;
+
+        weights.FlightAttendantCount = SimbriefConnector.ofpData.crew.fa.length;
+        weights.PaxCount = parseInt(SimbriefConnector.ofpData.weights.pax_count);
+        weights.PaxWeight = parseInt(SimbriefConnector.ofpData.weights.pax_weight);
+        weights.BagCount = parseInt(SimbriefConnector.ofpData.weights.bag_count);
+        weights.BagWeight = parseInt(SimbriefConnector.ofpData.weights.bag_weight);
+        weights.Cargo = parseInt(SimbriefConnector.ofpData.weights.cargo);
+        weights.Payload = parseInt(SimbriefConnector.ofpData.weights.payload);
+        weights.EstimatedZeroFuelWeight = parseInt(SimbriefConnector.ofpData.weights.est_zfw);
+
+        return weights;
     }
 }
