@@ -36,6 +36,11 @@ export class Aoc {
         this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedRouter);
 
         this.digitalInputs.addDataCallback('sendFreetextMessage', (message) => this.sendMessage(message));
+        this.digitalInputs.addDataCallback('requestFlightplan', (sentCallback) => this.receiveOfpData('routerRequestFlightplan', sentCallback));
+        this.digitalInputs.addDataCallback('requestNotams', (sentCallback) => this.receiveOfpData('routerRequestNotams', sentCallback));
+        this.digitalInputs.addDataCallback('requestPerformance', (sentCallback) => this.receiveOfpData('routerRequestPerformance', sentCallback));
+        this.digitalInputs.addDataCallback('requestFuel', (sentCallback) => this.receiveOfpData('routerRequestFuel', sentCallback));
+        this.digitalInputs.addDataCallback('requestWeights', (sentCallback) => this.receiveOfpData('routerRequestWeights', sentCallback));
         this.digitalInputs.addDataCallback('requestAtis', (icao, type, sentCallback) => this.receiveAtis(icao, type, sentCallback));
         this.digitalInputs.addDataCallback('requestWeather', (icaos, requestMetar, sentCallback) => this.receiveWeather(requestMetar, icaos, sentCallback));
         this.digitalInputs.addDataCallback('registerMessages', (messages) => this.insertMessages(messages));
@@ -103,6 +108,14 @@ export class Aoc {
                 this.digitalOutputs.deleteMessage(uid);
             }
         }
+    }
+
+    private async receiveOfpData(
+        requestName: 'routerRequestFlightplan' | 'routerRequestNotams' | 'routerRequestPerformance' | 'routerRequestFuel' | 'routerRequestWeights',
+        sentCallback: () => void,
+    ): Promise<[AtsuStatusCodes, any]> {
+        if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
+        return this.digitalOutputs.receiveOfpData(requestName, sentCallback);
     }
 
     private async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {

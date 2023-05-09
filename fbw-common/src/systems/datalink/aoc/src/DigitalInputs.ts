@@ -8,8 +8,13 @@ import {
     AtsuStatusCodes,
     Clock,
     ClockDataBusTypes,
+    FlightFuelMessage,
+    FlightPerformanceMessage,
+    FlightPlanMessage,
+    FlightWeightsMessage,
     FreetextMessage,
     FwcDataBusTypes,
+    NotamMessage,
     WeatherMessage,
 } from '@datalink/common';
 import { RouterAtcAocMessages } from '@datalink/router';
@@ -22,6 +27,11 @@ export type AocDigitalInputCallbacks = {
     sendFreetextMessage: (message: FreetextMessage) => Promise<AtsuStatusCodes>;
     requestAtis: (icao: string, type: AtisType, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
     requestWeather: (icaos: string[], requestMetar: boolean, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
+    requestFlightplan: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightPlanMessage]>;
+    requestNotams: (sentRequest: () => void) => Promise<[AtsuStatusCodes, NotamMessage[]]>;
+    requestPerformance: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightPerformanceMessage]>;
+    requestFuel: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightFuelMessage]>;
+    requestWeights: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightWeightsMessage]>;
     registerMessages: (messages: AtsuMessage[]) => void;
     messageRead: (messageId: number) => void;
     removeMessage: (messageId: number) => void;
@@ -34,6 +44,11 @@ export class DigitalInputs {
         sendFreetextMessage: null,
         requestAtis: null,
         requestWeather: null,
+        requestFlightplan: null,
+        requestNotams: null,
+        requestPerformance: null,
+        requestFuel: null,
+        requestWeights: null,
         registerMessages: null,
         messageRead: null,
         removeMessage: null,
@@ -56,6 +71,18 @@ export class DigitalInputs {
 
     constructor(private readonly bus: EventBus) {
         this.resetData();
+    }
+
+    private requestOfpData(
+        publisherName: 'aocReceivedFlightPlan' | 'aocReceivedNotams' | 'aocReceivedPerformance' | 'aocReceivedFuel' | 'aocReceivedWeights',
+        requestId: number,
+        callback: (sentRequest: () => void) => Promise<[AtsuStatusCodes, any]>,
+    ): void {
+        if (callback !== null) {
+            callback(() => this.publisher.pub('aocRequestSentToGround', requestId, true, false)).then((response) => {
+                this.publisher.pub(publisherName, { requestId, data: response }, true, false);
+            });
+        }
     }
 
     public initialize(): void {
@@ -102,6 +129,21 @@ export class DigitalInputs {
                     this.publisher.pub('aocTransmissionResponse', { requestId: data.requestId, status }, true, false);
                 });
             }
+        });
+        this.subscriber.on('aocRequestFlightPlan').handle((requestId) => {
+            this.requestOfpData('aocReceivedFlightPlan', requestId, this.callbacks.requestFlightplan);
+        });
+        this.subscriber.on('aocRequestNotams').handle((requestId) => {
+            this.requestOfpData('aocReceivedNotams', requestId, this.callbacks.requestNotams);
+        });
+        this.subscriber.on('aocRequestPerformance').handle((requestId) => {
+            this.requestOfpData('aocReceivedPerformance', requestId, this.callbacks.requestPerformance);
+        });
+        this.subscriber.on('aocRequestFuel').handle((requestId) => {
+            this.requestOfpData('aocReceivedFuel', requestId, this.callbacks.requestFuel);
+        });
+        this.subscriber.on('aocRequestWeights').handle((requestId) => {
+            this.requestOfpData('aocReceivedWeights', requestId, this.callbacks.requestWeights);
         });
         this.subscriber.on('aocRequestAtis').handle((data) => {
             if (this.callbacks.requestAtis !== null) {

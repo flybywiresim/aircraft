@@ -9,6 +9,9 @@ import {
     WeatherMessage,
     FlightPlanMessage,
     NotamMessage,
+    FlightPerformanceMessage,
+    FlightFuelMessage,
+    FlightWeightsMessage,
 } from '@datalink/common';
 
 export interface AocDatalinkMessages {
@@ -20,8 +23,11 @@ export interface AocDatalinkMessages {
     aocSystemStatus: AtsuStatusCodes;
     aocTransmissionResponse: { requestId: number; status: AtsuStatusCodes };
 
-    aocReceivedFlightPlan: FlightPlanMessage;
-    aocReceivedNotams: NotamMessage[];
+    aocReceivedFlightPlan: { requestId: number; data: FlightPlanMessage };
+    aocReceivedNotams: { requestId: number; data: NotamMessage[] };
+    aocReceivedPerformance: { requestId: number; data: FlightPerformanceMessage };
+    aocReceivedFuel: { requestId: number; data: FlightFuelMessage };
+    aocReceivedWeights: { requestId: number; data: FlightWeightsMessage };
     aocResynchronizeWeatherMessage: WeatherMessage;
     aocResynchronizeFreetextMessage: FreetextMessage;
 
@@ -36,7 +42,9 @@ export interface DatalinkAocMessages {
     aocRequestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
     aocRequestFlightPlan: number;
     aocRequestNotams: number;
-    aocRequestFlightOperationsData: number;
+    aocRequestPerformance: number;
+    aocRequestFuel: number;
+    aocRequestWeights: number;
 
     aocRegisterWeatherMessages: WeatherMessage[];
     aocRegisterFreetextMessages: FreetextMessage[];
