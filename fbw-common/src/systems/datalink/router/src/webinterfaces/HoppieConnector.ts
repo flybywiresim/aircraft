@@ -288,8 +288,6 @@ export class HoppieConnector {
             }
         }
 
-        // TODO add some more heuristic about messages
-
         // create a deep-copy of the message
         const retval: CpdlcMessageElement = CpdlcMessagesUplink[matches[0]][1].deepCopy();
         let elements = message.split(' ');
