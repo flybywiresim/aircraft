@@ -9,13 +9,15 @@ import {
     AtsuMessage,
     AtsuMessageNetwork,
     AtsuMessageType,
-    AtisMessage,
     MetarMessage,
     TafMessage,
     WeatherMessage,
     FreetextMessage,
     FlightPlanMessage,
     NotamMessage,
+    FlightPerformanceMessage,
+    FlightFuelMessage,
+    FlightWeightsMessage,
 } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -96,6 +98,14 @@ export class Router {
         }
     }
 
+    private async handleRequest<Type extends AtsuMessage>(dataReceiver: () => Promise<Type>, sentCallback: () => void): Promise<[AtsuStatusCodes, Type]> {
+        if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
+            return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
+        }
+
+        return dataReceiver().then((message) => this.simulateResponse(message, sentCallback).then(() => [AtsuStatusCodes.Ok, message]));
+    }
+
     constructor(private readonly bus: EventBus, synchronizedAtc: boolean, synchronizedAoc: boolean) {
         HoppieConnector.activateHoppie();
 
@@ -109,14 +119,10 @@ export class Router {
         this.digitalInputs.addDataCallback('sendCpdlcMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendDclMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendOclMessage', (message, force) => this.sendMessage(message, force));
-        this.digitalInputs.addDataCallback('requestFlightPlan', (requestSent): Promise<[AtsuStatusCodes, FlightPlanMessage]> => {
-            if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-                return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
-            }
-
-            return SimbriefConnector.receiveFlightplan()
-                .then((message) => this.simulateResponse(message, requestSent).then(() => [AtsuStatusCodes.Ok, message]));
-        });
+        this.digitalInputs.addDataCallback(
+            'requestFlightPlan',
+            (requestSent): Promise<[AtsuStatusCodes, FlightPlanMessage]> => this.handleRequest(SimbriefConnector.receiveFlightplan, requestSent),
+        );
         this.digitalInputs.addDataCallback('requestNotams', (requestSent): Promise<[AtsuStatusCodes, NotamMessage[]]> => {
             if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
                 return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
@@ -137,15 +143,18 @@ export class Router {
                         .then((messages) => [AtsuStatusCodes.Ok, messages]);
                 });
         });
-        this.digitalInputs.addDataCallback('requestAtis', async (icao, type, requestSent): Promise<[AtsuStatusCodes, WeatherMessage]> => {
-            if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-                return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
-            }
-
-            const message = new AtisMessage();
-            return NXApiConnector.receiveAtis(icao, type, message)
-                .then(() => this.simulateResponse(message, requestSent).then(() => [AtsuStatusCodes.Ok, message]));
-        });
+        this.digitalInputs.addDataCallback(
+            'requestPerformance',
+            (requestSent): Promise<[AtsuStatusCodes, FlightPerformanceMessage]> => this.handleRequest(SimbriefConnector.receivePerformance, requestSent),
+        );
+        this.digitalInputs.addDataCallback(
+            'requestFuel',
+            (requestSent): Promise<[AtsuStatusCodes, FlightFuelMessage]> => this.handleRequest(SimbriefConnector.receiveFuel, requestSent),
+        );
+        this.digitalInputs.addDataCallback(
+            'requestWeights',
+            (requestSent): Promise<[AtsuStatusCodes, FlightWeightsMessage]> => this.handleRequest(SimbriefConnector.receiveWeights, requestSent),
+        );
         this.digitalInputs.addDataCallback('requestWeather', async (icaos, metar, requestSent) => this.receiveWeather(metar, icaos, requestSent));
     }
 

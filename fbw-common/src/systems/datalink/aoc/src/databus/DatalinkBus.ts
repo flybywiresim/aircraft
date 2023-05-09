@@ -7,6 +7,8 @@ import {
     AtsuMessage,
     FreetextMessage,
     WeatherMessage,
+    FlightPlanMessage,
+    NotamMessage,
 } from '@datalink/common';
 
 export interface AocDatalinkMessages {
@@ -18,6 +20,8 @@ export interface AocDatalinkMessages {
     aocSystemStatus: AtsuStatusCodes;
     aocTransmissionResponse: { requestId: number; status: AtsuStatusCodes };
 
+    aocReceivedFlightPlan: FlightPlanMessage;
+    aocReceivedNotams: NotamMessage[];
     aocResynchronizeWeatherMessage: WeatherMessage;
     aocResynchronizeFreetextMessage: FreetextMessage;
 
@@ -30,6 +34,9 @@ export interface DatalinkAocMessages {
 
     aocRequestAtis: { icao: string; type: AtisType; requestId: number };
     aocRequestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
+    aocRequestFlightPlan: number;
+    aocRequestNotams: number;
+    aocRequestFlightOperationsData: number;
 
     aocRegisterWeatherMessages: WeatherMessage[];
     aocRegisterFreetextMessages: FreetextMessage[];
