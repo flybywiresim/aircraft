@@ -414,7 +414,7 @@ impl WingLift {
     fn update(&mut self, context: &UpdateContext) {
         let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
-        let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
+        //let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
         let cur_weight_kg = context.total_weight().get::<kilogram>();
 
@@ -422,56 +422,38 @@ impl WingLift {
         let lift_1g = 9.8 * cur_weight_kg;
         let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
 
-        // let aoa = context.aoa();
-        // let lift_coef = crate::shared::interpolation(
-        //     &Self::DEFAULT_LIFT_ANGLE_MAP_DEGREES,
-        //     &Self::DEFAULT_LIFT_COEFF_MAP,
-        //     aoa.get::<degree>(),
-        // );
-
-        // let lift_from_aoa = 0.5
-        //     * context
-        //         .ambient_air_density()
-        //         .get::<kilogram_per_cubic_meter>()
-        //     * -context.local_relative_wind().to_ms_vector()[2]
-        //     * 840.
-        //     * lift_coef
-        //     * 150.; //magic coeff
-
         let lift = if total_weight_on_wheels.get::<kilogram>() > 500. {
-            // Assuming no lift at low wind speed and low AoA avoids glitches with ground when braking hard for a full stop
-            if context.true_airspeed().get::<knot>().abs() < 35.
-            // || context.aoa().get::<degree>() < 0.
-            {
-                println!(
-                    "-------GROUNDMODE LOW SPEED/AOA PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
-                    cur_weight_kg / 1000.,
-                    lift_1g /9.8 / 1000.,
-                    lift_wow/9.8 / 1000.,
-                    0.,
-                );
+            // Assuming no lift at low wind speed avoids glitches with ground when braking hard for a full stop
+            if context.true_airspeed().get::<knot>().abs() < 35. {
+                // println!(
+                //     "-------GROUNDMODE LOW SPEED/AOA PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+                //     cur_weight_kg / 1000.,
+                //     lift_1g /9.8 / 1000.,
+                //     lift_wow/9.8 / 1000.,
+                //     0.,
+                // );
                 0.
             } else {
-                println!(
-                    "++++++GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} ",
-                    cur_weight_kg / 1000.,
-                    lift_1g /9.8 / 1000.,
-                    lift_wow/9.8 / 1000.,
-                    ((lift_1g + lift_wow) /9.8 / 1000.).max(0.),
+                // println!(
+                //     "++++++GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} ",
+                //     cur_weight_kg / 1000.,
+                //     lift_1g /9.8 / 1000.,
+                //     lift_wow/9.8 / 1000.,
+                //     ((lift_1g + lift_wow) /9.8 / 1000.).max(0.),
 
-                );
+                // );
                 //println!("LIFT FROM WOOOOOW MODE");
                 (lift_1g + lift_wow).max(0.)
             }
         } else {
-            println!(
-                "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
-                cur_weight_kg / 1000.,
-                accel_y,
-                lift_1g /9.8 / 1000.,
-                lift_delta_from_accel_n/9.8 / 1000.,
-                (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
-            );
+            // println!(
+            //     "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
+            //     cur_weight_kg / 1000.,
+            //     accel_y,
+            //     lift_1g /9.8 / 1000.,
+            //     lift_delta_from_accel_n/9.8 / 1000.,
+            //     (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
+            // );
             // println!("FLIGHT  LIFT MODE");
             lift_1g + lift_delta_from_accel_n
         };
