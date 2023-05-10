@@ -228,7 +228,16 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.runwayLayer.data = runways;
 
-        const pseudoWaypoints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.PwpDecel);
+        const pseudoWaypoints = this.symbols.filter((it) => it.type & (NdSymbolTypeFlags.PwpStartOfClimb
+            | NdSymbolTypeFlags.PwpClimbLevelOff
+            | NdSymbolTypeFlags.PwpTopOfDescent
+            | NdSymbolTypeFlags.PwpDescentLevelOff
+            | NdSymbolTypeFlags.PwpInterceptProfile
+            | NdSymbolTypeFlags.PwpCdaFlap1
+            | NdSymbolTypeFlags.PwpCdaFlap2
+            | NdSymbolTypeFlags.PwpDecel
+            | NdSymbolTypeFlags.PwpTimeMarker
+            | NdSymbolTypeFlags.PwpSpeedChange));
 
         this.pwpLayer.data = pseudoWaypoints;
     }
