@@ -27,7 +27,7 @@ export interface AtcDatalinkMessages {
 
     // responses from ATSU to FMS for requests
     atcGenericRequestResponse: number;
-    atcRequestAtsuStatusCode: { requestId: number; code: AtsuStatusCodes };
+    atcRequestAtsuStatusCode: { requestId: number; status: AtsuStatusCodes };
     atcPositionReport: { requestId: number; data: PositionReportData };
 
     // requests from ATSU to FMS
