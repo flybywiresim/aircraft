@@ -238,7 +238,7 @@ export class SimbriefConnector {
                     }
 
                     const message = await response.text();
-                    const json = await response.json() as ISimbriefData;
+                    const json = JSON.parse(message);
 
                     return [message, json];
                 });
@@ -293,7 +293,7 @@ export class SimbriefConnector {
                         message.RouteChunks.push({ instruction: 'airwayTermination', ident: lastFix.ident });
                     }
                     message.RouteChunks.push({ instruction: 'airway', ident: fix.via_airway, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
-                } else if (ofp.navlog.fix[i + 1] && ofp.navlog[i + 1].via_airway !== fix.via_airway) {
+                } else if (ofp.navlog.fix[i + 1] && ofp.navlog.fix[i + 1].via_airway !== fix.via_airway) {
                     message.RouteChunks.push({ instruction: 'airwayTermination', ident: fix.ident });
                 }
             }
