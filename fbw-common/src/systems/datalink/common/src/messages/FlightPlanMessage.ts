@@ -72,6 +72,10 @@ export type FlightPlanRouteChunk =
 export class FlightPlanMessage extends AtsuMessage {
     private rawMessage: string = '';
 
+    public Flightnumber: string = '';
+
+    public Callsign: string = '';
+
     public Origin: { icao: string, runway: string } = { icao: '', runway: '' };
 
     public Destination: { icao: string, runway: string } = { icao: '', runway: '' };
@@ -79,6 +83,8 @@ export class FlightPlanMessage extends AtsuMessage {
     public Alternate: { icao: string, runway: string } = { icao: '', runway: '' };
 
     public RouteChunks: FlightPlanRouteChunk[] = [];
+
+    public EstimatedTimeEnroute: number = 0;
 
     constructor(rawMessage: string) {
         super();

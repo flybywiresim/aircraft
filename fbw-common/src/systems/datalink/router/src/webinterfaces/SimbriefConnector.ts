@@ -121,7 +121,6 @@ interface IFuel {
     alternate_burn: string,
     reserve: string,
     etops: string,
-    atc: IAtc,
     extra: string,
     min_takeoff: string,
     plan_takeoff: string,
@@ -215,6 +214,7 @@ interface ISimbriefData {
     alternate: IAirport,
     navlog: INavigationLog,
     etops?: IEtops,
+    atc: IAtc,
     fuel: IFuel,
     times: ITimes,
     weights: IWeights,
@@ -251,6 +251,9 @@ export class SimbriefConnector {
         return SimbriefConnector.receiveData().then(([data, ofp]) => {
             SimbriefConnector.ofpData = ofp;
             const message = new FlightPlanMessage(data);
+            message.Flightnumber = ofp.general.icao_airline + ofp.general.flight_number;
+            message.Callsign = ofp.atc.callsign;
+            message.EstimatedTimeEnroute = parseInt(ofp.times.est_time_enroute);
 
             /* extract the airport data */
             message.Origin.icao = ofp.origin.icao_code;
