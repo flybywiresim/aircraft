@@ -83,9 +83,9 @@ impl LandingGearCompression {
 
     fn weight_on_wheel(&self, wheel_id: GearStrutId) -> Mass {
         match wheel_id {
-            GearStrutId::Nose => {
-                Mass::new::<kilogram>(1.45 * self.center_compression.get::<percent>().powf(2.4))
-            }
+            GearStrutId::Nose => Mass::new::<kilogram>(
+                2.22966 * self.center_compression.get::<percent>().powf(2.2953179884),
+            ),
             GearStrutId::LeftWing => {
                 Mass::new::<kilogram>(5.5 * self.left_wing_compression.get::<percent>().powf(2.6))
             }
@@ -160,10 +160,10 @@ impl A380WingLiftModifier {
 
     // Ratio of the total lift on each wing section.
     // Sum shall be 1.
-    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.40, 0.12, 0.06];
+    const NOMINAL_WING_LIFT_SPREAD_RATIOS: [f64; 5] = [0., 0.42, 0.40, 0.15, 0.03];
 
     // GAIN to determine how much a surface spoils lift when deployed. 0.3 means a fully deployed surface reduce lift by 30%
-    const GLOBAL_SURFACES_SPOIL_GAIN: f64 = 0.3;
+    const GLOBAL_SURFACES_SPOIL_GAIN: f64 = 0.5;
 
     fn new(context: &mut InitContext) -> Self {
         assert!(Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS).sum() == 1.);
@@ -670,8 +670,8 @@ pub struct WingFlexA380 {
 }
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
-        [20000000., 17000000., 4000000., 200000.];
-    const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 600000., 100000., 1000.];
+        [22000000., 7000000., 3500000., 600000.];
+    const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 300000., 120000., 9000.];
 
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 20000., 5000., 400.];
 
@@ -1014,7 +1014,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
                 springness[idx],
                 damping[idx],
                 false,
-                Some(1.15),
+                Some(1.4),
             ));
         }
 
