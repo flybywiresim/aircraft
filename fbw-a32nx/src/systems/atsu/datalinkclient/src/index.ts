@@ -25,6 +25,7 @@ import {
     DatalinkCommunicationSystems,
     FlightFuelMessage,
     FlightWeightsMessage,
+    FlightPlanMessage,
 } from '@datalink/common';
 import { DatalinkRouterMessages, RouterDatalinkMessages } from '@datalink/router';
 import { FlightPhaseManager } from '@fmgc/flightphase';
@@ -226,6 +227,11 @@ export class DatalinkClient {
                 return id === requestId;
             });
         });
+    }
+
+    public async receiveFlightPlan(sentCallback: () => void): Promise<[AtsuStatusCodes, FlightPlanMessage]> {
+        const requestId = this.requestId++;
+        return this.requestData('aocRequestFlightPlan', sentCallback, requestId, requestId);
     }
 
     public async receiveFlightFuelPlan(sentCallback: () => void): Promise<[AtsuStatusCodes, FlightFuelMessage]> {
