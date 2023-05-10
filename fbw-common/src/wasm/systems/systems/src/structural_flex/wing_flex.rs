@@ -414,7 +414,7 @@ impl WingLift {
     fn update(&mut self, context: &UpdateContext) {
         let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
-        //let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
+        let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
         let cur_weight_kg = context.total_weight().get::<kilogram>();
 
@@ -438,43 +438,40 @@ impl WingLift {
         //     * lift_coef
         //     * 150.; //magic coeff
 
-        let lift = if total_weight_on_wheels.get::<kilogram>() > 5000. {
+        let lift = if total_weight_on_wheels.get::<kilogram>() > 500. {
             // Assuming no lift at low wind speed and low AoA avoids glitches with ground when braking hard for a full stop
-            if context.true_airspeed().get::<knot>().abs() < 25.
-                || context.aoa().get::<degree>() < 0.
+            if context.true_airspeed().get::<knot>().abs() < 35.
+            // || context.aoa().get::<degree>() < 0.
             {
-                // println!(
-                //     "GROUNDMODE LOW SPEED/AOA PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} CONDS: aoa {:.2} airspeed {:.2}",
-                //     cur_weight_kg / 1000.,
-                //     lift_1g /9.8 / 1000.,
-                //     lift_wow/9.8 / 1000.,
-                //     0.,
-                //     context.aoa().get::<degree>(),
-                //     context.true_airspeed().get::<knot>()
-                // );
+                println!(
+                    "-------GROUNDMODE LOW SPEED/AOA PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
+                    cur_weight_kg / 1000.,
+                    lift_1g /9.8 / 1000.,
+                    lift_wow/9.8 / 1000.,
+                    0.,
+                );
                 0.
             } else {
-                // println!(
-                //     "GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} CONDS: aoa {:.2} airspeed {:.2}",
-                //     cur_weight_kg / 1000.,
-                //     lift_1g /9.8 / 1000.,
-                //     lift_wow/9.8 / 1000.,
-                //     ((lift_1g + lift_wow) /9.8 / 1000.).max(0.),
-                //     context.aoa().get::<degree>(),
-                //     context.true_airspeed().get::<knot>()
-                // );
+                println!(
+                    "++++++GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} ",
+                    cur_weight_kg / 1000.,
+                    lift_1g /9.8 / 1000.,
+                    lift_wow/9.8 / 1000.,
+                    ((lift_1g + lift_wow) /9.8 / 1000.).max(0.),
+
+                );
                 //println!("LIFT FROM WOOOOOW MODE");
                 (lift_1g + lift_wow).max(0.)
             }
         } else {
-            // println!(
-            //     "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
-            //     cur_weight_kg / 1000.,
-            //     accel_y,
-            //     lift_1g /9.8 / 1000.,
-            //     lift_delta_from_accel_n/9.8 / 1000.,
-            //     (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
-            // );
+            println!(
+                "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
+                cur_weight_kg / 1000.,
+                accel_y,
+                lift_1g /9.8 / 1000.,
+                lift_delta_from_accel_n/9.8 / 1000.,
+                (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
+            );
             // println!("FLIGHT  LIFT MODE");
             lift_1g + lift_delta_from_accel_n
         };
@@ -676,7 +673,7 @@ impl WingFlexA380 {
         [20000000., 17000000., 4000000., 200000.];
     const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 600000., 100000., 1000.];
 
-    const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 20000., 5000., 800.];
+    const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 20000., 5000., 400.];
 
     const FUEL_MAPPING: [usize; FUEL_TANKS_NUMBER] = [1, 1, 2, 2, 3];
 
@@ -764,6 +761,7 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.left_tanks_masses()),
+            true,
         );
 
         self.flex_physics[1].update(
@@ -773,6 +771,7 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
+            false,
         );
 
         // println!(
@@ -975,6 +974,7 @@ impl WingSectionNode {
 
 struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     updater_max_step: MaxStepLoop,
+    dev_updater_max_step: MaxStepLoop,
 
     nodes: [WingSectionNode; NODE_NUMBER],
     flex_constraints: [FlexibleConstraint; LINK_NUMBER],
@@ -1020,6 +1020,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
 
         Self {
             updater_max_step: MaxStepLoop::new(Self::MIN_PHYSICS_SOLVER_TIME_STEP),
+            dev_updater_max_step: MaxStepLoop::new(Duration::from_millis(5)),
 
             nodes: nodes_array
                 .try_into()
@@ -1059,10 +1060,16 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         context: &UpdateContext,
         lift_forces: &[f64],
         fuel_masses: [Mass; NODE_NUMBER],
+        is_left: bool,
     ) {
         self.updater_max_step.update(context);
+        self.dev_updater_max_step.update(context);
 
-        for cur_time_step in &mut self.updater_max_step {
+        for cur_time_step in if is_left {
+            &mut self.dev_updater_max_step
+        } else {
+            &mut self.updater_max_step
+        } {
             for idx in 0..LINK_NUMBER {
                 self.nodes[idx].set_fuel_mass(fuel_masses[idx]);
                 self.nodes[idx].apply_force(Force::new::<newton>(lift_forces[idx]));

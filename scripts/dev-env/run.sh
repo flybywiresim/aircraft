@@ -1,6 +1,7 @@
 #!/bin/bash
 
-IMAGE="ghcr.io/flybywiresim/dev-env@sha256:52415c40545b88c820f61f5d0ce77178599288c3bc60adae57acc5435d19d98c"
+#IMAGE="ghcr.io/flybywiresim/dev-env@sha256:52415c40545b88c820f61f5d0ce77178599288c3bc60adae57acc5435d19d98c"
+IMAGE="docker.io/saschl/fbw-test:latest"
 
 # only set `-it` if there is a tty
 if [ -t 0 ] && [ -t 1 ];
@@ -13,12 +14,12 @@ export MSYS_NO_PATHCONV=1
 
 docker image inspect $IMAGE 1> /dev/null || docker system prune --filter label=flybywiresim=true -f
 
-ARCH='uname -m'
-if [ "$ARCH" == 'arm64' ]; then
-    PLATFORM='--platform=linux/amd64'
-else
+# ARCH='uname -m'
+# if [ "$ARCH" == 'arm64' ]; then
+#     PLATFORM='--platform=linux/amd64'
+# else
     PLATFORM=' '
-fi
+# fi
 
 docker run \
     --rm $TTY_PARAM \
