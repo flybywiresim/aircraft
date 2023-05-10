@@ -23,6 +23,8 @@ import {
     FlightStateData,
     PositionReportData,
     DatalinkCommunicationSystems,
+    FlightFuelMessage,
+    FlightWeightsMessage,
 } from '@datalink/common';
 import { DatalinkRouterMessages, RouterDatalinkMessages } from '@datalink/router';
 import { FlightPhaseManager } from '@fmgc/flightphase';
@@ -52,7 +54,7 @@ export class DatalinkClient {
 
     private requestSentToGroundCallbacks: ((requestId: number) => boolean)[] = [];
 
-    private weatherResponseCallbacks: ((response: [AtsuStatusCodes, WeatherMessage], requestId: number) => boolean)[] = [];
+    private statusDataResponseCallbacks: ((response: [AtsuStatusCodes, any], requestId: number) => boolean)[] = [];
 
     private positionReportDataCallbacks: ((response: PositionReportData, requestId: number) => boolean)[] = [];
 
@@ -82,6 +84,36 @@ export class DatalinkClient {
         vhf: DatalinkModeCode.None,
         satellite: DatalinkModeCode.None,
         hf: DatalinkModeCode.None,
+    }
+
+    private processRequestId(callbacks: ((number) => boolean)[], response: number): void {
+        callbacks.every((callback, index) => {
+            if (callback(response)) {
+                callbacks.splice(index, 1);
+                return false;
+            }
+            return true;
+        });
+    }
+
+    private processStatus(callbacks: ((AtsuStatusCodes, number) => boolean)[], data: { requestId: number; status: AtsuStatusCodes }): void {
+        callbacks.every((callback, index) => {
+            if (callback(data.status, data.requestId)) {
+                callbacks.splice(index, 1);
+                return false;
+            }
+            return true;
+        });
+    }
+
+    private processResponse<Type>(callbacks: ((AtsuStatusCodes, number) => boolean)[], response: { requestId: number; data: Type }): void {
+        callbacks.every((callback, index) => {
+            if (callback(response.data, response.requestId)) {
+                callbacks.splice(index, 1);
+                return false;
+            }
+            return true;
+        });
     }
 
     constructor(fms: any, flightPlanManager: FlightPlanManager, flightPhaseManager: FlightPhaseManager) {
@@ -133,73 +165,17 @@ export class DatalinkClient {
         this.subscriber.on('atcStationStatus').handle((status) => this.atcStationStatus = status);
         this.subscriber.on('atcMaxUplinkDelay').handle((delay) => this.maxUplinkDelay = delay);
         this.subscriber.on('atcAutomaticPositionReportActive').handle((active) => this.automaticPositionReportIsActive = active);
-        this.subscriber.on('routerManagementResponse').handle((data) => {
-            this.routerResponseCallbacks.every((callback, index) => {
-                if (callback(data.status, data.requestId)) {
-                    this.routerResponseCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
+        this.subscriber.on('routerManagementResponse').handle((data) => this.processStatus(this.routerResponseCallbacks, data));
         this.subscriber.on('routerDatalinkStatus').handle((data) => this.datalinkStatus = data);
         this.subscriber.on('routerDatalinkMode').handle((data) => this.datalinkMode = data);
 
         // register the response handlers
-        this.subscriber.on('atcGenericRequestResponse').handle((response) => {
-            this.genericRequestResponseCallbacks.every((callback, index) => {
-                if (callback(response)) {
-                    this.genericRequestResponseCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
-        this.subscriber.on('atcRequestAtsuStatusCode').handle((response) => {
-            this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
-                if (callback(response.code, response.requestId)) {
-                    this.requestAtsuStatusCodeCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
-        this.subscriber.on('aocTransmissionResponse').handle((response) => {
-            this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
-                if (callback(response.status, response.requestId)) {
-                    this.requestAtsuStatusCodeCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
-        this.subscriber.on('aocRequestSentToGround').handle((response) => {
-            this.requestSentToGroundCallbacks.every((callback, index) => {
-                if (callback(response)) {
-                    this.requestSentToGroundCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
-        this.subscriber.on('aocWeatherResponse').handle((response) => {
-            this.weatherResponseCallbacks.every((callback, index) => {
-                if (callback(response.data, response.requestId)) {
-                    this.weatherResponseCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
-        this.subscriber.on('atcPositionReport').handle((response) => {
-            this.positionReportDataCallbacks.every((callback, index) => {
-                if (callback(response.data, response.requestId)) {
-                    this.positionReportDataCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
+        this.subscriber.on('atcGenericRequestResponse').handle((response) => this.processRequestId(this.genericRequestResponseCallbacks, response));
+        this.subscriber.on('atcRequestAtsuStatusCode').handle((response) => this.processStatus(this.requestAtsuStatusCodeCallbacks, response));
+        this.subscriber.on('aocTransmissionResponse').handle((response) => this.processStatus(this.requestAtsuStatusCodeCallbacks, response));
+        this.subscriber.on('aocRequestSentToGround').handle((response) => this.processRequestId(this.requestSentToGroundCallbacks, response));
+        this.subscriber.on('aocWeatherResponse').handle((response) => this.processResponse(this.statusDataResponseCallbacks, response));
+        this.subscriber.on('atcPositionReport').handle((response) => this.processResponse(this.positionReportDataCallbacks, response));
     }
 
     public maxUplinkDelay: number = -1;
@@ -230,48 +206,51 @@ export class DatalinkClient {
         this.publisher.pub(aocMessage ? 'aocRemoveMessage' : 'atcRemoveMessage', uid, true, false);
     }
 
-    public async receiveAocAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
-        return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
-            const requestId = this.requestId++;
-            this.publisher.pub('aocRequestAtis', { icao: airport, type, requestId }, true, false);
+    private async requestData<Type>(
+        requestName: keyof DatalinkAocMessages | keyof DatalinkAtcMessages,
+        sentCallback: () => void,
+        requestId: number,
+        data: any,
+    ): Promise<Type> {
+        return new Promise<Type>((resolve, _reject) => {
+            this.publisher.pub(requestName, data, true, false);
 
-            this.requestSentToGroundCallbacks.push((id: number) => {
-                if (id === requestId) sentCallback();
-                return id === requestId;
-            });
-            this.weatherResponseCallbacks.push((response: [AtsuStatusCodes, WeatherMessage], id: number) => {
+            if (sentCallback !== null) {
+                this.requestSentToGroundCallbacks.push((id: number) => {
+                    if (id === requestId) sentCallback();
+                    return id === requestId;
+                });
+            }
+            this.requestAtsuStatusCodeCallbacks.push((response: any, id: number) => {
                 if (id === requestId) resolve(response);
                 return id === requestId;
             });
         });
+    }
+
+    public async receiveFlightFuelPlan(sentCallback: () => void): Promise<[AtsuStatusCodes, FlightFuelMessage]> {
+        const requestId = this.requestId++;
+        return this.requestData('aocRequestFuel', sentCallback, requestId, requestId);
+    }
+
+    public async receiveFlightWeightsPlan(sentCallback: () => void): Promise<[AtsuStatusCodes, FlightWeightsMessage]> {
+        const requestId = this.requestId++;
+        return this.requestData('aocRequestWeights', sentCallback, requestId, requestId);
+    }
+
+    public async receiveAocAtis(airport: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        const requestId = this.requestId++;
+        return this.requestData('aocRequestAtis', sentCallback, requestId, { icao: airport, type, requestId });
     }
 
     public async receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
-        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
-            const requestId = this.requestId++;
-            this.publisher.pub('atcRequestAtis', { icao: airport, type, requestId }, true, false);
-
-            this.requestAtsuStatusCodeCallbacks.push((response: AtsuStatusCodes, id: number) => {
-                if (id === requestId) resolve(response);
-                return id === requestId;
-            });
-        });
+        const requestId = this.requestId++;
+        return this.requestData('atcRequestAtis', null, requestId, { icao: airport, type, requestId });
     }
 
     public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
-        return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
-            const requestId = this.requestId++;
-            this.publisher.pub('aocRequestWeather', { icaos, requestMetar, requestId }, true, false);
-
-            this.requestSentToGroundCallbacks.push((id: number) => {
-                if (id === requestId) sentCallback();
-                return id === requestId;
-            });
-            this.weatherResponseCallbacks.push((response: [AtsuStatusCodes, WeatherMessage], id: number) => {
-                if (id === requestId) resolve(response);
-                return id === requestId;
-            });
-        });
+        const requestId = this.requestId++;
+        return this.requestData('aocRequestWeather', sentCallback, requestId, { icaos, requestMetar, requestId });
     }
 
     public registerMessages(messages: AtsuMessage[]): void {
