@@ -234,14 +234,15 @@ export class SimbriefConnector {
             return fetch(`${SimbriefUrl}&userid=${simBriefUserId}`)
                 .then(async (response) => {
                     if (!response.ok) {
-                        throw new Error(`Simbrief API error: ${response.status}`);
+                        return null;
                     }
 
                     return response.json();
-                });
+                })
+                .catch((_err) => null);
         }
 
-        throw new Error('No SimBrief pilot ID provided');
+        return null;
     }
 
     public static async receiveFlightplan(): Promise<FlightPlanMessage> {
