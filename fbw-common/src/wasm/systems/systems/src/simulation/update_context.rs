@@ -1,13 +1,16 @@
 use std::time::Duration;
-use uom::si::{
-    acceleration::meter_per_second_squared,
-    angle::radian,
-    f64::*,
-    mass::kilogram,
-    mass_density::kilogram_per_cubic_meter,
-    pressure::inch_of_mercury,
-    time::second,
-    velocity::{foot_per_minute, foot_per_second, meter_per_second},
+use uom::{
+    impl_from,
+    si::{
+        acceleration::meter_per_second_squared,
+        angle::radian,
+        f64::*,
+        mass::kilogram,
+        mass_density::kilogram_per_cubic_meter,
+        pressure::inch_of_mercury,
+        time::second,
+        velocity::{foot_per_minute, foot_per_second, meter_per_second},
+    },
 };
 
 use super::{Read, SimulatorReader};
@@ -47,6 +50,65 @@ impl Attitude {
 
     fn bank(&self) -> Angle {
         self.bank
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum SurfaceTypeMsfs {
+    Concrete = 0,
+    Grass = 1,
+    Water = 2,
+    Grass_bumpy = 3,
+    Asphalt = 4,
+    Short_grass = 5,
+    Long_grass = 6,
+    Hard_turf = 7,
+    Snow = 8,
+    Ice = 9,
+    Urban = 10,
+    Forest = 11,
+    Dirt = 12,
+    Coral = 13,
+    Gravel = 14,
+    Oil_treated = 15,
+    Steel_mats = 16,
+    Bituminus = 17,
+    Brick = 18,
+    Macadam = 19,
+    Planks = 20,
+    Sand = 21,
+    Shale = 22,
+    Tarmac = 23,
+}
+impl From<f64> for SurfaceTypeMsfs {
+    fn from(value: f64) -> Self {
+        match value {
+            0. => SurfaceTypeMsfs::Concrete,
+            1. => SurfaceTypeMsfs::Grass,
+            2. => SurfaceTypeMsfs::Water,
+            3. => SurfaceTypeMsfs::Grass_bumpy,
+            4. => SurfaceTypeMsfs::Asphalt,
+            5. => SurfaceTypeMsfs::Short_grass,
+            6. => SurfaceTypeMsfs::Long_grass,
+            7. => SurfaceTypeMsfs::Hard_turf,
+            8. => SurfaceTypeMsfs::Snow,
+            9. => SurfaceTypeMsfs::Ice,
+            10. => SurfaceTypeMsfs::Urban,
+            11. => SurfaceTypeMsfs::Forest,
+            12. => SurfaceTypeMsfs::Dirt,
+            13. => SurfaceTypeMsfs::Coral,
+            14. => SurfaceTypeMsfs::Gravel,
+            15. => SurfaceTypeMsfs::Oil_treated,
+            16. => SurfaceTypeMsfs::Steel_mats,
+            17. => SurfaceTypeMsfs::Bituminus,
+            18. => SurfaceTypeMsfs::Brick,
+            19. => SurfaceTypeMsfs::Macadam,
+            20. => SurfaceTypeMsfs::Planks,
+            21. => SurfaceTypeMsfs::Sand,
+            22. => SurfaceTypeMsfs::Shale,
+            23. => SurfaceTypeMsfs::Tarmac,
+            i => panic!("Cannot convert from {} to SurfaceTypeMsfs.", i),
+        }
     }
 }
 
@@ -166,6 +228,7 @@ pub struct UpdateContext {
     total_weight_id: VariableIdentifier,
     total_yaw_inertia_id: VariableIdentifier,
     aoa_id: VariableIdentifier,
+    surface_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -197,6 +260,8 @@ pub struct UpdateContext {
 
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
+
+    surface: SurfaceTypeMsfs,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -227,6 +292,7 @@ impl UpdateContext {
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
     pub(crate) const AOA_KEY: &'static str = "INCIDENCE ALPHA";
+    pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -289,6 +355,7 @@ impl UpdateContext {
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
             aoa_id: context.get_identifier(Self::AOA_KEY.to_owned()),
+            surface_id: context.get_identifier(Self::SURFACE_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -337,6 +404,7 @@ impl UpdateContext {
             aoa: Angle::default(),
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 10.,
+            surface: SurfaceTypeMsfs::Asphalt,
         }
     }
 
@@ -370,6 +438,7 @@ impl UpdateContext {
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
             aoa_id: context.get_identifier("INCIDENCE ALPHA".to_owned()),
+            surface_id: context.get_identifier("SURFACE TYPE".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -414,6 +483,7 @@ impl UpdateContext {
             aoa: Angle::default(),
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 1.,
+            surface: SurfaceTypeMsfs::Asphalt,
         }
     }
 
@@ -477,6 +547,9 @@ impl UpdateContext {
         self.total_weight = reader.read(&self.total_weight_id);
 
         self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
+
+        let surface_read: f64 = reader.read(&self.surface_id);
+        self.surface = surface_read.into();
 
         self.update_relative_wind();
 
@@ -611,6 +684,10 @@ impl UpdateContext {
 
     pub fn vert_accel(&self) -> Acceleration {
         self.local_acceleration.vert_accel()
+    }
+
+    pub fn surface_type(&self) -> SurfaceTypeMsfs {
+        self.surface
     }
 
     pub fn local_acceleration_without_gravity(&self) -> Vector3<f64> {

@@ -226,6 +226,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PUSHBACK ANGLE", "Radians", 0)?
     .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
     .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
+    .provides_aircraft_variable("SURFACE TYPE", "Enum", 0)?
     .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?
