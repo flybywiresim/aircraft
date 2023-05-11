@@ -227,7 +227,7 @@ interface ISimbriefData {
 export class SimbriefConnector {
     private static ofpData: ISimbriefData = null;
 
-    private static async receiveData(): Promise<[string, ISimbriefData]> {
+    private static async receiveData(): Promise<ISimbriefData> {
         const simBriefUserId = NXDataStore.get('CONFIG_SIMBRIEF_USERID', '');
 
         if (simBriefUserId) {
@@ -237,10 +237,7 @@ export class SimbriefConnector {
                         throw new Error(`Simbrief API error: ${response.status}`);
                     }
 
-                    const message = await response.text();
-                    const json = JSON.parse(message);
-
-                    return [message, json];
+                    return response.json();
                 });
         }
 
@@ -248,9 +245,9 @@ export class SimbriefConnector {
     }
 
     public static async receiveFlightplan(): Promise<FlightPlanMessage> {
-        return SimbriefConnector.receiveData().then(([data, ofp]) => {
+        return SimbriefConnector.receiveData().then((ofp) => {
             SimbriefConnector.ofpData = ofp;
-            const message = new FlightPlanMessage(data);
+            const message = new FlightPlanMessage();
             message.Flightnumber = ofp.general.icao_airline + ofp.general.flight_number;
             message.Callsign = ofp.atc.callsign;
             message.EstimatedTimeEnroute = parseInt(ofp.times.est_time_enroute);
@@ -354,7 +351,9 @@ export class SimbriefConnector {
     }
 
     public static async receiveNotams(): Promise<NotamMessage[]> {
-        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
+        if (SimbriefConnector.ofpData === null) {
+            SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+        }
 
         const notams: NotamMessage[] = [];
 
@@ -373,7 +372,9 @@ export class SimbriefConnector {
     }
 
     public static async receivePerformance(): Promise<FlightPerformanceMessage> {
-        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
+        if (SimbriefConnector.ofpData === null) {
+            SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+        }
 
         const performance = new FlightPerformanceMessage();
 
@@ -400,7 +401,9 @@ export class SimbriefConnector {
     }
 
     public static async receiveFuel(): Promise<FlightFuelMessage> {
-        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
+        if (SimbriefConnector.ofpData === null) {
+            SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+        }
 
         const fuel = new FlightFuelMessage();
 
@@ -418,7 +421,9 @@ export class SimbriefConnector {
     }
 
     public static async receiveWeights(): Promise<FlightWeightsMessage> {
-        if (SimbriefConnector.ofpData === null) await SimbriefConnector.receiveData();
+        if (SimbriefConnector.ofpData === null) {
+            SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+        }
 
         const weights = new FlightWeightsMessage();
 
