@@ -297,7 +297,7 @@ export class Router {
                     this.removeTransmissionTimeout(timeout);
 
                     // simulate the response transmission
-                    const responseTimeout = this.vdl.enqueueInboundMessage(data[1]);
+                    const responseTimeout = this.vdl.enqueueInboundMessage(data);
                     timeout = setTimeout(() => {
                         this.vdl.dequeueInboundMessage(responseTimeout);
                         this.removeTransmissionTimeout(timeout);
