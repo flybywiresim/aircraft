@@ -26,6 +26,14 @@ export class FlightWeightsMessage extends AtsuMessage {
     }
 
     public serialize(_format: AtsuMessageSerializationFormat): string {
-        return '';
+        return `PILOTS:${this.CockpitCrewCount}\n`
+            + `FLIGHTATTENDANTS:${this.FlightAttendantCount}\n`
+            + `PAX:${this.PaxCount}\n`
+            + `PAXEIGHT:${this.PaxCount}\n`
+            + `BAGS:${this.PaxCount}\n`
+            + `BAGWEIGHT:${this.PaxCount}\n`
+            + `CARGO:${this.PaxCount}\n`
+            + `PAYLOAD:${this.PaxCount}\n`
+            + `EST-ZFW:${this.PaxCount}`;
     }
 }

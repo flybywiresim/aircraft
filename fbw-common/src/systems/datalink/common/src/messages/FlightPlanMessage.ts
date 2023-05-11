@@ -70,8 +70,6 @@ export type FlightPlanRouteChunk =
     | IFlightPlanStarEnrouteTransitionChunk;
 
 export class FlightPlanMessage extends AtsuMessage {
-    private rawMessage: string = '';
-
     public Flightnumber: string = '';
 
     public Callsign: string = '';
@@ -86,14 +84,25 @@ export class FlightPlanMessage extends AtsuMessage {
 
     public EstimatedTimeEnroute: number = 0;
 
-    constructor(rawMessage: string) {
+    constructor() {
         super();
         this.Type = AtsuMessageType.FlightPlan;
         this.Station = 'AOC';
-        this.rawMessage = rawMessage;
     }
 
     public serialize(_format: AtsuMessageSerializationFormat): string {
-        return this.rawMessage;
+        let message = `FLTNO:${this.Flightnumber}\n`
+            + `C/S:${this.Callsign}\n`
+            + `ORIG:${this.Origin.icao}/${this.Origin.runway}\n`
+            + `DEST:${this.Destination.icao}/${this.Destination.runway}\n`
+            + `ALTN:${this.Alternate.icao}/${this.Alternate.runway}\n`
+            + `ETE:${this.EstimatedTimeEnroute}\n`
+            + 'RTE:\n';
+
+        this.RouteChunks.forEach((chunk) => {
+            message += `${chunk}\n`;
+        });
+
+        return message;
     }
 }

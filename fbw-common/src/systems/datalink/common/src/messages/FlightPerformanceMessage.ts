@@ -24,6 +24,13 @@ export class FlightPerformanceMessage extends AtsuMessage {
     }
 
     public serialize(_format: AtsuMessageSerializationFormat): string {
-        return '';
+        return `FL:${this.CruiseLevel}\n`
+            + `CI:${this.PlannedCostIndex}\n`
+            + `CI-6000FT:${this.CostIndexMinus6000Feet}\n`
+            + `CI-4000FT:${this.CostIndexMinus6000Feet}\n`
+            + `CI-2000FT:${this.CostIndexMinus6000Feet}\n`
+            + `CI_ZFW-1000:${this.CostIndexZfwMinus1000}\n`
+            + `CI_ZFW+1000:${this.CostIndexZfwMinus1000}\n`
+            + `TROPO:${this.TropopauseAltitude}`;
     }
 }
