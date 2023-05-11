@@ -26,6 +26,14 @@ export class FlightFuelMessage extends AtsuMessage {
     }
 
     public serialize(_format: AtsuMessageSerializationFormat): string {
-        return '';
+        return `PLAN-RAMP:${this.PlannedRamp}\n`
+            + `PLAN-TO:${this.PlannedTakeoff}\n`
+            + `PLAN-LAND:${this.PlannedLanding}\n`
+            + `TAXI:${this.Taxi}\n`
+            + `CONT:${this.Contingency}\n`
+            + `ENROUTE:${this.Enroute}\n`
+            + `ALTN:${this.Alternate}\n`
+            + `EXTRA:${this.Extra}\n`
+            + `MIN-TO:${this.MinimumTakeoff}`;
     }
 }
