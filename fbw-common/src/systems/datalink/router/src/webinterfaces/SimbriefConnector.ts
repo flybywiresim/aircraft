@@ -248,6 +248,8 @@ export class SimbriefConnector {
     public static async receiveFlightplan(): Promise<FlightPlanMessage> {
         return SimbriefConnector.receiveData().then((ofp) => {
             SimbriefConnector.ofpData = ofp;
+            if (SimbriefConnector.ofpData === null) return null;
+
             const message = new FlightPlanMessage();
             message.Flightnumber = ofp.general.icao_airline + ofp.general.flight_number;
             message.Callsign = ofp.atc.callsign;
@@ -354,6 +356,9 @@ export class SimbriefConnector {
     public static async receiveNotams(): Promise<NotamMessage[]> {
         if (SimbriefConnector.ofpData === null) {
             SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+
+            // check if something is wrong with the Simbrief ID or no flight plan exists
+            if (SimbriefConnector.ofpData === null) return null;
         }
 
         const notams: NotamMessage[] = [];
@@ -375,6 +380,9 @@ export class SimbriefConnector {
     public static async receivePerformance(): Promise<FlightPerformanceMessage> {
         if (SimbriefConnector.ofpData === null) {
             SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+
+            // check if something is wrong with the Simbrief ID or no flight plan exists
+            if (SimbriefConnector.ofpData === null) return null;
         }
 
         const performance = new FlightPerformanceMessage();
@@ -404,6 +412,9 @@ export class SimbriefConnector {
     public static async receiveFuel(): Promise<FlightFuelMessage> {
         if (SimbriefConnector.ofpData === null) {
             SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+
+            // check if something is wrong with the Simbrief ID or no flight plan exists
+            if (SimbriefConnector.ofpData === null) return null;
         }
 
         const fuel = new FlightFuelMessage();
@@ -424,6 +435,9 @@ export class SimbriefConnector {
     public static async receiveWeights(): Promise<FlightWeightsMessage> {
         if (SimbriefConnector.ofpData === null) {
             SimbriefConnector.ofpData = await SimbriefConnector.receiveData();
+
+            // check if something is wrong with the Simbrief ID or no flight plan exists
+            if (SimbriefConnector.ofpData === null) return null;
         }
 
         const weights = new FlightWeightsMessage();
