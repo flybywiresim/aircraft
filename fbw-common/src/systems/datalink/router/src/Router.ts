@@ -103,7 +103,10 @@ export class Router {
             return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
         }
 
-        return dataReceiver().then((message) => this.simulateResponse(message, sentCallback).then(() => [AtsuStatusCodes.Ok, message]));
+        return dataReceiver().then((message) => {
+            if (message === null) return [AtsuStatusCodes.ComFailed, null];
+            return this.simulateResponse(message, sentCallback).then(() => [AtsuStatusCodes.Ok, message]);
+        });
     }
 
     constructor(private readonly bus: EventBus, synchronizedAtc: boolean, synchronizedAoc: boolean) {
