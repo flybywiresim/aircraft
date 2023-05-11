@@ -16,5 +16,6 @@ export * from './FreetextMessage';
 export * from './MetarMessage';
 export * from './NotamMessage';
 export * from './OclMessage';
+export * from './OutOffOnInMessage';
 export * from './TafMessage';
 export * from './WeatherMessage';

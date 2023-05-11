@@ -23,11 +23,12 @@ export enum AtsuMessageType {
     OperationsPerformance = 6,
     OperationsFuel = 7,
     OperationsWeights = 8,
-    AOC = 9,
-    CPDLC = 10,
-    DCL = 11,
-    OCL = 12,
-    ATC = 13
+    OOOI = 9,
+    AOC = 10,
+    CPDLC = 20,
+    DCL = 21,
+    OCL = 22,
+    ATC = 33
 }
 
 export enum AtsuMessageComStatus {
