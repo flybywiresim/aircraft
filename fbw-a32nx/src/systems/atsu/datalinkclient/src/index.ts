@@ -225,7 +225,7 @@ export class DatalinkClient {
                 if (id === requestId) sentCallback();
                 return id === requestId;
             });
-            this.statusDataResponseCallbacks.push((response: any, id: number) => {
+            this.statusDataResponseCallbacks.push((response: [AtsuStatusCodes, Type], id: number) => {
                 if (id === requestId) resolve(response);
                 return id === requestId;
             });
