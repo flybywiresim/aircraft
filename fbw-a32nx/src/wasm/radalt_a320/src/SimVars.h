@@ -33,26 +33,40 @@ public:
 	/// <summary>
 	/// Collection of LVars for the A32NX
 	/// </summary>
+	ENUM PlaneAltitudeAGL = get_aircraft_var_enum("PLANE ALT ABOVE GROUND");
+
 	ID DevVar;
-	ID RadAlt;
+	ID RadAlt1;
+	ID RadAlt2;
+	ID AcBus1;
+	ID AcBus2;
 
 	SimVars() { this->initializeVars(); }
 
 	void initializeVars() {
 		DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
-		RadAlt = register_named_variable("A32NX_RA_RAW");
+		RadAlt1 = register_named_variable("A32NX_RA_1_RAW");
+		RadAlt2 = register_named_variable("A32NX_RA_2_RAW");
+		AcBus1 = register_named_variable("A32NX_ELEC_AC_1_BUS_IS_POWERED");
+		AcBus2 = register_named_variable("A32NX_ELEC_AC_2_BUS_IS_POWERED");
 
 		//this->setDeveloperState(0);
-		this->setRadarAltitude(99999);
+		this->setRadioAltitude1(99999);
+		this->setRadioAltitude2(99999);
 
 
 		m_Units = new Units();
 	}
 	// Collection of LVar 'set' Functions
 	void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
-	void setRadarAltitude(FLOAT64 value) { set_named_variable_value(RadAlt, value); }
+	void setRadioAltitude1(FLOAT64 value) { set_named_variable_value(RadAlt1, value); }
+	void setRadioAltitude2(FLOAT64 value) { set_named_variable_value(RadAlt2, value); }
 
 	// Collection of SimVar/LVar 'get' Functions
 	FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
-	FLOAT64 getRadarAltitude() { return get_named_variable_value(RadAlt); }
+	FLOAT64 getRadarAltitude1() { return get_named_variable_value(RadAlt1); }
+	FLOAT64 getRadarAltitude2() { return get_named_variable_value(RadAlt2); }
+	FLOAT64 getAcBusState1() { return get_named_variable_value(AcBus1); }
+	FLOAT64 getAcBusState2() { return get_named_variable_value(AcBus2); }
+	FLOAT64 getPlaneAltitudeAGL() { return aircraft_varget(PlaneAltitudeAGL, m_Units->Feet, 0); }
 };

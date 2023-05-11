@@ -52,6 +52,14 @@ private:
 			SimConnect_AddToDataDefinition(hSimConnect, DEFINITION_PROBE_POS, "Plane Longitude", "degrees");
 			SimConnect_AddToDataDefinition(hSimConnect, DEFINITION_PROBE_POS, "Plane Pitch Degrees", "degrees");
 			SimConnect_AddToDataDefinition(hSimConnect, DEFINITION_PROBE_POS, "Plane Heading Degrees True", "radians");
+				
+			// Subscribe to the repeating 4-second timer event
+			SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_4S_TIMER, "4sec");
+
+			//  set the id for the freeze events so this client has full control of probe objects
+			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FREEZE_LATLONG, "FREEZE_LATITUDE_LONGITUDE_SET");
+			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FREEZE_ALTITUDE, "FREEZE_ALTITUDE_SET");
+			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FREEZE_ATTITUDE, "FREEZE_ATTITUDE_SET");
 
 			// Create some private events
 			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_RADAR_ON);
@@ -62,11 +70,6 @@ private:
 			SimConnect_MapInputEventToClientEvent(hSimConnect, INPUT_ZX, "C", EVENT_RADAR_OFF);
 
 			SimConnect_SetInputGroupState(hSimConnect, INPUT_ZX, SIMCONNECT_STATE_OFF);
-
-			//  set the id for the freeze events so this client has full control of probe objects
-			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FREEZE_LATLONG, "FREEZE_LATITUDE_LONGITUDE_SET");
-			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FREEZE_ALTITUDE, "FREEZE_ALTITUDE_SET");
-			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FREEZE_ATTITUDE, "FREEZE_ATTITUDE_SET");
 
 			// Sign up for notifications
 			SimConnect_AddClientEventToNotificationGroup(hSimConnect, GROUP_ZX, EVENT_RADAR_ON);
@@ -96,6 +99,7 @@ public:
 		}
 
 		isConnected = true;
+		simVars = new SimVars();
 		SimConnect_CallDispatch(hSimConnect, RadaltDispatchProc, this);
 
 		return true;

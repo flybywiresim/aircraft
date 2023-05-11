@@ -7,7 +7,7 @@ SimVars* simVars;
 
 // Debug
 double devState = 0.0;
-bool debug = true;
+bool debug = false;
 double planeAltitude = 0.0;
 double probeAltitude = 0.0;
 double planeAboveGround = 0.0;
@@ -17,7 +17,7 @@ int interval = 1;
 int probeBest = 0;
 int preSample = 1;
 int quit = 0;
-double radarAltitude = 0.0;
+double radioAltitude = 0.0;
 double rxMax = 0.0;
 double beamActual = 0.0;
 double rxActual = 0.0;
@@ -101,6 +101,7 @@ struct ProbeInfo
 };
 
 static enum EVENT_ID {
+	EVENT_4S_TIMER,
 	EVENT_RADAR_ON,
 	EVENT_RADAR_OFF,
 	EVENT_FREEZE_LATLONG,
@@ -209,6 +210,7 @@ void createProbeMesh(int probeIndex)
 	SIMCONNECT_DATA_INITPOSITION initPosition;
 	HRESULT hr;
 
+	srand(time(0));
 	devState = simVars->getDeveloperState();
 
 	ProbeStruct probeResult = distanceAndBearing(userPosition, probeIndex, preSample, probeBest);
@@ -285,6 +287,8 @@ void removeProbes() {
 	for (int i = 0; i < MAX_AI; i++) {
 		removeProbeMesh(i);
 	}
+	simVars->setRadioAltitude1(99999);
+	simVars->setRadioAltitude2(99999);
 	radarActive = false;
 }
 
@@ -351,14 +355,14 @@ void updateProbeMesh(int probeIndex, int preSample, int probeBest) {
 void readProbeData(int probeIndex, ProbeStruct probePosition) {
 	if (probeIndex == 0) {
 		rxMax = -140;
-		radarAltitude = 99999;
+		radioAltitude = 99999;
 	}
 
 	beamActual = sqrt(pow(probePosition.pitch * 100, 2) + pow(userPosition.altitude - probePosition.altitude, 2));
 	rxActual = probeRX(beamActual);
 
 	if (isNewRxMax(rxActual, rxMax)) {
-		radarAltitude = userPosition.altitude - probePosition.altitude;
+		radioAltitude = userPosition.altitude - probePosition.altitude;
 		rxMax = rxActual;
 		if (preSample == 1)
 			probeBest = probeIndex;
@@ -368,8 +372,8 @@ void readProbeData(int probeIndex, ProbeStruct probePosition) {
 	}
 
 	if (probeIndex == MAX_AI - 1) {
-		if (radarAltitude > MAX_BEAM_DISTANCE || rxMax < NOISE_FLOOR)
-			radarAltitude = 99999;
+		if (radioAltitude > MAX_BEAM_DISTANCE || rxMax < NOISE_FLOOR)
+			radioAltitude = 99999;
 	}
 }
 
@@ -463,9 +467,30 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 	{
 		SIMCONNECT_RECV_EVENT* evt = (SIMCONNECT_RECV_EVENT*)pData;
 
+
 		switch (evt->uEventID)
 		{
+		case EVENT_4S_TIMER:
+			if (devState == 0) {
+				double acBusState = simVars->getAcBusState1() + simVars->getAcBusState2();
+				double altitudeAGL = simVars->getPlaneAltitudeAGL();
+
+				if (!radarActive && acBusState > 0 && altitudeAGL < MAX_BEAM_DISTANCE)
+				{
+					if (debug) std::cout << "RADALT: [EVENT_4S_TIMER] Probe START ..." << std::endl;
+					getStartupData();
+				}
+
+				if ((radarActive && acBusState < 1) ||
+					(radarActive && acBusState > 0 && altitudeAGL > MAX_BEAM_DISTANCE))
+				{
+					if (debug) std::cout << "RADALT: [EVENT_4S_TIMER] Probe STOP ..." << std::endl;
+					removeProbes();
+				}
+			}
+			break;
 		case EVENT_RADAR_ON:
+			if (debug) std::cout << "RADALT: [EVENT_RADAR_ON]" << std::endl;
 			if (!radarActive)
 			{
 				simVars = new SimVars();
@@ -473,6 +498,7 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 			}
 			break;
 		case EVENT_RADAR_OFF:
+			if (debug) std::cout << "RADALT: [EVENT_RADAR_OFF]" << std::endl;
 			if (radarActive)
 			{
 				removeProbes();
@@ -507,7 +533,20 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 
 			if (probeIndex == MAX_AI - 1) {
 				if (preSample == 0) {
-					simVars->setRadarAltitude(radarAltitude);
+					if (radioAltitude <= 75)
+						radioAltitude = radioAltitude + (-15.0 + rand() % 31) / 10;
+					else if (radioAltitude > 75 && radioAltitude < 99999)
+						radioAltitude = radioAltitude * (1.0 + (-2.0 + rand() % 5) / 100);
+
+					if (simVars->getAcBusState1() == 1)
+						simVars->setRadioAltitude1(radioAltitude);
+					else
+						simVars->setRadioAltitude1(99999);
+
+					if (simVars->getAcBusState2() == 0 || radioAltitude == 99999)
+						simVars->setRadioAltitude2(99999);
+					else
+						simVars->setRadioAltitude2(radioAltitude * (99 + rand() % 2)/100);
 
 					if (debug) {
 						std::cout << "RADALT: Probe# (" << probeBest <<
@@ -515,8 +554,8 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 							" Probe_Alt: " << probeAltitude <<
 							" Plane_AltAbv: " << planeAboveGround <<
 							" Prx: " << rxMax <<
-							" RA: " << radarAltitude <<
-							" pct_diff: " << 100 * (planeAboveGround - radarAltitude) / planeAboveGround << std::endl;
+							" RA1: " << radioAltitude <<
+							" pct_diff: " << 100 * (planeAboveGround - radioAltitude) / planeAboveGround << std::endl;
 					}
 
 					preSample = 1;
