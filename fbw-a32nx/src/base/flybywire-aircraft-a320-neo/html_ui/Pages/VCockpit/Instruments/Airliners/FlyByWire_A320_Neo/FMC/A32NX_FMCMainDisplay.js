@@ -2760,12 +2760,6 @@ class FMCMainDisplay extends BaseAirliners {
             && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true);
     }
 
-    getToSpeedsTooLow() {
-        if (this.flaps === null || this.zeroFuelWeight === undefined || this.blockFuel === undefined) {
-            return false;
-        }
-    }
-
     getDepartureElevation() {
         let departureElevation = null;
         if (this.flightPlanManager.getOriginRunway()) {
@@ -2778,6 +2772,10 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getToSpeedsTooLow() {
+        if (this.flaps === null || this.zeroFuelWeight === undefined || this.blockFuel === undefined) {
+            return false;
+        }
+
         const departureElevation = this.getDepartureElevation();
 
         const zp = departureElevation !== null ? this.getPressureAltAtElevation(departureElevation, this.getBaroCorrection1()) : this.getPressureAlt();
