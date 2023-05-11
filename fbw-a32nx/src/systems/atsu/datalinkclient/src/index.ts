@@ -175,6 +175,11 @@ export class DatalinkClient {
         this.subscriber.on('atcRequestAtsuStatusCode').handle((response) => this.processStatus(this.requestAtsuStatusCodeCallbacks, response));
         this.subscriber.on('aocTransmissionResponse').handle((response) => this.processStatus(this.requestAtsuStatusCodeCallbacks, response));
         this.subscriber.on('aocRequestSentToGround').handle((response) => this.processRequestId(this.requestSentToGroundCallbacks, response));
+        this.subscriber.on('aocReceivedFlightPlan').handle((response) => this.processResponse(this.statusDataResponseCallbacks, response));
+        this.subscriber.on('aocReceivedNotams').handle((response) => this.processResponse(this.statusDataResponseCallbacks, response));
+        this.subscriber.on('aocReceivedPerformance').handle((response) => this.processResponse(this.statusDataResponseCallbacks, response));
+        this.subscriber.on('aocReceivedFuel').handle((response) => this.processResponse(this.statusDataResponseCallbacks, response));
+        this.subscriber.on('aocReceivedWeights').handle((response) => this.processResponse(this.statusDataResponseCallbacks, response));
         this.subscriber.on('aocWeatherResponse').handle((response) => this.processResponse(this.statusDataResponseCallbacks, response));
         this.subscriber.on('atcPositionReport').handle((response) => this.processResponse(this.positionReportDataCallbacks, response));
     }
