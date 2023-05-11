@@ -212,17 +212,15 @@ export class DatalinkClient {
         sentCallback: () => void,
         requestId: number,
         data: any,
-    ): Promise<Type> {
-        return new Promise<Type>((resolve, _reject) => {
+    ): Promise<[AtsuStatusCodes, Type]> {
+        return new Promise<[AtsuStatusCodes, Type]>((resolve, _reject) => {
             this.publisher.pub(requestName, data, true, false);
 
-            if (sentCallback !== null) {
-                this.requestSentToGroundCallbacks.push((id: number) => {
-                    if (id === requestId) sentCallback();
-                    return id === requestId;
-                });
-            }
-            this.requestAtsuStatusCodeCallbacks.push((response: any, id: number) => {
+            this.requestSentToGroundCallbacks.push((id: number) => {
+                if (id === requestId) sentCallback();
+                return id === requestId;
+            });
+            this.statusDataResponseCallbacks.push((response: any, id: number) => {
                 if (id === requestId) resolve(response);
                 return id === requestId;
             });
@@ -251,7 +249,14 @@ export class DatalinkClient {
 
     public async receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
         const requestId = this.requestId++;
-        return this.requestData('atcRequestAtis', null, requestId, { icao: airport, type, requestId });
+        return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+            this.publisher.pub('atcRequestAtis', { icao: airport, type, requestId }, true, false);
+
+            this.statusDataResponseCallbacks.push((response: any, id: number) => {
+                if (id === requestId) resolve(response);
+                return id === requestId;
+            });
+        });
     }
 
     public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
