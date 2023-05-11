@@ -7,7 +7,14 @@ function formatWeight(value) {
 }
 
 class CDUAocInit {
-    static ShowPage(mcdu) {
+    static CreateDataBlock() {
+        return {
+            requestedData: false,
+            flightPlan: null,
+        };
+    }
+
+    static ShowPage(mcdu, data = CDUAocInit.CreateDataBlock()) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCInit;
         mcdu.pageRedrawCallback = () => CDUAocInit.ShowPage(mcdu);
@@ -19,6 +26,9 @@ class CDUAocInit {
         let ete = "____[color]amber";
         let fob = `{small}---.-{end}[color]white`;
         let requestButton = "INIT DATA REQ*[color]cyan";
+        if (data.requestedData === true) {
+            requestButton = "INIT DATA REQ\xa0[color]cyan";
+        }
         let gmt = "0000[color]green";
 
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -26,7 +36,7 @@ class CDUAocInit {
 
         function updateView() {
             if (mcdu.page.Current === mcdu.page.AOCInit) {
-                CDUAocInit.ShowPage(mcdu);
+                CDUAocInit.ShowPage(mcdu, data);
             }
         }
 
@@ -35,20 +45,11 @@ class CDUAocInit {
             updateView();
         }, mcdu.PageTimeout.Default);
 
-        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
-            requestButton = "INIT DATA REQ [color]cyan";
-        }
-        if (mcdu.simbrief.originIcao) {
-            originIcao = `${mcdu.simbrief.originIcao}[color]cyan`;
-        }
-        if (mcdu.simbrief.destinationIcao) {
-            destinationIcao = `${mcdu.simbrief.destinationIcao}[color]cyan`;
-        }
-        if (mcdu.simbrief.callsign) {
-            fltNbr = `{small}${mcdu.simbrief.callsign}{end}[color]green`;
-        }
-        if (mcdu.simbrief.ete) {
-            ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
+        if (data.flightPlan) {
+            originIcao = `${data.flightPlan.Origin.icao}[color]cyan`;
+            destinationIcao = `${data.flightPlan.Destination.icao}[color]cyan`;
+            fltNbr = `{small}${data.flightPlan.Flightnumber}{end}[color]green`;
+            ete = `${FMCMainDisplay.secondsTohhmm(data.flightPlan.EstimatedTimeEnroute)}[color]cyan`;
         }
 
         const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
@@ -83,7 +84,21 @@ class CDUAocInit {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[4] = () => {
-            getSimBriefOfp(mcdu, updateView);
+            if (data.requestedData === false) {
+                data.requestedData = true;
+
+                const onRequestSent = () => {};
+                mcdu.atsu.receiveFlightPlan(onRequestSent).then((response) => {
+                    if (response[0] === AtsuCommon.AtsuStatusCodes.Ok) {
+                        data.flightPlan = response[1];
+                    }
+
+                    data.requestedData = false;
+                    CDUAocInit.ShowPage(mcdu, data);
+                });
+
+                CDUAocInit.ShowPage(mcdu, data);
+            }
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -94,11 +109,11 @@ class CDUAocInit {
         };
 
         mcdu.onNextPage = () => {
-            CDUAocInit.ShowPage2(mcdu);
+            CDUAocInit.ShowPage2(mcdu, data);
         };
     }
 
-    static ShowPage2(mcdu) {
+    static ShowPage2(mcdu, data = CDUAocInit.CreateDataBlock()) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCInit2;
         mcdu.activeSystem = 'ATSU';
@@ -157,26 +172,26 @@ class CDUAocInit {
         }
 
         function updateView() {
-            if (mcdu.page.Current !== mcdu.page.AOCInit2) {
-                return;
+            if (mcdu.page.Current === mcdu.page.AOCInit2) {
+                CDUAocInit.ShowPage2(mcdu, data);
             }
-            const display = [
-                ["INIT/REVIEW", "2", "2", "AOC"],
-                [" OUT", "OFF ", "DOORS"],
-                [outTime, offTime, doorsTime],
-                [" ON", "IN ", "GMT"],
-                [onTime, inTime, gmt],
-                [" BLK TIME", "FLT TIME "],
-                [blockTime, fltTime],
-                [" FUEL REM", "LDG PILOT "],
-                ["   " + fob, "-------"],
-                ["", ""],
-                ["*AUTOLAND <{small}n{end}>[color]cyan"],
-                ["", "ADVISORY "],
-                ["<AOC MENU"]
-            ];
-            mcdu.setTemplate(display);
         }
+
+        mcdu.setTemplate([
+            ["INIT/REVIEW", "2", "2", "AOC"],
+            [" OUT", "OFF ", "DOORS"],
+            [outTime, offTime, doorsTime],
+            [" ON", "IN ", "GMT"],
+            [onTime, inTime, gmt],
+            [" BLK TIME", "FLT TIME "],
+            [blockTime, fltTime],
+            [" FUEL REM", "LDG PILOT "],
+            ["   " + fob, "-------"],
+            ["", ""],
+            ["*AUTOLAND <{small}n{end}>[color]cyan"],
+            ["", "ADVISORY "],
+            ["<AOC MENU"]
+        ]);
 
         // regular update due to showing time on this page
         mcdu.page.SelfPtr = setTimeout(() => {
@@ -191,7 +206,7 @@ class CDUAocInit {
         };
 
         mcdu.onPrevPage = () => {
-            CDUAocInit.ShowPage(mcdu);
+            CDUAocInit.ShowPage(mcdu, data);
         };
 
         updateView();
