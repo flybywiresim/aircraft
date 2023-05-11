@@ -4,6 +4,7 @@
 import { AtcMessageButtonBusMessages } from '@datalink/atc';
 import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
+import { SensorsBusTypes } from 'datalink/common/src/databus/SensorsBus';
 import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes } from '../databus';
 
 interface SimVars {
@@ -34,6 +35,8 @@ interface SimVars {
     msfsCompanyMessageCount: number,
     msfsAtcMessageButtonActive: boolean,
     msfsAtcMessageButtonPressed: number,
+    msfsNoseGearCompressed: boolean,
+    msfsParkingBrakeSet: boolean,
 }
 
 export enum SimVarSources {
@@ -64,6 +67,8 @@ export enum SimVarSources {
     companyMessageCount = 'L:A32NX_COMPANY_MSG_COUNT',
     atcMessageButtonActive = 'L:A32NX_DCDU_ATC_MSG_WAITING',
     atcMessageButtonPressed = 'L:A32NX_DCDU_ATC_MSG_ACK',
+    noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
+    parkingBrakeSet = 'L:A32NX_PARK_BRAKE_LEVER_POS',
 }
 
 export class SimVarHandling extends SimVarPublisher<SimVars> {
@@ -74,7 +79,8 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         ClockDataBusTypes &
         FmgcDataBusTypes &
         RmpDataBusTypes &
-        FwcDataBusTypes
+        FwcDataBusTypes &
+        SensorsBusTypes
     > = null;
 
     private static simvars = new Map<keyof SimVars, SimVarDefinition>([
@@ -104,6 +110,8 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         ['msfsCompanyMessageCount', { name: SimVarSources.companyMessageCount, type: SimVarValueType.Number }],
         ['msfsAtcMessageButtonActive', { name: SimVarSources.atcMessageButtonActive, type: SimVarValueType.Bool }],
         ['msfsAtcMessageButtonPressed', { name: SimVarSources.atcMessageButtonPressed, type: SimVarValueType.Number }],
+        ['msfsNoseGearCompressed', { name: SimVarSources.noseGearCompressed, type: SimVarValueType.Bool }],
+        ['msfsParkingBrakeSet', { name: SimVarSources.parkingBrakeSet, type: SimVarValueType.Bool }],
     ]);
 
     public constructor(private readonly eventBus: EventBus) {
@@ -138,6 +146,8 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         super.subscribe('msfsCompanyMessageCount');
         super.subscribe('msfsAtcMessageButtonActive');
         super.subscribe('msfsAtcMessageButtonPressed');
+        super.subscribe('msfsNoseGearCompressed');
+        super.subscribe('msfsParkingBrakeSet');
     }
 
     public initialize(): void {
@@ -146,7 +156,8 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
             ClockDataBusTypes &
             FmgcDataBusTypes &
             RmpDataBusTypes &
-            FwcDataBusTypes
+            FwcDataBusTypes &
+            SensorsBusTypes
         >();
         this.subscriber = this.eventBus.getSubscriber<SimVars>();
 
@@ -228,6 +239,8 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         this.subscriber.on('msfsCompanyMessageCount').handle((count: number) => this.datalinkPublisher.pub('companyMessageCount', count, false, false));
         this.subscriber.on('msfsAtcMessageButtonActive').handle((active: boolean) => this.datalinkPublisher.pub('atcMessageButtonActive', active, false, false));
         this.subscriber.on('msfsAtcMessageButtonPressed').handle((pressed: number) => this.datalinkPublisher.pub('atcMessageButtonPressed', pressed !== 0, false, false));
+        this.subscriber.on('msfsNoseGearCompressed').handle((compressed: boolean) => this.datalinkPublisher.pub('noseGearCompressed', compressed, false, false));
+        this.subscriber.on('msfsParkingBrakeSet').handle((compressed: boolean) => this.datalinkPublisher.pub('parkingBrakeSet', compressed, false, false));
 
         this.connectedCallback();
     }
