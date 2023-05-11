@@ -91,6 +91,8 @@ class CDUAocInit {
                 mcdu.atsu.receiveFlightPlan(onRequestSent).then((response) => {
                     if (response[0] === AtsuCommon.AtsuStatusCodes.Ok) {
                         data.flightPlan = response[1];
+                    } else {
+                        mcdu.addNewAtsuMessage(response[0]);
                     }
 
                     data.requestedData = false;
