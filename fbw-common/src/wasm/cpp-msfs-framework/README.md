@@ -64,13 +64,15 @@ Details see below.
 MsfsHandler and DataManager are the central components which provide a simple
 API to retrieve and send data from and to the simulator.
 
-The MsfsHandler is the central component acts as a dispatcher for the custom
-module. It manages the SimConnect connection, all module updates, owns the
+The MsfsHandler is the central component acting as a dispatcher for the custom
+modules. It manages the SimConnect connection, all module updates, owns the
 DataManager and provides some imported core data variables to the modules.
 
 The DataManager is a central data store which allows to store and retrieve data
 from the simulator. It provides different kind of data objects / variables which abstract the 
 sim's data types and allows to easily retrieve and send data from the simulator.
+One of its main features is de-duplication of variables over all modules and 
+to automatically update (read/write) the data to and from the simulator.
 
 These components live in the common src folder.
 
@@ -84,20 +86,26 @@ It basically provides a callback function the sim calls with different messages
 (service_ids) which will be handled accordingly. 
 
 In this framework the gauge code can be found in the Gauge_Extra_Backend.cpp file:<br/>
-<span style="color:cyan">src/extra-backend/src/Gauge_Extra_Backend.cpp</span>
+<span style="color:cyan">fbw-a32nx/src/wasm/extra-backend-a32nx/src/Gauge_Extra_Backend.cpp</span><br/>
+or
+<span style="color:cyan">fbw-a380x/src/wasm/extra-backend-a380x/src/Gauge_Extra_Backend.cpp</span>
 
 Gauges need to be configured into the panel.cfg file:<br/>
 <span style="color:cyan">flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/panel.cfg</span>
+or the corresponding panel.cfg file of the A380X.
 
 The Gauge_Extra_Backend.cpp also instantiates the MsfsHandler and the custom 
 modules - this is the only place a new module has to be added.
 
 ```cpp 
 ... 
-MsfsHandler msfsHandlerPtr("Gauge_Extra_Backend");
-LightingPresets lightingPresets(&msfsHandlerPtr);
-Pushback pushback(&msfsHandlerPtr);
-AircraftPresets aircraftPresets(&msfsHandlerPtr);
+MsfsHandler msfsHandler("Gauge_Extra_Backend_A32NX", "A32NX_");
+
+// ADD ADDITIONAL MODULES HERE
+// This is the only place these have to be added - everything else is handled automatically
+LightingPresets_A32NX lightingPresets(msfsHandler);
+Pushback pushback(msfsHandler);
+AircraftPresets aircraftPresets(msfsHandler, AircraftPresetProcedures_A32NX::aircraftProcedureDefinition);
 ...
 ```
 
@@ -111,7 +119,7 @@ Also see:
 <span style="color:cyan">src/extra-backend/src/MsfsHandler/MsfsHandler.h</span>
 
 The MsfsHandler is the central component acts as a dispatcher for the custom 
-module. It manages the SimConnect connection, all module updates, owns the 
+modules. It manages the SimConnect connection, all module updates, owns the 
 DataManager and provides some imported core data variables to the modules.
 
 Each module has to be registered with the MsfsHandler (done automatically in the
@@ -135,34 +143,31 @@ various sim SDK API elements and data types into C++ objects.
 
 It currently provides the following data types:
 
-- AircraftVariable: a variable which is directly mapped to a simvar
-- NamedVariable: a variable which is mapped to a LVAR
-- DataDefinitionVariable: Custom defined SimObjects base on simvars and custom 
+- **AircraftVariable:** a variable which is directly mapped to a simvar
+- **NamedVariable**: a variable which is mapped to a LVAR
+- **DataDefinitionVariable**: Custom defined SimObjects base on simvars and custom 
   C++ structs (with SU12 also LVARs can be part of the data definition - this is 
   not tested yet).
-- ClientDataAreaVariable: Custom defined SimObjects base on memory mapped data to 
+- **ClientDataAreaVariable**: Custom defined SimObjects base on memory mapped data to 
   exchange arbitrary data between SimConnect clients.  
-- ClientDataAreaBuffered Variable: Custom defined SimObjects base on memory mapped
+- **StreamingClientDataAreaVariable**: Custom defined SimObjects base on memory mapped
   which can be larger than the limit of 8k bytes per ClientDataArea by using a 
   streaming buffer approach to send and retrieve data.
-- ClientEvent: These events are used to either create a custom event or to be mapped
+- **ClientEvent**: These events are used to either create a custom event or to be mapped
   to a sim event or sim system event. The main feature of a ClientEvent is that it
   has a unique ID which can be used to map and recognize the event. Callbacks can
   then be registered to be called when the event is triggered.
                            
 Also, it allows to register callback functions for KeyEvents.  
 
-The below described variables can be used without the DataManager, however the 
-DataManager provides not only automatic updates and writing of the variables, 
-but also functions to create and register variables and events in the 
-DataManager itself and also will de-duplicate variables where useful. 
-                          
+The below described data types can be created via the DataManager's make_... functions.
+                        
 #### DataObjectBase (abstract base class)
 
 The base class for all data objects providing the variable's name.
 
 #### ManagedDataObjectBase (abstract base class)
-MSFS SDK and SimConnect provide different kinds of variable each with different
+MSFS SDK and SimConnect provide different kinds of variables each with different
 APIs on how to read and write them to the sim. 
 
 The idea of variables in this framework is to provide a relatively consistent
@@ -214,7 +219,7 @@ See the documentation of CacheableVariable for more details.
 See the documentation of CacheableVariable for more details.
 
 ##### NamedVariable
-The NamedVariable is a variable which is mapped to a LVAR. It is the simplest
+The NamedVariable is a variable which is mapped to a LVAR (Local Variable). It is the simplest
 variable type and can be used to store and retrieve custom numeric data from the 
 sim.
 
@@ -232,6 +237,12 @@ are read-only it is required to use an event to write the variable back to the s
 
 It allows to specify either an event-name or an instance of an ClientEvent object to
 write data back to the sim.
+
+One major difference of SimObjects to Named or Aircraft Variables is that SimObjects
+are read asynchronously from the sim. This means that the data is not available at the 
+time of the call to the read function. Instead, the data is received via SimConnect Callback
+in the next tick. Although this is all handled automatically by the DataManager it is
+important to understand this difference.
 
 It is based on the CacheableVariable - see above.
 
@@ -258,11 +269,11 @@ See the documentation of CacheableVariable for more details.
 | writeDataToSim()  | Write the current data struct contents to the sim |
 
 ##### DataDefinitionVariable (Custom SimObjects)
-The DataDefinitionVariable is a variable which is mapped to a custom data struct 
-and a SimObject which can be defined by adding separate data definitions for single 
-sim variables to a container of data definitions.
+The DataDefinitionVariable is a variable (in fact a data structure) which is mapped 
+to a custom data struct and a SimObject which can be defined by adding separate 
+data definitions for single sim variables to a container of data definitions.
 
-It requires a local data struct as a template type which is then used to hold the data.
+It requires a local data structure as a template type which is then used to hold the data.
 
 The class is based on ManagedDataObjectBase and therefore supports auto reading and writing of
 the data to the sim. It also supports using the SIMCONNECT_PERIOD flags to update the
@@ -274,7 +285,8 @@ very efficient but a bit harder to set up and use.
 A data definition variable consisting of only writable simvars can be used to
 write data back to the sim without the need to define an event.
 
-Writing back a read only simvar will produce a SimConnect exception (visible in the console). 
+Writing back a read only simvar will produce a SimConnect exception (visible in the console)
+in the next update tick. 
 
 See the DataDefinitionVariable class documentation for more details.
 
@@ -284,11 +296,11 @@ from the sim. The DataManager will create these variables, and it will automatic
 assign unique IDs.
 
 Also see:
-- Example and Pushback modules for examples of custom writable sim objects
+- Example and Pushback modules have examples of custom writable sim objects
 - [MSFS SDK Documentation: SimConnect Data Definition](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToClientDataDefinition.htm)
 
 #### ClientDataAreaVariable (Custom Data Area)
-SImConnect also allows to define custom SimObjects using memory mapped data 
+SimConnect also allows to define custom SimObjects using memory mapped data 
 between clients to send and receive arbitrary data to and from the sim.
 
 It requires a local data struct as a template type which is used to hold the data.
@@ -315,12 +327,16 @@ The StreamingClientDataAreaVariable class is a special variant of the ClientData
 class which allows to send and receive data larger than the maximum size of a single 
 SimConnect client data area chunk of 8192 bytes.
 
-The data is split into chunks of a fixed size (default 8192 bytes) and sent and received in chunks.
+The data is split into chunks of a fixed size (default 8192 bytes) and sent and 
+received in chunks.
 
-The data is stored in a vector of T, which is resized to the number of bytes expected to be received.
+The data is stored in a vector of the given type T, which is resized to the number of 
+bytes expected to be received.
 
-Before receiving data the reserve() method must be called to reset the data and set the number of bytes to be
-received.
+Before receiving data the reserve() method must be called to reset the data and set 
+the number of bytes to be received.
+
+See the StreamingClientDataAreaVariable class documentation for more details.
 
 #### ClientEvent
 The ClientEvent class represents a client event which can be used to:<br/>
@@ -340,7 +356,7 @@ The ClientEvent class represents a client event which can be used to:<br/>
  If the ClientEvent is intended to be used as a system event then it must be constructed with the
  registerToSim parameter set to false. This will prevent the event from being registered to the sim.
 
- See constructor documentation for more details.
+See the DataManager::make_xxx_event() functions for more details.
 
 #### Input Event
 Input events can be added and mapped to an Event instance to be triggered by the 
@@ -355,11 +371,11 @@ input events at once. Use Event::setInputGroupState() to enable or disable a gro
 OBS: There are still some inconsistencies in the MSFS SDK regarding input events, esp. when removing 
 and re-adding input events. It is recommended to only add input events once and not remove them. 
 
-For details see the Event class documentation.  
+For details see the ClientEvent class documentation.  
 
 #### Key Event
 A Key Event is not a data type which can be created. Use the DataManager to register a callback
-to handle key events. The callback will be called with the key event data.
+to handle key events (addKeyEventCallback). The callback will be called with the key event data.
 
 For details see the DataManager class documentation.
 
@@ -411,22 +427,23 @@ Add it to the following files:
 To build it separately you can use the following commands:
                                             
 ```pwsh 
-.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake
+.\scripts\dev-env\run.cmd npm run build:cpp-wasm-cmake
 ```
 
-or
+or 
 
 ```pwsh 
-.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake
+.\scripts\dev-env\run.cmd npm run build:cpp-wasm-cmake-clean
 ```
                                                                        
 If you want debug information in the build use:<br/>
+
 ```pwsh
-.\scripts\dev-env\run.cmd npm run build-a32nx:extra-backend-cmake-debug
+.\scripts\dev-env\run.cmd npm run build:cpp-wasm-cmake-debug
 ```
 
 or
 
 ```pwsh
-.\scripts\dev-env\run.cmd npm run build-a380x:extra-backend-cmake-debug
+.\scripts\dev-env\run.cmd npm run build:cpp-wasm-cmake-debug-clean
 ```
