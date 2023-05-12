@@ -4,4 +4,5 @@
 export interface SensorsBusTypes {
     noseGearCompressed: boolean,
     parkingBrakeSet: boolean,
+    fuelOnBoard: number,
 }
