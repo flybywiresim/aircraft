@@ -45,7 +45,7 @@ class CDUAocOOOI {
                 inFuel = `{green}${Number(messages[offset].InGate.fuel).toFixed(1).toString()}\xa0{end}`;
             }
             if (messages[offset].InGate.icao !== '') {
-                outIcao = `{green}${messages[offset].InGate.icao}{end}`;
+                inIcao = `{green}${messages[offset].InGate.icao}{end}`;
             }
         }
 
