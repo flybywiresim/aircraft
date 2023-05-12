@@ -12,12 +12,15 @@ import {
 import { EventBus } from '@microsoft/msfs-sdk';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
+import { Sensors } from './components';
 
 /**
  * Defines the AOC
  */
 export class Aoc {
     private poweredUp: boolean = false;
+
+    private sensors: Sensors = null;
 
     private messageCounter: number = 0;
 
@@ -34,6 +37,7 @@ export class Aoc {
     constructor(private bus: EventBus, synchronizedRouter: boolean) {
         this.digitalInputs = new DigitalInputs(this.bus);
         this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedRouter);
+        this.sensors = new Sensors(this.digitalInputs);
 
         this.digitalInputs.addDataCallback('sendFreetextMessage', (message) => this.sendMessage(message));
         this.digitalInputs.addDataCallback('requestFlightplan', (sentCallback) => this.receiveOfpData('routerRequestFlightplan', sentCallback));
@@ -65,6 +69,7 @@ export class Aoc {
     public powerDown(): void {
         this.digitalOutputs.powerDown();
         this.digitalInputs.powerDown();
+        this.sensors.powerDown();
         this.messageQueueUplink = [];
         this.messageQueueDownlink = [];
         this.poweredUp = false;

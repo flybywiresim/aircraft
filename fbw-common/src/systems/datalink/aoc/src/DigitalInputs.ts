@@ -16,9 +16,12 @@ import {
     FwcDataBusTypes,
     NotamMessage,
     WeatherMessage,
+    SensorsBusTypes,
+    FmgcDataBusTypes,
 } from '@datalink/common';
 import { RouterAtcAocMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+import { Arinc429Word } from '@shared/arinc429';
 import { AocDatalinkMessages, DatalinkAocMessages } from './databus/DatalinkBus';
 
 export type AocDigitalInputCallbacks = {
@@ -35,6 +38,12 @@ export type AocDigitalInputCallbacks = {
     registerMessages: (messages: AtsuMessage[]) => void;
     messageRead: (messageId: number) => void;
     removeMessage: (messageId: number) => void;
+    noseGearCompressed: (compressed: boolean) => void;
+    parkingBrakeSet: (set: boolean) => void;
+    currentLatitude: (lat: Arinc429Word) => void;
+    currentLongitude: (long: Arinc429Word) => void;
+    currentAltitude: (alt: Arinc429Word) => void;
+    groundSpeed: (speed: Arinc429Word) => void;
 }
 
 export class DigitalInputs {
@@ -52,9 +61,23 @@ export class DigitalInputs {
         registerMessages: null,
         messageRead: null,
         removeMessage: null,
+        noseGearCompressed: null,
+        parkingBrakeSet: null,
+        currentLatitude: null,
+        currentLongitude: null,
+        currentAltitude: null,
+        groundSpeed: null,
     };
 
-    private subscriber: EventSubscriber<AtcAocMessages & ClockDataBusTypes & DatalinkAocMessages & FwcDataBusTypes & RouterAtcAocMessages> = null;
+    private subscriber: EventSubscriber<
+        AtcAocMessages &
+        ClockDataBusTypes &
+        DatalinkAocMessages &
+        FmgcDataBusTypes &
+        FwcDataBusTypes &
+        RouterAtcAocMessages &
+        SensorsBusTypes
+    > = null;
 
     private publisher: Publisher<AocDatalinkMessages> = null;
 
@@ -86,7 +109,15 @@ export class DigitalInputs {
     }
 
     public initialize(): void {
-        this.subscriber = this.bus.getSubscriber<AtcAocMessages & ClockDataBusTypes & DatalinkAocMessages & FwcDataBusTypes & RouterAtcAocMessages>();
+        this.subscriber = this.bus.getSubscriber<
+            AtcAocMessages &
+            ClockDataBusTypes &
+            DatalinkAocMessages &
+            FmgcDataBusTypes &
+            FwcDataBusTypes &
+            RouterAtcAocMessages &
+            SensorsBusTypes
+        >();
         this.publisher = this.bus.getPublisher<AocDatalinkMessages>();
 
         this.subscriber.on('utcYear').handle((year: number) => {
@@ -177,6 +208,36 @@ export class DigitalInputs {
         this.subscriber.on('aocRemoveMessage').handle((messageId) => {
             if (this.callbacks.removeMessage !== null) {
                 this.callbacks.removeMessage(messageId);
+            }
+        });
+        this.subscriber.on('noseGearCompressed').handle((compressed) => {
+            if (this.callbacks.noseGearCompressed !== null) {
+                this.callbacks.noseGearCompressed(compressed);
+            }
+        });
+        this.subscriber.on('parkingBrakeSet').handle((set) => {
+            if (this.callbacks.parkingBrakeSet !== null) {
+                this.callbacks.parkingBrakeSet(set);
+            }
+        });
+        this.subscriber.on('presentPositionLatitude').handle((lat) => {
+            if (this.callbacks.currentLatitude !== null) {
+                this.callbacks.currentLatitude(lat);
+            }
+        });
+        this.subscriber.on('presentPositionLongitude').handle((long) => {
+            if (this.callbacks.currentLongitude !== null) {
+                this.callbacks.currentLongitude(long);
+            }
+        });
+        this.subscriber.on('presentAltitude').handle((altitude) => {
+            if (this.callbacks.currentAltitude !== null) {
+                this.callbacks.currentAltitude(altitude);
+            }
+        });
+        this.subscriber.on('groundSpeed').handle((speed) => {
+            if (this.callbacks.groundSpeed !== null) {
+                this.callbacks.groundSpeed(speed);
             }
         });
     }
