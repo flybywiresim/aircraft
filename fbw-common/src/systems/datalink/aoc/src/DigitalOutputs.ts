@@ -8,6 +8,8 @@ import {
     AtsuStatusCodes,
     Constants,
     FreetextMessage,
+    OutOffOnInMessage,
+    SensorsMessage,
     WeatherMessage,
 } from '@datalink/common';
 import { AtcAocRouterMessages, RouterAtcAocMessages } from '@datalink/router';
@@ -169,5 +171,17 @@ export class DigitalOutputs {
 
     public setCompanyMessageCount(count: number): void {
         SimVar.SetSimVarValue(Constants.CompanyMessageCountName, 'number', count);
+    }
+
+    public sendFlightPlanFromTo(from: string, to: string): void {
+        this.publisher.pub('routerUpdateFromTo', { from, to }, this.synchronizedRouter, false);
+    }
+
+    public resynchronizeSensors(message: SensorsMessage): void {
+        this.publisher.pub('aocResynchronizeSensorsMessage', message, true, false);
+    }
+
+    public resynchronizeOooiMessages(messages: OutOffOnInMessage[]): void {
+        this.publisher.pub('aocResynchronizeOooiMessages', messages, true, false);
     }
 }
