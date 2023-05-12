@@ -41,7 +41,7 @@ clang++ \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   "${DIR}/src/radaltGauge.cpp"
 
-# restore directory
+# restore directory.
 popd
 
 wasm-ld \
