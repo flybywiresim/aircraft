@@ -89,8 +89,13 @@ export class MessageStorage {
         });
         this.subscriber.on('aocResynchronizeWeatherMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
         this.subscriber.on('aocResynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
-        this.subscriber.on('aocResynchronizeSensorsMessage').handle((data) => this.aocSensorsMessage = data);
-        this.subscriber.on('aocResynchronizeOooiMessages').handle((data) => this.aocOooiMessages = data);
+        this.subscriber.on('aocResynchronizeSensorsMessage').handle((data) => this.aocSensorsMessage = Conversion.messageDataToMessage(data) as SensorsMessage);
+        this.subscriber.on('aocResynchronizeOooiMessages').handle((data) => {
+            this.aocOooiMessages = [];
+            data.forEach((message) => {
+                this.aocOooiMessages.push(Conversion.messageDataToMessage(message) as OutOffOnInMessage);
+            });
+        });
         this.subscriber.on('atcResynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as CpdlcMessage));
         this.subscriber.on('atcResynchronizeDclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as DclMessage));
         this.subscriber.on('atcResynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as OclMessage));
