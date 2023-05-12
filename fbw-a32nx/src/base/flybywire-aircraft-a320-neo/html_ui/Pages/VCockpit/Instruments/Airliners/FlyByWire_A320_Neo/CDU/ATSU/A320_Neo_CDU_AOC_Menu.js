@@ -13,7 +13,7 @@ class CDUAocMenu {
             ["", "SENT\xa0"],
             ["<SENSORS", "MESSAGES>"],
             [""],
-            ["", "DIVERSION>[color]inop"],
+            ["<OOOI", "DIVERSION>[color]inop"],
             ["\xa0ATSU DLK"],
             ["<RETURN", "MISC>[color]inop"]
         ]);
@@ -35,6 +35,12 @@ class CDUAocMenu {
         };
         mcdu.onLeftInput[3] = () => {
             CDUAocSensors.ShowPage(mcdu);
+        };
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[4] = () => {
+            CDUAocOOOI.ShowPage(mcdu);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
