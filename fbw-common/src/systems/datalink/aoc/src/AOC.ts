@@ -66,6 +66,7 @@ export class Aoc {
         this.digitalInputs.powerUp();
         this.ofpSystem.powerUp();
         this.sensors.powerUp();
+        this.oooiSystem.powerUp();
         this.poweredUp = true;
     }
 

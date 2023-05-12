@@ -80,45 +80,54 @@ export class OutOffOnIn {
 
     private flightLegs: OutOffOnInMessage[] = [];
 
+    private publisher: NodeJS.Timer = null;
+
     constructor(private digitalInputs: DigitalInputs, private sensors: Sensors, private digitalOutputs: DigitalOutputs) {
         this.stateMachine = new OooiStateMachine(digitalInputs, this.sensors);
     }
 
+    public powerUp(): void {
+        if (this.publisher === null) {
+            this.publisher = setInterval(() => {
+                this.digitalOutputs.resynchronizeOooiMessages(this.flightLegs);
+            }, 5000);
+        }
+    }
+
     public powerDown(): void {
+        if (this.publisher !== null) {
+            clearInterval(this.publisher);
+            this.publisher = null;
+        }
+
         this.stateMachine.powerDown();
         this.flightLegs = [];
     }
 
     public update(flightPlan: FlightPlanMessage): void {
-        let resyncMessages: boolean = false;
-
         if (this.stateMachine.update() === true) {
             switch (this.stateMachine.CurrentState) {
             case OooiState.OutGate:
                 // handle startup on runway
                 if (this.flightLegs.length === 0) {
                     this.flightLegs.unshift(new OutOffOnInMessage());
-                    resyncMessages = true;
                 }
 
                 if (this.flightLegs[0].OutGate.timestamp === null) {
                     this.flightLegs[0].OutGate.timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
                     this.flightLegs[0].OutGate.fuel = this.sensors.FuelOnBoard;
-                    resyncMessages = true;
                 }
                 break;
             case OooiState.OffGround:
                 if (this.flightLegs[0].OffGround.timestamp !== null) {
                     this.flightLegs[0].OffGround.timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
                     this.flightLegs[0].OffGround.fuel = this.sensors.FuelOnBoard;
-                    resyncMessages = true;
                 }
                 break;
             case OooiState.OnGround:
                 if (this.flightLegs[0].OnGround.timestamp !== null) {
                     this.flightLegs[0].OnGround.timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
                     this.flightLegs[0].OnGround.fuel = this.sensors.FuelOnBoard;
-                    resyncMessages = true;
                 }
                 break;
             case OooiState.InGate:
@@ -130,7 +139,6 @@ export class OutOffOnIn {
                     this.flightLegs.pop();
                 }
 
-                resyncMessages = true;
                 break;
             default:
                 break;
@@ -141,12 +149,7 @@ export class OutOffOnIn {
             if (this.flightLegs[0].OutGate.icao !== flightPlan.Origin.icao || this.flightLegs[0].InGate.icao !== flightPlan.Destination.icao) {
                 this.flightLegs[0].OutGate.icao = flightPlan.Origin.icao;
                 this.flightLegs[0].InGate.icao = flightPlan.Destination.icao;
-                resyncMessages = true;
             }
-        }
-
-        if (resyncMessages === true) {
-            this.digitalOutputs.resynchronizeOooiMessages(this.flightLegs);
         }
     }
 
