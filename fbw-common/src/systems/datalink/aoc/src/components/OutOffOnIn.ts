@@ -17,7 +17,7 @@ class OooiStateMachine {
         if (this.CurrentState !== OooiState.Unknown) this.CurrentState = OooiState.InGate;
     }
 
-    public update(): void {
+    public update(): boolean {
         switch (this.CurrentState) {
         case OooiState.Unknown:
             const coldAndDark = SimVar.GetSimVarValue('A32NX_COLD_AND_DARK_SPAWN', 'Bool');
@@ -26,13 +26,19 @@ class OooiStateMachine {
             } else {
                 this.CurrentState = OooiState.OutGate;
             }
-            break;
+            return true;
         case OooiState.OutGate:
-            if (this.sensors.NoseGearDown === false) this.CurrentState = OooiState.OffGround;
-            break;
+            if (this.sensors.NoseGearDown === false) {
+                this.CurrentState = OooiState.OffGround;
+                return true;
+            }
+            return false;
         case OooiState.OffGround:
-            if (this.sensors.NoseGearDown === true) this.CurrentState = OooiState.OnGround;
-            break;
+            if (this.sensors.NoseGearDown === true) {
+                this.CurrentState = OooiState.OnGround;
+                return true;
+            }
+            return false;
         case OooiState.OnGround:
             if (this.sensors.GroundSpeed.isNormalOperation() === true && this.sensors.GroundSpeed.value === 0) {
                 if (this.standStillTimestamp !== null) {
@@ -42,6 +48,7 @@ class OooiStateMachine {
                     /* ensure that we are standing still for the last 30 seconds */
                     if (difference >= 30) {
                         this.CurrentState = OooiState.InGate;
+                        return true;
                     }
                 } else {
                     this.standStillTimestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
@@ -49,18 +56,19 @@ class OooiStateMachine {
             } else {
                 this.standStillTimestamp = null;
             }
-            break;
+            return false;
         case OooiState.InGate:
             if (this.sensors.ParkingBrakeSet === false) {
                 /* check if the aircraft moving */
                 if (this.sensors.GroundSpeed.isNormalOperation() === true && this.sensors.GroundSpeed.value !== 0) {
                     this.CurrentState = OooiState.OutGate;
+                    return true;
                 }
             }
-            break;
+            return false;
         default:
             this.CurrentState = OooiState.Unknown;
-            break;
+            return false;
         }
     }
 }
