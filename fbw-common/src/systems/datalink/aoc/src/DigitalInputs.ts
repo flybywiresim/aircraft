@@ -44,6 +44,7 @@ export type AocDigitalInputCallbacks = {
     currentLongitude: (long: Arinc429Word) => void;
     currentAltitude: (alt: Arinc429Word) => void;
     groundSpeed: (speed: Arinc429Word) => void;
+    fuelOnBoard: (fob: number) => void;
 }
 
 export class DigitalInputs {
@@ -67,6 +68,7 @@ export class DigitalInputs {
         currentLongitude: null,
         currentAltitude: null,
         groundSpeed: null,
+        fuelOnBoard: null,
     };
 
     private subscriber: EventSubscriber<
@@ -238,6 +240,11 @@ export class DigitalInputs {
         this.subscriber.on('groundSpeed').handle((speed) => {
             if (this.callbacks.groundSpeed !== null) {
                 this.callbacks.groundSpeed(speed);
+            }
+        });
+        this.subscriber.on('fuelOnBoard').handle((fob) => {
+            if (this.callbacks.fuelOnBoard !== null) {
+                this.callbacks.fuelOnBoard(fob);
             }
         });
     }
