@@ -2,9 +2,9 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtcMessageButtonBusMessages } from '@datalink/atc';
+import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes, SensorsBusTypes } from '@datalink/common';
 import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes, SensorsBusTypes } from '../databus';
 
 interface SimVars {
     msfsUtcYear: number,
