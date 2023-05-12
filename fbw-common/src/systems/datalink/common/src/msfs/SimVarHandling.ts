@@ -4,8 +4,7 @@
 import { AtcMessageButtonBusMessages } from '@datalink/atc';
 import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { SensorsBusTypes } from 'datalink/common/src/databus/SensorsBus';
-import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes } from '../databus';
+import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes, SensorsBusTypes } from '../databus';
 
 interface SimVars {
     msfsUtcYear: number,
