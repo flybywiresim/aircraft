@@ -3,13 +3,13 @@ import {
     AtsuMessage,
     AtsuStatusCodes,
     Clock,
+    Constants,
     Conversion,
     CpdlcMessage,
     FmgcDataBusTypes,
     FreetextMessage,
     PositionReportData,
     RmpDataBusTypes,
-    SimVarSources,
 } from '@datalink/common';
 import { RouterAtcAocMessages } from '@datalink/router';
 import { Arinc429Word } from '@shared/arinc429';
@@ -389,7 +389,7 @@ export class DigitalInputs {
                     this.callbacks.onAtcMessageButtonPressed();
                 }
 
-                SimVar.SetSimVarValue(SimVarSources.atcMessageButtonPressed, 'Number', 0);
+                SimVar.SetSimVarValue(Constants.AtcButtonPressedName, 'Number', 0);
             }
         });
     }

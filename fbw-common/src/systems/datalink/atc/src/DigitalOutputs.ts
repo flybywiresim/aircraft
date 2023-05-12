@@ -1,5 +1,17 @@
-import { AtisMessage, AtisType, AtsuMessage, AtsuMessageType, AtsuStatusCodes, CpdlcMessage, DclMessage, FansMode, OclMessage, SimVarSources, WeatherMessage } from '@datalink/common';
-import { AtcAocRouterMessages } from '@datalink/router';
+import {
+    AtisMessage,
+    AtisType,
+    AtsuMessage,
+    AtsuMessageType,
+    AtsuStatusCodes,
+    Constants,
+    CpdlcMessage,
+    DclMessage,
+    FansMode,
+    OclMessage,
+    WeatherMessage,
+} from '@datalink/common';
+import { AtcAocRouterMessages, RouterAtcAocMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AtcAocMessages } from './databus/AtcAocBus';
 import { AtcDatalinkMessages } from './databus/DatalinkBus';
@@ -184,11 +196,11 @@ export class DigitalOutputs {
     }
 
     public activateButton(): void {
-        SimVar.SetSimVarValue(SimVarSources.atcMessageButtonActive, 'Bool', true);
+        SimVar.SetSimVarValue(Constants.AtcButtonActiveName, 'Bool', true);
     }
 
     public resetButton(): void {
-        SimVar.SetSimVarValue(SimVarSources.atcMessageButtonActive, 'Bool', false);
-        SimVar.SetSimVarValue(SimVarSources.atcMessageButtonPressed, 'Number', 0);
+        SimVar.SetSimVarValue(Constants.AtcButtonActiveName, 'Bool', false);
+        SimVar.SetSimVarValue(Constants.AtcButtonPressedName, 'Number', 0);
     }
 }

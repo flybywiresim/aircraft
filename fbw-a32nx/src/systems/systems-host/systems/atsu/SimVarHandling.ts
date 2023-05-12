@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtcMessageButtonBusMessages } from '@datalink/atc';
-import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes, SensorsBusTypes } from '@datalink/common';
+import { ClockDataBusTypes, Constants, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes, SensorsBusTypes } from '@datalink/common';
 import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
@@ -63,9 +63,6 @@ export enum SimVarSources {
     vhf3Powered = 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED',
     vhf3Frequency = 'A:COM ACTIVE FREQUENCY:3',
     transponderCode = 'TRANSPONDER CODE:1',
-    companyMessageCount = 'L:A32NX_COMPANY_MSG_COUNT',
-    atcMessageButtonActive = 'L:A32NX_DCDU_ATC_MSG_WAITING',
-    atcMessageButtonPressed = 'L:A32NX_DCDU_ATC_MSG_ACK',
     noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
     parkingBrakeSet = 'L:A32NX_PARK_BRAKE_LEVER_POS',
 }
@@ -106,9 +103,9 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         ['msfsVhf3Powered', { name: SimVarSources.vhf3Powered, type: SimVarValueType.Number }],
         ['msfsVhf3Frequency', { name: SimVarSources.vhf3Frequency, type: SimVarValueType.MHz }],
         ['msfsTransponderCode', { name: SimVarSources.transponderCode, type: SimVarValueType.Number }],
-        ['msfsCompanyMessageCount', { name: SimVarSources.companyMessageCount, type: SimVarValueType.Number }],
-        ['msfsAtcMessageButtonActive', { name: SimVarSources.atcMessageButtonActive, type: SimVarValueType.Bool }],
-        ['msfsAtcMessageButtonPressed', { name: SimVarSources.atcMessageButtonPressed, type: SimVarValueType.Number }],
+        ['msfsCompanyMessageCount', { name: Constants.CompanyMessageCountName, type: SimVarValueType.Number }],
+        ['msfsAtcMessageButtonActive', { name: Constants.AtcButtonActiveName, type: SimVarValueType.Bool }],
+        ['msfsAtcMessageButtonPressed', { name: Constants.AtcButtonPressedName, type: SimVarValueType.Number }],
         ['msfsNoseGearCompressed', { name: SimVarSources.noseGearCompressed, type: SimVarValueType.Bool }],
         ['msfsParkingBrakeSet', { name: SimVarSources.parkingBrakeSet, type: SimVarValueType.Bool }],
     ]);

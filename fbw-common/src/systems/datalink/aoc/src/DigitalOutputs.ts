@@ -6,8 +6,8 @@ import {
     AtsuMessage,
     AtsuMessageType,
     AtsuStatusCodes,
+    Constants,
     FreetextMessage,
-    SimVarSources,
     WeatherMessage,
 } from '@datalink/common';
 import { AtcAocRouterMessages, RouterAtcAocMessages } from '@datalink/router';
@@ -168,6 +168,6 @@ export class DigitalOutputs {
     }
 
     public setCompanyMessageCount(count: number): void {
-        SimVar.SetSimVarValue(SimVarSources.companyMessageCount, 'number', count);
+        SimVar.SetSimVarValue(Constants.CompanyMessageCountName, 'number', count);
     }
 }
