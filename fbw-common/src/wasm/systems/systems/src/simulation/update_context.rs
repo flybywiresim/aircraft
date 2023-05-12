@@ -4,6 +4,9 @@ use uom::{
     si::{
         acceleration::meter_per_second_squared,
         angle::radian,
+        angular_acceleration::radian_per_second_squared,
+        angular_jerk::degree_per_second_cubed,
+        angular_velocity::{degree_per_second, radian_per_second},
         f64::*,
         mass::kilogram,
         mass_density::kilogram_per_cubic_meter,
@@ -229,6 +232,12 @@ pub struct UpdateContext {
     total_yaw_inertia_id: VariableIdentifier,
     aoa_id: VariableIdentifier,
     surface_id: VariableIdentifier,
+    rotation_acc_x_id: VariableIdentifier,
+    rotation_acc_y_id: VariableIdentifier,
+    rotation_acc_z_id: VariableIdentifier,
+    rotation_vel_x_id: VariableIdentifier,
+    rotation_vel_y_id: VariableIdentifier,
+    rotation_vel_z_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -262,6 +271,9 @@ pub struct UpdateContext {
     total_yaw_inertia_slug_foot_squared: f64,
 
     surface: SurfaceTypeMsfs,
+
+    rotation_accel: Vector3<AngularAcceleration>,
+    rotation_vel: Vector3<AngularVelocity>,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -293,6 +305,12 @@ impl UpdateContext {
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
     pub(crate) const AOA_KEY: &'static str = "INCIDENCE ALPHA";
     pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
+    pub(crate) const ROTATION_ACCEL_X_KEY: &'static str = "ROTATION ACCELERATION BODY X";
+    pub(crate) const ROTATION_ACCEL_Y_KEY: &'static str = "ROTATION ACCELERATION BODY Y";
+    pub(crate) const ROTATION_ACCEL_Z_KEY: &'static str = "ROTATION ACCELERATION BODY Z";
+    pub(crate) const ROTATION_VEL_X_KEY: &'static str = "ROTATION VELOCITY BODY X";
+    pub(crate) const ROTATION_VEL_Y_KEY: &'static str = "ROTATION VELOCITY BODY Y";
+    pub(crate) const ROTATION_VEL_Z_KEY: &'static str = "ROTATION VELOCITY BODY Z";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -356,6 +374,12 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
             aoa_id: context.get_identifier(Self::AOA_KEY.to_owned()),
             surface_id: context.get_identifier(Self::SURFACE_KEY.to_owned()),
+            rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
+            rotation_acc_y_id: context.get_identifier(Self::ROTATION_ACCEL_Y_KEY.to_owned()),
+            rotation_acc_z_id: context.get_identifier(Self::ROTATION_ACCEL_Z_KEY.to_owned()),
+            rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
+            rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
+            rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -405,6 +429,9 @@ impl UpdateContext {
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 10.,
             surface: SurfaceTypeMsfs::Asphalt,
+
+            rotation_accel: Vector3::default(),
+            rotation_vel: Vector3::default(),
         }
     }
 
@@ -439,6 +466,13 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
             aoa_id: context.get_identifier("INCIDENCE ALPHA".to_owned()),
             surface_id: context.get_identifier("SURFACE TYPE".to_owned()),
+
+            rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
+            rotation_acc_y_id: context.get_identifier(Self::ROTATION_ACCEL_Y_KEY.to_owned()),
+            rotation_acc_z_id: context.get_identifier(Self::ROTATION_ACCEL_Z_KEY.to_owned()),
+            rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
+            rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
+            rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -484,6 +518,9 @@ impl UpdateContext {
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 1.,
             surface: SurfaceTypeMsfs::Asphalt,
+
+            rotation_accel: Vector3::default(),
+            rotation_vel: Vector3::default(),
         }
     }
 
@@ -550,6 +587,37 @@ impl UpdateContext {
 
         let surface_read: f64 = reader.read(&self.surface_id);
         self.surface = surface_read.into();
+
+        self.rotation_accel = Vector3::new(
+            AngularAcceleration::new::<radian_per_second_squared>(
+                reader.read(&self.rotation_acc_x_id),
+            ),
+            AngularAcceleration::new::<radian_per_second_squared>(
+                reader.read(&self.rotation_acc_y_id),
+            ),
+            AngularAcceleration::new::<radian_per_second_squared>(
+                reader.read(&self.rotation_acc_z_id),
+            ),
+        );
+
+        self.rotation_vel = Vector3::new(
+            AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_x_id)),
+            AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_y_id)),
+            AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_z_id)),
+        );
+
+        println!(
+            "CONTEXT Avel {:.2}/{:.2}/{:.2}",
+            self.rotation_vel[0].get::<radian_per_second>(),
+            self.rotation_vel[1].get::<radian_per_second>(),
+            self.rotation_vel[2].get::<radian_per_second>()
+        );
+        println!(
+            "CONTEXT Aacc {:.2}/{:.2}/{:.2}",
+            self.rotation_accel[0].get::<radian_per_second_squared>(),
+            self.rotation_accel[1].get::<radian_per_second_squared>(),
+            self.rotation_accel[2].get::<radian_per_second_squared>()
+        );
 
         self.update_relative_wind();
 
@@ -756,6 +824,22 @@ impl UpdateContext {
 
     pub fn aoa(&self) -> Angle {
         self.aoa
+    }
+
+    pub fn rotation_acceleration_rad_s2(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.rotation_accel[0].get::<radian_per_second_squared>(),
+            self.rotation_accel[1].get::<radian_per_second_squared>(),
+            self.rotation_accel[2].get::<radian_per_second_squared>(),
+        )
+    }
+
+    pub fn rotation_velocity_rad_s(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.rotation_vel[0].get::<radian_per_second>(),
+            self.rotation_vel[1].get::<radian_per_second>(),
+            self.rotation_vel[2].get::<radian_per_second>(),
+        )
     }
 }
 

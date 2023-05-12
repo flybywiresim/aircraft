@@ -246,9 +246,24 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("VELOCITY BODY Z", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
     .provides_aircraft_variable("INCIDENCE ALPHA", "degree", 0)?
-    .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
-    .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
-    .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable("ROTATION VELOCITY BODY X", "radian per second", 0)?
+    .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "radian per second", 0)?
+    .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "radian per second", 0)?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY X",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Y",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Z",
+        "radian per second squared",
+        0,
+    )?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),

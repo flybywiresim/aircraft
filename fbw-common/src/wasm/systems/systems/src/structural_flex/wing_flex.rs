@@ -6,7 +6,9 @@ use crate::simulation::{
     SimulatorWriter, SurfaceTypeMsfs, UpdateContext, VariableIdentifier, Write,
 };
 
-use crate::shared::{random_from_normal_distribution, random_from_range};
+use crate::shared::{
+    local_acceleration_at_plane_coordinate, random_from_normal_distribution, random_from_range,
+};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -24,7 +26,7 @@ use uom::si::{
 use std::fmt;
 use std::time::Duration;
 
-use nalgebra::{Vector2, Vector5};
+use nalgebra::{Vector2, Vector3, Vector5};
 
 enum GearStrutId {
     Nose = 0,
@@ -787,6 +789,14 @@ impl WingFlexA380 {
         //     self.flex_physics[1].nodes[3].position().get::<meter>(),
         //     self.flex_physics[1].nodes[4].position().get::<meter>(),
         // );
+
+        let debug_right_tip_accel =
+            local_acceleration_at_plane_coordinate(context, Vector3::new(30., 0., 0.));
+
+        println!(
+            "RIGHT TIP ACCEL LOC {:.2}/{:.2}/{:.2}",
+            debug_right_tip_accel[0], debug_right_tip_accel[1], debug_right_tip_accel[2]
+        );
     }
 }
 impl SimulationElement for WingFlexA380 {
@@ -2221,6 +2231,15 @@ mod tests {
 
     #[test]
     fn vibration_testing() {
+        let mut test_bed = WingFlexTestBed::new()
+            .with_nominal_weight()
+            .steady_on_ground();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_millis(5000));
+    }
+
+    #[test]
+    fn rotational_accel_testing() {
         let mut test_bed = WingFlexTestBed::new()
             .with_nominal_weight()
             .steady_on_ground();
