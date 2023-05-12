@@ -4,5 +4,6 @@
 export * from './Clock';
 export * from './DatalinkCommunicationSystems';
 export * from './DatalinkStatusCodes';
+export * from './OooiState';
 export * from './PositionReportData';
 export * from './Waypoint';
