@@ -107,12 +107,15 @@ export abstract class Guidable {
      * @param distanceBeforeTerminator
      */
     getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
+        let accumulator = 0;
         for (const vector of [...this.predictedPath].reverse()) {
             const length = pathVectorLength(vector);
 
-            if (length > distanceBeforeTerminator) {
-                return pathVectorPoint(vector, distanceBeforeTerminator);
+            if (accumulator + length > distanceBeforeTerminator) {
+                return pathVectorPoint(vector, distanceBeforeTerminator - accumulator);
             }
+
+            accumulator += length;
         }
         return undefined;
     }
