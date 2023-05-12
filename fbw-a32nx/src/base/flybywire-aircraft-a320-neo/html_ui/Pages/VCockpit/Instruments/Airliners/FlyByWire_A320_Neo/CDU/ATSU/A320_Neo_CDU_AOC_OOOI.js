@@ -11,18 +11,23 @@ class CDUAocOOOI {
 
         let outTime = "{cyan}*--:--{end}";
         let outFuel = "{cyan}---.-*{end}";
+        let outIcao = "\xa0\xa0\xa0\xa0";
         let offTime = "{cyan}*--:--{end}";
         let offFuel = "{cyan}---.-*{end}";
         let onTime = "{cyan}*--:--{end}";
         let onFuel = "{cyan}---.-*{end}";
         let inTime = "{cyan}*--:--{end}";
         let inFuel = "{cyan}---.-*{end}";
+        let inIcao = "\xa0\xa0\xa0\xa0";
 
         const messages = mcdu.atsu.getAocOooiMessages();
         if (messages.length > offset) {
             if (messages[offset].OutGate.timestamp !== null) {
                 outTime = `{green}\xa0${AOCOooi.TimestampToString(messages[offset].OutGate.timestamp.Seconds)}{end}`;
                 outFuel = `{green}${Number(messages[offset].OutGate.fuel).toFixed(1).toString()}\xa0{end}`;
+            }
+            if (messages[offset].OutGate.icao !== '') {
+                outIcao = `{green}${messages[offset].OutGate.icao}{end}`;
             }
 
             if (messages[offset].OffGround.timestamp !== null) {
@@ -39,18 +44,21 @@ class CDUAocOOOI {
                 inTime = `{green}\xa0${AOCOooi.TimestampToString(messages[offset].InGate.timestamp.Seconds)}{end}`;
                 inFuel = `{green}${Number(messages[offset].InGate.fuel).toFixed(1).toString()}\xa0{end}`;
             }
+            if (messages[offset].InGate.icao !== '') {
+                outIcao = `{green}${messages[offset].InGate.icao}{end}`;
+            }
         }
 
         mcdu.setTemplate([
             ["AOC OOOI", (offset + 1).toString(), "3"],
             ["TIME", "FUEL"],
-            [outTime, outFuel, "{small}OUT\xa0\xa0\xa0TEST{end}"],
+            [outTime, outFuel, `{small}OUT\xa0\xa0\xa0${outIcao}{end}`],
             ["", ""],
-            [offTime, offFuel, "{small}OFF{end}"],
+            [offTime, offFuel, "{small}OFF\xa0\xa0\xa0\xa0\xa0\xa0\xa0{end}"],
             ["", ""],
-            [onTime, onFuel, "{small}ON{end}"],
+            [onTime, onFuel, "{small}ON\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0{end}"],
             ["", ""],
-            [inTime, inFuel, "{small}IN\xa0\xa0\xa0\xa0TEST{end}"],
+            [inTime, inFuel, `{small}IN\xa0\xa0\xa0\xa0${inIcao}{end}`],
             [""],
             [""],
             ["\xa0RETURN TO"],
