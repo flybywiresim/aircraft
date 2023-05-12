@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuTimestamp } from './AtsuTimestamp';
+import { AtsuTimestamp } from '../types/AtsuTimestamp';
 
 export enum AtsuMessageNetwork {
     Hoppie,

@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { Clock } from '../types';
+import { Clock } from '.';
 import { timestampToString } from '../components/Convert';
 
 /**
