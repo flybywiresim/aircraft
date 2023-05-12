@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessage, AtsuMessageType, AtsuMessageSerializationFormat } from './AtsuMessage';
-import { AtsuTimestamp } from './AtsuTimestamp';
+import { AtsuTimestamp } from '../types/AtsuTimestamp';
 
 export class OutOffOnInMessage extends AtsuMessage {
     public OutGate: { icao: string; timestamp: AtsuTimestamp; fuel: number } = {
