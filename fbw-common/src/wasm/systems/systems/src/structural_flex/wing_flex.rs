@@ -949,10 +949,30 @@ impl WingSectionNode {
         self.solve_physics(context);
     }
 
+    //TODO move to updatecontext?
+    fn gravity_on_plane_y_axis(context: &UpdateContext) -> Acceleration {
+        let pitch_rotation = context.attitude().pitch_rotation_transform();
+
+        let bank_rotation = context.attitude().bank_rotation_transform();
+
+        let gravity_acceleration_world_reference = Vector3::new(0., -9.8, 0.);
+
+        // Total acceleration in plane reference is the gravity in world reference rotated to plane reference.
+        let local_gravity_plane_reference =
+            pitch_rotation * (bank_rotation * gravity_acceleration_world_reference);
+
+        Acceleration::new::<meter_per_second_squared>(local_gravity_plane_reference[1])
+    }
+
     fn apply_gravity_force(&mut self, context: &UpdateContext) {
         self.sum_of_forces += Force::new::<newton>(
-            context.acceleration_plane_reference_unfiltered_ms2_vector()[1]
+            Self::gravity_on_plane_y_axis(context).get::<meter_per_second_squared>()
                 * self.total_mass().get::<kilogram>(),
+        );
+
+        println!(
+            "GRAVITY Y : {:.3}",
+            Self::gravity_on_plane_y_axis(context).get::<meter_per_second_squared>()
         );
     }
 
