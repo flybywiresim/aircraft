@@ -45,4 +45,26 @@ export class AtsuTimestamp {
         timestamp.Seconds = clock.secondsOfDay;
         return timestamp;
     }
+
+    public static difference(compare: AtsuTimestamp, reference: AtsuTimestamp): number {
+        const compareDate = new Date(
+            compare.Year,
+            compare.Month,
+            compare.Day,
+            Math.floor(compare.Seconds / 3600),
+            Math.floor(compare.Seconds / 60) % 60,
+            compare.Seconds % 60,
+        );
+
+        const referenceDate = new Date(
+            reference.Year,
+            reference.Month,
+            reference.Day,
+            Math.floor(reference.Seconds / 3600),
+            Math.floor(reference.Seconds / 60) % 60,
+            reference.Seconds % 60,
+        );
+
+        return compareDate.valueOf() - referenceDate.valueOf();
+    }
 }
