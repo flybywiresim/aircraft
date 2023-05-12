@@ -12,6 +12,8 @@ import {
     FlightPerformanceMessage,
     FlightFuelMessage,
     FlightWeightsMessage,
+    OutOffOnInMessage,
+    SensorsMessage,
 } from '@datalink/common';
 
 export interface AocDatalinkMessages {
@@ -30,6 +32,8 @@ export interface AocDatalinkMessages {
     aocReceivedWeights: { requestId: number; data: FlightWeightsMessage };
     aocResynchronizeWeatherMessage: WeatherMessage;
     aocResynchronizeFreetextMessage: FreetextMessage;
+    aocResynchronizeOooiMessages: OutOffOnInMessage[];
+    aocResynchronizeSensorsMessage: SensorsMessage;
 
     aocPrintMessage: AtsuMessage;
     aocDeleteMessage: number;
