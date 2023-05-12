@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.11.0
+
+1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
+
 ## 0.10.0
 
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
