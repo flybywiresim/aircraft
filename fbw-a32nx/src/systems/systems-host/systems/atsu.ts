@@ -50,5 +50,6 @@ export class AtsuSystem {
     public update(): void {
         this.simVarHandling.update();
         this.router.update();
+        this.aoc.update();
     }
 }
