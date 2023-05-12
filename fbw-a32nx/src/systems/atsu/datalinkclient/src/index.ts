@@ -26,6 +26,8 @@ import {
     FlightFuelMessage,
     FlightWeightsMessage,
     FlightPlanMessage,
+    SensorsMessage,
+    OutOffOnInMessage,
 } from '@datalink/common';
 import { DatalinkRouterMessages, RouterDatalinkMessages } from '@datalink/router';
 import { FlightPhaseManager } from '@fmgc/flightphase';
@@ -497,5 +499,13 @@ export class DatalinkClient {
         default:
             return DatalinkModeCode.None;
         }
+    }
+
+    public getAocSensorsMessage(): SensorsMessage {
+        return this.messageStorage.aocSensorsMessage;
+    }
+
+    public getAocOooiMessages(): OutOffOnInMessage[] {
+        return this.messageStorage.aocOooiMessages;
     }
 }
