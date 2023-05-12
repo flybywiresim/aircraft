@@ -7,7 +7,7 @@ import { AtcDatalinkMessages } from './databus/DatalinkBus';
 export class DigitalOutputs {
     private requestId: number = 0;
 
-    private subscriber: EventSubscriber<AtcAocRouterMessages> = null;
+    private subscriber: EventSubscriber<RouterAtcAocMessages> = null;
 
     private publisher: Publisher<AtcAocMessages & AtcAocRouterMessages & AtcDatalinkMessages> = null;
 
@@ -18,7 +18,7 @@ export class DigitalOutputs {
     private weatherResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, WeatherMessage]) => boolean)[] = [];
 
     constructor(private readonly bus: EventBus, private readonly synchronizedAoc: boolean, private readonly synchronizedRouter: boolean) {
-        this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
+        this.subscriber = this.bus.getSubscriber<RouterAtcAocMessages>();
         this.publisher = this.bus.getPublisher<AtcAocMessages & AtcAocRouterMessages & AtcDatalinkMessages>();
 
         this.subscriber.on('routerSendMessageResponse').handle((response) => {
