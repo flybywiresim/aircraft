@@ -54,6 +54,7 @@
 
 ## 0.10.0
 
+1. [SYSTEM] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
 1. [FMGC] Fix loading VHF navaids without region - @tracernz (Mike)
 1. [EFB] Added pretty release name to flyPad about page - @frankkopp (Frank Kopp)

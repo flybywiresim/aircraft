@@ -28,6 +28,7 @@ import { LegType } from '@fmgc/types/fstypes/FSEnums';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ApproachStats, HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentType } from '@fmgc/wtsdk';
+import { ICAO } from '@microsoft/msfs-sdk';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
@@ -337,7 +338,7 @@ export class FlightPlanManager {
      * @param callback A callback to call when the operation has completed.
      */
     public async setOrigin(icao: string, callback = () => { }): Promise<void> {
-        const sameAirport = this.getOrigin()?.ident === icao;
+        const sameAirport = ICAO.getIdent(icao) === icao;
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
         if (airport) {
@@ -355,6 +356,7 @@ export class FlightPlanManager {
             }
             this.updateFlightPlanVersion().catch(console.error);
         }
+        NXDataStore.set('PLAN_ORIGIN', ICAO.getIdent(icao));
         callback();
     }
 
@@ -753,7 +755,7 @@ export class FlightPlanManager {
      * @param callback A callback to call once the operation completes.
      */
     public async setDestination(icao: string, callback = () => { }): Promise<void> {
-        const sameAirport = this.getDestination()?.ident === icao;
+        const sameAirport = ICAO.getIdent(icao) === icao;
         const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const destinationIndex = currentFlightPlan.length - 1;
@@ -785,6 +787,7 @@ export class FlightPlanManager {
         }
 
         this.updateFlightPlanVersion().catch(console.error);
+        NXDataStore.set('PLAN_DESTINATION', ICAO.getIdent(icao));
         callback();
     }
 

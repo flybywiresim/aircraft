@@ -230,6 +230,3 @@ export class NXApiConnector {
         return 15000;
     }
 }
-
-NXDataStore.set('PLAN_ORIGIN', '');
-NXDataStore.set('PLAN_DESTINATION', '');
