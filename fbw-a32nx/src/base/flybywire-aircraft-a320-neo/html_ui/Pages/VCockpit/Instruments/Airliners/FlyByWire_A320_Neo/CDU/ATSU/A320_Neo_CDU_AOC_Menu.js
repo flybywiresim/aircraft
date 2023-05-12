@@ -11,7 +11,7 @@ class CDUAocMenu {
             ["", "RECEIVED\xa0"],
             ["<ATIS", "MESSAGES>"],
             ["", "SENT\xa0"],
-            ["", "MESSAGES>"],
+            ["<SENSORS", "MESSAGES>"],
             [""],
             ["", "DIVERSION>[color]inop"],
             ["\xa0ATSU DLK"],
@@ -29,6 +29,12 @@ class CDUAocMenu {
         };
         mcdu.onLeftInput[2] = () => {
             CDUAocRequestsAtis.ShowPage(mcdu);
+        };
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[3] = () => {
+            CDUAocSensors.ShowPage(mcdu);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
