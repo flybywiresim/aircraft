@@ -33,6 +33,18 @@ export class OutOffOnInMessage extends AtsuMessage {
         this.Station = 'AOC';
     }
 
+    public static deserialize(jsonData: Record<string, unknown> | OutOffOnInMessage): OutOffOnInMessage {
+        const retval = new OutOffOnInMessage();
+
+        AtsuMessage.deserialize(jsonData, retval);
+        retval.OutGate = jsonData.OutGate as { icao: string; timestamp: AtsuTimestamp; fuel: number };
+        retval.OffGround = jsonData.OffGround as { timestamp: AtsuTimestamp; fuel: number };
+        retval.OnGround = jsonData.OnGround as { timestamp: AtsuTimestamp; fuel: number };
+        retval.InGate = jsonData.InGate as { icao: string; timestamp: AtsuTimestamp; fuel: number };
+
+        return retval;
+    }
+
     public serialize(_format: AtsuMessageSerializationFormat): string {
         return 'OOOI\n'
             + `OUT:${this.OutGate.icao},${this.OutGate.timestamp.fmsTimestamp()},${this.OutGate.fuel}\n`
