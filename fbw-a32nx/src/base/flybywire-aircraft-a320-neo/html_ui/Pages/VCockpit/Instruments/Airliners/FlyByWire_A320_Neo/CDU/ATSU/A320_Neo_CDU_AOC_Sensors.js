@@ -52,7 +52,7 @@ class CDUAocSensors {
                 altitude = `{green}${Math.round(message.Altitude).toString()}{end}`;
             }
             if (message.GroundSpeed !== undefined) {
-                speed = `{green}${message.GroundSpeed.toString()}{end}`;
+                speed = `{green}${Math.round(message.GroundSpeed).toString()}{end}`;
             }
 
             fob = `{green}${Number(message.FuelOnBoard).toFixed(1).toString()}{end}`;

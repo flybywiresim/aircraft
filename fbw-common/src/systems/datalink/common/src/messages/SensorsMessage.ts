@@ -63,13 +63,13 @@ export class SensorsMessage extends AtsuMessage {
         }
 
         return 'AOC SENSORS\n'
-            + `OOOI: ${state}`
-            + `NOSEGEAR: ${this.NoseGearDown}\n`
-            + `PARKINGBRAKE: ${this.ParkingBrakeSet}\n`
-            + `LATITUDE: ${this.Latitude}\n`
-            + `LONGITUDE: ${this.Longitude}\n`
-            + `ALTITUDE: ${this.Altitude}\n`
-            + `GROUNDSPEED: ${this.GroundSpeed}\n`
-            + `FOB: ${this.FuelOnBoard}`;
+            + `OOOI: ${state}\n`
+            + `NOSE STRUT: ${this.NoseGearDown === true ? 'ON GND' : 'IN AIR'}\n`
+            + `PARKING BRAKE: ${this.ParkingBrakeSet === true ? 'SET' : 'RLSD'}\n`
+            + `LATITUDE: ${Number(this.Latitude).toFixed(4).toString()}\n`
+            + `LONGITUDE: ${Number(this.Longitude).toFixed(4).toString()}\n`
+            + `ALTITUDE: ${Math.round(this.Altitude).toString()}\n`
+            + `GROUND SPEED: ${Math.round(this.GroundSpeed).toString()}\n`
+            + `FOB: ${Number(this.FuelOnBoard).toFixed(1).toString()}`;
     }
 }
