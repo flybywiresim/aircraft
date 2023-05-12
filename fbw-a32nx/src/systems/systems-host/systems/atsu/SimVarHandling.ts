@@ -36,6 +36,7 @@ interface SimVars {
     msfsAtcMessageButtonPressed: number,
     msfsNoseGearCompressed: boolean,
     msfsParkingBrakeSet: boolean,
+    msfsFuelOnBoard: number,
 }
 
 export enum SimVarSources {
@@ -65,6 +66,7 @@ export enum SimVarSources {
     transponderCode = 'TRANSPONDER CODE:1',
     noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
     parkingBrakeSet = 'L:A32NX_PARK_BRAKE_LEVER_POS',
+    fuelOnBoard = 'FUEL TOTAL QUANTITY WEIGHT',
 }
 
 export class SimVarHandling extends SimVarPublisher<SimVars> {
@@ -108,6 +110,7 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         ['msfsAtcMessageButtonPressed', { name: Constants.AtcButtonPressedName, type: SimVarValueType.Number }],
         ['msfsNoseGearCompressed', { name: SimVarSources.noseGearCompressed, type: SimVarValueType.Bool }],
         ['msfsParkingBrakeSet', { name: SimVarSources.parkingBrakeSet, type: SimVarValueType.Bool }],
+        ['msfsFuelOnBoard', { name: SimVarSources.fuelOnBoard, type: SimVarValueType.Pounds }],
     ]);
 
     public constructor(private readonly eventBus: EventBus) {
@@ -144,6 +147,7 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         super.subscribe('msfsAtcMessageButtonPressed');
         super.subscribe('msfsNoseGearCompressed');
         super.subscribe('msfsParkingBrakeSet');
+        super.subscribe('msfsFuelOnBoard');
     }
 
     public initialize(): void {
@@ -237,6 +241,7 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
         this.subscriber.on('msfsAtcMessageButtonPressed').handle((pressed: number) => this.datalinkPublisher.pub('atcMessageButtonPressed', pressed !== 0, false, false));
         this.subscriber.on('msfsNoseGearCompressed').handle((compressed: boolean) => this.datalinkPublisher.pub('noseGearCompressed', compressed, false, false));
         this.subscriber.on('msfsParkingBrakeSet').handle((compressed: boolean) => this.datalinkPublisher.pub('parkingBrakeSet', compressed, false, false));
+        this.subscriber.on('msfsFuelOnBoard').handle((fob: number) => this.datalinkPublisher.pub('fuelOnBoard', fob * 0.453592, false, false));
 
         this.connectedCallback();
     }
