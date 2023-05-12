@@ -1,8 +1,8 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AocFmsMessages } from '@datalink/aoc';
-import { AtcFmsMessages } from '@datalink/atc';
+import { AocDatalinkMessages } from '@datalink/aoc';
+import { AtcDatalinkMessages } from '@datalink/atc';
 import {
     AtisMessage,
     AtsuMessage,
@@ -11,6 +11,8 @@ import {
     CpdlcMessage,
     DclMessage,
     OclMessage,
+    OutOffOnInMessage,
+    SensorsMessage,
 } from '@datalink/common';
 import { EventSubscriber } from '@microsoft/msfs-sdk';
 
@@ -24,6 +26,10 @@ export class MessageStorage {
     public aocUplinkMessages: AtsuMessage[] = [];
 
     public aocDownlinkMessages: AtsuMessage[] = [];
+
+    public aocSensorsMessage: SensorsMessage = null;
+
+    public aocOooiMessages: OutOffOnInMessage[] = [];
 
     private resynchronizeAocMessageQueue(message: AtsuMessage, queue: AtsuMessage[]): void {
         const index = queue.findIndex((entry) => entry.UniqueMessageID === message.UniqueMessageID);
@@ -64,7 +70,7 @@ export class MessageStorage {
         this.deleteMessageFromQueue(uid, this.aocUplinkMessages);
     }
 
-    constructor(private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & AocFmsMessages>) {
+    constructor(private readonly subscriber: EventSubscriber<AtcDatalinkMessages & AocDatalinkMessages>) {
         this.subscriber.on('atcAtisReports').handle((reports) => {
             this.atisReports = new Map();
 
@@ -83,6 +89,8 @@ export class MessageStorage {
         });
         this.subscriber.on('aocResynchronizeWeatherMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
         this.subscriber.on('aocResynchronizeFreetextMessage').handle((message) => this.resynchronizeAocMessage(Conversion.messageDataToMessage(message)));
+        this.subscriber.on('aocResynchronizeSensorsMessage').handle((data) => this.aocSensorsMessage = data);
+        this.subscriber.on('aocResynchronizeOooiMessages').handle((data) => this.aocOooiMessages = data);
         this.subscriber.on('atcResynchronizeCpdlcMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as CpdlcMessage));
         this.subscriber.on('atcResynchronizeDclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as DclMessage));
         this.subscriber.on('atcResynchronizeOclMessage').handle((message) => this.resynchronizeAtcMessage(Conversion.messageDataToMessage(message) as OclMessage));
@@ -93,6 +101,8 @@ export class MessageStorage {
     public resetAocData(): void {
         this.aocUplinkMessages = [];
         this.aocDownlinkMessages = [];
+        this.aocSensorsMessage = null;
+        this.aocOooiMessages = [];
     }
 
     public resetAtcData(): void {
