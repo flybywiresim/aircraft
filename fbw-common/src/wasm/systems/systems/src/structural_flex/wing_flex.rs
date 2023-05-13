@@ -733,7 +733,11 @@ impl WingFlexA380 {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        surface_vibration_acceleration: Acceleration,
+    ) {
         self.wing_lift.update(context);
         self.wing_lift_dynamic
             .update(self.wing_lift.total_plane_lift());
@@ -780,13 +784,12 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.left_tanks_masses()),
-            Acceleration::new::<meter_per_second_squared>(
-                self.left_right_wing_root_position[0]
-                    .total_wing_root_accel_filtered
-                    .output(),
-            ),
-            self.wing_lift.ground_weight_ratio(),
-            self.left_right_wing_root_position[0].position_delta(),
+            surface_vibration_acceleration
+                + Acceleration::new::<meter_per_second_squared>(
+                    self.left_right_wing_root_position[0]
+                        .total_wing_root_accel_filtered
+                        .output(),
+                ),
         );
 
         self.flex_physics[1].update(
@@ -796,13 +799,12 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
-            Acceleration::new::<meter_per_second_squared>(
-                self.left_right_wing_root_position[1]
-                    .total_wing_root_accel_filtered
-                    .output(),
-            ),
-            self.wing_lift.ground_weight_ratio(),
-            self.left_right_wing_root_position[1].position_delta(),
+            surface_vibration_acceleration
+                + Acceleration::new::<meter_per_second_squared>(
+                    self.left_right_wing_root_position[1]
+                        .total_wing_root_accel_filtered
+                        .output(),
+                ),
         );
 
         // println!(
@@ -818,6 +820,10 @@ impl WingFlexA380 {
         //     self.flex_physics[1].nodes[3].position().get::<meter>(),
         //     self.flex_physics[1].nodes[4].position().get::<meter>(),
         // );
+    }
+
+    pub fn ground_weight_ratio(&self) -> Ratio {
+        self.wing_lift.ground_weight_ratio()
     }
 }
 impl SimulationElement for WingFlexA380 {
@@ -1121,8 +1127,6 @@ struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     neg_flex_coeff_id: VariableIdentifier,
     exponent_flex_id: VariableIdentifier,
 
-    bumps: SurfaceVibrationGenerator,
-
     external_accelerations_filtered: LowPassFilter<Acceleration>,
 }
 impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMBER, LINK_NUMBER> {
@@ -1186,8 +1190,6 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
             neg_flex_coeff_id: context.get_identifier("WING_FLEX_DEV_NEG_STIFF_COEFF".to_owned()),
             exponent_flex_id: context.get_identifier("WING_FLEX_DEV_STIFF_EXPO_ENA".to_owned()),
 
-            bumps: SurfaceVibrationGenerator::new(),
-
             external_accelerations_filtered: LowPassFilter::new(Duration::from_millis(50)),
         }
     }
@@ -1197,22 +1199,13 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         context: &UpdateContext,
         lift_forces: &[f64],
         fuel_masses: [Mass; NODE_NUMBER],
-        external_acceleration: Acceleration,
-        weight_on_wheels_ratio: Ratio,
-        external_position_offset: Length,
+        external_acceleration_from_plane_body: Acceleration,
     ) {
         self.updater_max_step.update(context);
 
         for cur_time_step in &mut self.updater_max_step {
-            self.bumps
-                .update(&context.with_delta(cur_time_step), weight_on_wheels_ratio);
-
-            let external_accelerationDEV = self.bumps.final_bump_accel;
-
-            self.external_accelerations_filtered.update(
-                context.delta(),
-                external_acceleration + external_accelerationDEV,
-            );
+            self.external_accelerations_filtered
+                .update(context.delta(), external_acceleration_from_plane_body);
 
             self.nodes[0].apply_external_offet(
                 -0.006
@@ -1384,116 +1377,6 @@ impl<const NODE_NUMBER: usize> WingAnimationMapper<NODE_NUMBER> {
     }
 }
 
-struct BumpGenerator {
-    bump_accel: Acceleration,
-
-    seconds_per_bump: Duration,
-
-    mean_bump: f64,
-    std_bump: f64,
-}
-impl BumpGenerator {
-    fn new(seconds_per_bump: Duration, mean_bump: f64, std_bump: f64) -> Self {
-        Self {
-            bump_accel: Acceleration::default(),
-            seconds_per_bump,
-
-            mean_bump,
-            std_bump,
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        let bump_encountered = random_from_range(0., 1.)
-            < context.delta_as_secs_f64() / self.seconds_per_bump.as_secs_f64();
-
-        if bump_encountered {
-            self.bump_accel = Acceleration::new::<meter_per_second_squared>(
-                random_from_normal_distribution(self.mean_bump, self.std_bump),
-            );
-
-            if random_from_range(0., 1.) < 0.5 {
-                self.bump_accel = -self.bump_accel;
-            }
-            // println!(
-            //     "********BBBBBUUUUUUMMMMPPPPPPP******* {:.2}",
-            //     self.bump_accel.get::<meter_per_second_squared>()
-            // );
-        } else {
-            self.bump_accel = Acceleration::default();
-        }
-    }
-}
-
-fn to_surface_vibration_coeff(surface: SurfaceTypeMsfs) -> f64 {
-    // println!("to_surface_vibration_coeff {:?} ", surface);
-    match surface {
-        SurfaceTypeMsfs::Concrete => 1.,
-        SurfaceTypeMsfs::Grass => 10.,
-        SurfaceTypeMsfs::Dirt => 10.,
-        SurfaceTypeMsfs::Grass_bumpy => 15.,
-        SurfaceTypeMsfs::Bituminus => 2.,
-        SurfaceTypeMsfs::Tarmac => 1.2,
-        SurfaceTypeMsfs::Asphalt => 1.,
-        SurfaceTypeMsfs::Macadam => 1.5,
-        _ => 3.,
-    }
-}
-
-struct SurfaceVibrationGenerator {
-    bumps: Vec<BumpGenerator>,
-
-    final_bump_accel: Acceleration,
-}
-impl SurfaceVibrationGenerator {
-    fn new() -> Self {
-        // let big_holes = BumpGenerator::new(Duration::from_secs(10), 60., 15.);
-        // let small_holes = BumpGenerator::new(Duration::from_secs(3), 25., 5.);
-        // let vibrations = BumpGenerator::new(Duration::from_millis(10), 8., 4.);
-
-        // let all_bumps = vec![big_holes, small_holes, vibrations];
-
-        let big_holes = BumpGenerator::new(Duration::from_secs(15), 9., 2.);
-        let small_holes = BumpGenerator::new(Duration::from_secs(5), 3., 0.5);
-        let vibrations = BumpGenerator::new(Duration::from_millis(10), 0.7, 0.2);
-
-        let all_bumps = vec![vibrations, small_holes, big_holes];
-
-        Self {
-            bumps: all_bumps,
-            final_bump_accel: Acceleration::default(),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext, weight_on_wheels_ratio: Ratio) {
-        self.final_bump_accel = Acceleration::default();
-
-        let local_velocity =
-            Velocity::new::<meter_per_second>(context.local_velocity().to_ms_vector()[2]);
-
-        let velocity_coeff = if local_velocity.get::<knot>() < 2. {
-            0.
-        } else {
-            0.1 * local_velocity.get::<knot>().abs().sqrt()
-        };
-
-        // println!(
-        //     "SURFAAAAAAACE {:?} : coeff applied {:.2} WoW:{:.2} VelCoef{:.2}",
-        //     context.surface_type(),
-        //     to_surface_vibration_coeff(context.surface_type()),
-        //     weight_on_wheels_ratio.get::<ratio>(),
-        //     velocity_coeff
-        // );
-        for bump in &mut self.bumps {
-            bump.update(context);
-            self.final_bump_accel += bump.bump_accel
-                * weight_on_wheels_ratio
-                * to_surface_vibration_coeff(context.surface_type())
-                * velocity_coeff;
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1520,7 +1403,7 @@ mod tests {
     }
     impl Aircraft for WingFlexTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.wing_flex.update(context);
+            self.wing_flex.update(context, Acceleration::default());
 
             println!(
                 "WING HEIGHTS L/O\\R => {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",

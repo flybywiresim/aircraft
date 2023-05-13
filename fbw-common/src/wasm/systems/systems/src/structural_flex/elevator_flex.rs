@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-use uom::si::{f64::*, torque::newton_meter};
+use uom::si::{acceleration::meter_per_second_squared, f64::*, torque::newton_meter};
 
 use nalgebra::Vector3;
 use std::fmt::Debug;
@@ -36,6 +36,8 @@ impl AftConeFlexPhysics {
     //      stronger it is to flex the rudder relative to lower surface
     const AERODYNAMIC_FLEX_COEF_FOR_UPPER_RUDDER_SURFACE: f64 = 1.5;
 
+    const SURFACE_VIBRATION_SENSITIVITY: f64 = 1.0;
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             position_id: context.get_identifier("AFT_FLEX_POSITION".to_owned()),
@@ -59,8 +61,21 @@ impl AftConeFlexPhysics {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, rudder_aero_torques: (Torque, Torque)) {
-        self.wobble_physics.update(context);
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        rudder_aero_torques: (Torque, Torque),
+        surface_vibration_acceleration: Acceleration,
+    ) {
+        self.wobble_physics.update(
+            context,
+            Vector3::new(
+                0.,
+                (surface_vibration_acceleration * Self::SURFACE_VIBRATION_SENSITIVITY)
+                    .get::<meter_per_second_squared>(),
+                0.,
+            ),
+        );
 
         self.update_animation_position(rudder_aero_torques);
     }
@@ -114,6 +129,8 @@ impl ElevatorFlexPhysics {
     //      stronger it is to flex the elevator relative to inner surface
     const AERODYNAMIC_FLEX_COEF_FOR_OUTER_ELEVATOR_SURFACE: f64 = 1.5;
 
+    const SURFACE_VIBRATION_SENSITIVITY: f64 = 1.0;
+
     fn new(context: &mut InitContext, side: ElevatorSide) -> Self {
         Self {
             y_position_id: if side == ElevatorSide::Left {
@@ -154,8 +171,17 @@ impl ElevatorFlexPhysics {
         &mut self,
         context: &UpdateContext,
         outter_inner_elevator_aero_torques: (Torque, Torque),
+        surface_vibration_acceleration: Acceleration,
     ) {
-        self.wobble_physics.update(context);
+        self.wobble_physics.update(
+            context,
+            Vector3::new(
+                0.,
+                (surface_vibration_acceleration * Self::SURFACE_VIBRATION_SENSITIVITY)
+                    .get::<meter_per_second_squared>(),
+                0.,
+            ),
+        );
 
         self.update_animation_position(outter_inner_elevator_aero_torques);
     }
@@ -241,6 +267,7 @@ impl FlexibleElevators {
         context: &UpdateContext,
         outter_inner_elevator_aero_torques: [(Torque, Torque); 2],
         up_down_rudder_aero_torques: (Torque, Torque),
+        surface_vibration_acceleration: Acceleration,
     ) {
         self.flex_updater.update(context);
 
@@ -249,12 +276,14 @@ impl FlexibleElevators {
                 elevator_flex.update(
                     &context.with_delta(cur_time_step),
                     outter_inner_elevator_aero_torques[idx],
+                    surface_vibration_acceleration,
                 );
             }
 
             self.aft_cone_flex.update(
                 &context.with_delta(cur_time_step),
                 up_down_rudder_aero_torques,
+                surface_vibration_acceleration,
             );
         }
     }
@@ -315,6 +344,7 @@ mod tests {
                     ),
                 ],
                 (self.up_rudder_aero_torque, self.down_rudder_aero_torque),
+                Acceleration::default(),
             );
         }
     }

@@ -11,6 +11,7 @@ use crate::{
 
 use nalgebra::Vector3;
 use std::fmt::Debug;
+use uom::si::{acceleration::meter_per_second_squared, f64::*};
 
 /// Solves a basic mass connected to a static point through a spring damper system
 /// Mass center of gravity position reacting to external accelerations is then used to model engine wobbling movement
@@ -63,8 +64,15 @@ impl EngineFlexPhysics {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.wobble_physics.update(context);
+    pub fn update(&mut self, context: &UpdateContext, wing_pylon_acceleration: Acceleration) {
+        self.wobble_physics.update(
+            context,
+            Vector3::new(
+                0.,
+                wing_pylon_acceleration.get::<meter_per_second_squared>(),
+                0.,
+            ),
+        );
 
         self.update_animation_position();
     }
@@ -137,7 +145,7 @@ impl<const N: usize> EnginesFlexiblePhysics<N> {
 
         for cur_time_step in self.engines_flex_updater {
             for engine_flex in &mut self.engines_flex {
-                engine_flex.update(&context.with_delta(cur_time_step));
+                engine_flex.update(&context.with_delta(cur_time_step), Acceleration::default());
             }
         }
     }

@@ -1,6 +1,6 @@
 use crate::{shared::random_from_normal_distribution, simulation::UpdateContext};
 
-use uom::si::{f64::*, mass::kilogram};
+use uom::si::{acceleration::meter_per_second_squared, f64::*, mass::kilogram};
 
 use nalgebra::Vector3;
 
@@ -101,8 +101,9 @@ impl WobblePhysics {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        let acceleration = self.update_forces(context) / self.virtual_mass.get::<kilogram>();
+    pub fn update(&mut self, context: &UpdateContext, external_acceleration: Vector3<f64>) {
+        let acceleration = external_acceleration
+            + (self.update_forces(context) / self.virtual_mass.get::<kilogram>());
 
         self.cg_speed += acceleration * context.delta_as_secs_f64();
 
