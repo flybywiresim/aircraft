@@ -45,7 +45,7 @@ export class FixedRadiusTransition extends Transition {
 
     private centre: Coordinates | undefined = undefined;
 
-    private revertTo: PathCaptureTransition | undefined = undefined;
+    public revertTo: PathCaptureTransition | undefined = undefined;
 
     constructor(
         public previousLeg: PrevLeg, // FIXME temporary
