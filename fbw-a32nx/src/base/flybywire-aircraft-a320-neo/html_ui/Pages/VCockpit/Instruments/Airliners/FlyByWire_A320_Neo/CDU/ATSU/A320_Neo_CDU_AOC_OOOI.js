@@ -23,7 +23,7 @@ class CDUAocOOOI {
         const messages = mcdu.atsu.getAocOooiMessages();
         if (messages.length > offset) {
             if (messages[offset].OutGate.timestamp !== null) {
-                outTime = `{green}\xa0${AOCOooi.TimestampToString(messages[offset].OutGate.timestamp.Seconds)}{end}`;
+                outTime = `{green}\xa0${CDUAocOOOI.TimestampToString(messages[offset].OutGate.timestamp.Seconds)}{end}`;
                 outFuel = `{green}${Number(messages[offset].OutGate.fuel).toFixed(1).toString()}\xa0{end}`;
             }
             if (messages[offset].OutGate.icao !== '') {
@@ -31,17 +31,17 @@ class CDUAocOOOI {
             }
 
             if (messages[offset].OffGround.timestamp !== null) {
-                offTime = `{green}\xa0${AOCOooi.TimestampToString(messages[offset].OffGround.timestamp.Seconds)}{end}`;
+                offTime = `{green}\xa0${CDUAocOOOI.TimestampToString(messages[offset].OffGround.timestamp.Seconds)}{end}`;
                 offFuel = `{green}${Number(messages[offset].OffGround.fuel).toFixed(1).toString()}\xa0{end}`;
             }
 
             if (messages[offset].OnGround.timestamp !== null) {
-                onTime = `{green}\xa0${AOCOooi.TimestampToString(messages[offset].OnGround.timestamp.Seconds)}{end}`;
+                onTime = `{green}\xa0${CDUAocOOOI.TimestampToString(messages[offset].OnGround.timestamp.Seconds)}{end}`;
                 onFuel = `{green}${Number(messages[offset].OnGround.fuel).toFixed(1).toString()}\xa0{end}`;
             }
 
             if (messages[offset].InGate.timestamp !== null) {
-                inTime = `{green}\xa0${AOCOooi.TimestampToString(messages[offset].InGate.timestamp.Seconds)}{end}`;
+                inTime = `{green}\xa0${CDUAocOOOI.TimestampToString(messages[offset].InGate.timestamp.Seconds)}{end}`;
                 inFuel = `{green}${Number(messages[offset].InGate.fuel).toFixed(1).toString()}\xa0{end}`;
             }
             if (messages[offset].InGate.icao !== '') {
