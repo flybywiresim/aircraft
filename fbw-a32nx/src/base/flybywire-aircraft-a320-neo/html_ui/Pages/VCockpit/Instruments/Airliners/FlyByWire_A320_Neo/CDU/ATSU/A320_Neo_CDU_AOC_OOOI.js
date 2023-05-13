@@ -67,7 +67,7 @@ class CDUAocOOOI {
 
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
-            if (mcdu.page.Current === mcdu.page.AOCSensors) {
+            if (mcdu.page.Current === mcdu.page.AOCOooi) {
                 CDUAocOOOI.ShowPage(mcdu, offset);
             }
         }, mcdu.PageTimeout.Medium);
