@@ -36,11 +36,26 @@ export class OutOffOnInMessage extends AtsuMessage {
     public static deserialize(jsonData: Record<string, unknown> | OutOffOnInMessage): OutOffOnInMessage {
         const retval = new OutOffOnInMessage();
 
+        const outGate = jsonData.OutGate as { icao: string; timestamp: Record<string, unknown>; fuel: number };
+        const offGround = jsonData.OffGround as { timestamp: Record<string, unknown>; fuel: number };
+        const onGround = jsonData.OnGround as { timestamp: Record<string, unknown>; fuel: number };
+        const inGate = jsonData.InGate as { icao: string; timestamp: Record<string, unknown>; fuel: number };
+
         AtsuMessage.deserialize(jsonData, retval);
-        retval.OutGate = jsonData.OutGate as { icao: string; timestamp: AtsuTimestamp; fuel: number };
-        retval.OffGround = jsonData.OffGround as { timestamp: AtsuTimestamp; fuel: number };
-        retval.OnGround = jsonData.OnGround as { timestamp: AtsuTimestamp; fuel: number };
-        retval.InGate = jsonData.InGate as { icao: string; timestamp: AtsuTimestamp; fuel: number };
+
+        retval.OutGate.icao = outGate.icao;
+        retval.OutGate.fuel = outGate.fuel;
+        if (outGate.timestamp !== null) retval.OutGate.timestamp = AtsuTimestamp.deserialize(outGate.timestamp);
+
+        retval.OffGround.fuel = offGround.fuel;
+        if (offGround.timestamp !== null) retval.OffGround.timestamp = AtsuTimestamp.deserialize(offGround.timestamp);
+
+        retval.OnGround.fuel = onGround.fuel;
+        if (onGround.timestamp !== null) retval.OnGround.timestamp = AtsuTimestamp.deserialize(onGround.timestamp);
+
+        retval.InGate.icao = inGate.icao;
+        retval.InGate.fuel = inGate.fuel;
+        if (inGate.timestamp !== null) retval.InGate.timestamp = AtsuTimestamp.deserialize(inGate.timestamp);
 
         return retval;
     }
