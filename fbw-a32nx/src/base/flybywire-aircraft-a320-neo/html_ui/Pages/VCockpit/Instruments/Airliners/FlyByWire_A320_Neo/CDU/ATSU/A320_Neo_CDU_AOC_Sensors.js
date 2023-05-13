@@ -55,7 +55,7 @@ class CDUAocSensors {
                 speed = `{green}${Math.round(message.GroundSpeed).toString()}{end}`;
             }
 
-            fob = `{green}${Number(message.FuelOnBoard).toFixed(1).toString()}{end}`;
+            fob = `{green}${Math.round(message.FuelOnBoard).toString()}{end}`;
             print = "{cyan}PRINT*{end}";
         }
 
