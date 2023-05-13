@@ -21,7 +21,7 @@ class OooiStateMachine {
     public update(): boolean {
         switch (this.CurrentState) {
         case OooiState.Unknown:
-            const coldAndDark = SimVar.GetSimVarValue('A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+            const coldAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
             if (coldAndDark) {
                 this.CurrentState = OooiState.InGate;
             } else {
