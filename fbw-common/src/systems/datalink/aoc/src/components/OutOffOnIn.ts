@@ -42,7 +42,7 @@ class OooiStateMachine {
             }
             return false;
         case OooiState.OnGround:
-            if (this.sensors.GroundSpeed.isNormalOperation() === true && this.sensors.GroundSpeed.value === 0) {
+            if (this.sensors.GroundSpeed.isNormalOperation() === true && this.sensors.GroundSpeed.value < 0) {
                 if (this.standStillTimestamp !== null) {
                     const current = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
                     const difference = AtsuTimestamp.difference(current, this.standStillTimestamp);
@@ -62,7 +62,7 @@ class OooiStateMachine {
         case OooiState.InGate:
             if (this.sensors.ParkingBrakeSet === false) {
                 /* check if the aircraft moving */
-                if (this.sensors.GroundSpeed.isNormalOperation() === true && this.sensors.GroundSpeed.value !== 0) {
+                if (this.sensors.GroundSpeed.isNormalOperation() === true && this.sensors.GroundSpeed.value >= 3) {
                     this.CurrentState = OooiState.OutGate;
                     return true;
                 }
