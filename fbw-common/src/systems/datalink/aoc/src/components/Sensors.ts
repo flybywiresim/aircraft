@@ -24,28 +24,37 @@ export class Sensors {
 
     public FuelOnBoard: number = 0;
 
+    private dataChanged: boolean = false;
+
     private publisher: NodeJS.Timer = null;
 
     constructor(digitalInputs: DigitalInputs, private digitalOutputs: DigitalOutputs) {
         digitalInputs.addDataCallback('noseGearCompressed', (compressed: boolean) => {
+            this.dataChanged ||= this.NoseGearDown !== compressed;
             this.NoseGearDown = compressed;
         });
         digitalInputs.addDataCallback('parkingBrakeSet', (set: boolean) => {
+            this.dataChanged ||= this.ParkingBrakeSet !== set;
             this.ParkingBrakeSet = set;
         });
         digitalInputs.addDataCallback('currentLatitude', (lat: Arinc429Word) => {
+            this.dataChanged ||= this.Latitude !== lat;
             this.Latitude = lat;
         });
         digitalInputs.addDataCallback('currentLongitude', (long: Arinc429Word) => {
+            this.dataChanged ||= this.Longitude !== long;
             this.Longitude = long;
         });
         digitalInputs.addDataCallback('currentAltitude', (altitude: Arinc429Word) => {
+            this.dataChanged ||= this.Altitude !== altitude;
             this.Altitude = altitude;
         });
         digitalInputs.addDataCallback('groundSpeed', (speed: Arinc429Word) => {
+            this.dataChanged ||= this.GroundSpeed !== speed;
             this.GroundSpeed = speed;
         });
         digitalInputs.addDataCallback('fuelOnBoard', (fob: number) => {
+            this.dataChanged ||= this.FuelOnBoard !== fob;
             this.FuelOnBoard = fob;
         });
     }
@@ -53,18 +62,21 @@ export class Sensors {
     public powerUp(): void {
         if (this.publisher === null) {
             this.publisher = setInterval(() => {
-                const message = new SensorsMessage();
+                if (this.dataChanged === true) {
+                    const message = new SensorsMessage();
 
-                message.OooiState = this.oooiState;
-                message.NoseGearDown = this.NoseGearDown;
-                message.ParkingBrakeSet = this.ParkingBrakeSet;
-                if (this.Latitude.isNormalOperation()) message.Latitude = this.Latitude.value;
-                if (this.Longitude.isNormalOperation()) message.Longitude = this.Longitude.value;
-                if (this.Altitude.isNormalOperation()) message.Altitude = this.Altitude.value;
-                if (this.GroundSpeed.isNormalOperation()) message.GroundSpeed = this.GroundSpeed.value;
-                message.FuelOnBoard = this.FuelOnBoard;
+                    message.OooiState = this.oooiState;
+                    message.NoseGearDown = this.NoseGearDown;
+                    message.ParkingBrakeSet = this.ParkingBrakeSet;
+                    if (this.Latitude.isNormalOperation()) message.Latitude = this.Latitude.value;
+                    if (this.Longitude.isNormalOperation()) message.Longitude = this.Longitude.value;
+                    if (this.Altitude.isNormalOperation()) message.Altitude = this.Altitude.value;
+                    if (this.GroundSpeed.isNormalOperation()) message.GroundSpeed = this.GroundSpeed.value;
+                    message.FuelOnBoard = this.FuelOnBoard;
 
-                this.digitalOutputs.resynchronizeSensors(message);
+                    this.digitalOutputs.resynchronizeSensors(message);
+                    this.dataChanged = false;
+                }
             }, 1000);
         }
     }
@@ -86,6 +98,7 @@ export class Sensors {
     }
 
     public update(oooiSystem: OutOffOnIn): void {
+        this.dataChanged ||= this.oooiState !== oooiSystem.state();
         this.oooiState = oooiSystem.state();
     }
 }
