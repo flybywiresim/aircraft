@@ -606,18 +606,18 @@ impl UpdateContext {
             AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
 
-        println!(
-            "CONTEXT Avel {:.2}/{:.2}/{:.2}",
-            self.rotation_vel[0].get::<radian_per_second>(),
-            self.rotation_vel[1].get::<radian_per_second>(),
-            self.rotation_vel[2].get::<radian_per_second>()
-        );
-        println!(
-            "CONTEXT Aacc {:.2}/{:.2}/{:.2}",
-            self.rotation_accel[0].get::<radian_per_second_squared>(),
-            self.rotation_accel[1].get::<radian_per_second_squared>(),
-            self.rotation_accel[2].get::<radian_per_second_squared>()
-        );
+        // println!(
+        //     "CONTEXT Avel {:.2}/{:.2}/{:.2}",
+        //     self.rotation_vel[0].get::<radian_per_second>(),
+        //     self.rotation_vel[1].get::<radian_per_second>(),
+        //     self.rotation_vel[2].get::<radian_per_second>()
+        // );
+        // println!(
+        //     "CONTEXT Aacc {:.2}/{:.2}/{:.2}",
+        //     self.rotation_accel[0].get::<radian_per_second_squared>(),
+        //     self.rotation_accel[1].get::<radian_per_second_squared>(),
+        //     self.rotation_accel[2].get::<radian_per_second_squared>()
+        // );
 
         self.update_relative_wind();
 

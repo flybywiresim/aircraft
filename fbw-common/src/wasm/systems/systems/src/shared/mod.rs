@@ -691,13 +691,13 @@ pub fn height_over_ground(
 //      X negative left positive right
 //      Y negative down positive up
 //      Z negative aft positive forward
-pub fn local_acceleration_at_plane_coordinate(
+pub fn local_acceleration_velocity_at_plane_coordinate(
     context: &UpdateContext,
     offset_from_plane_reference: Vector3<f64>,
-) -> Vector3<f64> {
+) -> (Vector3<f64>, Vector3<f64>) {
     // If less than 10cm from center of rotation we don't consider rotational effect
     if offset_from_plane_reference.norm() < 0.01 {
-        return context.local_acceleration_without_gravity();
+        return (Vector3::default(), Vector3::default());
     }
 
     let tangential_velocity_of_point =
@@ -729,7 +729,10 @@ pub fn local_acceleration_at_plane_coordinate(
         + context.local_acceleration_without_gravity();
     // println!("Final acc {:.1},{:.1},{:.1}", debug[0], debug[1], debug[2]);
 
-    centripetal_acceleration + tangential_acceleration_of_point
+    (
+        centripetal_acceleration + tangential_acceleration_of_point,
+        tangential_velocity_of_point,
+    )
 }
 
 pub struct InternationalStandardAtmosphere;
@@ -1718,8 +1721,11 @@ mod local_acceleration_at_plane_coordinate {
         }
 
         fn update(&mut self, context: &UpdateContext) {
-            self.local_accel =
-                local_acceleration_at_plane_coordinate(context, self.rotating_point_position);
+            self.local_accel = local_acceleration_velocity_at_plane_coordinate(
+                context,
+                self.rotating_point_position,
+            )
+            .0;
         }
 
         fn set_point_position(&mut self, rotating_point_position: Vector3<f64>) {
