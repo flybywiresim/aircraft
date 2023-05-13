@@ -5,6 +5,9 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.11.0
+1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
+
 ## 0.10.0
 
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
@@ -125,7 +128,6 @@
 1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
 1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
 1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
-1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
 
 ## 0.9.0
 
