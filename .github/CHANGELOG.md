@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.11.0
+
+1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
+
 ## 0.10.0
 
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
