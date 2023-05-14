@@ -2,10 +2,12 @@
 
 import 'instruments/src/PFD/MFD-common/style.scss';
 
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
+import { Navigator, NavigatorPage } from 'instruments/src/PFD/MFD-common/Navigator';
 import { CustomMouseCursor } from 'instruments/src/PFD/MFD-common/CustomMouseCursor';
-import { MFDActivePerf } from 'instruments/src/PFD/MFDActivePerf';
+import { MFDFMSPerf } from 'instruments/src/PFD/pages/FMS/PERF';
+import { Ping } from 'instruments/src/PFD/pages/Ping';
 import { MFDSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -18,10 +20,30 @@ interface MFDProps extends ComponentProps {
     instrument: BaseInstrument;
 }
 
+export interface ActiveUriInformation {
+    uri: string;
+    sys: string;
+    category: string;
+    page: string;
+}
+
+export interface MFDComponentProps extends ComponentProps {
+    bus: EventBus;
+    active: Subscribable<ActiveUriInformation>;
+    navigateTo(uri: string): void;
+}
+
 export class MFDComponent extends DisplayComponent<MFDProps> {
     private displayBrightness = Subject.create(0);
 
     private displayPowered = Subject.create(false);
+
+    private activeUri = Subject.create<ActiveUriInformation>({
+        uri: 'fms/active/perf',
+        sys: 'fms',
+        category: 'active',
+        page: 'perf',
+    });
 
     private mouseCursorRef = FSComponent.createRef<CustomMouseCursor>();
 
@@ -51,10 +73,23 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
         });
     }
 
+    public navigateTo(uri: string) {
+        const uriParts = uri.split('/');
+        this.activeUri.set({
+            uri,
+            sys: uriParts[0],
+            category: uriParts[1],
+            page: uriParts[2],
+        });
+    }
+
     render(): VNode {
         return (
             <div class="mfd-main" ref={this.oansRef}>
-                <MFDActivePerf bus={this.props.bus} />
+                <Navigator active={this.activeUri}>
+                    <NavigatorPage uri="fms/active/perf" component={<MFDFMSPerf bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="ping" component={<Ping bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                </Navigator>
                 <CustomMouseCursor ref={this.mouseCursorRef} />
             </div>
         );

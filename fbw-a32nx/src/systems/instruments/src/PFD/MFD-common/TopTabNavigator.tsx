@@ -67,7 +67,7 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
         this.isVisible = value;
 
         if (this.topDivRef.instance !== undefined) {
-            this.topDivRef.instance.style.display = value === true ? 'block' : 'none';
+            this.topDivRef.instance.style.display = value === true ? 'flex' : 'none';
         }
     }
 
@@ -141,7 +141,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
             });
 
             // Add space at end, if any
-            if (this.props.additionalRightSpace) {
+            if (this.props.additionalRightSpace && this.props.additionalRightSpace > 0) {
                 const div = document.createElement('div');
                 div.style.width = `${this.props.additionalRightSpace}px`;
                 div.style.borderBottom = '2px solid lightgray';
@@ -166,7 +166,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
                             />
                         ))
                     }
-                    <div style="width: 50px; border-bottom: 2px solid lightgray" />
+                    <div style={`width: ${this.props.additionalRightSpace ? this.props.additionalRightSpace : '0'}px; border-bottom: 2px solid lightgray`} />
                 </div>
                 {this.props.children}
             </div>

@@ -198,7 +198,7 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .MFDPageContainer {
   display: flex;
-  flex-grow: 1;
+  flex: 1 1 auto;
   flex-direction: column;
 }
 
@@ -228,8 +228,20 @@ $display-mfd-dark-grey: #3c3c3c;
 .MFDTopTabNavigatorContainer {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 auto;
   margin: 2px;
+}
+
+.MFDNavigatorContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.MFDNavigatorContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .MFDTopTabNavigatorBar {

@@ -5,10 +5,11 @@ interface DropdownMenuProps extends ComponentProps {
     values: SubscribableArray<string>;
     selectedIndex: Subscribable<number>;
     idPrefix: string;
-    onChangeCallback: (newSelectedIndex: number) => void;
+    onChangeCallback(newSelectedIndex: number): void;
     containerStyle?: string;
     alignLabels?: 'left' | 'center';
 }
+
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     private label = Subject.create('NOT SET');
 
@@ -29,8 +30,15 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.props.values.sub((value) => {
-            this.label.set(value[this.props.selectedIndex.get()]);
+        this.props.values.getArray().forEach((val, i) => {
+            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
+                this.props.onChangeCallback(i);
+                this.dropdownIsOpened.set(false);
+            });
+        });
+
+        this.props.values.sub((value, type, item, array) => {
+            this.label.set(array[this.props.selectedIndex.get()]);
         });
 
         this.props.selectedIndex.sub((value) => {
@@ -45,13 +53,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
             this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
         });
-
-        for (let i = 0; i < this.props.values.length; i++) {
-            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
-                this.dropdownIsOpened.set(false);
-                this.props.onChangeCallback(i);
-            });
-        }
     }
 
     render(): VNode {
@@ -72,13 +73,13 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                 <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>
                     {this.props.values.getArray().map((el, idx) => (
                         <span
-                            class="MFDDropdownMenuElement"
                             id={`${this.props.idPrefix}_${idx}`}
+                            class="MFDDropdownMenuElement"
                             style={`text-align: ${this.props.alignLabels === 'left' ? 'flex-start' : 'center'};`}
                         >
                             {el}
                         </span>
-                    ))}
+                    ), this)}
                 </div>
             </div>
         );
