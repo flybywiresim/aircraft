@@ -6,7 +6,7 @@ use systems::{
         full_digital_agu_controller::FullDigitalAGUController,
         pressure_valve::{OutflowValve, SafetyValve},
         trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
-        ventilation_control_module::{VcmId, VentilationControlModule},
+        ventilation_control_module::{VcmId, VcmShared, VentilationControlModule},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
         DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlow,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
@@ -31,8 +31,8 @@ use systems::{
 
 use std::time::Duration;
 use uom::si::{
-    f64::*, mass_rate::kilogram_per_second, pressure::hectopascal, ratio::percent,
-    thermodynamic_temperature::degree_celsius, velocity::knot,
+    f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
+    velocity::knot, volume_rate::liter_per_second,
 };
 
 use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
@@ -361,29 +361,21 @@ impl A380AirConditioningSystem {
 
             cabin_fans: [
                 CabinFan::new(
-                    MassRate::new::<kilogram_per_second>(
-                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
-                    ),
+                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(1),
-                ), // 100XP1
+                ), // Left Hand - 100XP1
                 CabinFan::new(
-                    MassRate::new::<kilogram_per_second>(
-                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
-                    ),
+                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(1),
-                ), // 100XP2
+                ), // Left Hand - 100XP2
                 CabinFan::new(
-                    MassRate::new::<kilogram_per_second>(
-                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
-                    ),
+                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(2),
-                ), // 200XP3
+                ), // Right Hand - 200XP3
                 CabinFan::new(
-                    MassRate::new::<kilogram_per_second>(
-                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
-                    ),
+                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(2),
-                ), // 200XP4
+                ), // Right Hand - 200XP4
             ],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
@@ -434,9 +426,7 @@ impl A380AirConditioningSystem {
             module.update(&self.air_conditioning_overhead, pressurization_overhead)
         });
 
-        for fan in self.cabin_fans.iter_mut() {
-            fan.update(cabin_simulation, &self.vcm[0])
-        }
+        self.fan_update(cabin_simulation, cpiom_b);
 
         let pack_flow: [MassRate; 2] = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
 
@@ -462,6 +452,35 @@ impl A380AirConditioningSystem {
             self.fdac[0].fcv_status_determination(1) || self.fdac[0].fcv_status_determination(2),
             self.fdac[1].fcv_status_determination(3) || self.fdac[1].fcv_status_determination(4),
         ]
+    }
+
+    fn fan_update(
+        &mut self,
+        cabin_simulation: &impl CabinSimulation,
+        cpiom_b: &CoreProcessingInputOutputModuleB,
+    ) {
+        // The VCM FWD controls all LH recirculation fans and the VCM AFT controls all RH recirculation.
+        for (id, fan) in self.cabin_fans.iter_mut().enumerate() {
+            if cpiom_b.hp_recirculation_fans_signal().signal().is_some() {
+                fan.update(cabin_simulation, cpiom_b.hp_recirculation_fans_signal());
+            } else if id < 2 {
+                fan.update(
+                        cabin_simulation,
+                        self.vcm
+                            .iter()
+                            .find(|module| matches!(module.id(), VcmId::Fwd))
+                            .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
+                    )
+            } else {
+                fan.update(
+                        cabin_simulation,
+                        self.vcm
+                            .iter()
+                            .find(|module| matches!(module.id(), VcmId::Fwd))
+                            .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
+                    )
+            }
+        }
     }
 
     fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -501,6 +520,16 @@ impl TaddShared for A380AirConditioningSystem {
     fn trim_air_pressure_regulating_valve_is_open(&self, taprv_id: usize) -> bool {
         self.tadd
             .trim_air_pressure_regulating_valve_is_open(taprv_id)
+    }
+}
+
+impl VcmShared for A380AirConditioningSystem {
+    fn hp_cabin_fans_are_enabled(&self) -> bool {
+        // If one of the VCMs is not returning cabin fans enabled we return false here
+        // This will force the VCMs to take control of the fans instead of the CPIOM B
+        self.vcm
+            .iter()
+            .all(|module| module.hp_cabin_fans_are_enabled())
     }
 }
 
@@ -965,6 +994,7 @@ mod tests {
     };
     use uom::si::{
         length::{foot, meter},
+        mass_rate::kilogram_per_second,
         pressure::{hectopascal, psi},
         thermodynamic_temperature::degree_celsius,
         velocity::{foot_per_minute, meter_per_second},
@@ -1272,7 +1302,7 @@ mod tests {
                 PneumaticPipe::new(
                     Volume::new::<cubic_meter>(8.),
                     Pressure::new::<psi>(44.),
-                    ThermodynamicTemperature::new::<degree_celsius>(144.),
+                    ThermodynamicTemperature::new::<degree_celsius>(200.),
                 )
             } else {
                 PneumaticPipe::new(
@@ -1288,7 +1318,7 @@ mod tests {
                 PneumaticPipe::new(
                     Volume::new::<cubic_meter>(16.),
                     Pressure::new::<psi>(14.7),
-                    ThermodynamicTemperature::new::<degree_celsius>(131.),
+                    ThermodynamicTemperature::new::<degree_celsius>(200.),
                 )
             } else {
                 PneumaticPipe::new(
@@ -1352,7 +1382,7 @@ mod tests {
             Self {
                 pack_number,
                 pack_container: PneumaticPipe::new(
-                    Volume::new::<cubic_meter>(7.),
+                    Volume::new::<cubic_meter>(12.),
                     Pressure::new::<psi>(14.7),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
@@ -1656,8 +1686,12 @@ mod tests {
             self.powered_dc_source_1.unpower();
         }
 
+        fn unpower_dc_ess_bus(&mut self) {
+            self.powered_dc_source_ess.unpower();
+        }
+
         fn power_dc_ess_bus(&mut self) {
-            self.powered_dc_source_1.power();
+            self.powered_dc_source_ess.power();
         }
 
         fn power_dc_1_bus(&mut self) {
@@ -1666,10 +1700,6 @@ mod tests {
 
         fn unpower_dc_2_bus(&mut self) {
             self.powered_dc_source_2.unpower();
-        }
-
-        fn unpower_dc_ess_bus(&mut self) {
-            self.powered_dc_source_ess.unpower();
         }
 
         fn power_dc_2_bus(&mut self) {
@@ -1728,6 +1758,7 @@ mod tests {
             electricity.supplied_by(&self.powered_dc_source_1);
             electricity.supplied_by(&self.powered_ac_source_1);
             electricity.supplied_by(&self.powered_dc_source_2);
+            electricity.supplied_by(&self.powered_dc_source_ess);
             electricity.supplied_by(&self.powered_ac_source_2);
             electricity.supplied_by(&self.powered_ac_source_4);
             electricity.supplied_by(&self.powered_ac_source_ess);
@@ -3992,8 +4023,7 @@ mod tests {
                 let initial_temperature = test_bed.duct_temperature()[1];
 
                 test_bed = test_bed
-                    .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(30000.))
-                    .iterate(1000);
+                    .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(30000.));
 
                 assert!(test_bed.duct_temperature()[1] > initial_temperature);
             }
@@ -4058,26 +4088,6 @@ mod tests {
 
                 assert!((test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.);
             }
-
-            #[test]
-            fn unpowering_the_tadd_closes_trim_air_pressure_regulating_valves() {
-                let mut test_bed = test_bed()
-                    .with()
-                    .command_packs_on_off(true)
-                    .and()
-                    .engines_idle()
-                    .iterate(20)
-                    .and()
-                    .unpowered_ac_2_bus()
-                    .unpowered_ac_4_bus()
-                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
-                        30.,
-                    ));
-
-                test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-
-                assert!(test_bed.trim_air_valves_open_amount() < Ratio::new::<percent>(1.))
-            }
         }
 
         mod trim_air_drive_device_tests {
@@ -4129,6 +4139,26 @@ mod tests {
 
                 test_bed = test_bed.powered_ac_2_bus().powered_ac_4_bus().iterate(32);
                 assert!(test_bed.hot_air_is_enabled());
+            }
+
+            #[test]
+            fn unpowering_the_tadd_closes_trim_air_pressure_regulating_valves() {
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(20)
+                    .and()
+                    .unpowered_ac_2_bus()
+                    .unpowered_ac_4_bus()
+                    .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        30.,
+                    ));
+
+                test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+
+                assert!(test_bed.trim_air_valves_open_amount() < Ratio::new::<percent>(1.))
             }
         }
 
@@ -4287,6 +4317,93 @@ mod tests {
                     .abs()
                         < MassRate::new::<kilogram_per_second>(0.1)
                 )
+            }
+
+            #[test]
+            fn mixer_unit_flow_outputs_match_amm_at_different_pack_flows() {
+                // This tests checks that the cabin fans recirculation speed changes according to the pack flow
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .iterate(50);
+
+                test_bed.command_pack_flow_selector_position(1);
+                test_bed = test_bed.iterate(50);
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate()
+                        - (MassRate::new::<kilogram_per_second>(5.1183) * 0.8))
+                        .abs()
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                );
+
+                test_bed.command_pack_flow_selector_position(2);
+                test_bed = test_bed.iterate(50);
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate()
+                        - MassRate::new::<kilogram_per_second>(5.1183))
+                    .abs()
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                );
+
+                test_bed.command_pack_flow_selector_position(3);
+                test_bed = test_bed.iterate(50);
+
+                println!(
+                    "Pack flow: {}",
+                    test_bed.pack_flow().get::<kilogram_per_second>()
+                );
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate()
+                        - (MassRate::new::<kilogram_per_second>(5.1183) * 1.2))
+                        .abs()
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                );
+            }
+
+            #[test]
+            fn mixer_unit_flow_outputs_dont_match_amm_if_cpiom_unpowered() {
+                // This tests checks that the control of the fans goes to the vcm if the cpiom is unpowered
+                let mut test_bed = test_bed()
+                    .with()
+                    .command_cab_fans_pb_on(true)
+                    .and()
+                    .command_packs_on_off(true)
+                    .and()
+                    .engines_idle()
+                    .unpowered_dc_2_bus()
+                    .unpowered_dc_ess_bus()
+                    .iterate(50);
+
+                test_bed.command_pack_flow_selector_position(1);
+                test_bed = test_bed.iterate(50);
+
+                assert!(
+                    !((test_bed.mixer_unit_outlet_air().flow_rate()
+                        - (MassRate::new::<kilogram_per_second>(5.1183) * 0.8))
+                        .abs()
+                        < MassRate::new::<kilogram_per_second>(0.1))
+                );
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow()).abs()
+                        > MassRate::new::<kilogram_per_second>(0.1)
+                );
+
+                test_bed = test_bed.powered_dc_2_bus().powered_dc_ess_bus();
+                test_bed = test_bed.iterate(50);
+
+                assert!(
+                    (test_bed.mixer_unit_outlet_air().flow_rate()
+                        - (MassRate::new::<kilogram_per_second>(5.1183) * 0.8))
+                        .abs()
+                        < MassRate::new::<kilogram_per_second>(0.1)
+                );
             }
 
             #[test]

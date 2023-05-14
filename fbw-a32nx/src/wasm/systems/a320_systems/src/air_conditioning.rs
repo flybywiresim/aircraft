@@ -29,8 +29,8 @@ use systems::{
 
 use std::time::Duration;
 use uom::si::{
-    f64::*, mass_rate::kilogram_per_second, pressure::hectopascal, ratio::percent,
-    thermodynamic_temperature::degree_celsius, velocity::knot,
+    f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
+    velocity::knot, volume_rate::liter_per_second,
 };
 
 use crate::payload::{A320Pax, NumberOfPassengers};
@@ -267,7 +267,7 @@ impl A320AirConditioningSystem {
                 ],
             ),
             cabin_fans: [CabinFan::new(
-                MassRate::new::<kilogram_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3),
+                VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                 ElectricalBusType::AlternatingCurrent(1),
             ); 2],
             mixer_unit: MixerUnit::new(cabin_zones),

@@ -27,6 +27,7 @@ use uom::si::{
     ratio::percent,
     thermodynamic_temperature::{degree_celsius, kelvin},
     volume::cubic_meter,
+    volume_rate::cubic_meter_per_second,
 };
 
 pub mod acs_controller;
@@ -79,8 +80,17 @@ impl PneumaticValveSignal for PackFlowValveSignal {
 }
 
 pub enum CabinFansSignal {
-    On,
+    On(Option<MassRate>),
     Off,
+}
+
+impl CabinFansSignal {
+    fn recirculation_flow_demand(&self) -> Option<MassRate> {
+        match self {
+            CabinFansSignal::On(flow_demand) => *flow_demand,
+            CabinFansSignal::Off => None,
+        }
+    }
 }
 
 pub trait OutletAir {
@@ -297,7 +307,7 @@ pub trait PressurizationConstants {
 #[derive(Clone, Copy)]
 /// A320neo fan part number: VD3900-03
 pub struct CabinFan {
-    design_flow_rate: MassRate,
+    design_flow_rate: VolumeRate,
     is_on: bool,
     outlet_air: Air,
 
@@ -307,9 +317,9 @@ pub struct CabinFan {
 
 impl CabinFan {
     const PRESSURE_RISE_HPA: f64 = 22.; // hPa
-    const FAN_EFFICIENCY: f64 = 0.6; // Ratio - so output matches AMM numbers
+    const FAN_EFFICIENCY: f64 = 0.75; // Ratio - so output matches AMM numbers
 
-    pub fn new(design_flow_rate: MassRate, powered_by: ElectricalBusType) -> Self {
+    pub fn new(design_flow_rate: VolumeRate, powered_by: ElectricalBusType) -> Self {
         Self {
             design_flow_rate,
             is_on: false,
@@ -330,7 +340,7 @@ impl CabinFan {
         self.outlet_air
             .set_temperature(cabin_simulation.cabin_temperature().iter().average());
 
-        if !self.is_powered || !matches!(controller.signal(), Some(CabinFansSignal::On)) {
+        if !self.is_powered || !matches!(controller.signal(), Some(CabinFansSignal::On(_))) {
             self.is_on = false;
             self.outlet_air
                 .set_pressure(cabin_simulation.cabin_pressure());
@@ -341,16 +351,23 @@ impl CabinFan {
                 cabin_simulation.cabin_pressure()
                     + Pressure::new::<hectopascal>(Self::PRESSURE_RISE_HPA),
             );
-            self.outlet_air
-                .set_flow_rate(self.mass_flow_calculation() * Self::FAN_EFFICIENCY);
+
+            self.outlet_air.set_flow_rate(
+                self.mass_flow_calculation(
+                    controller.signal().unwrap().recirculation_flow_demand(),
+                ),
+            );
         }
     }
 
-    fn mass_flow_calculation(&self) -> MassRate {
+    fn mass_flow_calculation(&self, recirculation_flow_demand: Option<MassRate>) -> MassRate {
         let mass_flow: f64 = (self.outlet_air.pressure().get::<pascal>()
-            * self.design_flow_rate.get::<kilogram_per_second>())
+            * self.design_flow_rate.get::<cubic_meter_per_second>())
             / (Air::R * self.outlet_air.temperature().get::<kelvin>());
-        MassRate::new::<kilogram_per_second>(mass_flow)
+        // If we have flow demand calculated, we assign this directly to the fan flow
+        // This is a simplification, we could model the fans, send the signal and read the output
+        recirculation_flow_demand
+            .unwrap_or(MassRate::new::<kilogram_per_second>(mass_flow) * Self::FAN_EFFICIENCY)
     }
 }
 

@@ -1083,7 +1083,7 @@ impl<const ZONES: usize> CabinFanController<ZONES> {
 impl<const ZONES: usize> ControllerSignal<CabinFansSignal> for CabinFanController<ZONES> {
     fn signal(&self) -> Option<CabinFansSignal> {
         if self.is_enabled {
-            Some(CabinFansSignal::On)
+            Some(CabinFansSignal::On(None))
         } else {
             Some(CabinFansSignal::Off)
         }
@@ -1120,7 +1120,7 @@ mod acs_controller_tests {
     };
     use uom::si::{
         length::foot, pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
-        volume::cubic_meter,
+        volume::cubic_meter, volume_rate::liter_per_second,
     };
 
     struct TestAcsOverhead {
@@ -1897,9 +1897,7 @@ mod acs_controller_tests {
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
                 cabin_fans: [CabinFan::new(
-                    MassRate::new::<kilogram_per_second>(
-                        Self::CAB_FAN_DESIGN_FLOW_RATE_L_S * 1.225e-3,
-                    ),
+                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(1),
                 ); 2],
                 engine_1: TestEngine::new(Ratio::default()),

@@ -4,13 +4,14 @@ use systems::{
     air_conditioning::{
         acs_controller::{ACSCActiveComputer, AirConditioningStateManager, Pack, ZoneController},
         trim_air_drive_device::TaddShared,
-        AdirsToAirCondInterface, AirConditioningOverheadShared, DuctTemperature,
+        ventilation_control_module::VcmShared,
+        AdirsToAirCondInterface, AirConditioningOverheadShared, CabinFansSignal, DuctTemperature,
         OverheadFlowSelector, PackFlow, ZoneType,
     },
     integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     shared::{
-        CabinAltitude, CabinSimulation, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels,
-        PackFlowValveState, PneumaticBleed,
+        CabinAltitude, CabinSimulation, ControllerSignal, EngineCorrectedN1, EngineStartState,
+        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -29,7 +30,7 @@ pub(super) struct CoreProcessingInputOutputModuleB {
     cpiom_are_active: [bool; 4],
     ags_app: AirGenerationSystemApplication,
     tcs_app: TemperatureControlSystemApplication,
-    // ventilation_control_system_app: VentilationControlSystemApplication,
+    vcs_app: VentilationControlSystemApplication,
     // cabin_pressure_control_system_app: CabinPressureControllSystemApplication,
     // avionics_ventilation_system_app: AvionicsVentilationSystemApplication,
 }
@@ -40,7 +41,7 @@ impl CoreProcessingInputOutputModuleB {
             cpiom_are_active: [false; 4],
             ags_app: AirGenerationSystemApplication::new(context),
             tcs_app: TemperatureControlSystemApplication::new(context, cabin_zones),
-            // ventilation_control_system_app: VentilationControlSystemApplication::new(),
+            vcs_app: VentilationControlSystemApplication::new(),
             // cabin_pressure_control_system_app: CabinPressureControllSystemApplication::new(),
             // avionics_ventilation_system_app: AvionicsVentilationSystemApplication::new(),
         }
@@ -58,7 +59,7 @@ impl CoreProcessingInputOutputModuleB {
         number_of_passengers: usize,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pressurization: &impl CabinAltitude,
-        trim_air_drive_device: &impl TaddShared,
+        local_controllers: &(impl TaddShared + VcmShared),
     ) {
         self.cpiom_are_active = cpiom_b.map(|cpiom| cpiom.is_available());
 
@@ -79,13 +80,19 @@ impl CoreProcessingInputOutputModuleB {
                 acs_overhead,
                 cabin_temperature,
                 pressurization,
-                trim_air_drive_device,
+                local_controllers,
             );
+            self.vcs_app
+                .update(acs_overhead, local_controllers, &self.ags_app);
         }
     }
 
     pub(super) fn should_close_taprv(&self) -> [bool; 2] {
         self.tcs_app.should_close_taprv()
+    }
+
+    pub(super) fn hp_recirculation_fans_signal(&self) -> &impl ControllerSignal<CabinFansSignal> {
+        &self.vcs_app
     }
 }
 
@@ -230,7 +237,6 @@ impl AirGenerationSystemApplication {
         pack: Pack,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
     ) -> Ratio {
-        // TODO: Needs to account for the 4 positions of the A380 Selector
         let mut intermediate_flow: Ratio = acs_overhead.flow_selector_position().into();
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
         if self.pack_start_condition_determination(pack, pneumatic) {
@@ -459,5 +465,61 @@ impl SimulationElement for TemperatureControlSystemApplication {
             .iter()
             .zip(self.hot_air_is_open)
             .for_each(|(id, is_open)| writer.write(id, is_open));
+    }
+}
+
+struct VentilationControlSystemApplication {
+    hp_cabin_fans_are_enabled: bool,
+    hp_cabin_fans_flow_demand: MassRate,
+}
+
+impl VentilationControlSystemApplication {
+    // This value is an assumption. Total mixed air per cabin occupant (A320 AMM): 9.9 g/s -> (for 517 occupants) 5.1183 kg/s
+    const TOTAL_MIXED_AIR_DEMAND: f64 = 5.1183; // kg/s
+    const NUMBER_OF_FANS: f64 = 4.;
+
+    fn new() -> Self {
+        Self {
+            hp_cabin_fans_are_enabled: false,
+            hp_cabin_fans_flow_demand: MassRate::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        hp_cabin_fans_are_enabled: &impl VcmShared,
+        pack_flow_demand: &impl PackFlow,
+    ) {
+        self.hp_cabin_fans_are_enabled = hp_cabin_fans_are_enabled.hp_cabin_fans_are_enabled();
+        // The recirculation airflow demand is linked to the fresh airflow demand in order to keep the total airflow constant
+        self.hp_cabin_fans_flow_demand = self.recirculation_flow_determination(
+            acs_overhead,
+            pack_flow_demand.pack_flow_demand(Pack(1)) + pack_flow_demand.pack_flow_demand(Pack(2)),
+        );
+    }
+
+    fn recirculation_flow_determination(
+        &self,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        pack_flow_demand: MassRate,
+    ) -> MassRate {
+        MassRate::new::<kilogram_per_second>(
+            Self::TOTAL_MIXED_AIR_DEMAND
+                * Ratio::from(acs_overhead.flow_selector_position()).get::<ratio>()
+                - pack_flow_demand.get::<kilogram_per_second>(),
+        )
+    }
+}
+
+impl ControllerSignal<CabinFansSignal> for VentilationControlSystemApplication {
+    fn signal(&self) -> Option<CabinFansSignal> {
+        if self.hp_cabin_fans_are_enabled {
+            Some(CabinFansSignal::On(Some(
+                self.hp_cabin_fans_flow_demand / Self::NUMBER_OF_FANS,
+            )))
+        } else {
+            None
+        }
     }
 }

@@ -13,10 +13,14 @@ enum VcmFault {
     BothChannelsFault,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum VcmId {
     Fwd,
     Aft,
+}
+
+pub trait VcmShared {
+    fn hp_cabin_fans_are_enabled(&self) -> bool;
 }
 
 pub struct VentilationControlModule {
@@ -76,19 +80,21 @@ impl VentilationControlModule {
         std::mem::swap(&mut self.stand_by_channel, &mut self.active_channel);
     }
 
-    pub fn hp_cabin_fans_are_enabled(&self) -> bool {
-        self.hp_cabin_fans_are_enabled
-    }
-
     pub fn id(&self) -> VcmId {
         self.id
+    }
+}
+
+impl VcmShared for VentilationControlModule {
+    fn hp_cabin_fans_are_enabled(&self) -> bool {
+        self.hp_cabin_fans_are_enabled
     }
 }
 
 impl ControllerSignal<CabinFansSignal> for VentilationControlModule {
     fn signal(&self) -> Option<CabinFansSignal> {
         if self.hp_cabin_fans_are_enabled {
-            Some(CabinFansSignal::On)
+            Some(CabinFansSignal::On(None))
         } else {
             Some(CabinFansSignal::Off)
         }
