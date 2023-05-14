@@ -8,7 +8,10 @@ import { SpecifiedVorUnavailableLeft, SpecifiedVorUnavailableRight } from '@fmgc
 import { TuneNavaidLeft, TuneNavaidRight } from '@fmgc/components/fms-messages/TuneNavaid';
 import { TurnAreaExceedanceLeft, TurnAreaExceedanceRight } from '@fmgc/components/fms-messages/TurnAreaExceedance';
 import { FlightPlanManager } from '@shared/flightplan';
+import { TdReached } from '@fmgc/components/fms-messages/TdReached';
 import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
+import { StepAhead } from '@fmgc/components/fms-messages/StepAhead';
+import { StepDeleted } from '@fmgc/components/fms-messages/StepDeleted';
 import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
 import { GpsPrimaryLost } from './GpsPrimaryLost';
@@ -51,6 +54,9 @@ export class FmsMessages implements FmgcComponent {
         new SpecifiedNdbUnavailableRight(),
         new RwyLsMismatchLeft(),
         new RwyLsMismatchRight(),
+        new TdReached(),
+        new StepAhead(),
+        new StepDeleted(),
     ];
 
     init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
