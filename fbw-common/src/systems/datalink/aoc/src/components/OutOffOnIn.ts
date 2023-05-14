@@ -1,7 +1,7 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { OutOffOnInMessage, OooiState, AtsuTimestamp, FlightPlanMessage } from '@datalink/common';
+import { OutOffOnInMessage, OooiState, AtsuTimestamp, FlightPlanMessage, AtsuStatusCodes } from '@datalink/common';
 import { Sensors } from './Sensors';
 import { DigitalInputs } from '../DigitalInputs';
 import { DigitalOutputs } from '../DigitalOutputs';
@@ -138,7 +138,13 @@ export class OutOffOnIn {
             if (finishLastLeg) {
                 this.flightLegs[0].InGate.timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
                 this.flightLegs[0].InGate.fuel = this.sensors.FuelOnBoard;
-                /* TODO send this.flightLegs[0] */
+
+                const message = this.flightLegs[0];
+                this.digitalOutputs.sendOooiMessage(message).then((code) => {
+                    if (code === AtsuStatusCodes.Ok) {
+                        message.Confirmed = true;
+                    }
+                });
             }
 
             /* check if we need to start a new leg */
