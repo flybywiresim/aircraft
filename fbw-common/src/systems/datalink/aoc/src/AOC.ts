@@ -100,7 +100,7 @@ export class Aoc {
 
     private async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (this.poweredUp) {
-            return this.digitalOutputs.sendMessage(message, false).then((code) => {
+            return this.digitalOutputs.sendFreetextMessage(message, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) this.insertMessages([message]);
                 return code;
             });

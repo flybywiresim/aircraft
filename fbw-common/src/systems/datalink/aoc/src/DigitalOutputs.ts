@@ -75,15 +75,23 @@ export class DigitalOutputs {
         this.publisher.pub('aocResetData', true, true, false);
     }
 
-    public async sendMessage(message: FreetextMessage, force: boolean): Promise<AtsuStatusCodes> {
+    private async sendMessage(message: AtsuMessage, force: boolean, channel: keyof AtcAocRouterMessages): Promise<AtsuStatusCodes> {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const requestId = this.requestId++;
-            this.publisher.pub('routerSendFreetextMessage', { requestId, message, force }, this.synchronizedRouter, false);
+            this.publisher.pub(channel, { requestId, message, force }, this.synchronizedRouter, false);
             this.sendMessageCallbacks.push((id: number, code: AtsuStatusCodes) => {
                 if (id === requestId) resolve(code);
                 return id === requestId;
             });
         });
+    }
+
+    public async sendFreetextMessage(message: FreetextMessage, force: boolean): Promise<AtsuStatusCodes> {
+        return this.sendMessage(message, force, 'routerSendFreetextMessage');
+    }
+
+    public async sendOooiMessage(message: OutOffOnInMessage): Promise<AtsuStatusCodes> {
+        return this.sendMessage(message, false, 'routerSendOooiMessage');
     }
 
     public async receiveOfpData<Type extends AtsuMessage>(
