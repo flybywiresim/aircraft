@@ -128,16 +128,23 @@ export class OutOffOnIn {
             }
             break;
         case OooiState.InGate:
-            /* check if  current flight completed */
-            const newLeg = this.flightLegs.length === 0
+            /* check if the last leg needs to be finished */
+            const finishLastLeg = this.flightLegs.length !== 0
                 || (this.flightLegs[0].OutGate.timestamp !== null
                     && this.flightLegs[0].OffGround.timestamp !== null
                     && this.flightLegs[0].OnGround.timestamp !== null
-                    && this.flightLegs[0].InGate.timestamp !== null);
+                    && this.flightLegs[0].InGate.timestamp === null);
+
+            if (finishLastLeg) {
+                this.flightLegs[0].InGate.timestamp = AtsuTimestamp.fromClock(this.digitalInputs.UtcClock);
+                this.flightLegs[0].InGate.fuel = this.sensors.FuelOnBoard;
+                /* TODO send this.flightLegs[0] */
+            }
+
+            /* check if we need to start a new leg */
+            const newLeg = this.flightLegs.length === 0 || this.flightLegs[0].InGate.timestamp !== null;
 
             if (newLeg === true) {
-                /* TODO send this.flightLegs[0] */
-
                 this.flightLegs.unshift(new OutOffOnInMessage());
                 while (this.flightLegs.length > 3) {
                     this.flightLegs.pop();
