@@ -6,11 +6,14 @@ export function wordWrap(text: string, maxLength: number) {
     let line = [];
     let length = 0;
 
-    const words = text.match(/[-@_A-Z0-9]+|\[\s+\]/g);
+    const words = text.match(/[-.:*@_A-Z0-9]+|\[\s+\]|\n/g);
     for (const word of words) {
-        if ((length + word.length) >= maxLength) {
+        if ((length + word.length) >= maxLength || word === '\n') {
             result.push(line.join(' ').toUpperCase());
             line = []; length = 0;
+            if (word === '\n') {
+                continue;
+            }
         }
         length += word.length + 1;
         line.push(word);
