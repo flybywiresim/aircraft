@@ -9,6 +9,7 @@
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [MISC] New soft body physics system for wing flex - @Crocket63 (crocket)
 
 ## 0.10.0
 
