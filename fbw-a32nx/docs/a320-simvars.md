@@ -21,7 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
-  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
+  - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
 
@@ -1337,6 +1337,35 @@
     - Bool
     - Indicates if the SET HOLD SPEED message is shown on the PFD
 
+- A32NX_PFD_MSG_TD_REACHED
+    - Bool
+    - Indicates if the T/D REACHED message is shown on the PFD
+
+- A32NX_PFD_LINEAR_DEVIATION_ACTIVE
+    - Bool
+    - Indicates if the linear deviation is shown on the PFD
+
+- A32NX_PFD_TARGET_ALTITUDE
+    - Feet
+    - Indicates the current target altitude in the DES mode. This is an indicated altitude and not a pressure altitude
+    - This is used to compute a linear deviation
+
+- A32NX_PFD_VERTICAL_PROFILE_LATCHED
+    - Boolean
+    - Indicates whether to show the latch symbol on the PFD with the deviation indicator
+
+- A32NX_PFD_SHOW_SPEED_MARGINS
+    - Boolean
+    - Indicates whether speed margins are shown on the PFD in DES mode.
+
+- A32NX_PFD_UPPER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the upper speed margin limit in DES mode
+
+- A32NX_PFD_LOWER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the lower speed margin limit in DES mode
+
 - A32NX_ISIS_LS_ACTIVE
     - Bool
     - Indicates whether LS scales are shown on the ISIS
@@ -1855,6 +1884,29 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_DECISION_HEIGHT
+    - ARINC429<number>
+    - The decision height for an approach in feet, as entered on the PERF page.
+    - Value | Meaning
+       --- | ---
+       0 or greater | The decision height in feet
+       -1 | The pilot has not entered a decision height
+       -2 | The special value "NO" has been explicitly entered as the decision deight
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
+    - ARINC429<number>
+    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM_VNAV_TRIGGER_STEP_DELETED
+    - Bool
+    - Indicates whether to trigger a step deleted message on the MCDU
 
 ## Autopilot System
 

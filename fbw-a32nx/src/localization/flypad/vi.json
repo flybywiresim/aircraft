@@ -162,7 +162,7 @@
       "Passengers": "Hành khách",
       "Planned": "Đã lên kế hoạch",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Máy bay phải ở trên mặt đất và phải có động cơ tắt để thay đổi thời gian lên máy bay",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Máy bay phải ở trên mặt đất và động cơ phải được tắt để thay đổi thời gian lên máy bay",
         "FillPayloadFromSimbrief": "Điền thông tin tải trọng từ Simbrief",
         "MaxCargo": "Số lượng hàng hóa tối đa",
         "MaxGW": "Tổng trọng lg tối đa",

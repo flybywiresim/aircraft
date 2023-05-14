@@ -6,9 +6,7 @@ import { GuidanceManager } from './guidance/GuidanceManager';
 import { ManagedFlightPlan } from './flightplanning/ManagedFlightPlan';
 import { GuidanceController } from './guidance/GuidanceController';
 import { EfisSymbols } from './efis/EfisSymbols';
-import { DescentBuilder } from './guidance/vnav/descent/DescentBuilder';
-import { DecelPathBuilder } from './guidance/vnav/descent/DecelPathBuilder';
-import { VerticalFlightPlanBuilder } from './guidance/vnav/verticalFlightPlan/VerticalFlightPlanBuilder';
+import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
 import { initComponents, updateComponents, recallMessageById } from './components';
 import { WaypointBuilder } from './flightplanning/WaypointBuilder';
 import { RawDataMapper } from './flightplanning/RawDataMapper';
@@ -33,9 +31,7 @@ export {
     updateFmgcLoop,
     recallMessageById,
     EfisSymbols,
-    DescentBuilder,
-    DecelPathBuilder,
-    VerticalFlightPlanBuilder,
+    DescentPathBuilder,
     WaypointBuilder,
     RawDataMapper,
     ApproachUtils,

@@ -331,14 +331,14 @@ export class HoppieConnector {
             }
 
             // split up the received data into multiple messages
-            let messages = text.split(/({.*?})/gm);
+            let messages = text.split(/({[\s\S\n]*?})/gm);
             messages = messages.filter((elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '');
 
             // create the messages
             messages.forEach((element) => {
                 // get the single entries of the message
                 // example: [CALLSIGN telex, {Hello world!}]
-                const entries = element.substring(1).split(/({.*?})/gm);
+                const entries = element.substring(1).split(/({[\s\S\n]*?})/gm);
 
                 // get all relevant information
                 const metadata = entries[0].split(' ');
@@ -353,7 +353,7 @@ export class HoppieConnector {
                     freetext.Station = sender;
                     freetext.Direction = AtsuMessageDirection.Uplink;
                     freetext.ComStatus = AtsuMessageComStatus.Received;
-                    freetext.Message = content.replace(/\n/i, ' ');
+                    freetext.Message = content;
                     retval.push(freetext);
                     break;
                 case 'cpdlc':
