@@ -6,7 +6,7 @@ use crate::simulation::{
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
-use crate::shared::{local_acceleration_at_plane_coordinate, DelayedTrueLogicGate};
+use crate::shared::local_acceleration_at_plane_coordinate;
 
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -430,7 +430,7 @@ impl WingLift {
 
         let lift = if total_weight_on_wheels.get::<kilogram>() > 500. {
             // Assuming no lift at low wind speed avoids glitches with ground when braking hard for a full stop
-            if context.true_airspeed().get::<knot>().abs() < 35. {
+            if context.true_airspeed().get::<knot>().abs() < 20. {
                 0.
             } else {
                 (lift_1g + lift_wow).max(0.)
@@ -736,20 +736,6 @@ impl WingFlexA380 {
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
             surface_vibration_acceleration + self.left_right_wing_root_position[1].acceleration(),
         );
-
-        // println!(
-        //     "WING HEIGHTS {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",
-        //     self.flex_physics[0].nodes[4].position().get::<meter>(),
-        //     self.flex_physics[0].nodes[3].position().get::<meter>(),
-        //     self.flex_physics[0].nodes[2].position().get::<meter>(),
-        //     self.flex_physics[0].nodes[1].position().get::<meter>(),
-        //     self.flex_physics[0].nodes[0].position().get::<meter>(),
-        //     self.flex_physics[1].nodes[0].position().get::<meter>(),
-        //     self.flex_physics[1].nodes[1].position().get::<meter>(),
-        //     self.flex_physics[1].nodes[2].position().get::<meter>(),
-        //     self.flex_physics[1].nodes[3].position().get::<meter>(),
-        //     self.flex_physics[1].nodes[4].position().get::<meter>(),
-        // );
     }
 
     pub fn ground_weight_ratio(&self) -> Ratio {
