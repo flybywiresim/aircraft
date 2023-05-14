@@ -5,15 +5,16 @@ import { NumberInput } from 'instruments/src/PFD/MFD-common/NumberInput';
 
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
 
-import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/PFD/MFD-common/Button';
-import { PageSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/PageSelectorDropdownMenu';
 import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
 import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
+import { MFDComponentProps } from 'instruments/src/PFD/MFD';
+import { Header } from 'instruments/src/PFD/MFD-common/Header';
+import { Footer } from 'instruments/src/PFD/MFD-common/Footer';
 
-interface MFDActivePerfProps extends ComponentProps {
-    bus: EventBus;
+interface MFDActivePerfProps extends MFDComponentProps {
 }
 
 export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
@@ -32,33 +33,8 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
     render(): VNode {
         return (
             <>
-                {/* begin header */}
-                <div style="display: flex; flex-direction: row;">
-                    <DropdownMenu
-                        values={ArraySubject.create(['FMS 1', 'ATCCOM', 'SURV', 'FCU BKUP'])}
-                        selectedIndex={this.sysSelectorSelectedIndex}
-                        idPrefix="sysSelectorDropdown"
-                        onChangeCallback={(val) => this.sysSelectorSelectedIndex.set(val)}
-                        containerStyle="width: 25%;"
-                        alignLabels="left"
-                    />
-                </div>
-                <div style="display: flex; flex-direction: row;">
-                    <PageSelectorDropdownMenu isActive={Subject.create(true)}>
-                        ACTIVE
-                    </PageSelectorDropdownMenu>
-                    <PageSelectorDropdownMenu isActive={Subject.create(false)}>
-                        POSITION
-                    </PageSelectorDropdownMenu>
-                    <PageSelectorDropdownMenu isActive={Subject.create(false)}>
-                        SEC INDEX
-                    </PageSelectorDropdownMenu>
-                    <PageSelectorDropdownMenu isActive={Subject.create(false)}>
-                        DATA
-                    </PageSelectorDropdownMenu>
-                </div>
+                <Header bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
                 <ActivePageTitleBar activePage={Subject.create('ACTIVE/PERF')} tmpyIsActive={Subject.create(false)} />
-                {/* end header */}
                 {/* begin page content */}
                 <div class="MFDPageContainer">
                     <div style="margin: 15px; display: flex; justify-content: space-between;">
@@ -236,15 +212,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                     </div>
                 </div>
                 {/* end page content */}
-                {/* begin footer */}
-                <div style="display: flex; border-top: 2px solid $display-mfd-dark-grey; padding: 5px;">
-                    <Button>
-                        CLEAR
-                        <br />
-                        INFO
-                    </Button>
-                </div>
-                {/* end footer */}
+                <Footer bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
             </>
         );
     }
