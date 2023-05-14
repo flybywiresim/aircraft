@@ -1,4 +1,7 @@
-use crate::{shared::random_from_normal_distribution, simulation::UpdateContext};
+use crate::{
+    shared::local_acceleration_velocity_at_plane_coordinate,
+    shared::random_from_normal_distribution, simulation::UpdateContext,
+};
 
 use uom::si::{acceleration::meter_per_second_squared, f64::*, mass::kilogram};
 
@@ -53,6 +56,7 @@ impl SpringPhysics {
 pub enum GravityEffect {
     NoGravity,
     GravityFiltered,
+    ExternalAccelerationOnly,
 }
 
 pub struct WobblePhysics {
@@ -101,23 +105,66 @@ impl WobblePhysics {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, external_acceleration: Vector3<f64>) {
-        let acceleration = external_acceleration
-            + (self.update_forces(context) / self.virtual_mass.get::<kilogram>());
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        external_acceleration: Vector3<f64>,
+        offset_point_coordinates: Vector3<f64>,
+        is_debug: bool,
+    ) {
+        let acceleration = self.update_forces(
+            context,
+            external_acceleration,
+            offset_point_coordinates,
+            is_debug,
+        ) / self.virtual_mass.get::<kilogram>();
 
         self.cg_speed += acceleration * context.delta_as_secs_f64();
 
         self.cg_position += self.cg_speed * context.delta_as_secs_f64();
     }
 
-    fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
+    fn update_forces(
+        &mut self,
+        context: &UpdateContext,
+        external_acceleration: Vector3<f64>,
+        offset_point_coordinates: Vector3<f64>,
+        is_debug: bool,
+    ) -> Vector3<f64> {
         let local_acceleration = match self.gravity_effect {
-            GravityEffect::NoGravity => context.local_acceleration_without_gravity(),
-            GravityEffect::GravityFiltered => {
-                context.acceleration_plane_reference_filtered_ms2_vector()
+            GravityEffect::NoGravity => {
+                context.local_acceleration_without_gravity() + external_acceleration
+                    - local_acceleration_velocity_at_plane_coordinate(
+                        context,
+                        offset_point_coordinates,
+                    )
+                    .0
             }
+            GravityEffect::GravityFiltered => {
+                context.acceleration_plane_reference_filtered_ms2_vector() + external_acceleration
+            }
+            GravityEffect::ExternalAccelerationOnly => external_acceleration,
         };
+        if is_debug {
+            let accel_loc =
+                -local_acceleration_velocity_at_plane_coordinate(context, offset_point_coordinates)
+                    .0;
 
+            // println!(
+            //     "WOBBLE PHYS: LOCAL NO GRAV: {:.2}/{:.2}/{:.2} LOCAL AT LOCATION {:.2}/{:.2}/{:.2}  External added: {:.2}/{:.2}/{:.2} ",
+            //     context.local_acceleration_without_gravity()[0],
+            //     context.local_acceleration_without_gravity()[1],
+            //     context.local_acceleration_without_gravity()[2],
+
+            //     accel_loc[0],
+            //     accel_loc[1],
+            //     accel_loc[2],
+
+            //     external_acceleration[0],
+            //     external_acceleration[1],
+            //     external_acceleration[2]
+            // )
+        }
         let acceleration_force = local_acceleration * self.virtual_mass.get::<kilogram>();
 
         let spring_force =

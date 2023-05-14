@@ -46,19 +46,19 @@ impl EngineFlexPhysics {
             dev_mode_enable_id: context.get_identifier("ENGINE_WOBBLE_DEV_ENABLE".to_owned()),
 
             wobble_physics: WobblePhysics::new(
-                GravityEffect::NoGravity,
+                GravityEffect::ExternalAccelerationOnly,
                 Vector3::default(),
                 2000.,
                 100.,
                 800000.,
                 50000.,
-                500.,
-                20.,
-                Vector3::new(500., 500., 500.),
+                1500.,
+                100.,
+                Vector3::new(1000., 1000., 1000.),
                 50.,
             ),
 
-            position_output_gain: 90.,
+            position_output_gain: 60.,
 
             animation_position: 0.5,
         }
@@ -72,6 +72,8 @@ impl EngineFlexPhysics {
                 wing_pylon_acceleration.get::<meter_per_second_squared>(),
                 0.,
             ),
+            Vector3::default(),
+            false,
         );
 
         self.update_animation_position();
@@ -140,14 +142,24 @@ impl<const N: usize> EnginesFlexiblePhysics<N> {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &UpdateContext, pylons_accelerations: [Acceleration; N]) {
         self.engines_flex_updater.update(context);
 
         for cur_time_step in self.engines_flex_updater {
-            for engine_flex in &mut self.engines_flex {
-                engine_flex.update(&context.with_delta(cur_time_step), Acceleration::default());
+            for (idx, engine_flex) in &mut self.engines_flex.iter_mut().enumerate() {
+                engine_flex.update(
+                    &context.with_delta(cur_time_step),
+                    pylons_accelerations[idx],
+                );
             }
         }
+
+        println!(
+            "Eng1 {:.2}/{:.2}/{:.2}",
+            self.engines_flex[0].wobble_physics.position()[0],
+            self.engines_flex[0].wobble_physics.position()[1],
+            self.engines_flex[0].wobble_physics.position()[2]
+        );
     }
 }
 impl SimulationElement for EnginesFlexiblePhysics<4> {
@@ -181,7 +193,8 @@ mod tests {
         }
 
         fn update(&mut self, context: &UpdateContext) {
-            self.engines_flex.update(context);
+            self.engines_flex
+                .update(context, [Acceleration::default(); 4]);
         }
     }
     impl Aircraft for EngineFlexTestAircraft {

@@ -680,7 +680,7 @@ pub fn height_over_ground(
 }
 
 // Gets the local acceleration at a point away from plane reference point, including rotational effects (tangential/centripetal)
-// Warning: It EXLCLUDES PLANE LOCAL ACCELERATION. Add to plane acceleraiton to have total local acceleration at this point
+// Warning: It EXLCLUDES PLANE LOCAL CG ACCELERATION. Add to plane acceleration to have total local acceleration at this point
 //
 // For reference rotational velocity and acceleration from MSFS are:
 //      X axis pitch up negative

@@ -75,6 +75,8 @@ impl AftConeFlexPhysics {
                     .get::<meter_per_second_squared>(),
                 0.,
             ),
+            Vector3::new(0., 3.4, -25.),
+            false,
         );
 
         self.update_animation_position(rudder_aero_torques);
@@ -181,6 +183,8 @@ impl ElevatorFlexPhysics {
                     .get::<meter_per_second_squared>(),
                 0.,
             ),
+            Vector3::new(0., 3.4, -28.2),
+            true,
         );
 
         self.update_animation_position(outter_inner_elevator_aero_torques);

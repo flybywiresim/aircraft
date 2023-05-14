@@ -759,7 +759,9 @@ impl UpdateContext {
     }
 
     pub fn local_acceleration_without_gravity(&self) -> Vector3<f64> {
-        self.local_acceleration.to_ms2_vector()
+        // Gives the local acceleration in plane reference. If msfs local accel is free falling -9.81
+        //      then it's locally a up acceleration.
+        -self.local_acceleration.to_ms2_vector()
     }
 
     pub fn local_relative_wind(&self) -> Velocity3D {
@@ -768,10 +770,6 @@ impl UpdateContext {
 
     pub fn local_velocity(&self) -> Velocity3D {
         self.local_velocity
-    }
-
-    pub fn acceleration(&self) -> LocalAcceleration {
-        self.local_acceleration
     }
 
     pub fn acceleration_plane_reference_filtered_ms2_vector(&self) -> Vector3<f64> {

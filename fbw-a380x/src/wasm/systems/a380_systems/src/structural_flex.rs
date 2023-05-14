@@ -57,11 +57,20 @@ impl A380StructuralFlex {
             self.surface_vibrations.surface_vibration_acceleration(),
         );
 
-        self.engines_flex_physics.update(context);
+        self.engines_flex_physics
+            .update(context, self.wing_flex.accelerations_at_engines_pylons());
 
         // TODO check if on to run this only at sim rate
         self.surface_vibrations
             .update(context, self.wing_flex.ground_weight_ratio());
+
+        // println!(
+        //     "ENG PYLONS ACC {:.2} {:.2} {:.2} {:.2}",
+        //     self.wing_flex.accelerations_at_engines_pylons()[0].get::<meter_per_second_squared>(),
+        //     self.wing_flex.accelerations_at_engines_pylons()[1].get::<meter_per_second_squared>(),
+        //     self.wing_flex.accelerations_at_engines_pylons()[2].get::<meter_per_second_squared>(),
+        //     self.wing_flex.accelerations_at_engines_pylons()[3].get::<meter_per_second_squared>(),
+        // );
     }
 }
 impl SimulationElement for A380StructuralFlex {

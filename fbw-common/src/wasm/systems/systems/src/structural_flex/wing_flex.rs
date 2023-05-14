@@ -825,6 +825,16 @@ impl WingFlexA380 {
     pub fn ground_weight_ratio(&self) -> Ratio {
         self.wing_lift.ground_weight_ratio()
     }
+
+    // Accelerations (vertical) of engines pylons from eng1 to eng4
+    pub fn accelerations_at_engines_pylons(&self) -> [Acceleration; 4] {
+        [
+            self.flex_physics[0].acceleration_at_node_idx(2),
+            self.flex_physics[0].acceleration_at_node_idx(1),
+            self.flex_physics[1].acceleration_at_node_idx(1),
+            self.flex_physics[1].acceleration_at_node_idx(2),
+        ]
+    }
 }
 impl SimulationElement for WingFlexA380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1020,6 +1030,7 @@ struct WingSectionNode {
     fuel_mass: Mass,
     speed: Velocity,
     position: Length,
+    acceleration: Acceleration,
 
     external_acceleration: Acceleration,
     external_position_offset: Length,
@@ -1033,6 +1044,7 @@ impl WingSectionNode {
             fuel_mass: Mass::default(),
             speed: Velocity::default(),
             position: Length::default(),
+            acceleration: Acceleration::default(),
 
             external_acceleration: Acceleration::default(),
             external_position_offset: Length::default(),
@@ -1070,9 +1082,11 @@ impl WingSectionNode {
 
     fn solve_physics(&mut self, context: &UpdateContext) {
         if self.empty_mass.get::<kilogram>() > 0. {
-            let acceleration = self.sum_of_forces / self.total_mass();
+            self.acceleration = self.sum_of_forces / self.total_mass();
 
-            self.speed += (acceleration + self.external_acceleration) * context.delta_as_time();
+            // TODO try moving external accel to the apply gravity method see if it works better
+            self.speed +=
+                (self.acceleration + self.external_acceleration) * context.delta_as_time();
 
             self.position += self.speed * context.delta_as_time();
         }
@@ -1100,6 +1114,10 @@ impl WingSectionNode {
 
     fn position(&self) -> Length {
         self.position + self.external_position_offset
+    }
+
+    fn acceleration(&self) -> Acceleration {
+        self.acceleration
     }
 
     fn set_fuel_mass(&mut self, fuel_mass: Mass) {
@@ -1251,6 +1269,12 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
             *height = self.nodes[idx].position().get::<meter>();
         }
         all_heights_meters
+    }
+
+    fn acceleration_at_node_idx(&self, node_idx: usize) -> Acceleration {
+        assert!(node_idx < NODE_NUMBER);
+
+        self.nodes[node_idx].acceleration()
     }
 }
 impl SimulationElement for FlexPhysicsNG<5, 4> {

@@ -3551,8 +3551,8 @@ mod tests {
                     .body_pitch_rate(adiru_number)
                     .normal_value()
                     .unwrap()
-                    .get::<degree_per_second>(),
-                -rate.get::<degree_per_second>()
+                    .get::<radian_per_second>(),
+                -rate.get::<radian_per_second>()
             );
         }
 
