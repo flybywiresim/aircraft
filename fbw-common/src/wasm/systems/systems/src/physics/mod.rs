@@ -3,7 +3,7 @@ use crate::{
     simulation::UpdateContext,
 };
 
-use uom::si::{acceleration::meter_per_second_squared, f64::*, mass::kilogram};
+use uom::si::{ f64::*, mass::kilogram};
 
 use nalgebra::Vector3;
 

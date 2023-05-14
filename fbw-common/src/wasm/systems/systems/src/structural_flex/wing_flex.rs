@@ -877,14 +877,10 @@ impl FlexibleConstraint {
                     (-length.get::<meter>()).exp() * self.springiness - self.springiness,
                 ) * self.negative_springiness_coeff
             }
+        } else if self.is_linear {
+            Force::new::<newton>(length.get::<meter>() * self.springiness)
         } else {
-            if self.is_linear {
-                Force::new::<newton>(length.get::<meter>() * self.springiness)
-            } else {
-                Force::new::<newton>(
-                    length.get::<meter>().exp() * self.springiness - self.springiness,
-                )
-            }
+            Force::new::<newton>(length.get::<meter>().exp() * self.springiness - self.springiness)
         };
 
         let speed = (self.previous_length - length) / context.delta_as_time();
@@ -2112,23 +2108,5 @@ mod tests {
             test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
                 >= test_bed.current_total_lift().get::<newton>() * 0.99
         );
-    }
-
-    #[test]
-    fn vibration_testing() {
-        let mut test_bed = WingFlexTestBed::new()
-            .with_nominal_weight()
-            .steady_on_ground();
-
-        test_bed = test_bed.run_waiting_for(Duration::from_millis(5000));
-    }
-
-    #[test]
-    fn rotational_accel_testing() {
-        let mut test_bed = WingFlexTestBed::new()
-            .with_nominal_weight()
-            .steady_on_ground();
-
-        test_bed = test_bed.run_waiting_for(Duration::from_millis(5000));
     }
 }

@@ -1,19 +1,15 @@
 use std::time::Duration;
-use uom::{
-    impl_from,
-    si::{
-        acceleration::meter_per_second_squared,
-        angle::radian,
-        angular_acceleration::radian_per_second_squared,
-        angular_jerk::degree_per_second_cubed,
-        angular_velocity::{degree_per_second, radian_per_second},
-        f64::*,
-        mass::kilogram,
-        mass_density::kilogram_per_cubic_meter,
-        pressure::inch_of_mercury,
-        time::second,
-        velocity::{foot_per_minute, foot_per_second, meter_per_second},
-    },
+use uom::si::{
+    acceleration::meter_per_second_squared,
+    angle::radian,
+    angular_acceleration::radian_per_second_squared,
+    angular_velocity::radian_per_second,
+    f64::*,
+    mass::kilogram,
+    mass_density::kilogram_per_cubic_meter,
+    pressure::inch_of_mercury,
+    time::second,
+    velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };
 
 use super::{Read, SimulatorReader};
@@ -61,11 +57,11 @@ pub enum SurfaceTypeMsfs {
     Concrete = 0,
     Grass = 1,
     Water = 2,
-    Grass_bumpy = 3,
+    GrassBumpy = 3,
     Asphalt = 4,
-    Short_grass = 5,
-    Long_grass = 6,
-    Hard_turf = 7,
+    ShortGrass = 5,
+    LongGrass = 6,
+    HardTurf = 7,
     Snow = 8,
     Ice = 9,
     Urban = 10,
@@ -73,8 +69,8 @@ pub enum SurfaceTypeMsfs {
     Dirt = 12,
     Coral = 13,
     Gravel = 14,
-    Oil_treated = 15,
-    Steel_mats = 16,
+    OilTreated = 15,
+    SteelMats = 16,
     Bituminus = 17,
     Brick = 18,
     Macadam = 19,
@@ -85,31 +81,31 @@ pub enum SurfaceTypeMsfs {
 }
 impl From<f64> for SurfaceTypeMsfs {
     fn from(value: f64) -> Self {
-        match value {
-            0. => SurfaceTypeMsfs::Concrete,
-            1. => SurfaceTypeMsfs::Grass,
-            2. => SurfaceTypeMsfs::Water,
-            3. => SurfaceTypeMsfs::Grass_bumpy,
-            4. => SurfaceTypeMsfs::Asphalt,
-            5. => SurfaceTypeMsfs::Short_grass,
-            6. => SurfaceTypeMsfs::Long_grass,
-            7. => SurfaceTypeMsfs::Hard_turf,
-            8. => SurfaceTypeMsfs::Snow,
-            9. => SurfaceTypeMsfs::Ice,
-            10. => SurfaceTypeMsfs::Urban,
-            11. => SurfaceTypeMsfs::Forest,
-            12. => SurfaceTypeMsfs::Dirt,
-            13. => SurfaceTypeMsfs::Coral,
-            14. => SurfaceTypeMsfs::Gravel,
-            15. => SurfaceTypeMsfs::Oil_treated,
-            16. => SurfaceTypeMsfs::Steel_mats,
-            17. => SurfaceTypeMsfs::Bituminus,
-            18. => SurfaceTypeMsfs::Brick,
-            19. => SurfaceTypeMsfs::Macadam,
-            20. => SurfaceTypeMsfs::Planks,
-            21. => SurfaceTypeMsfs::Sand,
-            22. => SurfaceTypeMsfs::Shale,
-            23. => SurfaceTypeMsfs::Tarmac,
+        match value.floor() as u32 {
+            0 => SurfaceTypeMsfs::Concrete,
+            1 => SurfaceTypeMsfs::Grass,
+            2 => SurfaceTypeMsfs::Water,
+            3 => SurfaceTypeMsfs::GrassBumpy,
+            4 => SurfaceTypeMsfs::Asphalt,
+            5 => SurfaceTypeMsfs::ShortGrass,
+            6 => SurfaceTypeMsfs::LongGrass,
+            7 => SurfaceTypeMsfs::HardTurf,
+            8 => SurfaceTypeMsfs::Snow,
+            9 => SurfaceTypeMsfs::Ice,
+            10 => SurfaceTypeMsfs::Urban,
+            11 => SurfaceTypeMsfs::Forest,
+            12 => SurfaceTypeMsfs::Dirt,
+            13 => SurfaceTypeMsfs::Coral,
+            14 => SurfaceTypeMsfs::Gravel,
+            15 => SurfaceTypeMsfs::OilTreated,
+            16 => SurfaceTypeMsfs::SteelMats,
+            17 => SurfaceTypeMsfs::Bituminus,
+            18 => SurfaceTypeMsfs::Brick,
+            19 => SurfaceTypeMsfs::Macadam,
+            20 => SurfaceTypeMsfs::Planks,
+            21 => SurfaceTypeMsfs::Sand,
+            22 => SurfaceTypeMsfs::Shale,
+            23 => SurfaceTypeMsfs::Tarmac,
             i => panic!("Cannot convert from {} to SurfaceTypeMsfs.", i),
         }
     }
@@ -605,19 +601,6 @@ impl UpdateContext {
             AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_y_id)),
             AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
-
-        // println!(
-        //     "CONTEXT Avel {:.2}/{:.2}/{:.2}",
-        //     self.rotation_vel[0].get::<radian_per_second>(),
-        //     self.rotation_vel[1].get::<radian_per_second>(),
-        //     self.rotation_vel[2].get::<radian_per_second>()
-        // );
-        // println!(
-        //     "CONTEXT Aacc {:.2}/{:.2}/{:.2}",
-        //     self.rotation_accel[0].get::<radian_per_second_squared>(),
-        //     self.rotation_accel[1].get::<radian_per_second_squared>(),
-        //     self.rotation_accel[2].get::<radian_per_second_squared>()
-        // );
 
         self.update_relative_wind();
 

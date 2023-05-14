@@ -1678,12 +1678,6 @@ mod local_acceleration_at_plane_coordinate {
         test::{ElementCtorFn, SimulationTestBed, WriteByName},
         SimulationElement,
     };
-    use uom::si::{
-        angle::degree, angular_acceleration::radian_per_second_squared,
-        angular_velocity::radian_per_second,
-    };
-
-    use ntest::assert_about_eq;
 
     #[derive(Default)]
     struct RotatingObject {

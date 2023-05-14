@@ -57,12 +57,11 @@ impl BumpGenerator {
 }
 
 fn to_surface_vibration_coeff(surface: SurfaceTypeMsfs) -> f64 {
-    // println!("to_surface_vibration_coeff {:?} ", surface);
     match surface {
         SurfaceTypeMsfs::Concrete => 1.,
         SurfaceTypeMsfs::Grass => 10.,
         SurfaceTypeMsfs::Dirt => 10.,
-        SurfaceTypeMsfs::Grass_bumpy => 15.,
+        SurfaceTypeMsfs::GrassBumpy => 15.,
         SurfaceTypeMsfs::Bituminus => 2.,
         SurfaceTypeMsfs::Tarmac => 1.2,
         SurfaceTypeMsfs::Asphalt => 1.,
@@ -79,7 +78,7 @@ pub struct SurfaceVibrationGenerator {
     final_bump_accel_filtered: LowPassFilter<Acceleration>,
 }
 impl SurfaceVibrationGenerator {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         let big_holes = BumpGenerator::new(Duration::from_secs(25), 2., 0.4);
         let small_holes = BumpGenerator::new(Duration::from_secs(5), 1.1, 0.1);
         let vibrations = BumpGenerator::new(Duration::from_millis(20), 0.2, 0.05);
