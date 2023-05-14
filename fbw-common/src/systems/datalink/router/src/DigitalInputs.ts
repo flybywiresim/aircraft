@@ -18,6 +18,7 @@ import {
     AtsuMessage,
     FlightWeightsMessage,
     FlightFuelMessage,
+    OutOffOnInMessage,
 } from '@datalink/common';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -30,6 +31,7 @@ export type RouterDigitalInputCallbacks = {
     sendCpdlcMessage: (message: CpdlcMessage, force: boolean) => Promise<AtsuStatusCodes>;
     sendDclMessage: (message: DclMessage, force: boolean) => Promise<AtsuStatusCodes>;
     sendOclMessage: (message: OclMessage, force: boolean) => Promise<AtsuStatusCodes>;
+    sendOooiMessage: (message: OutOffOnInMessage, force: boolean) => Promise<AtsuStatusCodes>;
     requestFlightPlan: (requestSent: () => void) => Promise<[AtsuStatusCodes, FlightPlanMessage]>;
     requestNotams: (requestSent: () => void) => Promise<[AtsuStatusCodes, NotamMessage[]]>;
     requestPerformance: (requestSent: () => void) => Promise<[AtsuStatusCodes, FlightPerformanceMessage]>;
@@ -54,6 +56,7 @@ export class DigitalInputs {
         sendCpdlcMessage: null,
         sendDclMessage: null,
         sendOclMessage: null,
+        sendOooiMessage: null,
         requestFlightPlan: null,
         requestNotams: null,
         requestPerformance: null,
@@ -135,6 +138,9 @@ export class DigitalInputs {
         });
         this.subscriber.on('routerSendOclMessage').handle(async (request) => {
             this.sendMessage(request.requestId, request.message, request.force, this.callbacks.sendOclMessage);
+        });
+        this.subscriber.on('routerSendOooiMessage').handle(async (request) => {
+            this.sendMessage(request.requestId, request.message, request.force, this.callbacks.sendOooiMessage);
         });
         this.subscriber.on('routerRequestFlightplan').handle(async (request) => {
             this.requestData(request.requestId, 'routerReceivedFlightplan', this.callbacks.requestFlightPlan);

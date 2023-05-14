@@ -122,6 +122,7 @@ export class Router {
         this.digitalInputs.addDataCallback('sendCpdlcMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendDclMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendOclMessage', (message, force) => this.sendMessage(message, force));
+        this.digitalInputs.addDataCallback('sendOooiMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback(
             'requestFlightPlan',
             (requestSent): Promise<[AtsuStatusCodes, FlightPlanMessage]> => this.handleRequest(SimbriefConnector.receiveFlightplan, requestSent),
