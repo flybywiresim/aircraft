@@ -3,8 +3,6 @@ import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
 
-// eslint-disable-next-line max-len
-const DECEL_PATH = new Path2D('m 14.5125 0 c 0 8.015 -6.4975 14.5125 -14.5125 14.5125 c -8.015 0 -14.5125 -6.4975 -14.5125 -14.5125 c 0 -8.015 6.4975 -14.5125 14.5125 -14.5125 c 8.015 0 14.5125 6.4975 14.5125 14.5125 z m -12.15 -9.7875 h -7.7625 v 18.225 h 7.7625 l 2.7 -3.375 v -11.475 l -2.7 -3.375 z');
 const START_OF_CLIMB_PATH = new Path2D('M 0 0 h 22.2 l 19.8 -16.2 m -6 0 h 6 v 6');
 const LEVEL_OFF_CLIMB_PATH = new Path2D('M -42 16.2 l 19.8 -16.2 h 22.2 m -4.2 -4.2 l 4.2 4.2 l -4.2 4.2');
 const START_OF_DESCENT_PATH = new Path2D('M 0 0 h 22.2 l 19.8 16.2 m -6 0 h 6 v -6');

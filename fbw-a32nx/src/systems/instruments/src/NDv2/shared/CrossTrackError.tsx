@@ -1,4 +1,5 @@
 import { FSComponent, DisplayComponent, Subject, Subscribable, VNode, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
+import { EfisSide } from '@shared/NavigationDisplay';
 import { FmsVars } from '../../MsfsAvionicsCommon/providers/FmsDataPublisher';
 
 export interface CrossTrackErrorProps {
@@ -7,6 +8,7 @@ export interface CrossTrackErrorProps {
     y: number,
     isPlanMode: Subscribable<boolean>,
     isNormalOperation: Subscribable<boolean>, // TODO replace with ARINC429 word
+    side: EfisSide
 }
 
 export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
@@ -16,6 +18,8 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
 
     private readonly crossTrackAnchor = Subject.create('');
 
+    private rnp = 0;
+
     private readonly crossTrackVisibility = this.props.isNormalOperation.map((it) => (it ? 'inherit' : 'hidden'));
 
     onAfterRender(node: VNode) {
@@ -23,7 +27,7 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
 
         const sub = this.props.bus.getSubscriber<FmsVars>();
 
-        sub.on('crossTrackError').whenChanged().handle((crossTrackError) => {
+        sub.on('crossTrackError').atFrequency(2).handle((crossTrackError) => {
             const x = this.props.x;
 
             let crossTrackText = '';
@@ -31,8 +35,13 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
             let crossTrackX = x;
             const crossTrackAbs = Math.min(99.9, Math.abs(crossTrackError));
 
-            if (crossTrackAbs >= 0.1) {
+            if (this.rnp > 0 && this.rnp <= (0.3 + Number.EPSILON) && crossTrackAbs >= (0.02 - Number.EPSILON) && crossTrackAbs < (0.3 + Number.EPSILON)) {
+                crossTrackText = crossTrackAbs.toFixed(2);
+            } else if (crossTrackAbs >= 0.1) {
                 crossTrackText = crossTrackAbs.toFixed(1);
+            }
+
+            if (crossTrackText.length > 0) {
                 if (crossTrackError < 0) {
                     crossTrackText += 'R';
                     crossTrackAnchor = 'start';
@@ -47,6 +56,10 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
             this.crossTrackText.set(crossTrackText);
             this.crossTrackAnchor.set(crossTrackAnchor);
             this.crossTrackX.set(crossTrackX);
+        });
+
+        sub.on('rnp').whenChanged().handle((rnp) => {
+            this.rnp = rnp;
         });
     }
 

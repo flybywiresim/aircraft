@@ -1,4 +1,4 @@
-import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { EfisSide } from '@shared/NavigationDisplay';
 import { NDComponent } from './ND';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -55,14 +55,14 @@ class NDInstrument implements FsInstrument {
 
     constructor() {
         const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
-
+        const stateSubject = Subject.create<'L' | 'R'>(side);
         this.efisSide = side;
 
         this.bus = new ArincEventBus();
 
         this.simVarPublisher = new NDSimvarPublisher(this.bus);
         this.fcuBusPublisher = new FcuBusPublisher(this.bus, side);
-        this.fmsDataPublisher = new FmsDataPublisher(this.bus, side);
+        this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
         this.fgDataPublisher = new FGDataPublisher(this.bus);
         this.fmBusPublisher = new FMBusPublisher(this.bus);
         this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, side);
