@@ -1,4 +1,5 @@
 pub mod elevator_flex;
+pub mod engine_wobble;
 pub mod wing_flex;
 
 use crate::shared::low_pass_filter::LowPassFilter;

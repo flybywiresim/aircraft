@@ -1,7 +1,7 @@
 use systems::{
-    engine::engine_wing_flex::EnginesFlexiblePhysics,
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
     structural_flex::elevator_flex::FlexibleElevators,
+    structural_flex::engine_wobble::EnginesFlexiblePhysics,
     structural_flex::wing_flex::WingFlexA380,
     structural_flex::SurfaceVibrationGenerator,
 };
