@@ -13,6 +13,7 @@ import {
     FreetextMessage,
     NotamMessage,
     OclMessage,
+    OutOffOnInMessage,
     WeatherMessage,
 } from '@datalink/common';
 
@@ -25,6 +26,7 @@ export interface AtcAocRouterMessages {
     routerSendCpdlcMessage: { requestId: number, message: CpdlcMessage, force: boolean };
     routerSendDclMessage: { requestId: number, message: DclMessage, force: boolean };
     routerSendOclMessage: { requestId: number, message: OclMessage, force: boolean };
+    routerSendOooiMessage: { requestId: number, message: OutOffOnInMessage, force: boolean };
 
     // streams to request specific data
     routerRequestFlightplan: { requestId: number };
