@@ -224,16 +224,11 @@ class Drum extends DisplayComponent<DrumProperties> {
     private digitRefElements: NodeReference<SVGTextElement>[] = [];
 
     private buildElements(amount: number) {
-        const highestPosition = Math.round((this.position + this.props.displayRange) / this.props.valueSpacing) * this.props.valueSpacing;
-
         const highestValue = Math.round((this.value + this.props.displayRange) / this.props.valueSpacing) * this.props.valueSpacing;
 
         const graduationElements: SVGTextElement[] = [];
 
         for (let i = 0; i < amount; i++) {
-            const elementPosition = highestPosition - i * this.props.valueSpacing;
-            const offset = -elementPosition * this.props.distanceSpacing / this.props.valueSpacing;
-
             let elementVal = highestValue - i * this.props.valueSpacing;
             if (!this.showZero && elementVal === 0) {
                 elementVal = NaN;

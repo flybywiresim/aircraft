@@ -1,6 +1,5 @@
 import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from '@microsoft/msfs-sdk';
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
-import { Arinc429Values } from './shared/ArincValueProvider';
 import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface HorizontalTapeProps {

@@ -1,5 +1,5 @@
 import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
 
 import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import {
@@ -56,7 +56,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
         sub.on('heading').handle((h) => {
             this.heading = h.value;
-            if (this.isActive) {
+            if (this.isActive && h.isNormalOperation()) {
                 this.calculateAndSetOffset();
             }
         });
@@ -116,26 +116,22 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         const apfd = this.props.bus.getArincSubscriber<Arinc429Values>();
 
         apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
-            const multiplier = 1000;
-            const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
             if (pitch.isNormalOperation()) {
                 this.pitchGroupRef.instance.style.display = 'block';
 
-                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision)}px, 0px)`;
+                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value)}px, 0px)`;
             } else {
                 this.pitchGroupRef.instance.style.display = 'none';
             }
-            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(currentValueAtPrecision), 31.563), -31.563);
+            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
             this.yOffset.set(yOffset);
         });
 
         apfd.on('rollAr').withArinc429Precision(2).handle((roll) => {
-            const multiplier = 100;
-            const currentValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
             if (roll.isNormalOperation()) {
                 this.rollGroupRef.instance.style.display = 'block';
 
-                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-currentValueAtPrecision} 68.814 80.730)`);
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 68.814 80.730)`);
             } else {
                 this.rollGroupRef.instance.style.display = 'none';
             }

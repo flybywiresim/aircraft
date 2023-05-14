@@ -1034,7 +1034,7 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
                     transform={this.upperMarginTransform}
                 />
                 <path
-                    id="UpperSpeedMargin"
+                    id="LowerSpeedMargin"
                     class="Fill Magenta"
                     d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z"
                     visibility={this.lowerSpeedMarginVisibility}
