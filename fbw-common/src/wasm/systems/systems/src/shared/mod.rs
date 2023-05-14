@@ -705,29 +705,10 @@ pub fn local_acceleration_at_plane_coordinate(
     let tangential_acceleration_of_point =
         offset_from_plane_reference.cross(&-context.rotation_acceleration_rad_s2());
 
-    // println!(
-    //     "Tvel {:.1},{:.1},{:.1}",
-    //     tangential_velocity_of_point[0],
-    //     tangential_velocity_of_point[1],
-    //     tangential_velocity_of_point[2]
-    // );
-
-    // println!(
-    //     "Tacc {:.1},{:.1},{:.1}",
-    //     tangential_acceleration_of_point[0],
-    //     tangential_acceleration_of_point[1],
-    //     tangential_acceleration_of_point[2]
-    // );
-
     let radial_norm_vector = -offset_from_plane_reference.normalize();
 
     let centripetal_acceleration = radial_norm_vector
         * (tangential_velocity_of_point.norm().powi(2) / offset_from_plane_reference.norm());
-
-    let debug = centripetal_acceleration
-        + tangential_acceleration_of_point
-        + context.local_acceleration_without_gravity();
-    // println!("Final acc {:.1},{:.1},{:.1}", debug[0], debug[1], debug[2]);
 
     centripetal_acceleration + tangential_acceleration_of_point
 }

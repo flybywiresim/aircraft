@@ -666,7 +666,7 @@ pub struct WingFlexA380 {
 
     flex_physics: [FlexPhysicsNG<WING_FLEX_NODE_NUMBER, WING_FLEX_LINK_NUMBER>; 2],
 
-    left_right_wing_root_position: [WingRootPositionIntegrator; 2],
+    left_right_wing_root_position: [WingRootAcceleration; 2],
 }
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
@@ -726,8 +726,8 @@ impl WingFlexA380 {
             ],
 
             left_right_wing_root_position: [
-                WingRootPositionIntegrator::new(Vector3::new(-3.33668, -0.273, 6.903)),
-                WingRootPositionIntegrator::new(Vector3::new(3.33668, -0.273, 6.903)),
+                WingRootAcceleration::new(Vector3::new(-3.33668, -0.273, 6.903)),
+                WingRootAcceleration::new(Vector3::new(3.33668, -0.273, 6.903)),
             ],
         }
     }
@@ -744,38 +744,6 @@ impl WingFlexA380 {
         self.left_right_wing_root_position[0].update(context);
         self.left_right_wing_root_position[1].update(context);
 
-        //let standard_lift_spread = Vector5::new(0., 0.42, 0.31, 0.22, 0.05);
-
-        // let lift_left_table_newton =
-        //     standard_lift_spread * self.wing_lift_dynamic.left_wing_lift.get::<newton>();
-
-        // let lift_right_table_newton =
-        //     standard_lift_spread * self.wing_lift_dynamic.right_wing_lift.get::<newton>();
-
-        // println!(
-        //     "LIFT SPREAD {:.0}/{:.0}/{:.0}/{:.0}/{:.0}  {:.0}\\{:.0}\\{:.0}\\{:.0}\\{:.0}",
-        //     lift_left_table_newton.a,
-        //     lift_left_table_newton.w,
-        //     lift_left_table_newton.z,
-        //     lift_left_table_newton.y,
-        //     lift_left_table_newton.x,
-        //     lift_right_table_newton.x,
-        //     lift_right_table_newton.y,
-        //     lift_right_table_newton.z,
-        //     lift_right_table_newton.w,
-        //     lift_right_table_newton.a
-        // );
-
-        // println!(
-        //     "REGISTERED WING ROOT ACCELY L/R {:.2}/{:.2}",
-        //     self.left_right_wing_root_position[0]
-        //         .total_wing_root_accel_filtered
-        //         .output(),
-        //     self.left_right_wing_root_position[1]
-        //         .total_wing_root_accel_filtered
-        //         .output()
-        // );
-
         self.flex_physics[0].update(
             context,
             self.wing_lift_dynamic
@@ -783,12 +751,7 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.left_tanks_masses()),
-            surface_vibration_acceleration
-                + Acceleration::new::<meter_per_second_squared>(
-                    self.left_right_wing_root_position[0]
-                        .total_wing_root_accel_filtered
-                        .output(),
-                ),
+            surface_vibration_acceleration + self.left_right_wing_root_position[0].acceleration(),
         );
 
         self.flex_physics[1].update(
@@ -798,12 +761,7 @@ impl WingFlexA380 {
                 .as_slice(),
             self.fuel_mapper
                 .fuel_masses(self.wing_mass.right_tanks_masses()),
-            surface_vibration_acceleration
-                + Acceleration::new::<meter_per_second_squared>(
-                    self.left_right_wing_root_position[1]
-                        .total_wing_root_accel_filtered
-                        .output(),
-                ),
+            surface_vibration_acceleration + self.left_right_wing_root_position[1].acceleration(),
         );
 
         // println!(
@@ -875,27 +833,15 @@ impl SimulationElement for WingFlexA380 {
     }
 }
 
-struct WingRootPositionIntegrator {
+struct WingRootAcceleration {
     wing_root_position_meters: Vector3<f64>,
-
-    position: f64,
-
-    position_delta: f64,
-
-    position_delta_filtered: LowPassFilter<f64>,
 
     total_wing_root_accel_filtered: LowPassFilter<f64>,
 }
-impl WingRootPositionIntegrator {
+impl WingRootAcceleration {
     fn new(wing_root_position_meters: Vector3<f64>) -> Self {
         Self {
             wing_root_position_meters,
-
-            position: 0.,
-
-            position_delta: 0.,
-
-            position_delta_filtered: LowPassFilter::new(Duration::from_millis(1)),
 
             total_wing_root_accel_filtered: LowPassFilter::new(Duration::from_millis(1)),
         }
@@ -910,31 +856,10 @@ impl WingRootPositionIntegrator {
 
         self.total_wing_root_accel_filtered
             .update(context.delta(), total_wing_root_accel);
-
-        // println!(
-        //     "Y plane ACCEL: {:.5}  Root local accel {:.5}  TOTAL Y acc {:.5}",
-        //     context.vert_accel().get::<meter_per_second_squared>(),
-        //     local_wing_root_accel[1],
-        //     total_wing_root_accel
-        // );
-
-        let delta_vel = self.total_wing_root_accel_filtered.output() * context.delta_as_secs_f64();
-
-        self.position_delta = delta_vel * context.delta_as_secs_f64();
-
-        self.position += self.position_delta;
-
-        // println!(
-        //     "INTEGRATOR: VEL Y {:.2}  POS {:.3}  DELTA {:.5}",
-        //     delta_vel, self.position, self.position_delta
-        // );
-
-        self.position_delta_filtered
-            .update(context.delta(), self.position_delta);
     }
 
-    fn position_delta(&self) -> Length {
-        Length::new::<meter>(self.position_delta_filtered.output())
+    fn acceleration(&self) -> Acceleration {
+        Acceleration::new::<meter_per_second_squared>(self.total_wing_root_accel_filtered.output())
     }
 }
 
@@ -1471,14 +1396,6 @@ mod tests {
                 test_bed: SimulationTestBed::new(WingFlexTestAircraft::new),
             }
         }
-
-        // fn rotate_body(&mut self, angle: Angle) {
-        //     self.command(|a| a.rotate_body(angle));
-        // }
-
-        // fn trim_body(&mut self, angle: Angle) {
-        //     self.command(|a| a.trim_body(angle));
-        // }
 
         fn left_wing_lift_per_node(&self) -> Vector5<f64> {
             self.query(|a| {

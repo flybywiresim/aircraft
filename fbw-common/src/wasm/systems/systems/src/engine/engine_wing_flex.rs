@@ -73,7 +73,6 @@ impl EngineFlexPhysics {
                 0.,
             ),
             Vector3::default(),
-            false,
         );
 
         self.update_animation_position();

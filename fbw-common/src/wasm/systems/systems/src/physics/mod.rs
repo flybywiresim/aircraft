@@ -110,14 +110,10 @@ impl WobblePhysics {
         context: &UpdateContext,
         external_acceleration: Vector3<f64>,
         offset_point_coordinates: Vector3<f64>,
-        is_debug: bool,
     ) {
-        let acceleration = self.update_forces(
-            context,
-            external_acceleration,
-            offset_point_coordinates,
-            is_debug,
-        ) / self.virtual_mass.get::<kilogram>();
+        let acceleration =
+            self.update_forces(context, external_acceleration, offset_point_coordinates)
+                / self.virtual_mass.get::<kilogram>();
 
         self.cg_speed += acceleration * context.delta_as_secs_f64();
 
@@ -129,7 +125,6 @@ impl WobblePhysics {
         context: &UpdateContext,
         external_acceleration: Vector3<f64>,
         offset_point_coordinates: Vector3<f64>,
-        is_debug: bool,
     ) -> Vector3<f64> {
         let local_acceleration = match self.gravity_effect {
             GravityEffect::NoGravity => {
@@ -141,25 +136,7 @@ impl WobblePhysics {
             }
             GravityEffect::ExternalAccelerationOnly => external_acceleration,
         };
-        if is_debug {
-            let accel_loc =
-                -local_acceleration_at_plane_coordinate(context, offset_point_coordinates);
 
-            // println!(
-            //     "WOBBLE PHYS: LOCAL NO GRAV: {:.2}/{:.2}/{:.2} LOCAL AT LOCATION {:.2}/{:.2}/{:.2}  External added: {:.2}/{:.2}/{:.2} ",
-            //     context.local_acceleration_without_gravity()[0],
-            //     context.local_acceleration_without_gravity()[1],
-            //     context.local_acceleration_without_gravity()[2],
-
-            //     accel_loc[0],
-            //     accel_loc[1],
-            //     accel_loc[2],
-
-            //     external_acceleration[0],
-            //     external_acceleration[1],
-            //     external_acceleration[2]
-            // )
-        }
         let acceleration_force = local_acceleration * self.virtual_mass.get::<kilogram>();
 
         let spring_force =

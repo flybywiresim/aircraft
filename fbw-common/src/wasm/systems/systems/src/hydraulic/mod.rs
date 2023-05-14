@@ -2144,7 +2144,7 @@ impl FluidPhysics {
 
     fn update(&mut self, context: &UpdateContext) {
         self.wobble_physics
-            .update(context, Vector3::default(), Vector3::default(), false);
+            .update(context, Vector3::default(), Vector3::default());
 
         self.g_trap_is_empty
             .update(context, self.is_fluid_going_up());

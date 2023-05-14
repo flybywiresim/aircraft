@@ -2,25 +2,13 @@ pub mod elevator_flex;
 pub mod wing_flex;
 
 use crate::shared::low_pass_filter::LowPassFilter;
-use crate::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, SurfaceTypeMsfs, UpdateContext, VariableIdentifier, Write,
-};
+use crate::simulation::{SurfaceTypeMsfs, UpdateContext};
 
-use crate::shared::{
-    local_acceleration_at_plane_coordinate, random_from_normal_distribution, random_from_range,
-};
+use crate::shared::{random_from_normal_distribution, random_from_range};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::radian,
     f64::*,
-    force::newton,
-    length::meter,
-    mass::kilogram,
-    mass_density::kilogram_per_cubic_meter,
-    ratio::percent,
-    ratio::ratio,
     velocity::{knot, meter_per_second},
 };
 

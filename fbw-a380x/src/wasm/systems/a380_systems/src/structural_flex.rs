@@ -1,25 +1,12 @@
 use systems::{
     engine::engine_wing_flex::EnginesFlexiblePhysics,
-    simulation::{
-        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
-    },
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
     structural_flex::elevator_flex::FlexibleElevators,
     structural_flex::wing_flex::WingFlexA380,
     structural_flex::SurfaceVibrationGenerator,
 };
 
-use uom::si::{
-    acceleration::meter_per_second_squared,
-    angle::radian,
-    f64::*,
-    force::newton,
-    length::meter,
-    mass::kilogram,
-    mass_density::kilogram_per_cubic_meter,
-    ratio::percent,
-    ratio::ratio,
-    velocity::{knot, meter_per_second},
-};
+use uom::si::f64::*;
 
 pub struct A380StructuralFlex {
     engines_flex_physics: EnginesFlexiblePhysics<4>,
