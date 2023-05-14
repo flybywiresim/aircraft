@@ -67,16 +67,17 @@ impl AftConeFlexPhysics {
         rudder_aero_torques: (Torque, Torque),
         surface_vibration_acceleration: Acceleration,
     ) {
-        self.wobble_physics.update(
-            context,
-            Vector3::new(
-                0.,
-                (surface_vibration_acceleration * Self::SURFACE_VIBRATION_SENSITIVITY)
-                    .get::<meter_per_second_squared>(),
-                0.,
-            ),
-            Vector3::new(0., 3.4, -25.),
-        );
+        //TODO remove aft flex to tune elevator flex
+        // self.wobble_physics.update(
+        //     context,
+        //     Vector3::new(
+        //         0.,
+        //         (surface_vibration_acceleration * Self::SURFACE_VIBRATION_SENSITIVITY)
+        //             .get::<meter_per_second_squared>(),
+        //         0.,
+        //     ),
+        //     Vector3::new(0., 3.4, -25.),
+        // );
 
         self.update_animation_position(rudder_aero_torques);
     }
