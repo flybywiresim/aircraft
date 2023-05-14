@@ -49,13 +49,13 @@ impl AftConeFlexPhysics {
                 5.,
                 40000.,
                 100.,
-                150.,
+                300.,
                 10.,
-                Vector3::new(200., 50., 200.),
+                Vector3::new(200., 200., 200.),
                 5.,
             ),
 
-            position_output_gain: 5.,
+            position_output_gain: 2.,
 
             animation_position: 0.5,
         }
@@ -67,17 +67,16 @@ impl AftConeFlexPhysics {
         rudder_aero_torques: (Torque, Torque),
         surface_vibration_acceleration: Acceleration,
     ) {
-        //TODO remove aft flex to tune elevator flex
-        // self.wobble_physics.update(
-        //     context,
-        //     Vector3::new(
-        //         0.,
-        //         (surface_vibration_acceleration * Self::SURFACE_VIBRATION_SENSITIVITY)
-        //             .get::<meter_per_second_squared>(),
-        //         0.,
-        //     ),
-        //     Vector3::new(0., 3.4, -25.),
-        // );
+        self.wobble_physics.update(
+            context,
+            Vector3::new(
+                0.,
+                (surface_vibration_acceleration * Self::SURFACE_VIBRATION_SENSITIVITY)
+                    .get::<meter_per_second_squared>(),
+                0.,
+            ),
+            Vector3::new(0., 3.4, -25.),
+        );
 
         self.update_animation_position(rudder_aero_torques);
     }
@@ -155,13 +154,13 @@ impl ElevatorFlexPhysics {
                 5.,
                 40000.,
                 100.,
-                150.,
+                250.,
                 10.,
-                Vector3::new(200., 50., 200.),
+                Vector3::new(200., 100., 200.),
                 5.,
             ),
 
-            position_output_gain: 3.,
+            position_output_gain: 2.5,
 
             animation_position: 0.5,
 

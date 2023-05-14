@@ -3,12 +3,10 @@ use crate::shared::update_iterator::MaxStepLoop;
 
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, SurfaceTypeMsfs, UpdateContext, VariableIdentifier, Write,
+    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
-use crate::shared::{
-    local_acceleration_at_plane_coordinate, random_from_normal_distribution, random_from_range,
-};
+use crate::shared::{local_acceleration_at_plane_coordinate, DelayedTrueLogicGate};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -433,36 +431,11 @@ impl WingLift {
         let lift = if total_weight_on_wheels.get::<kilogram>() > 500. {
             // Assuming no lift at low wind speed avoids glitches with ground when braking hard for a full stop
             if context.true_airspeed().get::<knot>().abs() < 35. {
-                // println!(
-                //     "-------GROUNDMODE LOW SPEED/AOA PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0}",
-                //     cur_weight_kg / 1000.,
-                //     lift_1g /9.8 / 1000.,
-                //     lift_wow/9.8 / 1000.,
-                //     0.,
-                // );
                 0.
             } else {
-                // println!(
-                //     "++++++GROUNDMODE PLANE Weight:{:.1}Tons => lift1G={:.0}tons lift_wow={:.0}tons FINAL{:.0} ",
-                //     cur_weight_kg / 1000.,
-                //     lift_1g /9.8 / 1000.,
-                //     lift_wow/9.8 / 1000.,
-                //     ((lift_1g + lift_wow) /9.8 / 1000.).max(0.),
-
-                // );
-                //println!("LIFT FROM WOOOOOW MODE");
                 (lift_1g + lift_wow).max(0.)
             }
         } else {
-            // println!(
-            //     "FLIGHTMODE PLANE Weight:{:.1}Tons AccelY {:.2} => lift1G={:.0}tons liftDelta={:.0}tons FINAL{:.0}",
-            //     cur_weight_kg / 1000.,
-            //     accel_y,
-            //     lift_1g /9.8 / 1000.,
-            //     lift_delta_from_accel_n/9.8 / 1000.,
-            //     (lift_1g + lift_delta_from_accel_n) /9.8 / 1000.
-            // );
-            // println!("FLIGHT  LIFT MODE");
             lift_1g + lift_delta_from_accel_n
         };
 
@@ -670,8 +643,8 @@ pub struct WingFlexA380 {
 }
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
-        [22000000., 7000000., 3500000., 600000.];
-    const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 300000., 120000., 9000.];
+        [20000000., 8000000., 5000000., 500000.];
+    const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 400000., 150000., 6000.];
 
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 20000., 5000., 400.];
 

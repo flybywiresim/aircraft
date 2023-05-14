@@ -58,7 +58,7 @@ impl EngineFlexPhysics {
                 50.,
             ),
 
-            position_output_gain: 60.,
+            position_output_gain: 70.,
 
             animation_position: 0.5,
         }
