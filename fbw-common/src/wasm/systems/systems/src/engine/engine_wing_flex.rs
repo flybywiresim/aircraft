@@ -153,13 +153,6 @@ impl<const N: usize> EnginesFlexiblePhysics<N> {
                 );
             }
         }
-
-        println!(
-            "Eng1 {:.2}/{:.2}/{:.2}",
-            self.engines_flex[0].wobble_physics.position()[0],
-            self.engines_flex[0].wobble_physics.position()[1],
-            self.engines_flex[0].wobble_physics.position()[2]
-        );
     }
 }
 impl SimulationElement for EnginesFlexiblePhysics<4> {
