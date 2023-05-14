@@ -8,8 +8,7 @@ use crate::simulation::{
 };
 
 use crate::shared::{
-    local_acceleration_velocity_at_plane_coordinate, random_from_normal_distribution,
-    random_from_range,
+    local_acceleration_at_plane_coordinate, random_from_normal_distribution, random_from_range,
 };
 
 use uom::si::{

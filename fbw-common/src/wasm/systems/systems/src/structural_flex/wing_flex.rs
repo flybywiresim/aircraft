@@ -7,8 +7,7 @@ use crate::simulation::{
 };
 
 use crate::shared::{
-    local_acceleration_velocity_at_plane_coordinate, random_from_normal_distribution,
-    random_from_range,
+    local_acceleration_at_plane_coordinate, random_from_normal_distribution, random_from_range,
 };
 
 use uom::si::{
@@ -903,11 +902,8 @@ impl WingRootPositionIntegrator {
     }
 
     fn update(&mut self, context: &UpdateContext) {
-        let local_wing_root_accel = local_acceleration_velocity_at_plane_coordinate(
-            context,
-            self.wing_root_position_meters,
-        )
-        .0;
+        let local_wing_root_accel =
+            local_acceleration_at_plane_coordinate(context, self.wing_root_position_meters);
 
         let total_wing_root_accel =
             context.vert_accel().get::<meter_per_second_squared>() + local_wing_root_accel[1];
@@ -1032,7 +1028,6 @@ struct WingSectionNode {
     position: Length,
     acceleration: Acceleration,
 
-    external_acceleration: Acceleration,
     external_position_offset: Length,
 
     sum_of_forces: Force,
@@ -1046,7 +1041,6 @@ impl WingSectionNode {
             position: Length::default(),
             acceleration: Acceleration::default(),
 
-            external_acceleration: Acceleration::default(),
             external_position_offset: Length::default(),
 
             sum_of_forces: Force::default(),
@@ -1084,16 +1078,12 @@ impl WingSectionNode {
         if self.empty_mass.get::<kilogram>() > 0. {
             self.acceleration = self.sum_of_forces / self.total_mass();
 
-            // TODO try moving external accel to the apply gravity method see if it works better
-            self.speed +=
-                (self.acceleration + self.external_acceleration) * context.delta_as_time();
+            self.speed += self.acceleration * context.delta_as_time();
 
             self.position += self.speed * context.delta_as_time();
         }
 
         self.sum_of_forces = Force::default();
-        self.external_acceleration = Acceleration::default();
-        //self.external_position_offset = Length::default();
     }
 
     fn total_mass(&self) -> Mass {
@@ -1102,10 +1092,6 @@ impl WingSectionNode {
 
     fn apply_force(&mut self, force: Force) {
         self.sum_of_forces += force;
-    }
-
-    fn apply_accel(&mut self, accel: Acceleration) {
-        self.external_acceleration += accel;
     }
 
     fn apply_external_offet(&mut self, offset: Length) {

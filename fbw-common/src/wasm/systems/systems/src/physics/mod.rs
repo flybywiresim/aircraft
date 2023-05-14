@@ -1,6 +1,6 @@
 use crate::{
-    shared::local_acceleration_velocity_at_plane_coordinate,
-    shared::random_from_normal_distribution, simulation::UpdateContext,
+    shared::local_acceleration_at_plane_coordinate, shared::random_from_normal_distribution,
+    simulation::UpdateContext,
 };
 
 use uom::si::{acceleration::meter_per_second_squared, f64::*, mass::kilogram};
@@ -134,11 +134,7 @@ impl WobblePhysics {
         let local_acceleration = match self.gravity_effect {
             GravityEffect::NoGravity => {
                 context.local_acceleration_without_gravity() + external_acceleration
-                    - local_acceleration_velocity_at_plane_coordinate(
-                        context,
-                        offset_point_coordinates,
-                    )
-                    .0
+                    - local_acceleration_at_plane_coordinate(context, offset_point_coordinates)
             }
             GravityEffect::GravityFiltered => {
                 context.acceleration_plane_reference_filtered_ms2_vector() + external_acceleration
@@ -147,8 +143,7 @@ impl WobblePhysics {
         };
         if is_debug {
             let accel_loc =
-                -local_acceleration_velocity_at_plane_coordinate(context, offset_point_coordinates)
-                    .0;
+                -local_acceleration_at_plane_coordinate(context, offset_point_coordinates);
 
             // println!(
             //     "WOBBLE PHYS: LOCAL NO GRAV: {:.2}/{:.2}/{:.2} LOCAL AT LOCATION {:.2}/{:.2}/{:.2}  External added: {:.2}/{:.2}/{:.2} ",
