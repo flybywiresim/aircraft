@@ -66,7 +66,7 @@ jobs:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
           CDN_BUCKET_DESTINATION: addons/a32nx/stable
         run: |
-          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./build-modules
+          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
       - name: Delete old GitHub Pre-Release assets
         uses: mknejp/delete-release-assets@v1
         with:
