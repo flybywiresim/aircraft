@@ -236,7 +236,7 @@ impl A380HydraulicCircuitFactory {
 struct A380CargoDoorFactory {}
 impl A380CargoDoorFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.05;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
@@ -249,15 +249,15 @@ impl A380CargoDoorFactory {
         let actuator_characteristics = LinearActuatorCharacteristics::new(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
-            VolumeRate::new::<gallon_per_second>(0.01),
+            VolumeRate::new::<gallon_per_second>(0.003),
             Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
         );
 
         LinearActuator::new(
             context,
             bounded_linear_length,
-            2,
-            Length::new::<meter>(0.04422),
+            1,
+            Length::new::<meter>(0.04422), // TODO Random 0.7 scaling factor waiting for actual data
             Length::new::<meter>(0.03366),
             actuator_characteristics.max_flow(),
             600000.,
@@ -289,7 +289,7 @@ impl A380CargoDoorFactory {
         let axis_direction = Vector3::new(0., 0., 1.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(200.),
+            Mass::new::<kilogram>(150.),
             size,
             cg_offset,
             cg_offset,
@@ -2736,7 +2736,6 @@ impl A380Hydraulic {
                 &self.green_electric_pump_a_controller,
                 &self.green_electric_pump_b_controller,
             ],
-            Some(&self.green_electric_aux_pump_controller),
         );
 
         self.green_circuit.update(
@@ -2763,7 +2762,6 @@ impl A380Hydraulic {
                 &self.yellow_electric_pump_a_controller,
                 &self.yellow_electric_pump_b_controller,
             ],
-            None,
         );
         self.yellow_circuit.update(
             context,
@@ -3008,31 +3006,17 @@ impl A380HydraulicCircuitController {
         context: &UpdateContext,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         epump_controllers: [&A380ElectricPumpController; 2],
-        auxiliary_pump_controller: Option<&A380AuxiliaryElectricPumpController>,
     ) {
         // No cargo doors on yellow side
         if self.circuit_id == HydraulicColor::Green {
             self.cargo_door_in_use.update(
                 context,
                 epump_controllers[0].should_pressurise_for_cargo_door_operation()
-                    || epump_controllers[1].should_pressurise_for_cargo_door_operation()
-                    || auxiliary_pump_controller.unwrap().should_pressurise(),
-            );
-
-            println!(
-                "GREEEN CONTRL p1{:?} p2{:?} ap{:?}",
-                epump_controllers[0].should_pressurise_for_cargo_door_operation(),
-                epump_controllers[1].should_pressurise_for_cargo_door_operation(),
-                auxiliary_pump_controller.unwrap().should_pressurise(),
+                    || epump_controllers[1].should_pressurise_for_cargo_door_operation(),
             );
 
             self.routing_epump_sections_to_aux
                 .update(context, self.cargo_door_in_use.output());
-
-            println!(
-                "GREEEN CONTRL ROUTING{:?}",
-                self.routing_epump_sections_to_aux.output(),
-            );
         }
 
         match self.circuit_id {
@@ -3395,11 +3379,6 @@ impl A380ElectricPumpAutoLogic {
             context,
             forward_cargo_door_controller.should_pressurise_hydraulics()
                 || aft_cargo_door_controller.should_pressurise_hydraulics(),
-        );
-
-        println!(
-            "AUTORUN: requiredCargo {:?}",
-            self.is_required_for_cargo_door_operation.output()
         );
 
         self.body_steering_in_operation_previous =
@@ -6874,10 +6853,15 @@ mod tests {
                 self.hydraulics.nose_steering.position_feedback()
             }
 
-            fn _is_cargo_fwd_door_locked_up(&self) -> bool {
+            fn is_cargo_fwd_door_locked_up(&self) -> bool {
                 self.hydraulics
                     .forward_cargo_door_controller
                     .control_state()
+                    == DoorControlState::UpLocked
+            }
+
+            fn is_cargo_aft_door_locked_up(&self) -> bool {
+                self.hydraulics.aft_cargo_door_controller.control_state()
                     == DoorControlState::UpLocked
             }
 
@@ -7070,8 +7054,12 @@ mod tests {
                 self.read_by_name("FWD_DOOR_CARGO_LOCKED")
             }
 
-            fn _is_cargo_fwd_door_locked_up(&self) -> bool {
-                self.query(|a| a._is_cargo_fwd_door_locked_up())
+            fn is_cargo_fwd_door_locked_up(&self) -> bool {
+                self.query(|a| a.is_cargo_fwd_door_locked_up())
+            }
+
+            fn is_cargo_aft_door_locked_up(&self) -> bool {
+                self.query(|a| a.is_cargo_aft_door_locked_up())
             }
 
             fn cargo_fwd_door_position(&mut self) -> f64 {
@@ -7338,6 +7326,11 @@ mod tests {
 
             fn open_fwd_cargo_door(mut self) -> Self {
                 self.write_by_name("FWD_DOOR_CARGO_OPEN_REQ", 1.);
+                self
+            }
+
+            fn open_aft_cargo_door(mut self) -> Self {
+                self.write_by_name("AFT_DOOR_CARGO_OPEN_REQ", 1.);
                 self
             }
 
@@ -10389,17 +10382,25 @@ mod tests {
                 .run_one_tick();
 
             // Waiting for 5s pressure should not rise due to no pump avail
-            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
-            );
-
             test_bed = test_bed
                 .open_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs(5));
+                .open_aft_cargo_door()
+                .run_waiting_for(
+                    HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL
+                        + Duration::from_secs(5),
+                );
+
+            // TODO check if two doors should be able to operate at the same time. Dual operation needs loooooooon time with weak aux pump
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs(90));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
-            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(3500.));
+            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(500.));
+
+            assert!(test_bed.is_cargo_fwd_door_locked_up());
+            assert!(test_bed.is_cargo_aft_door_locked_up());
         }
     }
 }

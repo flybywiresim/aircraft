@@ -981,6 +981,7 @@ impl HydraulicCircuit {
     const AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO: f64 = 0.5;
 
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
+    const AUX_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.001;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
 
@@ -1090,7 +1091,7 @@ impl HydraulicCircuit {
                     id,
                     "AUXILIARY",
                     1,
-                    VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
+                    VolumeRate::new::<gallon_per_second>(Self::AUX_SECTION_STATIC_LEAK_GAL_P_S),
                     system_section_volume
                         * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO
                         * priming_volume,
@@ -1141,6 +1142,13 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
+        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
+            println!(
+                "AUXIL P{:.0}  Flow {:.3}",
+                auxiliary_section.current_pressure.get::<psi>(),
+                auxiliary_section.current_flow.get::<gallon_per_minute>()
+            );
+        }
         let mut any_pump_is_overheating = false;
         for pump in main_section_pumps.iter() {
             if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
