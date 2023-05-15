@@ -1,17 +1,18 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@shared/arinc429';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429Word } from '@shared/arinc429';
 import { VerticalMode } from '@shared/autopilot';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
 const DistanceSpacing = 7.5;
 
-class LandingElevationIndicator extends DisplayComponent<{bus: EventBus}> {
+class LandingElevationIndicator extends DisplayComponent<{bus: ArincEventBus}> {
     private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
 
     private altitude = 0;
@@ -68,7 +69,7 @@ class LandingElevationIndicator extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class RadioAltIndicator extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number> }> {
+class RadioAltIndicator extends DisplayComponent<{ bus: ArincEventBus, filteredRadioAltitude: Subscribable<number> }> {
     private visibilitySub = Subject.create('hidden');
 
     private offsetSub = Subject.create('');
@@ -107,7 +108,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus, filteredRadioA
     }
 }
 
-class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }> {
+class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     private visibility = Subject.create('hidden');
 
     private path = Subject.create('');
@@ -157,7 +158,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
         sub.on('chosenRa').whenArinc429SsmChanged().handle((ra) => {
             this.radioAltitudeValid = !ra.isFailureWarning() && !ra.isNoComputedData();
@@ -180,10 +181,9 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }
             this.updateIndication();
         });
 
-        sub.on('mda').whenChanged().handle((mda) => {
-            // TODO get a real word
-            this.mda.value = mda;
-            this.mda.ssm = mda > 0 ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
+        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
+            this.mda.value = mda.value;
+            this.mda.ssm = mda.ssm;
             this.updateIndication();
         });
 
@@ -201,8 +201,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: EventBus }
 }
 
 interface AltitudeIndicatorProps {
-
-    bus: EventBus;
+    bus: ArincEventBus;
 }
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
@@ -254,7 +253,7 @@ class AltTapeBackground extends DisplayComponent<any> {
 }
 
  interface AltitudeIndicatorOfftapeProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     filteredRadioAltitude: Subscribable<number>;
 }
 
@@ -373,7 +372,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 }
 
 interface SelectedAltIndicatorProps {
-    bus: EventBus
+    bus: ArincEventBus
     selectedAltitude: Subscribable<number>
     altitudeColor: Subscribable<TargetAltitudeColor>
 }
@@ -436,7 +435,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
         sub.on('altitudeAr').withArinc429Precision(2).handle((a) => {
             this.altitude = a;
@@ -527,7 +526,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
 interface AltimeterIndicatorProps {
     altitude: Subscribable<Number>,
-    bus: EventBus,
+    bus: ArincEventBus,
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
@@ -664,14 +663,14 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
  interface MetricAltIndicatorState {
     altitude: Arinc429Word;
-    MDA: number;
+    MDA: Arinc429Word;
     targetAlt: number;
     altitudeColor: TargetAltitudeColor;
     metricAltToggle: boolean;
 }
 
 interface MetricAltIndicatorProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     targetAlt: Subscribable<number>
     altitudeColor: Subscribable<TargetAltitudeColor>
 }
@@ -687,7 +686,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
 
     private state: MetricAltIndicatorState = {
         altitude: new Arinc429Word(0),
-        MDA: 0,
+        MDA: new Arinc429Word(0),
         altitudeColor: TargetAltitudeColor.Cyan,
         targetAlt: 0,
         metricAltToggle: false,
@@ -696,9 +695,9 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
 
-        sub.on('mda').whenChanged().handle((mda) => {
+        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
             this.state.MDA = mda;
             this.needsUpdate = true;
         });
@@ -748,7 +747,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
 
                 this.updateAltitudeColor();
 
-                if (this.state.altitude.value < this.state.MDA) {
+                if (!this.state.MDA.isNoComputedData() && !this.state.MDA.isFailureWarning() && this.state.altitude.value < this.state.MDA.value) {
                     this.metricAltText.instance.classList.replace('Green', 'Amber');
                 } else {
                     this.metricAltText.instance.classList.replace('Amber', 'Green');

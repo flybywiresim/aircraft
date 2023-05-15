@@ -1,4 +1,4 @@
-import { Subject } from 'msfssdk';
+import { Subject } from '@microsoft/msfs-sdk';
 import { Arinc429Register } from '@shared/arinc429';
 
 export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
