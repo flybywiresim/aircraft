@@ -7195,6 +7195,7 @@ mod tests {
             fn start_eng1(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
                 self.write_by_name("ENGINE_N2:1", n2);
+                self.write_by_name("ENGINE_N3:1", n2);
 
                 self
             }
@@ -7202,6 +7203,7 @@ mod tests {
             fn start_eng2(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
                 self.write_by_name("ENGINE_N2:2", n2);
+                self.write_by_name("ENGINE_N3:2", n2);
 
                 self
             }
@@ -7209,6 +7211,7 @@ mod tests {
             fn start_eng3(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:3", true);
                 self.write_by_name("ENGINE_N2:3", n2);
+                self.write_by_name("ENGINE_N3:3", n2);
 
                 self
             }
@@ -7216,6 +7219,7 @@ mod tests {
             fn start_eng4(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:4", true);
                 self.write_by_name("ENGINE_N2:4", n2);
+                self.write_by_name("ENGINE_N3:4", n2);
 
                 self
             }
@@ -7223,6 +7227,7 @@ mod tests {
             fn stop_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 0.);
+                self.write_by_name("ENGINE_N3:1", 0.);
 
                 self
             }
@@ -7230,6 +7235,7 @@ mod tests {
             fn _stopping_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 25.);
+                self.write_by_name("ENGINE_N3:1", 25.);
 
                 self
             }
@@ -7237,6 +7243,7 @@ mod tests {
             fn stop_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 0.);
+                self.write_by_name("ENGINE_N3:2", 0.);
 
                 self
             }
@@ -7244,20 +7251,23 @@ mod tests {
             fn _stopping_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 25.);
+                self.write_by_name("ENGINE_N3:2", 25.);
 
                 self
             }
 
             fn stop_eng3(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:3", false);
-                self.write_by_name("ENGINE_N2:2", 0.);
+                self.write_by_name("ENGINE_N2:3", 0.);
+                self.write_by_name("ENGINE_N3:3", 0.);
 
                 self
             }
 
             fn stop_eng4(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:4", false);
-                self.write_by_name("ENGINE_N2:2", 0.);
+                self.write_by_name("ENGINE_N2:4", 0.);
+                self.write_by_name("ENGINE_N3:4", 0.);
 
                 self
             }
