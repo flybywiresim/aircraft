@@ -26,7 +26,7 @@ import {
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanManager } from '@fmgc/index';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanSynchronization } from './FlightPlanSynchronization';
 import { MessageStorage } from './MessageStorage';
 

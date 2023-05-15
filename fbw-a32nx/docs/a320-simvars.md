@@ -21,7 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
-  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
+  - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
 
@@ -904,14 +904,6 @@
     - 0 for legacy mode (steering with rudder). 1 for realistic mode with tiller axis
       Tiller axis to be binded on "ENGINE 4 MIXTURE AXIS"
 
-- A32NX_HOME_COCKPIT_ENABLED
-    - Bool
-    - 1 to enable Home Cockpit mode which:
-        - Removes backlight bleed from the PFD, ND, and ECAM displays
-        - Removes reflection from the ISIS
-    - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present
-      on their displays.
-
 - A32NX_FO_SYNC_EFIS_ENABLED
     - Bool
     - 1 to sync the status of FD and LS buttons between CPT and FO sides
@@ -1344,6 +1336,35 @@
 - A32NX_PFD_MSG_SET_HOLD_SPEED
     - Bool
     - Indicates if the SET HOLD SPEED message is shown on the PFD
+
+- A32NX_PFD_MSG_TD_REACHED
+    - Bool
+    - Indicates if the T/D REACHED message is shown on the PFD
+
+- A32NX_PFD_LINEAR_DEVIATION_ACTIVE
+    - Bool
+    - Indicates if the linear deviation is shown on the PFD
+
+- A32NX_PFD_TARGET_ALTITUDE
+    - Feet
+    - Indicates the current target altitude in the DES mode. This is an indicated altitude and not a pressure altitude
+    - This is used to compute a linear deviation
+
+- A32NX_PFD_VERTICAL_PROFILE_LATCHED
+    - Boolean
+    - Indicates whether to show the latch symbol on the PFD with the deviation indicator
+
+- A32NX_PFD_SHOW_SPEED_MARGINS
+    - Boolean
+    - Indicates whether speed margins are shown on the PFD in DES mode.
+
+- A32NX_PFD_UPPER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the upper speed margin limit in DES mode
+
+- A32NX_PFD_LOWER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the lower speed margin limit in DES mode
 
 - A32NX_ISIS_LS_ACTIVE
     - Bool
@@ -1863,6 +1884,29 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_DECISION_HEIGHT
+    - ARINC429<number>
+    - The decision height for an approach in feet, as entered on the PERF page.
+    - Value | Meaning
+       --- | ---
+       0 or greater | The decision height in feet
+       -1 | The pilot has not entered a decision height
+       -2 | The special value "NO" has been explicitly entered as the decision deight
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
+    - ARINC429<number>
+    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM_VNAV_TRIGGER_STEP_DELETED
+    - Bool
+    - Indicates whether to trigger a step deleted message on the MCDU
 
 ## Autopilot System
 
@@ -2478,6 +2522,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number (Kg/h)
     - Expected idle fuel flow as a function of temperature and pressure
 
+- A32NX_FADEC_IGNITER_A_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter A on engine {index}
+
+- A32NX_FADEC_IGNITER_B_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter B on engine {index}
+
 - A32NX_FUEL_USED:{index}
     - Number (Kg)
     - Fuel burnt by engine {index} on deltaTime
@@ -2666,27 +2718,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_TRANSFER_PRESSURE:
-    - Pressure between IP/HP valves but before the pressure regulating valve
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
-    - Pressure at the precooler inlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_PRESSURE:
-    - Pressure at theh precooler outlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
 - A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_PRESSURE:
     - Pressure behind the starter valve of the engine
     - PSI
@@ -2694,24 +2725,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE:
-    - Pressure measured at the intermediate pressure transducer, -1 if no output
-    - psi
-
 - A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
     - Pressure measured at the transfer pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_REGULATED_TRANSDUCER_PRESSURE
     - Pressure measured at the regulated pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_DIFFERENTIAL_TRANSDUCER_PRESSURE
     - Pressure measured at the differential pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
     - Temperature in intermediate pressure compression chamber

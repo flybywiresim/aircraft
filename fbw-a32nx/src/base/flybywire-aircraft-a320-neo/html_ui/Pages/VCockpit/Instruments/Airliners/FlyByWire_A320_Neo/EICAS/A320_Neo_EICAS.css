@@ -28,8 +28,8 @@
   height: 100%;
   background: radial-gradient(
     ellipse at center,
-    rgba(4, 4, 5, 1) 0%,
-    rgba(4, 4, 5, 1) 100%
+    rgba(4, 4, 4, 1) 0%,
+    rgba(4, 4, 4, 1) 100%
   );
 }
 #Electricity[state="off"] {
@@ -200,8 +200,8 @@ a320-neo-eicas-element #Mainframe {
 a320-neo-eicas-element #Mainframe #TopScreen {
   background: radial-gradient(
     ellipse at center,
-    rgba(4, 4, 5, 1) 0%,
-    rgba(4, 4, 5, 1) 100%
+    rgba(4, 4, 4, 1) 0%,
+    rgba(4, 4, 4, 1) 100%
   );
   transform: rotateX(0);
   top: 0%;
@@ -214,8 +214,8 @@ a320-neo-eicas-element #Mainframe #TopScreen {
 a320-neo-eicas-element #Mainframe #BottomScreen {
   background: radial-gradient(
     ellipse at center,
-    rgba(4, 4, 5, 1) 0%,
-    rgba(4, 4, 5, 1) 100%
+    rgba(4, 4, 4, 1) 0%,
+    rgba(4, 4, 4, 1) 100%
   );
   transform: rotateX(0);
   top: 5%;

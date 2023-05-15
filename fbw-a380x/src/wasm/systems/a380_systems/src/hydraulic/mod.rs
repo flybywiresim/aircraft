@@ -3,7 +3,7 @@ use nalgebra::Vector3;
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::{degree, radian},
+    angle::degree,
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
@@ -25,6 +25,7 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
+        cargo_doors::{CargoDoor, HydraulicDoorController},
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
@@ -38,6 +39,7 @@ use systems::{
             SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
+        pushback::PushbackTug,
         trimmable_horizontal_stabilizer::{
             TrimmableHorizontalStabilizerActuator, TrimmableHorizontalStabilizerMotorController,
         },
@@ -48,12 +50,11 @@ use systems::{
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
-        interpolation, low_pass_filter::LowPassFilter, random_from_range,
-        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirbusElectricPumpId,
-        AirbusEngineDrivenPumpId, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineFirePushButtons, GearWheel,
-        HydraulicColor, LandingGearHandle, LgciuInterface, LgciuWeightOnWheels,
-        ReservoirAirPressure, SectionPressure,
+        interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
+        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
+        DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
+        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -240,21 +241,31 @@ impl A380CargoDoorFactory {
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
+    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
+    const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
+
     fn a380_cargo_door_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
+        let actuator_characteristics = LinearActuatorCharacteristics::new(
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
+            VolumeRate::new::<gallon_per_second>(0.01),
+            Ratio::new::<percent>(Self::MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT),
+        );
+
         LinearActuator::new(
             context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
-            VolumeRate::new::<gallon_per_second>(0.01),
+            actuator_characteristics.max_flow(),
             600000.,
             15000.,
             500.,
-            1000000.,
+            actuator_characteristics.slow_damping(),
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [1., 1., 1., 1., 1., 1.],
@@ -280,7 +291,7 @@ impl A380CargoDoorFactory {
         let axis_direction = Vector3::new(0., 0., 1.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(200.),
             size,
             cg_offset,
             cg_offset,
@@ -1549,9 +1560,9 @@ pub(super) struct A380Hydraulic {
     slats_flaps_complex: SlatFlapComplex,
 
     forward_cargo_door: CargoDoor,
-    forward_cargo_door_controller: A380DoorController,
+    forward_cargo_door_controller: HydraulicDoorController,
     aft_cargo_door: CargoDoor,
-    aft_cargo_door_controller: A380DoorController,
+    aft_cargo_door_controller: HydraulicDoorController,
 
     elevator_system_controller: ElevatorSystemHydraulicController,
     aileron_system_controller: AileronSystemHydraulicController,
@@ -1834,7 +1845,7 @@ impl A380Hydraulic {
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
             ),
-            forward_cargo_door_controller: A380DoorController::new(
+            forward_cargo_door_controller: HydraulicDoorController::new(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
             ),
@@ -1843,7 +1854,10 @@ impl A380Hydraulic {
                 context,
                 Self::AFT_CARGO_DOOR_ID,
             ),
-            aft_cargo_door_controller: A380DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
+            aft_cargo_door_controller: HydraulicDoorController::new(
+                context,
+                Self::AFT_CARGO_DOOR_ID,
+            ),
 
             elevator_system_controller: ElevatorSystemHydraulicController::new(context),
             aileron_system_controller: AileronSystemHydraulicController::new(context),
@@ -1974,6 +1988,18 @@ impl A380Hydraulic {
 
     pub fn yellow_reservoir(&self) -> &Reservoir {
         self.yellow_circuit.reservoir()
+    }
+
+    pub fn left_elevator_aero_torques(&self) -> (Torque, Torque) {
+        self.left_elevator.aerodynamic_torques_outter_inner()
+    }
+
+    pub fn right_elevator_aero_torques(&self) -> (Torque, Torque) {
+        self.right_elevator.aerodynamic_torques_outter_inner()
+    }
+
+    pub fn up_down_rudder_aero_torques(&self) -> (Torque, Torque) {
+        self.rudder.aerodynamic_torques_up_down()
     }
 
     #[cfg(test)]
@@ -3322,8 +3348,8 @@ impl A380ElectricPumpAutoLogic {
     fn update(
         &mut self,
         context: &UpdateContext,
-        forward_cargo_door_controller: &A380DoorController,
-        aft_cargo_door_controller: &A380DoorController,
+        forward_cargo_door_controller: &HydraulicDoorController,
+        aft_cargo_door_controller: &HydraulicDoorController,
         pushback_tug: &PushbackTug,
         overhead: &A380HydraulicOverheadPanel,
     ) {
@@ -3340,8 +3366,8 @@ impl A380ElectricPumpAutoLogic {
     fn update_auto_run_logic(
         &mut self,
         context: &UpdateContext,
-        forward_cargo_door_controller: &A380DoorController,
-        aft_cargo_door_controller: &A380DoorController,
+        forward_cargo_door_controller: &HydraulicDoorController,
+        aft_cargo_door_controller: &HydraulicDoorController,
         pushback_tug: &PushbackTug,
     ) {
         self.cargo_door_in_operation_previous = self.is_required_for_cargo_door_operation.output();
@@ -4077,321 +4103,6 @@ impl SimulationElement for A380BrakingForce {
 
         self.is_chocks_enabled = reader.read(&self.enabled_chocks_id);
         self.is_light_beacon_on = reader.read(&self.light_beacon_on_id);
-    }
-}
-
-#[derive(PartialEq, Clone, Copy)]
-enum DoorControlState {
-    DownLocked = 0,
-    NoControl = 1,
-    HydControl = 2,
-    UpLocked = 3,
-}
-
-struct A380DoorController {
-    requested_position_id: VariableIdentifier,
-
-    control_state: DoorControlState,
-
-    position_requested: Ratio,
-
-    duration_in_no_control: Duration,
-    duration_in_hyd_control: Duration,
-
-    should_close_valves: bool,
-    control_position_request: Ratio,
-    should_unlock: bool,
-}
-impl A380DoorController {
-    // Duration which the hydraulic valves sends a open request when request is closing (this is done on real aircraft so uplock can be easily unlocked without friction)
-    const UP_CONTROL_TIME_BEFORE_DOWN_CONTROL: Duration = Duration::from_millis(200);
-
-    // Delay from the ground crew unlocking the door to the time they start requiring up movement in control panel
-    const DELAY_UNLOCK_TO_HYDRAULIC_CONTROL: Duration = Duration::from_secs(5);
-
-    fn new(context: &mut InitContext, id: &str) -> Self {
-        Self {
-            requested_position_id: context.get_identifier(format!("{}_DOOR_CARGO_OPEN_REQ", id)),
-            control_state: DoorControlState::DownLocked,
-            position_requested: Ratio::new::<ratio>(0.),
-
-            duration_in_no_control: Duration::from_secs(0),
-            duration_in_hyd_control: Duration::from_secs(0),
-
-            should_close_valves: true,
-            control_position_request: Ratio::new::<ratio>(0.),
-            should_unlock: false,
-        }
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        door: &CargoDoor,
-        current_pressure: &impl SectionPressure,
-    ) {
-        self.control_state =
-            self.determine_control_state_and_lock_action(door, current_pressure.pressure());
-        self.update_timers(context);
-        self.update_actions_from_state();
-    }
-
-    fn update_timers(&mut self, context: &UpdateContext) {
-        if self.control_state == DoorControlState::NoControl {
-            self.duration_in_no_control += context.delta();
-        } else {
-            self.duration_in_no_control = Duration::from_secs(0);
-        }
-
-        if self.control_state == DoorControlState::HydControl {
-            self.duration_in_hyd_control += context.delta();
-        } else {
-            self.duration_in_hyd_control = Duration::from_secs(0);
-        }
-    }
-
-    fn update_actions_from_state(&mut self) {
-        match self.control_state {
-            DoorControlState::DownLocked => {}
-            DoorControlState::NoControl => {
-                self.should_close_valves = true;
-            }
-            DoorControlState::HydControl => {
-                self.should_close_valves = false;
-                self.control_position_request = if self.position_requested > Ratio::new::<ratio>(0.)
-                    || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
-                {
-                    Ratio::new::<ratio>(1.0)
-                } else {
-                    Ratio::new::<ratio>(-0.1)
-                }
-            }
-            DoorControlState::UpLocked => {
-                self.should_close_valves = true;
-            }
-        }
-    }
-
-    fn determine_control_state_and_lock_action(
-        &mut self,
-        door: &CargoDoor,
-        current_pressure: Pressure,
-    ) -> DoorControlState {
-        match self.control_state {
-            DoorControlState::DownLocked if self.position_requested > Ratio::new::<ratio>(0.) => {
-                self.should_unlock = true;
-                DoorControlState::NoControl
-            }
-            DoorControlState::NoControl
-                if self.duration_in_no_control > Self::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL =>
-            {
-                self.should_unlock = false;
-                DoorControlState::HydControl
-            }
-            DoorControlState::HydControl if door.is_locked() => {
-                self.should_unlock = false;
-                DoorControlState::DownLocked
-            }
-            DoorControlState::HydControl
-                if door.position() > Ratio::new::<ratio>(0.9)
-                    && self.position_requested > Ratio::new::<ratio>(0.5) =>
-            {
-                self.should_unlock = false;
-                DoorControlState::UpLocked
-            }
-            DoorControlState::UpLocked
-                if self.position_requested < Ratio::new::<ratio>(1.)
-                    && current_pressure > Pressure::new::<psi>(1000.) =>
-            {
-                DoorControlState::HydControl
-            }
-            _ => self.control_state,
-        }
-    }
-
-    fn should_pressurise_hydraulics(&self) -> bool {
-        (self.control_state == DoorControlState::UpLocked
-            && self.position_requested < Ratio::new::<ratio>(1.))
-            || self.control_state == DoorControlState::HydControl
-    }
-}
-impl HydraulicAssemblyController for A380DoorController {
-    fn requested_mode(&self) -> LinearActuatorMode {
-        if self.should_close_valves {
-            LinearActuatorMode::ClosedValves
-        } else {
-            LinearActuatorMode::PositionControl
-        }
-    }
-
-    fn requested_position(&self) -> Ratio {
-        self.control_position_request
-    }
-
-    fn should_lock(&self) -> bool {
-        !self.should_unlock
-    }
-
-    fn requested_lock_position(&self) -> Ratio {
-        Ratio::new::<ratio>(0.)
-    }
-}
-impl SimulationElement for A380DoorController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.position_requested = Ratio::new::<ratio>(reader.read(&self.requested_position_id));
-    }
-}
-impl HydraulicLocking for A380DoorController {}
-impl ElectroHydrostaticPowered for A380DoorController {}
-
-struct CargoDoor {
-    hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
-
-    position_id: VariableIdentifier,
-    locked_id: VariableIdentifier,
-    position: Ratio,
-
-    is_locked: bool,
-
-    aerodynamic_model: AerodynamicModel,
-}
-impl CargoDoor {
-    fn new(
-        context: &mut InitContext,
-        id: &str,
-        hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
-        aerodynamic_model: AerodynamicModel,
-    ) -> Self {
-        Self {
-            hydraulic_assembly,
-            position_id: context.get_identifier(format!("{}_DOOR_CARGO_POSITION", id)),
-            locked_id: context.get_identifier(format!("{}_DOOR_CARGO_LOCKED", id)),
-
-            position: Ratio::new::<ratio>(0.),
-
-            is_locked: true,
-
-            aerodynamic_model,
-        }
-    }
-
-    fn position(&self) -> Ratio {
-        self.position
-    }
-
-    fn is_locked(&self) -> bool {
-        self.is_locked
-    }
-
-    fn actuator(&mut self) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(0)
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        cargo_door_controller: &(impl HydraulicAssemblyController
-              + HydraulicLocking
-              + ElectroHydrostaticPowered),
-        current_pressure: &impl SectionPressure,
-    ) {
-        self.aerodynamic_model
-            .update_body(context, self.hydraulic_assembly.body());
-        self.hydraulic_assembly.update(
-            context,
-            std::slice::from_ref(cargo_door_controller),
-            [current_pressure.pressure()],
-        );
-
-        self.position = self.hydraulic_assembly.position_normalized();
-        self.is_locked = self.hydraulic_assembly.is_locked();
-    }
-}
-impl SimulationElement for CargoDoor {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_id, self.position());
-        writer.write(&self.locked_id, self.is_locked());
-    }
-}
-
-struct PushbackTug {
-    nw_strg_disc_memo_id: VariableIdentifier,
-    state_id: VariableIdentifier,
-    steer_angle_id: VariableIdentifier,
-
-    steering_angle_raw: Angle,
-    steering_angle: LowPassFilter<Angle>,
-
-    // Type of pushback:
-    // 0 = Straight
-    // 1 = Left
-    // 2 = Right
-    // 3 = Assumed to be no pushback
-    // 4 = might be finishing pushback, to confirm
-    state: f64,
-    nose_wheel_steering_pin_inserted: DelayedFalseLogicGate,
-}
-impl PushbackTug {
-    const DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK: Duration =
-        Duration::from_secs(15);
-
-    const STATE_NO_PUSHBACK: f64 = 3.;
-
-    const STEERING_ANGLE_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
-
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
-            state_id: context.get_identifier("PUSHBACK STATE".to_owned()),
-            steer_angle_id: context.get_identifier("PUSHBACK ANGLE".to_owned()),
-
-            steering_angle_raw: Angle::default(),
-            steering_angle: LowPassFilter::new(Self::STEERING_ANGLE_FILTER_TIME_CONSTANT),
-
-            state: Self::STATE_NO_PUSHBACK,
-            nose_wheel_steering_pin_inserted: DelayedFalseLogicGate::new(
-                Self::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
-            ),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        self.nose_wheel_steering_pin_inserted
-            .update(context, self.is_pushing());
-
-        if self.is_pushing() {
-            self.steering_angle
-                .update(context.delta(), self.steering_angle_raw);
-        } else {
-            self.steering_angle.reset(Angle::default());
-        }
-    }
-
-    fn is_pushing(&self) -> bool {
-        (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() > f64::EPSILON
-    }
-}
-impl Pushback for PushbackTug {
-    fn is_nose_wheel_steering_pin_inserted(&self) -> bool {
-        self.nose_wheel_steering_pin_inserted.output()
-    }
-
-    fn steering_angle(&self) -> Angle {
-        self.steering_angle.output()
-    }
-}
-impl SimulationElement for PushbackTug {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.state = reader.read(&self.state_id);
-
-        self.steering_angle_raw = Angle::new::<radian>(reader.read(&self.steer_angle_id));
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.nw_strg_disc_memo_id,
-            self.is_nose_wheel_steering_pin_inserted(),
-        );
     }
 }
 
@@ -6290,7 +6001,6 @@ struct ElevatorAssembly {
     hydraulic_assemblies: [HydraulicLinearActuatorAssembly<2>; 2],
 
     position_out_id: VariableIdentifier,
-
     position_in_id: VariableIdentifier,
 
     positions: [Ratio; 2],
@@ -6324,6 +6034,7 @@ impl ElevatorAssembly {
                     context.get_identifier("HYD_ELEV_RIGHT_INWARD_DEFLECTION".to_owned())
                 }
             },
+
             positions: [Ratio::new::<ratio>(0.); 2],
             aerodynamic_models: [aerodynamic_model_outter, aerodynamic_model_inner],
         }
@@ -6348,6 +6059,7 @@ impl ElevatorAssembly {
         for idx in 0..2 {
             self.aerodynamic_models[idx]
                 .update_body(context, self.hydraulic_assemblies[idx].body());
+
             self.hydraulic_assemblies[idx].update(
                 context,
                 elevator_controllers[idx],
@@ -6359,6 +6071,14 @@ impl ElevatorAssembly {
 
             self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
         }
+    }
+
+    // Returns aerodynamic torques for (outter,inner) control surfaces
+    fn aerodynamic_torques_outter_inner(&self) -> (Torque, Torque) {
+        (
+            self.hydraulic_assemblies[0].aerodynamic_torque(),
+            self.hydraulic_assemblies[1].aerodynamic_torque(),
+        )
     }
 }
 impl SimulationElement for ElevatorAssembly {
@@ -6452,6 +6172,14 @@ impl RudderAssembly {
 
             self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
         }
+    }
+
+    // Returns aerodynamic torques for (upper,lower) control surfaces
+    fn aerodynamic_torques_up_down(&self) -> (Torque, Torque) {
+        (
+            self.hydraulic_assemblies[0].aerodynamic_torque(),
+            self.hydraulic_assemblies[1].aerodynamic_torque(),
+        )
     }
 }
 impl SimulationElement for RudderAssembly {
@@ -6779,6 +6507,7 @@ mod tests {
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
             failures::FailureType,
+            hydraulic::cargo_doors::{DoorControlState, HydraulicDoorController},
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{EmergencyElectricalState, LgciuId, PotentialOrigin},
             simulation::{
@@ -6788,7 +6517,7 @@ mod tests {
         };
 
         use uom::si::{
-            angle::degree,
+            angle::{degree, radian},
             electric_potential::volt,
             length::foot,
             ratio::{percent, ratio},
@@ -7040,7 +6769,9 @@ mod tests {
             }
 
             fn _is_cargo_fwd_door_locked_up(&self) -> bool {
-                self.hydraulics.forward_cargo_door_controller.control_state
+                self.hydraulics
+                    .forward_cargo_door_controller
+                    .control_state()
                     == DoorControlState::UpLocked
             }
 
@@ -10061,7 +9792,7 @@ mod tests {
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
             );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
@@ -10463,7 +10194,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                A380DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
+                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
             );
 
             test_bed = test_bed

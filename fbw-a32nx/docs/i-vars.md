@@ -30,19 +30,19 @@ And add the Update element to the Component containing the IVar.
     <!-- The Update element belongs in the Component scope, it won't work in the UseTemplate scope -->
     <Update Once="True">
         <!-- This copies the value from the LocalVar (set in the .flt files) to the IVar -->
-        (L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED) 
+        (L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
         <!-- This is copied from the LEFT_SINGLE_CODE element below so as not to break any existing functionality -->
         #UPDATE_AUTO_TRANSPONDER_STATE#
     </Update>
     <UseTemplate Name="ASOBO_GT_Switch_Code">
         <LEFT_SINGLE_CODE>
-            (I:XMLVAR_ALT_MODE_REQUESTED) ! (&gt;I:XMLVAR_ALT_MODE_REQUESTED) 
+            (I:XMLVAR_ALT_MODE_REQUESTED) ! (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
             #UPDATE_AUTO_TRANSPONDER_STATE#
         </LEFT_SINGLE_CODE>
         <ANIM_CODE>(I:XMLVAR_ALT_MODE_REQUESTED) 100 *</ANIM_CODE>
         <ANIM_NAME>#KNOB_XPNDR_ON_OFF_ANIM_NAME#</ANIM_NAME>
-        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_ON</ANIMTIP_0>
-        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_OFF</ANIMTIP_1>
+        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_OFF</ANIMTIP_0>
+        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_ON</ANIMTIP_1>
     </UseTemplate>
 </Component>
 ```
