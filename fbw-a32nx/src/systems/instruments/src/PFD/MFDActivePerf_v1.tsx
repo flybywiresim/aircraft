@@ -10,11 +10,11 @@ import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@mi
 import { Button } from 'instruments/src/PFD/MFD-common/Button';
 import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
 import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
-import { MFDComponentProps } from 'instruments/src/PFD/MFD';
+import { MfdComponentProps } from 'instruments/src/PFD/MFD';
 import { Header } from 'instruments/src/PFD/MFD-common/Header';
 import { Footer } from 'instruments/src/PFD/MFD-common/Footer';
 
-interface MFDActivePerfProps extends MFDComponentProps {
+interface MFDActivePerfProps extends MfdComponentProps {
 }
 
 export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {

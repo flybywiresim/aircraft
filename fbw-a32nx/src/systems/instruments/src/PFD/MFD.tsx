@@ -6,8 +6,14 @@ import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, S
 
 import { Navigator, NavigatorPage } from 'instruments/src/PFD/MFD-common/Navigator';
 import { CustomMouseCursor } from 'instruments/src/PFD/MFD-common/CustomMouseCursor';
-import { MFDFMSPerf } from 'instruments/src/PFD/pages/FMS/PERF';
+import { MfdFmsActivePerf } from 'instruments/src/PFD/pages/FMS/ACTIVE/PERF';
 import { Ping } from 'instruments/src/PFD/pages/Ping';
+import { MfdFmsActiveFpln } from 'instruments/src/PFD/pages/FMS/ACTIVE/F-PLN';
+import { MfdFmsActiveFuelLoad } from 'instruments/src/PFD/pages/FMS/ACTIVE/FUEL_LOAD';
+import { MfdFmsActiveWind } from 'instruments/src/PFD/pages/FMS/ACTIVE/WIND';
+import { MfdFmsActiveInit } from 'instruments/src/PFD/pages/FMS/ACTIVE/INIT';
+import { MfdFmsPositionNavaids } from 'instruments/src/PFD/pages/FMS/POSITION/NAVAIDS';
+
 import { MFDSimvars } from './shared/MFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
@@ -15,7 +21,7 @@ export const getDisplayIndex = () => {
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 
-interface MFDProps extends ComponentProps {
+interface MfdProps extends ComponentProps {
     bus: EventBus;
     instrument: BaseInstrument;
 }
@@ -27,22 +33,22 @@ export interface ActiveUriInformation {
     page: string;
 }
 
-export interface MFDComponentProps extends ComponentProps {
+export interface MfdComponentProps extends ComponentProps {
     bus: EventBus;
     active: Subscribable<ActiveUriInformation>;
     navigateTo(uri: string): void;
 }
 
-export class MFDComponent extends DisplayComponent<MFDProps> {
+export class MFDComponent extends DisplayComponent<MfdProps> {
     private displayBrightness = Subject.create(0);
 
     private displayPowered = Subject.create(false);
 
     private activeUri = Subject.create<ActiveUriInformation>({
-        uri: 'fms/active/perf',
+        uri: 'fms/active/init',
         sys: 'fms',
         category: 'active',
-        page: 'perf',
+        page: 'init',
     });
 
     private mouseCursorRef = FSComponent.createRef<CustomMouseCursor>();
@@ -87,7 +93,14 @@ export class MFDComponent extends DisplayComponent<MFDProps> {
         return (
             <div class="mfd-main" ref={this.oansRef}>
                 <Navigator active={this.activeUri}>
-                    <NavigatorPage uri="fms/active/perf" component={<MFDFMSPerf bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="fms/active/f-pln" component={<MfdFmsActiveFpln bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="fms/active/perf" component={<MfdFmsActivePerf bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="fms/active/fuel-load" component={<MfdFmsActiveFuelLoad bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="fms/active/wind" component={<MfdFmsActiveWind bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="fms/active/init" component={<MfdFmsActiveInit bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="fms/position/navaids" component={<MfdFmsPositionNavaids bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="surv/controls" component={<MfdFmsActiveInit bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
+                    <NavigatorPage uri="surv/status-switching" component={<MfdFmsActiveInit bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
                     <NavigatorPage uri="ping" component={<Ping bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
                 </Navigator>
                 <CustomMouseCursor ref={this.mouseCursorRef} />

@@ -1,8 +1,8 @@
 ﻿import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { MFDComponentProps } from 'instruments/src/PFD/MFD';
+import { MfdComponentProps } from 'instruments/src/PFD/MFD';
 import { Button } from 'instruments/src/PFD/MFD-common/Button';
 
-export class Footer extends DisplayComponent<MFDComponentProps> {
+export class Footer extends DisplayComponent<MfdComponentProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
     }

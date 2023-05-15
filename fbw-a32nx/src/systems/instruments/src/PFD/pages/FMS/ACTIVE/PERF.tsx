@@ -10,14 +10,14 @@ import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@mi
 import { Button } from 'instruments/src/PFD/MFD-common/Button';
 import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
 import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
-import { MFDComponentProps } from 'instruments/src/PFD/MFD';
+import { MfdComponentProps } from 'instruments/src/PFD/MFD';
 import { Header } from 'instruments/src/PFD/MFD-common/Header';
 import { Footer } from 'instruments/src/PFD/MFD-common/Footer';
 
-interface MFDFMSPerfProps extends MFDComponentProps {
+interface MfdFmsActivePerfProps extends MfdComponentProps {
 }
 
-export class MFDFMSPerf extends DisplayComponent<MFDFMSPerfProps> {
+export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     private sysSelectorSelectedIndex = Subject.create(0);
 
     private flightPhasesSelectedPageIndex = Subject.create(0);

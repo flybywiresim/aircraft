@@ -1,9 +1,9 @@
 ﻿import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { MFDComponentProps } from 'instruments/src/PFD/MFD';
+import { MfdComponentProps } from 'instruments/src/PFD/MFD';
 import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
 import { PageSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/PageSelectorDropdownMenu';
 
-export class Header extends DisplayComponent<MFDComponentProps> {
+export class Header extends DisplayComponent<MfdComponentProps> {
   private sysSelectorSelectedIndex = Subject.create(0);
 
   public onAfterRender(node: VNode): void {
@@ -43,18 +43,42 @@ export class Header extends DisplayComponent<MFDComponentProps> {
                   />
               </div>
               <div style="display: flex; flex-direction: row;">
-                  <PageSelectorDropdownMenu isActive={Subject.create(this.props.active.get().category === 'active')}>
-                      ACTIVE
-                  </PageSelectorDropdownMenu>
-                  <PageSelectorDropdownMenu isActive={Subject.create(this.props.active.get().category === 'position')}>
-                      POSITION
-                  </PageSelectorDropdownMenu>
-                  <PageSelectorDropdownMenu isActive={Subject.create(this.props.active.get().category === 'secindex')}>
-                      SEC INDEX
-                  </PageSelectorDropdownMenu>
-                  <PageSelectorDropdownMenu isActive={Subject.create(this.props.active.get().category === 'data')}>
-                      DATA
-                  </PageSelectorDropdownMenu>
+                  <PageSelectorDropdownMenu
+                      isActive={Subject.create(this.props.active.get().category === 'active')}
+                      label="ACTIVE"
+                      menuItems={[
+                          { label: 'F-PLN', action: () => this.props.navigateTo('fms/active/f-pln') },
+                          { label: 'PERF', action: () => this.props.navigateTo('fms/active/perf') },
+                          { label: 'FUEL&LOAD', action: () => this.props.navigateTo('fms/active/fuel-load') },
+                          { label: 'WIND', action: () => this.props.navigateTo('fms/active/wind') },
+                          { label: 'INIT', action: () => this.props.navigateTo('fms/active/init') }]}
+                      idPrefix="pageSelectorActive"
+                      containerStyle="flex: 1"
+                  />
+                  <PageSelectorDropdownMenu
+                      isActive={Subject.create(this.props.active.get().category === 'position')}
+                      label="POSITION"
+                      menuItems={[
+                          { label: 'NAVAIDS', action: () => this.props.navigateTo('fms/position/navaids') }]}
+                      idPrefix="pageSelectorPosition"
+                      containerStyle="flex: 1"
+                  />
+                  <PageSelectorDropdownMenu
+                      isActive={Subject.create(this.props.active.get().category === 'sec-index')}
+                      label="SEC INDEX"
+                      menuItems={[
+                          { label: 'INIT', action: () => this.props.navigateTo('fms/active/init') }]}
+                      idPrefix="pageSelectorSecIndex"
+                      containerStyle="flex: 1"
+                  />
+                  <PageSelectorDropdownMenu
+                      isActive={Subject.create(this.props.active.get().category === 'data')}
+                      label="DATA"
+                      menuItems={[
+                          { label: 'INIT', action: () => this.props.navigateTo('fms/active/init') }]}
+                      idPrefix="pageSelectorData"
+                      containerStyle="flex: 1"
+                  />
               </div>
           </>
       );
