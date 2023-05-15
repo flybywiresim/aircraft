@@ -327,7 +327,7 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude,
-            total_weight: Mass::new::<kilogram>(50000.),
+            total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 10.,
         }
     }
@@ -398,11 +398,11 @@ impl UpdateContext {
             ),
             attitude: Default::default(),
             mach_number: Default::default(),
-            air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
+            air_density: MassDensity::default(),
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
-            total_weight: Mass::new::<kilogram>(50000.),
+            total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 1.,
         }
     }
