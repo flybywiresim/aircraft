@@ -13,7 +13,6 @@ import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
-import { TerrainMap } from '../elements/TerrainMap';
 
 export interface ArcModeProps {
     symbols: NdSymbol[],
@@ -37,6 +36,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
     const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
     const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
@@ -55,7 +55,6 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     if (adirsAlign) {
         return (
             <>
-                <TerrainMap x={-108} y={128} width={984} height={492} side={side} potentiometerIndex={side === 'L' ? 94 : 95} clipName="arc-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}
@@ -78,7 +77,16 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             || fmaLatMode === LateralMode.HDG
                             || fmaLatMode === LateralMode.TRACK)
                             && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV)) && (
-                            <TrackLine x={384} y={620} heading={heading} track={track} />
+                            <TrackLine
+                                x={384}
+                                y={620}
+                                heading={heading}
+                                track={track}
+                                groundSpeed={Number(MathUtils.fastToFixed(groundSpeed, 2))}
+                                mapParams={mapParams}
+                                symbols={symbols}
+                                ndRange={rangeSetting}
+                            />
                         )}
                     </g>
                     <RadioNeedle index={1} side={side} displayMode={EfisNdMode.ARC} centreHeight={620} trueRef={trueRef} />
@@ -203,6 +211,10 @@ const ArcModeOverlayDefs = memo(() => (
         <clipPath id="arc-mode-overlay-clip-1">
             <path d="m 0 519 l 384 145 l 384 -86 v -580 h -768 z" />
         </clipPath>
+        {/* inverted map overlays for terrain map in WASM module  */}
+        <path name="arc-mode-bottom-left-map-area" d="M0,625 L122,625 L174,683 L174,768 L0,768 L0,625" className="nd-inverted-map-area" />
+        <path name="arc-mode-bottom-right-map-area" d="M768,562 L648,562 L591,625 L591,768 L768,768 L768,562" className="nd-inverted-map-area" />
+        <path name="arc-mode-top-map-area" d="M0,0 L0,312 a492,492 0 0 1 768,0 L768,0 L0,0" className="nd-inverted-map-area" />
     </>
 ));
 

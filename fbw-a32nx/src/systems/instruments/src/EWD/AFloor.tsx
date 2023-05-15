@@ -1,4 +1,4 @@
-import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
+import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AutoThrustMode } from '@shared/autopilot';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 

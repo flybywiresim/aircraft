@@ -1,6 +1,7 @@
 mod ailerons;
 mod autobrakes;
 mod brakes;
+mod cargo_doors;
 mod elevators;
 mod flaps;
 mod gear;
@@ -13,6 +14,7 @@ use a380_systems::A380;
 use ailerons::ailerons;
 use autobrakes::autobrakes;
 use brakes::brakes;
+use cargo_doors::cargo_doors;
 use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
@@ -24,7 +26,7 @@ use systems::failures::FailureType;
 use systems::shared::{
     ElectricalBusType, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
-use systems_wasm::aspects::ExecuteOn;
+
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
@@ -192,7 +194,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GPS GROUND TRUE TRACK", "Degrees", 0)?
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
-    .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 3)?
+    .provides_aircraft_variable("KOHLSMAN SETTING MB", "Millibars", 1)?
     .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?
     .provides_aircraft_variable("LIGHT BEACON ON", "Bool", 0)?
     .provides_aircraft_variable("PLANE ALT ABOVE GROUND", "Feet", 0)?
@@ -269,16 +272,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
         );
 
-        builder.map(
-            ExecuteOn::PreTick,
-            Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),
-            |value| if value > 0. { 1. } else { 0. },
-            Variable::aspect("FWD_DOOR_CARGO_OPEN_REQ"),
-        );
-
         Ok(())
     })?
     .with_aspect(brakes)?
+    .with_aspect(cargo_doors)?
     .with_aspect(autobrakes)?
     .with_aspect(nose_wheel_steering)?
     .with_aspect(flaps)?

@@ -1,70 +1,369 @@
-use super::{Air, DuctTemperature, ZoneType};
+use super::{Air, DuctTemperature, OutletAir, PressurizationConstants, ZoneType};
 use crate::{
-    shared::{CabinAir, CabinTemperature},
+    shared::{AverageExt, CabinSimulation},
     simulation::{
-        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
     },
 };
+use num_traits::Pow;
 use uom::si::{
     f64::*,
     length::meter,
     mass_density::kilogram_per_cubic_meter,
     mass_rate::kilogram_per_second,
     power::{kilowatt, watt},
-    pressure::pascal,
-    ratio::percent,
+    pressure::{hectopascal, pascal},
+    ratio::ratio,
     thermodynamic_temperature::{degree_celsius, kelvin},
     velocity::meter_per_second,
     volume::cubic_meter,
 };
 
-pub struct CabinZone<const ROWS: usize> {
-    zone_identifier: VariableIdentifier,
-    fwd_door_id: VariableIdentifier,
-    rear_door_id: VariableIdentifier,
-    passenger_rows_id: Option<Vec<VariableIdentifier>>,
+use bounded_vec_deque::BoundedVecDeque;
 
-    zone_id: ZoneType,
+use std::{convert::TryInto, marker::PhantomData};
+
+pub struct CabinAirSimulation<C, const ZONES: usize> {
+    is_initialised: bool,
+    previous_exterior_pressure: BoundedVecDeque<Pressure>,
+    filtered_exterior_pressure: Pressure,
+    previous_flow_in: BoundedVecDeque<MassRate>,
+    filtered_flow_in: MassRate,
+
+    air_in: Air,
+    air_out: Air,
+    internal_air: Air,
+
+    cabin_zones: [CabinZone<C>; ZONES],
+
+    constants: PhantomData<C>,
+}
+
+impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES> {
+    pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+        Self {
+            is_initialised: false,
+            previous_exterior_pressure: BoundedVecDeque::from_iter(
+                [Pressure::new::<hectopascal>(1013.25); 20],
+                20,
+            ),
+            filtered_exterior_pressure: Pressure::new::<hectopascal>(1013.25),
+            previous_flow_in: BoundedVecDeque::from_iter([MassRate::default(); 200], 200),
+            filtered_flow_in: MassRate::default(),
+
+            air_in: Air::new(),
+            air_out: Air::new(),
+            internal_air: Air::new(),
+
+            cabin_zones: cabin_zone_ids
+                .iter()
+                .map(|zone| CabinZone::new(context, zone))
+                .collect::<Vec<CabinZone<C>>>()
+                .try_into()
+                .unwrap_or_else(|v: Vec<CabinZone<C>>| {
+                    panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
+                }),
+
+            constants: PhantomData,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        air_conditioning_system: &(impl OutletAir + DuctTemperature),
+        outflow_valve_open_amount: Ratio,
+        safety_valve_open_amount: Ratio,
+        lgciu_gear_compressed: bool,
+        passengers: [u8; ZONES],
+        number_of_open_doors: u8,
+    ) {
+        if !self.is_initialised {
+            let initial_cabin_pressure =
+                self.initialize_cabin_pressure(context, lgciu_gear_compressed);
+            self.internal_air.set_pressure(initial_cabin_pressure);
+            let initial_cabin_temperature =
+                self.initialize_cabin_temperature(context, lgciu_gear_compressed);
+            self.internal_air.set_temperature(initial_cabin_temperature);
+            self.is_initialised = true;
+        }
+        self.filtered_flow_in =
+            self.flow_in_low_pass_filter(air_conditioning_system.outlet_air().flow_rate());
+
+        // Set flow in properties
+        self.air_in
+            .set_flow_rate(self.calculate_cabin_flow_in(context, self.filtered_flow_in));
+        self.air_in
+            .set_pressure(air_conditioning_system.outlet_air().pressure());
+        self.air_in
+            .set_temperature(air_conditioning_system.duct_temperature().iter().average());
+
+        // Calculate zone temperatures
+        let flow_rate_per_cubic_meter =
+            self.air_in.flow_rate() / (C::CABIN_VOLUME_CUBIC_METER + C::COCKPIT_VOLUME_CUBIC_METER);
+
+        for zone in self.cabin_zones.iter_mut() {
+            zone.update(
+                context,
+                air_conditioning_system,
+                flow_rate_per_cubic_meter,
+                self.internal_air.pressure(),
+                passengers[zone.zone_id()],
+                number_of_open_doors,
+            );
+        }
+
+        let average_temperature: ThermodynamicTemperature = self
+            .cabin_zones
+            .iter()
+            .map(|zone| zone.zone_air_temperature())
+            .average();
+
+        // Calculate flow out properties
+        self.filtered_exterior_pressure = self.exterior_pressure_low_pass_filter(context);
+        self.air_out.set_flow_rate(self.calculate_cabin_flow_out(
+            outflow_valve_open_amount,
+            safety_valve_open_amount,
+            number_of_open_doors,
+        ));
+
+        // Calculate internal air properties
+        let mass_change = (self.air_in.flow_rate().get::<kilogram_per_second>()
+            - self.air_out.flow_rate().get::<kilogram_per_second>())
+            * context.delta_as_secs_f64(); // Kg
+        let temperature_change =
+            average_temperature.get::<kelvin>() - self.internal_air.temperature().get::<kelvin>(); // K
+        let pressure_change = self.calculate_pressure_change(mass_change, temperature_change);
+        self.internal_air.set_temperature(average_temperature);
+        self.internal_air.set_flow_rate(MassRate::default());
+        self.internal_air
+            .set_pressure(self.internal_air.pressure() + pressure_change);
+    }
+
+    fn initialize_cabin_pressure(
+        &mut self,
+        context: &UpdateContext,
+        lgciu_gear_compressed: bool,
+    ) -> Pressure {
+        if lgciu_gear_compressed {
+            context.ambient_pressure()
+        } else {
+            // Formula to simulate pressure start state if starting in flight
+            let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
+            self.previous_exterior_pressure =
+                BoundedVecDeque::from_iter(vec![context.ambient_pressure(); 20], 20);
+            Pressure::new::<hectopascal>(
+                -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
+            )
+        }
+    }
+
+    fn initialize_cabin_temperature(
+        &mut self,
+        context: &UpdateContext,
+        lgciu_gear_compressed: bool,
+    ) -> ThermodynamicTemperature {
+        if lgciu_gear_compressed {
+            // If the aircraft is on the ground the cabin starts at the same temperature as ambient
+            self.cabin_zones
+                .iter_mut()
+                .for_each(|zone| zone.set_zone_air_temperature(context.ambient_temperature()));
+            context.ambient_temperature()
+        } else {
+            // If the aircraft is flying we assume the temperature has been stabilized at 24 degrees
+            self.cabin_zones.iter_mut().for_each(|zone| {
+                zone.set_zone_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.))
+            });
+            ThermodynamicTemperature::new::<degree_celsius>(24.)
+        }
+    }
+
+    fn calculate_cabin_flow_in(&self, context: &UpdateContext, flow_in: MassRate) -> MassRate {
+        // Placeholder until packs are modelled to prevent sudden changes in flow
+        const INTERNAL_FLOW_RATE_CHANGE: f64 = 0.1;
+
+        let rate_of_change_for_delta = MassRate::new::<kilogram_per_second>(
+            INTERNAL_FLOW_RATE_CHANGE * context.delta_as_secs_f64(),
+        );
+
+        if flow_in > self.air_in.flow_rate() {
+            self.air_in.flow_rate()
+                + rate_of_change_for_delta.min(flow_in - self.air_in.flow_rate())
+        } else if flow_in < self.air_in.flow_rate() {
+            self.air_in.flow_rate()
+                - rate_of_change_for_delta.min(self.air_in.flow_rate() - flow_in)
+        } else {
+            flow_in
+        }
+    }
+
+    fn exterior_pressure_low_pass_filter(&mut self, context: &UpdateContext) -> Pressure {
+        self.previous_exterior_pressure.pop_front();
+        self.previous_exterior_pressure
+            .push_back(context.ambient_pressure());
+
+        self.previous_exterior_pressure.iter().average()
+    }
+
+    fn flow_in_low_pass_filter(&mut self, unfiltered_flow_in: MassRate) -> MassRate {
+        // Too avoid high frequency airflow changes due to pneumatic updating at different rates
+        self.previous_flow_in.pop_front();
+        self.previous_flow_in.push_back(unfiltered_flow_in);
+
+        self.previous_flow_in.iter().average()
+    }
+
+    fn flow_coefficient_calculation(&self, pressure_ratio: f64) -> f64 {
+        const STABILITY_COEFFICIENT: f64 = 2.5e5;
+        const STABILITY_MARGIN: f64 = 2e-3;
+
+        let flow_direction: f64 = if pressure_ratio > 1. { -1. } else { 1. };
+
+        // To avoid instability close to rp = 1
+        if (pressure_ratio - 1.).abs() >= STABILITY_MARGIN {
+            flow_direction
+        } else {
+            flow_direction
+                * (STABILITY_COEFFICIENT * pressure_ratio.pow(2.)
+                    - 2. * STABILITY_COEFFICIENT * pressure_ratio
+                    + STABILITY_COEFFICIENT)
+        }
+    }
+
+    fn supersonic_flow_out_calculation(&self) -> MassRate {
+        const Z_VALUE_FOR_PR_UNDER_053: f64 = 0.256;
+
+        let airflow_per_unit_area = (2.
+            * (Air::GAMMA / (Air::GAMMA - 1.))
+            * self
+                .internal_air
+                .density()
+                .get::<kilogram_per_cubic_meter>()
+            * self.internal_air.pressure().get::<pascal>()
+            * Z_VALUE_FOR_PR_UNDER_053)
+            .sqrt();
+        MassRate::new::<kilogram_per_second>(airflow_per_unit_area)
+    }
+
+    fn subsonic_flow_out_calculation(&self) -> MassRate {
+        MassRate::new::<kilogram_per_second>(
+            self.internal_air
+                .density()
+                .get::<kilogram_per_cubic_meter>()
+                * (2.
+                    * (self.internal_air.pressure().get::<pascal>()
+                        - self.filtered_exterior_pressure.get::<pascal>())
+                    .abs()
+                    / self
+                        .internal_air
+                        .density()
+                        .get::<kilogram_per_cubic_meter>())
+                .sqrt(),
+        )
+    }
+
+    fn calculate_cabin_flow_out(
+        &self,
+        outflow_valve_open_amount: Ratio,
+        safety_valve_open_amount: Ratio,
+        number_of_open_doors: u8,
+    ) -> MassRate {
+        const TRANSONIC_PR_VALUE: f64 = 0.53;
+
+        let outflow_valve_area = C::OUTFLOW_VALVE_SIZE * outflow_valve_open_amount.get::<ratio>(); // sq m
+        let leakage_area = C::CABIN_LEAKAGE_AREA
+            + C::SAFETY_VALVE_SIZE * safety_valve_open_amount.get::<ratio>()
+            + number_of_open_doors as f64 * C::DOOR_OPENING_AREA; // sq m
+
+        let pressure_ratio =
+            (self.filtered_exterior_pressure / self.internal_air.pressure()).get::<ratio>();
+
+        let flow_coefficient = self.flow_coefficient_calculation(pressure_ratio);
+
+        if pressure_ratio < TRANSONIC_PR_VALUE {
+            flow_coefficient
+                * (outflow_valve_area + leakage_area)
+                * self.supersonic_flow_out_calculation()
+        } else {
+            flow_coefficient
+                * (outflow_valve_area + leakage_area)
+                * self.subsonic_flow_out_calculation()
+        }
+    }
+
+    /// Mass balance calculation to determine pressure differential
+    fn calculate_pressure_change(&self, mass_change: f64, temperature_change: f64) -> Pressure {
+        let pressure_change_mass =
+            mass_change * self.internal_air.temperature().get::<kelvin>() * Air::R
+                / C::PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER;
+        let pressure_change_temperature = self
+            .internal_air
+            .density()
+            .get::<kilogram_per_cubic_meter>()
+            * Air::R
+            * temperature_change;
+
+        Pressure::new::<pascal>(pressure_change_mass + pressure_change_temperature)
+    }
+}
+
+impl<C: PressurizationConstants, const ZONES: usize> CabinSimulation
+    for CabinAirSimulation<C, ZONES>
+{
+    fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        self.cabin_zones
+            .iter()
+            .flat_map(|zone| zone.cabin_temperature())
+            .collect()
+    }
+
+    fn exterior_pressure(&self) -> Pressure {
+        self.filtered_exterior_pressure
+    }
+    fn cabin_pressure(&self) -> Pressure {
+        self.internal_air.pressure()
+    }
+}
+
+impl<C: PressurizationConstants, const ZONES: usize> SimulationElement
+    for CabinAirSimulation<C, ZONES>
+{
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.cabin_zones, visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct CabinZone<C> {
+    zone_identifier: VariableIdentifier,
+
+    zone_id: usize,
     zone_air: ZoneAir,
     zone_volume: Volume,
     passengers: u8,
-    fwd_door_is_open: bool,
-    rear_door_is_open: bool,
+
+    constants: PhantomData<C>,
 }
 
-impl<const ROWS: usize> CabinZone<ROWS> {
-    const FWD_DOOR: &'static str = "INTERACTIVE POINT OPEN:0";
-    const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
-
-    pub fn new(
-        context: &mut InitContext,
-        zone_id: ZoneType,
-        zone_volume: Volume,
-        passengers: u8,
-        passenger_rows: Option<[(u8, u8); ROWS]>,
-    ) -> Self {
-        let passenger_rows_id = if let Some(rows) = passenger_rows {
-            let mut row_id_vec = Vec::new();
-            for r in rows.iter() {
-                row_id_vec.push(context.get_identifier(format!("PAX_TOTAL_ROWS_{}_{}", r.0, r.1)));
-            }
-            Some(row_id_vec)
+impl<C: PressurizationConstants> CabinZone<C> {
+    pub fn new(context: &mut InitContext, zone_id: &ZoneType) -> Self {
+        let (passengers, zone_volume) = if matches!(zone_id, &ZoneType::Cockpit) {
+            (2, Volume::new::<cubic_meter>(C::COCKPIT_VOLUME_CUBIC_METER))
         } else {
-            None
+            (0, Volume::new::<cubic_meter>(C::CABIN_VOLUME_CUBIC_METER))
         };
+
         Self {
             zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
-            fwd_door_id: context.get_identifier(Self::FWD_DOOR.to_owned()),
-            rear_door_id: context.get_identifier(Self::REAR_DOOR.to_owned()),
-            passenger_rows_id,
 
-            zone_id,
+            zone_id: zone_id.id(),
             zone_air: ZoneAir::new(),
             zone_volume,
             passengers,
-            fwd_door_is_open: false,
-            rear_door_is_open: false,
+
+            constants: PhantomData,
         }
     }
 
@@ -73,63 +372,53 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         context: &UpdateContext,
         duct_temperature: &impl DuctTemperature,
         pack_flow_per_cubic_meter: MassRate,
-        pressurization: &impl CabinAir,
+        cabin_pressure: Pressure,
+        passengers: u8,
+        number_of_open_doors: u8,
     ) {
         let mut air_in = Air::new();
-        air_in.set_temperature(duct_temperature.duct_temperature()[self.zone_id.id()]);
+        air_in.set_temperature(duct_temperature.duct_temperature()[self.zone_id]);
         air_in.set_flow_rate(pack_flow_per_cubic_meter * self.zone_volume.get::<cubic_meter>());
+        self.passengers = passengers;
 
         self.zone_air.update(
             context,
             &air_in,
             self.zone_volume,
             self.passengers,
-            self.fwd_door_is_open,
-            self.rear_door_is_open,
-            pressurization,
+            number_of_open_doors,
+            cabin_pressure,
         );
     }
 
-    pub fn update_number_of_passengers(&mut self, passengers: u8) {
-        self.passengers = passengers;
+    fn zone_id(&self) -> usize {
+        self.zone_id
+    }
+
+    fn set_zone_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
+        self.zone_air.set_zone_air_temperature(temperature);
+    }
+
+    pub fn zone_air_temperature(&self) -> ThermodynamicTemperature {
+        self.zone_air.zone_air_temperature()
     }
 }
 
-impl<const ROWS: usize> CabinTemperature for CabinZone<ROWS> {
+impl<C: PressurizationConstants> CabinSimulation for CabinZone<C> {
     fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
         vec![self.zone_air.zone_air_temperature()]
     }
 }
 
-impl<const ROWS: usize> SimulationElement for CabinZone<ROWS> {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        let rear_door_read: Ratio = reader.read(&self.rear_door_id);
-        self.rear_door_is_open = rear_door_read > Ratio::new::<percent>(0.);
-        let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
-        self.fwd_door_is_open = fwd_door_read > Ratio::new::<percent>(0.);
-
-        let zone_passengers: u8 = if let Some(rows) = &self.passenger_rows_id {
-            let mut zone_sum_passengers: u8 = 0;
-            for r in rows.iter() {
-                let passengers: u8 = reader.read(r);
-                zone_sum_passengers += passengers;
-            }
-            zone_sum_passengers
-        } else {
-            2
-        };
-        self.update_number_of_passengers(zone_passengers);
-    }
-
+impl<C: PressurizationConstants> SimulationElement for CabinZone<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.zone_identifier, self.zone_air.zone_air_temperature());
+        writer.write(&self.zone_identifier, self.zone_air_temperature());
     }
 }
 
 struct ZoneAir {
     flow_out: Air,
     internal_air: Air,
-    is_initialised: bool,
 }
 
 impl ZoneAir {
@@ -150,7 +439,6 @@ impl ZoneAir {
         Self {
             flow_out: Air::new(),
             internal_air: Air::new(),
-            is_initialised: false,
         }
     }
 
@@ -160,18 +448,11 @@ impl ZoneAir {
         air_in: &Air,
         zone_volume: Volume,
         zone_passengers: u8,
-        fwd_door_is_open: bool,
-        rear_door_is_open: bool,
-        pressurization: &impl CabinAir,
+        number_of_open_doors: u8,
+        cabin_pressure: Pressure,
     ) {
-        if !self.is_initialised {
-            self.internal_air
-                .set_temperature(context.ambient_temperature());
-            self.flow_out.set_temperature(context.ambient_temperature());
-            self.is_initialised = true;
-        }
-        self.internal_air.set_pressure(pressurization.pressure());
-        let number_of_open_doors: u8 = fwd_door_is_open as u8 + rear_door_is_open as u8;
+        self.internal_air.set_pressure(cabin_pressure);
+
         let new_equilibrium_temperature = self.equilibrium_temperature_calculation(
             context,
             number_of_open_doors,
@@ -185,6 +466,7 @@ impl ZoneAir {
         self.flow_out.set_flow_rate(air_in.flow_rate());
     }
 
+    /// Energy balance calculation to determine equilibrium temperature in the cabin
     fn equilibrium_temperature_calculation(
         &self,
         context: &UpdateContext,
@@ -193,7 +475,6 @@ impl ZoneAir {
         zone_volume: Volume,
         zone_passengers: u8,
     ) -> ThermodynamicTemperature {
-        // Energy balance calculation to determine equilibrium temperature in the cabin
         let inlet_air_energy = air_in.flow_rate().get::<kilogram_per_second>()
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * air_in.temperature().get::<kelvin>();
@@ -334,6 +615,10 @@ impl ZoneAir {
         }
     }
 
+    fn set_zone_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
+        self.internal_air.set_temperature(temperature);
+    }
+
     fn zone_air_temperature(&self) -> ThermodynamicTemperature {
         self.internal_air.temperature()
     }
@@ -366,13 +651,18 @@ mod cabin_air_tests {
     use super::*;
     use crate::{
         air_conditioning::PackFlow,
+        shared::InternationalStandardAtmosphere,
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
             Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
     use std::time::Duration;
-    use uom::si::{length::foot, thermodynamic_temperature::degree_celsius};
+    use uom::si::{
+        length::foot,
+        pressure::{hectopascal, psi},
+        thermodynamic_temperature::degree_celsius,
+    };
 
     struct TestAirConditioningSystem {
         duct_demand_temperature: ThermodynamicTemperature,
@@ -383,7 +673,7 @@ mod cabin_air_tests {
         fn new() -> Self {
             Self {
                 duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
-                pack_flow: MassRate::new::<kilogram_per_second>(0.),
+                pack_flow: MassRate::default(),
             }
         }
 
@@ -415,46 +705,61 @@ mod cabin_air_tests {
         }
     }
 
-    struct TestPressurization {
-        cabin_pressure: Pressure,
-    }
-
-    impl TestPressurization {
-        fn new() -> Self {
-            Self {
-                cabin_pressure: Pressure::new::<pascal>(101315.),
-            }
+    impl OutletAir for TestAirConditioningSystem {
+        fn outlet_air(&self) -> Air {
+            let mut outlet_air = Air::new();
+            outlet_air.set_flow_rate(self.pack_flow);
+            outlet_air.set_pressure(Pressure::new::<psi>(16.));
+            outlet_air
         }
     }
 
-    impl CabinAir for TestPressurization {
-        fn altitude(&self) -> Length {
-            Length::new::<foot>(0.)
-        }
+    struct TestConstants;
 
-        fn pressure(&self) -> Pressure {
-            self.cabin_pressure
-        }
+    impl PressurizationConstants for TestConstants {
+        const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+        const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+        const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
+        const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
+        const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
+        const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
+        const DOOR_OPENING_AREA: f64 = 1.5; // m2
+
+        const MAX_CLIMB_RATE: f64 = 750.; // fpm
+        const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
+        const MAX_DESCENT_RATE: f64 = -750.; // fpm
+        const MAX_ABORT_DESCENT_RATE: f64 = -500.; //fpm
+        const MAX_TAKEOFF_DELTA_P: f64 = 0.1; // PSI
+        const MAX_CLIMB_DELTA_P: f64 = 8.06; // PSI
+        const MAX_CLIMB_CABIN_ALTITUDE: f64 = 8050.; // feet
+        const MAX_SAFETY_DELTA_P: f64 = 8.1; // PSI
+        const MIN_SAFETY_DELTA_P: f64 = -0.5; // PSI
+        const TAKEOFF_RATE: f64 = -400.;
+        const DEPRESS_RATE: f64 = 500.;
+        const EXCESSIVE_ALT_WARNING: f64 = 9550.; // feet
+        const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.03; // PSI
+        const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64 = 1.45; // PSI
     }
 
     struct TestAircraft {
-        cabin_zone: CabinZone<2>,
         air_conditioning_system: TestAirConditioningSystem,
-        pressurization: TestPressurization,
+
+        number_of_passengers: u8,
+        cabin_air_simulation: CabinAirSimulation<TestConstants, 2>,
+        lgciu_gears_compressed: bool,
     }
 
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                cabin_zone: CabinZone::new(
-                    context,
-                    ZoneType::Cabin(1),
-                    Volume::new::<cubic_meter>(400. / 2.),
-                    0,
-                    Some([(1, 6), (7, 13)]),
-                ),
                 air_conditioning_system: TestAirConditioningSystem::new(),
-                pressurization: TestPressurization::new(),
+
+                number_of_passengers: 0,
+                cabin_air_simulation: CabinAirSimulation::new(
+                    context,
+                    &[ZoneType::Cockpit, ZoneType::Cabin(1)],
+                ),
+                lgciu_gears_compressed: true,
             }
         }
 
@@ -468,28 +773,29 @@ mod cabin_air_tests {
         }
 
         fn set_passengers(&mut self, passengers: u8) {
-            self.cabin_zone.update_number_of_passengers(passengers);
+            self.number_of_passengers = passengers;
+        }
+
+        fn set_in_the_air(&mut self, in_the_air: bool) {
+            self.lgciu_gears_compressed = !in_the_air;
         }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
-                self.air_conditioning_system
-                    .pack_flow()
-                    .get::<kilogram_per_second>()
-                    / (460.),
-            );
-            self.cabin_zone.update(
+            self.cabin_air_simulation.update(
                 context,
                 &self.air_conditioning_system,
-                flow_rate_per_cubic_meter,
-                &self.pressurization,
+                Ratio::default(),
+                Ratio::default(),
+                self.lgciu_gears_compressed,
+                [2, self.number_of_passengers],
+                0u8,
             );
         }
     }
     impl SimulationElement for TestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-            self.cabin_zone.accept(visitor);
+            self.cabin_air_simulation.accept(visitor);
 
             visitor.visit(self);
         }
@@ -506,7 +812,7 @@ mod cabin_air_tests {
                 stored_temperature: None,
             };
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-            test_bed = test_bed.true_airspeed_of(Velocity::new::<meter_per_second>(0.));
+            test_bed = test_bed.true_airspeed_of(Velocity::default());
 
             test_bed
         }
@@ -529,10 +835,8 @@ mod cabin_air_tests {
             self
         }
 
-        fn passengers(mut self, passengers: u8) -> Self {
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), passengers / 2);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), passengers / 2);
-            self.command(|a| a.set_passengers(passengers));
+        fn passengers(mut self, pax_quantity: u8) -> Self {
+            self.command(|a| a.set_passengers(pax_quantity));
             self
         }
 
@@ -561,13 +865,17 @@ mod cabin_air_tests {
             self
         }
 
-        fn command_open_door(mut self) -> Self {
-            self.write_by_name("INTERACTIVE POINT OPEN:0", Ratio::new::<percent>(100.));
+        fn flying(mut self, is_flying: bool) -> Self {
+            self.command(|a| a.set_in_the_air(is_flying));
             self
         }
 
+        fn cabin_pressure(&self) -> Pressure {
+            self.query(|a| a.cabin_air_simulation.cabin_pressure())
+        }
+
         fn cabin_temperature(&self) -> ThermodynamicTemperature {
-            self.query(|a| a.cabin_zone.zone_air.zone_air_temperature())
+            self.query(|a| a.cabin_air_simulation.cabin_temperature()[1])
         }
 
         fn memorize_cabin_temperature(mut self) -> Self {
@@ -623,6 +931,27 @@ mod cabin_air_tests {
     }
 
     #[test]
+    fn cabin_pressure_initialises_correctly() {
+        let test_bed = test_bed_with()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(-50.))
+            .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                Length::new::<foot>(39000.),
+            ))
+            .flying(true)
+            .iterate(1);
+
+        assert!(
+            (test_bed.cabin_pressure()
+                - InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                    8000.
+                )))
+            .get::<hectopascal>()
+            .abs()
+                < 50.
+        );
+    }
+
+    #[test]
     fn cabin_air_warms_up_with_pax_and_no_ac() {
         let test_bed = test_bed_with()
             .passengers(174 / 2)
@@ -637,6 +966,7 @@ mod cabin_air_tests {
     fn cabin_air_cools_with_ac_low() {
         let test_bed = test_bed()
             .with_flow()
+            .iterate(10)
             .memorize_cabin_temperature()
             .then()
             .air_in_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(4.))
@@ -679,11 +1009,11 @@ mod cabin_air_tests {
             .with_passengers()
             .and()
             .air_in_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(8.))
-            .iterate_with_delta(100, Duration::from_secs(10))
+            .iterate(500)
             .memorize_cabin_temperature()
             .then()
             .passengers(10)
-            .iterate_with_delta(100, Duration::from_secs(10));
+            .iterate(100);
 
         assert!(test_bed.initial_temperature() > test_bed.cabin_temperature());
     }
@@ -691,7 +1021,7 @@ mod cabin_air_tests {
     #[test]
     fn temperature_stays_stable_with_no_flow_and_no_passengers() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .memorize_cabin_temperature()
             .then()
             .iterate_with_delta(100, Duration::from_secs(10));
@@ -707,7 +1037,7 @@ mod cabin_air_tests {
     #[test]
     fn reducing_ambient_temperature_reduces_cabin_temperature() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .memorize_cabin_temperature()
             .then()
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
@@ -719,7 +1049,7 @@ mod cabin_air_tests {
     #[test]
     fn increasing_ambient_temperature_increases_cabin_temperature() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .memorize_cabin_temperature()
             .then()
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(45.))
@@ -731,7 +1061,7 @@ mod cabin_air_tests {
     #[test]
     fn more_heat_is_dissipated_in_flight() {
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .iterate(1)
             .then()
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
@@ -743,7 +1073,7 @@ mod cabin_air_tests {
             - test_bed.cabin_temperature().get::<degree_celsius>();
 
         let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .air_in_flow_rate_of(MassRate::default())
             .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
             .and()
             .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
@@ -756,64 +1086,5 @@ mod cabin_air_tests {
                 - test_bed.cabin_temperature().get::<degree_celsius>();
 
         assert!(first_temperature_differential < second_temperature_differential);
-    }
-
-    #[test]
-    fn increasing_altitude_reduces_heat_transfer() {
-        let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
-            .and()
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
-            .iterate(1)
-            .then()
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
-            .and()
-            .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
-            .memorize_cabin_temperature()
-            .and()
-            .iterate_with_delta(100, Duration::from_secs(10));
-
-        let first_temperature_differential = test_bed.initial_temperature().get::<degree_celsius>()
-            - test_bed.cabin_temperature().get::<degree_celsius>();
-
-        let test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
-            .and()
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
-            .iterate(1)
-            .then()
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
-            .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
-            .and()
-            .ambient_pressure_of(Pressure::new::<pascal>(45000.))
-            .memorize_cabin_temperature()
-            .and()
-            .iterate_with_delta(100, Duration::from_secs(10));
-
-        let second_temperature_differential =
-            test_bed.initial_temperature().get::<degree_celsius>()
-                - test_bed.cabin_temperature().get::<degree_celsius>();
-
-        assert!(first_temperature_differential > second_temperature_differential);
-    }
-
-    #[test]
-    fn opening_doors_affects_cabin_temp() {
-        let mut test_bed = test_bed_with()
-            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
-            .iterate(1)
-            .then()
-            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
-            .command_open_door()
-            .and()
-            .iterate_with_delta(100, Duration::from_secs(10));
-
-        assert!(
-            (test_bed.cabin_temperature().get::<degree_celsius>()
-                - test_bed.ambient_temperature().get::<degree_celsius>())
-            .abs()
-                < 1.
-        );
     }
 }

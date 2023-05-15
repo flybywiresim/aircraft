@@ -20,8 +20,13 @@
   position: absolute;
   width: 768px;
   height: 768px;
-  background: $display-background;
+  background: transparent;
   font-family: "Ecam", monospace !important;
+}
+
+.nd-inverted-map-area {
+  background: $display-background;
+  fill: rgb(4,4,4);
 }
 
 .GtLayer {
@@ -37,6 +42,12 @@
   stroke: $display-magenta;
 }
 
+// Used for the speed change dot
+.Magenta.Fill {
+  fill: $display-magenta;
+  stroke: none;
+}
+
 .Magenta text,
 text.Magenta {
   fill: $display-magenta;
@@ -46,6 +57,11 @@ text.Magenta {
 .Cyan {
   fill: none;
   stroke: $display-cyan;
+}
+
+.Cyan.Fill {
+  fill: $display-cyan;
+  stroke: none;
 }
 
 .Cyan text,

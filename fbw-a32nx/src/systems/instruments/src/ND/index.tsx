@@ -6,6 +6,7 @@ import { useArinc429Var } from '@instruments/common/arinc429';
 import { getSupplier } from '@instruments/common/utils';
 import { useFlowSyncEvent } from '@instruments/common/hooks';
 import { EfisNdMode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
+import { TerrainMapThresholds } from './elements/TerrainMapThresholds';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
 import { WindIndicator } from './elements/WindIndicator';
@@ -19,7 +20,6 @@ import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
 import './styles.scss';
 import { LnavStatus } from './elements/LnavStatus';
-import { TerrainMapProvider } from './elements/TerrainMap';
 
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
@@ -110,17 +110,10 @@ const NavigationDisplay: React.FC = () => {
         <DisplayUnit
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
+            normDmc={displayIndex}
         >
-            <TerrainMapProvider side={side} />
             <FlightPlanProvider>
                 <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
-                    <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
-                    <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
-
-                    {true && (
-                        <LnavStatus />
-                    )}
-
                     {modeIndex === EfisNdMode.PLAN && (
                         <PlanMode
                             adirsAlign={adirsAlign}
@@ -157,7 +150,14 @@ const NavigationDisplay: React.FC = () => {
                     )}
 
                     <Chrono side={side} />
+                    <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
+                    <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
 
+                    {true && (
+                        <LnavStatus />
+                    )}
+
+                    <TerrainMapThresholds side={side} />
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
                     {(adirsAlign && modeIndex !== EfisNdMode.PLAN) && (
                         <>

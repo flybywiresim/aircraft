@@ -12,7 +12,7 @@ import {
     DclMessage,
     OclMessage,
 } from '@datalink/common';
-import { EventBus, EventSubscriber, Publisher } from 'msfssdk';
+import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { Atc } from '../ATC';
 import { UplinkMessageStateMachine } from '../components/UplinkMessageStateMachine';
 

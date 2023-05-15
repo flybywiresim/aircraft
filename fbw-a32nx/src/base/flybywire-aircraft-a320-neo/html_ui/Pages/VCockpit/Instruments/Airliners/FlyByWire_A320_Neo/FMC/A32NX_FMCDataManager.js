@@ -110,6 +110,14 @@ class FMCDataManager {
         navaids.push(...ndbs);
         return navaids;
     }
+    async GetNavaidsByIdent(ident) {
+        const navaids = [];
+        const vors = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Vors);
+        navaids.push(...vors);
+        const ndbs = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Ndbs);
+        navaids.push(...ndbs);
+        return navaids;
+    }
     async GetWaypointsByIdentAndType(ident, filter = 0, maxItems = 40) {
         // fetch results from the nav database
         // we filter for equal idents, because the search returns everything starting with the given string

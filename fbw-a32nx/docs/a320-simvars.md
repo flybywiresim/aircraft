@@ -21,7 +21,7 @@
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
-  - [Electronic Flight Bag ATA 46](#electronic-flight-bag--ata-46-)
+  - [Electronic Flight Bag (ATA 46)](#electronic-flight-bag-ata-46)
 
 ## Uncategorized
 
@@ -188,6 +188,15 @@
     - EIS DMC
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+    - Enum
+    - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
+      Value | Meaning
+      --- | ---
+      0 | Inactive
+      1 | Maintenance Mode active
+      2 | Engineering display test in progress
 
 - A32NX_ECAM_ND_XFR_SWITCHING_KNOB
     - ECAM/ND XFR
@@ -432,10 +441,6 @@
     - Number
     - The ILS course tuned via the left/right RMP
 
-- A32NX_RMP_ILS_TUNED
-    - Bool
-    - If the ILS is tuned via the RMP
-
 - A32NX_TO_CONFIG_FLAPS
     - Enum
     - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry, -1 if not entered
@@ -449,10 +454,6 @@
     - ** Deprecated, see `A32NX_FM{number}_TO_PITCH_TRIM`
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
-
-- A32NX_ENG_OUT_ACC_ALT
-    - feet
-    - The engine out acceleration altitude, set in the PERF TAKE OFF page.
 
 - A32NX_SLIDES_ARMED
     - Boolean
@@ -903,14 +904,6 @@
     - 0 for legacy mode (steering with rudder). 1 for realistic mode with tiller axis
       Tiller axis to be binded on "ENGINE 4 MIXTURE AXIS"
 
-- A32NX_HOME_COCKPIT_ENABLED
-    - Bool
-    - 1 to enable Home Cockpit mode which:
-        - Removes backlight bleed from the PFD, ND, and ECAM displays
-        - Removes reflection from the ISIS
-    - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present
-      on their displays.
-
 - A32NX_FO_SYNC_EFIS_ENABLED
     - Bool
     - 1 to sync the status of FD and LS buttons between CPT and FO sides
@@ -1059,6 +1052,7 @@
     - Auto brake panel push button for MAX mode is pressed
 
 - A32NX_FM_LS_COURSE
+    - ** DEPRECATED ** Do not use.
     - Number<Degrees | -1>
     - Landing system course. Values, in priority order:
         - Pilot entered course
@@ -1080,15 +1074,6 @@
       APPROACH | 5
       GOAROUND | 6
       DONE | 7
-
-- A32NX_FMGC_RADIONAV_TUNING_MODE
-    - Enum
-    - Hold the FMGCs current tuning mode
-      Value | Meaning
-      --- | ---
-      0 | AUTO
-      1 | MANUAL
-      2 | REMOTE VIA RMPs
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number
@@ -1352,6 +1337,35 @@
     - Bool
     - Indicates if the SET HOLD SPEED message is shown on the PFD
 
+- A32NX_PFD_MSG_TD_REACHED
+    - Bool
+    - Indicates if the T/D REACHED message is shown on the PFD
+
+- A32NX_PFD_LINEAR_DEVIATION_ACTIVE
+    - Bool
+    - Indicates if the linear deviation is shown on the PFD
+
+- A32NX_PFD_TARGET_ALTITUDE
+    - Feet
+    - Indicates the current target altitude in the DES mode. This is an indicated altitude and not a pressure altitude
+    - This is used to compute a linear deviation
+
+- A32NX_PFD_VERTICAL_PROFILE_LATCHED
+    - Boolean
+    - Indicates whether to show the latch symbol on the PFD with the deviation indicator
+
+- A32NX_PFD_SHOW_SPEED_MARGINS
+    - Boolean
+    - Indicates whether speed margins are shown on the PFD in DES mode.
+
+- A32NX_PFD_UPPER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the upper speed margin limit in DES mode
+
+- A32NX_PFD_LOWER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the lower speed margin limit in DES mode
+
 - A32NX_ISIS_LS_ACTIVE
     - Bool
     - Indicates whether LS scales are shown on the ISIS
@@ -1394,32 +1408,54 @@
         - 2
         - 3
 
-- A32NX_PAX_TOTAL_ROWS_{rows}
-    - Number
-    - Indicates the current number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_BOARDING_STARTED_BY_USR
+    - Bool
+    - Indicates current pax/cargo loading state
 
-- A32NX_PAX_TOTAL_ROWS_{rows}_DESIRED
-    - Number
-    - Indicates the target number of pax in the selected rows
-    - {rows}
-        - 1_6
-        - 7_13
-        - 14_21
-        - 22_29
+- A32NX_PAX_{station}
+    - Bitwise Field
+    - Indicates the current pax in the selected rows (max 53 bits)
+    - {station}
+        - A
+        - B
+        - C
+        - D
 
-- PAYLOAD STATION WEIGHT:{stationIndex}
+- A32NX_PAX_{station}_DESIRED
+    - Bitwise Field
+    - Indicates the target layout of passengers in the station (max 53)
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_PAX
+    - Bitwise Field
+    - Indicates the current layout of passengers in the station (max 53)
+    - {station}
+        - A
+        - B
+        - C
+        - D
+
+- A32NX_CARGO_{station}_DESIRED
     - Number (Kilograms)
-    - Indicates the weight of the selected payload station
-    - {stationIndex}
-        - 5 | FWD BAGGAGE/CONTAINER
-        - 6 | AFT CONTAINER
-        - 7 | AFT BAGGAGE
-        - 8 | AFT BULK/LOOSE
+    - Indicates the targeted weight of the station in kilograms
+    - {station}
+        - FWD_BAGGAGE
+        - AFT_CONTAINER
+        - AFT_BAGGAGE
+        - AFT_BULK_LOOSE
+
+- A32NX_CARGO
+    - Number (Kilograms)
+    - Indicates the current weight of the station in kilograms
+    - {station}
+        - FWD_BAGGAGE
+        - AFT_CONTAINER
+        - AFT_BAGGAGE
+        - AFT_BULK_LOOSE
 
 - A32NX_MCDU_{side}_ANNUNC_{annunciator}
     - Boolean
@@ -1507,6 +1543,22 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_CORRECTED_AVERAGE_STATIC_PRESSURE
     - Arinc429Word<hPa>
     - The corrected average static pressure.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_1_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the captain side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_HPA
+    - Arinc429Word<hPa>
+    - The local barometric setting entered on the first officer side.
+
+- A32NX_ADIRS_ADR_{number}_BARO_CORRECTION_2_INHG
+    - Arinc429Word<inHg>
+    - The local barometric setting entered on the first officer side.
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
     - Arinc429Word<Feet>
@@ -1740,6 +1792,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - L
         - R
 
+- L:A32NX_FM{number}_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 - A32NX_FM{number}_DEST_LAT
     - Destination latitude
     - Arinc429<Angle>
@@ -1777,9 +1836,44 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 17  | Takeoff speeds too low            |
       | 18  | Takeoff speeds not inserted       |
 
+- L:A32NX_FM{number}_EO_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 - L:A32NX_FM{number}_LANDING_ELEVATION
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_EO_ACC_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_MISSED_THR_RED_ALT
+    - ARINC429<number> (feet MSL)
+    - The missed approach thrust reduction altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- L:A32NX_FM{number}_THR_RED_ALT
+    - ARINC429<number> (feet MSL)
+    - The thrust reduction altitude
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
@@ -1790,6 +1884,29 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_DECISION_HEIGHT
+    - ARINC429<number>
+    - The decision height for an approach in feet, as entered on the PERF page.
+    - Value | Meaning
+       --- | ---
+       0 or greater | The decision height in feet
+       -1 | The pilot has not entered a decision height
+       -2 | The special value "NO" has been explicitly entered as the decision deight
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+ - A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
+    - ARINC429<number>
+    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM_VNAV_TRIGGER_STEP_DELETED
+    - Bool
+    - Indicates whether to trigger a step deleted message on the MCDU
 
 ## Autopilot System
 
@@ -2405,6 +2522,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number (Kg/h)
     - Expected idle fuel flow as a function of temperature and pressure
 
+- A32NX_FADEC_IGNITER_A_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter A on engine {index}
+
+- A32NX_FADEC_IGNITER_B_ACTIVE_ENG{index}
+    - Boolean
+    - State of igniter B on engine {index}
+
 - A32NX_FUEL_USED:{index}
     - Number (Kg)
     - Fuel burnt by engine {index} on deltaTime
@@ -2593,27 +2718,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_TRANSFER_PRESSURE:
-    - Pressure between IP/HP valves but before the pressure regulating valve
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
-    - Pressure at the precooler inlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
-- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_PRESSURE:
-    - Pressure at theh precooler outlet for engine bleed system
-    - PSI
-    - {number}
-        - 1
-        - 2
-
 - A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_PRESSURE:
     - Pressure behind the starter valve of the engine
     - PSI
@@ -2621,24 +2725,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE:
-    - Pressure measured at the intermediate pressure transducer, -1 if no output
-    - psi
-
 - A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
     - Pressure measured at the transfer pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_REGULATED_TRANSDUCER_PRESSURE
     - Pressure measured at the regulated pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_DIFFERENTIAL_TRANSDUCER_PRESSURE
     - Pressure measured at the differential pressure transducer, -1 if no output
     - psi
-    - Only on the A380X
 
 - A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
     - Temperature in intermediate pressure compression chamber
@@ -3520,8 +3617,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - `Arinc429Word<Feet>`
     - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
     - {number}
-        - 0
         - 1
+        - 2
 
 ## Electronic Flight Bag (ATA 46)
 

@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
+import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { UpperDisplay } from './UpperDisplay';
@@ -32,7 +32,7 @@ export class EwdComponent extends DisplayComponent<EwdProps> {
 
     render(): VNode {
         return (
-            <DisplayUnit bus={this.props.bus} brightness={this.ewdPotentiometer} powered={this.acEssBus}>
+            <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.ewdPotentiometer} powered={this.acEssBus}>
                 <svg class="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
                     <UpperDisplay bus={this.props.bus} />
                     <line class="Separator" x1="4" y1="520" x2="444" y2="520" strokeLinecap="round" />

@@ -1,0 +1,39 @@
+{
+  "LocalisationPackage": {
+    "Language": "pt-BR",
+    "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
+      "A32NX.LOADING.TIPS.A320NEO_001": "O FlyByWire A32NX é uma colaboração entre centenas de colaboradores individuais.",
+      "A32NX.LOADING.TIPS.A320NEO_002": "Você sabia? O A320 pode pousar a ventos cruzados de até 38 nós e ventos de cauda de até 15 nós!",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire tem o nome dos controles fly-by-wire introduzidos pela primeira vez no Airbus A320.",
+      "A32NX.LOADING.TIPS.A320NEO_004": "Mais de 9900 aeronaves da família A320 foram construídas! Isso é quase tanto quanto a população de Tuvalu!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "As aeronaves Airbus A320neo têm um alcance de 3500 NM ou 6500 KM. Isso é o suficiente para voar de Nova Iorque para Paris!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "Você sabia? A família A320 tem 4 variantes! O A318, A319, A320, e o A321.",
+      "AIRCRAFT.DESCRIPTION": "A Airbus lançou seu primeiro A320 em março de 1984. Quase 26 anos depois, em 2010, eles anunciaram o A320neo (\"new engine option\", nova opção de motor) como o membro mais recente da família, para revitalizar e sustentar sua linha de aviões de passageiros líder mundial com turbofan duplo e corpo estreito.</br></br>Depois de um extenso processo de desenvolvimento, o A320neo entrou oficialmente em serviço no início de 2016 com a Lufthansa, e logo se tornou a aeronave comercial mais rapidamente vendida do mundo, com mais de 7.000 aviões encomendados por mais de 115 linhas aéreas até hoje.</br></br>Dando continuidade à tradição estabelecida pelo A320 original, que foi o primeiro avião de passageiros além do Concorde a usar o controle fly-by-wire para operações normais, o A320neo compartilha mais de 95% de uniformidade de componentes estruturais com os modelos predecessores. Entretanto, é a introdução de dois tipos de motor de nova geração, além das pontas de asa \"Sharklet\" proprietárias da empresa, que realmente destaca o neo.</br></br>Economia de combustível, alcance estendido, carga máxima ampliada e distância de aterrissagem encurtada; esses avanços fundamentais, junto com uma redução drástica de ruídos e emissões de dióxido de carbono, comprovam porque o A320neo não só é um sucesso comercial, como também um passo à frente significativo no caminho para maior responsabilidade ambiental.",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU disponível",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ajustar a proa selecionada para a esquerda (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar a proa selecionada para a direita (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Ajustar a trilha selecionada para a esquerda (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Ajustar a trilha selecionada para a direita (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Reduzir brilho do PFD esquerdo",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Aumentar brilho do PFD esquerdo",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Reduzir brilho do PFD direito",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Aumentar brilho do PFD direito",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Colocar a luz de aviso \"não fumar\" em AUTO",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE": "Turn off the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE": "Turn on the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE": "Decrease the volume of the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE": "Increase the volume of the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE": "Turn off the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE": "Turn on the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE": "Decrease the volume of the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_INCREASE": "Increase the volume of the ident of the Markers beacons",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_OFF": "Allow morse ident",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_ON": "Inhibit morse ident"
+    }
+  }
+}

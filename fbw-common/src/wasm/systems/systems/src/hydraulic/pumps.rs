@@ -16,9 +16,14 @@ pub struct PumpCharacteristics {
     air_pressure_map_breakpoints_psi: [f64; 9],
     cavitation_map_ratio: [f64; 9],
 
+    // Speed under which pump has no output
+    zero_efficiency_speed_threshold: AngularVelocity,
+
     regulated_speed: Option<AngularVelocity>,
 }
 impl PumpCharacteristics {
+    const DEFAULT_ZERO_EFFICIENCY_SPEED_THRESHOLD_RPM: f64 = 75.;
+
     const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
     const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
 
@@ -70,6 +75,10 @@ impl PumpCharacteristics {
 
             air_pressure_map_breakpoints_psi,
             cavitation_map_ratio,
+
+            zero_efficiency_speed_threshold: AngularVelocity::new::<revolution_per_minute>(
+                Self::DEFAULT_ZERO_EFFICIENCY_SPEED_THRESHOLD_RPM,
+            ),
 
             regulated_speed,
         }
@@ -150,5 +159,9 @@ impl PumpCharacteristics {
 
     pub fn regulated_speed(&self) -> AngularVelocity {
         self.regulated_speed.unwrap_or_default()
+    }
+
+    pub fn min_speed_for_non_zero_efficiency(&self) -> AngularVelocity {
+        self.zero_efficiency_speed_threshold
     }
 }

@@ -4,6 +4,7 @@
 #include <SimConnect.h>
 
 #include "AdditionalData.h"
+#include "Arinc429.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
@@ -22,7 +23,9 @@
 #include "fcdc/Fcdc.h"
 #include "sec/Sec.h"
 
+#include "utils/ConfirmNode.h"
 #include "utils/HysteresisNode.h"
+#include "utils/SRFlipFlop.h"
 
 class FlyByWireInterface {
  public:
@@ -62,6 +65,9 @@ class FlyByWireInterface {
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
+  ConfirmNode elac2EmerPowersupplyRelayTimer = ConfirmNode(true, 30);
+  SRFlipFlop elac2EmerPowersupplyNoseGearConditionLatch = SRFlipFlop(true);
+
   bool wasTcasEngaged = false;
 
   bool pauseDetected = false;
@@ -96,6 +102,13 @@ class FlyByWireInterface {
 
   bool last_ls1_active = false;
   bool last_ls2_active = false;
+
+  std::unique_ptr<Arinc429NumericWord> fmThrustReductionAltitude = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmThrustReductionAltitudeGoAround = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitude = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeEngineOut = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeGoAround = std::make_unique<Arinc429NumericWord>();
+  std::unique_ptr<Arinc429NumericWord> fmAccelerationAltitudeGoAroundEngineOut = std::make_unique<Arinc429NumericWord>();
 
   FlightDataRecorder flightDataRecorder;
 
@@ -372,6 +385,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
 
   // LGCIU inputs
+  std::unique_ptr<LocalVariable> idLgciu1NoseGearDownlocked;
+
   std::unique_ptr<LocalVariable> idLgciuNoseGearCompressed[2];
   std::unique_ptr<LocalVariable> idLgciuLeftMainGearCompressed[2];
   std::unique_ptr<LocalVariable> idLgciuRightMainGearCompressed[2];
@@ -545,6 +560,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
   std::unique_ptr<LocalVariable> idElecBat1HotBusPowered;
+  std::unique_ptr<LocalVariable> idElecBat2HotBusPowered;
 
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;

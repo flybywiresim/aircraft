@@ -7,6 +7,7 @@ use crate::hydraulic::{
 use crate::pneumatic::PressurizeableReservoir;
 use crate::wind_turbine::WindTurbine;
 
+use crate::physics::{GravityEffect, WobblePhysics};
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, random_from_normal_distribution,
     random_from_range, AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedTrueLogicGate,
@@ -21,19 +22,19 @@ use nalgebra::Vector3;
 use std::time::Duration;
 
 use uom::si::{
-    angle::radian,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
-    mass::kilogram,
+    length::meter,
     pressure::{pascal, psi},
     ratio::ratio,
-    torque::newton_meter,
+    torque::{newton_meter, pound_force_inch},
     volume::{cubic_inch, cubic_meter, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
 pub mod aerodynamic_model;
 pub mod brake_circuit;
+pub mod cargo_doors;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;
@@ -41,6 +42,7 @@ pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
 pub mod pumps;
+pub mod pushback;
 pub mod rudder_control;
 pub mod trimmable_horizontal_stabilizer;
 
@@ -2097,60 +2099,8 @@ impl SimulationElement for LeakMeasurementValve {
     }
 }
 
-pub struct SpringPhysics {
-    last_length: f64,
-    spring_constant: f64,
-    damping_constant: f64,
-}
-impl SpringPhysics {
-    pub fn new(spring_constant: f64, damping_constant: f64) -> Self {
-        Self {
-            last_length: 0.,
-            spring_constant,
-            damping_constant,
-        }
-    }
-
-    pub fn update_force(
-        &mut self,
-        context: &UpdateContext,
-        position1: Vector3<f64>,
-        position2: Vector3<f64>,
-    ) -> Vector3<f64> {
-        let spring_vector = position1 - position2;
-        let spring_length = spring_vector.norm();
-
-        if spring_length.abs() < 0.001 {
-            self.last_length = spring_length;
-
-            return Vector3::default();
-        }
-
-        let spring_vector_normalized = spring_vector.normalize();
-        let velocity = (spring_length - self.last_length) / context.delta_as_secs_f64();
-
-        let k_force = spring_length * self.spring_constant;
-        let damping_force = velocity * self.damping_constant;
-
-        self.last_length = spring_length;
-
-        (k_force + damping_force) * spring_vector_normalized
-    }
-
-    pub fn set_k_and_damping(&mut self, spring_constant: f64, damping_constant: f64) {
-        self.spring_constant = spring_constant;
-        self.damping_constant = damping_constant;
-    }
-}
-
 struct FluidPhysics {
-    reference_point_cg: Vector3<f64>,
-    fluid_cg_position: Vector3<f64>,
-    fluid_cg_speed: Vector3<f64>,
-
-    virtual_mass: Mass,
-    spring: SpringPhysics,
-    anisotropic_damping_constant: Vector3<f64>,
+    wobble_physics: WobblePhysics,
 
     g_trap_is_empty: DelayedTrueLogicGate,
 }
@@ -2165,13 +2115,18 @@ impl FluidPhysics {
 
     fn new() -> Self {
         Self {
-            reference_point_cg: Vector3::default(),
-            fluid_cg_position: Vector3::new(0., -0.2, 0.),
-            fluid_cg_speed: Vector3::default(),
-
-            virtual_mass: Mass::new::<kilogram>(100.),
-            spring: SpringPhysics::new(Self::SPRING_K_CONSTANT, Self::SPRING_DAMPING_CONSTANT),
-            anisotropic_damping_constant: Vector3::new(25., 20., 25.),
+            wobble_physics: WobblePhysics::new(
+                GravityEffect::GravityFiltered,
+                Vector3::new(0., -0.2, 0.),
+                100.,
+                2.,
+                Self::SPRING_K_CONSTANT,
+                5.,
+                Self::SPRING_DAMPING_CONSTANT,
+                1.,
+                Vector3::new(25., 20., 25.),
+                1.,
+            ),
 
             g_trap_is_empty: DelayedTrueLogicGate::new(Duration::from_secs_f64(
                 random_from_normal_distribution(
@@ -2187,33 +2142,10 @@ impl FluidPhysics {
     }
 
     fn update(&mut self, context: &UpdateContext) {
-        self.update_speed_position(context);
+        self.wobble_physics.update(context);
 
         self.g_trap_is_empty
             .update(context, self.is_fluid_going_up());
-    }
-
-    fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
-        let gravity_force = context.acceleration_plane_reference_filtered_ms2_vector()
-            * self.virtual_mass.get::<kilogram>();
-
-        let spring_force =
-            self.spring
-                .update_force(context, self.reference_point_cg, self.fluid_cg_position);
-
-        let viscosity_damping = -self
-            .fluid_cg_speed
-            .component_mul(&self.anisotropic_damping_constant);
-
-        gravity_force + spring_force + viscosity_damping
-    }
-
-    fn update_speed_position(&mut self, context: &UpdateContext) {
-        let acceleration = self.update_forces(context) / self.virtual_mass.get::<kilogram>();
-
-        self.fluid_cg_speed += acceleration * context.delta_as_secs_f64();
-
-        self.fluid_cg_position += self.fluid_cg_speed * context.delta_as_secs_f64();
     }
 
     // Returns a coefficient of the actual level that will be seen by the gauge.
@@ -2224,7 +2156,7 @@ impl FluidPhysics {
         let lateral_ratio = interpolation(
             &LATERAL_BREAKPOINTS,
             &LATERAL_MAP,
-            self.fluid_cg_position[0],
+            self.wobble_physics.position()[0],
         );
 
         const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
@@ -2232,7 +2164,7 @@ impl FluidPhysics {
         let longitudinal_ratio = interpolation(
             &LONGITUDINAL_BREAKPOINTS,
             &LONGITUDINAL_MAP,
-            self.fluid_cg_position[2],
+            self.wobble_physics.position()[2],
         );
 
         const VERTICAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.2, 1.];
@@ -2240,7 +2172,7 @@ impl FluidPhysics {
         let vertical_ratio = interpolation(
             &VERTICAL_BREAKPOINTS,
             &VERTICAL_MAP,
-            self.fluid_cg_position[1],
+            self.wobble_physics.position()[1],
         );
 
         Ratio::new::<ratio>(lateral_ratio * vertical_ratio * longitudinal_ratio)
@@ -2254,7 +2186,7 @@ impl FluidPhysics {
         let lateral_ratio = interpolation(
             &LATERAL_BREAKPOINTS,
             &LATERAL_MAP,
-            self.fluid_cg_position[0],
+            self.wobble_physics.position()[0],
         );
 
         const LONGITUDINAL_BREAKPOINTS: [f64; 6] = [-1., -0.1, 0., 0.1, 0.4, 1.];
@@ -2262,7 +2194,7 @@ impl FluidPhysics {
         let longitudinal_ratio = interpolation(
             &LONGITUDINAL_BREAKPOINTS,
             &LONGITUDINAL_MAP,
-            self.fluid_cg_position[2],
+            self.wobble_physics.position()[2],
         );
 
         if self.g_trap_is_empty.output() {
@@ -2273,7 +2205,7 @@ impl FluidPhysics {
     }
 
     fn is_fluid_going_up(&self) -> bool {
-        self.fluid_cg_position[1] > 0.
+        self.wobble_physics.position()[1] > 0.
     }
 }
 
@@ -2511,6 +2443,11 @@ impl HeatingElement for Reservoir {
 
 pub trait PumpController {
     fn should_pressurise(&self) -> bool;
+
+    // Gives a factor applied to max pump displacement to manually control displacement of the pump
+    fn max_displacement_restriction(&self) -> Ratio {
+        Ratio::new::<ratio>(1.)
+    }
 }
 
 pub struct Pump {
@@ -2563,10 +2500,13 @@ impl Pump {
 
         self.current_max_displacement.update(
             context.delta(),
-            self.cavitation_efficiency * theoretical_displacement,
+            self.cavitation_efficiency
+                * theoretical_displacement
+                * controller.max_displacement_restriction(),
         );
 
-        let max_flow = Self::calculate_flow(speed, self.current_max_displacement.output())
+        let max_flow = self
+            .get_max_flow_from_max_displacement()
             .max(VolumeRate::new::<gallon_per_second>(0.));
 
         let max_flow_available_from_reservoir =
@@ -2616,10 +2556,15 @@ impl Pump {
         }
     }
 
-    fn calculate_flow(speed: AngularVelocity, displacement: Volume) -> VolumeRate {
-        if speed.get::<revolution_per_minute>() > 0. {
+    fn get_max_flow_from_max_displacement(&self) -> VolumeRate {
+        if self.speed
+            > self
+                .pump_characteristics
+                .min_speed_for_non_zero_efficiency()
+        {
             VolumeRate::new::<gallon_per_second>(
-                speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>()
+                self.speed.get::<revolution_per_minute>()
+                    * self.current_max_displacement.output().get::<cubic_inch>()
                     / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
                     / Self::SECONDS_PER_MINUTES,
             )
@@ -2628,8 +2573,12 @@ impl Pump {
         }
     }
 
-    fn get_max_flow(&self) -> VolumeRate {
-        if self.speed.get::<revolution_per_minute>() > 0. {
+    fn get_max_flow_from_current_dsiplacement(&self) -> VolumeRate {
+        if self.speed
+            > self
+                .pump_characteristics
+                .min_speed_for_non_zero_efficiency()
+        {
             VolumeRate::new::<gallon_per_minute>(
                 self.speed.get::<revolution_per_minute>()
                     * self.current_displacement.get::<cubic_inch>()
@@ -2658,7 +2607,7 @@ impl PressureSource for Pump {
     ) {
         let required_flow = volume_required / context.delta_as_time();
         self.current_displacement = self.calculate_displacement_from_required_flow(required_flow);
-        let max_current_flow = self.get_max_flow();
+        let max_current_flow = self.get_max_flow_from_current_dsiplacement();
 
         self.current_flow = if is_pump_connected_to_reservoir {
             reservoir.try_take_flow(context, max_current_flow)
@@ -2911,18 +2860,43 @@ impl HeatingElement for EngineDrivenPump {
 }
 impl HeatingPressureSource for EngineDrivenPump {}
 
-struct AlwaysPressurisePumpController {}
-impl AlwaysPressurisePumpController {
+struct RatAntiStallPumpController {
+    anti_stall_ratio: LowPassFilter<Ratio>,
+}
+impl RatAntiStallPumpController {
+    const LOW_SPEED_CUT_OFF_THRESHOLD_RPM: f64 = 4000.;
+    const LOW_SPEED_CUT_OFF_BANDWIDTH_RPM: f64 = 500.;
+
+    const ANTI_STALL_TIME_CONSTANT: Duration = Duration::from_millis(200);
+
+    const MIN_ANTI_STALL_RATIO: f64 = 0.15;
+
     fn new() -> Self {
-        Self {}
+        Self {
+            anti_stall_ratio: LowPassFilter::new(Self::ANTI_STALL_TIME_CONSTANT),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, speed: AngularVelocity) {
+        let cut_off_ratio = ((speed.get::<revolution_per_minute>()
+            - (Self::LOW_SPEED_CUT_OFF_THRESHOLD_RPM - Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM))
+            / Self::LOW_SPEED_CUT_OFF_BANDWIDTH_RPM)
+            .clamp(Self::MIN_ANTI_STALL_RATIO, 1.);
+
+        self.anti_stall_ratio
+            .update(context.delta(), Ratio::new::<ratio>(cut_off_ratio));
     }
 }
-impl PumpController for AlwaysPressurisePumpController {
+impl PumpController for RatAntiStallPumpController {
     fn should_pressurise(&self) -> bool {
         true
     }
+
+    fn max_displacement_restriction(&self) -> Ratio {
+        self.anti_stall_ratio.output()
+    }
 }
-impl Default for AlwaysPressurisePumpController {
+impl Default for RatAntiStallPumpController {
     fn default() -> Self {
         Self::new()
     }
@@ -2933,7 +2907,7 @@ pub struct RamAirTurbine {
 
     deployment_commanded: bool,
     pump: Pump,
-    pump_controller: AlwaysPressurisePumpController,
+    pump_controller: RatAntiStallPumpController,
     wind_turbine: WindTurbine,
     position: f64,
 }
@@ -2941,14 +2915,34 @@ impl RamAirTurbine {
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
+    pub const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
+        0.0, 1000., 4700.0, 5500.0, 6250.0, 6300.0, 6450.0, 9000.0, 15000.0,
+    ];
+    pub const PROP_ALPHA_MAP: [f64; 9] = [0., 0., 0., 0., 1., 1., 1., 1., 1.];
+
+    pub const PROPELLER_DIAMETER_M: f64 = 1.003;
+
+    pub const PROPELLER_INERTIA: f64 = 0.10;
+    pub const DYNAMIC_FRICTION: f64 = 0.07;
+    pub const BEST_EFFICIENCY_TIP_SPEED_RATIO: f64 = 2.;
+
     pub fn new(context: &mut InitContext, pump_characteristics: PumpCharacteristics) -> Self {
         Self {
             stow_position_id: context.get_identifier("RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
             pump: Pump::new(pump_characteristics),
-            pump_controller: AlwaysPressurisePumpController::new(),
-            wind_turbine: WindTurbine::new(context),
+            pump_controller: RatAntiStallPumpController::new(),
+
+            wind_turbine: WindTurbine::new(
+                context,
+                Length::new::<meter>(Self::PROPELLER_DIAMETER_M / 2.),
+                Self::RPM_GOVERNOR_BREAKPTS,
+                Self::PROP_ALPHA_MAP,
+                Self::DYNAMIC_FRICTION,
+                Self::BEST_EFFICIENCY_TIP_SPEED_RATIO,
+                Self::PROPELLER_INERTIA,
+            ),
             position: 0.,
         }
     }
@@ -2963,6 +2957,9 @@ impl RamAirTurbine {
         // Once commanded, stays commanded forever
         self.deployment_commanded = controller.should_deploy() || self.deployment_commanded;
 
+        self.pump_controller
+            .update(context, self.wind_turbine.speed());
+
         self.pump.update(
             context,
             section,
@@ -2972,17 +2969,11 @@ impl RamAirTurbine {
         );
     }
 
-    pub fn update_physics(
-        &mut self,
-        delta_time: &Duration,
-        indicated_airspeed: Velocity,
-        pressure: &impl SectionPressure,
-    ) {
+    pub fn update_physics(&mut self, context: &UpdateContext, pressure: &impl SectionPressure) {
         let resistant_torque = self.resistant_torque(self.delta_vol_max(), pressure.pressure());
         self.wind_turbine.update(
-            delta_time,
-            indicated_airspeed,
-            self.position,
+            context,
+            Ratio::new::<ratio>(self.position),
             resistant_torque,
         );
     }
@@ -3001,16 +2992,9 @@ impl RamAirTurbine {
     }
 
     fn resistant_torque(&mut self, displacement: Volume, pressure: Pressure) -> Torque {
-        let pump_torque = if self.wind_turbine.is_low_speed() {
-            (self.wind_turbine.position().get::<radian>() * 4.).cos()
-                * displacement.get::<gallon>().max(0.35)
-                * 2.
-        } else {
-            // TODO wrong unit here, whole rat system needs a power/torque/rotation speed tuning and check
-            -pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI)
-        };
-
-        Torque::new::<newton_meter>(pump_torque)
+        Torque::new::<pound_force_inch>(
+            -pressure.get::<psi>() * displacement.get::<cubic_inch>() / (2. * std::f64::consts::PI),
+        )
     }
 }
 impl PressureSource for RamAirTurbine {

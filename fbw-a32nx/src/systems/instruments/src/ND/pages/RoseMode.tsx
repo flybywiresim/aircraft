@@ -2,7 +2,6 @@ import React, { FC, memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
-import { TuningMode } from '@fmgc/radionav';
 import { EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { useArinc429Var } from '@instruments/common/arinc429';
@@ -14,7 +13,6 @@ import { RadioNeedle } from '../elements/RadioNeedles';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
-import { TerrainMap } from '../elements/TerrainMap';
 
 export interface RoseModeProps {
     symbols: NdSymbol[],
@@ -38,6 +36,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
     const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
     const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
@@ -56,7 +55,6 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     if (adirsAlign) {
         return (
             <>
-                <TerrainMap x={0} y={134} width={768} height={250} side={side} potentiometerIndex={side === 'L' ? 94 : 95} clipName="rose-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}
@@ -78,7 +76,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                             { ((fmaLatMode === LateralMode.NONE || fmaLatMode === LateralMode.HDG || fmaLatMode === LateralMode.TRACK)
                                 && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV)) && (
-                                <TrackLine x={384} y={384} heading={heading} track={track} />
+                                <TrackLine x={384} y={384} heading={heading} track={track} mapParams={mapParams} groundSpeed={groundSpeed} symbols={symbols} ndRange={rangeSetting} />
                             )}
                         </g>
                     )}
@@ -88,11 +86,11 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                 { mode === EfisNdMode.ROSE_VOR && <VorCaptureOverlay heading={heading} side={side} /> }
 
-                { mode === EfisNdMode.ROSE_ILS && <IlsCaptureOverlay heading={heading} _side={side} /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsCaptureOverlay heading={heading} side={side} /> }
 
                 { mode === EfisNdMode.ROSE_NAV && <ToWaypointIndicator side={side} trueRef={trueRef} /> }
                 { mode === EfisNdMode.ROSE_VOR && <VorInfo side={side} /> }
-                { mode === EfisNdMode.ROSE_ILS && <IlsInfo /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsInfo side={side} /> }
 
                 <TopMessages side={side} ppos={ppos} trueTrack={trueTrack} trueRef={trueRef} />
                 <TrackBug heading={heading} track={track} />
@@ -207,6 +205,10 @@ const RoseModeOverlayDefs = memo(() => (
         <clipPath id="rose-mode-tcas-clip">
             <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
         </clipPath>
+        {/* inverted map overlays for terrain map in WASM module  */}
+        <path name="rose-mode-bottom-left-map-area" d="M45,625 L122,625 L174,683 L174,768 L0,768 L0,0 L45,0L45,625" className="nd-inverted-map-area" />
+        <path name="rose-mode-bottom-right-map-area" d="M591,768 L591,626 L648,562 L723,562 L723,0 L768,0 L768,768 L591,769" className="nd-inverted-map-area" />
+        <path name="rose-mode-top-map-area" d="M45,0 L45,155, L282,155 a250,250 0 0 1 204,0 L723,155 L723,0 L45,0" className="nd-inverted-map-area" />
     </>
 ));
 
@@ -569,6 +571,7 @@ const VorCaptureOverlay: React.FC<{
         setCdiPx(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
     }, [courseDeviation.toFixed(2)]);
 
+    // FIXME vor bearing - heading when course invalid
     return (
         <g transform={`rotate(${course - heading} 384 384)`} stroke="white" strokeWidth={3} fill="none">
             <g id="vor-deviation-scale">
@@ -629,9 +632,11 @@ const VorCaptureOverlay: React.FC<{
 // TODO true ref
 const IlsCaptureOverlay: React.FC<{
     heading: number,
-    _side: EfisSide,
-}> = memo(({ heading, _side }) => {
-    const [course] = useSimVar('NAV LOCALIZER:3', 'degrees');
+    side: EfisSide,
+}> = memo(({ heading, side }) => {
+    const index = side === 'L' ? 2 : 1;
+    const [course] = useSimVar(`NAV LOCALIZER:${index + 2}`, 'degrees');
+    // FIXME this shit needs to be per-MMR
     const [courseDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number', 20);
     const [available] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
     const [cdiPx, setCdiPx] = useState(12);
@@ -763,32 +768,31 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
     );
 };
 
-const formatTuningMode = (tuningMode: TuningMode): string => {
-    switch (tuningMode) {
-    case TuningMode.Manual:
-        return 'M';
-    case TuningMode.Remote:
-        return 'R';
-    default:
-        return '';
-    }
-};
-
 const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const index = side === 'R' ? 2 : 1;
 
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
     const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [vorCourse] = useSimVar(`NAV OBS:${index}`, 'degrees');
-    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
     const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
+    const [fm1Healthy] = useSimVar('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean');
+    const [fm2Healthy] = useSimVar('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean');
+    const fm1NavDiscrete = useArinc429Var('L:A32NX_FM1_NAV_DISCRETE');
+    const fm2NavDiscrete = useArinc429Var('L:A32NX_FM2_NAV_DISCRETE');
+    const [tuningMode, setTuningMode] = useState('');
 
     const [freqInt, freqDecimal] = vorFrequency.toFixed(2).split('.', 2);
 
-    const [tuningModeLabel, setTuningModeLabel] = useState('');
     useEffect(() => {
-        setTuningModeLabel(formatTuningMode(tuningMode));
-    }, [tuningMode]);
+        const bitIndex = 10 + index;
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavDiscrete.isNormalOperation() && !fm2NavDiscrete.isNormalOperation())) {
+            setTuningMode('R');
+        } else if (fm1NavDiscrete.getBitValueOr(bitIndex, false) || fm2NavDiscrete.getBitValueOr(bitIndex, false)) {
+            setTuningMode('M');
+        } else {
+            setTuningMode('');
+        }
+    }, [fm1Healthy, fm1NavDiscrete.value, fm1NavDiscrete.ssm, fm2Healthy, fm2NavDiscrete.value, fm2NavDiscrete.ssm]);
 
     return (
         <Layer x={748} y={28}>
@@ -807,32 +811,48 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
             ) }
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Cyan" textAnchor="end">
-                {vorCourse >= 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
+                {vorCourse > 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode}</text>
             <text x={0} y={60} fontSize={25} className="White" textAnchor="end">{vorIdent}</text>
         </Layer>
     );
 });
 
-const IlsInfo: FC = memo(() => {
-    const [ilsIdent] = useSimVar('NAV IDENT:3', 'string');
-    const [ilsFrequency] = useSimVar('NAV ACTIVE FREQUENCY:3', 'megahertz');
-    const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
-    const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'enum');
+const IlsInfo: FC<{side: EfisSide}> = memo(({ side }) => {
+    const index = side === 'R' ? 1 : 2;
+
+    const [ilsIdent] = useSimVar(`NAV IDENT:${index + 2}`, 'string');
+    const [ilsFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index + 2}`, 'megahertz');
+    const [ilsCourse] = useSimVar(`NAV LOCALIZER:${index + 2}`, 'degrees');
+    // FIXME this shit needs to be per-MMR
     const [locAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
+    const [fm1Healthy] = useSimVar('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean');
+    const [fm2Healthy] = useSimVar('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean');
+    const fm1NavDiscrete = useArinc429Var('L:A32NX_FM1_NAV_DISCRETE');
+    const fm2NavDiscrete = useArinc429Var('L:A32NX_FM2_NAV_DISCRETE');
+    const [tuningMode, setTuningMode] = useState('');
 
     const [freqInt, freqDecimal] = ilsFrequency.toFixed(2).split('.', 2);
 
-    const [tuningModeLabel, setTuningModeLabel] = useState('');
     useEffect(() => {
-        setTuningModeLabel(formatTuningMode(tuningMode));
-    }, [tuningMode]);
+        const bitIndex = 14 + index;
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavDiscrete.isNormalOperation() && !fm2NavDiscrete.isNormalOperation())) {
+            setTuningMode('R');
+        } else if (fm1NavDiscrete.getBitValueOr(bitIndex, false) || fm2NavDiscrete.getBitValueOr(bitIndex, false)) {
+            setTuningMode('M');
+        } else {
+            setTuningMode('');
+        }
+    }, [fm1Healthy, fm1NavDiscrete.value, fm1NavDiscrete.ssm, fm2Healthy, fm2NavDiscrete.value, fm2NavDiscrete.ssm]);
 
     return (
         <Layer x={748} y={28}>
-            <text x={-102} y={0} fontSize={25} className="White" textAnchor="end">ILS1</text>
+            <text x={-102} y={0} fontSize={25} className="White" textAnchor="end">
+                ILS
+                {index}
+            </text>
             { locAvailable && (
                 <text x={0} y={0} fontSize={25} className="Magenta" textAnchor="end">
                     {freqInt}
@@ -847,7 +867,7 @@ const IlsInfo: FC = memo(() => {
                 {locAvailable ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text>
+            <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode}</text>
             <text x={0} y={60} fontSize={25} className="Magenta" textAnchor="end">{ilsIdent}</text>
         </Layer>
     );
@@ -855,6 +875,7 @@ const IlsInfo: FC = memo(() => {
 
 const GlideSlope: FC = () => {
     // TODO need some photo refs for this
+    // FIXME this shit needs to be per-MMR
     const [gsDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number');
     const [gsAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number');
 

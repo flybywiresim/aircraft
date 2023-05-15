@@ -24,7 +24,6 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
@@ -34,6 +33,8 @@ import { ProcedureDetails } from './ProcedureDetails';
 import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
+import { NXDataStore } from '@shared/persistence';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -59,6 +60,42 @@ export class ManagedFlightPlan {
 
     /** Transition level for the destinationAirfield from the pilot */
     public destinationTransitionLevelPilot?: number;
+
+    /** Thrust reduction altitude in feet MSL for the origin airport from the nav database elevation, or undefined if none */
+    public thrustReductionAltitudeDefault?: number;
+
+    /** Thrust reduction altitude in feet MSL entered by the pilot, or undefined if none */
+    public thrustReductionAltitudePilot?: number;
+
+    /** Acceleration altitude in feet MSL for the origin airport from the nav database elevation, or undefined if none */
+    public accelerationAltitudeDefault?: number;
+
+    /** Acceleration altitude in feet MSL entered by the pilot, or undefined if none */
+    public accelerationAltitudePilot?: number;
+
+    /** Engine out acceleration altitude in feet MSL for the origin airport from the nav database elevation, or undefined if none */
+    public engineOutAccelerationAltitudeDefault?: number;
+
+    /** Engine out acceleration altitude in feet MSL entered by the pilot, or undefined if none */
+    public engineOutAccelerationAltitudePilot?: number;
+
+    /** Missed approach thrust reduction altitude in feet MSL for the destination airport from the nav database elevation, or undefined if none */
+    public missedThrustReductionAltitudeDefault?: number;
+
+    /** Missed approach thrust reduction altitude in feet MSL entered by the pilot, or undefined if none */
+    public missedThrustReductionAltitudePilot?: number;
+
+    /** Missed approach acceleration altitude in feet MSL for the destination airport from the nav database elevation, or undefined if none */
+    public missedAccelerationAltitudeDefault?: number;
+
+    /** Missed approach acceleration altitude in feet MSL entered by the pilot, or undefined if none */
+    public missedAccelerationAltitudePilot?: number;
+
+    /** Missed approach engine out acceleration altitude in feet MSL for the destination airport from the nav database elevation, or undefined if none */
+    public missedEngineOutAccelerationAltitudeDefault?: number;
+
+    /** Missed approach engine out acceleration altitude in feet MSL entered by the pilot, or undefined if none */
+    public missedEngineOutAccelerationAltitudePilot?: number;
 
     /** The cruise altitude for this flight plan. */
     public cruiseAltitude = 0;
@@ -143,6 +180,7 @@ export class ManagedFlightPlan {
                 ident: waypoint.ident,
                 bearingInFp: waypoint.bearingInFP,
                 distanceInFP: waypoint.distanceInFP,
+                magneticVariation: waypoint.infos.magneticVariation,
                 distanceFromPpos: distPpos,
                 timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
                 etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
@@ -289,6 +327,17 @@ export class ManagedFlightPlan {
         return waypoints;
     }
 
+    public get cruiseStepWaypoints(): WayPoint[] {
+        return this.waypoints.reduce((waypoints, wp, index) => {
+            if (wp.additionalData.cruiseStep) {
+                wp.additionalData.cruiseStep.waypointIndex = index;
+                waypoints.push(wp);
+            }
+
+            return waypoints;
+        }, []);
+    }
+
     /**
      * Sets the parent instrument that the flight plan is attached to locally.
      * @param instrument The instrument that the flight plan is attached to.
@@ -308,6 +357,18 @@ export class ManagedFlightPlan {
         this.destinationAirfield = undefined;
         this.destinationTransitionLevelDb = undefined;
         this.destinationTransitionLevelPilot = undefined;
+        this.thrustReductionAltitudeDefault = undefined;
+        this.thrustReductionAltitudePilot = undefined;
+        this.accelerationAltitudeDefault = undefined;
+        this.accelerationAltitudePilot = undefined;
+        this.engineOutAccelerationAltitudeDefault = undefined;
+        this.engineOutAccelerationAltitudePilot = undefined;
+        this.missedThrustReductionAltitudeDefault = undefined;
+        this.missedThrustReductionAltitudePilot = undefined;
+        this.missedAccelerationAltitudeDefault = undefined;
+        this.missedAccelerationAltitudePilot = undefined;
+        this.missedEngineOutAccelerationAltitudeDefault = undefined;
+        this.missedEngineOutAccelerationAltitudePilot = undefined;
 
         this.cruiseAltitude = 0;
         this.activeWaypointIndex = 0;
@@ -368,6 +429,8 @@ export class ManagedFlightPlan {
             this.originAirfield = mappedWaypoint;
             this.persistentOriginAirfield = mappedWaypoint;
 
+            this.setOriginDefaults(mappedWaypoint);
+
             this.procedureDetails.departureIndex = -1;
             this.procedureDetails.departureRunwayIndex = -1;
             this.procedureDetails.departureTransitionIndex = -1;
@@ -382,6 +445,8 @@ export class ManagedFlightPlan {
             this.procedureDetails.arrivalTransitionIndex = -1;
             this.procedureDetails.approachIndex = -1;
             this.procedureDetails.approachTransitionIndex = -1;
+
+            this.setDestinationDefaults(mappedWaypoint);
 
             const previousWp = this.waypoints[this.waypoints.length - 2];
             if (previousWp) {
@@ -1191,6 +1256,8 @@ export class ManagedFlightPlan {
                     } else {
                         this.destinationAirfield.additionalData.annotation = approachName;
                     }
+
+                    this.destinationAirfield.additionalData.verticalAngle = lastLeg.verticalAngle ? lastLeg.verticalAngle - 360 : undefined;
                 }
 
                 // Clear discontinuity before destination, if any
@@ -1264,7 +1331,7 @@ export class ManagedFlightPlan {
         case AltitudeDescriptor.AtOrBelow:
             return leg.legAltitude1;
         case AltitudeDescriptor.Between:
-            return leg.legAltitude2;
+            return Math.max(leg.legAltitude1, leg.legAltitude2);
         default:
             break;
         }
@@ -1275,8 +1342,9 @@ export class ManagedFlightPlan {
         switch (leg.legAltitudeDescription) {
         case AltitudeDescriptor.At:
         case AltitudeDescriptor.AtOrAbove:
-        case AltitudeDescriptor.Between:
             return leg.legAltitude1;
+        case AltitudeDescriptor.Between:
+            return Math.min(leg.legAltitude1, leg.legAltitude2);
         default:
             break;
         }
@@ -1570,7 +1638,7 @@ export class ManagedFlightPlan {
     public getOriginRunway(): OneWayRunway | null {
         if (this.originAirfield) {
             if (this.procedureDetails.originRunwayIndex >= 0) {
-                return this.originAirfield.infos.oneWayRunways[this.procedureDetails.originRunwayIndex];
+                return (this.originAirfield.infos as AirportInfo).oneWayRunways[this.procedureDetails.originRunwayIndex];
             }
         }
         return null;
@@ -1579,7 +1647,7 @@ export class ManagedFlightPlan {
     public getDestinationRunway(): OneWayRunway | null {
         if (this.destinationAirfield) {
             if (this.procedureDetails.destinationRunwayIndex >= 0) {
-                return this.destinationAirfield.infos.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
+                return (this.destinationAirfield.infos as AirportInfo).oneWayRunways[this.procedureDetails.destinationRunwayIndex];
             }
         }
         return null;
@@ -1624,5 +1692,267 @@ export class ManagedFlightPlan {
         }
 
         return false;
+    }
+
+    /**
+     * Rounds a number to the nearest multiple
+     * @param n the number to round
+     * @param r the multiple
+     * @returns n rounded to the nereast multiple of r, or null/undefined if n is null/undefined
+     */
+    private static round(n: number | undefined | null, r: number = 1): number | undefined | null {
+        if (n === undefined || n === null) {
+            return n;
+        }
+        return Math.round(n / r) * r;
+    }
+
+    private setOriginDefaults(airport: WayPoint): void {
+        const referenceAltitude = (airport.infos as AirportInfo).elevation;
+        if (referenceAltitude !== undefined) {
+            this.thrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
+            this.accelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
+            this.engineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
+        } else {
+            this.thrustReductionAltitudeDefault = undefined;
+            this.accelerationAltitudeDefault = undefined;
+            this.engineOutAccelerationAltitudeDefault = undefined;
+        }
+        this.thrustReductionAltitudePilot = undefined;
+        this.accelerationAltitudePilot = undefined;
+        this.engineOutAccelerationAltitudePilot = undefined;
+    }
+
+    private setDestinationDefaults(airport: WayPoint): void {
+        const referenceAltitude = (airport.infos as AirportInfo).elevation;
+        if (referenceAltitude !== undefined) {
+            this.missedThrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
+            this.missedAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
+            this.missedEngineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
+        } else {
+            this.missedThrustReductionAltitudeDefault = undefined;
+            this.missedAccelerationAltitudeDefault = undefined;
+            this.missedEngineOutAccelerationAltitudeDefault = undefined;
+        }
+        this.missedThrustReductionAltitudePilot = undefined;
+        this.missedAccelerationAltitudePilot = undefined;
+        this.missedEngineOutAccelerationAltitudePilot = undefined;
+    }
+
+    /**
+     * Thrust reduction altitude for the origin airport
+     * @returns altitude in feet MSL, or undefined if none
+     */
+    public get thrustReductionAltitude(): number | undefined {
+        return ManagedFlightPlan.round(this.thrustReductionAltitudePilot ?? this.thrustReductionAltitudeDefault, 10);
+    }
+
+    /**
+     * Check if the thrust reduction altitude is derived from a pilot entry
+     * @returns true if pilot entry
+     */
+    public get isThrustReductionAltitudePilotEntered(): boolean {
+        return this.thrustReductionAltitudePilot !== undefined;
+    }
+
+    /**
+     * Check if a default thrust reduction altitude is available
+     * @returns true if default is available
+     */
+    public get hasThrustReductionAltitudeDefault(): boolean {
+        return this.thrustReductionAltitudeDefault !== undefined;
+    }
+
+    /**
+     * Acceleration altitude for the origin airport
+     * @returns altitude in feet MSL, or undefined if none
+     */
+    public get accelerationAltitude(): number | undefined {
+        return ManagedFlightPlan.round(this.accelerationAltitudePilot ?? this.accelerationAltitudeDefault, 10);
+    }
+
+    /**
+     * Check if the acceleration altitude is derived from a pilot entry
+     * @returns true if pilot entry
+     */
+    public get isAccelerationAltitudePilotEntered(): boolean {
+        return this.accelerationAltitudePilot !== undefined;
+    }
+
+    /**
+     * Check if a default acceleration altitude is available
+     * @returns true if default is available
+     */
+    public get hasAccelerationAltitudeDefault(): boolean {
+        return this.accelerationAltitudeDefault !== undefined;
+    }
+
+    /**
+     * Engine out acceleration altitude for the origin airport
+     * @returns altitude in feet MSL, or undefined if none
+     */
+    public get engineOutAccelerationAltitude(): number | undefined {
+        return ManagedFlightPlan.round(this.engineOutAccelerationAltitudePilot ?? this.engineOutAccelerationAltitudeDefault, 10);
+    }
+
+    /**
+     * Check if the engine out acceleration altitude is derived from a pilot entry
+     * @returns true if pilot entry
+     */
+    public get isEngineOutAccelerationAltitudePilotEntered(): boolean {
+        return this.engineOutAccelerationAltitudePilot !== undefined;
+    }
+
+    /**
+     * Check if a default engine out acceleration altitude is available
+     * @returns true if default is available
+     */
+    public get hasEngineOutAccelerationAltitudeDefault(): boolean {
+        return this.engineOutAccelerationAltitudeDefault !== undefined;
+    }
+
+    /**
+     * Missed approach thrust reduction altitude for the destination airport
+     * @returns altitude in feet MSL, or undefined if none
+     */
+    public get missedThrustReductionAltitude(): number | undefined {
+        return ManagedFlightPlan.round(this.missedThrustReductionAltitudePilot ?? this.missedThrustReductionAltitudeDefault, 10);
+    }
+
+    /**
+     * Check if the missed approach thrust reduction altitude is derived from a pilot entry
+     * @returns true if pilot entry
+     */
+    public get isMissedThrustReductionAltitudePilotEntered(): boolean {
+        return this.missedThrustReductionAltitudePilot !== undefined;
+    }
+
+    /**
+     * Check if a default missed approach thrust reduction altitude is available
+     * @returns true if default is available
+     */
+    public get hasMissedThrustReductionAltitudeDefault(): boolean {
+        return this.missedThrustReductionAltitudeDefault !== undefined;
+    }
+
+    /**
+     * Missed approach acceleration altitude for the origin airport
+     * @returns altitude in feet MSL, or undefined if none
+     */
+    public get missedAccelerationAltitude(): number | undefined {
+        return ManagedFlightPlan.round(this.missedAccelerationAltitudePilot ?? this.missedAccelerationAltitudeDefault, 10);
+    }
+
+    /**
+     * Check if the missed approach acceleration altitude is derived from a pilot entry
+     * @returns true if pilot entry
+     */
+    public get isMissedAccelerationAltitudePilotEntered(): boolean {
+        return this.missedAccelerationAltitudePilot !== undefined;
+    }
+
+    /**
+     * Check if a default missed approach acceleration altitude is available
+     * @returns true if default is available
+     */
+    public get hasMissedAccelerationAltitudeDefault(): boolean {
+        return this.missedAccelerationAltitudeDefault !== undefined;
+    }
+
+    /**
+     * Missed approach engine outacceleration altitude for the origin airport
+     * @returns altitude in feet MSL, or undefined if none
+     */
+    public get missedEngineOutAccelerationAltitude(): number | undefined {
+        return ManagedFlightPlan.round(this.missedEngineOutAccelerationAltitudePilot ?? this.missedEngineOutAccelerationAltitudeDefault, 10);
+    }
+
+    /**
+     * Check if the missed approach engine out acceleration altitude is derived from a pilot entry
+     * @returns true if pilot entry
+     */
+    public get isMissedEngineOutAccelerationAltitudePilotEntered(): boolean {
+        return this.missedEngineOutAccelerationAltitudePilot !== undefined;
+    }
+
+    /**
+     * Check if a default missed approach engine out acceleration altitude is available
+     * @returns true if default is available
+     */
+    public get hasMissedEngineOutAccelerationAltitudeDefault(): boolean {
+        return this.missedEngineOutAccelerationAltitudeDefault !== undefined;
+    }
+
+    /**
+     * Finds the lowest climb constraint in the flight plan
+     * @returns the lowest climb constraint in feet or Infinity if none
+     */
+    private lowestClimbConstraint(): number {
+        let lowestClimbConstraint = Infinity;
+        for (const wp of this.waypoints) {
+            const climbConstraint = wp.additionalData.constraintType === WaypointConstraintType.CLB ? ManagedFlightPlan.climbConstraint(wp) : Infinity;
+            if (climbConstraint < lowestClimbConstraint) {
+                lowestClimbConstraint = climbConstraint;
+            }
+        }
+        return lowestClimbConstraint;
+    }
+
+    /**
+     * Check if the thrust reduction altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    public reconcileThrustReductionWithConstraints(): boolean {
+        const lowestClimbConstraint = this.lowestClimbConstraint();
+        if (isFinite(lowestClimbConstraint) && this.thrustReductionAltitude > lowestClimbConstraint) {
+            this.thrustReductionAltitudeDefault = this.thrustReductionAltitudeDefault !== undefined ? Math.min(this.thrustReductionAltitudeDefault, lowestClimbConstraint) : undefined;
+            this.thrustReductionAltitudePilot = this.thrustReductionAltitudePilot !== undefined ? Math.min(this.thrustReductionAltitudePilot, lowestClimbConstraint) : undefined;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the acceleration altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    public reconcileAccelerationWithConstraints(): boolean {
+        const lowestClimbConstraint = this.lowestClimbConstraint();
+        if (isFinite(lowestClimbConstraint) && this.accelerationAltitude > lowestClimbConstraint) {
+            this.accelerationAltitudeDefault = this.accelerationAltitudeDefault !== undefined ? Math.min(this.accelerationAltitudeDefault, lowestClimbConstraint) : undefined;
+            this.accelerationAltitudePilot = this.accelerationAltitudePilot !== undefined ? Math.min(this.accelerationAltitudePilot, lowestClimbConstraint) : undefined;
+            return true;
+        }
+
+        return false;
+    }
+
+    public addOrUpdateCruiseStep(waypoint: WayPoint, toAltitude: Feet, waypointIndex?: number): void {
+        if (!waypointIndex) {
+            waypointIndex = this.findWaypointIndexByIdent(waypoint.ident)
+        }
+
+        const step: CruiseStepEntry = {
+            distanceBeforeTermination: 0,
+            toAltitude,
+            waypointIndex,
+            isIgnored: false,
+        }
+
+        // TODO: Handle optimum steps
+        waypoint.additionalData.cruiseStep = step;
+    }
+
+    public removeCruiseStep(waypoint: WayPoint): void {
+        waypoint.additionalData.cruiseStep = undefined;
+    }
+
+    public findWaypointIndexByIdent(ident: string): number {
+        return this.waypoints.findIndex(waypoint => waypoint.ident === ident);
+    }
+
+    public unignoreAllCruiseSteps(): void {
+        this.cruiseStepWaypoints.forEach((step) => step.additionalData.cruiseStep.isIgnored = false);
     }
 }
