@@ -13,6 +13,8 @@ import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
+import { getFlightPhaseManager } from '@fmgc/flightphase';
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 
 export class EfisSymbols {
@@ -50,6 +52,8 @@ export class EfisSymbols {
     private lastFpVersion;
 
     private lastNavaidVersion = -1;
+
+    private lastVnavDriverVersion: number = -1;
 
     constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController, private readonly navaidTuner: NavaidTuner) {
         this.flightPlanManager = flightPlanManager;
@@ -95,6 +99,8 @@ export class EfisSymbols {
         this.lastPlanCentre = planCentre;
         const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
         this.lastNavaidVersion = this.navaidTuner.navaidVersion;
+        const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
+        this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
         const activeFp = this.flightPlanManager.getCurrentFlightPlan();
         // TODO temp f-pln
@@ -130,7 +136,16 @@ export class EfisSymbols {
             this.lastEfisOption[side] = efisOption;
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
-            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged && !navaidsChanged) {
+            if (!pposChanged
+                && !trueHeadingChanged
+                && !rangeChange
+                && !modeChange
+                && !efisOptionChange
+                && !nearbyOverlayChanged
+                && !fpChanged
+                && !planCentreChanged
+                && !navaidsChanged
+                && !vnavPredictionsChanged) {
                 continue;
             }
 
@@ -299,6 +314,11 @@ export class EfisSymbols {
                 }
             }
 
+            const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
+            const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+            const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
+            const flightPhase = getFlightPhaseManager().phase;
+
             // TODO don't send the waypoint before active once FP sequencing is properly implemented
             // (currently sequences with guidance which is too early)
             // eslint-disable-next-line no-lone-blocks
@@ -358,9 +378,19 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6 && !isFromWp) {
-                        // TODO vnav to predict
-                        type |= NdSymbolTypeFlags.Constraint;
+                    if (isInLatAutoControl && !isFromWp && wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
+                        if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, wp)) {
+                            type |= NdSymbolTypeFlags.Constraint;
+
+                            const predictionAtWaypoint = waypointPredictions.get(i);
+                            if (predictionAtWaypoint?.isAltitudeConstraintMet) {
+                                type |= NdSymbolTypeFlags.MagentaColor;
+                            } else if (predictionAtWaypoint) {
+                                type |= NdSymbolTypeFlags.AmberColor;
+                            }
+                        } else if (i === activeFp.activeWaypointIndex) {
+                            type |= NdSymbolTypeFlags.Constraint;
+                        }
                     }
 
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
@@ -444,12 +474,13 @@ export class EfisSymbols {
 
             // Pseudo waypoints
 
-            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it)) {
+            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
                 upsertSymbol({
                     databaseId: `W      ${pwp.ident}`,
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
                     type: pwp.efisSymbolFlag,
+                    distanceFromAirplane: pwp.distanceFromStart,
                 });
             }
 
@@ -563,3 +594,9 @@ export class EfisSymbols {
         }
     }
 }
+
+const shouldShowConstraintCircleInPhase = (phase: FmgcFlightPhase, waypoint: WayPoint) => (
+    (phase === FmgcFlightPhase.Takeoff || phase === FmgcFlightPhase.Climb) && waypoint.additionalData.constraintType === WaypointConstraintType.CLB
+) || (
+    (phase === FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach) && waypoint.additionalData.constraintType === WaypointConstraintType.DES
+);
