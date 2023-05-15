@@ -26,12 +26,8 @@ use electrical::{
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use systems::{
-    icing_state::{IcingState, PassiveIcingElement},
-    simulation::InitContext,
-};
+
 use uom::si::{f64::Length, length::nautical_mile};
-use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
 
 use systems::{
     apu::{
@@ -41,13 +37,17 @@ use systems::{
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
+    icing_state::{IcingState, PassiveIcingElement},
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
     shared::ElectricalBusType,
-    simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+    },
     structural_flex::elevator_flex::FlexibleElevators,
 };
 
