@@ -43,7 +43,7 @@ use systems::{
     },
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
-    wing_flex::FlexibleElevators,
+    structural_flex::elevator_flex::FlexibleElevators,
 };
 
 pub struct A380 {
@@ -253,7 +253,14 @@ impl Aircraft for A380 {
         );
 
         self.engines_flex_physics.update(context);
-        self.elevators_flex_physics.update(context);
+        self.elevators_flex_physics.update(
+            context,
+            [
+                self.hydraulic.left_elevator_aero_torques(),
+                self.hydraulic.right_elevator_aero_torques(),
+            ],
+            self.hydraulic.up_down_rudder_aero_torques(),
+        );
         self.cds.update();
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());

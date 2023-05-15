@@ -9,10 +9,85 @@ use crate::{
     },
 };
 
+use uom::si::{f64::*, torque::newton_meter};
+
 use nalgebra::Vector3;
 use std::fmt::Debug;
 
-pub struct ElevatorFlexPhysics {
+#[derive(PartialEq, Clone, Copy)]
+enum ElevatorSide {
+    Left,
+    Right,
+}
+
+struct AftConeFlexPhysics {
+    position_id: VariableIdentifier,
+    wobble_physics: WobblePhysics,
+
+    position_output_gain: f64,
+
+    animation_position: f64,
+}
+impl AftConeFlexPhysics {
+    // What is the gain from a torque value to how much we want to flex the rudder animation
+    const AERODYNAMIC_TORQUE_TO_ANIMATION_DEFLECTION_GAIN: f64 = 0.00001;
+
+    // Upper surface is further from rudder root so it has more force to flex the rudder. This is the gain defining how much
+    //      stronger it is to flex the rudder relative to lower surface
+    const AERODYNAMIC_FLEX_COEF_FOR_UPPER_RUDDER_SURFACE: f64 = 1.5;
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            position_id: context.get_identifier("AFT_FLEX_POSITION".to_owned()),
+
+            wobble_physics: WobblePhysics::new(
+                GravityEffect::NoGravity,
+                Vector3::default(),
+                300.,
+                5.,
+                40000.,
+                100.,
+                150.,
+                10.,
+                Vector3::new(200., 50., 200.),
+                5.,
+            ),
+
+            position_output_gain: 5.,
+
+            animation_position: 0.5,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, rudder_aero_torques: (Torque, Torque)) {
+        self.wobble_physics.update(context);
+
+        self.update_animation_position(rudder_aero_torques);
+    }
+
+    fn update_animation_position(&mut self, rudder_aero_torques: (Torque, Torque)) {
+        let cg_position = self.wobble_physics.position();
+
+        let aero_deflection = Self::AERODYNAMIC_TORQUE_TO_ANIMATION_DEFLECTION_GAIN
+            * (Self::AERODYNAMIC_FLEX_COEF_FOR_UPPER_RUDDER_SURFACE
+                * rudder_aero_torques.0.get::<newton_meter>()
+                + rudder_aero_torques.1.get::<newton_meter>());
+
+        let limited_pos = (self.position_output_gain * (cg_position[0] + cg_position[1])
+            + aero_deflection)
+            .min(1.)
+            .max(-1.);
+
+        self.animation_position = (limited_pos + 1.) / 2.;
+    }
+}
+impl SimulationElement for AftConeFlexPhysics {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.position_id, self.animation_position);
+    }
+}
+
+struct ElevatorFlexPhysics {
     y_position_id: VariableIdentifier,
 
     spring_const_id: VariableIdentifier,
@@ -28,11 +103,24 @@ pub struct ElevatorFlexPhysics {
     position_output_gain: f64,
 
     animation_position: f64,
+
+    side: ElevatorSide,
 }
 impl ElevatorFlexPhysics {
-    pub fn new(context: &mut InitContext, side: &str) -> Self {
+    // What is the gain from a torque value to how much we want to flex the elevator animation
+    const AERODYNAMIC_TORQUE_TO_ANIMATION_DEFLECTION_GAIN: f64 = 0.00003;
+
+    // Outer surface is further from elevator root so it has more force to flex the elevator. This is the gain defining how much
+    //      stronger it is to flex the elevator relative to inner surface
+    const AERODYNAMIC_FLEX_COEF_FOR_OUTER_ELEVATOR_SURFACE: f64 = 1.5;
+
+    fn new(context: &mut InitContext, side: ElevatorSide) -> Self {
         Self {
-            y_position_id: context.get_identifier(format!("ELEVATOR_{}_WOBBLE_Y_POSITION", side)),
+            y_position_id: if side == ElevatorSide::Left {
+                context.get_identifier("ELEVATOR_LEFT_WOBBLE_Y_POSITION".to_owned())
+            } else {
+                context.get_identifier("ELEVATOR_RIGHT_WOBBLE_Y_POSITION".to_owned())
+            },
             spring_const_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_K_CONST".to_owned()),
             damping_const_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_DAMP_CONST".to_owned()),
             mass_id: context.get_identifier("ELEVATOR_WOBBLE_DEV_MASS".to_owned()),
@@ -54,22 +142,38 @@ impl ElevatorFlexPhysics {
                 5.,
             ),
 
-            position_output_gain: 5.,
+            position_output_gain: 3.,
 
             animation_position: 0.5,
+
+            side,
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        outter_inner_elevator_aero_torques: (Torque, Torque),
+    ) {
         self.wobble_physics.update(context);
 
-        self.update_animation_position();
+        self.update_animation_position(outter_inner_elevator_aero_torques);
     }
 
-    fn update_animation_position(&mut self) {
-        let cg_position = self.wobble_physics.position();
+    fn update_animation_position(&mut self, elevator_aero_torques: (Torque, Torque)) {
+        // We set left side negative to get that torsion visual effect
+        let cg_position_y = if self.side == ElevatorSide::Left {
+            -self.wobble_physics.position()[1]
+        } else {
+            self.wobble_physics.position()[1]
+        };
 
-        let limited_pos = (self.position_output_gain * cg_position[1])
+        let aero_deflection = Self::AERODYNAMIC_TORQUE_TO_ANIMATION_DEFLECTION_GAIN
+            * (Self::AERODYNAMIC_FLEX_COEF_FOR_OUTER_ELEVATOR_SURFACE
+                * elevator_aero_torques.0.get::<newton_meter>()
+                + elevator_aero_torques.1.get::<newton_meter>());
+
+        let limited_pos = (self.position_output_gain * cg_position_y + aero_deflection)
             .min(1.)
             .max(-1.);
 
@@ -116,6 +220,7 @@ impl Debug for ElevatorFlexPhysics {
 pub struct FlexibleElevators {
     flex_updater: MaxStepLoop,
     elevators_flex: [ElevatorFlexPhysics; 2],
+    aft_cone_flex: AftConeFlexPhysics,
 }
 impl FlexibleElevators {
     const ELEVATOR_FLEX_SIM_TIME_STEP: Duration = Duration::from_millis(10);
@@ -124,25 +229,40 @@ impl FlexibleElevators {
         Self {
             flex_updater: MaxStepLoop::new(Self::ELEVATOR_FLEX_SIM_TIME_STEP),
             elevators_flex: [
-                ElevatorFlexPhysics::new(context, "LEFT"),
-                ElevatorFlexPhysics::new(context, "RIGHT"),
+                ElevatorFlexPhysics::new(context, ElevatorSide::Left),
+                ElevatorFlexPhysics::new(context, ElevatorSide::Right),
             ],
+            aft_cone_flex: AftConeFlexPhysics::new(context),
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        outter_inner_elevator_aero_torques: [(Torque, Torque); 2],
+        up_down_rudder_aero_torques: (Torque, Torque),
+    ) {
         self.flex_updater.update(context);
 
         for cur_time_step in self.flex_updater {
-            for elevator_flex in &mut self.elevators_flex {
-                elevator_flex.update(&context.with_delta(cur_time_step));
+            for (idx, elevator_flex) in &mut self.elevators_flex.iter_mut().enumerate() {
+                elevator_flex.update(
+                    &context.with_delta(cur_time_step),
+                    outter_inner_elevator_aero_torques[idx],
+                );
             }
+
+            self.aft_cone_flex.update(
+                &context.with_delta(cur_time_step),
+                up_down_rudder_aero_torques,
+            );
         }
     }
 }
 impl SimulationElement for FlexibleElevators {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.elevators_flex, visitor);
+        self.aft_cone_flex.accept(visitor);
 
         visitor.visit(self);
     }
@@ -162,16 +282,40 @@ mod tests {
 
     struct EngineFlexTestAircraft {
         elevators_flex: FlexibleElevators,
+
+        outter_elevator_aero_torque: Torque,
+        inner_elevator_aero_torque: Torque,
+
+        down_rudder_aero_torque: Torque,
+        up_rudder_aero_torque: Torque,
     }
     impl EngineFlexTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 elevators_flex: FlexibleElevators::new(context),
+
+                outter_elevator_aero_torque: Torque::default(),
+                inner_elevator_aero_torque: Torque::default(),
+                down_rudder_aero_torque: Torque::default(),
+                up_rudder_aero_torque: Torque::default(),
             }
         }
 
         fn update(&mut self, context: &UpdateContext) {
-            self.elevators_flex.update(context);
+            self.elevators_flex.update(
+                context,
+                [
+                    (
+                        self.outter_elevator_aero_torque,
+                        self.inner_elevator_aero_torque,
+                    ),
+                    (
+                        self.outter_elevator_aero_torque,
+                        self.inner_elevator_aero_torque,
+                    ),
+                ],
+                (self.up_rudder_aero_torque, self.down_rudder_aero_torque),
+            );
         }
     }
     impl Aircraft for EngineFlexTestAircraft {
