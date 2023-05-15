@@ -2817,6 +2817,9 @@ impl SimulationElement for A380Hydraulic {
         self.green_electric_pump_b.accept(visitor);
         self.green_electric_pump_b_controller.accept(visitor);
 
+        self.green_electric_aux_pump.accept(visitor);
+        self.green_electric_aux_pump_controller.accept(visitor);
+
         self.forward_cargo_door_controller.accept(visitor);
         self.forward_cargo_door.accept(visitor);
 
