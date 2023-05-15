@@ -9,6 +9,7 @@
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [HYD] Engine pumps disconnection mechanism on A380- @Crocket63 (crocket)
 
 ## 0.10.0
 
@@ -131,7 +132,6 @@
 1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
 1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
 
-1. [HYD] Engine pumps disconnection mechanism on A380- @Crocket63 (crocket)
 ## 0.9.0
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
