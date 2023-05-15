@@ -19,7 +19,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
         return (
             <>
                 <Header bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
-                <ActivePageTitleBar activePage={Subject.create('CONTROLS')} tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage="CONTROLS" tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer" />
                 {/* end page content */}

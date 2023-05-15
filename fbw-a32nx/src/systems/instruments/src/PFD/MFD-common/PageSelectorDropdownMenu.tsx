@@ -40,6 +40,14 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
             this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
         });
+
+        this.props.isActive.sub((val) => {
+            if (val === true) {
+                this.dropdownSelectorLabelRef.instance.classList.add('active');
+            } else {
+                this.dropdownSelectorLabelRef.instance.classList.remove('active');
+            }
+        }, true);
     }
 
     render(): VNode {
@@ -47,7 +55,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
             <div class="MFDDropdownContainer" style={this.props.containerStyle}>
                 <div class="MFDPageSelectorOuter" ref={this.dropdownSelectorRef}>
                     <div style="display: flex; flex: 8; justify-content: center; hover:background-color: cyan;">
-                        <span class={`MFDPageSelectorLabel ${this.props.isActive.get() === true ? 'active' : ''}`} ref={this.dropdownSelectorLabelRef}>
+                        <span class="MFDPageSelectorLabel" ref={this.dropdownSelectorLabelRef}>
                             {this.props.label}
                         </span>
                     </div>

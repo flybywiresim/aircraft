@@ -4,7 +4,6 @@ import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-s
 
 import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
 import { MfdComponentProps } from 'instruments/src/PFD/MFD';
-import { Header } from 'instruments/src/PFD/MFD-common/Header';
 import { Footer } from 'instruments/src/PFD/MFD-common/Footer';
 
 interface MfdFmsActiveFplnProps extends MfdComponentProps {
@@ -18,8 +17,7 @@ export class MfdFmsActiveFpln extends DisplayComponent<MfdFmsActiveFplnProps> {
     render(): VNode {
         return (
             <>
-                <Header bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
-                <ActivePageTitleBar activePage={Subject.create('ACTIVE/F-PLN')} tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage="ACTIVE/F-PLN" tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer" />
                 {/* end page content */}

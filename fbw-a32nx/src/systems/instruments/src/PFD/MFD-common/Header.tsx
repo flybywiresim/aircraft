@@ -6,27 +6,42 @@ import { PageSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/PageSel
 export class Header extends DisplayComponent<MfdComponentProps> {
   private sysSelectorSelectedIndex = Subject.create(0);
 
+  private activeIsSelected = Subject.create(false);
+
+  private positionIsSelected = Subject.create(false);
+
+  private secIndexIsSelected = Subject.create(false);
+
+  private dataIsSelected = Subject.create(false);
+
   public onAfterRender(node: VNode): void {
       super.onAfterRender(node);
 
-      switch (this.props.active.get().sys) {
-      case 'fms':
-          this.sysSelectorSelectedIndex.set(0);
-          break;
-      case 'atccom':
-          this.sysSelectorSelectedIndex.set(1);
-          break;
-      case 'surv':
-          this.sysSelectorSelectedIndex.set(2);
-          break;
-      case 'fcubkup':
-          this.sysSelectorSelectedIndex.set(3);
-          break;
+      this.props.active.sub((val) => {
+          switch (val.sys) {
+          case 'fms':
+              this.sysSelectorSelectedIndex.set(0);
+              break;
+          case 'atccom':
+              this.sysSelectorSelectedIndex.set(1);
+              break;
+          case 'surv':
+              this.sysSelectorSelectedIndex.set(2);
+              break;
+          case 'fcubkup':
+              this.sysSelectorSelectedIndex.set(3);
+              break;
 
-      default:
-          this.sysSelectorSelectedIndex.set(0);
-          break;
-      }
+          default:
+              this.sysSelectorSelectedIndex.set(0);
+              break;
+          }
+
+          this.activeIsSelected.set(val.category === 'active');
+          this.positionIsSelected.set(val.category === 'position');
+          this.secIndexIsSelected.set(val.category === 'sec-index');
+          this.dataIsSelected.set(val.category === 'data');
+      }, true);
   }
 
   render(): VNode {
@@ -44,7 +59,7 @@ export class Header extends DisplayComponent<MfdComponentProps> {
               </div>
               <div style="display: flex; flex-direction: row;">
                   <PageSelectorDropdownMenu
-                      isActive={Subject.create(this.props.active.get().category === 'active')}
+                      isActive={this.activeIsSelected}
                       label="ACTIVE"
                       menuItems={[
                           { label: 'F-PLN', action: () => this.props.navigateTo('fms/active/f-pln') },
@@ -56,7 +71,7 @@ export class Header extends DisplayComponent<MfdComponentProps> {
                       containerStyle="flex: 1"
                   />
                   <PageSelectorDropdownMenu
-                      isActive={Subject.create(this.props.active.get().category === 'position')}
+                      isActive={this.positionIsSelected}
                       label="POSITION"
                       menuItems={[
                           { label: 'NAVAIDS', action: () => this.props.navigateTo('fms/position/navaids') }]}
@@ -64,7 +79,7 @@ export class Header extends DisplayComponent<MfdComponentProps> {
                       containerStyle="flex: 1"
                   />
                   <PageSelectorDropdownMenu
-                      isActive={Subject.create(this.props.active.get().category === 'sec-index')}
+                      isActive={this.secIndexIsSelected}
                       label="SEC INDEX"
                       menuItems={[
                           { label: 'INIT', action: () => this.props.navigateTo('fms/active/init') }]}
@@ -72,7 +87,7 @@ export class Header extends DisplayComponent<MfdComponentProps> {
                       containerStyle="flex: 1"
                   />
                   <PageSelectorDropdownMenu
-                      isActive={Subject.create(this.props.active.get().category === 'data')}
+                      isActive={this.dataIsSelected}
                       label="DATA"
                       menuItems={[
                           { label: 'INIT', action: () => this.props.navigateTo('fms/active/init') }]}

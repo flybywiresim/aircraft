@@ -2,7 +2,7 @@
 import './style.scss';
 
 interface ActivePageTitleBarProps extends ComponentProps {
-    activePage: Subscribable<string>;
+    activePage: string;
     tmpyIsActive: Subscribable<boolean>;
 }
 export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps> {

@@ -4,6 +4,7 @@ import 'instruments/src/PFD/MFD-common/style.scss';
 
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
+import { Header } from 'instruments/src/PFD/MFD-common/Header';
 import { Navigator, NavigatorPage } from 'instruments/src/PFD/MFD-common/Navigator';
 import { CustomMouseCursor } from 'instruments/src/PFD/MFD-common/CustomMouseCursor';
 import { MfdFmsActivePerf } from 'instruments/src/PFD/pages/FMS/ACTIVE/PERF';
@@ -92,6 +93,7 @@ export class MFDComponent extends DisplayComponent<MfdProps> {
     render(): VNode {
         return (
             <div class="mfd-main" ref={this.oansRef}>
+                {this.activeUri.get().sys === 'fms' && <Header bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />}
                 <Navigator active={this.activeUri}>
                     <NavigatorPage uri="fms/active/f-pln" component={<MfdFmsActiveFpln bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />
                     <NavigatorPage uri="fms/active/perf" component={<MfdFmsActivePerf bus={this.props.bus} active={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />} />

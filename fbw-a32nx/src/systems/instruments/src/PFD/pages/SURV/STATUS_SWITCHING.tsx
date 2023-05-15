@@ -19,7 +19,7 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
         return (
             <>
                 <Header bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
-                <ActivePageTitleBar activePage={Subject.create('STATUS & SWITCHING')} tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage="STATUS & SWITCHING" tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer" />
                 {/* end page content */}
