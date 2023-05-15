@@ -1608,12 +1608,17 @@ impl A380Hydraulic {
 
     const ELECTRIC_PUMP_MAX_CURRENT_AMPERE: f64 = 75.;
 
-    const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
+    const GREEN_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(2);
+    const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrent(1);
+
     const GREEN_AUX_ELEC_PUMP_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentGndFltService;
-    const YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrentGndFltService;
+    const A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrent(1);
+    const B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrent(2);
 
     const EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
@@ -1738,7 +1743,7 @@ impl A380Hydraulic {
             yellow_electric_pump_a: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::YellowA,
-                Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1751,7 +1756,7 @@ impl A380Hydraulic {
             yellow_electric_pump_b: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::YellowB,
-                Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1764,38 +1769,37 @@ impl A380Hydraulic {
             green_electric_pump_a: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::GreenA,
-                Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
             green_electric_pump_a_controller: A380ElectricPumpController::new(
                 context,
                 A380ElectricPumpId::GreenA,
-                Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+                Self::GREEN_ELEC_PUMP_CONTROL_POWER_BUS,
             ),
 
             green_electric_pump_b: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::GreenB,
-                Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
             green_electric_pump_b_controller: A380ElectricPumpController::new(
                 context,
                 A380ElectricPumpId::GreenB,
-                Self::YELLOW_ELEC_PUMP_CONTROL_POWER_BUS,
+                Self::GREEN_ELEC_PUMP_CONTROL_POWER_BUS,
             ),
 
             green_electric_aux_pump: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::GreenAux,
-                Self::YELLOW_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_AUX_ELEC_PUMP_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
-                PumpCharacteristics::a380_electric_pump(), // TODO check if it's a different pump
+                PumpCharacteristics::a380_aux_electric_pump(),
             ),
             green_electric_aux_pump_controller: A380AuxiliaryElectricPumpController::new(
-                context,
                 A380ElectricPumpId::GreenAuxiliary,
                 Self::GREEN_AUX_ELEC_PUMP_POWER_BUS,
             ),
@@ -2647,6 +2651,7 @@ impl A380Hydraulic {
             engines,
             &self.epump_auto_logic,
         );
+
         self.green_electric_pump_a.update(
             context,
             self.green_circuit
@@ -2699,17 +2704,29 @@ impl A380Hydraulic {
             &self.yellow_electric_pump_b_controller,
         );
 
-        self.green_electric_aux_pump_controller.update(
-            &self.yellow_circuit,
-            self.yellow_circuit.reservoir(),
-            &self.epump_auto_logic,
-        );
+        self.green_electric_aux_pump_controller
+            .update(self.green_circuit.reservoir(), &self.epump_auto_logic);
         self.green_electric_aux_pump.update(
             context,
-            self.green_circuit
-                .pump_section(A380ElectricPumpId::GreenAuxiliary.into_pump_section_index()),
+            self.green_circuit.auxiliary_section(),
             self.green_circuit.reservoir(),
             &self.green_electric_aux_pump_controller,
+        );
+
+        println!(
+            "AUX PUMP CONTRL run {:?} Aux section press {:.1} rpm {:.1}  flow {:.1}gpm",
+            self.green_electric_aux_pump_controller.should_pressurise(),
+            self.green_circuit
+                .auxiliary_section()
+                .pressure()
+                .get::<psi>(),
+            self.green_electric_aux_pump
+                .speed()
+                .get::<revolution_per_minute>(),
+            self.green_electric_aux_pump
+                .flow()
+                .get::<gallon_per_second>()
+                * 60.
         );
 
         self.green_circuit_controller.update(
@@ -2719,6 +2736,7 @@ impl A380Hydraulic {
                 &self.green_electric_pump_a_controller,
                 &self.green_electric_pump_b_controller,
             ],
+            Some(&self.green_electric_aux_pump_controller),
         );
 
         self.green_circuit.update(
@@ -2745,6 +2763,7 @@ impl A380Hydraulic {
                 &self.yellow_electric_pump_a_controller,
                 &self.yellow_electric_pump_b_controller,
             ],
+            None,
         );
         self.yellow_circuit.update(
             context,
@@ -2819,6 +2838,8 @@ impl SimulationElement for A380Hydraulic {
 
         self.green_electric_aux_pump.accept(visitor);
         self.green_electric_aux_pump_controller.accept(visitor);
+
+        self.epump_auto_logic.accept(visitor);
 
         self.forward_cargo_door_controller.accept(visitor);
         self.forward_cargo_door.accept(visitor);
@@ -2987,17 +3008,31 @@ impl A380HydraulicCircuitController {
         context: &UpdateContext,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         epump_controllers: [&A380ElectricPumpController; 2],
+        auxiliary_pump_controller: Option<&A380AuxiliaryElectricPumpController>,
     ) {
         // No cargo doors on yellow side
         if self.circuit_id == HydraulicColor::Green {
             self.cargo_door_in_use.update(
                 context,
                 epump_controllers[0].should_pressurise_for_cargo_door_operation()
-                    || epump_controllers[1].should_pressurise_for_cargo_door_operation(),
+                    || epump_controllers[1].should_pressurise_for_cargo_door_operation()
+                    || auxiliary_pump_controller.unwrap().should_pressurise(),
+            );
+
+            println!(
+                "GREEEN CONTRL p1{:?} p2{:?} ap{:?}",
+                epump_controllers[0].should_pressurise_for_cargo_door_operation(),
+                epump_controllers[1].should_pressurise_for_cargo_door_operation(),
+                auxiliary_pump_controller.unwrap().should_pressurise(),
             );
 
             self.routing_epump_sections_to_aux
                 .update(context, self.cargo_door_in_use.output());
+
+            println!(
+                "GREEEN CONTRL ROUTING{:?}",
+                self.routing_epump_sections_to_aux.output(),
+            );
         }
 
         match self.circuit_id {
@@ -3362,6 +3397,11 @@ impl A380ElectricPumpAutoLogic {
                 || aft_cargo_door_controller.should_pressurise_hydraulics(),
         );
 
+        println!(
+            "AUTORUN: requiredCargo {:?}",
+            self.is_required_for_cargo_door_operation.output()
+        );
+
         self.body_steering_in_operation_previous =
             self.is_required_for_body_steering_operation.output();
 
@@ -3413,6 +3453,10 @@ impl A380ElectricPumpAutoLogic {
                 yellow_operation_required && !self.yellow_pump_a_selected
             }
             A380ElectricPumpId::GreenAuxiliary => {
+                println!(
+                    "AUTORUN: should run aux:  gnd bus {:?}  greenreq {:?}",
+                    self.ground_service_bus_available, green_operation_required
+                );
                 self.ground_service_bus_available && green_operation_required
             }
         }
@@ -3549,8 +3593,6 @@ impl SimulationElement for A380ElectricPumpController {
 }
 
 struct A380AuxiliaryElectricPumpController {
-    low_press_id: VariableIdentifier,
-
     pump_id: A380ElectricPumpId,
 
     is_powered: bool,
@@ -3561,17 +3603,10 @@ struct A380AuxiliaryElectricPumpController {
     has_air_pressure_low_fault: bool,
     has_low_level_fault: bool,
     is_pressure_low: bool,
-    should_pressurise_for_cargo_door_operation: bool,
 }
 impl A380AuxiliaryElectricPumpController {
-    fn new(
-        context: &mut InitContext,
-        pump_id: A380ElectricPumpId,
-        powered_by: ElectricalBusType,
-    ) -> Self {
+    fn new(pump_id: A380ElectricPumpId, powered_by: ElectricalBusType) -> Self {
         Self {
-            low_press_id: context.get_identifier(format!("HYD_{}_EPUMP_LOW_PRESS", pump_id)),
-
             pump_id,
 
             is_powered: false,
@@ -3584,48 +3619,19 @@ impl A380AuxiliaryElectricPumpController {
             has_low_level_fault: false,
 
             is_pressure_low: true,
-
-            should_pressurise_for_cargo_door_operation: false,
         }
     }
 
-    fn update(
-        &mut self,
-        hydraulic_circuit: &impl HydraulicPressureSensors,
-        reservoir: &Reservoir,
-        auto_logic: &A380ElectricPumpAutoLogic,
-    ) {
-        self.should_pressurise = auto_logic.should_auto_run_epump(self.pump_id) && self.is_powered;
-
-        self.update_low_pressure(hydraulic_circuit);
-
-        self.update_low_air_pressure(reservoir);
+    fn update(&mut self, reservoir: &Reservoir, auto_logic: &A380ElectricPumpAutoLogic) {
+        self.should_pressurise = auto_logic.should_auto_run_epump(self.pump_id)
+            && self.is_powered
+            && !self.has_low_level_fault;
 
         self.update_low_level(reservoir);
     }
 
-    fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressureSensors) {
-        self.is_pressure_low = self.should_pressurise()
-            && !hydraulic_circuit
-                .pump_section_switch_pressurised(self.pump_id.into_pump_section_index());
-
-        self.has_pressure_low_fault = self.is_pressure_low;
-    }
-
-    fn update_low_air_pressure(&mut self, reservoir: &Reservoir) {
-        self.has_air_pressure_low_fault = reservoir.is_low_air_pressure();
-    }
-
     fn update_low_level(&mut self, reservoir: &Reservoir) {
         self.has_low_level_fault = reservoir.is_low_level();
-    }
-
-    fn has_any_fault(&self) -> bool {
-        self.has_low_level_fault || self.has_air_pressure_low_fault || self.has_pressure_low_fault
-    }
-
-    fn should_pressurise_for_cargo_door_operation(&self) -> bool {
-        self.should_pressurise_for_cargo_door_operation
     }
 }
 impl PumpController for A380AuxiliaryElectricPumpController {
@@ -6820,9 +6826,27 @@ mod tests {
                 self.hydraulics.nose_wheel_steering_pin_is_inserted()
             }
 
-            fn is_yellow_epump_controller_pressurising(&self) -> bool {
+            fn is_yellow_a_epump_controller_pressurising(&self) -> bool {
                 self.hydraulics
                     .yellow_electric_pump_a_controller
+                    .should_pressurise()
+            }
+
+            fn is_yellow_b_epump_controller_pressurising(&self) -> bool {
+                self.hydraulics
+                    .yellow_electric_pump_b_controller
+                    .should_pressurise()
+            }
+
+            fn is_green_epump_a_controller_pressurising(&self) -> bool {
+                self.hydraulics
+                    .green_electric_pump_a_controller
+                    .should_pressurise()
+            }
+
+            fn is_green_epump_b_controller_pressurising(&self) -> bool {
+                self.hydraulics
+                    .green_electric_pump_b_controller
                     .should_pressurise()
             }
 
@@ -6871,6 +6895,10 @@ mod tests {
 
             fn set_ac_ground_service_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_ground_service_powered = bus_is_alive;
+            }
+
+            fn set_dc_bus_1_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_dc_1_powered = bus_is_alive;
             }
 
             fn set_dc_bus_2_is_powered(&mut self, bus_is_alive: bool) {
@@ -7435,6 +7463,21 @@ mod tests {
                 self
             }
 
+            fn set_yellow_e_pump_b(mut self, is_on: bool) -> Self {
+                self.write_by_name("OVHD_HYD_EPUMPYB_ON_PB_IS_AUTO", !is_on);
+                self
+            }
+
+            fn set_green_e_pump_a(mut self, is_on: bool) -> Self {
+                self.write_by_name("OVHD_HYD_EPUMPGA_ON_PB_IS_AUTO", !is_on);
+                self
+            }
+
+            fn set_green_e_pump_b(mut self, is_on: bool) -> Self {
+                self.write_by_name("OVHD_HYD_EPUMPGB_ON_PB_IS_AUTO", !is_on);
+                self
+            }
+
             fn set_green_ed_pump(mut self, is_auto: bool) -> Self {
                 self.write_by_name("OVHD_HYD_ENG_1A_PUMP_PB_IS_AUTO", is_auto);
                 self
@@ -7531,6 +7574,11 @@ mod tests {
 
             fn ac_ground_service_lost(mut self) -> Self {
                 self.command(|a| a.set_ac_ground_service_is_powered(false));
+                self
+            }
+
+            fn dc_bus_1_lost(mut self) -> Self {
+                self.command(|a| a.set_dc_bus_1_is_powered(false));
                 self
             }
 
@@ -9580,31 +9628,53 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
+            assert!(!test_bed.query(|a| a.is_yellow_a_epump_controller_pressurising()));
 
             test_bed = test_bed.set_yellow_e_pump_a(true).run_one_tick();
 
-            assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
+            assert!(test_bed.query(|a| a.is_yellow_a_epump_controller_pressurising()));
 
             test_bed = test_bed.set_yellow_e_pump_a(false).run_one_tick();
 
-            assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
+            assert!(!test_bed.query(|a| a.is_yellow_a_epump_controller_pressurising()));
         }
 
         #[test]
-        fn controller_yellow_epump_unpowered_cant_command_pump() {
+        fn controller_yellow_epumps_unpowered_cant_command_pumps() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_yellow_e_pump_a(true)
+                .set_yellow_e_pump_b(true)
                 .run_one_tick();
 
-            assert!(test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
+            assert!(test_bed.query(|a| a.is_yellow_a_epump_controller_pressurising()));
+            assert!(test_bed.query(|a| a.is_yellow_b_epump_controller_pressurising()));
+
+            test_bed = test_bed.dc_bus_1_lost().run_one_tick();
+
+            assert!(!test_bed.query(|a| a.is_yellow_a_epump_controller_pressurising()));
+            assert!(!test_bed.query(|a| a.is_yellow_b_epump_controller_pressurising()));
+        }
+
+        #[test]
+        fn controller_green_epumps_unpowered_cant_command_pumps() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_green_e_pump_a(true)
+                .set_green_e_pump_b(true)
+                .run_one_tick();
+
+            assert!(test_bed.query(|a| a.is_green_epump_a_controller_pressurising()));
+            assert!(test_bed.query(|a| a.is_green_epump_b_controller_pressurising()));
 
             test_bed = test_bed.dc_bus_2_lost().run_one_tick();
 
-            assert!(!test_bed.query(|a| a.is_yellow_epump_controller_pressurising()));
+            assert!(!test_bed.query(|a| a.is_green_epump_a_controller_pressurising()));
+            assert!(!test_bed.query(|a| a.is_green_epump_b_controller_pressurising()));
         }
 
         #[test]
@@ -9662,7 +9732,7 @@ mod tests {
         }
 
         #[test]
-        fn yellow_epump_unavailable_if_unpowered() {
+        fn yellow_epump_a_unavailable_if_unpowered() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -9678,14 +9748,43 @@ mod tests {
 
             test_bed = test_bed
                 .ac_bus_2_lost()
-                .ac_bus_1_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
-            // Yellow epump still working as not plugged on AC2 or AC1
+            // Yellow A epump still working as plugged on AC1
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_ground_service_lost()
+                .ac_bus_1_lost()
+                .run_waiting_for(Duration::from_secs(25));
+
+            // Yellow epump has stopped
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+        }
+
+        #[test]
+        fn yellow_epump_b_unavailable_if_unpowered() {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump_b(true)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Yellow epump working
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .run_waiting_for(Duration::from_secs(25));
+
+            // Yellow B epump still working as plugged on AC2
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            test_bed = test_bed
+                .ac_bus_2_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Yellow epump has stopped
@@ -9848,7 +9947,7 @@ mod tests {
         }
 
         #[test]
-        fn cargo_door_controller_closes_the_door_after_yellow_pump_auto_shutdown() {
+        fn cargo_door_controller_closes_the_door_after_green_pump_auto_shutdown() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -9864,7 +9963,7 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(30.));
 
-            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .close_fwd_cargo_door()
@@ -10250,6 +10349,57 @@ mod tests {
 
             assert!(test_bed.is_all_gears_really_up());
             assert!(test_bed.is_all_doors_really_up());
+        }
+
+        #[test]
+        fn green_aux_epump_cannot_buildup_auxiliary_section_when_cargo_doors_no_ac_no_ac_ground_svc(
+        ) {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .ac_ground_service_lost()
+                .run_one_tick();
+
+            // Waiting for 5s pressure should not rise due to no pump avail
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
+            );
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
+            assert!(test_bed.green_pressure_auxiliary() < Pressure::new::<psi>(100.));
+        }
+
+        #[test]
+        fn green_aux_epump_can_buildup_auxiliary_section_when_cargo_doors_no_ac_but_ac_ground_svc()
+        {
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .run_one_tick();
+
+            // Waiting for 5s pressure should not rise due to no pump avail
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
+            );
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
+            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(3500.));
         }
     }
 }
