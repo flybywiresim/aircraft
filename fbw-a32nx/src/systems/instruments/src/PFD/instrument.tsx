@@ -1,5 +1,6 @@
 import { DisplayManagementComputer } from 'instruments/src/PFD/shared/DisplayManagementComputer';
-import { Clock, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, HEventPublisher, Subject } from '@microsoft/msfs-sdk';
+import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -25,6 +26,8 @@ class A32NX_PFD extends BaseInstrument {
     private adirsValueProvider: AdirsValueProvider<PFDSimvars>;
 
     private readonly displayManagementComputer: DisplayManagementComputer;
+
+    private fmsDataPublisher: FmsDataPublisher;
 
     /**
      * "mainmenu" = 0
@@ -62,6 +65,9 @@ class A32NX_PFD extends BaseInstrument {
 
         this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, getDisplayIndex() === 1 ? 'L' : 'R');
 
+        const stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
+        this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
+
         this.arincProvider.init();
         this.clock.init();
         this.displayManagementComputer.init();
@@ -84,12 +90,14 @@ class A32NX_PFD extends BaseInstrument {
                 this.simVarPublisher.startPublish();
                 this.hEventPublisher.startPublish();
                 this.adirsValueProvider.start();
+                this.fmsDataPublisher.startPublish();
             }
             this.gameState = gamestate;
         } else {
             this.simVarPublisher.onUpdate();
             this.simplaneValueProvider.onUpdate();
             this.clock.onUpdate();
+            this.fmsDataPublisher.onUpdate();
         }
     }
 }
