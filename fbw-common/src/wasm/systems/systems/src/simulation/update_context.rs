@@ -3,7 +3,6 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
     f64::*,
-    mass::kilogram,
     mass_density::kilogram_per_cubic_meter,
     pressure::inch_of_mercury,
     time::second,
