@@ -5,6 +5,11 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.11.0
+
+1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+
 ## 0.10.0
 
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
