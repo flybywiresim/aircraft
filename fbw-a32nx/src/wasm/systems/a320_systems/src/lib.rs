@@ -9,8 +9,6 @@ mod payload;
 mod pneumatic;
 mod power_consumption;
 
-use std::time::Duration;
-
 use self::{
     air_conditioning::{A320AirConditioning, A320PressurizationOverheadPanel},
     fuel::A320Fuel,

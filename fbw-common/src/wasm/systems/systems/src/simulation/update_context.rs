@@ -5,7 +5,7 @@ use uom::si::{
     f64::*,
     length::millimeter,
     mass_density::kilogram_per_cubic_meter,
-    pressure::{inch_of_mercury, millimeter_of_mercury},
+    pressure::inch_of_mercury,
     time::second,
     velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };

@@ -1,24 +1,11 @@
 use std::time::Duration;
 
-use crate::{
-    shared::{
-        ControllerSignal, ElectricalBusType, ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2,
-        HydraulicColor, PneumaticValve,
-    },
-    simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
-    },
+use crate::simulation::{
+    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
 use uom::si::{
-    f64::*,
-    length::millimeter,
-    pressure::{pascal, psi},
-    ratio::{percent, ratio},
-    temperature_interval,
-    thermodynamic_temperature::{degree_celsius, kelvin},
-    volume::cubic_meter,
+    f64::*, length::millimeter, ratio::ratio, thermodynamic_temperature::degree_celsius,
 };
 
 pub trait ActiveDeicingController {
