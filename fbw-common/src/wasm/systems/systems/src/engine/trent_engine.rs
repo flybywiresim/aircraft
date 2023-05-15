@@ -30,6 +30,7 @@ impl TrentEngine {
     const TRENT_900_100_PCT_N3_RPM: f64 = 12200.0;
 
     // Gear ratio from primary gearbox input to EDP drive shaft
+    // TODO find real value, 0.31 is guessed to get the target 3775 pump rpm
     const PUMP_N3_GEAR_RATIO: f64 = 0.31; //EDP rated speed is 3775 RPM
 
     const MIN_IDLE_N2_UNCORRECTED_THRESHOLD_PERCENT: f64 = 55.;
