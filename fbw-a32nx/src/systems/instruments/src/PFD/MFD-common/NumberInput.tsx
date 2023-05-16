@@ -9,6 +9,8 @@ interface NumberInputProps extends ComponentProps {
     containerStyle?: string;
 }
 export class NumberInput extends DisplayComponent<NumberInputProps> {
+    private topRef = FSComponent.createRef<HTMLDivElement>();
+
     private textInputRef = FSComponent.createRef<HTMLInputElement>();
 
     private setInputFilter(el: Element, inputFilter: (value: string) => boolean): void {
@@ -36,11 +38,16 @@ export class NumberInput extends DisplayComponent<NumberInputProps> {
         super.onAfterRender(node);
 
         this.setInputFilter(this.textInputRef.instance, (value) => /^\d*\.?\d*$/.test(value));
+
+        this.topRef.instance.addEventListener('click', () => {
+            this.textInputRef.instance.value = '';
+            this.textInputRef.instance.focus();
+        });
     }
 
     render(): VNode {
         return (
-            <div class="MFDNumberInputContainer" style={this.props.containerStyle}>
+            <div ref={this.topRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
                 <span class="MFDUnitLabel leadingUnit">{this.props.unitLeading}</span>
                 <input ref={this.textInputRef} type="text" class="MFDNumberInputTextInput" maxlength="4" placeholder={this.props.emptyValueString} size="4" pattern="[0-9]+" />
                 <span class="MFDUnitLabel trailingUnit">{this.props.unitTrailing}</span>
