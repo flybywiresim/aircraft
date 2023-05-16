@@ -289,7 +289,7 @@ impl A380CargoDoorFactory {
         let axis_direction = Vector3::new(0., 0., 1.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(150.),
+            Mass::new::<kilogram>(250.),
             size,
             cg_offset,
             cg_offset,
@@ -10401,6 +10401,17 @@ mod tests {
 
             assert!(test_bed.is_cargo_fwd_door_locked_up());
             assert!(test_bed.is_cargo_aft_door_locked_up());
+        }
+
+        #[test]
+        fn temp_test() {
+            let test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .run_one_tick();
         }
     }
 }

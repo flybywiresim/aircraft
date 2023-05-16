@@ -1879,6 +1879,10 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
         let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
 
+        println!(
+            "LENGTH CARGO {:.3}",
+            length_at_max_angle.get::<meter>() - length_at_min_angle.get::<meter>()
+        );
         self.min_absolute_length_to_anchor = length_at_min_angle.min(length_at_max_angle);
         self.max_absolute_length_to_anchor = length_at_min_angle.max(length_at_max_angle);
     }
