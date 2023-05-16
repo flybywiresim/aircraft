@@ -849,6 +849,71 @@ impl ControllerSignal<Pressure> for DifferentialPressureTransducer {
     }
 }
 
+pub struct SolenoidSignal {
+    should_energize: bool,
+}
+impl SolenoidSignal {
+    pub fn energized() -> Self {
+        Self {
+            should_energize: true,
+        }
+    }
+
+    pub fn deenergized() -> Self {
+        Self {
+            should_energize: false,
+        }
+    }
+}
+
+struct Solenoid {
+    is_energized: bool,
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+}
+impl Solenoid {
+    fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            is_energized: false,
+            is_powered: false,
+            powered_by,
+        }
+    }
+
+    fn update(&mut self, controller: &impl ControllerSignal<SolenoidSignal>) {
+        if !self.is_powered {
+            self.is_energized = false;
+        } else if let Some(signal) = controller.signal() {
+            self.is_energized = signal.should_energize;
+        }
+    }
+
+    pub fn is_powered(&self) -> bool {
+        self.is_powered
+    }
+
+    fn is_energized(&self) -> bool {
+        self.is_energized
+    }
+}
+impl SimulationElement for Solenoid {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+
+        if !self.is_powered {
+            self.is_energized = false;
+        }
+    }
+}
+
+pub trait WingAntiIceValves {
+    fn is_wai_valve_closed(&self, number: usize) -> bool;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

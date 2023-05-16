@@ -16,6 +16,7 @@ use systems::{
     pneumatic::{
         valve::DefaultValve, valve::PneumaticExhaust, ControllablePneumaticValve,
         PneumaticContainer, PneumaticPipe, PneumaticValveSignal, WingAntiIcePushButtonMode,
+        WingAntiIceValves,
     },
     shared::{
         pid::PidController, random_from_normal_distribution, ControllerSignal, ElectricalBusType,
@@ -325,7 +326,7 @@ pub struct WingAntiIceSystem {
 impl WingAntiIceSystem {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
     const WAI_MAX_PRESSURE: f64 = 2.1; //BAR
-    const WAI_EXHAUST_SPEED: f64 = 0.1285; // Regulate wing_anti_ice_tweak_exhaust
+    const WAI_EXHAUST_SPEED: f64 = 0.1330; // Regulate wing_anti_ice_tweak_exhaust
     const WAI_VALVE_TRANSFER_SPEED: f64 = 1.3; // Regulate wing_anti_ice_tweak_time_to_open
 
     // Each WAI duct is made of
@@ -546,11 +547,6 @@ impl WingAntiIceComplex {
     }
 
     #[cfg(test)]
-    pub fn is_wai_valve_closed(&self, number: usize) -> bool {
-        self.wai_systems[number].is_wai_valve_closed()
-    }
-
-    #[cfg(test)]
     pub fn wai_consumer_pressure(&self, number: usize) -> Pressure {
         self.wai_systems[number].wai_consumer_pressure()
     }
@@ -600,7 +596,11 @@ impl WingAntiIceComplex {
         self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
-
+impl WingAntiIceValves for WingAntiIceComplex {
+    fn is_wai_valve_closed(&self, number: usize) -> bool {
+        self.wai_systems[number].is_wai_valve_closed()
+    }
+}
 impl SimulationElement for WingAntiIceComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.wai_systems, visitor);

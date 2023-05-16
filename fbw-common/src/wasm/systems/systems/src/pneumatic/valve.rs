@@ -1,7 +1,8 @@
 use std::f64::consts::PI;
 
 use crate::{
-    shared::{ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
+    pneumatic::{Solenoid, SolenoidSignal},
+    shared::{interpolation, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
@@ -70,6 +71,122 @@ impl PneumaticValve for PurelyPneumaticValve {
 impl Default for PurelyPneumaticValve {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+pub struct PneumaticValveCharacteristics<const N: usize> {
+    minimum_muscle_pressure: Pressure,
+    downstream_pressure_breakpoints_psig: [f64; N],
+    open_amount_breakpoints: [f64; N],
+    valve_speed: f64,
+}
+impl<const N: usize> PneumaticValveCharacteristics<N> {
+    pub fn new(
+        minimum_muscle_pressure: Pressure,
+        downstream_pressure_breakpoints_psig: [f64; N],
+        open_amount_breakpoints: [f64; N],
+        valve_speed: f64,
+    ) -> Self {
+        Self {
+            minimum_muscle_pressure,
+            downstream_pressure_breakpoints_psig,
+            open_amount_breakpoints,
+            valve_speed,
+        }
+    }
+
+    fn get_open_amount(&self, upstream_pressure: Pressure, downstream_pressure: Pressure) -> f64 {
+        if (upstream_pressure - self.minimum_muscle_pressure).get::<psi>() < 0. {
+            0.
+        } else {
+            interpolation(
+                &self.downstream_pressure_breakpoints_psig,
+                &self.open_amount_breakpoints,
+                downstream_pressure.get::<psi>(),
+            )
+            .max(0.)
+            .min(1.)
+        }
+    }
+}
+
+/**
+ * A valve with a solenoid. If the solenoid is energized, the valve is allowed to open
+ * If the solenoid is de-energized, the valve is closed.
+ */
+pub struct SolenoidValve<const N: usize> {
+    connector: PneumaticContainerConnector,
+    characteristics: PneumaticValveCharacteristics<N>,
+    solenoid: Solenoid,
+    open_amount: Ratio,
+    valve_speed: f64,
+}
+impl<const N: usize> SolenoidValve<N> {
+    pub fn new(
+        characteristics: PneumaticValveCharacteristics<N>,
+        powered_by: ElectricalBusType,
+    ) -> Self {
+        Self {
+            connector: PneumaticContainerConnector::new(),
+            characteristics,
+            solenoid: Solenoid::new(powered_by),
+            open_amount: Ratio::default(),
+            valve_speed: 0.25,
+        }
+    }
+
+    pub fn update_solenoid(&mut self, controller: &impl ControllerSignal<SolenoidSignal>) {
+        self.solenoid.update(controller);
+    }
+
+    pub fn update_move_fluid(
+        &mut self,
+        context: &UpdateContext,
+        upstream: &mut impl PneumaticContainer,
+        downstream: &mut impl PneumaticContainer,
+    ) {
+        let target_open_amount = if !self.solenoid.is_energized() {
+            0.
+        } else {
+            self.characteristics.get_open_amount(
+                upstream.pressure() - context.ambient_pressure(),
+                downstream.pressure() - context.ambient_pressure(),
+            )
+        };
+
+        let current_open_amount = self.open_amount.get::<ratio>();
+
+        self.open_amount = Ratio::new::<ratio>(if target_open_amount > current_open_amount {
+            target_open_amount.min(
+                current_open_amount
+                    + context.delta_as_secs_f64() * self.characteristics.valve_speed,
+            )
+        } else {
+            target_open_amount
+                .max(current_open_amount - context.delta_as_secs_f64() * self.valve_speed)
+        });
+
+        self.connector
+            .with_transfer_speed_factor(self.open_amount)
+            .update_move_fluid(context, upstream, downstream);
+    }
+
+    pub fn is_powered(&self) -> bool {
+        self.solenoid.is_powered()
+    }
+
+    pub fn open_amount(&self) -> Ratio {
+        self.open_amount
+    }
+}
+impl<const N: usize> PneumaticValve for SolenoidValve<N> {
+    fn is_open(&self) -> bool {
+        self.open_amount().get::<percent>() > 0.
+    }
+}
+impl<const N: usize> SimulationElement for SolenoidValve<N> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.solenoid.accept(visitor);
     }
 }
 
