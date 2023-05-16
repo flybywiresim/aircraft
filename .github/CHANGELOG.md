@@ -134,6 +134,7 @@
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
+1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
 
 ## 0.9.0
 
