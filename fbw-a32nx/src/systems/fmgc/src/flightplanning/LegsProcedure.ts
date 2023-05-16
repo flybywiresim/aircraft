@@ -249,6 +249,7 @@ export class LegsProcedure {
                   mappedLeg.additionalData.thetaTrue = A32NX_Util.magneticToTrue(currentLeg.theta, magCorrection);
                   mappedLeg.additionalData.annotation = currentAnnotation;
                   mappedLeg.additionalData.verticalAngle = currentLeg.verticalAngle ? currentLeg.verticalAngle - 360 : undefined;
+                  mappedLeg.additionalData.rnp = currentLeg.rnp;
               }
 
               this._currentIndex++;
