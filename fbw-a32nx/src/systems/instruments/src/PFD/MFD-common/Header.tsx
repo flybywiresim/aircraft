@@ -14,6 +14,30 @@ export class Header extends DisplayComponent<MfdComponentProps> {
 
   private dataIsSelected = Subject.create(false);
 
+  public changeSystem(selectedSysIndex: number) {
+      // ...
+      this.sysSelectorSelectedIndex.set(selectedSysIndex);
+
+      switch (selectedSysIndex) {
+      case 0: // FMS
+          this.props.navigateTo('fms/active/init');
+          break;
+      case 1: // ATCCOM
+          this.props.navigateTo('atccom/');
+          break;
+      case 2: // SURV
+          this.props.navigateTo('surv/controls');
+          break;
+      case 3: // FCU BKUP
+          this.props.navigateTo('fcubkup/');
+          break;
+
+      default:
+          this.props.navigateTo('fms/active/init');
+          break;
+      }
+  }
+
   public onAfterRender(node: VNode): void {
       super.onAfterRender(node);
 
@@ -52,7 +76,7 @@ export class Header extends DisplayComponent<MfdComponentProps> {
                       values={ArraySubject.create(['FMS 1', 'ATCCOM', 'SURV', 'FCU BKUP'])}
                       selectedIndex={this.sysSelectorSelectedIndex}
                       idPrefix="sysSelectorDropdown"
-                      onChangeCallback={(val) => this.sysSelectorSelectedIndex.set(val)}
+                      onChangeCallback={(val) => this.changeSystem(val)}
                       containerStyle="width: 25%;"
                       alignLabels="left"
                   />

@@ -6,10 +6,10 @@ import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTit
 import { MfdComponentProps } from 'instruments/src/PFD/MFD';
 import { Footer } from 'instruments/src/PFD/MFD-common/Footer';
 
-interface MfdFmsActiveInitProps extends MfdComponentProps {
+interface MfdNotFoundProps extends MfdComponentProps {
 }
 
-export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
+export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
     private subs = [] as Subscription[];
 
     public onAfterRender(node: VNode): void {
@@ -25,7 +25,7 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage="ACTIVE/INIT" tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage="ERROR 404 NOT FOUND" tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer" />
                 {/* end page content */}

@@ -4,7 +4,7 @@ import './style.scss';
 interface ButtonProps extends ComponentProps {
     disabled?: Subscribable<boolean>;
     containerStyle?: string;
-    onClick?: () => void;
+    onClick: () => void;
 }
 export class Button extends DisplayComponent<ButtonProps> {
     private spanRef = FSComponent.createRef<HTMLSpanElement>();
