@@ -1,6 +1,6 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
 import { MfdComponentProps } from 'instruments/src/PFD/MFD';
@@ -10,8 +10,16 @@ interface MfdFmsActiveFplnProps extends MfdComponentProps {
 }
 
 export class MfdFmsActiveFpln extends DisplayComponent<MfdFmsActiveFplnProps> {
+    private subs = [] as Subscription[];
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+    }
+
+    public destroy(): void {
+        this.subs.forEach((x) => x.destroy());
+
+        super.destroy();
     }
 
     render(): VNode {

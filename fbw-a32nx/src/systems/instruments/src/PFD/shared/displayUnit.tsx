@@ -4,7 +4,7 @@ import './common.scss';
 import './pixels.scss';
 
 import { NXDataStore } from '@shared/persistence';
-import { PFDSimvars } from './MFDSimvarPublisher';
+import { MFDSimvars } from './MFDSimvarPublisher';
 import { getDisplayIndex } from '../MFD';
 
 type DisplayUnitProps = {
@@ -41,7 +41,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & ClockEvents>();
+        const sub = this.props.bus.getSubscriber<MFDSimvars & ClockEvents>();
         const isCaptainSide = getDisplayIndex() === 1;
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {

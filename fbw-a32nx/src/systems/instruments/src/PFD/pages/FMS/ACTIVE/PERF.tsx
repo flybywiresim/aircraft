@@ -170,7 +170,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div />
                                 <div style="display: flex; flex: 1;">
-                                    <Button>
+                                    <Button onClick={() => console.log('NOISE')}>
                                         NOISE
                                     </Button>
                                 </div>
@@ -216,11 +216,11 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                     </TopTabNavigator>
                     <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row;">
                         <div style="display: flex; flex: 1;">
-                            <Button>
+                            <Button onClick={() => console.log('RETURN')}>
                                 RETURN
                             </Button>
                         </div>
-                        <Button>
+                        <Button onClick={() => console.log('POS MONITOR')}>
                             POS MONITOR
                         </Button>
                         <div style="flex: 1" />
