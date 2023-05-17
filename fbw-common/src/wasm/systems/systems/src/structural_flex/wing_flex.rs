@@ -1582,15 +1582,6 @@ mod tests {
     }
 
     #[test]
-    fn init() {
-        let mut test_bed = SimulationTestBed::new(WingFlexTestAircraft::new);
-
-        test_bed.set_true_airspeed(Velocity::new::<knot>(340.));
-
-        test_bed.run_with_delta(Duration::from_secs(1));
-    }
-
-    #[test]
     fn fuel_mapping_tanks_1_2_left_wing() {
         let mut test_bed = SimulationTestBed::new(WingFlexTestAircraft::new);
 
