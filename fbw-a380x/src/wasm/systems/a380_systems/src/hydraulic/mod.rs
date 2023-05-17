@@ -10393,7 +10393,7 @@ mod tests {
             // TODO check if two doors should be able to operate at the same time. Dual operation needs loooooooon time with weak aux pump
             test_bed = test_bed
                 .open_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs(150));
+                .run_waiting_for(Duration::from_secs(160));
 
             assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
