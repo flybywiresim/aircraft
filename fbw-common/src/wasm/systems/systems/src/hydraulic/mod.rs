@@ -1142,13 +1142,6 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
-        if let Some(auxiliary_section) = self.auxiliary_section.as_mut() {
-            println!(
-                "AUXIL P{:.0}  Flow {:.3}",
-                auxiliary_section.current_pressure.get::<psi>(),
-                auxiliary_section.current_flow.get::<gallon_per_minute>()
-            );
-        }
         let mut any_pump_is_overheating = false;
         for pump in main_section_pumps.iter() {
             if pump.flow().get::<gallon_per_second>() > 0.01 && pump.is_overheating() {
