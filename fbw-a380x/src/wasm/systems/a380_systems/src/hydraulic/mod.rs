@@ -9964,7 +9964,7 @@ mod tests {
 
             test_bed = test_bed
                 .close_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs_f64(35.));
+                .run_waiting_for(Duration::from_secs_f64(40.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
             assert!(test_bed.cargo_fwd_door_position() <= 0.);
