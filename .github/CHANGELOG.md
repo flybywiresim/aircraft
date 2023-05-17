@@ -9,6 +9,7 @@
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
 
 ## 0.10.0
 
@@ -130,6 +131,10 @@
 1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
 1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
 1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
+1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
+1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
 
 ## 0.9.0
 
