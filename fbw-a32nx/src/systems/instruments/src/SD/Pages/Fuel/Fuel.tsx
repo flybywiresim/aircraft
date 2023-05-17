@@ -421,7 +421,7 @@ const CentreToInnerTransfer: FC<CentreToInnerTransferProps> = ({ side, centreTan
         const fault = transferValveFullyOpen && transferValveFullyClosed; // FIXME also data valid, or neither state for >= 6 seconds
 
         const amber = !fault && (
-            (transferValveFullyClosed && !(!modeSelectManual && (!centreTankLowLevel || onGround) && transferValveSwitch > 0 && autoShutoffRequired))
+            (transferValveFullyClosed && (!modeSelectManual && transferValveSwitch > 0 && !autoShutoffRequired))
             || (!transferValveFullyClosed && (transferValveSwitch === 0 || (!modeSelectManual && autoShutoffRequired)))
         );
 
