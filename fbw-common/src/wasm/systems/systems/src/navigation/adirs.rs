@@ -20,7 +20,7 @@ use uom::si::pressure::inch_of_mercury;
 use uom::si::{
     angle::degree,
     angle::radian,
-    angular_velocity::{degree_per_second, radian_per_second},
+    angular_velocity::degree_per_second,
     f64::*,
     length::foot,
     pressure::hectopascal,
@@ -1862,6 +1862,7 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         angle::degree,
+        angular_velocity::radian_per_second,
         length::foot,
         ratio::percent,
         thermodynamic_temperature::degree_celsius,
