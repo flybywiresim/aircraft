@@ -139,8 +139,12 @@ impl A380Electrical {
 
         self.emergency_gen.update(&self.gcu);
 
-        self.alternating_current
-            .update(electricity, overhead, &self.emergency_gen);
+        self.alternating_current.update(
+            electricity,
+            overhead,
+            ext_pwrs.first().unwrap(),
+            &self.emergency_gen,
+        );
 
         self.direct_current.update(
             context,
@@ -297,6 +301,7 @@ trait A380AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem
     fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool;
     fn ac_ess_bus_powered(&self, electricity: &Electricity) -> bool;
     fn tr_apu(&self) -> &TransformerRectifier;
+    fn tr_2_powered_by_ac_bus(&self) -> bool;
     fn power_tr_1(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
     fn power_tr_2(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
     fn power_tr_ess(&self, electricity: &mut Electricity, tr: &impl ElectricalElement);
@@ -634,6 +639,48 @@ mod a380_electrical_circuit_tests {
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
+    #[test]
+    fn everything_off_ext_power_connected() {
+        let test_bed = test_bed_with()
+            .bat_off(1)
+            .bat_off(2)
+            .bat_off(3)
+            .bat_off(4)
+            .connected_external_power()
+            .on_the_ground()
+            .and()
+            .airspeed(Velocity::default())
+            .run();
+
+        for i in 1..=4 {
+            assert!(test_bed.ac_bus_output(i).is_unpowered());
+        }
+        assert!(test_bed.ac_ess_bus_output().is_unpowered());
+        assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
+        assert!(test_bed.ac_eha_bus_output().is_unpowered());
+        assert!(test_bed.static_inverter_input().is_unpowered());
+        assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::External));
+        assert!(test_bed.tr_1_input().is_unpowered());
+        assert!(test_bed.tr_2_input().is_single(PotentialOrigin::External));
+        assert!(test_bed.tr_ess_input().is_unpowered());
+        assert!(test_bed.tr_apu_input().is_unpowered());
+        assert!(test_bed.dc_bus_output(1).is_unpowered());
+        assert!(test_bed.dc_bus_output(2).is_unpowered());
+        assert!(test_bed.dc_ess_bus_output().is_unpowered());
+        assert!(test_bed.dc_eha_bus_output().is_unpowered());
+        assert!(test_bed.dc_apu_bus_output().is_unpowered());
+        for i in 1..=4 {
+            assert!(test_bed
+                .hot_bus_output(i)
+                .is_single(PotentialOrigin::Battery(i.into())));
+        }
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+    }
+
     /// # Source
     /// A380 FCOM
     #[test]
@@ -714,9 +761,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::External));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::External));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_single(PotentialOrigin::External));
         assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed.tr_ess_input().is_single(PotentialOrigin::External));
@@ -787,9 +832,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::ApuGenerator(2)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_single(PotentialOrigin::External));
         assert!(test_bed
             .tr_2_input()
@@ -859,9 +902,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::External));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::External));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_single(PotentialOrigin::External));
         assert!(test_bed.tr_2_input().is_single(PotentialOrigin::External));
         assert!(test_bed.tr_ess_input().is_single(PotentialOrigin::External));
@@ -933,9 +974,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::External));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::External));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_single(PotentialOrigin::External));
         assert!(test_bed.tr_2_input().is_single(PotentialOrigin::External));
         assert!(test_bed
@@ -1008,9 +1047,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::ApuGenerator(2)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::External));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::ApuGenerator(1)));
@@ -1088,9 +1125,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::ApuGenerator(2)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::ApuGenerator(2)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::ApuGenerator(1)));
@@ -1170,9 +1205,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::External));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::External));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_single(PotentialOrigin::External));
         assert!(test_bed.tr_2_input().is_single(PotentialOrigin::External));
         assert!(test_bed
@@ -1234,9 +1267,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -1313,9 +1344,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -1391,9 +1420,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(3)));
@@ -1469,9 +1496,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -1548,9 +1573,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::ApuGenerator(1)));
@@ -1629,9 +1652,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(4)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(4)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -1698,9 +1719,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_unpowered());
         assert!(test_bed
             .tr_2_input()
@@ -1775,9 +1794,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed
-        //     .ac_gnd_flt_service_bus_output()
-        //     .is_single(PotentialOrigin::EngineGenerator(3)));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::ApuGenerator(1)));
@@ -1953,7 +1970,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -2022,7 +2039,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -2091,7 +2108,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -2161,7 +2178,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
@@ -2225,7 +2242,7 @@ mod a380_electrical_circuit_tests {
             .ac_eha_bus_output()
             .is_single(PotentialOrigin::EngineGenerator(3)));
         assert!(test_bed.static_inverter_input().is_unpowered());
-        // assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));

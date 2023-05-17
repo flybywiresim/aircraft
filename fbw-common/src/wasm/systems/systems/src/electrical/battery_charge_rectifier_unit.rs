@@ -70,6 +70,7 @@ impl BatteryChargeRectifierUnit {
         electricity: &Electricity,
         battery: &impl ProvidePotential,
         battery_push_buttons: &impl BatteryPushButtons,
+        ground_servicing: bool,
     ) {
         self.battery_pb_is_auto = battery_push_buttons.bat_is_auto(self.number);
         let ac_bus_powered = electricity.is_powered(self);
@@ -90,8 +91,9 @@ impl BatteryChargeRectifierUnit {
             Duration::default()
         };
 
-        self.contactor_closed = ac_bus_powered
-            || self.contactor_closed && self.loss_of_ac_duration < Duration::from_secs(3);
+        self.contactor_closed = !ground_servicing
+            && (ac_bus_powered
+                || self.contactor_closed && self.loss_of_ac_duration < Duration::from_secs(3));
 
         // The battery contactor opens when the battery SOC < 20%
         self.battery_soc_20 = battery.potential().get::<volt>() < 24.5;

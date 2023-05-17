@@ -24,12 +24,14 @@ pub(super) struct A380AlternatingCurrentElectrical {
     ac_ess_bus: ElectricalBus,
     ac_emer_bus: ElectricalBus,
     ac_eha_bus: ElectricalBus,
+    ac_gnd_flt_service_bus: ElectricalBus,
     // This is actually a 2-way switch but we simulate this with 2 contactors
     ac_emer_contactor: [Contactor; 2],
     eha_contactors: [Contactor; 2],
     tr_apu: TransformerRectifier,
     emergency_gen_contactor: Contactor,
-    //ac_gnd_flt_service_bus: ElectricalBus,
+    ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor,
+    ac_bus_3_to_tr_2_contactor: Contactor,
 }
 impl A380AlternatingCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
@@ -52,14 +54,16 @@ impl A380AlternatingCurrentElectrical {
                 context,
                 ElectricalBusType::AlternatingCurrentNamed("247XP"),
             ),
+            ac_gnd_flt_service_bus: ElectricalBus::new(
+                context,
+                ElectricalBusType::AlternatingCurrentGndFltService,
+            ),
             ac_emer_contactor: [1, 2].map(|i| Contactor::new(context, &format!("3XB.{i}"))),
             eha_contactors: ["911XN", "911XH"].map(|id| Contactor::new(context, id)),
             tr_apu: TransformerRectifier::new(context, 4),
             emergency_gen_contactor: Contactor::new(context, "5XE"),
-            // ac_gnd_flt_service_bus: ElectricalBus::new(
-            //     context,
-            //     ElectricalBusType::AlternatingCurrentGndFltService,
-            // ),
+            ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor::new(context, "991PU6"),
+            ac_bus_3_to_tr_2_contactor: Contactor::new(context, "991PU2"),
         }
     }
 
@@ -91,6 +95,7 @@ impl A380AlternatingCurrentElectrical {
         &mut self,
         electricity: &mut Electricity,
         overhead: &A380ElectricalOverheadPanel,
+        ext_pwr: &ExternalPowerSource,
         emergency_generator: &EmergencyGenerator,
     ) {
         self.ac_ess_feed_contactors.update(
@@ -119,31 +124,29 @@ impl A380AlternatingCurrentElectrical {
         self.eha_contactors[0].close_when(self.ac_bus_powered(electricity, 3));
         electricity.flow(&self.ac_buses[2], &self.eha_contactors[0]);
 
-        self.update_shedding(emergency_generator, electricity);
-
-        /*// TODO: Check behavior and architecture of ground service bus
+        // TODO: Check behavior and architecture of ground service bus
         // On the real aircraft there is a button inside the galley which is taken into
         // account when determining whether to close this contactor or not.
         // As we're not building a galley simulator, for now we assume the button is ON.
         self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
             .close_when(
-                !electricity.is_powered(&self.ac_buses[2])
-                    && !self.tr_2.has_failed()
+                !self.ac_buses.iter().any(|b| electricity.is_powered(b))
                     && electricity.is_powered(ext_pwr),
             );
+        self.ac_bus_3_to_tr_2_contactor
+            .close_when(electricity.is_powered(&self.ac_buses[2]));
+
         electricity.flow(
             ext_pwr,
             &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
         );
-
-        electricity.flow(
-            &self.ac_bus_2_to_tr_2_contactor,
-            &self.ac_gnd_flt_service_bus,
-        );
+        electricity.flow(&self.ac_bus_3_to_tr_2_contactor, &self.ac_buses[2]);
         electricity.flow(
             &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
             &self.ac_gnd_flt_service_bus,
-        );*/
+        );
+
+        self.update_shedding(emergency_generator, electricity);
     }
 
     pub fn update_after_direct_current(
@@ -224,12 +227,20 @@ impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical
         &self.tr_apu
     }
 
+    fn tr_2_powered_by_ac_bus(&self) -> bool {
+        self.ac_bus_3_to_tr_2_contactor.is_closed()
+    }
+
     fn power_tr_1(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
         electricity.flow(&self.ac_buses[1], tr);
     }
 
     fn power_tr_2(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
-        electricity.flow(&self.ac_buses[2], tr);
+        electricity.flow(&self.ac_bus_3_to_tr_2_contactor, tr);
+        electricity.flow(
+            &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
+            tr,
+        );
     }
 
     fn power_tr_ess(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {

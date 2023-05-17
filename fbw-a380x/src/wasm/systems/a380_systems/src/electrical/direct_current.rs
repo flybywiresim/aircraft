@@ -135,28 +135,37 @@ impl A380DirectCurrentElectrical {
         ac_state.power_tr_2(electricity, &self.tr_2);
         ac_state.power_tr_ess(electricity, &self.tr_ess);
 
-        for (tr, battery, contactor, dc_bus) in [
+        for (tr, battery, contactor, dc_bus, ground_servicing) in [
             (
                 &mut self.tr_1,
                 &self.battery_1,
                 &mut self.tr_1_contactor,
                 &self.dc_bus_1,
+                false,
             ),
             (
                 &mut self.tr_2,
                 &self.battery_2,
                 &mut self.tr_2_contactor,
                 &self.dc_bus_2,
+                !ac_state.tr_2_powered_by_ac_bus(),
             ),
             (
                 &mut self.tr_ess,
                 &self.battery_ess,
                 &mut self.tr_ess_contactor,
                 &self.dc_ess_bus,
+                false,
             ),
         ] {
             electricity.transform_in(tr);
-            tr.update_before_direct_current(context, electricity, battery, overhead);
+            tr.update_before_direct_current(
+                context,
+                electricity,
+                battery,
+                overhead,
+                ground_servicing,
+            );
 
             contactor.close_when(tr.should_close_line_contactor());
             electricity.flow(tr, contactor);
