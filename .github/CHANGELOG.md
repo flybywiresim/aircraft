@@ -11,6 +11,7 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
 1. [SD] Corrected fuel transfer valve amber logic - @tracernz (Mike)
+1. [ELEC] Added electrical system for A380 - @Gurgel100 (Pascal)
 
 ## 0.10.0
 
