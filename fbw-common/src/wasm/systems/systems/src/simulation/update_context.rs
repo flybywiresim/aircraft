@@ -3,7 +3,7 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
     angular_acceleration::radian_per_second_squared,
-    angular_velocity::radian_per_second,
+    angular_velocity::{degree_per_second, radian_per_second},
     f64::*,
     mass::kilogram,
     mass_density::kilogram_per_cubic_meter,
@@ -226,7 +226,6 @@ pub struct UpdateContext {
     latitude_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
     total_yaw_inertia_id: VariableIdentifier,
-    aoa_id: VariableIdentifier,
     surface_id: VariableIdentifier,
     rotation_acc_x_id: VariableIdentifier,
     rotation_acc_y_id: VariableIdentifier,
@@ -260,8 +259,6 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
-
-    aoa: Angle,
 
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
@@ -299,7 +296,6 @@ impl UpdateContext {
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
-    pub(crate) const AOA_KEY: &'static str = "INCIDENCE ALPHA";
     pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
     pub(crate) const ROTATION_ACCEL_X_KEY: &'static str = "ROTATION ACCELERATION BODY X";
     pub(crate) const ROTATION_ACCEL_Y_KEY: &'static str = "ROTATION ACCELERATION BODY Y";
@@ -368,7 +364,6 @@ impl UpdateContext {
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
-            aoa_id: context.get_identifier(Self::AOA_KEY.to_owned()),
             surface_id: context.get_identifier(Self::SURFACE_KEY.to_owned()),
             rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
             rotation_acc_y_id: context.get_identifier(Self::ROTATION_ACCEL_Y_KEY.to_owned()),
@@ -421,7 +416,6 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude,
-            aoa: Angle::default(),
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 10.,
             surface: SurfaceTypeMsfs::Asphalt,
@@ -460,7 +454,6 @@ impl UpdateContext {
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
-            aoa_id: context.get_identifier("INCIDENCE ALPHA".to_owned()),
             surface_id: context.get_identifier("SURFACE TYPE".to_owned()),
 
             rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
@@ -510,7 +503,6 @@ impl UpdateContext {
             true_heading: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
-            aoa: Angle::default(),
             total_weight: Mass::new::<kilogram>(50000.),
             total_yaw_inertia_slug_foot_squared: 1.,
             surface: SurfaceTypeMsfs::Asphalt,
@@ -575,8 +567,6 @@ impl UpdateContext {
 
         self.latitude = reader.read(&self.latitude_id);
 
-        self.aoa = reader.read(&self.aoa_id);
-
         self.total_weight = reader.read(&self.total_weight_id);
 
         self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
@@ -597,9 +587,9 @@ impl UpdateContext {
         );
 
         self.rotation_vel = Vector3::new(
-            AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_x_id)),
-            AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_y_id)),
-            AngularVelocity::new::<radian_per_second>(reader.read(&self.rotation_vel_z_id)),
+            AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_x_id)),
+            AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_y_id)),
+            AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
 
         self.update_relative_wind();
@@ -801,10 +791,6 @@ impl UpdateContext {
     pub fn total_yaw_inertia_kg_m2(&self) -> f64 {
         self.total_yaw_inertia_slug_foot_squared
             * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
-    }
-
-    pub fn aoa(&self) -> Angle {
-        self.aoa
     }
 
     pub fn rotation_acceleration_rad_s2(&self) -> Vector3<f64> {

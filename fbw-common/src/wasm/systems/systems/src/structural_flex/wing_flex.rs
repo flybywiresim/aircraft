@@ -544,9 +544,6 @@ struct WingMassA380 {
 
     left_tank_volumes: [Volume; 5],
     right_tank_volumes: [Volume; 5],
-
-    left_fuel_mass: Mass,
-    right_fuel_mass: Mass,
 }
 impl WingMassA380 {
     const FUEL_MASS_DENSITY_KG_M3: f64 = 800.;
@@ -567,9 +564,6 @@ impl WingMassA380 {
 
             left_tank_volumes: [Volume::default(); 5],
             right_tank_volumes: [Volume::default(); 5],
-
-            left_fuel_mass: Mass::new::<kilogram>(0.),
-            right_fuel_mass: Mass::new::<kilogram>(0.),
         }
     }
 
@@ -608,20 +602,6 @@ impl SimulationElement for WingMassA380 {
         self.right_tank_volumes[2] = reader.read(&self.right_tank_3_id);
         self.right_tank_volumes[3] = reader.read(&self.right_tank_4_id);
         self.right_tank_volumes[4] = reader.read(&self.right_tank_5_id);
-
-        self.left_fuel_mass = MassDensity::new::<kilogram_per_cubic_meter>(800.)
-            * (self.left_tank_volumes[0]
-                + self.left_tank_volumes[1]
-                + self.left_tank_volumes[2]
-                + self.left_tank_volumes[3]
-                + self.left_tank_volumes[4]);
-
-        self.right_fuel_mass = MassDensity::new::<kilogram_per_cubic_meter>(800.)
-            * (self.right_tank_volumes[0]
-                + self.right_tank_volumes[1]
-                + self.right_tank_volumes[2]
-                + self.right_tank_volumes[3]
-                + self.right_tank_volumes[4]);
     }
 }
 
