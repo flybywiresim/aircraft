@@ -1879,10 +1879,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
         let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
 
-        println!(
-            "LENGTH CARGO {:.3}",
-            length_at_max_angle.get::<meter>() - length_at_min_angle.get::<meter>()
-        );
         self.min_absolute_length_to_anchor = length_at_min_angle.min(length_at_max_angle);
         self.max_absolute_length_to_anchor = length_at_min_angle.max(length_at_max_angle);
     }
@@ -2231,7 +2227,7 @@ mod tests {
                 .update(context, &self.controllers[..], self.pressures);
 
             println!(
-                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1} , Fluid used act0 {:.5}",
+                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1} , Fluid used act0 {:.5} Flow gps{:.4}",
                 self.hydraulic_assembly
                     .rigid_body
                     .angular_position
@@ -2246,7 +2242,8 @@ mod tests {
                 self.hydraulic_assembly.linear_actuators[0]
                     .force()
                     .get::<newton>(),
-                self.hydraulic_assembly.linear_actuators[0].used_volume().get::<gallon>()
+                self.hydraulic_assembly.linear_actuators[0].used_volume().get::<gallon>(),
+                self.hydraulic_assembly.linear_actuators[0].signed_flow().get::<gallon_per_second>()
             );
         }
 
@@ -3926,6 +3923,29 @@ mod tests {
         assert!(test_bed.query(|a| a.actuator_used_volume(0).get::<gallon>()) <= 0.0001);
     }
 
+    #[test]
+    fn linear_actuator_can_move_heavy_door_up() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let tested_object = cargo_door_assembly_heavy(context, true);
+            TestAircraft::new(context, tested_object)
+        });
+
+        let actuator_position_init = test_bed.query(|a| a.body_position());
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.1), 0));
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(5000.)]));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| a.body_position()) > actuator_position_init);
+
+        test_bed.run_with_delta(Duration::from_secs(33));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+    }
+
     fn cargo_door_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
@@ -3940,7 +3960,7 @@ mod tests {
             2,
             Length::new::<meter>(0.04422),
             Length::new::<meter>(0.03366),
-            VolumeRate::new::<gallon_per_second>(0.008),
+            VolumeRate::new::<gallon_per_second>(0.01),
             800000.,
             15000.,
             50000.,
@@ -3960,12 +3980,56 @@ mod tests {
         )
     }
 
+    fn cargo_door_actuator_heavy(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 4.;
+        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            context,
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.06651697090182), // Real actuator 34.75cm^2
+            Length::new::<meter>(0.0509),
+            VolumeRate::new::<gallon_per_second>(0.02),
+            800000.,
+            15000.,
+            50000.,
+            1200000.,
+            Duration::from_millis(100),
+            [1., 1., 1., 1., 1., 1.],
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+            false,
+            false,
+            None,
+            None,
+            Pressure::new::<psi>(5250.),
+        )
+    }
+
     fn cargo_door_assembly(
         context: &mut InitContext,
         is_locked: bool,
     ) -> HydraulicLinearActuatorAssembly<1> {
         let rigid_body = cargo_door_body(is_locked);
         let actuator = cargo_door_actuator(context, &rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn cargo_door_assembly_heavy(
+        context: &mut InitContext,
+        is_locked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = cargo_door_body_heavy(is_locked);
+        let actuator = cargo_door_actuator_heavy(context, &rigid_body);
 
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
@@ -3990,6 +4054,30 @@ mod tests {
             100.,
             is_locked,
             Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn cargo_door_body_heavy(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
+        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+
+        let control_arm = Vector3::new(0., -0.45, 0.);
+        let anchor = Vector3::new(-0.7596, -0.4, 0.);
+        let axis_direction = Vector3::new(0., 0., 1.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(250.),
+            size,
+            cg_offset,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-23.),
+            Angle::new::<degree>(136.),
+            Angle::new::<degree>(-23.),
+            100.,
+            is_locked,
+            axis_direction,
         )
     }
 

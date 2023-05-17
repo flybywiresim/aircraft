@@ -63,9 +63,11 @@ impl PumpCharacteristics {
     const A380_AUX_EPUMP_REGULATED_SPEED_RPM: f64 = 1200.0;
 
     const A380_AUX_EPUMP_DISPLACEMENT_BREAKPTS_PSI: [f64; 9] =
-        [0., 50., 3000., 4000., 4900., 5100., 5200., 5300., 5350.];
+        [0., 50., 3000., 4000., 4980., 5100., 5200., 5300., 5350.];
+
+    // Real pump has max flow of 0.3gpm @ 1200rpm
     const A380_AUX_EPUMP_DISPLACEMENT_MAP_CUBIC_INCH: [f64; 9] =
-        [0.01, 0.07, 0.07, 0.07, 0.07, 0., 0., 0., 0.];
+        [0.06, 0.06, 0.06, 0.06, 0.06, 0., 0., 0., 0.];
 
     fn new(
         pressure_map_breakpoints_psi: [f64; 9],
