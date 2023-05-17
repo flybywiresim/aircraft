@@ -33,7 +33,7 @@ enum GearStrutId {
     LeftWing = 3,
     RightWing = 4,
 }
-struct LandingGearCompression {
+struct LandingGearWeightOnWheelsEstimator {
     center_compression_id: VariableIdentifier,
 
     left_wing_compression_id: VariableIdentifier,
@@ -48,12 +48,22 @@ struct LandingGearCompression {
     left_body_compression: Ratio,
     right_body_compression: Ratio,
 }
-impl LandingGearCompression {
+impl LandingGearWeightOnWheelsEstimator {
     const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
     const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
     const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
     const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
     const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
+
+    // Weight estimation is in the form of weight = X * compression_percent^(Y)
+    const NOSE_GEAR_X_COEFF: f64 = 2.22966;
+    const NOSE_GEAR_Y_POW: f64 = 2.2953179884;
+
+    const WING_GEAR_X_COEFF: f64 = 5.5;
+    const WING_GEAR_Y_POW: f64 = 2.6;
+
+    const BODY_GEAR_X_COEFF: f64 = 7.5;
+    const BODY_GEAR_Y_POW: f64 = 2.5;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -86,24 +96,44 @@ impl LandingGearCompression {
     fn weight_on_wheel(&self, wheel_id: GearStrutId) -> Mass {
         match wheel_id {
             GearStrutId::Nose => Mass::new::<kilogram>(
-                2.22966 * self.center_compression.get::<percent>().powf(2.2953179884),
+                Self::NOSE_GEAR_X_COEFF
+                    * self
+                        .center_compression
+                        .get::<percent>()
+                        .powf(Self::NOSE_GEAR_Y_POW),
             ),
-            GearStrutId::LeftWing => {
-                Mass::new::<kilogram>(5.5 * self.left_wing_compression.get::<percent>().powf(2.6))
-            }
-            GearStrutId::RightWing => {
-                Mass::new::<kilogram>(5.5 * self.right_wing_compression.get::<percent>().powf(2.6))
-            }
-            GearStrutId::LeftBody => {
-                Mass::new::<kilogram>(7.5 * self.left_body_compression.get::<percent>().powf(2.5))
-            }
-            GearStrutId::RightBody => {
-                Mass::new::<kilogram>(7.5 * self.right_body_compression.get::<percent>().powf(2.5))
-            }
+            GearStrutId::LeftWing => Mass::new::<kilogram>(
+                Self::WING_GEAR_X_COEFF
+                    * self
+                        .left_wing_compression
+                        .get::<percent>()
+                        .powf(Self::WING_GEAR_Y_POW),
+            ),
+            GearStrutId::RightWing => Mass::new::<kilogram>(
+                Self::WING_GEAR_X_COEFF
+                    * self
+                        .right_wing_compression
+                        .get::<percent>()
+                        .powf(Self::WING_GEAR_Y_POW),
+            ),
+            GearStrutId::LeftBody => Mass::new::<kilogram>(
+                Self::BODY_GEAR_X_COEFF
+                    * self
+                        .left_body_compression
+                        .get::<percent>()
+                        .powf(Self::BODY_GEAR_Y_POW),
+            ),
+            GearStrutId::RightBody => Mass::new::<kilogram>(
+                Self::BODY_GEAR_X_COEFF
+                    * self
+                        .right_body_compression
+                        .get::<percent>()
+                        .powf(Self::BODY_GEAR_Y_POW),
+            ),
         }
     }
 }
-impl SimulationElement for LandingGearCompression {
+impl SimulationElement for LandingGearWeightOnWheelsEstimator {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.center_compression = reader.read(&self.center_compression_id);
         self.left_wing_compression = reader.read(&self.left_body_compression_id);
@@ -333,18 +363,6 @@ impl A380WingLiftModifier {
 
         self.lift_right_table_newton =
             right_lift_factor_normalized * self.right_wing_lift.get::<newton>();
-
-        // println!(
-        //     "LEFT/RIGHT WING LIFT SPREAD PERCENT {:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}",
-        //     left_lift_factor_normalized[4],
-        //     left_lift_factor_normalized[3],
-        //     left_lift_factor_normalized[2],
-        //     left_lift_factor_normalized[1],
-        //     right_lift_factor_normalized[1],
-        //     right_lift_factor_normalized[2],
-        //     right_lift_factor_normalized[3],
-        //     right_lift_factor_normalized[4],
-        // );
     }
 
     fn lateral_offset(&self) -> Ratio {
@@ -402,7 +420,7 @@ impl SimulationElement for A380WingLiftModifier {
 
 // Computes a global lift force from anything we can use from the sim
 struct WingLift {
-    gear_weight_on_wheels: LandingGearCompression,
+    gear_weight_on_wheels: LandingGearWeightOnWheelsEstimator,
 
     total_lift: Force,
 
@@ -411,7 +429,7 @@ struct WingLift {
 impl WingLift {
     fn new(context: &mut InitContext) -> Self {
         Self {
-            gear_weight_on_wheels: LandingGearCompression::new(context),
+            gear_weight_on_wheels: LandingGearWeightOnWheelsEstimator::new(context),
             total_lift: Force::default(),
             ground_weight_ratio: Ratio::default(),
         }
@@ -420,7 +438,6 @@ impl WingLift {
     fn update(&mut self, context: &UpdateContext) {
         let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
-        //let accel_y = context.acceleration_plane_reference_unfiltered_ms2_vector()[1];
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
         let cur_weight_kg = context.total_weight().get::<kilogram>();
 
@@ -605,12 +622,6 @@ impl SimulationElement for WingMassA380 {
                 + self.right_tank_volumes[2]
                 + self.right_tank_volumes[3]
                 + self.right_tank_volumes[4]);
-
-        // println!(
-        //     "left tank mass{:.1} right tank mass{:.1}",
-        //     self.left_fuel_mass.get::<kilogram>(),
-        //     self.right_fuel_mass.get::<kilogram>()
-        // );
     }
 }
 
@@ -758,6 +769,7 @@ impl SimulationElement for WingFlexA380 {
         self.wing_lift_dynamic.accept(visitor);
         self.wing_mass.accept(visitor);
 
+        // Calling only left wing as this is only used for dev purpose : live tuning of flex properties
         self.flex_physics[0].accept(visitor);
 
         visitor.visit(self);
@@ -781,17 +793,11 @@ impl SimulationElement for WingFlexA380 {
         writer.write(&self.right_flex_inboard_mid_id, bones_angles_right[2]);
         writer.write(&self.right_flex_outboard_mid_id, bones_angles_right[3]);
         writer.write(&self.right_flex_outboard_id, bones_angles_right[4]);
-
-        // println!(
-        //     "LEFT WING ANIM ANGLES FROM FRONT {:.2}_{:.2}_{:.2}_{:.2}",
-        //     bones_angles_left[1].get::<uom::si::angle::degree>(),
-        //     bones_angles_left[2].get::<uom::si::angle::degree>(),
-        //     bones_angles_left[3].get::<uom::si::angle::degree>(),
-        //     bones_angles_left[4].get::<uom::si::angle::degree>(),
-        // );
     }
 }
 
+/// Computes the vertical acceleration in plane local Y coordinate of the root of a wing
+/// Takes the points coordinates of the root of the wing relative to datum point in the model
 struct WingRootAcceleration {
     wing_root_position_meters: Vector3<f64>,
 
@@ -822,6 +828,7 @@ impl WingRootAcceleration {
     }
 }
 
+/// A flexible constraint with elasticity and damping property. Represent the bending flex force between two wing nodes
 struct FlexibleConstraint {
     springiness: f64,
     damping: f64,
@@ -862,8 +869,7 @@ impl FlexibleConstraint {
     fn update(
         &mut self,
         context: &UpdateContext,
-        nodes: &mut [WingSectionNode], // node1: &WingSectionNode,
-                                       // node2: &WingSectionNode,
+        nodes: &mut [WingSectionNode], //nodes[0] wing root side node nodes[1] wing tip side node
     ) {
         let length = nodes[1].position() - nodes[0].position();
 
@@ -901,6 +907,7 @@ impl FlexibleConstraint {
     }
 }
 
+/// A wing node with a empty mass and a fuel mass. Can be connected to another node through a flexible constraint
 struct WingSectionNode {
     empty_mass: Mass,
     fuel_mass: Mass,
@@ -932,7 +939,6 @@ impl WingSectionNode {
         self.solve_physics(context);
     }
 
-    //TODO move to updatecontext?
     fn gravity_on_plane_y_axis(context: &UpdateContext) -> Acceleration {
         let pitch_rotation = context.attitude().pitch_rotation_transform();
 
@@ -997,7 +1003,7 @@ struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     nodes: [WingSectionNode; NODE_NUMBER],
     flex_constraints: [FlexibleConstraint; LINK_NUMBER],
 
-    // DEV
+    // DEV simvars to adjust parameters ingame
     wing_dev_spring_1_id: VariableIdentifier,
     wing_dev_spring_2_id: VariableIdentifier,
     wing_dev_spring_3_id: VariableIdentifier,
@@ -1016,7 +1022,13 @@ struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
 impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMBER, LINK_NUMBER> {
     const MIN_PHYSICS_SOLVER_TIME_STEP: Duration = Duration::from_millis(5);
 
+    // Limits max impulse wing can receive from the plane as MSFS could send huge impulses when craching the plane
     const MAX_G_FORCE_IMPACT_APPLIED_ON_WING_ROOT_BY_PLANE_M_S2: f64 = 150.;
+
+    // Plane accelerations are comunicated to the wing by artificially move the root node proportionaly to acceleration using this gain
+    // More gain will cause wing being more sensitive to plane Y accelerations
+    // Negative because if plane suddenly goes up, it locally throws wing down in wing frame of reference
+    const PLANE_ACCEL_TO_WING_ROOT_OFFSET_GAIN: f64 = -0.006;
 
     fn new(
         context: &mut InitContext,
@@ -1091,8 +1103,10 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
             self.external_accelerations_filtered
                 .update(context.delta(), external_acceleration_from_plane_body);
 
+            // Here we artificially move up or down wing root point so that plane movement is communicated to the rest of the wing
+            //      through the flex constraints
             self.nodes[0].apply_external_offet(
-                -0.006
+                Self::PLANE_ACCEL_TO_WING_ROOT_OFFSET_GAIN
                     * Length::new::<meter>(
                         self.external_accelerations_filtered
                             .output()
@@ -1102,6 +1116,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
                     ),
             );
 
+            // Solving flex physics of n-1 first nodes (N nodes  N-1 Links)
             for idx in 0..LINK_NUMBER {
                 self.nodes[idx].set_fuel_mass(fuel_masses[idx]);
 
@@ -1115,7 +1130,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
                 );
             }
 
-            // Don't forget last node to solve
+            // Don't forget last node to solve as for loop solves only up to n-1 node
             self.nodes[NODE_NUMBER - 1].set_fuel_mass(fuel_masses[NODE_NUMBER - 1]);
             self.nodes[NODE_NUMBER - 1]
                 .apply_force(Force::new::<newton>(lift_forces[NODE_NUMBER - 1]));
@@ -1247,14 +1262,6 @@ impl<const NODE_NUMBER: usize> WingAnimationMapper<NODE_NUMBER> {
             previous_node_coord = cur_node_coord;
         }
 
-        // println!(
-        //     "ANGLES {:.5}/{:.5}/{:.5}/{:.5}/{:.5}",
-        //     animation_angles[0].get::<degree>(),
-        //     animation_angles[1].get::<degree>(),
-        //     animation_angles[2].get::<degree>(),
-        //     animation_angles[3].get::<degree>(),
-        //     animation_angles[4].get::<degree>()
-        // );
         animation_angles
     }
 
