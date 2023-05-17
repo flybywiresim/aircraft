@@ -1,5 +1,8 @@
 use systems::{
-    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
     structural_flex::elevator_flex::FlexibleElevators,
     structural_flex::engine_wobble::EnginesFlexiblePhysics,
     structural_flex::wing_flex::WingFlexA380,
@@ -9,6 +12,8 @@ use systems::{
 use uom::si::f64::*;
 
 pub struct A380StructuralFlex {
+    ground_weight_ratio_id: VariableIdentifier,
+
     engines_flex_physics: EnginesFlexiblePhysics<4>,
     elevators_flex_physics: FlexibleElevators,
     wing_flex: WingFlexA380,
@@ -18,6 +23,9 @@ pub struct A380StructuralFlex {
 impl A380StructuralFlex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
+            ground_weight_ratio_id: context
+                .get_identifier("GROUND_WEIGHT_ON_WHEELS_RATIO".to_owned()),
+
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
             elevators_flex_physics: FlexibleElevators::new(context),
             wing_flex: WingFlexA380::new(context),
@@ -58,5 +66,12 @@ impl SimulationElement for A380StructuralFlex {
         self.wing_flex.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.ground_weight_ratio_id,
+            self.wing_flex.ground_weight_ratio(),
+        );
     }
 }

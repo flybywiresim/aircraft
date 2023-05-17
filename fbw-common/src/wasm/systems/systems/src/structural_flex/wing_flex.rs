@@ -607,7 +607,6 @@ impl SimulationElement for WingMassA380 {
 
 const WING_FLEX_NODE_NUMBER: usize = 5;
 const WING_FLEX_LINK_NUMBER: usize = WING_FLEX_NODE_NUMBER - 1;
-
 const FUEL_TANKS_NUMBER: usize = 5;
 
 pub struct WingFlexA380 {
@@ -625,7 +624,7 @@ pub struct WingFlexA380 {
     wing_lift_dynamic: A380WingLiftModifier,
     wing_mass: WingMassA380,
 
-    fuel_mapper: WingFuelNodeMapper<5, WING_FLEX_NODE_NUMBER>,
+    fuel_mapper: WingFuelNodeMapper<FUEL_TANKS_NUMBER, WING_FLEX_NODE_NUMBER>,
     animation_mapper: WingAnimationMapper<WING_FLEX_NODE_NUMBER>,
 
     flex_physics: [FlexPhysicsNG<WING_FLEX_NODE_NUMBER, WING_FLEX_LINK_NUMBER>; 2],
