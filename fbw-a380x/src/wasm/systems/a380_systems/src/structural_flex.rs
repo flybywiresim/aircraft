@@ -9,7 +9,7 @@ use systems::{
     structural_flex::SurfaceVibrationGenerator,
 };
 
-use uom::si::f64::*;
+use uom::si::{f64::*, ratio::ratio};
 
 pub struct A380StructuralFlex {
     ground_weight_ratio_id: VariableIdentifier,
@@ -71,7 +71,7 @@ impl SimulationElement for A380StructuralFlex {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.ground_weight_ratio_id,
-            self.wing_flex.ground_weight_ratio(),
+            self.wing_flex.ground_weight_ratio().get::<ratio>(),
         );
     }
 }
