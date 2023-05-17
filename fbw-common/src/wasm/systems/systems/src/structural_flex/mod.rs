@@ -46,10 +46,6 @@ impl BumpGenerator {
             if random_from_range(0., 1.) < 0.5 {
                 self.bump_accel = -self.bump_accel;
             }
-            // println!(
-            //     "********BBBBBUUUUUUMMMMPPPPPPP******* {:.2}",
-            //     self.bump_accel.get::<meter_per_second_squared>()
-            // );
         } else {
             self.bump_accel = Acceleration::default();
         }
@@ -115,16 +111,6 @@ impl SurfaceVibrationGenerator {
 
         self.final_bump_accel_filtered
             .update(context.delta(), self.final_bump_accel);
-
-        // println!(
-        //     "SURFAAAAAAACE {:?} : ACCEL:  {:.2} coeff applied {:.2} WoW:{:.2} VelCoef{:.2}",
-        //     context.surface_type(),
-        //     self.surface_vibration_acceleration()
-        //         .get::<meter_per_second_squared>(),
-        //     to_surface_vibration_coeff(context.surface_type()),
-        //     weight_on_wheels_ratio.get::<ratio>(),
-        //     velocity_coeff
-        // );
     }
 
     pub fn surface_vibration_acceleration(&self) -> Acceleration {
