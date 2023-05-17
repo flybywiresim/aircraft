@@ -90,16 +90,29 @@ export class RawDataMapper {
                 // It may be tempting to think we can sort the transitions in alphabetical order after appending new ones,
                 // but this would break MSFS flight plan syncing even for transitions that do exist before; the MSFS
                 // flight plan system is based on the indices of the transitions in this array.
+
+                // fake RNPs for AR/SAAR procs
+                const isRnpAr = approach.runwayNumber !== 0 && approach.rnavTypeFlags === 0;
+                if (isRnpAr) {
+                    RawDataMapper.addRnpIfRfPresent(approach.finalLegs, true);
+                    approach.transitions.forEach((t) => RawDataMapper.addRnpIfRfPresent(t.legs));
+                }
             });
             info.approaches.forEach((approach) => approach.runway = approach.runway.trim());
 
             info.departures = facility.departures;
-            info.departures.forEach((departure) => departure.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
-            info.departures.forEach(
-                (departure) => departure.enRouteTransitions.forEach(
+            info.departures.forEach((departure) => {
+                // patch up transition names
+                departure.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans));
+                departure.enRouteTransitions.forEach(
                     (trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateDepartureEnRouteTransitionName(trans)),
-                ),
-            );
+                );
+
+                // fake RNPs for AR/SAAR procs
+                RawDataMapper.addRnpIfRfPresent(departure.commonLegs);
+                departure.enRouteTransitions.forEach((t) => RawDataMapper.addRnpIfRfPresent(t.legs));
+                departure.runwayTransitions.forEach((t) => RawDataMapper.addRnpIfRfPresent(t.legs));
+            });
 
             info.arrivals = facility.arrivals;
             info.arrivals.forEach((arrival) => arrival.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
@@ -234,5 +247,13 @@ export class RawDataMapper {
             legs,
             __Type: 'JS_ApproachTransition',
         });
+    }
+
+    /** Add an RNP of 0.3 if the set of legs contains an RF leg */
+    private static addRnpIfRfPresent(legs: RawProcedureLeg[], force = false): void {
+        const hasAr = legs.findIndex((l) => l.type === LegType.RF) >= 0;
+        if (hasAr || force) {
+            legs.forEach((l) => l.rnp = 0.3);
+        }
     }
 }
