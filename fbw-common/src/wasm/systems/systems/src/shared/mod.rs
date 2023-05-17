@@ -1727,7 +1727,10 @@ mod local_acceleration_at_plane_coordinate {
         assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(0., 1., 0.)));
 
         // Pitch up accel with velocity adds centripetal force
-        test_bed.write_by_name("ROTATION VELOCITY BODY X", AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>());
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY X",
+            AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>(),
+        );
         test_bed.write_by_name("ROTATION ACCELERATION BODY X", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
@@ -1756,7 +1759,10 @@ mod local_acceleration_at_plane_coordinate {
         assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(1., 0., 0.)));
 
         // Yaw right accel with velocity adds centripetal force
-        test_bed.write_by_name("ROTATION VELOCITY BODY Y", AngularVelocity::new::<radian_per_second>(1.).get::<degree_per_second>());
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY Y",
+            AngularVelocity::new::<radian_per_second>(1.).get::<degree_per_second>(),
+        );
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", 1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
@@ -1770,7 +1776,10 @@ mod local_acceleration_at_plane_coordinate {
         assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., 0., 0.)));
 
         // Yaw left accel with velocity adds centripetal force
-        test_bed.write_by_name("ROTATION VELOCITY BODY Y", AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>());
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY Y",
+            AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>(),
+        );
         test_bed.write_by_name("ROTATION ACCELERATION BODY Y", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
@@ -1799,7 +1808,10 @@ mod local_acceleration_at_plane_coordinate {
         assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
 
         // roll right accel with velocity -> Aligned on roll axis we expect no effect
-        test_bed.write_by_name("ROTATION VELOCITY BODY Z", AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>());
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY Z",
+            AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>(),
+        );
         test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
 
         test_bed.run_with_delta(Duration::from_secs(0));
