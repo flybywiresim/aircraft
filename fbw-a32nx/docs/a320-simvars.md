@@ -2829,8 +2829,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_TEMPERATURE:
-    - Temperature at the precooler outlet for engine bleed system
+- A32NX_PNEU_ENG_{number}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE:
+    - Temperature measured by the bleed temperature sensor at the precooler outlet, -100 if no output
     - Degree celsius
     - {number}
         - 1

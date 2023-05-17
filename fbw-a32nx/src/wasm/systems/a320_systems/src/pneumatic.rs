@@ -14,19 +14,20 @@ use systems::{
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
-        BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
-        CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode, DifferentialPressureTransducer,
-        EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
-        PneumaticPipe, PneumaticValveSignal, Precooler, PressureTransducer,
-        PressurisedReservoirWithExhaustValve, PressurizeableReservoir, SolenoidSignal,
-        TargetPressureTemperatureSignal, VariableVolumeContainer, WingAntiIcePushButton,
-        WingAntiIceValves,
+        BleedMonitoringComputerIsAliveSignal, BleedTemperatureSensor, CompressionChamber,
+        ControllablePneumaticValve, CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
+        DifferentialPressureTransducer, EngineCompressionChamberController, EngineModeSelector,
+        EngineState, PneumaticContainer, PneumaticPipe, PneumaticValveSignal, Precooler,
+        PressureTransducer, PressurisedReservoirWithExhaustValve, PressurizeableReservoir,
+        SolenoidSignal, TargetPressureTemperatureSignal, VariableVolumeContainer,
+        WingAntiIcePushButton, WingAntiIceValves,
     },
     shared::{
-        pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineCorrectedN2,
-        EngineFirePushButtons, EngineStartState, HydraulicColor, LgciuWeightOnWheels,
-        PackFlowValveState, PneumaticBleed, PneumaticValve, ReservoirAirPressure,
+        pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, DelayedTrueLogicGate,
+        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineCorrectedN2, EngineFirePushButtons, EngineStartState, HydraulicColor,
+        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
+        ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -600,6 +601,8 @@ struct BleedMonitoringComputerChannel {
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     cross_bleed_valve_is_open: bool,
     should_use_ip_vs_hp_valve: bool,
+    overtemperature_monitor: BleedOvertempertureMonitor,
+    overpressure_monitor: BleedOverpressureMonitor,
 }
 impl BleedMonitoringComputerChannel {
     const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 50.;
@@ -638,6 +641,8 @@ impl BleedMonitoringComputerChannel {
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
             should_use_ip_vs_hp_valve: false,
+            overtemperature_monitor: BleedOvertempertureMonitor::new(),
+            overpressure_monitor: BleedOverpressureMonitor::new(),
         }
     }
 
@@ -681,14 +686,20 @@ impl BleedMonitoringComputerChannel {
                 regulated_pressure_signal.get::<psi>(),
                 Some(context.delta()),
             );
+
+            self.overpressure_monitor
+                .update(context, regulated_pressure_signal);
         }
 
-        self.fan_air_valve_pid.next_control_output(
-            sensors
-                .precooler_outlet_temperature()
-                .get::<degree_celsius>(),
-            Some(context.delta()),
-        );
+        if let Some(precooler_outlet_temperature) = sensors.bleed_temperature_sensor_temperature() {
+            self.fan_air_valve_pid.next_control_output(
+                precooler_outlet_temperature.get::<degree_celsius>(),
+                Some(context.delta()),
+            );
+
+            self.overtemperature_monitor
+                .update(context, precooler_outlet_temperature);
+        }
 
         self.engine_starter_valve_is_open = sensors.engine_starter_valve_is_open();
 
@@ -800,7 +811,7 @@ struct EngineBleedAirSystem {
     high_temperature_id: VariableIdentifier,
     transfer_temperature_id: VariableIdentifier,
     precooler_inlet_temperature_id: VariableIdentifier,
-    precooler_outlet_temperature_id: VariableIdentifier,
+    bleed_temperature_sensor_temperature_id: VariableIdentifier,
     starter_container_temperature_id: VariableIdentifier,
     intermediate_pressure_valve_open_id: VariableIdentifier,
     high_pressure_valve_open_id: VariableIdentifier,
@@ -833,6 +844,7 @@ struct EngineBleedAirSystem {
     transfer_pressure_transducer: PressureTransducer,
     regulated_pressure_transducer: PressureTransducer,
     differential_pressure_transducer: DifferentialPressureTransducer,
+    bleed_temperature_sensor: BleedTemperatureSensor,
 }
 impl EngineBleedAirSystem {
     fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
@@ -851,8 +863,10 @@ impl EngineBleedAirSystem {
                 .get_identifier(format!("PNEU_ENG_{}_TRANSFER_TEMPERATURE", number)),
             precooler_inlet_temperature_id: context
                 .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_INLET_TEMPERATURE", number)),
-            precooler_outlet_temperature_id: context
-                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_OUTLET_TEMPERATURE", number)),
+            bleed_temperature_sensor_temperature_id: context.get_identifier(format!(
+                "PNEU_ENG_{}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE",
+                number
+            )),
             starter_container_temperature_id: context
                 .get_identifier(format!("PNEU_ENG_{}_STARTER_CONTAINER_TEMPERATURE", number)),
             intermediate_pressure_valve_open_id: context
@@ -927,6 +941,7 @@ impl EngineBleedAirSystem {
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
             regulated_pressure_transducer: PressureTransducer::new(powered_by),
             differential_pressure_transducer: DifferentialPressureTransducer::new(powered_by),
+            bleed_temperature_sensor: BleedTemperatureSensor::new(powered_by),
         }
     }
 
@@ -1003,6 +1018,9 @@ impl EngineBleedAirSystem {
             .update(context, &self.precooler_inlet_pipe);
         self.differential_pressure_transducer
             .update(&self.precooler_inlet_pipe, &self.precooler_outlet_pipe);
+
+        self.bleed_temperature_sensor
+            .update(&self.precooler_outlet_pipe);
     }
 
     fn intermediate_pressure(&self) -> Pressure {
@@ -1043,6 +1061,7 @@ impl EngineBleedAirSystem {
         self.precooler_inlet_pipe.temperature()
     }
 
+    #[cfg(test)]
     fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature {
         self.precooler_outlet_pipe.temperature()
     }
@@ -1066,6 +1085,10 @@ impl EngineBleedAirSystem {
     fn differential_pressure_transducer_pressure(&self) -> Option<Pressure> {
         self.differential_pressure_transducer.signal()
     }
+
+    fn bleed_temperature_sensor_temperature(&self) -> Option<ThermodynamicTemperature> {
+        self.bleed_temperature_sensor.signal()
+    }
 }
 impl SimulationElement for EngineBleedAirSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1076,6 +1099,7 @@ impl SimulationElement for EngineBleedAirSystem {
         self.transfer_pressure_transducer.accept(visitor);
         self.regulated_pressure_transducer.accept(visitor);
         self.differential_pressure_transducer.accept(visitor);
+        self.bleed_temperature_sensor.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1113,8 +1137,9 @@ impl SimulationElement for EngineBleedAirSystem {
             self.precooler_inlet_temperature(),
         );
         writer.write(
-            &self.precooler_outlet_temperature_id,
-            self.precooler_outlet_temperature(),
+            &self.bleed_temperature_sensor_temperature_id,
+            self.bleed_temperature_sensor_temperature()
+                .map_or(-100., |t| t.get::<degree_celsius>()),
         );
         writer.write(
             &self.starter_container_temperature_id,
@@ -1170,6 +1195,62 @@ impl PneumaticContainer for EngineBleedAirSystem {
 
     fn update_temperature(&mut self, temperature: TemperatureInterval) {
         self.precooler_outlet_pipe.update_temperature(temperature);
+    }
+}
+
+struct BleedOvertempertureMonitor {
+    temperature_over_257_for_55s: DelayedTrueLogicGate,
+    temperature_over_270_for_15s: DelayedTrueLogicGate,
+    temperature_over_290_for_5s: DelayedTrueLogicGate,
+}
+impl BleedOvertempertureMonitor {
+    fn new() -> Self {
+        Self {
+            temperature_over_257_for_55s: DelayedTrueLogicGate::new(Duration::from_secs(55)),
+            temperature_over_270_for_15s: DelayedTrueLogicGate::new(Duration::from_secs(15)),
+            temperature_over_290_for_5s: DelayedTrueLogicGate::new(Duration::from_secs(5)),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, temperature: ThermodynamicTemperature) {
+        self.temperature_over_257_for_55s.update(
+            context,
+            temperature > ThermodynamicTemperature::new::<degree_celsius>(257.),
+        );
+        self.temperature_over_270_for_15s.update(
+            context,
+            temperature > ThermodynamicTemperature::new::<degree_celsius>(270.),
+        );
+        self.temperature_over_290_for_5s.update(
+            context,
+            temperature > ThermodynamicTemperature::new::<degree_celsius>(290.),
+        );
+    }
+
+    fn has_overtemperature(&self) -> bool {
+        self.temperature_over_257_for_55s.output()
+            || self.temperature_over_270_for_15s.output()
+            || self.temperature_over_290_for_5s.output()
+    }
+}
+
+struct BleedOverpressureMonitor {
+    pressure_over_60_psig_for_15s: DelayedTrueLogicGate,
+}
+impl BleedOverpressureMonitor {
+    fn new() -> Self {
+        Self {
+            pressure_over_60_psig_for_15s: DelayedTrueLogicGate::new(Duration::from_secs(15)),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, pressure: Pressure) {
+        self.pressure_over_60_psig_for_15s
+            .update(context, pressure > Pressure::new::<psi>(60.));
+    }
+
+    fn has_overpressure(&self) -> bool {
+        self.pressure_over_60_psig_for_15s.output()
     }
 }
 
@@ -1440,6 +1521,7 @@ impl SimulationElement for CrossBleedValve {
 
 #[cfg(test)]
 pub mod tests {
+    use ntest::assert_about_eq;
     use systems::{
         air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
@@ -2066,6 +2148,15 @@ pub mod tests {
             })
         }
 
+        fn bleed_temperature_sensor_temperature(
+            &self,
+            number: usize,
+        ) -> Option<ThermodynamicTemperature> {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1].bleed_temperature_sensor_temperature()
+            })
+        }
+
         fn precooler_supply_pressure(&self, number: usize) -> Pressure {
             self.query(|a| {
                 a.pneumatic.engine_systems[number - 1]
@@ -2469,7 +2560,7 @@ pub mod tests {
         // 8s * 1000 steps / 16 ms = 500 steps
         let n1_profile_timesteps: [f64; 2] = [set_toga_thrust_at_step as f64, 2750.];
         // let n1_profile: [f64; 2] = [0.2, 0.87];
-        let n1_profile: [f64; 2] = [0.2, 0.50];
+        let n1_profile: [f64; 2] = [0.2, 0.5];
 
         for i in 1..num_steps {
             time_points.push((i * update_step_ms) as f64);
@@ -2923,8 +3014,12 @@ pub mod tests {
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_INLET_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_INLET_TEMPERATURE"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_OUTLET_TEMPERATURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_OUTLET_TEMPERATURE"));
+        assert!(
+            test_bed.contains_variable_with_name("PNEU_ENG_1_BLEED_TEMPERATURE_SENSOR_TEMPERATURE")
+        );
+        assert!(
+            test_bed.contains_variable_with_name("PNEU_ENG_2_BLEED_TEMPERATURE_SENSOR_TEMPERATURE")
+        );
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_CONTAINER_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_CONTAINER_TEMPERATURE"));
@@ -3726,6 +3821,32 @@ pub mod tests {
             assert!(test_bed.ip_valve_is_open(i));
             assert!(!test_bed.hp_valve_is_open(i));
         }
+    }
+
+    #[test]
+    fn bleed_temperature_sensor() {
+        let test_bed = test_bed_with().idle_eng1().idle_eng2().and_stabilize();
+
+        assert_about_eq!(
+            test_bed
+                .precooler_outlet_temperature(1)
+                .get::<degree_celsius>(),
+            test_bed
+                .bleed_temperature_sensor_temperature(1)
+                .unwrap()
+                .get::<degree_celsius>(),
+            1.
+        );
+        assert_about_eq!(
+            test_bed
+                .precooler_outlet_temperature(2)
+                .get::<degree_celsius>(),
+            test_bed
+                .bleed_temperature_sensor_temperature(2)
+                .unwrap()
+                .get::<degree_celsius>(),
+            1.
+        );
     }
 
     mod wing_anti_ice {

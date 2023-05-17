@@ -866,6 +866,36 @@ impl SolenoidSignal {
     }
 }
 
+pub struct BleedTemperatureSensor {
+    temperature_output: Option<ThermodynamicTemperature>,
+
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+}
+impl BleedTemperatureSensor {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            temperature_output: None,
+            powered_by,
+            is_powered: false,
+        }
+    }
+
+    pub fn update(&mut self, container: &impl PneumaticContainer) {
+        self.temperature_output = self.is_powered.then_some(container.temperature());
+    }
+}
+impl SimulationElement for BleedTemperatureSensor {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
+impl ControllerSignal<ThermodynamicTemperature> for BleedTemperatureSensor {
+    fn signal(&self) -> Option<ThermodynamicTemperature> {
+        self.temperature_output
+    }
+}
+
 struct Solenoid {
     is_energized: bool,
     is_powered: bool,
