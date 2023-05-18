@@ -338,7 +338,7 @@ export class FlightPlanManager {
      * @param callback A callback to call when the operation has completed.
      */
     public async setOrigin(icao: string, callback = () => { }): Promise<void> {
-        const sameAirport = ICAO.getIdent(icao) === icao;
+        const sameAirport = this.getOrigin()?.ident === icao;
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
         if (airport) {
@@ -755,7 +755,7 @@ export class FlightPlanManager {
      * @param callback A callback to call once the operation completes.
      */
     public async setDestination(icao: string, callback = () => { }): Promise<void> {
-        const sameAirport = ICAO.getIdent(icao) === icao;
+        const sameAirport = this.setDestination()?.ident === icao;
         const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const destinationIndex = currentFlightPlan.length - 1;
