@@ -10,6 +10,7 @@
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
+1. [EFB] Fixed Simbridge failing to connect if remote setting is enabled then disabled - @DevonDF (Devon#9451)
 1. [SD] Corrected fuel transfer valve amber logic - @tracernz (Mike)
 
 ## 0.10.0
