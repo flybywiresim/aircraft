@@ -3,12 +3,13 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { ClientState, SimBridgeClientState } from './ClientState';
+import { getSimBridgeIp } from '../common';
 
 /**
  * Class to communicate with the SimBridge MCDU server
  */
 export class McduServerClient {
-    public static ip = ():string => NXDataStore.get('CONFIG_SIMBRIDGE_IP', 'localhost');
+    public static ip = ():string => getSimBridgeIp();
 
     public static port = ():string => NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380');
 
