@@ -389,60 +389,72 @@ export class TcasComputer implements TcasComponent {
      * @param _deltaTime Deltatime of this frame
      */
     private fetchRawTraffic(_deltaTime): void {
+        // RA Probe Mesh - Read the uID for the first probe of the mesh, and sets the
+        // length of the mesh (15 if RA is on, 0 if RA is off).
+        // This is needed until Asobo fixes the isGround flag (among other things)
+        let probeId = SimVar.GetSimVarValue('L:A32NX_RA_PROBE_ZERO', 'number');
+        let probeLen = 14;
+        if (probeId === 0) {
+            probeLen = 0
+        }
+        
         Coherent.call('GET_AIR_TRAFFIC').then((obj: JS_NPCPlane[]) => {
             this.airTraffic.forEach((traffic) => {
                 traffic.alive = false;
             });
             obj.forEach((tf) => {
-                // Junk bad air traffic
-                if (!tf.lat && !tf.lon && !tf.alt && !tf.heading) {
-                    if (this.debug) {
-                        console.log('Removing bugged traffic');
-                        console.log('====================================');
-                        console.log(` id | ${tf.uId}`);
-                        console.log(` alt | ${tf.alt * 3.281}`);
-                        console.log(` bearing | ${MathUtils.computeGreatCircleHeading(this.ppos.lat, this.ppos.long, tf.lat, tf.lon)}`);
-                        console.log(` hDist | ${MathUtils.computeGreatCircleDistance(this.ppos.lat, this.ppos.long, tf.lat, tf.lon)}`);
-                        console.log(' ================================ ');
+                // Only non-probe traffic will be considered
+                if (tf.uId < probeId || tf.uId > probeId + probeLen) {
+                    // Junk bad air traffic
+                    if (!tf.lat && !tf.lon && !tf.alt && !tf.heading) {
+                        if (this.debug) {
+                            console.log('Removing bugged traffic');
+                            console.log('====================================');
+                            console.log(` id | ${tf.uId}`);
+                            console.log(` alt | ${tf.alt * 3.281}`);
+                            console.log(` bearing | ${MathUtils.computeGreatCircleHeading(this.ppos.lat, this.ppos.long, tf.lat, tf.lon)}`);
+                            console.log(` hDist | ${MathUtils.computeGreatCircleDistance(this.ppos.lat, this.ppos.long, tf.lat, tf.lon)}`);
+                            console.log(' ================================ ');
+                        }
+                        return;
                     }
-                    return;
-                }
-                let traffic: TcasTraffic | undefined = this.airTraffic.find((p) => p && p.ID === tf.uId.toFixed(0));
-                if (!traffic) {
-                    traffic = new TcasTraffic(tf, this.ppos, this.planeAlt);
-                    this.airTraffic.push(traffic);
-                }
+                    let traffic: TcasTraffic | undefined = this.airTraffic.find((p) => p && p.ID === tf.uId.toFixed(0));
+                    if (!traffic) {
+                        traffic = new TcasTraffic(tf, this.ppos, this.planeAlt);
+                        this.airTraffic.push(traffic);
+                    }
 
-                traffic.alive = true;
-                traffic.seen = Math.min(traffic.seen + 1, 10);
-                const newAlt = tf.alt * 3.281;
-                traffic.vertSpeed = (newAlt - traffic.alt) / (_deltaTime / 1000) * 60; // feet per minute
-                traffic.groundSpeed = Math.abs(MathUtils.computeGreatCircleDistance(tf.lat, tf.lon, traffic.lat, traffic.lon) / (_deltaTime / 1000) * 3600);
-                const newSlantDist = MathUtils.computeDistance3D(traffic.lat, traffic.lon, traffic.alt, this.ppos.lat, this.ppos.long, this.pressureAlt);
-                const newClosureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600; // knots = nautical miles per hour
-                traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
-                traffic.closureRate = newClosureRate;
-                traffic.slantDistance = newSlantDist;
-                traffic.lat = tf.lat;
-                traffic.lon = tf.lon;
-                traffic.alt = tf.alt * 3.281;
-                traffic.heading = tf.heading;
-                traffic.relativeAlt = newAlt - this.planeAlt;
+                    traffic.alive = true;
+                    traffic.seen = Math.min(traffic.seen + 1, 10);
+                    const newAlt = tf.alt * 3.281;
+                    traffic.vertSpeed = (newAlt - traffic.alt) / (_deltaTime / 1000) * 60; // feet per minute
+                    traffic.groundSpeed = Math.abs(MathUtils.computeGreatCircleDistance(tf.lat, tf.lon, traffic.lat, traffic.lon) / (_deltaTime / 1000) * 3600);
+                    const newSlantDist = MathUtils.computeDistance3D(traffic.lat, traffic.lon, traffic.alt, this.ppos.lat, this.ppos.long, this.pressureAlt);
+                    const newClosureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600; // knots = nautical miles per hour
+                    traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
+                    traffic.closureRate = newClosureRate;
+                    traffic.slantDistance = newSlantDist;
+                    traffic.lat = tf.lat;
+                    traffic.lon = tf.lon;
+                    traffic.alt = tf.alt * 3.281;
+                    traffic.heading = tf.heading;
+                    traffic.relativeAlt = newAlt - this.planeAlt;
 
-                let taTau = (traffic.slantDistance - TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.TA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
-                let raTau = (traffic.slantDistance - TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.RA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
-                let vTau = traffic.relativeAlt / (this.verticalSpeed - traffic.vertSpeed) * 60;
+                    let taTau = (traffic.slantDistance - TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.TA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
+                    let raTau = (traffic.slantDistance - TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.RA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
+                    let vTau = traffic.relativeAlt / (this.verticalSpeed - traffic.vertSpeed) * 60;
 
-                if (raTau < 0) {
-                    taTau = Infinity;
-                    raTau = Infinity;
+                    if (raTau < 0) {
+                        taTau = Infinity;
+                        raTau = Infinity;
+                    }
+                    if (vTau < 0) {
+                        vTau = Infinity;
+                    }
+                    traffic.taTau = taTau;
+                    traffic.raTau = raTau;
+                    traffic.vTau = vTau;
                 }
-                if (vTau < 0) {
-                    vTau = Infinity;
-                }
-                traffic.taTau = taTau;
-                traffic.raTau = raTau;
-                traffic.vTau = vTau;
             });
 
             if (this.airTraffic.length > TCAS.MEMORY_MAX) {

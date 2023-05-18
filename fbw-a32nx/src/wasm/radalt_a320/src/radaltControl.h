@@ -231,6 +231,7 @@ void createProbeMesh(int probeIndex)
 		hr = SimConnect_AICreateSimulatedObject(hSimConnect, "ralt_probe", initPosition, (UINT)REQUEST_PROBE_CREATE + probeIndex);
 	else
 		hr = SimConnect_AICreateSimulatedObject(hSimConnect, "triangleWithoutIndices", initPosition, (UINT)REQUEST_PROBE_CREATE + probeIndex);
+
 }
 
 // Removes the probe mesh when RA is turned off. Called by REQUEST_PROBE_DATA
@@ -277,7 +278,6 @@ void getStartupData() {
 			createProbeMesh(i);
 		}
 	}
-
 	radarActive = true;
 }
 
@@ -289,6 +289,8 @@ void removeProbes() {
 	}
 	simVars->setRadioAltitude1(99999);
 	simVars->setRadioAltitude2(99999);
+	simVars->setProbeZero(0);
+
 	radarActive = false;
 }
 
@@ -316,6 +318,9 @@ void probeInit(int probeIndex)
 		1, // set freeze value to 1
 		SIMCONNECT_GROUP_PRIORITY_HIGHEST,
 		SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+
+	if (probeIndex == 0)
+		simVars->setProbeZero(probeIndexnfo[0].id);
 }
 
 // Sets request for probe position while probes are being created. Called within REQUEST_PROBE_CREATE
@@ -547,7 +552,7 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 						simVars->setRadioAltitude2(99999);
 					else
 						simVars->setRadioAltitude2(radioAltitude * (99 + rand() % 2)/100);
-
+					
 					if (debug) {
 						std::cout << "RADALT: Probe# (" << probeBest <<
 							") Plane_Alt: " << planeAltitude <<

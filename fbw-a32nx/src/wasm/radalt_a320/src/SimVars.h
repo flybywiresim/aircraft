@@ -36,6 +36,7 @@ public:
 	ENUM PlaneAltitudeAGL = get_aircraft_var_enum("PLANE ALT ABOVE GROUND");
 
 	ID DevVar;
+	ID ProbeZero;
 	ID RadAlt1;
 	ID RadAlt2;
 	ID AcBus1;
@@ -45,6 +46,7 @@ public:
 
 	void initializeVars() {
 		DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
+		ProbeZero = register_named_variable("A32NX_RA_PROBE_ZERO");
 		RadAlt1 = register_named_variable("A32NX_RA_1_RAW");
 		RadAlt2 = register_named_variable("A32NX_RA_2_RAW");
 		AcBus1 = register_named_variable("A32NX_ELEC_AC_1_BUS_IS_POWERED");
@@ -53,11 +55,13 @@ public:
 		//this->setDeveloperState(0);
 		this->setRadioAltitude1(99999);
 		this->setRadioAltitude2(99999);
+		this->setProbeZero(0);
 
 
 		m_Units = new Units();
 	}
 	// Collection of LVar 'set' Functions
+	void setProbeZero(FLOAT64 value) { set_named_variable_value(ProbeZero, value); }
 	void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
 	void setRadioAltitude1(FLOAT64 value) { set_named_variable_value(RadAlt1, value); }
 	void setRadioAltitude2(FLOAT64 value) { set_named_variable_value(RadAlt2, value); }
