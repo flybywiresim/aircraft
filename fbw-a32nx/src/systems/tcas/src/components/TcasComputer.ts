@@ -392,12 +392,11 @@ export class TcasComputer implements TcasComponent {
         // RA Probe Mesh - Read the uID for the first probe of the mesh, and sets the
         // length of the mesh (15 if RA is on, 0 if RA is off).
         // This is needed until Asobo fixes the isGround flag (among other things)
-        let probeId = SimVar.GetSimVarValue('L:A32NX_RA_PROBE_ZERO', 'number');
+        const probeId = SimVar.GetSimVarValue('L:A32NX_RA_PROBE_ZERO', 'number');
         let probeLen = 14;
         if (probeId === 0) {
-            probeLen = 0
+            probeLen = 0;
         }
-        
         Coherent.call('GET_AIR_TRAFFIC').then((obj: JS_NPCPlane[]) => {
             this.airTraffic.forEach((traffic) => {
                 traffic.alive = false;
