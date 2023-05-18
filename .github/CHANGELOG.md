@@ -15,6 +15,8 @@
 1. [EFB] Optimized/fixed strobe handling in aircraft presets @frankkopp (Frank Kopp)
 1. [ATSU] Hoppie Telex with \n now can be received @Maximilian-Reuter (Chaoz#3065)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
+1. [EFB] Fixed Simbridge failing to connect if remote setting is enabled then disabled - @DevonDF (Devon#9451)
+
 
 ## 0.10.0
 
