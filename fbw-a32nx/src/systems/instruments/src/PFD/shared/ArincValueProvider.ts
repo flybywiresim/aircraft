@@ -1,6 +1,6 @@
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { MFDSimvars } from './MFDSimvarPublisher';
+import { MfdSimvars } from './MFDSimvarPublisher';
 
 export interface Arinc429Values {
 }
@@ -11,6 +11,6 @@ export class ArincValueProvider {
 
     public init() {
         const publisher = this.bus.getPublisher<Arinc429Values>();
-        const subscriber = this.bus.getSubscriber<MFDSimvars>();
+        const subscriber = this.bus.getSubscriber<MfdSimvars>();
     }
 }

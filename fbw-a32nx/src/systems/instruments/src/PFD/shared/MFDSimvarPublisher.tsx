@@ -1,12 +1,11 @@
 import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
 
-export type MFDSimvars = {
+export type MfdSimvars = {
     coldDark: number;
-    elec: number;
-    elecFo: number;
+    elec: boolean;
+    elecFo: boolean;
     potentiometerCaptain: number;
     potentiometerFo: number;
-    ecamNdXfr: number;
   }
 
 export enum MFDVars {
@@ -15,21 +14,19 @@ export enum MFDVars {
     elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
     potentiometerCaptain = 'LIGHT POTENTIOMETER:88',
     potentiometerFo = 'LIGHT POTENTIOMETER:90',
-    ecamNdXfr = 'L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
-export class MFDSimvarPublisher extends SimVarPublisher<MFDSimvars> {
-    private static simvars = new Map<keyof MFDSimvars, SimVarDefinition>([
+export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
+    private static simvars = new Map<keyof MfdSimvars, SimVarDefinition>([
         ['coldDark', { name: MFDVars.coldDark, type: SimVarValueType.Number }],
         ['elec', { name: MFDVars.elec, type: SimVarValueType.Bool }],
         ['elecFo', { name: MFDVars.elecFo, type: SimVarValueType.Bool }],
         ['potentiometerCaptain', { name: MFDVars.potentiometerCaptain, type: SimVarValueType.Number }],
         ['potentiometerFo', { name: MFDVars.potentiometerFo, type: SimVarValueType.Number }],
-        ['ecamNdXfr', { name: MFDVars.ecamNdXfr, type: SimVarValueType.Enum }],
     ])
 
     public constructor(bus: EventBus) {
-        super(MFDSimvarPublisher.simvars, bus);
+        super(MfdSimvarPublisher.simvars, bus);
     }
 }

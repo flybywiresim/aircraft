@@ -1,23 +1,23 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
-import { NumberInput } from 'instruments/src/PFD/MFD-common/NumberInput';
+import { DropdownMenu } from 'instruments/src/PFD/pages/common/DropdownMenu';
+import { NumberInput } from 'instruments/src/PFD/pages/common/NumberInput';
 
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/pages/common/TopTabNavigator';
 
 import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Button } from 'instruments/src/PFD/MFD-common/Button';
-import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
-import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
+import { Button } from 'instruments/src/PFD/pages/common/Button';
+import { ActivePageTitleBar } from 'instruments/src/PFD/pages/common/ActivePageTitleBar';
+import { RadioButtonGroup } from 'instruments/src/PFD/pages/common/RadioButtonGroup';
 import { MfdComponentProps } from 'instruments/src/PFD/MFD';
-import { Header } from 'instruments/src/PFD/MFD-common/Header';
-import { Footer } from 'instruments/src/PFD/MFD-common/Footer';
+import { Header } from 'instruments/src/PFD/pages/common/Header';
+import { Footer } from 'instruments/src/PFD/pages/common/Footer';
 
-interface MFDActivePerfProps extends MfdComponentProps {
+interface MFDActivePerfOldLayoutProps extends MfdComponentProps {
 }
 
-export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
+export class MFDActivePerfOldLayout extends DisplayComponent<MFDActivePerfOldLayoutProps> {
     private sysSelectorSelectedIndex = Subject.create(0);
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
@@ -33,8 +33,8 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
     render(): VNode {
         return (
             <>
-                <Header bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
-                <ActivePageTitleBar activePage={Subject.create('ACTIVE/PERF')} tmpyIsActive={Subject.create(false)} />
+                <Header bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
+                <ActivePageTitleBar activePage="ACTIVE/PERF" tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer">
                     <div style="margin: 15px; display: flex; justify-content: space-between;">
@@ -160,7 +160,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                             </div>
                             <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row;">
                                 <div style="display: flex; flex: 1;">
-                                    <Button>
+                                    <Button onClick={() => console.log('NOISE')}>
                                         NOISE
                                     </Button>
                                 </div>
@@ -176,7 +176,7 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                                         unitTrailing={Subject.create('FT')}
                                     />
                                 </div>
-                                <Button>
+                                <Button onClick={() => console.log('CPNY T.O REQUEST')}>
                                     CPNY T.O
                                     <br />
                                     REQUEST
@@ -201,18 +201,18 @@ export class MFDActivePerf extends DisplayComponent<MFDActivePerfProps> {
                     </TopTabNavigator>
                     <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row;">
                         <div style="display: flex; flex: 1;">
-                            <Button>
+                            <Button onClick={() => console.log('RETURN')}>
                                 RETURN
                             </Button>
                         </div>
-                        <Button>
+                        <Button onClick={() => console.log('POS MONITOR')}>
                             POS MONITOR
                         </Button>
                         <div style="flex: 1" />
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
+                <Footer bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
             </>
         );
     }

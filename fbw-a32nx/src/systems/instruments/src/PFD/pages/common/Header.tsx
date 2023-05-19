@@ -1,7 +1,7 @@
 ﻿import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { MfdComponentProps } from 'instruments/src/PFD/MFD';
-import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
-import { PageSelectorDropdownMenu } from 'instruments/src/PFD/MFD-common/PageSelectorDropdownMenu';
+import { DropdownMenu } from 'instruments/src/PFD/pages/common/DropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/PFD/pages/common/PageSelectorDropdownMenu';
 
 export class Header extends DisplayComponent<MfdComponentProps> {
   private sysSelectorSelectedIndex = Subject.create(0);
@@ -41,7 +41,7 @@ export class Header extends DisplayComponent<MfdComponentProps> {
   public onAfterRender(node: VNode): void {
       super.onAfterRender(node);
 
-      this.props.active.sub((val) => {
+      this.props.activeUri.sub((val) => {
           switch (val.sys) {
           case 'fms':
               this.sysSelectorSelectedIndex.set(0);

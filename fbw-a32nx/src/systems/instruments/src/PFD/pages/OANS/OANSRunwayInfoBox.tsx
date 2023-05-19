@@ -1,6 +1,6 @@
 ﻿import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import './MFD-common/style.scss';
-import { EntityTypes } from 'instruments/src/PFD/OANS';
+import '../common/style.scss';
+import { EntityTypes } from 'instruments/src/PFD/pages/OANS/OANS';
 
 interface OANSRunwayInfoBoxProps {
     rwyOrStand: Subscribable<EntityTypes>;

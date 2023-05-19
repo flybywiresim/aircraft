@@ -1,11 +1,11 @@
 import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { MFDComponent } from './MFD';
-import { MFDSimvarPublisher } from './shared/MFDSimvarPublisher';
+import { MfdComponent } from './MFD';
+import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 
 class A32NX_MFD extends BaseInstrument {
     private bus: EventBus;
 
-    private simVarPublisher: MFDSimvarPublisher;
+    private simVarPublisher: MfdSimvarPublisher;
 
     private readonly hEventPublisher;
 
@@ -22,7 +22,7 @@ class A32NX_MFD extends BaseInstrument {
     constructor() {
         super();
         this.bus = new EventBus();
-        this.simVarPublisher = new MFDSimvarPublisher(this.bus);
+        this.simVarPublisher = new MfdSimvarPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.clock = new Clock(this.bus);
     }
@@ -50,9 +50,8 @@ class A32NX_MFD extends BaseInstrument {
         this.simVarPublisher.subscribe('coldDark');
         this.simVarPublisher.subscribe('potentiometerCaptain');
         this.simVarPublisher.subscribe('potentiometerFo');
-        this.simVarPublisher.subscribe('ecamNdXfr');
 
-        FSComponent.render(<MFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+        FSComponent.render(<MfdComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 
         // Remove "instrument didn't load" text
         document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();

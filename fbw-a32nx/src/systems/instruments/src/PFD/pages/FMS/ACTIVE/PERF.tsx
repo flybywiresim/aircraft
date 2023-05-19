@@ -1,23 +1,24 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
-import { NumberInput } from 'instruments/src/PFD/MFD-common/NumberInput';
+import { DropdownMenu } from 'instruments/src/PFD/pages/common/DropdownMenu';
+import { NumberInput } from 'instruments/src/PFD/pages/common/NumberInput';
 
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/pages/common/TopTabNavigator';
 
-import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
-import { Button } from 'instruments/src/PFD/MFD-common/Button';
-import { ActivePageTitleBar } from 'instruments/src/PFD/MFD-common/ActivePageTitleBar';
-import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
+import { Button } from 'instruments/src/PFD/pages/common/Button';
+import { ActivePageTitleBar } from 'instruments/src/PFD/pages/common/ActivePageTitleBar';
+import { RadioButtonGroup } from 'instruments/src/PFD/pages/common/RadioButtonGroup';
 import { MfdComponentProps } from 'instruments/src/PFD/MFD';
-import { Footer } from 'instruments/src/PFD/MFD-common/Footer';
+import { Footer } from 'instruments/src/PFD/pages/common/Footer';
 
 interface MfdFmsActivePerfProps extends MfdComponentProps {
 }
 
 export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
-    private sysSelectorSelectedIndex = Subject.create(0);
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -31,6 +32,38 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        // If extra parameter for activeUri is given, navigate to flight phase sub-page
+        switch (this.props.activeUri.get().extra) {
+        case 'to':
+            this.flightPhasesSelectedPageIndex.set(0);
+            break;
+        case 'clb':
+            this.flightPhasesSelectedPageIndex.set(1);
+            break;
+        case 'crz':
+            this.flightPhasesSelectedPageIndex.set(2);
+            break;
+        case 'des':
+            this.flightPhasesSelectedPageIndex.set(3);
+            break;
+        case 'appr':
+            this.flightPhasesSelectedPageIndex.set(4);
+            break;
+        case 'ga':
+            this.flightPhasesSelectedPageIndex.set(5);
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    public destroy(): void {
+        // Destroy all subscriptions to remove all references to this instance.
+        this.subs.forEach((x) => x.destroy());
+
+        super.destroy();
     }
 
     render(): VNode {
@@ -227,7 +260,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} active={this.props.active} navigateTo={this.props.navigateTo} />
+                <Footer bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
             </>
         );
     }

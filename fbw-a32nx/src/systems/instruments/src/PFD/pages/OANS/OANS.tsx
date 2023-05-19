@@ -1,19 +1,19 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 
-import 'instruments/src/PFD/MFD-common/style.scss';
-import 'instruments/src/PFD/oans.scss';
+import 'instruments/src/PFD/pages/common/style.scss';
+import './oans.scss';
 
-import { Button } from 'instruments/src/PFD/MFD-common/Button';
-import { IconButton } from 'instruments/src/PFD/MFD-common/IconButton';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/MFD-common/TopTabNavigator';
-import { OANSRunwayInfoBox } from 'instruments/src/PFD/OANSRunwayInfoBox';
-import { ContextMenu } from 'instruments/src/PFD/MFD-common/ContextMenu';
+import { Button } from 'instruments/src/PFD/pages/common/Button';
+import { IconButton } from 'instruments/src/PFD/pages/common/IconButton';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/pages/common/TopTabNavigator';
+import { OANSRunwayInfoBox } from 'instruments/src/PFD/pages/OANS/OANSRunwayInfoBox';
+import { ContextMenu } from 'instruments/src/PFD/pages/common/ContextMenu';
 
 import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { DropdownMenu } from 'instruments/src/PFD/MFD-common/DropdownMenu';
-import { RadioButtonGroup } from 'instruments/src/PFD/MFD-common/RadioButtonGroup';
-import { NumberInput } from 'instruments/src/PFD/MFD-common/NumberInput';
+import { DropdownMenu } from 'instruments/src/PFD/pages/common/DropdownMenu';
+import { RadioButtonGroup } from 'instruments/src/PFD/pages/common/RadioButtonGroup';
+import { NumberInput } from 'instruments/src/PFD/pages/common/NumberInput';
 
 export interface OANSProps extends ComponentProps {
     bus: EventBus;
@@ -132,7 +132,7 @@ export class OANS extends DisplayComponent<OANSProps> {
 
     render(): VNode {
         return (
-            <>
+            <div class="mfd-main">
                 {/* begin header */}
                 <div style="display: flex; flex-direction: row; justify-content: space-between">
                     <div style="display: flex; flex-direction: column">
@@ -277,9 +277,9 @@ export class OANS extends DisplayComponent<OANSProps> {
                                 margin-top: 20px; margin-bottom: 20px; justify-content: space-between;
                                 align-items: center; border-left: 2px solid lightgrey"
                                 >
-                                    <Button>EDDM</Button>
-                                    <Button>KJFK</Button>
-                                    <Button disabled={Subject.create(true)}>ALTN</Button>
+                                    <Button onClick={() => null}>EDDM</Button>
+                                    <Button onClick={() => null}>KJFK</Button>
+                                    <Button onClick={() => null} disabled={Subject.create(true)}>ALTN</Button>
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -311,7 +311,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                         </TopTabNavigatorPage>
                     </TopTabNavigator>
                 </div>
-            </>
+            </div>
         );
     }
 }
