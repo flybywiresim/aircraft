@@ -15,6 +15,8 @@ const rnpDefaults: Record<FlightArea, number> = {
     [FlightArea.NonPrecisionApproach]: 0.5,
 };
 
+// FIXME RNP-related scratchpad messages
+
 export class RequiredPerformance {
     activeRnp: number | undefined;
 
@@ -43,6 +45,17 @@ export class RequiredPerformance {
     private updateAutoRnp(): void {
         if (this.manualRnp) {
             return;
+        }
+
+        const plan = this.flightPlanManager.activeFlightPlan;
+        if (plan && plan.activeWaypoint) {
+            const legRnp = plan.activeWaypoint.additionalData.rnp;
+            if (legRnp !== undefined) {
+                if (legRnp !== this.activeRnp) {
+                    this.setActiveRnp(legRnp);
+                }
+                return;
+            }
         }
 
         const area = this.flightPlanManager.activeArea;
