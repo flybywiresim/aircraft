@@ -1,10 +1,10 @@
 ﻿import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
-interface MfdMouseCursorProps extends ComponentProps {
+interface MouseCursorProps extends ComponentProps {
 }
 
-export class MfdMouseCursor extends DisplayComponent<MfdMouseCursorProps> {
+export class MouseCursor extends DisplayComponent<MouseCursorProps> {
     private divRef = FSComponent.createRef<HTMLSpanElement>();
 
     updatePosition(x: number, y: number) {

@@ -5,7 +5,7 @@ import 'instruments/src/PFD/pages/common/style.scss';
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import { Header } from 'instruments/src/PFD/pages/common/Header';
-import { MfdMouseCursor } from 'instruments/src/PFD/pages/common/MfdMouseCursor';
+import { MouseCursor } from 'instruments/src/PFD/pages/common/MfdMouseCursor';
 import { MfdFmsActivePerf } from 'instruments/src/PFD/pages/FMS/ACTIVE/PERF';
 import { MfdFmsActiveInit } from 'instruments/src/PFD/pages/FMS/ACTIVE/INIT';
 
@@ -50,7 +50,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         extra: '',
     });
 
-    private mouseCursorRef = FSComponent.createRef<MfdMouseCursor>();
+    private mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
     private topRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -164,7 +164,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
                 <div class="mfd-main" ref={this.topRef}>
                     <div ref={this.activeHeaderRef} />
                     <div ref={this.activePageRef} class="MFDNavigatorContainer" />
-                    <MfdMouseCursor ref={this.mouseCursorRef} />
+                    <MouseCursor ref={this.mouseCursorRef} />
                 </div>
             </DisplayUnit>
         );
