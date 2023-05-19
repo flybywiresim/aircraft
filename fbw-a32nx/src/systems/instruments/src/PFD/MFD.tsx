@@ -4,8 +4,8 @@ import 'instruments/src/PFD/pages/common/style.scss';
 
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
-import { Header } from 'instruments/src/PFD/pages/common/Header';
-import { MouseCursor } from 'instruments/src/PFD/pages/common/MfdMouseCursor';
+import { FmsHeader } from 'instruments/src/PFD/pages/common/FmsHeader';
+import { MouseCursor } from 'instruments/src/PFD/pages/common/MouseCursor';
 import { MfdFmsActivePerf } from 'instruments/src/PFD/pages/FMS/ACTIVE/PERF';
 import { MfdFmsActiveInit } from 'instruments/src/PFD/pages/FMS/ACTIVE/INIT';
 
@@ -124,7 +124,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         // Different systems use different navigation bars
         switch (uriParts[0]) {
         case 'fms':
-            this.activeHeader = <Header bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = <FmsHeader bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         case 'atccom':
             this.activeHeader = <div />;
@@ -137,7 +137,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
             break;
 
         default:
-            this.activeHeader = <Header bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = <FmsHeader bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         }
 

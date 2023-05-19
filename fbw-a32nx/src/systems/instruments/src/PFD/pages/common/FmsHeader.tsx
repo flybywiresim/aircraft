@@ -3,7 +3,7 @@ import { MfdComponentProps } from 'instruments/src/PFD/MFD';
 import { DropdownMenu } from 'instruments/src/PFD/pages/common/DropdownMenu';
 import { PageSelectorDropdownMenu } from 'instruments/src/PFD/pages/common/PageSelectorDropdownMenu';
 
-export class Header extends DisplayComponent<MfdComponentProps> {
+export class FmsHeader extends DisplayComponent<MfdComponentProps> {
   private sysSelectorSelectedIndex = Subject.create(0);
 
   private activeIsSelected = Subject.create(false);
@@ -15,7 +15,6 @@ export class Header extends DisplayComponent<MfdComponentProps> {
   private dataIsSelected = Subject.create(false);
 
   public changeSystem(selectedSysIndex: number) {
-      // ...
       this.sysSelectorSelectedIndex.set(selectedSysIndex);
 
       switch (selectedSysIndex) {

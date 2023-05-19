@@ -11,7 +11,7 @@ import { Button } from 'instruments/src/PFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/PFD/pages/common/ActivePageTitleBar';
 import { RadioButtonGroup } from 'instruments/src/PFD/pages/common/RadioButtonGroup';
 import { MfdComponentProps } from 'instruments/src/PFD/MFD';
-import { Header } from 'instruments/src/PFD/pages/common/Header';
+import { FmsHeader } from 'instruments/src/PFD/pages/common/FmsHeader';
 import { Footer } from 'instruments/src/PFD/pages/common/Footer';
 
 interface MFDActivePerfOldLayoutProps extends MfdComponentProps {
@@ -33,7 +33,7 @@ export class MFDActivePerfOldLayout extends DisplayComponent<MFDActivePerfOldLay
     render(): VNode {
         return (
             <>
-                <Header bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
+                <FmsHeader bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
                 <ActivePageTitleBar activePage="ACTIVE/PERF" tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer">
