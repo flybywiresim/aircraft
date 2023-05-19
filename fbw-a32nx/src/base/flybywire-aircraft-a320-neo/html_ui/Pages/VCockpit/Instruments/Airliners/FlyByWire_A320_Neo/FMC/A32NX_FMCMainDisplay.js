@@ -2739,23 +2739,52 @@ class FMCMainDisplay extends BaseAirliners {
             && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true);
     }
 
-    getToSpeedsTooLow() {
-        if (this.flaps === null || this.zeroFuelWeight === undefined || this.blockFuel === undefined) {
-            return false;
-        }
-
+    /**
+     * Gets the departure runway elevation in feet, if available.
+     * @returns departure runway elevation in feet, or null if not available.
+     */
+    getDepartureElevation() {
         let departureElevation = null;
         if (this.flightPlanManager.getOriginRunway()) {
             departureElevation = this.flightPlanManager.getOriginRunway().thresholdElevation / 0.3048;
         } else if (this.flightPlanManager.getOrigin()) {
             departureElevation = this.flightPlanManager.getOrigin().infos.elevation;
         }
+
+        return departureElevation;
+    }
+
+    /**
+     * Gets the gross weight, if available.
+     * Prior to engine start this is based on ZFW + Fuel entries,
+     * after engine start ZFW entry + FQI FoB.
+     * @returns {number | null} gross weight in tons or null if not available.
+     */
+    getGrossWeight() {
+        const useFqi = this.isAnEngineOn();
+
+        if (this.zeroFuelWeight === undefined || (!useFqi && this.blockFuel === undefined)) {
+            return null;
+        }
+
+        return this.zeroFuelWeight + (useFqi ? this.getFOB() : this.blockFuel);
+    }
+
+    getToSpeedsTooLow() {
+        const grossWeight = this.getGrossWeight();
+
+        if (this.flaps === null || grossWeight === null) {
+            return false;
+        }
+
+        const departureElevation = this.getDepartureElevation();
+
         const zp = departureElevation !== null ? this.getPressureAltAtElevation(departureElevation, this.getBaroCorrection1()) : this.getPressureAlt();
         if (zp === null) {
             return false;
         }
 
-        const tow = this.zeroFuelWeight + this.blockFuel - (this.taxiFuelWeight ? this.taxiFuelWeight : 0);
+        const tow = grossWeight - (this.isAnEngineOn() || this.taxiFuelWeight === undefined ? 0 : this.taxiFuelWeight);
 
         return this.v1Speed < Math.trunc(NXSpeedsUtils.getVmcg(zp))
             || this.vRSpeed < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
@@ -3544,7 +3573,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetBlockFuel(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.blockFuel = 0.0;
+            this.blockFuel = undefined;
             this._blockFuelEntered = false;
             this._fuelPredDone = false;
             this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
