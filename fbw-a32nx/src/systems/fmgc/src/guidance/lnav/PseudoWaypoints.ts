@@ -1,10 +1,12 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
-//
+// Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
-import { PseudoWaypoint, PseudoWaypointFlightPlanInfo, PseudoWaypointSequencingAction } from '@fmgc/guidance/PseudoWaypoint';
+import {
+    PseudoWaypoint,
+    PseudoWaypointFlightPlanInfo,
+    PseudoWaypointSequencingAction,
+} from '@fmgc/guidance/PseudoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
 import { NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { Geometry } from '@fmgc/guidance/Geometry';
@@ -16,9 +18,9 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
+import { LegType } from 'msfs-navdata';
+import { distanceTo } from 'msfs-geo';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
@@ -81,7 +83,11 @@ const isCheckpointForCdaPwp = (checkpoint: VerticalCheckpoint) => CDA_CHECKPOINT
 export class PseudoWaypoints implements GuidanceComponent {
     pseudoWaypoints: PseudoWaypoint[] = [];
 
-    constructor(private guidanceController: GuidanceController, private atmosphericConditions: AtmosphericConditions) { }
+    constructor(
+        private readonly flightPlanService: typeof FlightPlanService,
+        private readonly guidanceController: GuidanceController,
+        private readonly atmosphericConditions: AtmosphericConditions,
+    ) { }
 
     acceptVerticalProfile() {
         if (DEBUG) {
@@ -99,7 +105,7 @@ export class PseudoWaypoints implements GuidanceComponent {
 
     private recompute() {
         const geometry = this.guidanceController.activeGeometry;
-        const wptCount = FlightPlanService.active.allLegs.length;
+        const wptCount = FlightPlanService.active.firstMissedApproachLegIndex;
 
         const navGeometryProfile = this.guidanceController.vnavDriver.mcduProfile;
         if (!geometry || geometry.legs.size < 1 || !navGeometryProfile?.isReadyToDisplay) {
@@ -269,29 +275,31 @@ export class PseudoWaypoints implements GuidanceComponent {
             console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
         }
 
-        const destination = this.guidanceController.flightPlanManager.getDestination();
+        const plan = this.flightPlanService.active;
+        const destination = this.flightPlanService.active.destinationAirport;
 
         for (let i = wptCount - 1; i > 0; i--) {
-            const leg = path.legs.get(i);
+            const planLeg = plan.maybeElementAt(i);
+            const geometryLeg = path.legs.get(i);
 
-            if (!leg || leg.isNull) {
+            if (!planLeg || planLeg.isDiscontinuity === true || !geometryLeg || geometryLeg.isNull) {
                 continue;
             }
 
-            let distanceInDiscontinuity = 0;
-            const nextLeg = path.legs.get(i + 1);
-            const previousLeg = path.legs.get(i - 1);
+            const previousPlanLeg = plan.maybeElementAt(i - 1);
+            const nextPlanLeg = plan.maybeElementAt(i + 1);
+            const nextNextPlanLeg = plan.maybeElementAt(i + 2);
 
-            if (leg instanceof XFLeg && leg.fix.endsInDiscontinuity) {
-                if (!nextLeg) {
-                    // The idea is that if there's a discontinuity but not next leg, we're probably at the end of the path.
-                    // So the distance in the discontinuity is just the distance to the airport.
-                    distanceInDiscontinuity = Avionics.Utils.computeGreatCircleDistance(leg.fix.infos.coordinates, destination.infos.coordinates);
-                } else if (nextLeg instanceof XFLeg) {
-                    distanceInDiscontinuity = Avionics.Utils.computeGreatCircleDistance(leg.fix.infos.coordinates, nextLeg.fix.infos.coordinates);
+            let distanceInDiscontinuity = 0;
+
+            if (planLeg.isXF() && nextPlanLeg?.isDiscontinuity === true) {
+                if (nextNextPlanLeg && nextNextPlanLeg.isDiscontinuity === false && nextNextPlanLeg.isXF()) {
+                    distanceInDiscontinuity = distanceTo(planLeg.terminationWaypoint().location, nextNextPlanLeg.terminationWaypoint().location);
                 }
-            } else if (leg instanceof VMLeg && previousLeg instanceof XFLeg && nextLeg instanceof XFLeg) {
-                distanceInDiscontinuity = Avionics.Utils.computeGreatCircleDistance(previousLeg.fix.infos.coordinates, nextLeg.fix.infos.coordinates);
+            } else if (planLeg.type === LegType.VM && previousPlanLeg.isDiscontinuity === false && nextNextPlanLeg.isDiscontinuity === false) {
+                if (previousPlanLeg.isXF() && nextNextPlanLeg.isXF()) {
+                    distanceInDiscontinuity = distanceTo(previousPlanLeg.terminationWaypoint().location, nextNextPlanLeg.terminationWaypoint().location);
+                }
             }
 
             accumulator += distanceInDiscontinuity;
@@ -300,7 +308,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             const outboundTrans = path.transitions.get(i);
 
             const [inboundTransLength, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(
-                leg,
+                geometryLeg,
                 inboundTrans,
                 (outboundTrans instanceof FixedRadiusTransition) ? outboundTrans : null,
             );
@@ -321,12 +329,12 @@ export class PseudoWaypoints implements GuidanceComponent {
                 if (distanceInDiscontinuity > 0 && accumulator - totalLegPathLength > distanceFromEnd) {
                     // Points lies on discontinuity (on the direct line between the two fixes)
                     // In this case, we don't want to place the PWP unless we force placement. In this case, we place it on the termination
-                    if (nextLeg instanceof IFLeg) {
+                    if (nextPlanLeg instanceof IFLeg) {
                         // If the point lies on a discontinuity, we place it on the next leg.
-                        return [nextLeg.fix.infos.coordinates, distanceFromEnd - (accumulator - totalLegPathLength), i + 1];
-                    } if (!nextLeg && destination?.infos?.coordinates) {
+                        return [nextPlanLeg.fix.location, distanceFromEnd - (accumulator - totalLegPathLength), i + 1];
+                    } if (!nextPlanLeg && destination?.location) {
                         // Hack until destination airport is properly handled (should exist as IF leg in geometry.)
-                        return [destination.infos.coordinates, distanceFromEnd, i + 1];
+                        return [destination.location, distanceFromEnd, i + 1];
                     }
 
                     return undefined;
@@ -352,7 +360,7 @@ export class PseudoWaypoints implements GuidanceComponent {
                         console.log(`[FMS/PWP] Placed PWP '${debugString}' on leg #${i} leg segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`);
                     }
 
-                    lla = leg.getPseudoWaypointLocation(distanceBeforeTerminator);
+                    lla = geometryLeg.getPseudoWaypointLocation(distanceBeforeTerminator);
                 } else {
                     // Point is in inbound transition segment
                     const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength - legPartLength;
@@ -369,7 +377,7 @@ export class PseudoWaypoints implements GuidanceComponent {
                 }
 
                 if (VnavConfig.DEBUG_PROFILE) {
-                    console.error(`[FMS/PseudoWaypoints] Tried to place PWP ${debugString} on ${leg.repr}, but failed`);
+                    console.error(`[FMS/PseudoWaypoints] Tried to place PWP ${debugString} on ${geometryLeg.repr}, but failed`);
                 }
 
                 return undefined;

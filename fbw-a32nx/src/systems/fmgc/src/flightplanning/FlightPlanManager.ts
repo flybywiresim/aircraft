@@ -37,6 +37,7 @@ import { FixInfo } from './FixInfo';
 export enum WaypointConstraintType {
     CLB = 1,
     DES = 2,
+    Unknown = 3,
 }
 
 export enum FlightPlans {

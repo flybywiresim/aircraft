@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -213,7 +217,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.dataManager = new FMCDataManager(this);
 
-        this.guidanceController = new Fmgc.GuidanceController();
+        this.guidanceController = new Fmgc.GuidanceController(this);
         this.navigation = new Fmgc.Navigation(this.flightPlanManager, this.facilityLoader);
         this.efisSymbols = new Fmgc.EfisSymbols(this.guidanceController, this.navigation.getNavaidTuner());
 
@@ -2772,7 +2776,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
             SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
 
-this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            callback();
+            this.guidanceController.vnavDriver.invalidateFlightPlanProfile(); callback();
         }
     }
 
@@ -4953,25 +4957,33 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
     }
 
     getAccelerationAltitude() {
-        const plan = this.flightPlanManager.activeFlightPlan;
+        const plan = this.currFlightPlanService.active;
+
         if (plan) {
-            return plan.accelerationAltitude;
+            return plan.performanceData.accelerationAltitude.get();
         }
 
         return undefined;
     }
 
     getThrustReductionAltitude() {
-        const plan = this.flightPlanManager.activeFlightPlan;
+        const plan = this.currFlightPlanService.active;
+
         if (plan) {
-            return plan.thrustReductionAltitude;
+            return plan.performanceData.thrustReductionAltitude.get();
         }
 
         return undefined;
     }
 
     getOriginTransitionAltitude() {
-        return this.flightPlanManager.getOriginTransitionAltitude();
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.transitionAltitude.get();
+        }
+
+        return undefined;
     }
 
     getCruiseAltitude() {
@@ -5030,12 +5042,14 @@ this.guidanceController.vnavDriver.invalidateFlightPlanProfile();            cal
         return this.winds;
     }
     getApproachWind() {
-        const destination = this.flightPlanManager.getDestination();
-        if (!destination || !destination.infos && !destination.infos.coordinates || !isFinite(this.perfApprWindHeading)) {
+        const activePlan = this.currFlightPlanService.active;
+        const destination = activePlan.destinationAirport;
+
+        if (!destination || !destination.location || !isFinite(this.perfApprWindHeading)) {
             return { direction: 0, speed: 0 };
         }
 
-        const magVar = Facilities.getMagVar(destination.infos.coordinates.lat, destination.infos.coordinates.long);
+        const magVar = Facilities.getMagVar(destination.location.lat, destination.location.long);
         const trueHeading = A32NX_Util.magneticToTrue(this.perfApprWindHeading, magVar);
 
         return { direction: trueHeading, speed: this.perfApprWindSpeed };

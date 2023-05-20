@@ -1,9 +1,8 @@
-//  Copyright (c) 2021 FlyByWire Simulations
+//  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { VerticalMode, LateralMode, isArmed, ArmedLateralMode } from '@shared/autopilot';
 import { VerticalProfileComputationParameters, VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
@@ -19,6 +18,8 @@ import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfi
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { distanceTo } from 'msfs-geo';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import {
@@ -34,7 +35,9 @@ export class VnavDriver implements GuidanceComponent {
 
     private currentMcduSpeedProfile: McduSpeedProfile;
 
-    private constraintReader: ConstraintReader;
+    // TODO this is public because it's needed in the StepAhead FMMessage. Make this private and pass it to the message class once we don't instantiate
+    // those from vanilla JS
+    public constraintReader: ConstraintReader;
 
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation;
 
@@ -63,16 +66,16 @@ export class VnavDriver implements GuidanceComponent {
     private requestDescentProfileRecomputation: boolean = false;
 
     constructor(
+        private readonly flightPlanService: typeof FlightPlanService,
         private readonly guidanceController: GuidanceController,
         private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
         private readonly atmosphericConditions: AtmosphericConditions,
         private readonly windProfileFactory: WindProfileFactory,
-        private readonly flightPlanManager: FlightPlanManager,
     ) {
-        this.headingProfile = new NavHeadingProfile(flightPlanManager);
+        this.headingProfile = new NavHeadingProfile(FlightPlanService);
         this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
 
-        this.constraintReader = new ConstraintReader(guidanceController);
+        this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);
 
         this.aircraftToDescentProfileRelation = new AircraftToDescentProfileRelation(this.computationParametersObserver);
         this.descentGuidance = VnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
@@ -80,6 +83,7 @@ export class VnavDriver implements GuidanceComponent {
             : new DescentGuidance(this.guidanceController, this.aircraftToDescentProfileRelation, computationParametersObserver, this.atmosphericConditions);
 
         this.profileManager = new VerticalProfileManager(
+            this.flightPlanService,
             this.guidanceController,
             this.computationParametersObserver,
             this.atmosphericConditions,
@@ -295,7 +299,7 @@ export class VnavDriver implements GuidanceComponent {
         }
 
         return newParameters.flightPhase < FmgcFlightPhase.Descent || newParameters.flightPhase > FmgcFlightPhase.Approach
-            || (!this.flightPlanManager.isCurrentFlightPlanTemporary() && this.didLegsChange(this.oldLegs, newLegs))
+            || (!FlightPlanService.hasTemporary && this.didLegsChange(this.oldLegs, newLegs))
             || numberOrNanChanged(this.lastParameters.cruiseAltitude, newParameters.cruiseAltitude)
             || numberOrNanChanged(this.lastParameters.managedDescentSpeed, newParameters.managedDescentSpeed)
             || numberOrNanChanged(this.lastParameters.managedDescentSpeedMach, newParameters.managedDescentSpeedMach)
@@ -325,7 +329,9 @@ export class VnavDriver implements GuidanceComponent {
      * Compute predictions for EFOB, ETE, etc. at destination
      */
     public getDestinationPrediction(): VerticalWaypointPrediction | null {
-        return this.profileManager.mcduProfile?.waypointPredictions?.get(this.flightPlanManager.getDestinationIndex());
+        const destLegIndex = FlightPlanService.active.destinationLegIndex;
+
+        return this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex);
     }
 
     /**
@@ -438,9 +444,10 @@ export class VnavDriver implements GuidanceComponent {
 
             if (i > activeLegIndex) {
                 if (leg instanceof IFLeg) {
-                    const previousTermination = geometry.legs.get(i - 1).getPathEndPoint();
-                    if (previousTermination && leg?.fix?.infos?.coordinates) {
-                        distanceFromAircraft += Avionics.Utils.computeGreatCircleDistance(previousTermination, leg.fix.infos.coordinates);
+                    const previousTermination = geometry.legs.get(i - 2)?.getPathEndPoint();
+
+                    if (previousTermination && leg?.fix?.location) {
+                        distanceFromAircraft += distanceTo(previousTermination, leg.fix.location);
                     }
                 } else {
                     const inboundTransition = geometry.transitions.get(i - 1);

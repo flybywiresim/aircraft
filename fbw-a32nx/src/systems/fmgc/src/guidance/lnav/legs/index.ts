@@ -43,36 +43,7 @@ export abstract class FXLeg extends Leg {
     from: WayPoint;
 }
 
-export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstraint | undefined {
-    if (wp.legAltitudeDescription && wp.legAltitude1) {
-        const ac: Partial<AltitudeConstraint> = {};
-        ac.altitude1 = wp.legAltitude1;
-        ac.altitude2 = undefined;
-        switch (wp.legAltitudeDescription) {
-        case 1:
-        case 6:
-            ac.type = AltitudeConstraintType.at;
-            break;
-        case 2:
-            ac.type = AltitudeConstraintType.atOrAbove;
-            break;
-        case 3:
-            ac.type = AltitudeConstraintType.atOrBelow;
-            break;
-        case 4:
-        case 7:
-            ac.type = AltitudeConstraintType.range;
-            ac.altitude2 = wp.legAltitude2;
-            break;
-        default:
-            break;
-        }
-        return ac as AltitudeConstraint;
-    }
-    return undefined;
-}
-
-export function altitudeConstraintFromFlightPlanLeg(definition: FlightPlanLegDefinition): AltitudeConstraint | undefined {
+export function altitudeConstraintFromProcedureLeg(definition: FlightPlanLegDefinition): AltitudeConstraint | undefined {
     if (definition.altitudeDescriptor !== undefined && definition.altitude1 !== undefined) {
         const ac: Partial<AltitudeConstraint> = {};
 
@@ -102,16 +73,6 @@ export function altitudeConstraintFromFlightPlanLeg(definition: FlightPlanLegDef
     return undefined;
 }
 
-export function getSpeedConstraintFromWaypoint(wp: WayPoint): SpeedConstraint | undefined {
-    if (wp.speedConstraint) {
-        const sc: Partial<SpeedConstraint> = {};
-        sc.type = SpeedConstraintType.atOrBelow;
-        sc.speed = wp.speedConstraint;
-        return sc as SpeedConstraint;
-    }
-    return undefined;
-}
-
 export function speedConstraintFromProcedureLeg(definition: FlightPlanLegDefinition): SpeedConstraint | undefined {
     if (definition.speedDescriptor !== undefined) {
         let type;
@@ -129,16 +90,8 @@ export function speedConstraintFromProcedureLeg(definition: FlightPlanLegDefinit
     return undefined;
 }
 
-export function getPathAngleConstraintFromWaypoint(wp: WayPoint): PathAngleConstraint | undefined {
-    return wp.additionalData.verticalAngle;
-}
-
-export function waypointToLocation(wp: WayPoint): LatLongData {
-    const loc: LatLongData = {
-        lat: wp.infos.coordinates.lat,
-        long: wp.infos.coordinates.long,
-    };
-    return loc;
+export function pathAngleConstraintFromProcedureLeg(definition: FlightPlanLegDefinition): PathAngleConstraint | undefined {
+    return definition.verticalAngle;
 }
 
 export function isHold(leg: Leg): boolean {
@@ -202,9 +155,9 @@ export interface LegMetadata {
 }
 
 export function legMetadataFromFlightPlanLeg(leg: FlightPlanLeg): LegMetadata {
-    const altitudeConstraint = getAltitudeConstraintFromWaypoint(waypoint);
-    const speedConstraint = getSpeedConstraintFromWaypoint(waypoint);
-    const pathAngleConstraint = getPathAngleConstraintFromWaypoint(waypoint);
+    const altitudeConstraint = altitudeConstraintFromProcedureLeg(leg.definition);
+    const speedConstraint = speedConstraintFromProcedureLeg(leg.definition);
+    const pathAngleConstraint = pathAngleConstraintFromProcedureLeg(leg.definition);
 
     let turnDirection = TurnDirection.Either;
     if (leg.definition.turnDirection === 'L') {
