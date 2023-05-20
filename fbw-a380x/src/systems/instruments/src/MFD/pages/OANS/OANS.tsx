@@ -1,4 +1,4 @@
-﻿/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable jsx-a11y/label-has-associated-control */
 
 import 'instruments/src/MFD/pages/common/style.scss';
 import './oans.scss';

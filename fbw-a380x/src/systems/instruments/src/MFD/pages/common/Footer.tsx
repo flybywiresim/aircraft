@@ -1,4 +1,4 @@
-﻿import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { MfdComponentProps } from 'instruments/src/MFD/MFD';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 

@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface RadioButtonGroupProps extends ComponentProps {

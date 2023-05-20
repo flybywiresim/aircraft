@@ -1,4 +1,4 @@
-﻿/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable jsx-a11y/label-has-associated-control */
 
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { NumberInput } from 'instruments/src/MFD/pages/common/NumberInput';

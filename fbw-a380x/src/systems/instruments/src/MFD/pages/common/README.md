@@ -1,4 +1,4 @@
-﻿# Common UI elements for the MFD
+# Common UI elements for the MFD
 
 This directory contains common user interface elements for building the A380's MFD.
 

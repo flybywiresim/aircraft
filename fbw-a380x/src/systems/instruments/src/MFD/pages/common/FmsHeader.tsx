@@ -1,4 +1,4 @@
-﻿import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { MfdComponentProps } from 'instruments/src/MFD/MFD';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
