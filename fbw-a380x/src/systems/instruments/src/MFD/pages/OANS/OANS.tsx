@@ -1,19 +1,19 @@
 ﻿/* eslint-disable jsx-a11y/label-has-associated-control */
 
-import 'instruments/src/PFD/pages/common/style.scss';
+import 'instruments/src/MFD/pages/common/style.scss';
 import './oans.scss';
 
-import { Button } from 'instruments/src/PFD/pages/common/Button';
-import { IconButton } from 'instruments/src/PFD/pages/common/IconButton';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/PFD/pages/common/TopTabNavigator';
-import { OANSRunwayInfoBox } from 'instruments/src/PFD/pages/OANS/OANSRunwayInfoBox';
-import { ContextMenu } from 'instruments/src/PFD/pages/common/ContextMenu';
+import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { OANSRunwayInfoBox } from 'instruments/src/MFD/pages/OANS/OANSRunwayInfoBox';
+import { ContextMenu } from 'instruments/src/MFD/pages/common/ContextMenu';
 
 import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { DropdownMenu } from 'instruments/src/PFD/pages/common/DropdownMenu';
-import { RadioButtonGroup } from 'instruments/src/PFD/pages/common/RadioButtonGroup';
-import { NumberInput } from 'instruments/src/PFD/pages/common/NumberInput';
+import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { NumberInput } from 'instruments/src/MFD/pages/common/NumberInput';
 
 export interface OANSProps extends ComponentProps {
     bus: EventBus;

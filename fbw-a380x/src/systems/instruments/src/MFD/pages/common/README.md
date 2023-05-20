@@ -21,7 +21,7 @@ Status legend:
 | 🟥 | AtccomHeader | Header (system selector + page navigator) for ATCCOM system |
 | 🟥 | SurvHeader | Header (system selector + page navigator) for SURV system |
 | 🟥 | FcuBkupHeader | Header (system selector + page navigator) for FCU BKUP system |
-| 🟥 | IconButton | Button consisting of just an icon (e.g. F-PLN up/down) |
+| 🟨 | IconButton | Button consisting of just an icon (e.g. F-PLN up/down) |
 | 🟨 | MouseCursor | Custom mouse cursor for MFD |
 | 🟨 | NumberInput | Number input field |
 | ✅ | PageSelectorDropdownMenu | Page selector buttons incl. dropdown menu |
