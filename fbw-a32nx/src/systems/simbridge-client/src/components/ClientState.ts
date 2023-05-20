@@ -56,6 +56,12 @@ export class ClientState {
             this.connectionAttemptCounter = 0;
             this.checkServerAvailability();
         }, 'AUTO ON');
+        // Subscribe to the SimBridge Remote setting so we can instantly re-establish connection
+        // when we change this
+        NXDataStore.subscribe('CONFIG_SIMBRIDGE_REMOTE', (_) => {
+            this.connectionAttemptCounter = 0;
+            this.checkServerAvailability();
+        });
 
         // reset the setting if not permanent off
         if (this.simBridgeEnabledSetting !== 'PERM OFF') {
@@ -160,13 +166,13 @@ export class ClientState {
                         this.connectionAttemptCounter = 0;
                     } else {
                         this.available = false;
-                        console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter: 
+                        console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter:
                                     ${this.connectionAttemptCounter} of ${this.maxSimBridgeConnectionAttempts}`);
                     }
                 },
             ).catch(() => {
                 this.available = false;
-                console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter: 
+                console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter:
                             ${this.connectionAttemptCounter} of ${this.maxSimBridgeConnectionAttempts}`);
             });
         }
