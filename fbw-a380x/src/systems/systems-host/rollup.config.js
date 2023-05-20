@@ -13,7 +13,7 @@ console.log('Root: ', root);
 export default {
     input: join(__dirname, 'index.tsx'),
     output: {
-        dir: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost'),
+        dir: join(root, 'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/SystemsHost'),
         format: 'es',
     },
     plugins: [

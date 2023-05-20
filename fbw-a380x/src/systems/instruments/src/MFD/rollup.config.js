@@ -15,11 +15,11 @@ console.log('Root: ', root);
 export default {
     input: join(__dirname, 'instrument.tsx'),
     output: {
-        file: join(root, 'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/instrument.js'),
+        file: join(root, 'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/PFD/instrument.js'),
         format: 'es',
     },
     plugins: [
-        scss({ output: join(root, 'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/pfd.css') }),
+        scss({ output: join(root, 'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/PFD/pfd.css') }),
         resolve(),
         ts(),
     ],

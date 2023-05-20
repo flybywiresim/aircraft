@@ -50,7 +50,7 @@ module.exports = {
         }),
     ],
     output: {
-        file: join(root, 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/simbridge-client/simbridge-client.js'),
+        file: join(root, 'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/JS/fbw-a380x/simbridge-client/simbridge-client.js'),
         format: 'umd',
         name: 'SimBridgeClient',
     },
