@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 type PageSelectorMenuItem = {
@@ -14,6 +14,9 @@ interface PageSelectorDropdownMenuProps extends ComponentProps {
     containerStyle?: string;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
     private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
     private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
@@ -36,18 +39,25 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
             this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
         });
 
-        this.dropdownIsOpened.sub((val) => {
+        this.subs.push(this.dropdownIsOpened.sub((val) => {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
             this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
-        });
+        }));
 
-        this.props.isActive.sub((val) => {
+        this.subs.push(this.props.isActive.sub((val) => {
             if (val === true) {
                 this.dropdownSelectorLabelRef.instance.classList.add('active');
             } else {
                 this.dropdownSelectorLabelRef.instance.classList.remove('active');
             }
-        }, true);
+        }, true));
+    }
+
+    public destroy(): void {
+        // Destroy all subscriptions to remove all references to this instance.
+        this.subs.forEach((x) => x.destroy());
+
+        super.destroy();
     }
 
     render(): VNode {

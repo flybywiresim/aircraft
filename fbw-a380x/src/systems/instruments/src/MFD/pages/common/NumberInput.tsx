@@ -14,6 +14,7 @@ export class NumberInput extends DisplayComponent<NumberInputProps> {
     private textInputRef = FSComponent.createRef<HTMLInputElement>();
 
     private setInputFilter(el: Element, inputFilter: (value: string) => boolean): void {
+        // Taken from https://stackoverflow.com/questions/469357/html-text-input-allow-only-numeric-input
         ['input', 'keydown', 'keyup', 'mousedown', 'mouseup', 'select', 'contextmenu', 'drop', 'focusout'].forEach((event) => {
             el.addEventListener(event, function (this: (HTMLInputElement | HTMLTextAreaElement) & { oldValue: string; oldSelectionStart: number | null, oldSelectionEnd: number | null }) {
                 if (inputFilter(this.value)) {

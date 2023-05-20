@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, VNode } from '@microsoft/msfs-sdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface DropdownMenuProps extends ComponentProps {
@@ -11,6 +11,9 @@ interface DropdownMenuProps extends ComponentProps {
 }
 
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
     private label = Subject.create('NOT SET');
 
     private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
@@ -37,22 +40,29 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             });
         });
 
-        this.props.values.sub((value, type, item, array) => {
+        this.subs.push(this.props.values.sub((value, type, item, array) => {
             this.label.set(array[this.props.selectedIndex.get()]);
-        });
+        }));
 
-        this.props.selectedIndex.sub((value) => {
+        this.subs.push(this.props.selectedIndex.sub((value) => {
             this.label.set(this.props.values.get(value));
-        });
+        }));
 
         this.dropdownSelectorRef.instance.addEventListener('click', () => {
             this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
         });
 
-        this.dropdownIsOpened.sub((val) => {
+        this.subs.push(this.dropdownIsOpened.sub((val) => {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
             this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
-        });
+        }));
+    }
+
+    public destroy(): void {
+        // Destroy all subscriptions to remove all references to this instance.
+        this.subs.forEach((x) => x.destroy());
+
+        super.destroy();
     }
 
     render(): VNode {
