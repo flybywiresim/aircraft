@@ -114,9 +114,10 @@ animation: pulsingS 1s step-end infinite;
     }
 
     .Separator {
-      stroke: $display-light-grey;
+      stroke: $display-grey;
       stroke-width: 4;
       fill: none;
+      stroke-linecap: round;
     }
 
     .AmberLine {
