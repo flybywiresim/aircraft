@@ -14,7 +14,7 @@ import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
 export const getDisplayIndex = () => {
-    const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
+    const url = document.getElementsByTagName('a380-mfd')[0].getAttribute('url');
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 

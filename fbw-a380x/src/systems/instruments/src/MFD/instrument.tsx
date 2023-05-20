@@ -2,7 +2,7 @@ import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-s
 import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 
-class A32NX_MFD extends BaseInstrument {
+class A380X_MFD extends BaseInstrument {
     private bus: EventBus;
 
     private simVarPublisher: MfdSimvarPublisher;
@@ -28,7 +28,7 @@ class A32NX_MFD extends BaseInstrument {
     }
 
     get templateID(): string {
-        return 'A32NX_PFD';
+        return 'A380X_MFD';
     }
 
     get isInteractive(): boolean {
@@ -51,10 +51,10 @@ class A32NX_MFD extends BaseInstrument {
         this.simVarPublisher.subscribe('potentiometerCaptain');
         this.simVarPublisher.subscribe('potentiometerFo');
 
-        FSComponent.render(<MfdComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+        FSComponent.render(<MfdComponent bus={this.bus} instrument={this} />, document.getElementById('MFD_CONTENT'));
 
         // Remove "instrument didn't load" text
-        document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();
+        document.getElementById('MFD_CONTENT').querySelector(':scope > h1').remove();
     }
 
     /**
@@ -77,4 +77,4 @@ class A32NX_MFD extends BaseInstrument {
     }
 }
 
-registerInstrument('a32nx-pfd', A32NX_MFD);
+registerInstrument('a380x-mfd', A380X_MFD);
