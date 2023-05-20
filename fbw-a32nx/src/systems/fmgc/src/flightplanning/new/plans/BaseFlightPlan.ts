@@ -3,7 +3,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Approach, Arrival, Departure, Fix, LegType, ProcedureTransition, Runway, WaypointDescriptor } from 'msfs-navdata';
+import {
+    Airport,
+    Approach,
+    Arrival,
+    Departure,
+    Fix,
+    LegType,
+    ProcedureTransition,
+    Runway,
+    WaypointDescriptor,
+} from 'msfs-navdata';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/new/segments/DepartureSegment';
@@ -26,6 +36,8 @@ import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -322,7 +334,7 @@ export abstract class BaseFlightPlan {
     elementAt(index: number): FlightPlanElement {
         const legs = this.allLegs;
 
-        if (index < 0 || index > legs.length) {
+        if (index < 0 || index >= legs.length) {
             throw new Error('[FMS/FPM] leg index out of bounds');
         }
 
@@ -706,6 +718,26 @@ export abstract class BaseFlightPlan {
         throw new Error('[FMS/FPM] Tried to get segment for out-of-bounds index');
     }
 
+    autoConstraintTypeForLegIndex(index: number): WaypointConstraintType {
+        const [segment] = this.segmentPositionForIndex(index);
+
+        switch (segment) {
+        case this.originSegment:
+        case this.departureRunwayTransitionSegment:
+        case this.departureSegment:
+        case this.departureEnrouteTransitionSegment:
+            return WaypointConstraintType.CLB;
+        case this.arrivalEnrouteTransitionSegment:
+        case this.arrivalSegment:
+        case this.arrivalRunwayTransitionSegment:
+        case this.approachViaSegment:
+        case this.approachSegment:
+            return WaypointConstraintType.DES;
+        default:
+            return WaypointConstraintType.Unknown;
+        }
+    }
+
     /**
      * Inserts a waypoint before a leg at an index.
      *
@@ -841,6 +873,16 @@ export abstract class BaseFlightPlan {
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
         await this.flushOperationQueue();
         this.incrementVersion();
+    }
+
+    editLegDefinition(index: number, changes: Partial<FlightPlanLegDefinition>, notify = true): void {
+        const leg = this.legElementAt(index);
+
+        Object.assign(leg.definition, changes);
+
+        if (notify) {
+            this.syncLegDefinitionChange(index);
+        }
     }
 
     setOverflyAt(index: number, overfly: boolean): void {

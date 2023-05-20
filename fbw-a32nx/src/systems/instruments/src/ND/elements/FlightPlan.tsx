@@ -451,3 +451,15 @@ export const ConstraintMarker: FC<ConstraintMarkerProps> = memo(({ x, y, type })
         <circle r={14} className={typeFlagToColor(type)} strokeWidth={2} />
     </Layer>
 ));
+
+const typeFlagToColor = (typeFlag: NdSymbolTypeFlags) => {
+    if (typeFlag & NdSymbolTypeFlags.CyanColor) {
+        return 'Cyan';
+    } if (typeFlag & NdSymbolTypeFlags.MagentaColor) {
+        return 'Magenta';
+    } if (typeFlag & NdSymbolTypeFlags.AmberColor) {
+        return 'Amber';
+    }
+
+    return 'White';
+};

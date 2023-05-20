@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /**
  * @typedef {Object} SelectedNavaid
  * @property {Fmgc.SelectedNavaidType} type
@@ -17,6 +21,7 @@ NAVAID_TYPE_STRINGS = Object.freeze({
     [Fmgc.SelectedNavaidType.Ils]: 'ILSDME',
     [Fmgc.SelectedNavaidType.Gls]: 'GLS',
     [Fmgc.SelectedNavaidType.Mls]: 'MLS',
+    [LatLong.fromStringFloat]: 'bruh',
 });
 
 NAVAID_MODE_STRINGS = Object.freeze({

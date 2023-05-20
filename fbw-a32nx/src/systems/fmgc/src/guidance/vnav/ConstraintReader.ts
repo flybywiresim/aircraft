@@ -2,19 +2,30 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { GeographicCruiseStep, DescentAltitudeConstraint, MaxAltitudeConstraint, MaxSpeedConstraint } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import {
+    DescentAltitudeConstraint,
+    GeographicCruiseStep,
+    MaxAltitudeConstraint,
+    MaxSpeedConstraint,
+} from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Geometry } from '@fmgc/guidance/Geometry';
-import { AltitudeConstraintType, getAltitudeConstraintFromWaypoint, getPathAngleConstraintFromWaypoint, getSpeedConstraintFromWaypoint } from '@fmgc/guidance/lnav/legs';
-import { FlightPlans, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import {
+    altitudeConstraintFromProcedureLeg,
+    AltitudeConstraintType,
+    pathAngleConstraintFromProcedureLeg,
+    speedConstraintFromProcedureLeg,
+} from '@fmgc/guidance/lnav/legs';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { FixTypeFlags } from '@fmgc/types/fstypes/FSEnums';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { ApproachType, LegType } from 'msfs-navdata';
+import { distanceTo } from 'msfs-geo';
 
 /**
  * This entire class essentially represents an interface to the flightplan.
@@ -32,6 +43,8 @@ export class ConstraintReader {
 
     public totalFlightPlanDistance = 0;
 
+    public readonly legDistancesToEnd: number[] = [];
+
     public distanceToEnd: NauticalMiles = 0;
 
     // If you change this property here, make sure you also reset it properly in `reset`
@@ -46,7 +59,7 @@ export class ConstraintReader {
 
     public finalAltitude: Feet = 50;
 
-    constructor(private guidanceController: GuidanceController) {
+    constructor(private flightPlanService: typeof FlightPlanService, private guidanceController: GuidanceController) {
         this.reset();
     }
 
@@ -54,72 +67,80 @@ export class ConstraintReader {
         this.reset();
         this.updateDistancesToEnd(geometry);
 
-        const fpm = this.guidanceController.flightPlanManager;
         let maxSpeed = Infinity;
 
-        for (let i = 0; i < fpm.getWaypointsCount(FlightPlans.Active); i++) {
-            const waypoint = fpm.getWaypoint(i, FlightPlans.Active);
+        const plan = this.flightPlanService.active;
 
-            if (waypoint.additionalData.cruiseStep && !waypoint.additionalData.cruiseStep.isIgnored) {
-                if (i >= fpm.getActiveWaypointIndex()) {
-                    const { waypointIndex, toAltitude, distanceBeforeTermination } = waypoint.additionalData.cruiseStep as CruiseStepEntry;
+        for (let i = 0; i < plan.firstMissedApproachLegIndex; i++) {
+            const leg = plan.elementAt(i);
+
+            if (leg.isDiscontinuity === true) {
+                continue;
+            }
+
+            const legDistanceToEnd = this.legDistancesToEnd[i];
+
+            if (leg.cruiseStep && !leg.cruiseStep.isIgnored) {
+                if (i >= plan.activeLegIndex) {
+                    const { waypointIndex, toAltitude, distanceBeforeTermination } = leg.cruiseStep;
 
                     this.cruiseSteps.push({
-                        distanceFromStart: this.totalFlightPlanDistance - waypoint.additionalData.distanceToEnd - distanceBeforeTermination,
+                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd - distanceBeforeTermination,
                         toAltitude,
                         waypointIndex,
                         isIgnored: false,
                     });
                 } else {
                     // We've already passed the waypoint
-                    waypoint.additionalData.cruiseStep = undefined;
+                    leg.cruiseStep = undefined; // TODO fms-v2: sync this
                     SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', 'boolean', true);
                 }
             }
 
-            const altConstraint = getAltitudeConstraintFromWaypoint(waypoint);
-            const speedConstraint = getSpeedConstraintFromWaypoint(waypoint);
-            const pathAngleConstraint = getPathAngleConstraintFromWaypoint(waypoint);
+            const altConstraint = altitudeConstraintFromProcedureLeg(leg.definition);
+            const speedConstraint = speedConstraintFromProcedureLeg(leg.definition);
+            const pathAngleConstraint = pathAngleConstraintFromProcedureLeg(leg.definition);
 
-            if (waypoint.additionalData.constraintType === WaypointConstraintType.CLB) {
+            if (leg.constraintType === WaypointConstraintType.CLB) {
                 if (altConstraint && altConstraint.type !== AltitudeConstraintType.atOrAbove) {
                     this.climbAlitudeConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - waypoint.additionalData.distanceToEnd,
+                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
                         maxAltitude: altConstraint.altitude1,
                     });
                 }
 
-                if (speedConstraint && waypoint.speedConstraint > 100) {
+                if (speedConstraint && speedConstraint.speed > 100) {
                     this.climbSpeedConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - waypoint.additionalData.distanceToEnd,
+                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
                         maxSpeed: speedConstraint.speed,
                     });
                 }
-            } else if (waypoint.additionalData.constraintType === WaypointConstraintType.DES) {
+            } else if (leg.constraintType === WaypointConstraintType.DES) {
                 if (altConstraint) {
                     this.descentAltitudeConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - waypoint.additionalData.distanceToEnd,
+                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
                         constraint: altConstraint,
                     });
                 }
 
-                if (speedConstraint && waypoint.speedConstraint > 100) {
+                if (speedConstraint && speedConstraint.speed > 100) {
                     maxSpeed = Math.min(maxSpeed, speedConstraint.speed);
 
                     this.descentSpeedConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - waypoint.additionalData.distanceToEnd,
+                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
                         maxSpeed,
                     });
                 }
             }
 
-            if (i === fpm.getDestinationIndex() && pathAngleConstraint) {
+            if (i === plan.destinationLegIndex && pathAngleConstraint) {
                 this.finalDescentAngle = pathAngleConstraint;
             }
 
-            if ((waypoint.additionalData.fixTypeFlags & FixTypeFlags.FAF) > 0) {
-                this.fafDistanceToEnd = waypoint.additionalData.distanceToEnd;
-            }
+            // TODO fms-v2: find fixTypeFlags in msfs-navdata
+            // if ((leg.definition.fixTypeFlags & FixTypeFlags.FAF) > 0) {
+            //     this.fafDistanceToEnd = leg.additionalData.distanceToEnd;
+            // }
         }
 
         this.updateFinalAltitude();
@@ -135,16 +156,17 @@ export class ConstraintReader {
         const geometry = this.guidanceController.activeGeometry;
         const activeLegIndex = this.guidanceController.activeLegIndex;
         const activeTransIndex = this.guidanceController.activeTransIndex;
-        const fpm = this.guidanceController.flightPlanManager;
 
         const leg = geometry.legs.get(activeLegIndex);
+
+        const nextLeg = leg instanceof VMLeg
+            ? this.flightPlanService.active.maybeElementAt(activeLegIndex + 2)
+            : this.flightPlanService.active.maybeElementAt(activeLegIndex);
+        const nextLegDistanceToEnd = this.legDistancesToEnd[leg instanceof VMLeg ? activeLegIndex + 2 : activeLegIndex];
+
         if (!leg || leg.isNull) {
             return;
         }
-
-        const nextWaypoint: WayPoint | undefined = leg instanceof VMLeg
-            ? fpm.getWaypoint(activeLegIndex + 1, FlightPlans.Active)
-            : fpm.getWaypoint(activeLegIndex, FlightPlans.Active);
 
         const inboundTransition = geometry.transitions.get(activeLegIndex - 1);
         const outboundTransition = geometry.transitions.get(activeLegIndex);
@@ -157,7 +179,7 @@ export class ConstraintReader {
             // On an outbound transition
             // We subtract `outboundLength` because getDistanceToGo will include the entire distance while we only want the part that's on this leg.
             // For a FixedRadiusTransition, there's also a part on the next leg.
-            this.distanceToEnd = outboundTransition.getDistanceToGo(ppos) - outboundLength + (nextWaypoint?.additionalData?.distanceToEnd ?? 0);
+            this.distanceToEnd = outboundTransition.getDistanceToGo(ppos) - outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
         } else if (activeTransIndex === activeLegIndex - 1) {
             // On an inbound transition
             const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
@@ -170,46 +192,46 @@ export class ConstraintReader {
                 transitionDistanceToGo = inboundTransition.revertTo.getActualDistanceToGo(ppos, trueTrack);
             }
 
-            this.distanceToEnd = transitionDistanceToGo + legDistance + outboundLength + (nextWaypoint?.additionalData?.distanceToEnd ?? 0);
+            this.distanceToEnd = transitionDistanceToGo + legDistance + outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
         } else {
-            const distanceToGo = leg instanceof VMLeg || leg instanceof IFLeg
-                ? Avionics.Utils.computeGreatCircleDistance(ppos, nextWaypoint?.infos?.coordinates)
+            const distanceToGo = (leg instanceof VMLeg || leg instanceof IFLeg) && nextLeg && nextLeg.isDiscontinuity === false && nextLeg.isXF()
+                ? distanceTo(ppos, nextLeg.terminationWaypoint().location)
                 : leg.getDistanceToGo(ppos);
 
-            this.distanceToEnd = distanceToGo + outboundLength + (nextWaypoint?.additionalData?.distanceToEnd ?? 0);
+            this.distanceToEnd = distanceToGo + outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
         }
     }
 
     private updateFinalAltitude(): void {
-        const metersToFeet = 3.2808399;
+        const plan = this.flightPlanService.active;
 
-        const fpm = this.guidanceController.flightPlanManager;
-        const approach = fpm.getApproach();
+        const approach = plan.approach;
 
         // Check if we have a procedure loaded from which we can extract the final altitude
-        if (approach && approach.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN) {
-            for (const leg of approach.finalLegs) {
-                if (leg.fixTypeFlags & FixTypeFlags.MAP && Number.isFinite(leg.altitude1)) {
-                    this.finalAltitude = leg.altitude1 * metersToFeet;
-
-                    return;
-                }
-            }
+        if (approach && approach.type !== ApproachType.Unknown) {
+            // TODO fms-v2: find fixTypeFlags in msfs-navdata
+            // for (const leg of approach.legs) {
+            // if (leg.fixTypeFlags & FixTypeFlags.MAP && Number.isFinite(leg.altitude1)) {
+            //     this.finalAltitude = leg.altitude1 * metersToFeet;
+            //
+            //     return;
+            // }
+            // }
         }
 
         // Check if we only have a runway loaded. In this case, take the threshold elevation.
-        const runway = fpm.getDestinationRunway();
-        if (runway && Number.isFinite(runway.thresholdElevation)) {
-            this.finalAltitude = runway.thresholdElevation * metersToFeet + 50;
+        const runway = plan.destinationRunway;
+        if (runway && Number.isFinite(runway.thresholdLocation.alt)) {
+            this.finalAltitude = runway.thresholdLocation.alt + 50;
 
             return;
         }
 
         // Check if we only have a destination airport loaded. In this case, take the airport elevation.
-        const destinationAirport = fpm.getDestination();
+        const destinationAirport = plan.destinationAirport;
         // TODO: I think selecting an approach and then deleting it will cause destinationAirport.infos.coordinates.alt to be zero.
-        if (destinationAirport && Number.isFinite(destinationAirport.infos.coordinates.alt)) {
-            this.finalAltitude = destinationAirport.infos.coordinates.alt + 50;
+        if (destinationAirport && Number.isFinite(destinationAirport.location.alt)) {
+            this.finalAltitude = destinationAirport.location.alt + 50;
 
             return;
         }
@@ -235,24 +257,34 @@ export class ConstraintReader {
 
     private updateDistancesToEnd(geometry: Geometry) {
         const { legs, transitions } = geometry;
-        const fpm = this.guidanceController.flightPlanManager;
 
         this.totalFlightPlanDistance = 0;
 
-        for (let i = fpm.getWaypointsCount(FlightPlans.Active) - 1; i >= fpm.getActiveWaypointIndex() - 1 && i >= 0; i--) {
+        const plan = this.flightPlanService.active;
+
+        for (let i = plan.firstMissedApproachLegIndex - 1; i >= plan.activeLegIndex - 1 && i >= 0; i--) {
             const leg = legs.get(i);
-            const waypoint = fpm.getWaypoint(i, FlightPlans.Active);
-            const nextWaypoint = fpm.getWaypoint(i + 1, FlightPlans.Active);
+            const waypoint = plan.elementAt(i);
+            const nextWaypoint = plan.maybeElementAt(i + 1);
+            const nextNextWaypoint = plan.maybeElementAt(i + 2);
 
-            if (waypoint.endsInDiscontinuity) {
-                const startingPointOfDisco = waypoint.discontinuityCanBeCleared
-                    ? waypoint
-                    : fpm.getWaypoint(i - 1, FlightPlans.Active); // MANUAL
+            if (waypoint.isDiscontinuity === false && nextWaypoint?.isDiscontinuity === true && nextNextWaypoint?.isDiscontinuity === false) {
+                const startingPointOfDisco = !(waypoint.type !== LegType.VM && waypoint.type !== LegType.FM)
+                    ? legs.get(i - 1) // MANUAL
+                    : leg;
 
-                this.totalFlightPlanDistance += Avionics.Utils.computeGreatCircleDistance(startingPointOfDisco.infos.coordinates, nextWaypoint.infos.coordinates);
+                if (!startingPointOfDisco.isNull) {
+                    const termination = startingPointOfDisco.terminationWaypoint;
+
+                    if (termination) {
+                        const terminationPoint = 'ident' in termination ? termination.location : termination;
+
+                        this.totalFlightPlanDistance += distanceTo(terminationPoint, nextNextWaypoint.terminationWaypoint().location);
+                    }
+                }
             }
 
-            waypoint.additionalData.distanceToEnd = this.totalFlightPlanDistance;
+            this.legDistancesToEnd[i] = this.totalFlightPlanDistance;
 
             if (!leg || leg.isNull) {
                 continue;
@@ -273,9 +305,10 @@ export class ConstraintReader {
     }
 
     ignoreCruiseStep(waypointIndex: number) {
-        const waypoint = this.guidanceController.flightPlanManager.getWaypoint(waypointIndex, FlightPlans.Active);
-        if (waypoint?.additionalData?.cruiseStep) {
-            waypoint.additionalData.cruiseStep.isIgnored = true;
+        const leg = this.flightPlanService.active.maybeElementAt(waypointIndex);
+
+        if (leg?.isDiscontinuity === false && leg?.cruiseStep) {
+            leg.cruiseStep.isIgnored = true;
         }
     }
 }

@@ -13,6 +13,9 @@ import { MathUtils } from '@shared/MathUtils';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
 import { MagVar } from '@shared/MagVar';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -58,6 +61,10 @@ export class FlightPlanLeg {
     modifiedHold: HoldData | undefined = undefined;
 
     holdImmExit = false;
+
+    constraintType: WaypointConstraintType | undefined;
+
+    cruiseStep: CruiseStepEntry | undefined;
 
     serialize(): SerializedFlightPlanLeg {
         return {
@@ -202,7 +209,20 @@ export class FlightPlanLeg {
         const [ident, annotation] = procedureLegIdentAndAnnotation(procedureLeg, procedureIdent);
 
         // TODO somehow we need to also return a discont for legs combinations that always have a discontinuity between them
-        return new FlightPlanLeg(segment, procedureLeg, ident, annotation, undefined, procedureLeg.rnp, procedureLeg.overfly);
+        const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, undefined, procedureLeg.rnp, procedureLeg.overfly);
+
+        let constraintType: WaypointConstraintType;
+        if (segment.class === SegmentClass.Departure) {
+            constraintType = WaypointConstraintType.CLB;
+        } else if (segment.class === SegmentClass.Arrival) {
+            constraintType = WaypointConstraintType.DES;
+        } else {
+            constraintType = WaypointConstraintType.Unknown;
+        }
+
+        flightPlanLeg.constraintType = constraintType;
+
+        return flightPlanLeg;
     }
 
     static fromAirportAndRunway(segment: FlightPlanSegment, procedureIdent: string, airport: Airport, runway?: Runway): FlightPlanLeg {

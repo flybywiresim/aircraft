@@ -1,6 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
-//
+// Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Geometry } from '@fmgc/guidance/Geometry';
@@ -19,7 +17,6 @@ import { SimVarString } from '@flybywiresim/fbw-sdk';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ApproachType, LegType } from 'msfs-navdata';
-import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
@@ -256,12 +253,14 @@ export class GuidanceController {
 
     private updateEfisApproachMessage() {
         let apprMsg = '';
-        // const appr = this.flightPlanManager.getApproach(FlightPlans.Active);
         const appr = FlightPlanService.active.approach;
+
         if (appr && appr.type !== ApproachType.Unknown) {
             const phase = getFlightPhaseManager().phase;
+
+            // TODO fms-v2: port getDistanceToDestination and appr.longName
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise /* && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250) */)) {
-                apprMsg = appr.longName;
+                apprMsg = appr.ident;
             }
         }
 
@@ -283,8 +282,8 @@ export class GuidanceController {
         this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
         this.lnavDriver = new LnavDriver(this);
-        this.vnavDriver = new VnavDriver(this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory, flightPlanManager);
-        this.pseudoWaypoints = new PseudoWaypoints(this, this.atmosphericConditions);
+        this.vnavDriver = new VnavDriver(FlightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory);
+        this.pseudoWaypoints = new PseudoWaypoints(FlightPlanService, this, this.atmosphericConditions);
         this.efisVectors = new EfisVectors(this);
     }
 
@@ -367,6 +366,16 @@ export class GuidanceController {
                 this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false, true);
                 this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, false, true);
                 this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, true, true);
+
+                if (this.activeGeometry) {
+                    try {
+                        this.vnavDriver.acceptMultipleLegGeometry(this.activeGeometry);
+                        this.pseudoWaypoints.acceptMultipleLegGeometry(this.activeGeometry);
+                    } catch (e) {
+                        console.error('[FMS] Error during active geometry profile recomputation. See exception below.');
+                        console.error(e);
+                    }
+                }
             }
 
             this.updateEfisIdent();

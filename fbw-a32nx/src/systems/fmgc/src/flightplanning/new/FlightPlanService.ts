@@ -12,6 +12,7 @@ import { Coordinates, Degrees } from 'msfs-geo';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 
 // TODO refactor into instance class
 export class FlightPlanService {
@@ -416,6 +417,14 @@ export class FlightPlanService {
         const plan = this.flightPlanManager.get(finalIndex);
 
         plan.enableAltn(atIndexInAlternate);
+    }
+
+    static editLegDefinition(atIndex: number, changes: Partial<FlightPlanLegDefinition>, planIndex = FlightPlanIndex.Active, alternate = false) {
+        const finalIndex = this.prepareDestructiveModification(planIndex);
+
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
+
+        return plan.editLegDefinition(atIndex, changes);
     }
 
     static setOverfly(atIndex: number, overfly: boolean, planIndex = FlightPlanIndex.Active) {

@@ -1,6 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
-//
+// Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, rangeSettings, EfisNdRangeValue } from '@shared/NavigationDisplay';
@@ -21,6 +19,18 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
+import { getFlightPhaseManager } from '@fmgc/flightphase';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+
+const VALID_ALTITUDE_CONSTRAINT_TYPES_FOR_EFIS = [
+    AltitudeDescriptor.AtAlt1,
+    AltitudeDescriptor.AtOrAboveAlt1,
+    AltitudeDescriptor.AtOrBelowAlt1,
+    AltitudeDescriptor.BetweenAlt1Alt2,
+    AltitudeDescriptor.AtOrAboveAlt2,
+];
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -50,6 +60,8 @@ export class EfisSymbols {
     private lastFpVersions: Record<number, number> = {};
 
     private lastNavaidVersion = -1;
+
+    private lastVnavDriverVersion: number = -1;
 
     constructor(guidanceController: GuidanceController, private readonly navaidTuner: NavaidTuner) {
         this.guidanceController = guidanceController;
@@ -143,6 +155,9 @@ export class EfisSymbols {
         const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
         this.lastNavaidVersion = this.navaidTuner.navaidVersion;
 
+        const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
+        this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
+
         const hasSuitableRunway = (airport: Airport): boolean => airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
         for (const side of EfisSymbols.sides) {
@@ -158,7 +173,17 @@ export class EfisSymbols {
             this.lastEfisOption[side] = efisOption;
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
-            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged && !navaidsChanged) {
+            if (!pposChanged
+                && !trueHeadingChanged
+                && !rangeChange
+                && !modeChange
+                && !efisOptionChange
+                && !nearbyOverlayChanged
+                && !fpChanged
+                && !planCentreChanged
+                && !navaidsChanged
+                && !vnavPredictionsChanged
+            ) {
                 continue;
             }
 
@@ -388,7 +413,7 @@ export class EfisSymbols {
 
             // Pseudo waypoints
 
-            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it)) {
+            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
                 upsertSymbol({
                     databaseId: `W      ${pwp.ident}`,
                     ident: pwp.ident,
@@ -444,6 +469,11 @@ export class EfisSymbols {
         formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
         formatConstraintSpeed: (speed: number, prefix?: string) => string,
     ): NdSymbol[] {
+        const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
+        const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+        const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
+        const flightPhase = getFlightPhaseManager().phase;
+
         const planCentreFpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_FP_INDEX', 'number');
         const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
 
@@ -454,6 +484,8 @@ export class EfisSymbols {
 
         // FP legs
         for (let i = flightPlan.legCount - 1; i >= (flightPlan.activeLegIndex - 1) && i >= 0; i--) {
+            const isFromLeg = i === flightPlan.activeLegIndex - 1;
+
             const leg = flightPlan.elementAt(i);
 
             if (leg.isDiscontinuity === true) {
@@ -529,9 +561,20 @@ export class EfisSymbols {
                 continue;
             }
 
-            if (leg.definition.altitudeDescriptor > 0 && leg.definition.altitudeDescriptor < 6) {
-                // TODO vnav to predict
-                type |= NdSymbolTypeFlags.Constraint;
+            if (isInLatAutoControl && !isFromLeg && VALID_ALTITUDE_CONSTRAINT_TYPES_FOR_EFIS.includes(leg.definition.altitudeDescriptor)) {
+                if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, leg)) {
+                    type |= NdSymbolTypeFlags.Constraint;
+
+                    const predictionAtWaypoint = waypointPredictions.get(i);
+
+                    if (predictionAtWaypoint?.isAltitudeConstraintMet) {
+                        type |= NdSymbolTypeFlags.MagentaColor;
+                    } else if (predictionAtWaypoint) {
+                        type |= NdSymbolTypeFlags.AmberColor;
+                    }
+                } else if (i === flightPlan.activeLegIndex) {
+                    type |= NdSymbolTypeFlags.Constraint;
+                }
             }
 
             if (efisOption === EfisOption.Constraints) {
@@ -705,3 +748,9 @@ export class EfisSymbols {
         }
     }
 }
+
+const shouldShowConstraintCircleInPhase = (phase: FmgcFlightPhase, leg: FlightPlanLeg) => (
+    (phase === FmgcFlightPhase.Takeoff || phase === FmgcFlightPhase.Climb) && leg.constraintType === WaypointConstraintType.CLB
+) || (
+    (phase === FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach) && leg.constraintType === WaypointConstraintType.DES
+);
