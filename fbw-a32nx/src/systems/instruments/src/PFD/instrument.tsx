@@ -1,15 +1,33 @@
-import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { MfdComponent } from './MFD';
-import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
+import { DisplayManagementComputer } from 'instruments/src/PFD/shared/DisplayManagementComputer';
+import { Clock, FSComponent, HEventPublisher, Subject } from '@microsoft/msfs-sdk';
+import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { getDisplayIndex, PFDComponent } from './PFD';
+import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
+import { ArincValueProvider } from './shared/ArincValueProvider';
+import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
+import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
+import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
-class A32NX_MFD extends BaseInstrument {
-    private bus: EventBus;
+import './style.scss';
 
-    private simVarPublisher: MfdSimvarPublisher;
+class A32NX_PFD extends BaseInstrument {
+    private bus: ArincEventBus;
+
+    private simVarPublisher: PFDSimvarPublisher;
 
     private readonly hEventPublisher;
 
+    private readonly arincProvider: ArincValueProvider;
+
+    private readonly simplaneValueProvider: SimplaneValueProvider;
+
     private readonly clock: Clock;
+
+    private adirsValueProvider: AdirsValueProvider<PFDSimvars>;
+
+    private readonly displayManagementComputer: DisplayManagementComputer;
+
+    private fmsDataPublisher: FmsDataPublisher;
 
     /**
      * "mainmenu" = 0
@@ -21,37 +39,40 @@ class A32NX_MFD extends BaseInstrument {
 
     constructor() {
         super();
-        this.bus = new EventBus();
-        this.simVarPublisher = new MfdSimvarPublisher(this.bus);
+        this.bus = new ArincEventBus();
+        this.simVarPublisher = new PFDSimvarPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
+        this.arincProvider = new ArincValueProvider(this.bus);
+        this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
+        this.displayManagementComputer = new DisplayManagementComputer(this.bus);
     }
 
     get templateID(): string {
         return 'A32NX_PFD';
     }
 
-    get isInteractive(): boolean {
-        return true;
-    }
-
     public getDeltaTime() {
         return this.deltaTime;
+    }
+
+    public onInteractionEvent(args: string[]): void {
+        this.hEventPublisher.dispatchHEvent(args[0]);
     }
 
     public connectedCallback(): void {
         super.connectedCallback();
 
+        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, getDisplayIndex() === 1 ? 'L' : 'R');
+
+        const stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
+        this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
+
+        this.arincProvider.init();
         this.clock.init();
+        this.displayManagementComputer.init();
 
-        this.simVarPublisher.subscribe('elec');
-        this.simVarPublisher.subscribe('elecFo');
-
-        this.simVarPublisher.subscribe('coldDark');
-        this.simVarPublisher.subscribe('potentiometerCaptain');
-        this.simVarPublisher.subscribe('potentiometerFo');
-
-        FSComponent.render(<MfdComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+        FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
 
         // Remove "instrument didn't load" text
         document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();
@@ -68,13 +89,17 @@ class A32NX_MFD extends BaseInstrument {
             if (gamestate === 3) {
                 this.simVarPublisher.startPublish();
                 this.hEventPublisher.startPublish();
+                this.adirsValueProvider.start();
+                this.fmsDataPublisher.startPublish();
             }
             this.gameState = gamestate;
         } else {
             this.simVarPublisher.onUpdate();
+            this.simplaneValueProvider.onUpdate();
             this.clock.onUpdate();
+            this.fmsDataPublisher.onUpdate();
         }
     }
 }
 
-registerInstrument('a32nx-pfd', A32NX_MFD);
+registerInstrument('a32nx-pfd', A32NX_PFD);

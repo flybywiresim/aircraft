@@ -1,9 +1,4 @@
 {
   "index": "./instrument.tsx",
-  "name": "MFD",
-  "dimensions": {
-    "width": 768,
-    "height": 1024
-  },
-  "isInteractive": true
+  "isInteractive": false
 }
