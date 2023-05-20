@@ -1,5 +1,6 @@
 import { ExecTask, TaskOfTasks } from "@flybywiresim/igniter";
-import { getInstrumentsIgniterTasks } from "./fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs";
+import { getA32NXInstrumentsIgniterTasks } from "./fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs";
+import { getA380XInstrumentsIgniterTasks } from "./fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs";
 
 export default new TaskOfTasks("all", [
     // A32NX Task
@@ -96,7 +97,7 @@ export default new TaskOfTasks("all", [
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/tcas"
                 ]),
 
-            new TaskOfTasks("instruments", getInstrumentsIgniterTasks(), true),
+            new TaskOfTasks("instruments", getA32NXInstrumentsIgniterTasks(), true),
         ], true),
 
         // Group all WASM build tasks together but separate from the rest of the tasks as build run more stable like this.
@@ -158,6 +159,7 @@ export default new TaskOfTasks("all", [
             ])
         ], true),
 
+        // Group WASM tasks
         new TaskOfTasks("wasm", [
             new ExecTask("systems",
                 "npm run build-a380x:systems",
@@ -198,7 +200,12 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm"
                 ])
-        ], true)
+        ], true),
+
+        // Group all typescript and react build tasks together.
+        new TaskOfTasks("build", [
+            new TaskOfTasks("instruments", getA380XInstrumentsIgniterTasks(), true),
+        ], true),
     ]),
 
     // InGamePanels Checklist Fix Tasks

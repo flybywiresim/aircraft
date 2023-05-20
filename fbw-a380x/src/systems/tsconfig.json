@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "baseUrl": ".",
+    "resolveJsonModule" : true,
+    "typeRoots": [
+      "../../../fbw-common/src/typings",
+      "../../../node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "paths": {
+      "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],
+      "@datalink/atc": ["../../../fbw-common/src/systems/datalink/atc/src/index.ts"],
+      "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
+      "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
+      "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@simbridge/*": ["./simbridge-client/src/*"],
+      "@shared/*": ["./shared/src/*"],
+      "@typings/*": ["../../../fbw-common/src/typings/*"],
+    }
+  },
+}

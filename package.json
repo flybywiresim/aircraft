@@ -54,8 +54,10 @@
     "build-a380x:fadec": "cd fbw-a380x/src/wasm/fadec_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm",
     "build-a380x:fbw": "cd fbw-a380x/src/wasm/fbw_a380 && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm",
     "build-a380x:flypad-backend": "cd fbw-a380x/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm",
+    
+    "build-a380x:instruments": "mach build --config fbw-a380x/mach.config.js --work-in-config-dir",
 
-    "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend",
+    "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend && npm run build-a380x:instruments",
 
     "====== INGAMEPANELS CHECKLIST FIX ====": "==========================================",
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
