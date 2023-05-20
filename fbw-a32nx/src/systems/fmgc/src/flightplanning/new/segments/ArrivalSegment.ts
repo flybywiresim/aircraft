@@ -20,7 +20,7 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
     private arrival: Arrival | undefined
 
-    async setProcedure(procedureIdent: string, skipUpdateLegs = true) {
+    async setProcedure(procedureIdent: string | undefined, skipUpdateLegs?: boolean) {
         if (procedureIdent === undefined) {
             this.arrival = undefined;
 
