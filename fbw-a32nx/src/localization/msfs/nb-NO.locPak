@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "nb-NO",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX er et samarbeid mellom hundrevis av individuelle bidragsytere.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Visste du? A320 kan lande med sidevind på opptil 38 knop, og medvind på opptil 15 knop!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire er oppkalt etter fly-by-wire kontrollsystemet først introdusert i Airbus A320.",

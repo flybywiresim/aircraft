@@ -44,16 +44,18 @@ Collection::Collection(simconnect::Connection& connection)
   });
 
   this->_ndConfiguration = connection.lvarObject<EgpwcNdLeftRange, EfisNdLeftMode, EgpwcTerrOnNdLeftActive, EgpwcNdRightRange,
-                                                 EfisNdRightMode, EgpwcTerrOnNdRightActive>();
+                                                 EfisNdRightMode, EgpwcTerrOnNdRightActive, AcEssBus, Ac2Bus>();
   this->_ndConfiguration->setUpdateCycleTime(200 * types::millisecond);
   this->_ndConfiguration->setOnChangeCallback([=]() {
     this->_configurationLeft.range = static_cast<float>(this->_ndConfiguration->value<EgpwcNdLeftRange>()) * types::nauticmile;
     this->_configurationLeft.mode = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdLeftMode>());
     this->_configurationLeft.terrainActive = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdLeftActive>()) != 0;
+    this->_configurationLeft.powered = static_cast<std::uint8_t>(this->_ndConfiguration->value<AcEssBus>()) != 0;
 
     this->_configurationRight.range = static_cast<float>(this->_ndConfiguration->value<EgpwcNdRightRange>()) * types::nauticmile;
     this->_configurationRight.mode = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdRightMode>());
     this->_configurationRight.terrainActive = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdRightActive>()) != 0;
+    this->_configurationRight.powered = static_cast<std::uint8_t>(this->_ndConfiguration->value<Ac2Bus>()) != 0;
 
     this->_reconfigureDisplayLeft = true;
     this->_reconfigureDisplayRight = true;

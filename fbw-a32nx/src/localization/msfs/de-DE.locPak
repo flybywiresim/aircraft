@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "de-DE",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "Der FlyByWire A32NX ist das Ergebnis der Zusammenarbeit von Hunderten von individuellen Mitwirkenden.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Wussten Sie schon? Der A320 kann bei Seitenwinden bis zu 38 Knoten und Rückenwinden von bis zu 15 Knoten landen!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire ist nach der Fly-by-Wire-Steuerung benannt, die im Airbus A320 erstmals eingeführt wurde.",
@@ -27,11 +29,11 @@
       "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE": "Decrease the volume of the ident of the ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE": "Increase the volume of the ident of the ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE": "Turn off the ident of the Markers beacons",
-      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE": "Turn on the ident of the Markers beacons",
-      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE": "Decrease the volume of the ident of the Markers beacons",
-      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_INCREASE": "Increase the volume of the ident of the Markers beacons",
-      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_OFF": "Allow morse ident",
-      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_ON": "Inhibit morse ident"
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_ENABLE": "Einschalten der Identifikation des Marker-Beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_DECREASE": "Verringern der Lautstärke der Identifikation des Marker-Beacons",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_VOLUME_INCREASE": "Erhöhen der Lautstärke der Identifikation des Marker-Beacons",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_OFF": "Morse-ID zulassen",
+      "COCKPIT.TOOLTIPS.NAV_PUSHBUTTON_VOICE_ON": "Morse-Ident blockieren"
     }
   }
 }

@@ -8,7 +8,7 @@ import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanManager, ManagedFlightPlan } from '@fmgc/wtsdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { EventBus, Publisher } from 'msfssdk';
+import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 
 export class FlightPlanSynchronization {
     private readonly publisher: Publisher<FmsAtcMessages>;

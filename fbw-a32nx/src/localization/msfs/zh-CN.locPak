@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "zh-CN",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX是由数百名个人贡献者合作完成的。",
       "A32NX.LOADING.TIPS.A320NEO_002": "你知道吗？A320的降落侧风速度可达38节，尾风速度可达15节!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire的名字来源于空客A320首次引入的飞线控制。",

@@ -24,7 +24,6 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
@@ -35,6 +34,7 @@ import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
 import { NXDataStore } from '@shared/persistence';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -325,6 +325,17 @@ export class ManagedFlightPlan {
         }
 
         return waypoints;
+    }
+
+    public get cruiseStepWaypoints(): WayPoint[] {
+        return this.waypoints.reduce((waypoints, wp, index) => {
+            if (wp.additionalData.cruiseStep) {
+                wp.additionalData.cruiseStep.waypointIndex = index;
+                waypoints.push(wp);
+            }
+
+            return waypoints;
+        }, []);
     }
 
     /**
@@ -1245,6 +1256,8 @@ export class ManagedFlightPlan {
                     } else {
                         this.destinationAirfield.additionalData.annotation = approachName;
                     }
+
+                    this.destinationAirfield.additionalData.verticalAngle = lastLeg.verticalAngle ? lastLeg.verticalAngle - 360 : undefined;
                 }
 
                 // Clear discontinuity before destination, if any
@@ -1913,5 +1926,33 @@ export class ManagedFlightPlan {
         }
 
         return false;
+    }
+
+    public addOrUpdateCruiseStep(waypoint: WayPoint, toAltitude: Feet, waypointIndex?: number): void {
+        if (!waypointIndex) {
+            waypointIndex = this.findWaypointIndexByIdent(waypoint.ident)
+        }
+
+        const step: CruiseStepEntry = {
+            distanceBeforeTermination: 0,
+            toAltitude,
+            waypointIndex,
+            isIgnored: false,
+        }
+
+        // TODO: Handle optimum steps
+        waypoint.additionalData.cruiseStep = step;
+    }
+
+    public removeCruiseStep(waypoint: WayPoint): void {
+        waypoint.additionalData.cruiseStep = undefined;
+    }
+
+    public findWaypointIndexByIdent(ident: string): number {
+        return this.waypoints.findIndex(waypoint => waypoint.ident === ident);
+    }
+
+    public unignoreAllCruiseSteps(): void {
+        this.cruiseStepWaypoints.forEach((step) => step.additionalData.cruiseStep.isIgnored = false);
     }
 }

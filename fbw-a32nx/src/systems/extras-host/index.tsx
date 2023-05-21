@@ -1,7 +1,10 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher } from 'msfssdk';
+import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
+import { NotificationManager } from '@shared/notification';
+import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
+import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import './style.scss';
@@ -26,7 +29,13 @@ import './style.scss';
 class ExtrasHost extends BaseInstrument {
     private readonly bus: EventBus;
 
+    private readonly notificationManager: NotificationManager;
+
     private readonly hEventPublisher: HEventPublisher;
+
+    private readonly simVarPublisher: ExtrasSimVarPublisher;
+
+    private readonly pushbuttonCheck: PushbuttonCheck;
 
     private readonly versionCheck: VersionCheck;
 
@@ -45,9 +54,13 @@ class ExtrasHost extends BaseInstrument {
 
         this.bus = new EventBus();
         this.hEventPublisher = new HEventPublisher(this.bus);
+        this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
 
+        this.notificationManager = new NotificationManager();
+
+        this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
         this.versionCheck = new VersionCheck(this.bus);
-        this.keyInterceptor = new KeyInterceptor(this.bus);
+        this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -67,6 +80,7 @@ class ExtrasHost extends BaseInstrument {
     public connectedCallback(): void {
         super.connectedCallback();
 
+        this.pushbuttonCheck.connectedCallback();
         this.versionCheck.connectedCallback();
         this.keyInterceptor.connectedCallback();
     }
@@ -80,8 +94,11 @@ class ExtrasHost extends BaseInstrument {
                 this.hEventPublisher.startPublish();
                 this.versionCheck.startPublish();
                 this.keyInterceptor.startPublish();
+                this.simVarPublisher.startPublish();
             }
             this.gameState = gs;
+        } else {
+            this.simVarPublisher.onUpdate();
         }
 
         this.versionCheck.update();

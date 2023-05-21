@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "es-ES",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "El FlyByWire A32NX es una colaboración entre cientos de colaboradores individuales.",
       "A32NX.LOADING.TIPS.A320NEO_002": "¿Sabías que? El A320 puede aterrizar con vientos cruzados de hasta 38 nudos y con vientos de cola de hasta 15 nudos.",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire recibe su nombre de los controles fly-by-wire introducidos por primera vez en el Airbus A320.",

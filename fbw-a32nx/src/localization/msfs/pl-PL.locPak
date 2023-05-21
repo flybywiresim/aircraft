@@ -2,6 +2,8 @@
   "LocalisationPackage": {
     "Language": "pl-PL",
     "Strings": {
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX jest efektem współpracy setek indywidualnych współpracowników.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Czy wiesz, że? A320 może lądować przy wietrze bocznym o prędkości do 38 węzłów i tylnym do 15 węzłów!",
       "A32NX.LOADING.TIPS.A320NEO_003": "Nazwa FlyByWire pochodzi od systemu sterowania fly-by-wire wprowadzonego po raz pierwszy w samolocie Airbus A320.",

@@ -1,4 +1,4 @@
-import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from 'msfssdk';
+import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@shared/persistence';
 import { AFloor } from './AFloor';
 import { Egt } from './EGT';

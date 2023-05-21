@@ -14,21 +14,23 @@ const localazyConfigFile = 'localazy-locPak-download-config.json';
 const workingDir = path.resolve('msfs');
 const langFilesPath = 'downloaded';
 const convertedFilesPath = '.';
-const outFolder = '../../out/flybywire-aircraft-a320-neo';
+const outFolder = '../../../out/flybywire-aircraft-a320-neo';
 
 let UPDATE_LOCAL = false;
 
-// Quick exit if run locally to not change the local files automatically.
-// Will then only run within a GitHub action or when started manually.
-// If run with option "local" then it will also update languages files locally.
+// Process command line arguments
 process.argv.forEach((val) => {
     if (val === 'local') {
         UPDATE_LOCAL = true;
     }
 });
+
+// Only download translations on GitHub actions to avoid changing local files
+// automatically when running locally.
+// If run with option "local" then it will also update languages files locally.
 if (!process.env.GITHUB_ACTIONS && !UPDATE_LOCAL) {
-    console.warn('Error: Only runs on github actions. Add "local" as parameter to run locally.');
-    // exit with '0' to show build as successful to not confuse devs
+    console.warn('Error: Downloading translations only happens on github actions. Add "local" as parameter to download locally.');
+    copyFilesToOutFolder();
     process.exit(0);
 }
 
@@ -76,16 +78,40 @@ function processFile(fileName) {
         return false;
     }
 
-    console.log(`Copying file ${fileName} to ${outFolder}`);
-    try {
-        fs.copyFileSync(path.join(workingDir, convertedFilesPath, `${fileName}`), path.join(outFolder, `${fileName}`));
-    } catch (e) {
-        console.error(`Error while copying file "${fileName}": ${e}`);
-        return false;
-    }
-
     console.log(`Successfully completed file: ${fileName}`);
     return true;
+}
+
+// Create folder if it does not exist
+function createFolderIfNotExist(folderPath) {
+    if (!fs.existsSync(folderPath)) {
+        console.log(`Creating folder ${folderPath}...`);
+        fs.mkdirSync(folderPath, { recursive: true });
+        return;
+    }
+    console.log(`Folder ${folderPath} exists.`);
+}
+
+// Copy files to out folder
+function copyFilesToOutFolder() {
+    console.log('Copying files to out folder...');
+    let dirEntries;
+    try {
+        dirEntries = fs.readdirSync(path.join(workingDir, convertedFilesPath), { withFileTypes: true });
+    } catch (e) {
+        console.error(`Error while reading folder "${path.join(workingDir, convertedFilesPath)}": ${e}`);
+        process.exit(1);
+    }
+    // make sure the out folder exists before copying files - this is important for the nightly Localazy GitHub action
+    createFolderIfNotExist(path.join(workingDir, outFolder));
+    for (const dirent of dirEntries) {
+        if (dirent.isFile() && dirent.name.endsWith(fileExtension)) {
+            const src = path.join(workingDir, convertedFilesPath, dirent.name);
+            const dest = path.join(workingDir, outFolder, dirent.name);
+            console.log(`Copying file ${src} to ${dest}`);
+            fs.copyFileSync(src, dest);
+        }
+    }
 }
 
 // Remove old files as otherwise disabled language files will remain in the folder and
@@ -124,7 +150,6 @@ exec(localazyCommand,
         });
 
         console.log('Files successfully downloaded. Processing...');
-        let result = true;
         let readdirSync;
         try {
             readdirSync = fs.readdirSync(path.join(workingDir, langFilesPath), { withFileTypes: true });
@@ -136,18 +161,10 @@ exec(localazyCommand,
             if (dirent.isFile() && dirent.name.endsWith(fileExtension)) {
                 const fileName = dirent.name;
                 if (!processFile(fileName)) {
-                    result = false;
+                    console.error(`Error while processing file "${dirent.name}"`);
                 }
             }
         }
 
-        console.log('Copying en-US.locPak to out folder');
-        try {
-            fs.copyFileSync(path.join(workingDir, convertedFilesPath, 'en-US.locPak'), path.join(outFolder, 'en-US.locPak'));
-        } catch (e) {
-            console.error(`Error while copying file "en-US.locPak": ${e}`);
-            result = false;
-        }
-
-        process.exit(result ? 0 : 1);
+        copyFilesToOutFolder();
     });

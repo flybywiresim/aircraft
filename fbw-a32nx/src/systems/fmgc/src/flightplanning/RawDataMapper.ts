@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+import { FixTypeFlags, LegType } from '@fmgc/types/fstypes/FSEnums';
 import { ApproachUtils } from '@shared/ApproachUtils';
 
 /**
@@ -60,20 +61,58 @@ export class RawDataMapper {
                 approach.longName = ApproachUtils.longApproachName(approach)
             });
 
-            info.approaches.forEach(
-                (approach) => approach.transitions.forEach(
-                    (trans) => trans.name.trim().length === 0 && (trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao)),
-                ),
-            );
+            info.approaches.forEach((approach) => {
+                approach.transitions.forEach((trans) => {
+                    // if the trans name is empty (in some 3pd navdata), fill it with the IAF name
+                    if (trans.name.trim().length === 0) {
+                        trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao)
+                    }
+
+                    // Fix up navigraph approach transitions which hide IAPs inside other transitions rather
+                    // than splitting them out as they should be in MSFS data. Unfortunately this means
+                    // these transitions cannot be synced to the sim's flight plan system for ATC etc. as
+                    // they're not visible without this hack.
+                    // Note: it is safe to append to the array inside the forEach by the ECMA spec, and the appended
+                    // elements will not be visited.
+                    for (let i = 1; i < trans.legs.length; i++) {
+                        const leg = trans.legs[i];
+                        if ((leg.fixTypeFlags & FixTypeFlags.IAF) > 0 && (leg.type === LegType.TF || leg.type === LegType.IF)) {
+                            const iafIdent = WayPoint.formatIdentFromIcao(leg.fixIcao);
+                            // this is a transition in itself... check that it doesn't already exist
+                            if (approach.transitions.find((t) => t.name === iafIdent) !== undefined) {
+                                continue;
+                            }
+
+                            RawDataMapper.addApproachTransition(approach, iafIdent, trans.legs.slice(i));
+                        }
+                    }
+                });
+                // It may be tempting to think we can sort the transitions in alphabetical order after appending new ones,
+                // but this would break MSFS flight plan syncing even for transitions that do exist before; the MSFS
+                // flight plan system is based on the indices of the transitions in this array.
+
+                // fake RNPs for AR/SAAR procs
+                const isRnpAr = approach.runwayNumber !== 0 && approach.rnavTypeFlags === 0;
+                if (isRnpAr) {
+                    RawDataMapper.addRnpIfRfPresent(approach.finalLegs, true);
+                    approach.transitions.forEach((t) => RawDataMapper.addRnpIfRfPresent(t.legs));
+                }
+            });
             info.approaches.forEach((approach) => approach.runway = approach.runway.trim());
 
             info.departures = facility.departures;
-            info.departures.forEach((departure) => departure.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
-            info.departures.forEach(
-                (departure) => departure.enRouteTransitions.forEach(
+            info.departures.forEach((departure) => {
+                // patch up transition names
+                departure.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans));
+                departure.enRouteTransitions.forEach(
                     (trans) => trans.name.trim().length === 0 && (trans.name = RawDataMapper.generateDepartureEnRouteTransitionName(trans)),
-                ),
-            );
+                );
+
+                // fake RNPs for AR/SAAR procs
+                RawDataMapper.addRnpIfRfPresent(departure.commonLegs);
+                departure.enRouteTransitions.forEach((t) => RawDataMapper.addRnpIfRfPresent(t.legs));
+                departure.runwayTransitions.forEach((t) => RawDataMapper.addRnpIfRfPresent(t.legs));
+            });
 
             info.arrivals = facility.arrivals;
             info.arrivals.forEach((arrival) => arrival.runwayTransitions.forEach((trans) => trans.name = RawDataMapper.generateRunwayTransitionName(trans)));
@@ -195,5 +234,26 @@ export class RawDataMapper {
      */
     public static generateDepartureEnRouteTransitionName(enrouteTransition: RawEnRouteTransition): string {
         return WayPoint.formatIdentFromIcao(enrouteTransition.legs[enrouteTransition.legs.length - 1].fixIcao);
+    }
+
+    /** Create an approach transition from a list of legs starting with the IAF and add it to the approach */
+    private static addApproachTransition(approach: RawApproach, name: string, legs: RawProcedureLeg[]): void {
+        // copy the IAF leg before we mutate it!
+        legs[0] = { ...legs[0] };
+        legs[0].type = LegType.IF;
+
+        approach.transitions.push({
+            name,
+            legs,
+            __Type: 'JS_ApproachTransition',
+        });
+    }
+
+    /** Add an RNP of 0.3 if the set of legs contains an RF leg */
+    private static addRnpIfRfPresent(legs: RawProcedureLeg[], force = false): void {
+        const hasAr = legs.findIndex((l) => l.type === LegType.RF) >= 0;
+        if (hasAr || force) {
+            legs.forEach((l) => l.rnp = 0.3);
+        }
     }
 }
