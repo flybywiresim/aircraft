@@ -1,0 +1,12 @@
+target
+Cargo.lock
+
+*.pdf
+*.png
+*.svg
+*.pkl
+
+!examples/*.png
+
+scatter.py
+gh-pages/
