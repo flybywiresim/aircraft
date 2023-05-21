@@ -1,6 +1,0 @@
-target
-Cargo.lock
-*.bk
-.vscode
-.idea
-/*.svg
