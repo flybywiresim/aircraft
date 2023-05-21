@@ -1,0 +1,13 @@
+*.swp
+*.html
+doc
+lib
+TODO
+target/
+Cargo.lock
+*.orig
+*.swo
+site/
+.vscode/
+.idea/
+proptest-regressions
