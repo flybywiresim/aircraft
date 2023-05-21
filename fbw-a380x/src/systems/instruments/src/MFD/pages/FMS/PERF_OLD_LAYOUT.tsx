@@ -5,7 +5,7 @@ import { NumberInput } from 'instruments/src/MFD/pages/common/NumberInput';
 
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
-import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
@@ -18,7 +18,10 @@ interface MFDActivePerfOldLayoutProps extends MfdComponentProps {
 }
 
 export class MFDActivePerfOldLayout extends DisplayComponent<MFDActivePerfOldLayoutProps> {
-    private sysSelectorSelectedIndex = Subject.create(0);
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
+    private activePageTitle = Subject.create<string>('');
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -28,13 +31,34 @@ export class MFDActivePerfOldLayout extends DisplayComponent<MFDActivePerfOldLay
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        this.subs.push(this.props.activeUri.sub((val) => {
+            switch (val.category) {
+            case 'active':
+                this.activePageTitle.set('ACTIVE/PERF');
+                break;
+            case 'sec1':
+                this.activePageTitle.set('SEC1/PERF');
+                break;
+            case 'sec2':
+                this.activePageTitle.set('SEC2/PERF');
+                break;
+            case 'sec3':
+                this.activePageTitle.set('SEC3/PERF');
+                break;
+
+            default:
+                this.activePageTitle.set('ACTIVE/PERF');
+                break;
+            }
+        }, true));
     }
 
     render(): VNode {
         return (
             <>
                 <FmsHeader bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
-                <ActivePageTitleBar activePage="ACTIVE/PERF" tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage={this.activePageTitle} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer">
                     <div style="margin: 15px; display: flex; justify-content: space-between;">

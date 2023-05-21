@@ -20,6 +20,8 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
+    private activePageTitle = Subject.create<string>('');
+
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
     private selectedThrustSettingIndex = Subject.create(0);
@@ -32,6 +34,27 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        this.subs.push(this.props.activeUri.sub((val) => {
+            switch (val.category) {
+            case 'active':
+                this.activePageTitle.set('ACTIVE/PERF');
+                break;
+            case 'sec1':
+                this.activePageTitle.set('SEC1/PERF');
+                break;
+            case 'sec2':
+                this.activePageTitle.set('SEC2/PERF');
+                break;
+            case 'sec3':
+                this.activePageTitle.set('SEC3/PERF');
+                break;
+
+            default:
+                this.activePageTitle.set('ACTIVE/PERF');
+                break;
+            }
+        }, true));
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page
         switch (this.props.activeUri.get().extra) {
@@ -69,7 +92,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage="ACTIVE/PERF" tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage={this.activePageTitle} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer">
                     <div style="margin: 15px; display: flex; justify-content: space-between;">

@@ -11,22 +11,18 @@ Status legend:
 ### FMS
 | Status      | URI |
 | ------------- | ------------- |
-| 🟥 | fms/active/f-pln |
-| 🟨 | fms/active/perf |
-| 🟥 | fms/active/fuel-load |
-| 🟥 | fms/active/wind |
-| 🟥 | fms/active/init |
+| 🟥 | fms/\*/f-pln |
+| 🟨 | fms/\*/perf |
+| 🟥 | fms/\*/fuel-load |
+| 🟥 | fms/\*/wind |
+| 🟥 | fms/\*/init |
 |  |  |
 | 🟥 | fms/position/navaids |
 |  |  |
 | 🟥 | fms/sec/index |
-| 🟥 | fms/sec/f-pln |
-| 🟥 | fms/sec/perf |
-| 🟥 | fms/sec/wind |
-| 🟥 | fms/sec/fuel-load |
-| 🟥 | fms/sec/init |
 |  |  |
 | 🟥 | fms/data/route |
+\* (active | sec1 | sec2 | sec3)
 
 ### ATCCOM
 

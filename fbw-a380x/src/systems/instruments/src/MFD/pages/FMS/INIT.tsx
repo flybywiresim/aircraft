@@ -13,8 +13,31 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
+    private activePageTitle = Subject.create<string>('');
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        this.subs.push(this.props.activeUri.sub((val) => {
+            switch (val.category) {
+            case 'active':
+                this.activePageTitle.set('ACTIVE/INIT');
+                break;
+            case 'sec1':
+                this.activePageTitle.set('SEC1/INIT');
+                break;
+            case 'sec2':
+                this.activePageTitle.set('SEC2/INIT');
+                break;
+            case 'sec3':
+                this.activePageTitle.set('SEC3/INIT');
+                break;
+
+            default:
+                this.activePageTitle.set('ACTIVE/INIT');
+                break;
+            }
+        }, true));
     }
 
     public destroy(): void {
@@ -27,7 +50,7 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage="ACTIVE/INIT" tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage={this.activePageTitle} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer" />
                 {/* end page content */}

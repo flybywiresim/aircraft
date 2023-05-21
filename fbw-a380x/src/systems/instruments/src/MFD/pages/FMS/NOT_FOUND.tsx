@@ -27,7 +27,7 @@ export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage="ERROR 404 NOT FOUND" tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage={Subject.create('ERROR 404 NOT FOUND')} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer" />
                 {/* end page content */}

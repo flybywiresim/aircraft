@@ -2,7 +2,7 @@ import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } fr
 import './style.scss';
 
 interface ActivePageTitleBarProps extends ComponentProps {
-    activePage: string;
+    activePage: Subscribable<string>;
     tmpyIsActive: Subscribable<boolean>;
 }
 export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps> {

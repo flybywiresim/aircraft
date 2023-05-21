@@ -6,8 +6,8 @@ import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, S
 
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
-import { MfdFmsActivePerf } from 'instruments/src/MFD/pages/FMS/ACTIVE/PERF';
-import { MfdFmsActiveInit } from 'instruments/src/MFD/pages/FMS/ACTIVE/INIT';
+import { MfdFmsActivePerf } from 'instruments/src/MFD/pages/FMS/PERF';
+import { MfdFmsActiveInit } from 'instruments/src/MFD/pages/FMS/INIT';
 
 import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/NOT_FOUND';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
