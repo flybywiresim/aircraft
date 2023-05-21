@@ -5,6 +5,7 @@
 
 import {
     Airport,
+    AltitudeDescriptor,
     Approach,
     Arrival,
     Departure,
@@ -903,6 +904,77 @@ export abstract class BaseFlightPlan {
         this.incrementVersion();
 
         this.syncLegDefinitionChange(index);
+    }
+
+    setAltitudeDescriptionAt(index: number, value: AltitudeDescriptor) {
+        const element = this.elementAt(index);
+
+        if (element.isDiscontinuity === true) {
+            return;
+        }
+
+        element.definition.altitudeDescriptor = value;
+        this.syncLegDefinitionChange(index);
+
+        this.incrementVersion();
+    }
+
+    setAltitudeAt(index: number, value: number, isDescentConstraint?: boolean) {
+        const element = this.elementAt(index);
+
+        if (element.isDiscontinuity === true) {
+            return;
+        }
+
+        element.definition.altitude1 = value;
+        this.syncLegDefinitionChange(index);
+
+        if (isDescentConstraint && element.constraintType === WaypointConstraintType.Unknown) {
+            this.setFirstDesConstraintWaypoint(index);
+        } else {
+            this.setLastClbConstraintWaypoint(index);
+        }
+
+        this.incrementVersion();
+    }
+
+    setSpeedAt(index: number, value: number, isDescentConstraint?: boolean) {
+        const element = this.elementAt(index);
+
+        if (element.isDiscontinuity === true) {
+            return;
+        }
+
+        element.definition.speed = value;
+        this.syncLegDefinitionChange(index);
+
+        if (isDescentConstraint) {
+            this.setFirstDesConstraintWaypoint(index);
+        } else {
+            this.setLastClbConstraintWaypoint(index);
+        }
+
+        this.incrementVersion();
+    }
+
+    private setLastClbConstraintWaypoint(index: number) {
+        for (let i = index; i >= 0; i--) {
+            const element = this.elementAt(i);
+
+            if (element && element.isDiscontinuity === false) {
+                element.constraintType = WaypointConstraintType.CLB;
+            }
+        }
+    }
+
+    private setFirstDesConstraintWaypoint(index: number) {
+        for (let i = index; i < this.legCount; i++) {
+            const element = this.elementAt(i);
+
+            if (element && element.isDiscontinuity === false) {
+                element.constraintType = WaypointConstraintType.DES;
+            }
+        }
     }
 
     private findDuplicate(waypoint: Fix, afterIndex?: number): [FlightPlanSegment, number, number] | null {

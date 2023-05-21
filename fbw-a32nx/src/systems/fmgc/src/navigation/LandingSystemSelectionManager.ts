@@ -9,7 +9,7 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDa
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { distanceTo } from 'msfs-geo';
-import { Airport, AirportSubsectionCode, Approach, ApproachType, IlsNavaid } from 'msfs-navdata';
+import { Airport, Approach, ApproachType, IlsNavaid, Runway } from 'msfs-navdata';
 
 export class LandingSystemSelectionManager {
     private static readonly DESTINATION_TUNING_DISTANCE = 300;
@@ -35,14 +35,15 @@ export class LandingSystemSelectionManager {
     private inProcess = false;
 
     constructor(
+        private readonly flightPlanService: FlightPlanService,
         private readonly navigationProvider: NavigationProvider,
     ) {
         this.flightPhaseManager = getFlightPhaseManager();
     }
 
     async update(deltaTime: number): Promise<void> {
-        const forceUpdate = FlightPlanService.active.version !== this.flightPlanVersion;
-        this.flightPlanVersion = FlightPlanService.active.version;
+        const forceUpdate = this.flightPlanService.active.version !== this.flightPlanVersion;
+        this.flightPlanVersion = this.flightPlanService.active.version;
 
         if (this.autotuneUpdateThrottler.canUpdate(deltaTime, forceUpdate) > -1) {
             if (this.inProcess) {
@@ -57,7 +58,7 @@ export class LandingSystemSelectionManager {
                 } else if (phase >= FmgcFlightPhase.Descent) {
                     await this.selectApproachIls();
                 } else if (this.pposValid && phase >= FmgcFlightPhase.Cruise) {
-                    const destination = FlightPlanService.active.destinationAirport;
+                    const destination = this.flightPlanService.active.destinationAirport;
                     if (destination && distanceTo(this.ppos, destination.location) <= LandingSystemSelectionManager.DESTINATION_TUNING_DISTANCE) {
                         await this.selectApproachIls();
                     } else if (this._selectedIls !== null) {
@@ -91,7 +92,7 @@ export class LandingSystemSelectionManager {
     }
 
     private async selectDepartureIls(): Promise<boolean> {
-        const runway = FlightPlanService.active.originRunway;
+        const runway = this.flightPlanService.active.originRunway;
 
         if (runway?.lsIdent) {
             const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
@@ -107,8 +108,8 @@ export class LandingSystemSelectionManager {
     }
 
     private async selectApproachIls(): Promise<boolean> {
-        const airport = FlightPlanService.active.destinationAirport;
-        const approach = FlightPlanService.active.approach;
+        const airport = this.flightPlanService.active.destinationAirport;
+        const approach = this.flightPlanService.active.approach;
 
         if (this.isTunableApproach(approach?.type)) {
             return this.setIlsFromApproach(airport, approach, true);
@@ -116,6 +117,40 @@ export class LandingSystemSelectionManager {
 
         // if we got here there wasn't a suitable ILS
         this.resetSelectedIls();
+        return false;
+    }
+
+    /**
+     * Attempt to set the ILS from the runway data
+     * @param airport The airport
+     * @param runway The runway
+     * @param icao If specified, the facility will only be selected if it matches this icao
+     * @param checkBothEnds Check the secondary runway too in case it's a backcourse approach
+     * @returns true on success
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private async setIlsFromRunway(airport: Airport, runway?: Runway, icao?: string, checkBothEnds = false): Promise<boolean> {
+        if (!runway) {
+            return false;
+        }
+
+        const frequencies = await this.flightPlanService.navigationDatabase.backendDatabase.getIlsAtAirport(airport.ident);
+        const runwayFrequencies = frequencies.filter((it) => it.runwayIdent === runway.ident);
+
+        for (const frequency of runwayFrequencies) {
+            if (frequency.frequency > 0 && (!icao || frequency.databaseId === icao)) {
+                if (frequency.databaseId === this._selectedIls?.databaseId) {
+                    return true;
+                }
+
+                this._selectedIls = frequency;
+                this._selectedLocCourse = frequency.locBearing;
+                this._selectedGsSlope = frequency.gsLocation ? -frequency.gsSlope : null;
+
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -128,20 +163,50 @@ export class LandingSystemSelectionManager {
      * unfortunately many scenery developers break the runway <-> ILS links and the data is not available
      * @returns true on success
      */
-    private async setIlsFromApproach(airport: Airport, approach: Approach): Promise<boolean> {
-        const finalLeg = FlightPlanService.active.approachSegment.lastLeg;
-        // FIXME msfs-navdata
-        if (finalLeg.definition.recommendedNavaid?.subSectionCode !== AirportSubsectionCode.LocalizerGlideSlope) {
-            this.resetSelectedIls();
+    private async setIlsFromApproach(airport: Airport, approach: Approach, checkRunwayFrequencies = false): Promise<boolean> {
+        const finalLeg = approach.legs[approach.legs.length - 1];
+
+        if ((finalLeg?.waypoint.databaseId.trim() ?? '').length === 0) {
             return false;
         }
 
-        this._selectedIls = finalLeg.definition.recommendedNavaid;
-        this._selectedApproachBackcourse = approach.type === ApproachType.LocBackcourse;
-        this._selectedLocCourse = finalLeg.definition.recommendedNavaid.locBearing;
-        this._selectedGsSlope = final.definition.recommendedNavaid.gsSlope;
+        if (finalLeg.waypoint.databaseId === this._selectedIls?.databaseId) {
+            return true;
+        }
 
-        return true;
+        if (checkRunwayFrequencies) {
+            const runways = await this.flightPlanService.navigationDatabase.backendDatabase.getRunways(airport.ident);
+            const runway = runways.find((it) => it.ident === approach.runwayIdent);
+
+            if (runway && await this.setIlsFromRunway(airport, runway, finalLeg.waypoint.databaseId, true)) {
+                return true;
+            }
+        }
+
+        return false;
+
+        // TODO fms-v2: port over - need way to get ls facility from msfs-navdata
+
+        // const loc = await this.facLoader.getFacilityRaw(finalLeg.originIcao, 1500, true) as RawVor | undefined;
+        //
+        // if (!loc) {
+        //     return false;
+        // }
+        //
+        // this._selectedIls = loc;
+        //
+        // const courseSlope = await this.getIlsCourseSlopeFromApproach(airport, approach, loc);
+        // if (courseSlope !== null) {
+        //     this._selectedApproachBackcourse = courseSlope.backcourse;
+        //     this._selectedLocCourse = courseSlope.course;
+        //     this._selectedGsSlope = courseSlope.slope;
+        // } else {
+        //     this._selectedApproachBackcourse = false;
+        //     this._selectedLocCourse = null;
+        //     this._selectedGsSlope = null;
+        // }
+        //
+        // return true;
     }
 
     private resetSelectedIls(): void {

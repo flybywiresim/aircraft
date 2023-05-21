@@ -8,7 +8,6 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { Airport, AltitudeDescriptor, LegType, Runway, RunwaySurfaceType, VhfNavaidType, WaypointDescriptor } from 'msfs-navdata';
 import { MathUtils } from '@shared/MathUtils';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
@@ -23,6 +22,7 @@ import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 
 const VALID_ALTITUDE_CONSTRAINT_TYPES_FOR_EFIS = [
     AltitudeDescriptor.AtAlt1,
@@ -63,7 +63,7 @@ export class EfisSymbols {
 
     private lastVnavDriverVersion: number = -1;
 
-    constructor(guidanceController: GuidanceController, private readonly navaidTuner: NavaidTuner) {
+    constructor(guidanceController: GuidanceController, private readonly flightPlanService: FlightPlanService, private readonly navaidTuner: NavaidTuner) {
         this.guidanceController = guidanceController;
         this.nearby = NearbyFacilities.getInstance();
     }
@@ -99,22 +99,25 @@ export class EfisSymbols {
         const nearbyFacilitiesChanged = this.nearby.version !== this.lastNearbyFacilitiesVersion;
         this.lastNearbyFacilitiesVersion = this.nearby.version;
 
-        const activeFPVersionChanged = FlightPlanService.has(FlightPlanIndex.Active) && this.lastFpVersions[FlightPlanIndex.Active] !== FlightPlanService.active.version;
-        const tempFPVersionChanged = FlightPlanService.has(FlightPlanIndex.Temporary) && this.lastFpVersions[FlightPlanIndex.Temporary] !== FlightPlanService.temporary.version;
-        const secFPVersionChanged = FlightPlanService.has(FlightPlanIndex.FirstSecondary) && this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== FlightPlanService.secondary(1).version;
+        const activeFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Active)
+            && this.lastFpVersions[FlightPlanIndex.Active] !== this.flightPlanService.active.version;
+        const tempFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.Temporary)
+            && this.lastFpVersions[FlightPlanIndex.Temporary] !== this.flightPlanService.temporary.version;
+        const secFPVersionChanged = this.flightPlanService.has(FlightPlanIndex.FirstSecondary)
+            && this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== this.flightPlanService.secondary(1).version;
 
         const fpChanged = activeFPVersionChanged || tempFPVersionChanged || secFPVersionChanged;
 
-        if (FlightPlanService.has(FlightPlanIndex.Active)) {
-            this.lastFpVersions[FlightPlanIndex.Active] = FlightPlanService.active.version;
+        if (this.flightPlanService.has(FlightPlanIndex.Active)) {
+            this.lastFpVersions[FlightPlanIndex.Active] = this.flightPlanService.active.version;
         }
 
-        if (FlightPlanService.has(FlightPlanIndex.Temporary)) {
-            this.lastFpVersions[FlightPlanIndex.Temporary] = FlightPlanService.temporary.version;
+        if (this.flightPlanService.has(FlightPlanIndex.Temporary)) {
+            this.lastFpVersions[FlightPlanIndex.Temporary] = this.flightPlanService.temporary.version;
         }
 
-        if (FlightPlanService.has(FlightPlanIndex.FirstSecondary)) {
-            this.lastFpVersions[FlightPlanIndex.FirstSecondary] = FlightPlanService.secondary(1).version;
+        if (this.flightPlanService.has(FlightPlanIndex.FirstSecondary)) {
+            this.lastFpVersions[FlightPlanIndex.FirstSecondary] = this.flightPlanService.secondary(1).version;
         }
 
         // FIXME map reference point should be per side
@@ -123,11 +126,11 @@ export class EfisSymbols {
         const planCentreInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
 
         // FIXME can't have these early returns as it breaks non-fpln stuff
-        if (!FlightPlanService.has(planCentreFpIndex)) {
+        if (!this.flightPlanService.has(planCentreFpIndex)) {
             return;
         }
 
-        const plan = planCentreInAlternate ? FlightPlanService.get(planCentreFpIndex).alternateFlightPlan : FlightPlanService.get(planCentreFpIndex);
+        const plan = planCentreInAlternate ? this.flightPlanService.get(planCentreFpIndex).alternateFlightPlan : this.flightPlanService.get(planCentreFpIndex);
 
         // FIXME as above
         if (!plan.hasElement(planCentreIndex)) {
@@ -322,10 +325,10 @@ export class EfisSymbols {
             // eslint-disable-next-line no-lone-blocks
 
             // ALTN
-            if (FlightPlanService.hasActive) {
+            if (this.flightPlanService.hasActive) {
                 const symbols = this.getFlightPlanSymbols(
                     true,
-                    FlightPlanService.active,
+                    this.flightPlanService.active,
                     this.guidanceController.activeGeometry,
                     range,
                     efisOption,
@@ -339,10 +342,10 @@ export class EfisSymbols {
                 }
 
                 // ACTIVE ALTN
-                if (FlightPlanService.active.alternateFlightPlan.legCount > 0) {
+                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
-                        FlightPlanService.active.alternateFlightPlan,
+                        this.flightPlanService.active.alternateFlightPlan,
                         this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Active, true),
                         range,
                         efisOption,
@@ -358,10 +361,10 @@ export class EfisSymbols {
             }
 
             // TMPY
-            if (FlightPlanService.hasTemporary) {
+            if (this.flightPlanService.hasTemporary) {
                 const symbols = this.getFlightPlanSymbols(
                     true,
-                    FlightPlanService.temporary,
+                    this.flightPlanService.temporary,
                     this.guidanceController.temporaryGeometry,
                     range,
                     efisOption,
@@ -376,10 +379,10 @@ export class EfisSymbols {
             }
 
             // SEC
-            if (FlightPlanService.hasSecondary(1)) {
+            if (this.flightPlanService.hasSecondary(1)) {
                 const symbols = this.getFlightPlanSymbols(
                     false,
-                    FlightPlanService.secondary(1),
+                    this.flightPlanService.secondary(1),
                     this.guidanceController.secondaryGeometry,
                     range,
                     efisOption,
@@ -393,10 +396,10 @@ export class EfisSymbols {
                 }
 
                 // SEC ALTN
-                if (FlightPlanService.secondary((1)).alternateFlightPlan.legCount > 0) {
+                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
-                        FlightPlanService.secondary(1).alternateFlightPlan,
+                        this.flightPlanService.secondary(1).alternateFlightPlan,
                         this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true),
                         range,
                         efisOption,

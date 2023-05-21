@@ -25,7 +25,7 @@ export class RequiredPerformance {
 
     manualRnp = false;
 
-    constructor(private flightPlanManager: FlightPlanManager) {}
+    constructor(private flightPlanService: FlightPlanService) {}
 
     update(_deltaTime: number): void {
         this.updateAutoRnp();
@@ -59,7 +59,7 @@ export class RequiredPerformance {
             }
         }
 
-        const area = FlightPlanService.active.calculateActiveArea();
+        const area = this.flightPlanService.active.calculateActiveArea();
         const rnp = rnpDefaults[area];
 
         if (rnp !== this.activeRnp) {
@@ -74,7 +74,7 @@ export class RequiredPerformance {
     }
 
     private updateLDev(): void {
-        const area = FlightPlanService.active.calculateActiveArea();
+        const area = this.flightPlanService.active.calculateActiveArea();
         const ldev = area !== FlightArea.Enroute
             && area !== FlightArea.Oceanic
             && this.activeRnp < 0.305

@@ -64,7 +64,7 @@ export class LnavDriver implements GuidanceComponent {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    constructor(guidanceController: GuidanceController) {
+    constructor(private readonly flightPlanService: FlightPlanService, guidanceController: GuidanceController) {
         this.guidanceController = guidanceController;
         this.lastAvail = null;
         this.lastLaw = null;
@@ -447,9 +447,9 @@ export class LnavDriver implements GuidanceComponent {
     }
 
     sequenceLeg(leg?: Leg, outboundTransition?: Transition): void {
-        FlightPlanService.active.sequence();
+        this.flightPlanService.active.sequence();
 
-        console.log(`[FMGC/Guidance] LNAV - sequencing leg. [new Index: ${FlightPlanService.active.activeLegIndex}]`);
+        console.log(`[FMGC/Guidance] LNAV - sequencing leg. [new Index: ${this.flightPlanService.active.activeLegIndex}]`);
 
         outboundTransition?.freeze();
 

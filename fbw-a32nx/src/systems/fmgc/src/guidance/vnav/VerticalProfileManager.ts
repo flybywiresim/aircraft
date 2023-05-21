@@ -60,7 +60,7 @@ export class VerticalProfileManager {
     expediteProfile: SelectedGeometryProfile | undefined;
 
     constructor(
-        private readonly flightPlanService: typeof FlightPlanService,
+        private readonly flightPlanService: FlightPlanService,
         private guidanceController: GuidanceController,
         private observer: VerticalProfileComputationParametersObserver,
         private atmosphericConditions: AtmosphericConditions,

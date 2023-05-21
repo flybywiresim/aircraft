@@ -6,84 +6,81 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FpmConfig, FpmConfigs } from '@fmgc/flightplanning/new/FpmConfig';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { Fix, Waypoint } from 'msfs-navdata';
+import { AltitudeDescriptor, Fix, Waypoint } from 'msfs-navdata';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
+import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 
-// TODO refactor into instance class
-export class FlightPlanService {
-    private constructor() {
-    }
+export class FlightPlanService implements FlightPlanInterface {
+    private flightPlanManager = new FlightPlanManager(new EventBus(), Math.round(Math.random() * 10_000), true);
 
-    private static flightPlanManager = new FlightPlanManager(new EventBus(), Math.round(Math.random() * 10_000), true);
+    private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3
 
-    private static config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3
+    navigationDatabase: NavigationDatabase
 
-    static navigationDatabase: NavigationDatabase
+    version = 0;
 
-    static version = 0;
-
-    static createFlightPlans() {
+    createFlightPlans() {
         this.flightPlanManager.create(FlightPlanIndex.Active);
         this.flightPlanManager.create(FlightPlanIndex.Uplink);
         this.flightPlanManager.create(FlightPlanIndex.FirstSecondary);
     }
 
-    static get(index: number) {
+    get(index: number) {
         return this.flightPlanManager.get(index);
     }
 
-    static has(index: number) {
+    has(index: number) {
         return this.flightPlanManager.has(index);
     }
 
-    static get active() {
+    get active() {
         return this.flightPlanManager.get(FlightPlanIndex.Active);
     }
 
-    static get temporary() {
+    get temporary() {
         return this.flightPlanManager.get(FlightPlanIndex.Temporary);
     }
 
-    static get activeOrTemporary() {
+    get activeOrTemporary() {
         if (this.hasTemporary) {
             return this.flightPlanManager.get(FlightPlanIndex.Temporary);
         }
         return this.flightPlanManager.get(FlightPlanIndex.Active);
     }
 
-    static get uplink() {
+    get uplink() {
         return this.flightPlanManager.get(FlightPlanIndex.Uplink);
     }
 
     /**
      * Obtains the specified secondary flight plan, 1-indexed
      */
-    static secondary(index: number) {
+    secondary(index: number) {
         return this.flightPlanManager.get(FlightPlanIndex.FirstSecondary + index - 1);
     }
 
-    static get hasActive() {
+    get hasActive() {
         return this.flightPlanManager.has(FlightPlanIndex.Active);
     }
 
-    static get hasTemporary() {
+    get hasTemporary() {
         return this.flightPlanManager.has(FlightPlanIndex.Temporary);
     }
 
-    static hasSecondary(index: number) {
+    hasSecondary(index: number) {
         return this.flightPlanManager.has(FlightPlanIndex.FirstSecondary + index - 1);
     }
 
-    static get hasUplink() {
+    get hasUplink() {
         return this.flightPlanManager.has(FlightPlanIndex.Uplink);
     }
 
-    static temporaryInsert() {
+    temporaryInsert() {
         const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
 
         if (temporaryPlan.pendingAirways) {
@@ -103,7 +100,7 @@ export class FlightPlanService {
         this.flightPlanManager.delete(FlightPlanIndex.Temporary);
     }
 
-    static temporaryDelete() {
+    temporaryDelete() {
         if (!this.hasTemporary) {
             throw new Error('[FMS/FPS] Cannot delete temporary flight plan if none exists');
         }
@@ -111,7 +108,7 @@ export class FlightPlanService {
         this.flightPlanManager.delete(FlightPlanIndex.Temporary);
     }
 
-    static uplinkInsert() {
+    uplinkInsert() {
         if (!this.hasUplink) {
             throw new Error('[FMS/FPS] Cannot insert uplink flight plan if none exists');
         }
@@ -124,13 +121,13 @@ export class FlightPlanService {
         }
     }
 
-    static reset() {
+    reset() {
         this.flightPlanManager.deleteAll();
 
         this.createFlightPlans();
     }
 
-    private static prepareDestructiveModification(planIndex: FlightPlanIndex) {
+    private prepareDestructiveModification(planIndex: FlightPlanIndex) {
         let finalIndex = planIndex;
         if (planIndex === FlightPlanIndex.Active) {
             this.ensureTemporaryExists();
@@ -149,7 +146,7 @@ export class FlightPlanService {
      * @param altnIcao  ICAO of the ALTN airport
      * @param planIndex which flight plan (excluding temporary) to make the change on
      */
-    static async newCityPair(fromIcao: string, toIcao: string, altnIcao?: string, planIndex = FlightPlanIndex.Active) {
+    async newCityPair(fromIcao: string, toIcao: string, altnIcao?: string, planIndex = FlightPlanIndex.Active) {
         if (planIndex === FlightPlanIndex.Temporary) {
             throw new Error('[FMS/FPM] Cannot enter new city pair on temporary flight plan');
         }
@@ -176,7 +173,7 @@ export class FlightPlanService {
      * @param altnIcao  ICAo of the ALTN airport
      * @param planIndex which flight plan (excluding temporary) to make the change on
      */
-    static async setAlternate(altnIcao: string, planIndex = FlightPlanIndex.Active) {
+    async setAlternate(altnIcao: string, planIndex = FlightPlanIndex.Active) {
         if (planIndex === FlightPlanIndex.Temporary) {
             throw new Error('[FMS/FPM] Cannot set alternate on temporary flight plan');
         }
@@ -193,7 +190,7 @@ export class FlightPlanService {
      * @param planIndex   which flight plan to make the change on
      * @param alternate   whether to edit the plan's alternate flight plan
      */
-    static setOriginRunway(runwayIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setOriginRunway(runwayIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -208,7 +205,7 @@ export class FlightPlanService {
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    static setDepartureProcedure(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setDepartureProcedure(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -223,7 +220,7 @@ export class FlightPlanService {
      * @param planIndex       which flight plan to make the change on
      * @param alternate       whether to edit the plan's alternate flight plan
      */
-    static setDepartureEnrouteTransition(transitionIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setDepartureEnrouteTransition(transitionIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -238,7 +235,7 @@ export class FlightPlanService {
      * @param planIndex       which flight plan to make the change on
      * @param alternate       whether to edit the plan's alternate flight plan
      */
-    static setArrivalEnrouteTransition(transitionIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setArrivalEnrouteTransition(transitionIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -253,7 +250,7 @@ export class FlightPlanService {
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    static setArrival(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setArrival(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -268,7 +265,7 @@ export class FlightPlanService {
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    static setApproachVia(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setApproachVia(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -283,7 +280,7 @@ export class FlightPlanService {
      * @param planIndex      which flight plan to make the change on
      * @param alternate      whether to edit the plan's alternate flight plan
      */
-    static setApproach(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setApproach(procedureIdent: string | undefined, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -298,7 +295,7 @@ export class FlightPlanService {
      * @param planIndex   which flight plan to make the change on
      * @param alternate   whether to edit the plan's alternate flight plan
      */
-    static setDestinationRunway(runwayIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {
+    setDestinationRunway(runwayIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -316,7 +313,7 @@ export class FlightPlanService {
      *
      * @returns `true` if the element could be removed, `false` if removal is not allowed
      */
-    static deleteElementAt(index: number, planIndex = FlightPlanIndex.Active, alternate = false): boolean {
+    deleteElementAt(index: number, planIndex = FlightPlanIndex.Active, alternate = false): boolean {
         if (!this.config.ALLOW_REVISIONS_ON_TMPY && planIndex === FlightPlanIndex.Temporary) {
             throw new Error('[FMS/FPS] Cannot delete element in temporary flight plan');
         }
@@ -339,7 +336,7 @@ export class FlightPlanService {
      * @param planIndex which flight plan to make the change on
      * @param alternate whether to edit the plan's alternate flight plan
      */
-    static async insertWaypointBefore(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
+    async insertWaypointBefore(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -355,7 +352,7 @@ export class FlightPlanService {
      * @param planIndex which flight plan to make the change on
      * @param alternate whether to edit the plan's alternate flight plan
      */
-    static async nextWaypoint(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
+    async nextWaypoint(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -371,7 +368,7 @@ export class FlightPlanService {
      * @param planIndex which flight plan to make the change on
      * @param alternate whether to edit the plan's alternate flight plan
      */
-    static async newDest(atIndex: number, airportIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {
+    async newDest(atIndex: number, airportIdent: string, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -379,7 +376,7 @@ export class FlightPlanService {
         await plan.newDest(atIndex, airportIdent);
     }
 
-    static startAirwayEntry(at: number, planIndex = FlightPlanIndex.Active) {
+    async startAirwayEntry(at: number, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
@@ -387,7 +384,7 @@ export class FlightPlanService {
         plan.startAirwayEntry(at);
     }
 
-    static directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false, planIndex = FlightPlanIndex.Active) {
+    async directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
@@ -395,7 +392,7 @@ export class FlightPlanService {
         plan.directTo(ppos, trueTrack, waypoint, withAbeam);
     }
 
-    static async addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex = FlightPlanIndex.Active): Promise<number> {
+    async addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex = FlightPlanIndex.Active): Promise<number> {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
@@ -403,7 +400,7 @@ export class FlightPlanService {
         return plan.addOrEditManualHold(at, desiredHold, modifiedHold, defaultHold);
     }
 
-    static revertHoldToComputed(at: number, planIndex = FlightPlanIndex.Active) {
+    async revertHoldToComputed(at: number, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
@@ -411,7 +408,7 @@ export class FlightPlanService {
         plan.revertHoldToComputed(at);
     }
 
-    static enableAltn(atIndexInAlternate: number, planIndex = FlightPlanIndex.Active) {
+    async enableAltn(atIndexInAlternate: number, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
@@ -419,7 +416,31 @@ export class FlightPlanService {
         plan.enableAltn(atIndexInAlternate);
     }
 
-    static editLegDefinition(atIndex: number, changes: Partial<FlightPlanLegDefinition>, planIndex = FlightPlanIndex.Active, alternate = false) {
+    async setAltitudeDescriptionAt(atIndex: number, altDesc: AltitudeDescriptor, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
+        const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
+
+        plan.setAltitudeDescriptionAt(atIndex, altDesc);
+    }
+
+    async setAltitudeAt(atIndex: number, altitude: number, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean) {
+        const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
+
+        plan.setAltitudeAt(atIndex, altitude, isDescentConstraint);
+    }
+
+    async setSpeedAt(atIndex: number, speed: number, isDescentConstraint: boolean, planIndex = FlightPlanIndex.Active, alternate = false) {
+        const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
+
+        plan.setSpeedAt(atIndex, speed, isDescentConstraint);
+    }
+
+    async editLegDefinition(atIndex: number, changes: Partial<FlightPlanLegDefinition>, planIndex = FlightPlanIndex.Active, alternate = false) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
@@ -427,7 +448,7 @@ export class FlightPlanService {
         return plan.editLegDefinition(atIndex, changes);
     }
 
-    static setOverfly(atIndex: number, overfly: boolean, planIndex = FlightPlanIndex.Active) {
+    async setOverfly(atIndex: number, overfly: boolean, planIndex = FlightPlanIndex.Active) {
         let finalIndex: number = planIndex;
         if (this.config.TMPY_ON_OVERFLY) {
             finalIndex = this.prepareDestructiveModification(planIndex);
@@ -438,7 +459,7 @@ export class FlightPlanService {
         return plan.setOverflyAt(atIndex, overfly);
     }
 
-    static toggleOverfly(atIndex: number, planIndex = FlightPlanIndex.Active) {
+    async toggleOverfly(atIndex: number, planIndex = FlightPlanIndex.Active) {
         let finalIndex: number = planIndex;
         if (this.config.TMPY_ON_OVERFLY) {
             finalIndex = this.prepareDestructiveModification(planIndex);
@@ -449,7 +470,7 @@ export class FlightPlanService {
         return plan.toggleOverflyAt(atIndex);
     }
 
-    static setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex = FlightPlanIndex.Active) {
+    async setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex = FlightPlanIndex.Active) {
         if (!this.config.ALLOW_NON_ACTIVE_FIX_INFOS && planIndex !== FlightPlanIndex.Active) {
             throw new Error('FIX INFO can only be modified on the active flight plan');
         }
@@ -459,7 +480,7 @@ export class FlightPlanService {
         plan.setFixInfoEntry(index, fixInfo);
     }
 
-    static editFixInfoEntry(index: 1 | 2 | 3 | 4, callback: (fixInfo: FixInfoEntry) => FixInfoEntry, planIndex = FlightPlanIndex.Active) {
+    async editFixInfoEntry(index: 1 | 2 | 3 | 4, callback: (fixInfo: FixInfoEntry) => FixInfoEntry, planIndex = FlightPlanIndex.Active) {
         if (!this.config.ALLOW_NON_ACTIVE_FIX_INFOS && planIndex !== FlightPlanIndex.Active) {
             throw new Error('FIX INFO can only be modified on the active flight plan');
         }
@@ -469,11 +490,11 @@ export class FlightPlanService {
         plan.editFixInfoEntry(index, callback);
     }
 
-    static get activeLegIndex(): number {
+    get activeLegIndex(): number {
         return this.active.activeLegIndex;
     }
 
-    static isWaypointInUse(waypoint: Waypoint) {
+    async isWaypointInUse(waypoint: Waypoint) {
         const activePlan = this.active;
 
         for (const leg of activePlan.allLegs) {
@@ -505,32 +526,11 @@ export class FlightPlanService {
         return false;
     }
 
-    private static ensureTemporaryExists() {
+    private async ensureTemporaryExists() {
         if (this.hasTemporary) {
             return;
         }
 
         this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary);
     }
-
-    // static insertDirectTo(directTo: DirectTo): Promise<void> {
-    //     if (!this.hasActive) {
-    //         throw new Error('[FMS/FPM] DirectTo cannot be done without active flight plan');
-    //     }
-    //
-    //     if ((directTo.flightPlanLegIndex === undefined || directTo.flightPlanLegIndex === null) && !directTo.nonFlightPlanWaypoint) {
-    //         throw new Error('[FMS/FPM] DirectTo must have either flightPlanLegIndex or nonFlightPlanWaypoint');
-    //     }
-    //
-    //     if (directTo.flightPlanLegIndex !== undefined && directTo.flightPlanLegIndex !== null && directTo.nonFlightPlanWaypoint) {
-    //         throw new Error('[FMS/FPM] DirectTo cannot have both flightPlanLegIndex and nonFlightPlanWaypoint');
-    //     }
-    //
-    //     if (directTo.nonFlightPlanWaypoint) {
-    //         const dfLeg = FlightPlanLeg.fromEnrouteWaypoint(this.active.enrouteSegment, directTo.nonFlightPlanWaypoint);
-    //         dfLeg.type = LegType.DF;
-    //
-    //         this.active.insertWaypointAfter(this.active.activeLegIndex, directTo.nonFlightPlanWaypoint);
-    //     }
-    // }
 }
