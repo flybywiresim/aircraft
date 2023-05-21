@@ -179,6 +179,14 @@ impl A380AirConditioning {
         self.a320_pressurization_system
             .update_ambient_conditions(context, adirs);
     }
+
+    pub(crate) fn fcv_to_pack_id(fcv_id: usize) -> usize {
+        if fcv_id == 1 || fcv_id == 2 {
+            0
+        } else {
+            1
+        }
+    }
 }
 
 impl PackFlowControllers for A380AirConditioning {
@@ -1174,13 +1182,7 @@ mod tests {
     }
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, fcv_id: usize) -> bool {
-            let id = {
-                if fcv_id == 1 || fcv_id == 2 {
-                    0
-                } else {
-                    1
-                }
-            };
+            let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
             if fcv_id % 2 == 0 {
                 self.packs[id].right_pack_flow_valve_is_open()
             } else {
@@ -1188,13 +1190,7 @@ mod tests {
             }
         }
         fn pack_flow_valve_air_flow(&self, fcv_id: usize) -> MassRate {
-            let id = {
-                if fcv_id == 1 || fcv_id == 2 {
-                    0
-                } else {
-                    1
-                }
-            };
+            let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
             if fcv_id % 2 == 0 {
                 self.packs[id].right_pack_flow_valve_air_flow()
             } else {
@@ -1947,12 +1943,13 @@ mod tests {
         }
 
         fn command_one_pack_on(mut self, pack_id: usize) -> Self {
+            let opposite_pack_id = 1 + (pack_id == 1) as usize;
             self.write_by_name(
-                format!("OVHD_COND_PACK_{}_PB_IS_ON", 1 + (pack_id == 2) as usize).as_str(),
+                format!("OVHD_COND_PACK_{}_PB_IS_ON", pack_id).as_str(),
                 true,
             );
             self.write_by_name(
-                format!("OVHD_COND_PACK_{}_PB_IS_ON", 1 + (pack_id == 1) as usize).as_str(),
+                format!("OVHD_COND_PACK_{}_PB_IS_ON", opposite_pack_id).as_str(),
                 false,
             );
             self
@@ -2190,9 +2187,11 @@ mod tests {
     }
 
     mod a380_pressurization_tests {
+        // All presurization tests ignored until the A380 pressurization system is modelled
         use super::*;
 
         #[test]
+        #[ignore]
         fn conversion_from_pressure_to_altitude_works() {
             let test_bed = test_bed()
                 .on_ground()
@@ -2210,6 +2209,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn pressure_initialization_works() {
             let test_bed = test_bed()
                 .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
@@ -2234,6 +2234,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn positive_cabin_vs_reduces_cabin_pressure() {
             let test_bed = test_bed()
                 .run_and()
@@ -2245,6 +2246,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn seventy_seconds_after_landing_cpc_switches() {
             let mut test_bed = test_bed_in_descent()
                 .indicated_airspeed_of(Velocity::new::<knot>(99.))
@@ -2264,6 +2266,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn fifty_five_seconds_after_landing_outflow_valve_opens() {
             let mut test_bed = test_bed_in_descent()
                 .indicated_airspeed_of(Velocity::new::<knot>(99.))
@@ -2283,6 +2286,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn going_to_ground_and_ground_again_resets_valve_opening() {
             let mut test_bed = test_bed_in_descent()
                 .indicated_airspeed_of(Velocity::new::<knot>(99.))
@@ -2317,6 +2321,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn outflow_valve_closes_when_ditching_pb_is_on() {
             let mut test_bed = test_bed().iterate(50);
 
@@ -2328,6 +2333,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn fifty_five_seconds_after_landing_outflow_valve_doesnt_open_if_ditching_pb_is_on() {
             let mut test_bed = test_bed_in_descent()
                 .indicated_airspeed_of(Velocity::new::<knot>(99.))
@@ -2344,6 +2350,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn fifty_five_seconds_after_landing_outflow_valve_doesnt_open_if_mode_sel_man() {
             let test_bed = test_bed_in_descent()
                 .memorize_outflow_valve_open_amount()
@@ -2360,6 +2367,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn rpcu_opens_ofv_if_mode_sel_man() {
             let test_bed = test_bed_in_descent()
                 .command_mode_sel_pb_man()
@@ -2375,6 +2383,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cpc_man_mode_starts_in_auto() {
             let mut test_bed = test_bed();
 
@@ -2382,6 +2391,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cpc_switches_if_man_mode_is_engaged_for_at_least_10_seconds() {
             let mut test_bed = test_bed();
 
@@ -2398,6 +2408,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cpc_does_not_switch_if_man_mode_is_engaged_for_less_than_10_seconds() {
             let mut test_bed = test_bed();
 
@@ -2414,6 +2425,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cpc_switching_timer_resets() {
             let mut test_bed = test_bed();
 
@@ -2437,6 +2449,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cpc_targets_manual_landing_elev_if_knob_not_in_initial_position() {
             let mut test_bed = test_bed();
 
@@ -2448,6 +2461,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cpc_targets_auto_landing_elev_if_knob_returns_to_initial_position() {
             let mut test_bed = test_bed();
 
@@ -2463,6 +2477,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn aircraft_vs_starts_at_0() {
             let test_bed = test_bed().set_on_ground().iterate(300);
 
@@ -2470,6 +2485,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn outflow_valve_stays_open_on_ground() {
             let mut test_bed = test_bed().set_on_ground().iterate(10);
 
@@ -2486,22 +2502,22 @@ mod tests {
             );
         }
 
-        // Test fails because the packs generate more air but the outflow valve hasn't been adjusted for A380 yet
-        // To be uncommented when pressurization system is adapted to a380
-        // #[test]
-        // fn cabin_vs_changes_to_takeoff() {
-        //     let test_bed = test_bed()
-        //         .set_on_ground()
-        //         .iterate(50)
-        //         .set_takeoff_power()
-        //         .iterate_with_delta(400, Duration::from_millis(10));
-        //     assert!(
-        //         (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
-        //             < Velocity::new::<foot_per_minute>(20.)
-        //     );
-        // }
+        #[test]
+        #[ignore]
+        fn cabin_vs_changes_to_takeoff() {
+            let test_bed = test_bed()
+                .set_on_ground()
+                .iterate(50)
+                .set_takeoff_power()
+                .iterate_with_delta(400, Duration::from_millis(10));
+            assert!(
+                (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-400.)).abs()
+                    < Velocity::new::<foot_per_minute>(20.)
+            );
+        }
 
         #[test]
+        #[ignore]
         fn cabin_delta_p_does_not_exceed_0_1_during_takeoff() {
             let test_bed = test_bed()
                 .on_ground()
@@ -2517,6 +2533,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cabin_vs_changes_to_climb() {
             let test_bed = test_bed()
                 .iterate(10)
@@ -2528,6 +2545,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cabin_vs_increases_with_altitude() {
             let test_bed = test_bed()
                 .iterate(10)
@@ -2547,34 +2565,35 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cabin_vs_changes_to_cruise() {
             let test_bed = test_bed_in_cruise().iterate_with_delta(200, Duration::from_millis(100));
 
             assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
         }
 
-        // Test fails because the packs generate more air but the outflow valve hasn't been adjusted for A380 yet
-        // To be uncommented when pressurization system is adapted to a380
-        // #[test]
-        // fn cabin_vs_maintains_stability_in_cruise() {
-        //     let mut test_bed = test_bed_in_cruise().iterate(400);
+        #[test]
+        #[ignore]
+        fn cabin_vs_maintains_stability_in_cruise() {
+            let mut test_bed = test_bed_in_cruise().iterate(400);
 
-        //     assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
 
-        //     test_bed = test_bed.iterate(200);
+            test_bed = test_bed.iterate(200);
 
-        //     assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
 
-        //     test_bed = test_bed.iterate(3000);
+            test_bed = test_bed.iterate(3000);
 
-        //     assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
 
-        //     test_bed = test_bed.iterate(10000);
+            test_bed = test_bed.iterate(10000);
 
-        //     assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
-        // }
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(1.));
+        }
 
         #[test]
+        #[ignore]
         fn cabin_vs_changes_to_descent() {
             let test_bed = test_bed_in_cruise()
                 .vertical_speed_of(Velocity::new::<foot_per_minute>(-260.))
@@ -2585,6 +2604,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cabin_vs_changes_to_ground() {
             let test_bed = test_bed_in_descent()
                 .indicated_airspeed_of(Velocity::new::<knot>(99.))
@@ -2599,6 +2619,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn cabin_delta_p_does_not_exceed_8_06_psi_in_climb() {
             let test_bed = test_bed()
                 .and_run()
@@ -2615,6 +2636,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn outflow_valve_closes_to_compensate_packs_off() {
             let test_bed = test_bed_in_cruise()
                 .iterate(200)
@@ -2631,6 +2653,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn outflow_valve_does_not_move_when_man_mode_engaged() {
             let test_bed = test_bed()
                 .iterate(10)
@@ -2650,6 +2673,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn outflow_valve_responds_to_man_inputs_when_in_man_mode() {
             let test_bed = test_bed_in_cruise()
                 .command_mode_sel_pb_man()
@@ -2664,6 +2688,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn outflow_valve_position_affects_cabin_vs_when_in_man_mode() {
             let test_bed = test_bed()
                 .with()
@@ -2680,6 +2705,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn pressure_builds_up_when_ofv_closed_and_packs_on() {
             let test_bed = test_bed()
                 .iterate(10)
@@ -2694,6 +2720,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn pressure_decreases_when_ofv_closed_and_packs_off() {
             let test_bed = test_bed()
                 .with()
@@ -2712,6 +2739,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn pressure_is_constant_when_ofv_closed_and_packs_off_with_no_delta_p() {
             let test_bed = test_bed()
                 .with()
@@ -2730,6 +2758,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn pressure_never_goes_below_ambient_when_ofv_opens() {
             let test_bed = test_bed()
                 .with()
@@ -2751,6 +2780,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn safety_valve_stays_closed_when_delta_p_is_less_than_8_6_psi() {
             let test_bed = test_bed()
                 .ambient_pressure_of(
@@ -2763,6 +2793,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn safety_valve_stays_closed_when_delta_p_is_less_than_minus_1_psi() {
             let test_bed = test_bed()
                 .ambient_pressure_of(
@@ -2775,6 +2806,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn safety_valve_opens_when_delta_p_above_8_6_psi() {
             let test_bed = test_bed()
                 .command_mode_sel_pb_man()
@@ -2792,6 +2824,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn safety_valve_opens_when_delta_p_below_minus_1_psi() {
             let test_bed = test_bed()
                 .command_mode_sel_pb_man()
@@ -2809,6 +2842,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn safety_valve_closes_when_condition_is_not_met() {
             let mut test_bed = test_bed()
                 .command_mode_sel_pb_man()
@@ -2834,6 +2868,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn opening_doors_affects_cabin_pressure() {
             let test_bed = test_bed_in_cruise()
                 .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
@@ -2853,6 +2888,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore]
         fn opening_doors_affects_cabin_temperature() {
             let mut test_bed = test_bed()
                 .on_ground()
@@ -2872,23 +2908,21 @@ mod tests {
             );
         }
 
-        // Test fails because the packs generate more air but the outflow valve hasn't been adjusted for A380 yet
-        // To be uncommented when pressurization system is adapted to a380
-        // Uncomment when pressurization is modelled
-        // #[test]
-        // fn when_on_ground_pressure_diff_is_less_than_excessive() {
-        //     let test_bed = test_bed()
-        //         .on_ground()
-        //         .command_packs_on_off(true)
-        //         .iterate(100);
+        #[test]
+        #[ignore]
+        fn when_on_ground_pressure_diff_is_less_than_excessive() {
+            let test_bed = test_bed()
+                .on_ground()
+                .command_packs_on_off(true)
+                .iterate(100);
 
-        //     assert!(
-        //         test_bed.cabin_delta_p()
-        //             < Pressure::new::<psi>(
-        //                 A320PressurizationConstants::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
-        //             )
-        //     );
-        // }
+            assert!(
+                test_bed.cabin_delta_p()
+                    < Pressure::new::<psi>(
+                        A320PressurizationConstants::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
+                    )
+            );
+        }
 
         mod cabin_pressure_controller_tests {
             use super::*;

@@ -33,6 +33,8 @@ use systems::{
     },
 };
 
+use crate::air_conditioning::A380AirConditioning;
+
 macro_rules! valve_signal_implementation {
     ($signal_type: ty) => {
         impl PneumaticValveSignal for $signal_type {
@@ -372,13 +374,7 @@ impl EngineStartState for A380Pneumatic {
 impl PackFlowValveState for A380Pneumatic {
     // fcv_id: 1, 2, 3 or 4
     fn pack_flow_valve_is_open(&self, fcv_id: usize) -> bool {
-        let id = {
-            if fcv_id == 1 || fcv_id == 2 {
-                0
-            } else {
-                1
-            }
-        };
+        let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
         if fcv_id % 2 == 0 {
             self.packs[id].right_pack_flow_valve_is_open()
         } else {
@@ -386,13 +382,7 @@ impl PackFlowValveState for A380Pneumatic {
         }
     }
     fn pack_flow_valve_air_flow(&self, fcv_id: usize) -> MassRate {
-        let id = {
-            if fcv_id == 1 || fcv_id == 2 {
-                0
-            } else {
-                1
-            }
-        };
+        let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
         if fcv_id % 2 == 0 {
             self.packs[id].right_pack_flow_valve_air_flow()
         } else {
