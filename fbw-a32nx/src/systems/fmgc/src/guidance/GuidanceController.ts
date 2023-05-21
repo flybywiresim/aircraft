@@ -104,7 +104,7 @@ export class GuidanceController {
     }
 
     get activeLegIndex(): number {
-        return FlightPlanService.active.activeLegIndex;
+        return this.flightPlanService.active.activeLegIndex;
     }
 
     temporaryLegIndex: number = -1;
@@ -141,10 +141,6 @@ export class GuidanceController {
 
     private atmosphericConditions: AtmosphericConditions;
 
-    get hasTemporaryFlightPlan() {
-        return FlightPlanService.hasTemporary;
-    }
-
     private updateEfisState(side: EfisSide, state: EfisState): void {
         const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
         const ndRange = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
@@ -164,7 +160,7 @@ export class GuidanceController {
 
     // FIXME only considers the case where F-PLN is shown on the MCDU
     private updateMrpState() {
-        if (!FlightPlanService.hasActive) {
+        if (!this.flightPlanService.hasActive) {
             return; // TODO secondary
         }
 
@@ -174,11 +170,11 @@ export class GuidanceController {
         const focusedWpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
         const focusedWpInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
 
-        if (!FlightPlanService.has(focusedWpFpIndex)) {
+        if (!this.flightPlanService.has(focusedWpFpIndex)) {
             return;
         }
 
-        const plan = focusedWpInAlternate ? FlightPlanService.get(focusedWpFpIndex).alternateFlightPlan : FlightPlanService.get(focusedWpFpIndex);
+        const plan = focusedWpInAlternate ? this.flightPlanService.get(focusedWpFpIndex).alternateFlightPlan : this.flightPlanService.get(focusedWpFpIndex);
 
         if (!plan.hasElement(focusedWpIndex)) {
             return;
@@ -253,7 +249,7 @@ export class GuidanceController {
 
     private updateEfisApproachMessage() {
         let apprMsg = '';
-        const appr = FlightPlanService.active.approach;
+        const appr = this.flightPlanService.active.approach;
 
         if (appr && appr.type !== ApproachType.Unknown) {
             const phase = getFlightPhaseManager().phase;
@@ -275,16 +271,16 @@ export class GuidanceController {
         }
     }
 
-    constructor(fmgc: Fmgc) {
+    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService) {
         this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
         this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
-        this.lnavDriver = new LnavDriver(this);
-        this.vnavDriver = new VnavDriver(FlightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory);
-        this.pseudoWaypoints = new PseudoWaypoints(FlightPlanService, this, this.atmosphericConditions);
-        this.efisVectors = new EfisVectors(this);
+        this.lnavDriver = new LnavDriver(flightPlanService, this);
+        this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory);
+        this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
+        this.efisVectors = new EfisVectors(this.flightPlanService, this);
     }
 
     init() {
@@ -311,7 +307,7 @@ export class GuidanceController {
         this.pseudoWaypoints.init();
 
         Coherent.on('A32NX_IMM_EXIT', (fpIndex, immExit) => {
-            const fpLeg = FlightPlanService.active.maybeElementAt(fpIndex);
+            const fpLeg = this.flightPlanService.active.maybeElementAt(fpIndex);
             const geometryLeg = this.activeGeometry.legs.get(fpIndex);
 
             const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
@@ -319,7 +315,7 @@ export class GuidanceController {
             if (fpLeg.isDiscontinuity === false && fpLeg.type === LegType.HM) {
                 fpLeg.holdImmExit = immExit;
 
-                FlightPlanService.active.incrementVersion();
+                this.flightPlanService.active.incrementVersion();
             }
 
             if (geometryLeg instanceof HMLeg) {
@@ -439,12 +435,12 @@ export class GuidanceController {
 
         const lastVersion = this.lastFlightPlanVersions.get(flightPlanIndex);
 
-        if (!FlightPlanService.has(flightPlanIndex)) {
+        if (!this.flightPlanService.has(flightPlanIndex)) {
             this.flightPlanGeometries.delete(geometryPIndex);
             return;
         }
 
-        const plan = alternate ? FlightPlanService.get(flightPlanIndex).alternateFlightPlan : FlightPlanService.get(flightPlanIndex);
+        const plan = alternate ? this.flightPlanService.get(flightPlanIndex).alternateFlightPlan : this.flightPlanService.get(flightPlanIndex);
 
         const currentVersion = plan.version;
 

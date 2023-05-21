@@ -84,7 +84,7 @@ export class PseudoWaypoints implements GuidanceComponent {
     pseudoWaypoints: PseudoWaypoint[] = [];
 
     constructor(
-        private readonly flightPlanService: typeof FlightPlanService,
+        private readonly flightPlanService: FlightPlanService,
         private readonly guidanceController: GuidanceController,
         private readonly atmosphericConditions: AtmosphericConditions,
     ) { }
@@ -105,7 +105,7 @@ export class PseudoWaypoints implements GuidanceComponent {
 
     private recompute() {
         const geometry = this.guidanceController.activeGeometry;
-        const wptCount = FlightPlanService.active.firstMissedApproachLegIndex;
+        const wptCount = this.flightPlanService.active.firstMissedApproachLegIndex;
 
         const navGeometryProfile = this.guidanceController.vnavDriver.mcduProfile;
         if (!geometry || geometry.legs.size < 1 || !navGeometryProfile?.isReadyToDisplay) {

@@ -66,7 +66,7 @@ export class VnavDriver implements GuidanceComponent {
     private requestDescentProfileRecomputation: boolean = false;
 
     constructor(
-        private readonly flightPlanService: typeof FlightPlanService,
+        private readonly flightPlanService: FlightPlanService,
         private readonly guidanceController: GuidanceController,
         private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
         private readonly atmosphericConditions: AtmosphericConditions,
@@ -299,7 +299,7 @@ export class VnavDriver implements GuidanceComponent {
         }
 
         return newParameters.flightPhase < FmgcFlightPhase.Descent || newParameters.flightPhase > FmgcFlightPhase.Approach
-            || (!FlightPlanService.hasTemporary && this.didLegsChange(this.oldLegs, newLegs))
+            || (!this.flightPlanService.hasTemporary && this.didLegsChange(this.oldLegs, newLegs))
             || numberOrNanChanged(this.lastParameters.cruiseAltitude, newParameters.cruiseAltitude)
             || numberOrNanChanged(this.lastParameters.managedDescentSpeed, newParameters.managedDescentSpeed)
             || numberOrNanChanged(this.lastParameters.managedDescentSpeedMach, newParameters.managedDescentSpeedMach)
@@ -329,7 +329,7 @@ export class VnavDriver implements GuidanceComponent {
      * Compute predictions for EFOB, ETE, etc. at destination
      */
     public getDestinationPrediction(): VerticalWaypointPrediction | null {
-        const destLegIndex = FlightPlanService.active.destinationLegIndex;
+        const destLegIndex = this.flightPlanService.active.destinationLegIndex;
 
         return this.profileManager.mcduProfile?.waypointPredictions?.get(destLegIndex);
     }

@@ -93,14 +93,14 @@ export class FlightPlanSynchronization {
 
     constructor(
         private readonly bus: EventBus,
-        private readonly flightPlanManager: FlightPlanManager,
+        private readonly flightPlanService: FlightPlanService,
         private readonly flightPhaseManager: FlightPhaseManager,
     ) {
         this.publisher = this.bus.getPublisher<FmsAtcMessages>();
 
         // FIXME use the non-guidance FMGC to get the flightplan data
         setInterval(() => {
-            const activeFlightPlan = FlightPlanService.active;
+            const activeFlightPlan = this.flightPlanService.active;
             const phase = this.flightPhaseManager.phase;
             const isFlying = phase >= FmgcFlightPhase.Takeoff && phase !== FmgcFlightPhase.Done;
 

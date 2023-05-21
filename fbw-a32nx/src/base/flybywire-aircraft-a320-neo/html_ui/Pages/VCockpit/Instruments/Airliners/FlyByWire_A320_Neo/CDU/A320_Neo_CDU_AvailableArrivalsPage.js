@@ -132,7 +132,7 @@ class CDUAvailableArrivalsPage {
                     let runwayLength = '----';
                     let runwayCourse = '---';
 
-                    const runway = Fmgc.FlightPlanService.active.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
+                    const runway = mcdu.flightPlanService.active.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
                     if (runway) {
                         runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
                         runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);

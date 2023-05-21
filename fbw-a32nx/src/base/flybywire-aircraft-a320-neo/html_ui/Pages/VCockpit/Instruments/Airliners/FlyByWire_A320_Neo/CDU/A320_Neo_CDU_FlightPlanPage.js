@@ -517,11 +517,11 @@ class CDUFlightPlanPage {
                 addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
                     (value, scratchpadCallback) => {
                         if (value === "") {
-                            CDUVerticalRevisionPage.ShowPage(mcdu, wp, verticalWaypoint);
+                            CDUVerticalRevisionPage.ShowPage(mcdu, wp, fpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                         } else if (value === FMCMainDisplay.clrValue) {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                         } else {
-                            CDUVerticalRevisionPage.setConstraints(mcdu, wp, verticalWaypoint, value, scratchpadCallback, offset);
+                            CDUVerticalRevisionPage.setConstraints(mcdu, wp, fpIndex, verticalWaypoint, value, scratchpadCallback, offset, forPlan, inAlternate);
                         }
                     });
 
@@ -790,7 +790,7 @@ class CDUFlightPlanPage {
 
             addRskAt(5, () => mcdu.getDelaySwitchPage(),
                 () => {
-                    CDUVerticalRevisionPage.ShowPage(mcdu, targetPlan.destinationLeg);
+                    CDUVerticalRevisionPage.ShowPage(mcdu, targetPlan.destinationLeg, targetPlan.destinationLegIndex, undefined, undefined, undefined, undefined, forPlan, false);
                 });
         }
 

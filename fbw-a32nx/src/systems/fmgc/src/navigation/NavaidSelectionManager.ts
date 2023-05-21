@@ -71,6 +71,7 @@ export class NavaidSelectionManager {
     private filteredHeight = null;
 
     constructor(
+        private readonly flightPlanService: FlightPlanService,
         private readonly navigationProvider: NavigationProvider,
     ) {}
 
@@ -345,8 +346,8 @@ export class NavaidSelectionManager {
     }
 
     private getSpecifiedNavaid(): VhfNavaid | null {
-        if (NavaidSelectionManager.SPECIFIED_VOR_APPROACH_TYPES.includes(FlightPlanService.active.approach.type)) {
-            const segment = FlightPlanService.active.approachSegment;
+        if (NavaidSelectionManager.SPECIFIED_VOR_APPROACH_TYPES.includes(this.flightPlanService.active.approach.type)) {
+            const segment = this.flightPlanService.active.approachSegment;
 
             // eslint-disable-next-line no-underscore-dangle
             const facility = segment.lastLeg?.definition.recommendedNavaid ?? null;
@@ -363,7 +364,7 @@ export class NavaidSelectionManager {
         this.specifiedVorDeselected = false;
 
         // procedure specified for the approach
-        if (FlightPlanService.active.isApproachActive) {
+        if (this.flightPlanService.active.isApproachActive) {
             const specified = this.getSpecifiedNavaid();
             if (specified !== null) {
                 if (this.isDeselected(specified)) {
@@ -393,10 +394,10 @@ export class NavaidSelectionManager {
         }
 
         // route navaid (to waypoint or 5 next downpath within FoM limit)
-        const activeLegIndex = FlightPlanService.activeLegIndex;
+        const activeLegIndex = this.flightPlanService.activeLegIndex;
         if (activeLegIndex >= 0) {
             for (let i = activeLegIndex; i < activeLegIndex + 5; i++) {
-                const element = FlightPlanService.active.allLegs[i];
+                const element = this.flightPlanService.active.allLegs[i];
                 if (!element) {
                     break;
                 }
@@ -446,7 +447,7 @@ export class NavaidSelectionManager {
      * Finds a VOR/DME or VOR/TAC within 5 NM of the destination runway and within 51 NM or the aircraft
      */
     private getReferenceNavaid(): VhfNavaid | null {
-        const destRunway = FlightPlanService.active.destinationRunway;
+        const destRunway = this.flightPlanService.active.destinationRunway;
         if (!destRunway) {
             return null;
         }
@@ -459,8 +460,8 @@ export class NavaidSelectionManager {
     }
 
     private getSpecifiedNdb(): NdbNavaid | null {
-        if (NavaidSelectionManager.SPECIFIED_NDB_APPROACH_TYPES.includes(FlightPlanService.active.approach.type)) {
-            const segment = FlightPlanService.active.approachSegment;
+        if (NavaidSelectionManager.SPECIFIED_NDB_APPROACH_TYPES.includes(this.flightPlanService.active.approach.type)) {
+            const segment = this.flightPlanService.active.approachSegment;
 
             // eslint-disable-next-line no-underscore-dangle
             const facility = segment.lastLeg?.definition.recommendedNavaid ?? null;
@@ -473,7 +474,7 @@ export class NavaidSelectionManager {
 
     private selectDisplayNdb(): void {
         this.specifiedNdbDeselected = false;
-        if (FlightPlanService.active.isApproachActive) {
+        if (this.flightPlanService.active.isApproachActive) {
             const specified = this.getSpecifiedNdb();
             if (specified !== null) {
                 if (this.isDeselected(specified)) {

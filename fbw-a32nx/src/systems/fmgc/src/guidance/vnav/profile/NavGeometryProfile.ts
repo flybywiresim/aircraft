@@ -142,7 +142,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
     public waypointPredictions: Map<number, VerticalWaypointPrediction> = new Map();
 
     constructor(
-        private flightPlanService: typeof FlightPlanService,
+        private flightPlanService: FlightPlanService,
         private constraintReader: ConstraintReader,
         private atmosphericConditions: AtmosphericConditions,
     ) {

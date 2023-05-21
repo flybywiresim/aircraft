@@ -59,7 +59,7 @@ export class ConstraintReader {
 
     public finalAltitude: Feet = 50;
 
-    constructor(private flightPlanService: typeof FlightPlanService, private guidanceController: GuidanceController) {
+    constructor(private flightPlanService: FlightPlanService, private guidanceController: GuidanceController) {
         this.reset();
     }
 

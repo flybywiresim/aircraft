@@ -58,7 +58,7 @@ class NavSystem extends BaseInstrument {
         if (this.nodeName.includes('CDU')) {
             this.currFlightPhaseManager = Fmgc.getFlightPhaseManager();
 
-            this.currFlightPlanService = Fmgc.FlightPlanService;
+            this.currFlightPlanService = new Fmgc.FlightPlanService();
             this.currFlightPlanService.createFlightPlans();
 
             this.currNavigationDatabaseService = Fmgc.NavigationDatabaseService;
@@ -73,6 +73,9 @@ class NavSystem extends BaseInstrument {
         return this.currFlightPhaseManager;
     }
 
+    /**
+     * @type {Fmgc.FlightPlanService}
+     */
     get flightPlanService() {
         return this.currFlightPlanService;
     }

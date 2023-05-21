@@ -20,6 +20,7 @@ export class EfisVectors {
     private lastFpVersions = new Map<number, number>();
 
     constructor(
+        private readonly flightPlanService: FlightPlanService,
         private guidanceController: GuidanceController,
     ) {
     }
@@ -73,7 +74,7 @@ export class EfisVectors {
     }
 
     private tryProcessFlightPlan(planIndex: FlightPlanIndex, force = false) {
-        const planExists = FlightPlanService.has(planIndex);
+        const planExists = this.flightPlanService.has(planIndex);
 
         if (!planExists) {
             this.lastFpVersions.delete(planIndex);
@@ -95,7 +96,7 @@ export class EfisVectors {
             return;
         }
 
-        const plan = FlightPlanService.get(planIndex);
+        const plan = this.flightPlanService.get(planIndex);
 
         if (!force && this.lastFpVersions.get(planIndex) === plan.version) {
             return;
