@@ -1,16 +1,13 @@
 use std::time::Duration;
 
 use crate::{
-    hydraulic::SpringPhysics,
-    shared::random_from_normal_distribution,
+    physics::{GravityEffect, WobblePhysics},
     shared::update_iterator::MaxStepLoop,
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
-
-use uom::si::{f64::*, mass::kilogram};
 
 use nalgebra::Vector3;
 use std::fmt::Debug;
@@ -28,13 +25,7 @@ pub struct EngineFlexPhysics {
     vertical_damping_id: VariableIdentifier,
     dev_mode_enable_id: VariableIdentifier,
 
-    reference_point_cg: Vector3<f64>,
-    cg_position: Vector3<f64>,
-    cg_speed: Vector3<f64>,
-
-    virtual_mass: Mass,
-    spring: SpringPhysics,
-    anisotropic_damping_constant: Vector3<f64>,
+    wobble_physics: WobblePhysics,
 
     position_output_gain: f64,
 
@@ -53,20 +44,19 @@ impl EngineFlexPhysics {
             vertical_damping_id: context.get_identifier("ENGINE_WOBBLE_DEV_YDAMP".to_owned()),
             dev_mode_enable_id: context.get_identifier("ENGINE_WOBBLE_DEV_ENABLE".to_owned()),
 
-            reference_point_cg: Vector3::default(),
-            cg_position: Vector3::default(),
-            cg_speed: Vector3::default(),
+            wobble_physics: WobblePhysics::new(
+                GravityEffect::NoGravity,
+                Vector3::default(),
+                2000.,
+                100.,
+                800000.,
+                50000.,
+                500.,
+                20.,
+                Vector3::new(500., 500., 500.),
+                50.,
+            ),
 
-            virtual_mass: Mass::new::<kilogram>(random_from_normal_distribution(2000., 100.)),
-            spring: SpringPhysics::new(
-                random_from_normal_distribution(800000., 50000.),
-                random_from_normal_distribution(500., 20.),
-            ),
-            anisotropic_damping_constant: Vector3::new(
-                random_from_normal_distribution(500., 50.),
-                random_from_normal_distribution(500., 50.),
-                random_from_normal_distribution(500., 50.),
-            ),
             position_output_gain: 90.,
 
             animation_position: 0.5,
@@ -74,36 +64,15 @@ impl EngineFlexPhysics {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.update_speed_position(context);
+        self.wobble_physics.update(context);
 
         self.update_animation_position();
     }
 
-    fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
-        let acceleration_force =
-            context.local_acceleration_without_gravity() * self.virtual_mass.get::<kilogram>();
-
-        let spring_force =
-            self.spring
-                .update_force(context, self.reference_point_cg, self.cg_position);
-
-        let viscosity_damping = -self
-            .cg_speed
-            .component_mul(&self.anisotropic_damping_constant);
-
-        acceleration_force + spring_force + viscosity_damping
-    }
-
-    fn update_speed_position(&mut self, context: &UpdateContext) {
-        let acceleration = self.update_forces(context) / self.virtual_mass.get::<kilogram>();
-
-        self.cg_speed += acceleration * context.delta_as_secs_f64();
-
-        self.cg_position += self.cg_speed * context.delta_as_secs_f64();
-    }
-
     fn update_animation_position(&mut self) {
-        let limited_pos = (self.position_output_gain * (self.cg_position[0] + self.cg_position[1]))
+        let cg_position = self.wobble_physics.position();
+
+        let limited_pos = (self.position_output_gain * (cg_position[0] + cg_position[1]))
             .min(1.)
             .max(-1.);
 
@@ -115,17 +84,19 @@ impl SimulationElement for EngineFlexPhysics {
         let activate_dev_mode: f64 = reader.read(&self.dev_mode_enable_id);
 
         if activate_dev_mode > 0. {
-            self.spring.set_k_and_damping(
+            self.wobble_physics.set_k_and_damping(
                 reader.read(&self.spring_const_id),
                 reader.read(&self.damping_const_id),
             );
-            self.virtual_mass = reader.read(&self.mass_id);
+            self.wobble_physics.set_mass(reader.read(&self.mass_id));
             self.position_output_gain = reader.read(&self.output_gain_id);
-            self.anisotropic_damping_constant[0] = reader.read(&self.lateral_damping_id);
-            self.anisotropic_damping_constant[1] = reader.read(&self.vertical_damping_id);
 
             // Z dimension not really used we use same param as Y damping
-            self.anisotropic_damping_constant[2] = reader.read(&self.vertical_damping_id);
+            self.wobble_physics.set_aniso_damping(
+                reader.read(&self.lateral_damping_id),
+                reader.read(&self.vertical_damping_id),
+                reader.read(&self.vertical_damping_id),
+            );
         }
     }
 
@@ -138,9 +109,9 @@ impl Debug for EngineFlexPhysics {
         write!(
             f,
             "\nEngine Flex=> CG [{:.2};{:.2};{:.2}]",
-            self.cg_position[0] * self.position_output_gain,
-            self.cg_position[1] * self.position_output_gain,
-            self.cg_position[2] * self.position_output_gain
+            self.wobble_physics.position()[0] * self.position_output_gain,
+            self.wobble_physics.position()[1] * self.position_output_gain,
+            self.wobble_physics.position()[2] * self.position_output_gain
         )
     }
 }

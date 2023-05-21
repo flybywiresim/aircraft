@@ -49,6 +49,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
 
     private setHoldSpeed = false;
 
+    private tdReached = false;
+
     private tcasRaInhibited = Subject.create(false);
 
     private trkFpaDeselected = Subject.create(false);
@@ -67,7 +69,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
         const sharedModeActive = this.activeLateralMode === 32 || this.activeLateralMode === 33
             || this.activeLateralMode === 34 || (this.activeLateralMode === 20 && this.activeVerticalMode === 24);
         const BC3Message = getBC3Message(this.props.isAttExcessive.get(), this.armedVerticalModeSub.get(),
-            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get(), this.fcdcDiscreteWord1, this.fwcFlightPhase)[0] !== null;
+            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get(), this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached)[0] !== null;
 
         const engineMessage = this.athrModeMessage;
         const AB3Message = (this.machPreselVal !== -1
@@ -149,6 +151,10 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
 
         sub.on('fwcFlightPhase').whenChanged().handle((fwcFlightPhase) => {
             this.fwcFlightPhase = fwcFlightPhase;
+        });
+
+        sub.on('tdReached').whenChanged().handle((tdr) => {
+            this.tdReached = tdr;
             this.handleFMABorders();
         });
     }
@@ -1180,6 +1186,7 @@ const getBC3Message = (
     tcasRaInhibited: boolean,
     fcdcWord1: Arinc429Word,
     fwcFlightPhase: number,
+    tdReached: boolean,
 ) => {
     const armedVerticalBitmask = armedVerticalMode;
     const TCASArmed = (armedVerticalBitmask >> 6) & 1;
@@ -1218,7 +1225,7 @@ const getBC3Message = (
     } else if (false) {
         text = 'SET GREEN DOT SPEED';
         className = 'White';
-    } else if (false) {
+    } else if (tdReached) {
         text = 'T/D REACHED';
         className = 'White';
     } else if (false) {
@@ -1268,9 +1275,11 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
     private fwcFlightPhase = 0;
 
+    private tdReached = false;
+
     private fillBC3Cell() {
         const [text, className] = getBC3Message(
-            this.isAttExcessive, this.armedVerticalMode, this.setHoldSpeed, this.trkFpaDeselected, this.tcasRaInhibited, this.fcdcDiscreteWord1, this.fwcFlightPhase,
+            this.isAttExcessive, this.armedVerticalMode, this.setHoldSpeed, this.trkFpaDeselected, this.tcasRaInhibited, this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached,
         );
         this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
         if (text !== null) {
@@ -1317,6 +1326,10 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
         sub.on('fwcFlightPhase').whenChanged().handle((fwcFlightPhase) => {
             this.fwcFlightPhase = fwcFlightPhase;
+        });
+
+        sub.on('tdReached').whenChanged().handle((tdr) => {
+            this.tdReached = tdr;
             this.fillBC3Cell();
         });
     }
@@ -1416,11 +1429,11 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('mda').whenChanged().handle((mda) => {
-            if (mda !== 0) {
-                const MDAText = Math.round(mda).toString().padStart(6, ' ');
+        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
+            if ((!mda.isNoComputedData() && !mda.isFailureWarning()) && mda.value !== 0) {
+                const MDAText = Math.round(mda.value).toString().padStart(6, ' ');
 
                 this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
             } else {
@@ -1428,16 +1441,16 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
             }
         });
 
-        sub.on('dh').whenChanged().handle((dh) => {
+        sub.on('dhAr').withArinc429Precision(0).handle((dh) => {
             let fontSize = 'FontSmallest';
-
-            if (dh !== -1 && dh !== -2) {
-                const DHText = Math.round(dh).toString().padStart(4, ' ');
+            const dhValue = dh.value;
+            if ((!dh.isNoComputedData() && !dh.isFailureWarning()) && dhValue !== -1 && dhValue !== -2) {
+                const DHText = Math.round(dhValue).toString().padStart(4, ' ');
 
                 this.textRef.instance.innerHTML = `
                         <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
                     `;
-            } else if (dh === -2) {
+            } else if ((!dh.isNoComputedData() && !dh.isFailureWarning()) && dhValue === -2) {
                 this.textRef.instance.innerHTML = '<tspan>NO DH</tspan>';
                 fontSize = 'FontMedium';
             } else {

@@ -5,6 +5,16 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.11.0
+
+1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
+1. [EFB] Fixed Simbridge failing to connect if remote setting is enabled then disabled - @DevonDF (Devon#9451)
+1. [SD] Corrected fuel transfer valve amber logic - @tracernz (Mike)
+1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
+1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
+
 ## 0.10.0
 
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
@@ -105,6 +115,7 @@
 1. [MCDU/ND] Implemented SPECIF VOR/D UNAVAIL message - @tracernz (Mike)
 1. [MCDU] Implemented TUNE BBB FFF.FF, SPECIF NDB UNAVAIL messages - @tracernz (Mike)
 1. [F/CTL] Add ELAC 2 Emergency Powersupply - @lukecologne (lukecologne#1156)
+1. [FADEC] Automatic enginestarts use one igniter alternating and enabled use of FADEC GND PWR pushbuttons @Maximilian-Reuter (Maximilian Reuter)
 1. [FWC] Target a modern FWC version - @beheh (Benedict Etzel)
 1. [HYD] New aerodynamic model for RAT turbine / Added A320 RAT anti stall valve system - @Crocket63 (crocket)
 1. [W/B] Phase 1 of refactoring payload (passenger and cargo) logic into rust systems - @2hwk (2Cas#1022)
@@ -120,6 +131,14 @@
 1. [ND] Do not draw background when busses are not powered - @saschl (saschl#9432)
 1. [MODEL] Working windshield wipers - @tracernz (Mike)
 1. [LIGHTS] Redid all cockpit interior lighting and fixed exterior wing lights - @FinalLightNL (FinalLight#2113)
+1. [BLEED] Add pressure sensors to bleed system - @BlueberryKing (BlueberryKing#6641)
+1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
+1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
+1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
+1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
+1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
 
 ## 0.9.0
 

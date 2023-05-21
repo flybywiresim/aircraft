@@ -86,6 +86,7 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     engTwoRunning: boolean;
     expediteMode: boolean;
     setHoldSpeed: boolean;
+    tdReached: boolean;
     trkFpaDeselectedTCAS: boolean;
     tcasRaInhibited: boolean;
     radioAltitude1: number;
@@ -181,8 +182,8 @@ export enum PFDVars {
     athrModeMessage = 'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
     machPreselVal = 'L:A32NX_MachPreselVal',
     speedPreselVal = 'L:A32NX_SpeedPreselVal',
-    mda = 'L:AIRLINER_MINIMUM_DESCENT_ALTITUDE',
-    dh = 'L:AIRLINER_DECISION_HEIGHT',
+    mda = 'L:A32NX_FM1_MINIMUM_DESCENT_ALTITUDE',
+    dh = 'L:A32NX_FM1_DECISION_HEIGHT',
     attHdgKnob = 'L:A32NX_ATT_HDG_SWITCHING_KNOB',
     airKnob = 'L:A32NX_AIR_DATA_SWITCHING_KNOB',
     vsBaro = 'L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED',
@@ -231,7 +232,8 @@ export enum PFDVars {
     engTwoRunning = 'GENERAL ENG COMBUSTION:2',
     expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
     setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
-    trkFpaDeselectedTCAS= 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
+    trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
+    tdReached = 'L:A32NX_PFD_MSG_TD_REACHED',
     tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
     radioAltitude1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
     radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
@@ -381,6 +383,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
         ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
         ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
+        ['tdReached', { name: PFDVars.tdReached, type: SimVarValueType.Bool }],
         ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
         ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
         ['radioAltitude1', { name: PFDVars.radioAltitude1, type: SimVarValueType.Number }],

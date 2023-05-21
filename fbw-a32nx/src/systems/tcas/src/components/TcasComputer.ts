@@ -9,7 +9,7 @@ import { Arinc429Word } from '@shared/arinc429';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { LocalSimVar } from '@shared/simvar';
 import { NXDataStore } from '@shared/persistence';
-import { FlowEventSync } from '@shared/FlowEventSync';
+import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { TcasComponent } from '../lib/TcasComponent';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
@@ -159,7 +159,7 @@ export class TcasComputer implements TcasComponent {
 
     private debug: boolean; // TCAS_DEBUG on/off
 
-    private syncer: FlowEventSync = new FlowEventSync();
+    private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
     private updateThrottler: UpdateThrottler; // Utility to restrict updates
 
