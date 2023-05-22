@@ -118,11 +118,11 @@ declare global {
 
         namedFrequencies: any[];
 
-        departures: any[];
+        departures: RawDeparture[];
 
         approaches: RawApproach[];
 
-        arrivals: any[];
+        arrivals: RawArrival[];
 
         runways: any[];
 
@@ -195,6 +195,8 @@ declare global {
         originIcao: string;
         // distance to originIcao in metres
         rho: number;
+        /** Leg RNP, added by RawDataMapper for AR/SAAR procs as MSFS does not have RNP data */
+        rnp?: number;
         // knots
         speedRestriction: number;
         // heading to originIcao, megnetic unless trueDegrees is true?
@@ -266,6 +268,8 @@ declare global {
 
     interface RawRunwayTransition {
         legs: RawProcedureLeg[];
+        /** Added by RawDataMapper */
+        name?: string;
         runwayDesignation: RunwayDesignatorChar;
         runwayNumber: number;
         __Type: 'JS_RunwayTransition';
