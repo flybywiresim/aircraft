@@ -981,6 +981,7 @@ impl HydraulicCircuit {
     const AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO: f64 = 0.5;
 
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
+    const AUX_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.001;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
 
@@ -1090,7 +1091,7 @@ impl HydraulicCircuit {
                     id,
                     "AUXILIARY",
                     1,
-                    VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
+                    VolumeRate::new::<gallon_per_second>(Self::AUX_SECTION_STATIC_LEAK_GAL_P_S),
                     system_section_volume
                         * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO
                         * priming_volume,
@@ -3048,6 +3049,90 @@ impl SimulationElement for RamAirTurbine {
 }
 impl HeatingElement for RamAirTurbine {}
 impl HeatingPressureSource for RamAirTurbine {}
+
+pub struct ManualPump {
+    pump: Pump,
+    speed: AngularVelocity,
+    max_speed: AngularVelocity,
+}
+impl ManualPump {
+    const SPOOL_RATE_RPM_S: f64 = 1000.;
+
+    pub fn new(pump_characteristics: PumpCharacteristics) -> Self {
+        let max_speed = pump_characteristics.regulated_speed();
+        Self {
+            pump: Pump::new(pump_characteristics),
+            speed: AngularVelocity::default(),
+            max_speed,
+        }
+    }
+
+    pub fn update<T: PumpController>(
+        &mut self,
+        context: &UpdateContext,
+        section: &impl SectionPressure,
+        reservoir: &Reservoir,
+        controller: &T,
+    ) {
+        self.speed =
+            AngularVelocity::new::<revolution_per_minute>(if controller.should_pressurise() {
+                (self.speed.get::<revolution_per_minute>()
+                    + (Self::SPOOL_RATE_RPM_S * context.delta_as_secs_f64()))
+                .max(0.)
+                .min(self.max_speed.get::<revolution_per_minute>())
+            } else {
+                (self.speed.get::<revolution_per_minute>()
+                    - (Self::SPOOL_RATE_RPM_S * context.delta_as_secs_f64()))
+                .max(0.)
+                .min(self.max_speed.get::<revolution_per_minute>())
+            });
+
+        self.pump
+            .update(context, section, reservoir, self.speed, controller);
+    }
+
+    pub fn cavitation_efficiency(&self) -> Ratio {
+        self.pump.cavitation_efficiency()
+    }
+
+    pub fn flow(&self) -> VolumeRate {
+        self.pump.flow()
+    }
+
+    pub fn speed(&self) -> AngularVelocity {
+        self.pump.speed
+    }
+}
+impl PressureSource for ManualPump {
+    fn delta_vol_max(&self) -> Volume {
+        self.pump.delta_vol_max()
+    }
+
+    fn update_after_pressure_regulation(
+        &mut self,
+        context: &UpdateContext,
+        volume_required: Volume,
+        reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
+    ) {
+        self.pump.update_after_pressure_regulation(
+            context,
+            volume_required,
+            reservoir,
+            is_pump_connected_to_reservoir,
+        );
+    }
+
+    fn flow(&self) -> VolumeRate {
+        self.pump.flow()
+    }
+
+    fn displacement(&self) -> Volume {
+        self.pump.displacement()
+    }
+}
+impl HeatingElement for ManualPump {}
+impl HeatingPressureSource for ManualPump {}
 
 #[cfg(test)]
 mod tests {
