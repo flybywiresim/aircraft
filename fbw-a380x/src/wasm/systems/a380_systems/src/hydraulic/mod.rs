@@ -44,7 +44,7 @@ use systems::{
             TrimmableHorizontalStabilizerActuator, TrimmableHorizontalStabilizerMotorController,
         },
         Accumulator, ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PressureSwitch, PressureSwitchType, PriorityValve,
+        HydraulicPressureSensors, ManualPump, PressureSwitch, PressureSwitchType, PriorityValve,
         PumpController, Reservoir,
     },
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
@@ -1547,8 +1547,8 @@ pub(super) struct A380Hydraulic {
     green_electric_pump_b: ElectricPump,
     green_electric_pump_b_controller: A380ElectricPumpController,
 
-    green_electric_aux_pump: ElectricPump,
-    green_electric_aux_pump_controller: A380AuxiliaryElectricPumpController,
+    green_auxiliary_pump: ManualPump,
+    green_electric_aux_pump_controller: A380AuxiliaryPumpController,
 
     pushback_tug: PushbackTug,
 
@@ -1613,8 +1613,6 @@ impl A380Hydraulic {
     const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
 
-    const GREEN_AUX_ELEC_PUMP_POWER_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentGndFltService;
     const A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrent(1);
     const B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
@@ -1792,16 +1790,9 @@ impl A380Hydraulic {
                 Self::GREEN_ELEC_PUMP_CONTROL_POWER_BUS,
             ),
 
-            green_electric_aux_pump: ElectricPump::new(
-                context,
-                AirbusElectricPumpId::GreenAux,
-                Self::GREEN_AUX_ELEC_PUMP_POWER_BUS,
-                ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
-                PumpCharacteristics::a380_aux_electric_pump(),
-            ),
-            green_electric_aux_pump_controller: A380AuxiliaryElectricPumpController::new(
+            green_auxiliary_pump: ManualPump::new(PumpCharacteristics::a380_aux_pump()),
+            green_electric_aux_pump_controller: A380AuxiliaryPumpController::new(
                 A380ElectricPumpId::GreenAuxiliary,
-                Self::GREEN_AUX_ELEC_PUMP_POWER_BUS,
             ),
 
             pushback_tug: PushbackTug::new(context),
@@ -1910,7 +1901,6 @@ impl A380Hydraulic {
             epump_auto_logic: A380ElectricPumpAutoLogic::new(
                 Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
-                Self::GREEN_AUX_ELEC_PUMP_POWER_BUS,
             ),
 
             tilting_gears: A380TiltingGearsFactory::new_a380_tilt_assembly(context),
@@ -2709,8 +2699,8 @@ impl A380Hydraulic {
         );
 
         self.green_electric_aux_pump_controller
-            .update(self.green_circuit.reservoir(), &self.epump_auto_logic);
-        self.green_electric_aux_pump.update(
+            .update(&self.epump_auto_logic);
+        self.green_auxiliary_pump.update(
             context,
             self.green_circuit.auxiliary_section(),
             self.green_circuit.reservoir(),
@@ -2737,7 +2727,7 @@ impl A380Hydraulic {
                 &mut self.green_electric_pump_b,
             ],
             None::<&mut ElectricPump>,
-            Some(&mut self.green_electric_aux_pump),
+            Some(&mut self.green_auxiliary_pump),
             None,
             &self.green_circuit_controller,
             reservoir_pneumatics.green_reservoir_pressure(),
@@ -2821,9 +2811,6 @@ impl SimulationElement for A380Hydraulic {
 
         self.green_electric_pump_b.accept(visitor);
         self.green_electric_pump_b_controller.accept(visitor);
-
-        self.green_electric_aux_pump.accept(visitor);
-        self.green_electric_aux_pump_controller.accept(visitor);
 
         self.epump_auto_logic.accept(visitor);
 
@@ -3311,10 +3298,9 @@ struct A380ElectricPumpAutoLogic {
 
     a_pumps_powered_by: ElectricalBusType,
     b_pumps_powered_by: ElectricalBusType,
-    aux_pump_powered_by: ElectricalBusType,
+
     a_pumps_bus_powered: bool,
     b_pumps_bus_powered: bool,
-    aux_pump_bus_powered: bool,
 }
 impl A380ElectricPumpAutoLogic {
     const DURATION_OF_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
@@ -3322,11 +3308,7 @@ impl A380ElectricPumpAutoLogic {
 
     const DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION: Duration =
         Duration::from_secs(5);
-    fn new(
-        a_pumps_powered_by: ElectricalBusType,
-        b_pumps_powered_by: ElectricalBusType,
-        aux_pump_powered_by: ElectricalBusType,
-    ) -> Self {
+    fn new(a_pumps_powered_by: ElectricalBusType, b_pumps_powered_by: ElectricalBusType) -> Self {
         Self {
             green_pump_a_selected: random_from_range(0., 1.) < 0.5,
             yellow_pump_a_selected: random_from_range(0., 1.) < 0.5,
@@ -3340,12 +3322,12 @@ impl A380ElectricPumpAutoLogic {
                 Self::DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION,
             ),
             body_steering_in_operation_previous: false,
+
             a_pumps_powered_by,
             b_pumps_powered_by,
-            aux_pump_powered_by,
+
             a_pumps_bus_powered: false,
             b_pumps_bus_powered: false,
-            aux_pump_bus_powered: false,
         }
     }
 
@@ -3422,7 +3404,7 @@ impl A380ElectricPumpAutoLogic {
         }
     }
 
-    fn should_auto_run_epump(&self, pump_id: A380ElectricPumpId) -> bool {
+    fn should_auto_run_pump(&self, pump_id: A380ElectricPumpId) -> bool {
         let green_operation_required = self.is_required_for_cargo_door_operation.output();
         let yellow_operation_required = self.is_required_for_body_steering_operation.output();
         match pump_id {
@@ -3441,18 +3423,14 @@ impl A380ElectricPumpAutoLogic {
                     && !self.yellow_pump_a_selected
             }
             A380ElectricPumpId::GreenAuxiliary => {
-                // Only allow AUX if no AC, note on A380 it should be by elec system design (no AC when aux possible)
-                self.aux_pump_bus_powered
-                    && green_operation_required
-                    && !self.a_pumps_bus_powered
-                    && !self.b_pumps_bus_powered
+                // Only allow AUX if no AC. This is actually a manual pump using external electric/pneumatic wrench
+                green_operation_required && !self.a_pumps_bus_powered && !self.b_pumps_bus_powered
             }
         }
     }
 }
 impl SimulationElement for A380ElectricPumpAutoLogic {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.aux_pump_bus_powered = buses.is_powered(self.aux_pump_powered_by);
         self.a_pumps_bus_powered = buses.is_powered(self.a_pumps_powered_by);
         self.b_pumps_bus_powered = buses.is_powered(self.b_pumps_powered_by);
     }
@@ -3508,7 +3486,7 @@ impl A380ElectricPumpController {
         auto_logic: &A380ElectricPumpAutoLogic,
     ) {
         self.should_pressurise_for_cargo_door_operation =
-            auto_logic.should_auto_run_epump(self.pump_id);
+            auto_logic.should_auto_run_pump(self.pump_id);
 
         self.should_pressurise = (overhead_panel.epump_button_on_is_on(self.pump_id)
             || self.should_pressurise_for_cargo_door_operation)
@@ -3581,50 +3559,26 @@ impl SimulationElement for A380ElectricPumpController {
     }
 }
 
-struct A380AuxiliaryElectricPumpController {
+struct A380AuxiliaryPumpController {
     pump_id: A380ElectricPumpId,
 
-    is_powered: bool,
-    powered_by: ElectricalBusType,
-
     should_pressurise: bool,
-
-    has_low_level_fault: bool,
 }
-impl A380AuxiliaryElectricPumpController {
-    fn new(pump_id: A380ElectricPumpId, powered_by: ElectricalBusType) -> Self {
+impl A380AuxiliaryPumpController {
+    fn new(pump_id: A380ElectricPumpId) -> Self {
         Self {
             pump_id,
-
-            is_powered: false,
-            powered_by,
-
             should_pressurise: false,
-
-            has_low_level_fault: false,
         }
     }
 
-    fn update(&mut self, reservoir: &Reservoir, auto_logic: &A380ElectricPumpAutoLogic) {
-        self.should_pressurise = auto_logic.should_auto_run_epump(self.pump_id)
-            && self.is_powered
-            && !self.has_low_level_fault;
-
-        self.update_low_level(reservoir);
-    }
-
-    fn update_low_level(&mut self, reservoir: &Reservoir) {
-        self.has_low_level_fault = reservoir.is_low_level();
+    fn update(&mut self, auto_logic: &A380ElectricPumpAutoLogic) {
+        self.should_pressurise = auto_logic.should_auto_run_pump(self.pump_id)
     }
 }
-impl PumpController for A380AuxiliaryElectricPumpController {
+impl PumpController for A380AuxiliaryPumpController {
     fn should_pressurise(&self) -> bool {
         self.should_pressurise
-    }
-}
-impl SimulationElement for A380AuxiliaryElectricPumpController {
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
@@ -10349,34 +10303,7 @@ mod tests {
         }
 
         #[test]
-        fn green_aux_epump_cannot_buildup_auxiliary_section_when_cargo_doors_no_ac_no_ac_ground_svc(
-        ) {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .ac_bus_1_lost()
-                .ac_bus_2_lost()
-                .ac_ground_service_lost()
-                .run_one_tick();
-
-            // Waiting for 5s pressure should not rise due to no pump avail
-            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
-                HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
-            );
-
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs(5));
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
-            assert!(test_bed.green_pressure_auxiliary() < Pressure::new::<psi>(100.));
-        }
-
-        #[test]
-        fn green_aux_epump_can_buildup_auxiliary_section_when_cargo_doors_no_ac_but_ac_ground_svc()
-        {
+        fn green_auxiliary_pump_can_buildup_auxiliary_section_when_cargo_doors_but_no_ac() {
             let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
@@ -10390,7 +10317,6 @@ mod tests {
                 HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(5),
             );
 
-            // TODO check if two doors should be able to operate at the same time. Dual operation needs loooooooon time with weak aux pump
             test_bed = test_bed
                 .open_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs(160));
@@ -10420,38 +10346,6 @@ mod tests {
                         + Duration::from_secs(5),
                 );
 
-            // TODO check if two doors should be able to operate at the same time. Dual operation needs loooooooong time with weak aux pump
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(Duration::from_secs(35));
-
-            assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(1500.));
-            assert!(test_bed.green_pressure_auxiliary() > Pressure::new::<psi>(500.));
-
-            assert!(test_bed.is_cargo_fwd_door_locked_up());
-            assert!(test_bed.is_cargo_aft_door_locked_up());
-        }
-
-        #[test]
-        fn green_epumps_can_buildup_auxiliary_section_when_cargo_doors_and_ac_available_and_gnd_scv_avail(
-        ) {
-            let mut test_bed = test_bed_on_ground_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Waiting for 5s pressure should not rise due to no pump avail
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .open_aft_cargo_door()
-                .run_waiting_for(
-                    HydraulicDoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL
-                        + Duration::from_secs(5),
-                );
-
-            // TODO check if two doors should be able to operate at the same time. Dual operation needs loooooooong time with weak aux pump
             test_bed = test_bed
                 .open_fwd_cargo_door()
                 .run_waiting_for(Duration::from_secs(35));
