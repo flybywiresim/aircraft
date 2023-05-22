@@ -42,11 +42,11 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
         return '';
     }, this.adf, this.fm1Healthy, this.fm2Healthy, this.fm1NavTuningWord, this.fm2NavTuningWord);
 
-    private readonly frequencyIntTextSub = Subject.create('');
+    private readonly frequencyIntTextSub = Subject.create('---');
 
-    private readonly frequencyDecimalTextSub = Subject.create('');
+    private readonly frequencyDecimalTextSub = Subject.create('--');
 
-    private readonly courseTextSub = Subject.create('');
+    private readonly courseTextSub = Subject.create('---');
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -87,11 +87,11 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
                 this.frequencyIntTextSub.set('---');
                 this.frequencyDecimalTextSub.set('--');
             }
-        });
+        }, true);
 
         this.vorCourse.sub((course) => {
             this.courseTextSub.set(course > 0 ? Math.round(course).toString().padStart(3, '0') : '---');
-        });
+        }, true);
     }
 
     private readonly visibilityFn = (v: boolean) => (v ? 'inherit' : 'hidden');
@@ -105,10 +105,10 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
                 </text>
 
                 <g visibility={this.vorAvailable.map(this.visibilityFn)} class="White" text-anchor="end">
-                    <text x={0} y={0} font-size={25}>
+                    <text x={-40} y={0} font-size={25}>
                         {this.frequencyIntTextSub}
                     </text>
-                    <text x={60} y={0} font-size={20}>
+                    <text x={0} y={0} font-size={20}>
                         .
                         {this.frequencyDecimalTextSub}
                     </text>

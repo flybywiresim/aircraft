@@ -53,6 +53,8 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
         });
 
         this.headingWord.setConsumer(sub.on('heading'));
+
+        this.headingWord.sub((_v) => this.handleDisplay());
     }
 
     private handleDisplay() {

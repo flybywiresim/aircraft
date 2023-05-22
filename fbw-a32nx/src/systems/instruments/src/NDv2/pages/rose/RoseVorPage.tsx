@@ -112,7 +112,6 @@ interface VorCaptureOverlayProps extends ComponentProps {
 }
 
 class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
-    // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
     private readonly visible = MappedSubject.create(([heading, vorAvailable]) => {
         return heading.isNormalOperation() && vorAvailable;
     }, this.props.heading, this.props.vorAvailable);
@@ -160,7 +159,7 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
                     <circle cx={532} cy={384} r={5} />
                 </g>
 
-                <g visibility={this.props.vorFrequency.map((v) => (v > 0 ? 'visible' : 'hidden'))}>
+                <g visibility={this.props.vorFrequency.map((v) => (v > 0 ? 'inherit' : 'hidden'))}>
                     <path
                         d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
                         class="rounded shadow"

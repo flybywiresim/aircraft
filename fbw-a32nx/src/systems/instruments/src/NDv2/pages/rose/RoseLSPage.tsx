@@ -13,7 +13,7 @@ import { GlideSlope } from './Glideslope';
 import { RadioNeedle } from '../../shared/RadioNeedle';
 
 export interface RoseLsProps extends RoseModeProps {
-    index: 3 | 4,
+    index: 1 | 2,
 }
 
 export class RoseLSPage extends RoseMode<RoseLsProps> {
@@ -38,7 +38,7 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
 
         const sub = this.props.bus.getSubscriber<AdirsSimVars & DmcEvents & VorSimVars>();
 
-        const index = this.props.index;
+        const index: 3 | 4 = this.props.index + 2 as (3|4);
 
         // this.headingWord.setConsumer(sub.on('heading'));
 
@@ -89,7 +89,6 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
 
                 {/* FIXME LOC indications */}
                 <IlsCaptureOverlay
-                    index={this.props.index}
                     heading={this.props.headingWord}
                     course={this.courseSub}
                     courseDeviation={this.courseDeviationSub}
@@ -103,7 +102,6 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
 }
 
 interface IlsCaptureOverlayProps extends ComponentProps {
-    index: 3 | 4,
     heading: Subscribable<Arinc429WordData>,
     course: Subscribable<number>,
     courseDeviation: Subscribable<number>,
@@ -116,6 +114,10 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
         private readonly pointerVisibilitySub = MappedSubject.create(([ilsFrequency]) => {
             return ilsFrequency >= 108 && ilsFrequency <= 112;
         }, this.props.ilsFrequency);
+
+        private readonly visible = MappedSubject.create(([heading, available]) => {
+            return heading.isNormalOperation() && available;
+        }, this.props.heading, this.props.available);
 
         private readonly rotation = MappedSubject.create(([heading, course]) => {
             if (heading.isNormalOperation()) {
@@ -140,6 +142,7 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
         render(): VNode {
             return (
                 <g
+                    visibility={this.visible.map((visible) => (visible ? 'inherit' : 'hidden'))}
                     transform={this.rotation.map((deg) => `rotate(${deg} 384 384)`)}
                     stroke="white"
                     strokeWidth={3}

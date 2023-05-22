@@ -239,7 +239,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueTrackWord={this.trueTrackWord}
                         rangeValue={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
-                        index={this.props.side === 'L' ? 4 : 3}
+                        index={this.props.side === 'L' ? 1 : 2}
                     />
                     <RoseVorPage
                         bus={this.props.bus}
