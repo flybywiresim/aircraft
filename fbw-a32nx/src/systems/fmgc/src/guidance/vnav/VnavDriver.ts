@@ -72,7 +72,7 @@ export class VnavDriver implements GuidanceComponent {
         private readonly atmosphericConditions: AtmosphericConditions,
         private readonly windProfileFactory: WindProfileFactory,
     ) {
-        this.headingProfile = new NavHeadingProfile(FlightPlanService);
+        this.headingProfile = new NavHeadingProfile(flightPlanService);
         this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
 
         this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);

@@ -19,7 +19,7 @@ export interface AircraftHeadingProfile {
 export class NavHeadingProfile implements AircraftHeadingProfile {
     private courses: CourseAtDistance[] = [];
 
-    constructor(private fps: typeof FlightPlanService) { }
+    constructor(private fps: FlightPlanService) { }
 
     get(distanceFromStart: NauticalMiles): DegreesTrue | null {
         if (this.courses.length === 0) {
