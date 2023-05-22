@@ -3053,7 +3053,7 @@ impl ManualPump {
         Self {
             pump: Pump::new(pump_characteristics),
             speed: AngularVelocity::default(),
-            max_speed: max_speed,
+            max_speed,
         }
     }
 
