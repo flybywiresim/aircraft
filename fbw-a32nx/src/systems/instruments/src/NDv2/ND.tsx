@@ -654,6 +654,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         this.visibleSub.set(visible);
     }
 
+    // FIXME distance, eta and bearing are currently not transmitted as arinc429 labels which would be needed for proper visibility determination
     private handleToWptDistance() {
         const value = this.toWptDistanceCaptain.get();
 
