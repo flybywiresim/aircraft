@@ -43,18 +43,20 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_electrical_buses([
         (ElectricalBusType::AlternatingCurrent(1), 2),
         (ElectricalBusType::AlternatingCurrent(2), 3),
-        (ElectricalBusType::AlternatingCurrentEssential, 4),
-        (ElectricalBusType::AlternatingCurrentEssentialShed, 5),
-        (ElectricalBusType::AlternatingCurrentStaticInverter, 6),
-        (ElectricalBusType::AlternatingCurrentGndFltService, 14),
-        (ElectricalBusType::DirectCurrent(1), 7),
-        (ElectricalBusType::DirectCurrent(2), 8),
-        (ElectricalBusType::DirectCurrentEssential, 9),
-        (ElectricalBusType::DirectCurrentEssentialShed, 10),
-        (ElectricalBusType::DirectCurrentBattery, 11),
+        (ElectricalBusType::AlternatingCurrent(3), 4),
+        (ElectricalBusType::AlternatingCurrent(4), 5),
+        (ElectricalBusType::AlternatingCurrentEssential, 6),
+        (ElectricalBusType::AlternatingCurrentEssentialShed, 7),
+        (ElectricalBusType::AlternatingCurrentGndFltService, 16),
+        (ElectricalBusType::DirectCurrent(1), 8),
+        (ElectricalBusType::DirectCurrent(2), 9),
+        (ElectricalBusType::DirectCurrentEssential, 10),
+        (ElectricalBusType::DirectCurrentNamed("309PP"), 11),
         (ElectricalBusType::DirectCurrentHot(1), 12),
         (ElectricalBusType::DirectCurrentHot(2), 13),
-        (ElectricalBusType::DirectCurrentGndFltService, 15),
+        (ElectricalBusType::DirectCurrentHot(3), 14),
+        (ElectricalBusType::DirectCurrentHot(4), 15),
+        (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8)?
     .with_failures(vec![
@@ -264,45 +266,33 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         0,
     )?
     .with_aspect(|builder| {
-        builder.copy(
-            Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
-            Variable::aspect("OVHD_ELEC_APU_GEN_PB_IS_ON"),
-        );
+        for i in 1..=2 {
+            builder.copy(
+                Variable::aircraft("APU GENERATOR SWITCH", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_APU_GEN_{i}_PB_IS_ON")),
+            );
+        }
 
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 1),
-            Variable::aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 2),
-            Variable::aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 3),
-            Variable::aspect("OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 4),
-            Variable::aspect("OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO"),
-        );
+        for i in 1..=4 {
+            builder.copy(
+                Variable::aircraft("BLEED AIR ENGINE", "Bool", i),
+                Variable::aspect(&format!("OVHD_PNEU_ENG_{i}_BLEED_PB_IS_AUTO")),
+            );
 
-        builder.copy(
-            Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", 1),
-            Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"),
-        );
-        builder.copy(
-            Variable::aircraft("EXTERNAL POWER ON", "Bool", 1),
-            Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_ON"),
-        );
+            builder.copy(
+                Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_AVAILABLE")),
+            );
+            builder.copy(
+                Variable::aircraft("EXTERNAL POWER ON", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_ON")),
+            );
 
-        builder.copy(
-            Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 1),
-            Variable::aspect("OVHD_ELEC_ENG_GEN_1_PB_IS_ON"),
-        );
-        builder.copy(
-            Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 2),
-            Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
-        );
+            builder.copy(
+                Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", i),
+                Variable::aspect(&format!("OVHD_ELEC_ENG_GEN_{i}_PB_IS_ON")),
+            );
+        }
 
         Ok(())
     })?
