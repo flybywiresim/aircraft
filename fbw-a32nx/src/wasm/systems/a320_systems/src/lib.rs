@@ -46,7 +46,7 @@ pub struct A320 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A320AirConditioning,
-    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
+    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A320PneumaticOverheadPanel,
@@ -96,7 +96,7 @@ impl A320 {
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
             electrical: A320Electrical::new(context),
             power_consumption: A320PowerConsumption::new(context),
-            ext_pwr: ExternalPowerSource::new(context),
+            ext_pwr: ExternalPowerSource::new(context, 1),
             lgcius: LandingGearControlInterfaceUnitSet::new(
                 context,
                 ElectricalBusType::DirectCurrentEssential,
