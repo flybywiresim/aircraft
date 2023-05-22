@@ -27,6 +27,8 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
 
     private readonly vorAvailableSub = Subject.create(false);
 
+    private readonly vorFrequencySub = Subject.create(0);
+
     onShow() {
         super.onShow();
 
@@ -49,6 +51,8 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
         sub.on(`nav${index}RadialError`).whenChanged().handle((v) => this.courseDeviationSub.set(v));
 
         sub.on(`nav${index}Available`).whenChanged().handle((v) => this.vorAvailableSub.set(v));
+
+        sub.on(`nav${index}Frequency`).whenChanged().handle((v) => this.vorFrequencySub.set(v));
     }
 
     private readonly hdgFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.headingWord);
@@ -89,6 +93,7 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
                     course={this.courseSub}
                     courseDeviation={this.courseDeviationSub}
                     vorAvailable={this.vorAvailableSub}
+                    vorFrequency={this.vorFrequencySub}
                 />
 
                 <Flag visible={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
@@ -103,9 +108,11 @@ interface VorCaptureOverlayProps extends ComponentProps {
     course: Subscribable<number>,
     courseDeviation: Subscribable<number>,
     vorAvailable: Subscribable<boolean>,
+    vorFrequency: Subscribable<number>,
 }
 
 class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
+    // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
     private readonly visible = MappedSubject.create(([heading, vorAvailable]) => {
         return heading.isNormalOperation() && vorAvailable;
     }, this.props.heading, this.props.vorAvailable);
@@ -153,18 +160,20 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
                     <circle cx={532} cy={384} r={5} />
                 </g>
 
-                <path
-                    d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                    class="rounded shadow"
-                    id="vor-course-pointer-shadow"
-                    stroke-width={4.5}
-                />
-                <path
-                    d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                    class={this.pointerColor.map((color) => `rounded ${color}`)}
-                    id="vor-course-pointer"
-                    stroke-width={4}
-                />
+                <g visibility={this.props.vorFrequency.map((v) => (v > 0 ? 'visible' : 'hidden'))}>
+                    <path
+                        d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                        class="rounded shadow"
+                        id="vor-course-pointer-shadow"
+                        stroke-width={4.5}
+                    />
+                    <path
+                        d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                        class={this.pointerColor.map((color) => `rounded ${color}`)}
+                        id="vor-course-pointer"
+                        stroke-width={4}
+                    />
+                </g>
 
                 <g visibility={this.props.vorAvailable.map((available) => (available ? 'inherit' : 'hidden'))}>
                     <path

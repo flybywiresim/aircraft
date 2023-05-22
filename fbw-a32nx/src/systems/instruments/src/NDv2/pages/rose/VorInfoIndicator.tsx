@@ -80,8 +80,13 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
         this.vorFrequency.sub((frequency) => {
             const [int, dec] = frequency.toFixed(2).split('.', 2);
 
-            this.frequencyIntTextSub.set(int);
-            this.frequencyDecimalTextSub.set(dec);
+            if (frequency > 0) {
+                this.frequencyIntTextSub.set(int);
+                this.frequencyDecimalTextSub.set(dec);
+            } else {
+                this.frequencyIntTextSub.set('---');
+                this.frequencyDecimalTextSub.set('--');
+            }
         });
 
         this.vorCourse.sub((course) => {
@@ -89,7 +94,7 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
         });
     }
 
-    private readonly visibilityFn = (v) => (v ? 'inherit' : 'hidden');
+    private readonly visibilityFn = (v: boolean) => (v ? 'inherit' : 'hidden');
 
     render(): VNode | null {
         return (

@@ -1,4 +1,5 @@
-@import "../Common/definitions";
+@import "../MsfsAvionicsCommon/definitions.scss";
+@import "animations";
 
 @font-face {
   font-family: "Ecam";
@@ -18,9 +19,12 @@
 
 .nd-svg {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 768px;
   height: 768px;
   background: transparent;
+  //background: $display-background;
   font-family: "Ecam", monospace !important;
 }
 
@@ -32,32 +36,65 @@
   transform: rotateX(0deg);
   background: none;
 }
-.nd-inverted-map-area {
-  background: $display-background;
-  fill: rgb(4,4,4);
+
+.TextOutline {
+  paint-order: stroke fill markers;
+
+  stroke-width: 0.05mm;
+  stroke: $display-background !important;
 }
 
-.GtLayer {
-  -webkit-transform: rotateX(0deg);
+$font-factor: 5;
+
+.FontLargest {
+  font-size: #{7px * $font-factor};
 }
 
+.FontLarge {
+  font-size: #{6.5px * $font-factor};
+}
+
+.FontMedium {
+  font-size: #{6px * $font-factor};
+}
+
+.FontIntermediate {
+  font-size: #{5.5px * $font-factor};
+}
+
+.FontSmall {
+  font-size: #{5px * $font-factor};
+}
+
+.FontSmallest {
+  font-size: #{4.5px * $font-factor};
+}
+
+.FontTiny {
+  font-size: #{4px * $font-factor};
+}
+
+.StartAlign {
+  text-align: start;
+  text-anchor: start;
+}
 .MiddleAlign {
+  text-align: center;
   text-anchor: middle;
+}
+.EndAlign {
+  text-align: end;
+  text-anchor: end;
 }
 
 .Magenta {
   fill: none;
   stroke: $display-magenta;
 }
-
-// Used for the speed change dot
-.Magenta.Fill {
-  fill: $display-magenta;
-  stroke: none;
-}
-
+text.Magenta,
+tspan.Magenta,
 .Magenta text,
-text.Magenta {
+.Magenta tspan {
   fill: $display-magenta;
   stroke: none;
 }
@@ -66,37 +103,31 @@ text.Magenta {
   fill: none;
   stroke: $display-cyan;
 }
-
-.Cyan.Fill {
-  fill: $display-cyan;
-  stroke: none;
-}
-
-.Cyan text,
 text.Cyan,
-.Cyan tspan,
-tspan.Cyan {
+tspan.Cyan,
+.Cyan text,
+.Cyan tspan {
   fill: $display-cyan;
   stroke: none;
 }
 
-tspan.Cyan {
-  fill: $display-cyan;
+/* .None {
+  fill: none;
   stroke: none;
-}
+} */
 
 .White {
   fill: none;
   stroke: $display-white;
 }
-
 .White.Fill {
   fill: $display-white;
   stroke: none;
 }
-
+text.White,
+tspan.White,
 .White text,
-text.White {
+.White tspan {
   fill: $display-white;
   stroke: none;
 }
@@ -111,10 +142,10 @@ text.White {
   stroke: none;
 }
 
-.Green text,
 text.Green,
-.Green tspan,
-tspan.Green {
+tspan.Green,
+.Green text,
+.Green tspan {
   fill: $display-green;
   stroke: none;
 }
@@ -123,9 +154,10 @@ tspan.Green {
   stroke: $display-amber;
   fill: none;
 }
-
+text.Amber,
+tspan.Amber,
 .Amber text,
-text.Amber {
+.Amber tspan {
   fill: $display-amber;
   stroke: none;
 }
@@ -134,14 +166,14 @@ text.Amber {
   stroke: $display-yellow;
   fill: none;
 }
-
 .Yellow.Fill {
   fill: $display-yellow;
   stroke: none;
 }
-
+text.Yellow,
+tspan.Yellow,
 .Yellow text,
-text.Yellow {
+.Yellow tspan {
   fill: $display-yellow;
   stroke: none;
 }
@@ -150,36 +182,31 @@ text.Yellow {
   stroke: $display-red;
   fill: none;
 }
-
 .Red.Fill {
   fill: $display-red;
   stroke: none;
 }
-
+text.Red,
+tspan.Red,
 .Red text,
-text.Red {
+.Red tspan {
   fill: $display-red;
   stroke: none;
 }
 
+.Grey {
+  stroke: $display-grey;
+  fill: none;
+}
 .Grey.Fill {
   fill: $display-grey;
   stroke: none;
 }
 
+
 .BackgroundFill {
   fill: $display-background;
-}
-
-path.rounded {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-text.shadow {
-  stroke: $display-background;
-  stroke-width: 1px;
-  paint-order: stroke;
+  fill-rule: evenodd;
 }
 
 circle.shadow,
@@ -190,6 +217,12 @@ rect.shadow {
   fill: none;
 }
 
+
 .chrono {
   font-family: "NDChrono", monospace !important;
+}
+
+.nd-inverted-map-area {
+  background: $display-background;
+  fill: rgb(4,4,5);
 }

@@ -1,5 +1,4 @@
 import { FSComponent, DisplayComponent, Subject, Subscribable, VNode, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
-import { EfisSide } from '@shared/NavigationDisplay';
 import { FmsVars } from '../../MsfsAvionicsCommon/providers/FmsDataPublisher';
 
 export interface CrossTrackErrorProps {
@@ -8,7 +7,6 @@ export interface CrossTrackErrorProps {
     y: number,
     isPlanMode: Subscribable<boolean>,
     isNormalOperation: Subscribable<boolean>, // TODO replace with ARINC429 word
-    side: EfisSide
 }
 
 export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {

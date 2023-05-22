@@ -4,7 +4,7 @@ import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublishe
 
 export interface IlsInfoIndicatorProps {
     bus: EventBus,
-    index: 1 | 2,
+    index: 3 | 4,
 }
 
 export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
@@ -34,12 +34,13 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
         const subs = this.props.bus.getSubscriber<VorSimVars>();
 
         // TODO select correct MMR
+        // Fixed now??
 
-        this.ilsIdent.setConsumer(subs.on('nav3Ident').whenChanged());
+        this.ilsIdent.setConsumer(subs.on(`nav${this.props.index}Ident`).whenChanged());
 
-        this.ilsFrequency.setConsumer(subs.on('nav3Frequency').whenChanged());
+        this.ilsFrequency.setConsumer(subs.on(`nav${this.props.index}Frequency`).whenChanged());
 
-        this.ilsCourse.setConsumer(subs.on('nav3Obs').whenChanged());
+        this.ilsCourse.setConsumer(subs.on(`nav${this.props.index}Obs`).whenChanged());
 
         this.ilsFrequency.sub((freq) => this.ilsFrequencyValid.set(freq >= 108 && freq <= 112), true);
         this.ilsFrequencyValid.sub((valid) => this.ilsCourseValid.set(valid), true);
