@@ -2,6 +2,7 @@
 
 mod battery;
 mod battery_charge_limiter;
+mod battery_charge_rectifier_unit;
 pub mod consumption;
 mod emergency_generator;
 mod engine_generator;
@@ -28,6 +29,7 @@ use crate::{
 };
 pub use battery::Battery;
 pub use battery_charge_limiter::BatteryChargeLimiter;
+pub use battery_charge_rectifier_unit::BatteryChargeRectifierUnit;
 pub use emergency_generator::EmergencyGenerator;
 pub use engine_generator::{
     EngineGenerator, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
