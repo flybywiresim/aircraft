@@ -5853,7 +5853,7 @@ mod tests {
                     ),
                     adirus: A320TestAdirus::default(),
                     electrical: A320TestElectrical::new(),
-                    ext_pwr: ExternalPowerSource::new(context),
+                    ext_pwr: ExternalPowerSource::new(context, 1),
                     powered_source_ac: TestElectricitySource::powered(
                         context,
                         PotentialOrigin::EngineGenerator(1),
