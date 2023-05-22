@@ -14,6 +14,7 @@
 1. [SD] Corrected fuel transfer valve amber logic - @tracernz (Mike)
 1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
 1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
+1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
 
 ## 0.10.0
 
