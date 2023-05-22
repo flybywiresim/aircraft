@@ -641,7 +641,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
 
         this.trueRefActive.setConsumer(this.sub.on('trueRefActive').whenChanged());
 
-        this.sub.on('realTime').whenChangedBy(100).handle(() => {
+        this.sub.on('simTime').whenChangedBy(100).handle(() => {
             this.refreshToWptIdent();
         });
     }
@@ -657,7 +657,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private handleToWptDistance() {
         const value = this.toWptDistanceCaptain.get();
 
-        if (value < 0 || !this.props.isNormalOperation.get()) {
+        if (!value || value < 0 || !this.props.isNormalOperation.get()) {
             this.distanceSmallContainerVisible.set(false);
             this.distanceLargeContainerVisible.set(false);
             this.distanceNmUnitVisible.set(false);
