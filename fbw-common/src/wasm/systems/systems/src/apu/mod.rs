@@ -3,10 +3,7 @@ use self::{
     electronic_control_box::ElectronicControlBox,
 };
 use crate::{
-    electrical::{
-        ElectricalElement, ElectricalElementIdentifier, ElectricitySource, Potential,
-        ProvideFrequency, ProvidePotential,
-    },
+    electrical::{ElectricalElement, ElectricitySource, ProvideFrequency, ProvidePotential},
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
     pneumatic::{ControllablePneumaticValve, TargetPressureTemperatureSignal},
     shared::{
@@ -37,12 +34,30 @@ impl AuxiliaryPowerUnitFactory {
         start_motor_powered_by: ElectricalBusType,
         electronic_control_box_powered_by: ElectricalBusType,
         air_intake_flap_powered_by: ElectricalBusType,
-    ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor> {
+    ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1> {
         let generator = Aps3200ApuGenerator::new(context, number);
         AuxiliaryPowerUnit::new(
             context,
             Box::new(ShutdownAps3200Turbine::new()),
-            generator,
+            [generator],
+            Aps3200StartMotor::new(start_motor_powered_by),
+            electronic_control_box_powered_by,
+            air_intake_flap_powered_by,
+        )
+    }
+
+    pub fn new_pw980(
+        context: &mut InitContext,
+        start_motor_powered_by: ElectricalBusType,
+        electronic_control_box_powered_by: ElectricalBusType,
+        air_intake_flap_powered_by: ElectricalBusType,
+    ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 2> {
+        // TODO: replace with correct generator and turbine model
+        let generators = [1, 2].map(|i| Aps3200ApuGenerator::new(context, i));
+        AuxiliaryPowerUnit::new(
+            context,
+            Box::new(ShutdownAps3200Turbine::new()),
+            generators,
             Aps3200StartMotor::new(start_motor_powered_by),
             electronic_control_box_powered_by,
             air_intake_flap_powered_by,
@@ -83,21 +98,21 @@ pub enum TurbineSignal {
     Stop,
 }
 
-pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor> {
+pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor, const N: usize> {
     apu_flap_open_percentage_id: VariableIdentifier,
 
     turbine: Option<Box<dyn Turbine>>,
-    generator: T,
+    generators: [T; N],
     ecb: ElectronicControlBox,
     start_motor: U,
     air_intake_flap: AirIntakeFlap,
     fuel_pressure_switch: FuelPressureSwitch,
 }
-impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
+impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> AuxiliaryPowerUnit<T, U, N> {
     pub fn new(
         context: &mut InitContext,
         turbine: Box<dyn Turbine>,
-        generator: T,
+        generators: [T; N],
         start_motor: U,
         electronic_control_box_powered_by: ElectricalBusType,
         air_intake_flap_powered_by: ElectricalBusType,
@@ -107,7 +122,7 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
                 .get_identifier("APU_FLAP_OPEN_PERCENTAGE".to_owned()),
 
             turbine: Some(turbine),
-            generator,
+            generators,
             ecb: ElectronicControlBox::new(context, electronic_control_box_powered_by),
             start_motor,
             air_intake_flap: AirIntakeFlap::new(air_intake_flap_powered_by),
@@ -149,8 +164,10 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
             self.turbine = Some(updated_turbine);
         }
 
-        self.generator
-            .update(self.ecb.n(), self.is_emergency_shutdown());
+        let emergency_shutdown = self.is_emergency_shutdown();
+        for gen in &mut self.generators {
+            gen.update(self.ecb.n(), emergency_shutdown);
+        }
     }
 
     pub fn update_after_power_distribution(&mut self) {
@@ -187,50 +204,38 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
         self.air_intake_flap.set_travel_time(duration);
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnitElectrical for AuxiliaryPowerUnit<T, U> {
-    fn output_within_normal_parameters(&self) -> bool {
-        self.generator.output_within_normal_parameters()
+impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> AuxiliaryPowerUnitElectrical
+    for AuxiliaryPowerUnit<T, U, N>
+{
+    type Generator = T;
+
+    fn generator(&self, number: usize) -> &Self::Generator {
+        &self.generators[number - 1]
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ApuAvailable for AuxiliaryPowerUnit<T, U> {
+impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> ApuAvailable
+    for AuxiliaryPowerUnit<T, U, N>
+{
     fn is_available(&self) -> bool {
         self.ecb.is_available()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ContactorSignal>
-    for AuxiliaryPowerUnit<T, U>
+impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> ControllerSignal<ContactorSignal>
+    for AuxiliaryPowerUnit<T, U, N>
 {
     fn signal(&self) -> Option<ContactorSignal> {
         self.ecb.signal()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ElectricitySource for AuxiliaryPowerUnit<T, U> {
-    fn output_potential(&self) -> Potential {
-        self.generator.output_potential()
-    }
-}
-impl<T: ApuGenerator, U: ApuStartMotor> ElectricalElement for AuxiliaryPowerUnit<T, U> {
-    fn input_identifier(&self) -> ElectricalElementIdentifier {
-        self.generator.input_identifier()
-    }
-
-    fn output_identifier(&self) -> crate::electrical::ElectricalElementIdentifier {
-        self.generator.output_identifier()
-    }
-
-    fn is_conductive(&self) -> bool {
-        self.generator.is_conductive()
-    }
-}
-impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ApuBleedAirValveSignal>
-    for AuxiliaryPowerUnit<T, U>
+impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> ControllerSignal<ApuBleedAirValveSignal>
+    for AuxiliaryPowerUnit<T, U, N>
 {
     fn signal(&self) -> Option<ApuBleedAirValveSignal> {
         self.ecb.signal()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureTemperatureSignal>
-    for AuxiliaryPowerUnit<T, U>
+impl<T: ApuGenerator, U: ApuStartMotor, const N: usize>
+    ControllerSignal<TargetPressureTemperatureSignal> for AuxiliaryPowerUnit<T, U, N>
 {
     fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
         // TODO: Calculate the temperature depending on environmental conditions.
@@ -243,9 +248,11 @@ impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureTemperatu
         })
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {
+impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> SimulationElement
+    for AuxiliaryPowerUnit<T, U, N>
+{
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        self.generator.accept(visitor);
+        accept_iterable!(self.generators, visitor);
         self.start_motor.accept(visitor);
         self.air_intake_flap.accept(visitor);
         self.ecb.accept(visitor);
@@ -324,9 +331,9 @@ impl AuxiliaryPowerUnitOverheadPanel {
         }
     }
 
-    pub fn update_after_apu<T: ApuGenerator, U: ApuStartMotor>(
+    pub fn update_after_apu<T: ApuGenerator, U: ApuStartMotor, const N: usize>(
         &mut self,
-        apu: &AuxiliaryPowerUnit<T, U>,
+        apu: &AuxiliaryPowerUnit<T, U, N>,
     ) {
         self.start.set_available(apu.is_available());
         if self.start_is_on()
@@ -449,7 +456,7 @@ pub mod tests {
         dc_bat_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
         apu_start_motor_bus: ElectricalBus,
-        apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
+        apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1>,
         apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
         apu_overhead: AuxiliaryPowerUnitOverheadPanel,
         apu_bleed: OnOffFaultPushButton,
@@ -505,7 +512,7 @@ pub mod tests {
         }
 
         pub fn generator_is_unpowered(&self, electricity: &Electricity) -> bool {
-            electricity.output_of(&self.apu).is_unpowered()
+            electricity.output_of(self.apu.generator(1)).is_unpowered()
         }
 
         fn set_power_demand(&mut self, power: Power) {
@@ -531,7 +538,7 @@ pub mod tests {
         fn apu_generator_output_within_normal_parameters_after_processing_power_consumption_report(
             &self,
         ) -> bool {
-            self.apu.output_within_normal_parameters()
+            self.apu.generator(1).output_within_normal_parameters()
         }
 
         fn apu_generator_output_within_normal_parameters_before_processing_power_consumption_report(
@@ -560,9 +567,9 @@ pub mod tests {
                 self.has_fuel_remaining,
             );
 
-            self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report = self.apu.output_within_normal_parameters();
+            self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report = self.apu.generator(1).output_within_normal_parameters();
 
-            electricity.supplied_by(&self.apu);
+            electricity.supplied_by(self.apu.generator(1));
             electricity.supplied_by(&self.dc_bat_bus_electricity_source);
             electricity.flow(&self.dc_bat_bus_electricity_source, &self.dc_bat_bus);
             if matches!(self.apu.signal(), Some(ContactorSignal::Close))
@@ -571,7 +578,7 @@ pub mod tests {
                 electricity.flow(&self.dc_bat_bus, &self.apu_start_motor_bus);
             }
 
-            electricity.flow(&self.apu, &self.ac_1_bus);
+            electricity.flow(self.apu.generator(1), &self.ac_1_bus);
         }
 
         fn update_after_power_distribution(&mut self, _: &UpdateContext) {

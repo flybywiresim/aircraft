@@ -6671,7 +6671,7 @@ mod tests {
                     ),
                     adirus: A380TestAdirus::default(),
                     electrical: A380TestElectrical::new(),
-                    ext_pwr: ExternalPowerSource::new(context),
+                    ext_pwr: ExternalPowerSource::new(context, 1),
                     powered_source_ac: TestElectricitySource::powered(
                         context,
                         PotentialOrigin::EngineGenerator(1),
