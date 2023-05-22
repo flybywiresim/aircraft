@@ -246,7 +246,8 @@ export class NavaidTuner {
 
     private readonly flightPhaseManager: FlightPhaseManager;
 
-    private lastBlockEventMessageTime: number | null = null;
+    /** Whether the tuning event blocked message has been shown before. It is only shown once. */
+    private blockEventMessageShown = false;
 
     // eslint-disable-next-line camelcase
     private tipsManager?: A32NX_TipsManager;
@@ -311,13 +312,9 @@ export class NavaidTuner {
             if (this.rmpTuningActive) {
                 // pass the tuning event through to the sim
                 Coherent.call('TRIGGER_KEY_EVENT', key, true, value0 ?? 0, value1 ?? 0, value2 ?? 0);
-            } else {
-                const time = SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds');
-                if (this.lastBlockEventMessageTime === null || (time - this.lastBlockEventMessageTime) > 60) {
-                    this.lastBlockEventMessageTime = time;
-                    this.tipsManager?.showNavRadioTuningTip();
-                }
-                console.log('Blocked nav radio tuning event', key);
+            } else if (!this.blockEventMessageShown) {
+                this.tipsManager?.showNavRadioTuningTip();
+                this.blockEventMessageShown = true;
             }
         }
     }
