@@ -233,6 +233,7 @@ pub struct UpdateContext {
     rotation_vel_y_id: VariableIdentifier,
     rotation_vel_z_id: VariableIdentifier,
 
+
     delta: Delta,
     simulation_time: f64,
     is_ready: bool,
@@ -363,6 +364,7 @@ impl UpdateContext {
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
+
             surface_id: context.get_identifier(Self::SURFACE_KEY.to_owned()),
             rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
             rotation_acc_y_id: context.get_identifier(Self::ROTATION_ACCEL_Y_KEY.to_owned()),
@@ -370,6 +372,7 @@ impl UpdateContext {
             rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
+
 
             delta: delta.into(),
             simulation_time,
@@ -417,6 +420,7 @@ impl UpdateContext {
             latitude,
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 10.,
+
             surface: SurfaceTypeMsfs::Asphalt,
 
             rotation_accel: Vector3::default(),
@@ -453,6 +457,7 @@ impl UpdateContext {
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
+
             surface_id: context.get_identifier("SURFACE TYPE".to_owned()),
 
             rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
@@ -461,6 +466,7 @@ impl UpdateContext {
             rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
             rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
             rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
+
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -504,6 +510,7 @@ impl UpdateContext {
             latitude: Default::default(),
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 1.,
+
             surface: SurfaceTypeMsfs::Asphalt,
 
             rotation_accel: Vector3::default(),
