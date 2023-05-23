@@ -102,11 +102,7 @@ impl Morse {
             ident_new: 0,
             ident_current: 0,
             morse: "".to_owned(),
-            is_ils: if name == "NAV" && id == 3 {
-                true
-            } else {
-                false
-            },
+            is_ils: name == "NAV" && id == 3,
             ident_active: false,
             beep: false,
             duration_between_symbols: Duration::from_millis(0),

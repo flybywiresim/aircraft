@@ -57,6 +57,8 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
       this->_previousTimeSELCAL = std::chrono::system_clock::now();
     }
 
+    // Setting the lvars with the new volume
+    // _volumeCOM1FromATCServicesLVar is read by the Rust code
     if (_data.volumeCOM1 != UINT8_MAX) {
       set_named_variable_value(_volumeCOM1FromATCServicesLVar, _data.volumeCOM1);
       this->_previousVolumeCOM1 = _data.volumeCOM1;
@@ -95,9 +97,6 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
       if (this->_previousTimeATT == std::chrono::system_clock::from_time_t(0) && get_named_variable_value(_attCallingLVar) == 1) {
         this->_baseTimeATT = std::chrono::system_clock::now();
       }
-      if (this->_previousTimeMECH == std::chrono::system_clock::from_time_t(0) && get_named_variable_value(_mechCallingLVar) == 1) {
-        this->_baseTimeMECH = std::chrono::system_clock::now();
-      }
 
       if (this->_baseTimeATT > std::chrono::system_clock::from_time_t(0)) {
         if (std::chrono::duration_cast<Milliseconds>(now - this->_previousTimeATT).count() >= BLINK_LIGHT_TIME_MS) {
@@ -107,6 +106,10 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
           this->_previousTimeATT = this->_baseTimeATT = {};
           set_named_variable_value(_attCallingLVar, 0);
         }
+      }
+
+      if (this->_previousTimeMECH == std::chrono::system_clock::from_time_t(0) && get_named_variable_value(_mechCallingLVar) == 1) {
+        this->_baseTimeMECH = std::chrono::system_clock::now();
       }
 
       if (this->_baseTimeMECH > std::chrono::system_clock::from_time_t(0)) {
@@ -133,16 +136,16 @@ void ATCServices::onUpdate(INT64 volumeCOM1, INT64 volumeCOM2) {
       setATCServicesDataIVAO(false, volumeCOM1, volumeCOM2);
       setATCServicesDataVPILOT(true, false);
     }
+  }
 
-    // Update third party volume with volume from ACPs
-    if (get_named_variable_value(_updateVolumeATCServicesFromACPLvar) == 1 &&
-        (volumeCOM1 != this->_previousVolumeCOM1 || volumeCOM2 != this->_previousVolumeCOM2)) {
-      set_named_variable_value(_updateVolumeATCServicesFromACPLvar, 0);
-      this->_previousVolumeCOM1 = volumeCOM1;
-      this->_previousVolumeCOM2 = volumeCOM2;
+  // Update third party volume with volume from ACPs
+  if (get_named_variable_value(_updateVolumeATCServicesFromACPLvar) == 1 &&
+      (volumeCOM1 != this->_previousVolumeCOM1 || volumeCOM2 != this->_previousVolumeCOM2)) {
+    set_named_variable_value(_updateVolumeATCServicesFromACPLvar, 0);
+    this->_previousVolumeCOM1 = volumeCOM1;
+    this->_previousVolumeCOM2 = volumeCOM2;
 
-      setATCServicesDataIVAO(this->_selcalActive, volumeCOM1, volumeCOM2);
-    }
+    setATCServicesDataIVAO(this->_selcalActive, volumeCOM1, volumeCOM2);
   }
 }
 
