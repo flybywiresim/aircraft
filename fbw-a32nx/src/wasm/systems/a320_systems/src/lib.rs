@@ -32,7 +32,7 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
@@ -69,6 +69,7 @@ pub struct A320 {
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
+    reverse_thrust: ReverserForce,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
@@ -121,6 +122,7 @@ impl A320 {
                 ],
                 0,
             ),
+            reverse_thrust: ReverserForce::new(context),
         }
     }
 }
@@ -193,6 +195,12 @@ impl Aircraft for A320 {
             &self.adirs,
         );
 
+        self.reverse_thrust.update(
+            context,
+            [&self.engine_1, &self.engine_2],
+            self.hydraulic.reversers_position(),
+        );
+
         self.pneumatic.update_hydraulic_reservoir_spatial_volumes(
             self.hydraulic.green_reservoir(),
             self.hydraulic.blue_reservoir(),
@@ -260,6 +268,7 @@ impl SimulationElement for A320 {
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
+        self.reverse_thrust.accept(visitor);
 
         visitor.visit(self);
     }
