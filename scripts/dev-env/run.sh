@@ -13,7 +13,6 @@ export MSYS_NO_PATHCONV=1
 
 docker image inspect $IMAGE 1> /dev/null || docker system prune --filter label=flybywiresim=true -f
 
-
 docker run \
     --rm $TTY_PARAM \
     -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
