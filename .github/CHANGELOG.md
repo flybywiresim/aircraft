@@ -148,6 +148,7 @@
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
 1. [EFB] Added warning for not compatible aircraft type to simbrief import - @2hwk (2Cas)
+1. [COMMS] Enabled all components of comms panels. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.10.0
 
@@ -273,7 +274,7 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
-1. [COMMS] Enabled all components of all ACPs/RMPs and AudioSwitching knob. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
+1. [FLIGHT MODEL/EFB] Updated CG for ELAC 103 - @donstim (donbikes#4084)
 
 ## 0.9.0
 
