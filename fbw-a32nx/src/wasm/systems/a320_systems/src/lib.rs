@@ -33,7 +33,7 @@ use systems::{
     },
     communications::Communications,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
@@ -47,7 +47,7 @@ pub struct A320 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A320AirConditioning,
-    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
+    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A320PneumaticOverheadPanel,
@@ -70,6 +70,7 @@ pub struct A320 {
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
+    reverse_thrust: ReverserForce,
     communications: Communications,
 }
 impl A320 {
@@ -98,7 +99,7 @@ impl A320 {
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
             electrical: A320Electrical::new(context),
             power_consumption: A320PowerConsumption::new(context),
-            ext_pwr: ExternalPowerSource::new(context),
+            ext_pwr: ExternalPowerSource::new(context, 1),
             lgcius: LandingGearControlInterfaceUnitSet::new(
                 context,
                 ElectricalBusType::DirectCurrentEssential,
@@ -123,6 +124,7 @@ impl A320 {
                 ],
                 0,
             ),
+            reverse_thrust: ReverserForce::new(context),
             communications: Communications::new(context),
         }
     }
@@ -196,6 +198,12 @@ impl Aircraft for A320 {
             &self.adirs,
         );
 
+        self.reverse_thrust.update(
+            context,
+            [&self.engine_1, &self.engine_2],
+            self.hydraulic.reversers_position(),
+        );
+
         self.pneumatic.update_hydraulic_reservoir_spatial_volumes(
             self.hydraulic.green_reservoir(),
             self.hydraulic.blue_reservoir(),
@@ -263,8 +271,9 @@ impl SimulationElement for A320 {
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
+        self.reverse_thrust.accept(visitor);
         self.communications.accept(visitor);
-
+      
         visitor.visit(self);
     }
 }
