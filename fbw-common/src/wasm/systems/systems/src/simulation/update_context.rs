@@ -471,7 +471,7 @@ impl UpdateContext {
         self.total_weight = reader.read(&self.total_weight_id);
 
         self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
-      
+
         self.side_controlling = reader.read(&self.side_controlling_id);
 
         self.update_relative_wind();

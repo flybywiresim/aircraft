@@ -273,7 +273,7 @@ impl SimulationElement for A320 {
         self.egpwc.accept(visitor);
         self.reverse_thrust.accept(visitor);
         self.communications.accept(visitor);
-      
+
         visitor.visit(self);
     }
 }
