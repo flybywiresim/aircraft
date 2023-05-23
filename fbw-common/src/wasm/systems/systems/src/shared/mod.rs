@@ -319,6 +319,7 @@ pub enum AirbusElectricPumpId {
     Green,
     Blue,
     Yellow,
+    GreenAux,
 }
 impl Display for AirbusElectricPumpId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -330,6 +331,7 @@ impl Display for AirbusElectricPumpId {
             AirbusElectricPumpId::Green => write!(f, "GREEN"),
             AirbusElectricPumpId::Blue => write!(f, "BLUE"),
             AirbusElectricPumpId::Yellow => write!(f, "YELLOW"),
+            AirbusElectricPumpId::GreenAux => write!(f, "GREEN_AUX"),
         }
     }
 }
