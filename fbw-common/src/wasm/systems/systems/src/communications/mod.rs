@@ -564,12 +564,30 @@ impl SimulationElement for Communications {
 
             writer.write(&self.volume_com1_id, self.volume_com1);
             writer.write(&self.volume_com2_id, self.volume_com2);
-            writer.write(&self.volume_adf1_id, self.volume_adf1 * (self.receive_adf1 as u8));
-            writer.write(&self.volume_adf2_id, self.volume_adf2 * (self.receive_adf2 as u8));
-            writer.write(&self.volume_vor1_id, self.volume_vor1 * (self.receive_vor1 as u8));
-            writer.write(&self.volume_vor2_id, self.volume_vor2 * (self.receive_vor2 as u8));
-            writer.write(&self.volume_ils_id, self.volume_ils * (self.receive_ils as u8));
-            writer.write(&self.volume_gls_id, self.volume_gls * (self.receive_gls as u8));
+            writer.write(
+                &self.volume_adf1_id,
+                self.volume_adf1 * (self.receive_adf1 as u8),
+            );
+            writer.write(
+                &self.volume_adf2_id,
+                self.volume_adf2 * (self.receive_adf2 as u8),
+            );
+            writer.write(
+                &self.volume_vor1_id,
+                self.volume_vor1 * (self.receive_vor1 as u8),
+            );
+            writer.write(
+                &self.volume_vor2_id,
+                self.volume_vor2 * (self.receive_vor2 as u8),
+            );
+            writer.write(
+                &self.volume_ils_id,
+                self.volume_ils * (self.receive_ils as u8),
+            );
+            writer.write(
+                &self.volume_gls_id,
+                self.volume_gls * (self.receive_gls as u8),
+            );
             writer.write(&self.volume_markers_id, self.volume_markers);
 
             // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
