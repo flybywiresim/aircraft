@@ -9,6 +9,8 @@ use super::Engine;
 use crate::simulation::{InitContext, VariableIdentifier};
 
 pub struct TrentEngine {
+    thrust_id: VariableIdentifier,
+
     corrected_n1_id: VariableIdentifier,
     corrected_n1: Ratio,
     corrected_n2_id: VariableIdentifier,
@@ -21,6 +23,8 @@ pub struct TrentEngine {
 
     hydraulic_pump_output_speed: AngularVelocity,
     oil_pressure: Pressure,
+
+    net_thrust: Mass,
 }
 impl TrentEngine {
     // 100% N1 @ 2900 RPM
@@ -39,6 +43,8 @@ impl TrentEngine {
 
     pub fn new(context: &mut InitContext, number: usize) -> TrentEngine {
         TrentEngine {
+            thrust_id: context.get_identifier(format!("TURB ENG JET THRUST:{}", number)),
+
             corrected_n1_id: context.get_identifier(format!("TURB ENG CORRECTED N1:{}", number)),
             corrected_n1: Ratio::new::<percent>(0.),
             corrected_n2_id: context.get_identifier(format!("TURB ENG CORRECTED N2:{}", number)),
@@ -50,6 +56,8 @@ impl TrentEngine {
 
             hydraulic_pump_output_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             oil_pressure: Pressure::new::<psi>(0.),
+
+            net_thrust: Mass::default(),
         }
     }
 
@@ -71,6 +79,8 @@ impl SimulationElement for TrentEngine {
         self.corrected_n2 = reader.read(&self.corrected_n2_id);
         self.uncorrected_n2 = reader.read(&self.uncorrected_n2_id);
         self.uncorrected_n3 = reader.read(&self.uncorrected_n3_id);
+        self.net_thrust = reader.read(&self.thrust_id);
+
         self.update_parameters();
     }
 }
@@ -101,5 +111,9 @@ impl Engine for TrentEngine {
     fn is_above_minimum_idle(&self) -> bool {
         self.uncorrected_n2
             >= Ratio::new::<percent>(TrentEngine::MIN_IDLE_N2_UNCORRECTED_THRESHOLD_PERCENT)
+    }
+
+    fn net_thrust(&self) -> Mass {
+        self.net_thrust
     }
 }
