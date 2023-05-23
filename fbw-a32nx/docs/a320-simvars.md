@@ -440,10 +440,6 @@
     - Number
     - The ILS course tuned via the left/right RMP
 
-- A32NX_RMP_ILS_TUNED
-    - Bool
-    - If the ILS is tuned via the RMP
-
 - A32NX_RMP_SEL_LIGHT_ON
     - Bool
     - If the SEL light is on

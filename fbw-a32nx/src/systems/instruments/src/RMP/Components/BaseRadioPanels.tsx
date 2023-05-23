@@ -90,7 +90,6 @@ const PoweredRadioPanel = (props: Props) => {
 
     useInteractionEvent(`A32NX_RMP_${props.side}_NAV_BUTTON_PRESSED`, () => {
         if (navButtonPressed) {
-            SimVar.SetSimVarValue('L:A32NX_RMP_ILS_TUNED', 'boolean', false);
             setPanelMode(previousPanelMode);
         }
 
