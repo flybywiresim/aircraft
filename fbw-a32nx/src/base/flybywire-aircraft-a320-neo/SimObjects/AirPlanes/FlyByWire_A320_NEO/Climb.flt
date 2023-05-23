@@ -32,13 +32,7 @@ Com2Receive=False
 Com3Receive=False
 AudioNav1Listen=False
 AudioNav2Listen=False
-; To uncomment whenever the SDK let us set the markers sound with a set function
-; For now, there's a toggle version only
-; This create a weird behavior at startup.
-; Default value is True but at startup it's set to False due to toggle version
-; Whenever available, MARKER_SOUND_TOGGLE in communications.rs should be replaced
-; and condition feeding aspect MARKER_IDENT too
-; AudioMarkerListen=False
+AudioMarkerListen=False
 AudioDmeListen=False
 AudioAdfListen=False
 AudioAdf2Listen=False
