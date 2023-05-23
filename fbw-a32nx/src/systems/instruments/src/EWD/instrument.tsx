@@ -75,8 +75,8 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('engine1FF');
         this.simVarPublisher.subscribe('engine1N1');
         this.simVarPublisher.subscribe('engine1N2');
-        this.simVarPublisher.subscribe('engine1Reverse');
-        this.simVarPublisher.subscribe('engine1ReverseNozzle');
+        this.simVarPublisher.subscribe('engine1ReverserTransit');
+        this.simVarPublisher.subscribe('engine1ReverserDeployed');
         this.simVarPublisher.subscribe('engine1State');
 
         this.simVarPublisher.subscribe('engine2AntiIce');
@@ -85,8 +85,8 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('engine2FF');
         this.simVarPublisher.subscribe('engine2N1');
         this.simVarPublisher.subscribe('engine2N2');
-        this.simVarPublisher.subscribe('engine2Reverse');
-        this.simVarPublisher.subscribe('engine2ReverseNozzle');
+        this.simVarPublisher.subscribe('engine2ReverserTransit');
+        this.simVarPublisher.subscribe('engine2ReverserDeployed');
         this.simVarPublisher.subscribe('engine2State');
 
         this.simVarPublisher.subscribe('ewdLowerLeft1');
