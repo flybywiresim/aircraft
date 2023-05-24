@@ -1849,6 +1849,8 @@ impl A380Hydraulic {
             epump_auto_logic: A380ElectricPumpAutoLogic::new(
                 Self::GREEN_A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 Self::GREEN_B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_B_ELEC_PUMP_SUPPLY_POWER_BUS,
             ),
 
             tilting_gears: A380TiltingGearsFactory::new_a380_tilt_assembly(context),
@@ -3244,11 +3246,15 @@ struct A380ElectricPumpAutoLogic {
     is_required_for_body_steering_operation: DelayedFalseLogicGate,
     body_steering_in_operation_previous: bool,
 
-    a_pumps_powered_by: ElectricalBusType,
-    b_pumps_powered_by: ElectricalBusType,
+    green_a_pump_powered_by: ElectricalBusType,
+    green_b_pump_powered_by: ElectricalBusType,
+    yellow_a_pump_powered_by: ElectricalBusType,
+    yellow_b_pump_powered_by: ElectricalBusType,
 
-    a_pumps_bus_powered: bool,
-    b_pumps_bus_powered: bool,
+    green_a_pump_bus_powered: bool,
+    green_b_pump_bus_powered: bool,
+    yellow_a_pump_bus_powered: bool,
+    yellow_b_pump_bus_powered: bool,
 }
 impl A380ElectricPumpAutoLogic {
     const DURATION_OF_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
@@ -3256,7 +3262,12 @@ impl A380ElectricPumpAutoLogic {
 
     const DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION: Duration =
         Duration::from_secs(5);
-    fn new(a_pumps_powered_by: ElectricalBusType, b_pumps_powered_by: ElectricalBusType) -> Self {
+    fn new(
+        green_a_pump_powered_by: ElectricalBusType,
+        green_b_pump_powered_by: ElectricalBusType,
+        yellow_a_pump_powered_by: ElectricalBusType,
+        yellow_b_pump_powered_by: ElectricalBusType,
+    ) -> Self {
         Self {
             green_pump_a_selected: random_from_range(0., 1.) < 0.5,
             yellow_pump_a_selected: random_from_range(0., 1.) < 0.5,
@@ -3271,11 +3282,15 @@ impl A380ElectricPumpAutoLogic {
             ),
             body_steering_in_operation_previous: false,
 
-            a_pumps_powered_by,
-            b_pumps_powered_by,
+            green_a_pump_powered_by,
+            green_b_pump_powered_by,
+            yellow_a_pump_powered_by,
+            yellow_b_pump_powered_by,
 
-            a_pumps_bus_powered: false,
-            b_pumps_bus_powered: false,
+            green_a_pump_bus_powered: false,
+            green_b_pump_bus_powered: false,
+            yellow_a_pump_bus_powered: false,
+            yellow_b_pump_bus_powered: false,
         }
     }
 
@@ -3335,10 +3350,16 @@ impl A380ElectricPumpAutoLogic {
         }
 
         // If a pump selected but no AC to power it and B would have power : get back on B
-        if self.green_pump_a_selected && !self.a_pumps_bus_powered && self.b_pumps_bus_powered {
+        if self.green_pump_a_selected
+            && !self.green_a_pump_bus_powered
+            && self.green_b_pump_bus_powered
+        {
             self.green_pump_a_selected = false;
         }
-        if self.yellow_pump_a_selected && !self.a_pumps_bus_powered && self.b_pumps_bus_powered {
+        if self.yellow_pump_a_selected
+            && !self.yellow_a_pump_bus_powered
+            && self.yellow_b_pump_bus_powered
+        {
             self.yellow_pump_a_selected = false;
         }
 
@@ -3357,30 +3378,42 @@ impl A380ElectricPumpAutoLogic {
         let yellow_operation_required = self.is_required_for_body_steering_operation.output();
         match pump_id {
             A380ElectricPumpId::GreenA => {
-                self.a_pumps_bus_powered && green_operation_required && self.green_pump_a_selected
+                self.green_a_pump_bus_powered
+                    && green_operation_required
+                    && self.green_pump_a_selected
             }
             A380ElectricPumpId::GreenB => {
-                self.b_pumps_bus_powered && green_operation_required && !self.green_pump_a_selected
+                self.green_b_pump_bus_powered
+                    && green_operation_required
+                    && !self.green_pump_a_selected
             }
             A380ElectricPumpId::YellowA => {
-                self.a_pumps_bus_powered && yellow_operation_required && self.yellow_pump_a_selected
+                self.yellow_a_pump_bus_powered
+                    && yellow_operation_required
+                    && self.yellow_pump_a_selected
             }
             A380ElectricPumpId::YellowB => {
-                self.b_pumps_bus_powered
+                self.yellow_b_pump_bus_powered
                     && yellow_operation_required
                     && !self.yellow_pump_a_selected
             }
             A380ElectricPumpId::GreenAuxiliary => {
                 // Only allow AUX if no AC. This is actually a manual pump using external electric/pneumatic wrench
-                green_operation_required && !self.a_pumps_bus_powered && !self.b_pumps_bus_powered
+                green_operation_required
+                    && !self.green_a_pump_bus_powered
+                    && !self.green_b_pump_bus_powered
+                    && !self.yellow_a_pump_bus_powered
+                    && !self.yellow_b_pump_bus_powered
             }
         }
     }
 }
 impl SimulationElement for A380ElectricPumpAutoLogic {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.a_pumps_bus_powered = buses.is_powered(self.a_pumps_powered_by);
-        self.b_pumps_bus_powered = buses.is_powered(self.b_pumps_powered_by);
+        self.green_a_pump_bus_powered = buses.is_powered(self.green_a_pump_powered_by);
+        self.green_b_pump_bus_powered = buses.is_powered(self.green_b_pump_powered_by);
+        self.yellow_a_pump_bus_powered = buses.is_powered(self.yellow_a_pump_powered_by);
+        self.yellow_b_pump_bus_powered = buses.is_powered(self.yellow_b_pump_powered_by);
     }
 }
 
@@ -10324,6 +10357,8 @@ mod tests {
                 .set_cold_dark_inputs()
                 .ac_bus_1_lost()
                 .ac_bus_2_lost()
+                .ac_bus_3_lost()
+                .ac_bus_4_lost()
                 .run_one_tick();
 
             // Waiting for 5s pressure should not rise due to no pump avail
