@@ -37,7 +37,7 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
