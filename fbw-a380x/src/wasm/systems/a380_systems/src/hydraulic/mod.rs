@@ -345,6 +345,11 @@ impl A380AileronFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
 
+    // 427XP - AC ESS
+    const MIDDLE_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
+    // 247XP - AC EHA
+    const INWARD_PANEL_EHA_BUS: ElectricalBusType = AC_EHA_BUS;
+
     fn a380_aileron_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
@@ -471,13 +476,13 @@ impl A380AileronFactory {
         let assembly_middle = Self::a380_aileron_assembly(
             context,
             init_drooped_down,
-            Some(AC_EHA_BUS),
+            Some(Self::MIDDLE_PANEL_EHA_BUS),
             AileronPanelPosition::Middle,
         );
         let assembly_inward = Self::a380_aileron_assembly(
             context,
             init_drooped_down,
-            Some(AC_EHA_BUS),
+            Some(Self::INWARD_PANEL_EHA_BUS),
             AileronPanelPosition::Inward,
         );
         AileronAssembly::new(
@@ -522,6 +527,9 @@ impl A380SpoilerFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 400000.;
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 20.;
+
+    // 427XP - AC ESS
+    const SPOILER_6_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_spoiler_actuator(
         context: &mut InitContext,
@@ -612,7 +620,8 @@ impl A380SpoilerFactory {
         let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3, None);
         let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4, None);
         let spoiler_5 = Self::new_a380_spoiler_element(context, id, 5, None);
-        let spoiler_6 = Self::new_a380_spoiler_element(context, id, 6, Some(AC_EHA_BUS));
+        let spoiler_6 =
+            Self::new_a380_spoiler_element(context, id, 6, Some(Self::SPOILER_6_EBHA_BUS));
         let spoiler_7 = Self::new_a380_spoiler_element(context, id, 7, None);
         let spoiler_8 = Self::new_a380_spoiler_element(context, id, 8, None);
 
@@ -669,6 +678,17 @@ impl A380ElevatorFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
+
+    // 247XP - AC EHA
+    const LEFT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType = AC_EHA_BUS;
+    // 427XP - AC ESS
+    const RIGHT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential;
+    // 427XP - AC ESS
+    const LEFT_INWARD_PANEL_EHA_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential;
+    // 247XP - AC EHA
+    const RIGHT_INWARD_PANEL_EHA_BUS: ElectricalBusType = AC_EHA_BUS;
 
     fn a380_elevator_actuator(
         context: &mut InitContext,
@@ -782,10 +802,26 @@ impl A380ElevatorFactory {
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let init_drooped_down = !context.is_in_flight();
 
-        let assembly_outward =
-            Self::a380_elevator_assembly(context, init_drooped_down, Some(AC_EHA_BUS), true);
-        let assembly_inward =
-            Self::a380_elevator_assembly(context, init_drooped_down, Some(AC_EHA_BUS), false);
+        let assembly_outward = Self::a380_elevator_assembly(
+            context,
+            init_drooped_down,
+            if id == ActuatorSide::Left {
+                Some(Self::LEFT_OUTWARD_PANEL_EHA_BUS)
+            } else {
+                Some(Self::RIGHT_OUTWARD_PANEL_EHA_BUS)
+            },
+            true,
+        );
+        let assembly_inward = Self::a380_elevator_assembly(
+            context,
+            init_drooped_down,
+            if id == ActuatorSide::Left {
+                Some(Self::LEFT_INWARD_PANEL_EHA_BUS)
+            } else {
+                Some(Self::RIGHT_INWARD_PANEL_EHA_BUS)
+            },
+            false,
+        );
         ElevatorAssembly::new(
             context,
             id,
@@ -823,6 +859,14 @@ impl A380RudderFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
+
+    // 427XP - AC ESS
+    const UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrentEssential;
+    // 247XP - ACEHA
+    const UPPER_PANEL_LOWER_EBHA_BUS: ElectricalBusType = AC_EHA_BUS;
+    // 100XP1 - AC 1
+    const LOWER_PANEL_LOWER_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
 
     fn a380_rudder_actuator(
         context: &mut InitContext,
@@ -940,10 +984,20 @@ impl A380RudderFactory {
             || context.start_state() == StartState::Runway
             || context.is_in_flight();
 
-        let upper_assembly =
-            Self::a380_rudder_assembly(context, init_at_center, true, AC_EHA_BUS, AC_EHA_BUS);
-        let lower_assembly =
-            Self::a380_rudder_assembly(context, init_at_center, false, AC_EHA_BUS, AC_EHA_BUS);
+        let upper_assembly = Self::a380_rudder_assembly(
+            context,
+            init_at_center,
+            true,
+            Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
+            Self::UPPER_PANEL_LOWER_EBHA_BUS,
+        );
+        let lower_assembly = Self::a380_rudder_assembly(
+            context,
+            init_at_center,
+            false,
+            Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
+            Self::LOWER_PANEL_LOWER_EBHA_BUS,
+        );
         RudderAssembly::new(
             context,
             upper_assembly,
