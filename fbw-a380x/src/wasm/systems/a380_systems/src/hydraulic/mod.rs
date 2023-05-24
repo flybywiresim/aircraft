@@ -70,6 +70,8 @@ use flaps_computer::SlatFlapComplex;
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
 
+const AC_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentNamed("247XP");
+
 struct A380TiltingGearsFactory {}
 impl A380TiltingGearsFactory {
     fn new_a380_body_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
@@ -343,11 +345,6 @@ impl A380AileronFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
 
-    //TODO should be ACEss 1
-    const MIDDLE_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 2
-    const INWARD_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
-
     fn a380_aileron_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
@@ -474,13 +471,13 @@ impl A380AileronFactory {
         let assembly_middle = Self::a380_aileron_assembly(
             context,
             init_drooped_down,
-            Some(Self::MIDDLE_PANEL_EHA_BUS),
+            Some(AC_EHA_BUS),
             AileronPanelPosition::Middle,
         );
         let assembly_inward = Self::a380_aileron_assembly(
             context,
             init_drooped_down,
-            Some(Self::INWARD_PANEL_EHA_BUS),
+            Some(AC_EHA_BUS),
             AileronPanelPosition::Inward,
         );
         AileronAssembly::new(
@@ -525,9 +522,6 @@ impl A380SpoilerFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 400000.;
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 20.;
-
-    //TODO should be ACEss 1
-    const SPOILER_6_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_spoiler_actuator(
         context: &mut InitContext,
@@ -618,8 +612,7 @@ impl A380SpoilerFactory {
         let spoiler_3 = Self::new_a380_spoiler_element(context, id, 3, None);
         let spoiler_4 = Self::new_a380_spoiler_element(context, id, 4, None);
         let spoiler_5 = Self::new_a380_spoiler_element(context, id, 5, None);
-        let spoiler_6 =
-            Self::new_a380_spoiler_element(context, id, 6, Some(Self::SPOILER_6_EBHA_BUS));
+        let spoiler_6 = Self::new_a380_spoiler_element(context, id, 6, Some(AC_EHA_BUS));
         let spoiler_7 = Self::new_a380_spoiler_element(context, id, 7, None);
         let spoiler_8 = Self::new_a380_spoiler_element(context, id, 8, None);
 
@@ -676,19 +669,6 @@ impl A380ElevatorFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
-
-    //TODO should be ACEss 2
-    const LEFT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 1
-    const RIGHT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 1
-    const LEFT_INWARD_PANEL_EHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 2
-    const RIGHT_INWARD_PANEL_EHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_elevator_actuator(
         context: &mut InitContext,
@@ -802,26 +782,10 @@ impl A380ElevatorFactory {
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let init_drooped_down = !context.is_in_flight();
 
-        let assembly_outward = Self::a380_elevator_assembly(
-            context,
-            init_drooped_down,
-            if id == ActuatorSide::Left {
-                Some(Self::LEFT_OUTWARD_PANEL_EHA_BUS)
-            } else {
-                Some(Self::RIGHT_OUTWARD_PANEL_EHA_BUS)
-            },
-            true,
-        );
-        let assembly_inward = Self::a380_elevator_assembly(
-            context,
-            init_drooped_down,
-            if id == ActuatorSide::Left {
-                Some(Self::LEFT_INWARD_PANEL_EHA_BUS)
-            } else {
-                Some(Self::RIGHT_INWARD_PANEL_EHA_BUS)
-            },
-            false,
-        );
+        let assembly_outward =
+            Self::a380_elevator_assembly(context, init_drooped_down, Some(AC_EHA_BUS), true);
+        let assembly_inward =
+            Self::a380_elevator_assembly(context, init_drooped_down, Some(AC_EHA_BUS), false);
         ElevatorAssembly::new(
             context,
             id,
@@ -859,16 +823,6 @@ impl A380RudderFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
-
-    //TODO should be ACEss 2
-    const UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 1
-    const UPPER_PANEL_LOWER_EBHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 2
-    const LOWER_PANEL_LOWER_EBHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_rudder_actuator(
         context: &mut InitContext,
@@ -986,20 +940,10 @@ impl A380RudderFactory {
             || context.start_state() == StartState::Runway
             || context.is_in_flight();
 
-        let upper_assembly = Self::a380_rudder_assembly(
-            context,
-            init_at_center,
-            true,
-            Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
-            Self::UPPER_PANEL_LOWER_EBHA_BUS,
-        );
-        let lower_assembly = Self::a380_rudder_assembly(
-            context,
-            init_at_center,
-            false,
-            Self::UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS,
-            Self::LOWER_PANEL_LOWER_EBHA_BUS,
-        );
+        let upper_assembly =
+            Self::a380_rudder_assembly(context, init_at_center, true, AC_EHA_BUS, AC_EHA_BUS);
+        let lower_assembly =
+            Self::a380_rudder_assembly(context, init_at_center, false, AC_EHA_BUS, AC_EHA_BUS);
         RudderAssembly::new(
             context,
             upper_assembly,
@@ -1613,10 +1557,14 @@ impl A380Hydraulic {
     const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
 
-    const A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+    const GREEN_A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrent(1);
-    const B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+    const GREEN_B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrent(2);
+    const YELLOW_A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrent(3);
+    const YELLOW_B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrent(4);
 
     const EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
@@ -1741,7 +1689,7 @@ impl A380Hydraulic {
             yellow_electric_pump_a: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::YellowA,
-                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1754,7 +1702,7 @@ impl A380Hydraulic {
             yellow_electric_pump_b: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::YellowB,
-                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_B_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1767,7 +1715,7 @@ impl A380Hydraulic {
             green_electric_pump_a: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::GreenA,
-                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1780,7 +1728,7 @@ impl A380Hydraulic {
             green_electric_pump_b: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::GreenB,
-                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_B_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1899,8 +1847,8 @@ impl A380Hydraulic {
             ),
 
             epump_auto_logic: A380ElectricPumpAutoLogic::new(
-                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
-                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_B_ELEC_PUMP_SUPPLY_POWER_BUS,
             ),
 
             tilting_gears: A380TiltingGearsFactory::new_a380_tilt_assembly(context),
@@ -6657,6 +6605,9 @@ mod tests {
             ac_ess_bus: ElectricalBus,
             ac_1_bus: ElectricalBus,
             ac_2_bus: ElectricalBus,
+            ac_3_bus: ElectricalBus,
+            ac_4_bus: ElectricalBus,
+            ac_eha_bus: ElectricalBus,
             dc_1_bus: ElectricalBus,
             dc_2_bus: ElectricalBus,
             dc_ess_bus: ElectricalBus,
@@ -6669,6 +6620,9 @@ mod tests {
             is_ac_ess_powered: bool,
             is_ac_1_powered: bool,
             is_ac_2_powered: bool,
+            is_ac_3_powered: bool,
+            is_ac_4_powered: bool,
+            is_ac_eha_powered: bool,
             is_dc_1_powered: bool,
             is_dc_2_powered: bool,
             is_dc_ess_powered: bool,
@@ -6714,6 +6668,9 @@ mod tests {
                     ),
                     ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                     ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                    ac_3_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(3)),
+                    ac_4_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(4)),
+                    ac_eha_bus: ElectricalBus::new(context, AC_EHA_BUS),
                     dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
                     dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
                     dc_ess_bus: ElectricalBus::new(
@@ -6733,6 +6690,9 @@ mod tests {
                     is_ac_ess_powered: true,
                     is_ac_1_powered: true,
                     is_ac_2_powered: true,
+                    is_ac_3_powered: true,
+                    is_ac_4_powered: true,
+                    is_ac_eha_powered: true,
                     is_dc_1_powered: true,
                     is_dc_2_powered: true,
                     is_dc_ess_powered: true,
@@ -6831,6 +6791,14 @@ mod tests {
                 self.is_ac_2_powered = bus_is_alive;
             }
 
+            fn set_ac_bus_3_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_ac_3_powered = bus_is_alive;
+            }
+
+            fn set_ac_bus_4_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_ac_4_powered = bus_is_alive;
+            }
+
             fn _set_dc_ground_service_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ground_service_powered = bus_is_alive;
             }
@@ -6849,6 +6817,10 @@ mod tests {
 
             fn set_ac_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_ess_powered = bus_is_alive;
+            }
+
+            fn set_ac_eha_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_ac_eha_powered = bus_is_alive;
             }
 
             fn _set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
@@ -6872,6 +6844,18 @@ mod tests {
 
                 if self.is_ac_2_powered {
                     electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
+                }
+
+                if self.is_ac_3_powered {
+                    electricity.flow(&self.powered_source_ac, &self.ac_3_bus);
+                }
+
+                if self.is_ac_4_powered {
+                    electricity.flow(&self.powered_source_ac, &self.ac_4_bus);
+                }
+
+                if self.is_ac_eha_powered {
+                    electricity.flow(&self.powered_source_ac, &self.ac_eha_bus);
                 }
 
                 if self.is_ac_ground_service_powered {
@@ -7523,6 +7507,16 @@ mod tests {
                 self
             }
 
+            fn ac_bus_3_lost(mut self) -> Self {
+                self.command(|a| a.set_ac_bus_3_is_powered(false));
+                self
+            }
+
+            fn ac_bus_4_lost(mut self) -> Self {
+                self.command(|a| a.set_ac_bus_4_is_powered(false));
+                self
+            }
+
             fn _dc_ground_service_lost(mut self) -> Self {
                 self.command(|a| a._set_dc_ground_service_is_powered(false));
                 self
@@ -7565,6 +7559,16 @@ mod tests {
 
             fn ac_ess_active(mut self) -> Self {
                 self.command(|a| a.set_ac_ess_is_powered(true));
+                self
+            }
+
+            fn ac_eha_lost(mut self) -> Self {
+                self.command(|a| a.set_ac_eha_is_powered(false));
+                self
+            }
+
+            fn ac_eha_active(mut self) -> Self {
+                self.command(|a| a.set_ac_eha_is_powered(true));
                 self
             }
 
@@ -8341,7 +8345,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_ess_lost()
+                .ac_eha_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Middle,
@@ -8361,7 +8365,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_ess_active()
+                .ac_eha_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Middle,
@@ -8390,7 +8394,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_ess_lost()
+                .ac_eha_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Middle,
@@ -8410,7 +8414,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_ess_active()
+                .ac_eha_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Middle,
@@ -8543,7 +8547,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_ess_lost()
+                .ac_eha_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Inward,
@@ -8563,7 +8567,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_ess_active()
+                .ac_eha_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Inward,
@@ -8592,7 +8596,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_ess_lost()
+                .ac_eha_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Inward,
@@ -8612,7 +8616,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_ess_active()
+                .ac_eha_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Inward,
@@ -9708,14 +9712,14 @@ mod tests {
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_2_lost()
+                .ac_bus_4_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
-            // Yellow A epump still working as plugged on AC1
+            // Yellow A epump still working as plugged on AC3
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_1_lost()
+                .ac_bus_3_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Yellow epump has stopped
@@ -9738,14 +9742,14 @@ mod tests {
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_1_lost()
+                .ac_bus_3_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
-            // Yellow B epump still working as plugged on AC2
+            // Yellow B epump still working as plugged on AC4
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_2_lost()
+                .ac_bus_4_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Yellow epump has stopped
