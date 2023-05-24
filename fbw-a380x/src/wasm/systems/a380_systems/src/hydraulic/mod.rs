@@ -7585,7 +7585,7 @@ mod tests {
                 self
             }
 
-            fn ac_ess_lost(mut self) -> Self {
+            fn _ac_ess_lost(mut self) -> Self {
                 self.command(|a| a.set_ac_ess_is_powered(false));
                 self
             }
