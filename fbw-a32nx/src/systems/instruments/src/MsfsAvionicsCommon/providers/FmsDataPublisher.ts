@@ -38,10 +38,10 @@ export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R
             ['rnp', { name: (side) => `L:A32NX_FMGC_${side}_RNP`, type: SimVarValueType.Number }],
             ['toWptIdent0Captain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_IDENT_0`, type: SimVarValueType.Number }],
             ['toWptIdent1Captain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_IDENT_1`, type: SimVarValueType.Number }],
-            ['toWptBearingCaptain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_BEARING`, type: SimVarValueType.Number }],
-            ['toWptTrueBearingCaptain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_TRUE_BEARING`, type: SimVarValueType.Number }],
+            ['toWptBearingCaptain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_BEARING`, type: SimVarValueType.Degree }],
+            ['toWptTrueBearingCaptain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_TRUE_BEARING`, type: SimVarValueType.Degree }],
             ['toWptDistanceCaptain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_DISTANCE`, type: SimVarValueType.Number }],
-            ['toWptEtaCaptain', { name: (side) => `'L:A32NX_EFIS_${side}_TO_WPT_ETA`, type: SimVarValueType.Number }],
+            ['toWptEtaCaptain', { name: (side) => `L:A32NX_EFIS_${side}_TO_WPT_ETA`, type: SimVarValueType.Seconds }],
             ['apprMessage0Captain', { name: (side) => `L:A32NX_EFIS_${side}_APPR_MSG_0`, type: SimVarValueType.Number }],
             ['apprMessage1Captain', { name: (side) => `L:A32NX_EFIS_${side}_APPR_MSG_1`, type: SimVarValueType.Number }],
 

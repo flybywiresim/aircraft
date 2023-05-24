@@ -250,7 +250,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueTrackWord={this.trueTrackWord}
                         rangeValue={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
-                        index={this.props.side === 'R' ? 2 : 1}
+                        index={this.props.side === 'L' ? 1 : 2}
                     />
                     <RoseNavPage
                         bus={this.props.bus}
