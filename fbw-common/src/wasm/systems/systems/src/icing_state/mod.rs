@@ -30,7 +30,12 @@ pub struct IcingState {
 impl IcingState {
     const MAX_ICING_TEMP_C: f64 = -12.;
     const MAX_ICING_TEMP_STANDARD_DEVIATION_C: f64 = 7.;
+
     const NO_ICING_TEMP_C: f64 = 0.1;
+    const MIN_ICING_PRECIPITATION_RATE: f64 = 0.1;
+
+    const DEICING_FROM_TEMP_GAIN: f64 = 0.25; // Tunes the deicing gain from over 0 temperature
+    const MAX_NATURAL_DEICING_FROM_HOT_TEMP_RATIO: f64 = 2.;
 
     pub fn new(
         context: &mut InitContext,
@@ -53,15 +58,6 @@ impl IcingState {
         context: &UpdateContext,
         deicing_controller: Option<&impl ActiveDeicingController>,
     ) {
-        println!(
-            "ICING==> Temp {:.2} Precip {:.3} IcingRate {:.3} Inclouds {:?} FINAL {:.2}",
-            context.ambient_temperature().get::<degree_celsius>(),
-            context.precipitation_rate().get::<millimeter>(),
-            Self::icing_rate_normalized(context).get::<ratio>(),
-            context.is_in_cloud(),
-            self.icing_state_normalized.get::<ratio>(),
-        );
-
         let icing_delta = Self::icing_rate_normalized(context).get::<ratio>()
             * context.delta_as_secs_f64()
             / self.time_to_fully_iced.as_secs_f64();
@@ -91,20 +87,13 @@ impl IcingState {
             .icing_state_normalized
             .min(Ratio::new::<ratio>(1.))
             .max(Ratio::new::<ratio>(0.));
-
-        println!(
-            "ICING DELTAS==> icing {:.2} deicing {:.3} active_deicing {:.3} finaldelta {:.3} ==> FINAL {:.2}",
-            icing_delta,
-            passive_deicing_delta,
-            active_deicing_delta,
-            icing_delta - passive_deicing_delta - active_deicing_delta,
-            self.icing_state_normalized.get::<ratio>(),
-        );
     }
 
     fn is_in_icing_conditions(context: &UpdateContext) -> bool {
         context.ambient_temperature().get::<degree_celsius>() < Self::NO_ICING_TEMP_C
-            && (context.is_in_cloud() || context.precipitation_rate().get::<millimeter>() > 0.1)
+            && (context.is_in_cloud()
+                || context.precipitation_rate().get::<millimeter>()
+                    > Self::MIN_ICING_PRECIPITATION_RATE)
     }
 
     fn icing_rate_normalized(context: &UpdateContext) -> Ratio {
@@ -123,7 +112,9 @@ impl IcingState {
     fn natural_deicing_rate(context: &UpdateContext) -> Ratio {
         if context.ambient_temperature().get::<degree_celsius>() > 0. {
             Ratio::new::<ratio>(
-                (0.25 * context.ambient_temperature().get::<degree_celsius>().sqrt()).clamp(0., 2.),
+                (Self::DEICING_FROM_TEMP_GAIN
+                    * context.ambient_temperature().get::<degree_celsius>().sqrt())
+                .clamp(0., Self::MAX_NATURAL_DEICING_FROM_HOT_TEMP_RATIO),
             )
         } else {
             Ratio::default()
