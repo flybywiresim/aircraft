@@ -7639,7 +7639,7 @@ mod tests {
                 self
             }
 
-            fn _ac_ess_lost(mut self) -> Self {
+            fn ac_ess_lost(mut self) -> Self {
                 self.command(|a| a.set_ac_ess_is_powered(false));
                 self
             }
@@ -8432,7 +8432,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_eha_lost()
+                .ac_ess_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Middle,
@@ -8452,7 +8452,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_eha_active()
+                .ac_ess_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Middle,
@@ -8481,7 +8481,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_eha_lost()
+                .ac_ess_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Middle,
@@ -8501,7 +8501,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_eha_active()
+                .ac_ess_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Middle,
