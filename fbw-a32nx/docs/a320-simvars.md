@@ -2890,6 +2890,27 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_LOW_TEMPERATURE:
+    - Indicates whether the engine bleed air temperature is low
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_OVERHEAT:
+    - Indicates whether an an engine bleed air overheat is detected
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_OVERPRESSURE:
+    - Indicates whether an engine bleed overpressure is detected
+    - Bool
+    - {number}
+        - 1
+        - 2
+
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_HAS_FAULT:
     - Indicates whether the fault light is on for the engine bleed push button
     - Bool

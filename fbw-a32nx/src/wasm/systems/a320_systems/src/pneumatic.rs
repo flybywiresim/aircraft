@@ -144,8 +144,13 @@ impl A320Pneumatic {
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
             bleed_monitoring_computers: [
-                BleedMonitoringComputer::new(1, 2, ElectricalBusType::DirectCurrentEssentialShed),
-                BleedMonitoringComputer::new(2, 1, ElectricalBusType::DirectCurrent(2)),
+                BleedMonitoringComputer::new(
+                    context,
+                    1,
+                    2,
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
+                BleedMonitoringComputer::new(context, 2, 1, ElectricalBusType::DirectCurrent(2)),
             ],
             engine_systems: [
                 EngineBleedAirSystem::new(
@@ -463,6 +468,7 @@ struct BleedMonitoringComputer {
 }
 impl BleedMonitoringComputer {
     fn new(
+        context: &mut InitContext,
         main_channel_engine_number: usize,
         backup_channel_engine_number: usize,
         powered_by: ElectricalBusType,
@@ -471,10 +477,12 @@ impl BleedMonitoringComputer {
             main_channel_engine_number,
             backup_channel_engine_number,
             main_channel: BleedMonitoringComputerChannel::new(
+                context,
                 main_channel_engine_number,
                 BleedMonitoringComputerChannelOperationMode::Master,
             ),
             backup_channel: BleedMonitoringComputerChannel::new(
+                context,
                 backup_channel_engine_number,
                 BleedMonitoringComputerChannelOperationMode::Slave,
             ),
@@ -563,6 +571,13 @@ impl BleedMonitoringComputer {
     }
 }
 impl SimulationElement for BleedMonitoringComputer {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.main_channel.accept(visitor);
+        self.backup_channel.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by)
     }
@@ -601,12 +616,18 @@ struct BleedMonitoringComputerChannel {
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     cross_bleed_valve_is_open: bool,
     should_use_ip_vs_hp_valve: bool,
-    overtemperature_monitor: BleedOvertempertureMonitor,
+    overheat_monitor: BleedOverheatMonitor,
     overpressure_monitor: BleedOverpressureMonitor,
+    has_low_bleed_temperature: bool,
+
+    low_temperature_id: VariableIdentifier,
+    overheat_id: VariableIdentifier,
+    overpressure_id: VariableIdentifier,
 }
 impl BleedMonitoringComputerChannel {
     const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 50.;
     const PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI: f64 = 42.;
+    const LOW_BLEED_TEMPERATURE_THRESHOLD_C: f64 = 150.;
 
     const DUAL_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [33.3, 38.9];
     const DUAL_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [36.4, 43.2];
@@ -614,6 +635,7 @@ impl BleedMonitoringComputerChannel {
     const SINGLE_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [47.5, 60.5];
 
     fn new(
+        context: &mut InitContext,
         engine_number: usize,
         operation_mode: BleedMonitoringComputerChannelOperationMode,
     ) -> Self {
@@ -641,8 +663,15 @@ impl BleedMonitoringComputerChannel {
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
             should_use_ip_vs_hp_valve: false,
-            overtemperature_monitor: BleedOvertempertureMonitor::new(),
+            overheat_monitor: BleedOverheatMonitor::new(),
             overpressure_monitor: BleedOverpressureMonitor::new(),
+            has_low_bleed_temperature: false,
+
+            low_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_LOW_TEMPERATURE", engine_number)),
+            overheat_id: context.get_identifier(format!("PNEU_ENG_{}_OVERHEAT", engine_number)),
+            overpressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_OVERPRESSURE", engine_number)),
         }
     }
 
@@ -680,6 +709,7 @@ impl BleedMonitoringComputerChannel {
         );
 
         self.pressure_regulating_valve_is_closed = !sensors.pressure_regulating_valve_is_open();
+        self.update_low_temperature(context, sensors, wing_anti_ice);
 
         if let Some(regulated_pressure_signal) = sensors.regulated_pressure_transducer_pressure() {
             self.pressure_regulating_valve_pid.next_control_output(
@@ -697,7 +727,7 @@ impl BleedMonitoringComputerChannel {
                 Some(context.delta()),
             );
 
-            self.overtemperature_monitor
+            self.overheat_monitor
                 .update(context, precooler_outlet_temperature);
         }
 
@@ -712,6 +742,25 @@ impl BleedMonitoringComputerChannel {
 
         self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
         self.cross_bleed_valve_is_open = cross_bleed_valve.is_open();
+    }
+
+    fn update_low_temperature(
+        &mut self,
+        context: &UpdateContext,
+        sensors: &EngineBleedAirSystem,
+        wing_anti_ice: &impl WingAntiIceValves,
+    ) {
+        self.has_low_bleed_temperature = if let Some(precooler_outlet_temperature) =
+            sensors.bleed_temperature_sensor_temperature()
+        {
+            precooler_outlet_temperature.get::<degree_celsius>()
+                < Self::LOW_BLEED_TEMPERATURE_THRESHOLD_C
+                && !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1)
+                && self.pressure_regulating_valve_is_closed
+                && context.is_in_flight() // TODO: Figure out where this signal comes from.
+        } else {
+            false
+        }
     }
 
     fn operation_mode(&self) -> BleedMonitoringComputerChannelOperationMode {
@@ -749,6 +798,18 @@ impl BleedMonitoringComputerChannel {
             (true, false) => Self::SINGLE_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS,
             (true, true) => Self::SINGLE_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS,
         }
+    }
+
+    fn has_low_temperature(&self) -> bool {
+        self.has_low_bleed_temperature
+    }
+
+    fn has_overpressure(&self) -> bool {
+        self.overpressure_monitor.has_overpressure()
+    }
+
+    fn has_overheat(&self) -> bool {
+        self.overheat_monitor.has_overheat()
     }
 }
 impl ControllerSignal<SolenoidSignal> for BleedMonitoringComputerChannel {
@@ -799,6 +860,19 @@ impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel 
                     ))
                 }
             }
+        }
+    }
+}
+impl SimulationElement for BleedMonitoringComputerChannel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.operation_mode() == BleedMonitoringComputerChannelOperationMode::Master {
+            writer.write(&self.low_temperature_id, self.has_low_temperature());
+            writer.write(&self.overheat_id, self.has_overheat());
+            writer.write(&self.overpressure_id, self.has_overpressure());
         }
     }
 }
@@ -916,7 +990,7 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             precooler_inlet_pipe: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.5),
+                Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -1198,12 +1272,12 @@ impl PneumaticContainer for EngineBleedAirSystem {
     }
 }
 
-struct BleedOvertempertureMonitor {
+struct BleedOverheatMonitor {
     temperature_over_257_for_55s: DelayedTrueLogicGate,
     temperature_over_270_for_15s: DelayedTrueLogicGate,
     temperature_over_290_for_5s: DelayedTrueLogicGate,
 }
-impl BleedOvertempertureMonitor {
+impl BleedOverheatMonitor {
     fn new() -> Self {
         Self {
             temperature_over_257_for_55s: DelayedTrueLogicGate::new(Duration::from_secs(55)),
@@ -1227,7 +1301,7 @@ impl BleedOvertempertureMonitor {
         );
     }
 
-    fn has_overtemperature(&self) -> bool {
+    fn has_overheat(&self) -> bool {
         self.temperature_over_257_for_55s.output()
             || self.temperature_over_270_for_15s.output()
             || self.temperature_over_290_for_5s.output()
@@ -2525,8 +2599,10 @@ pub mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
+            .eng1_n1(0.5)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.5)
+            .and_eng2_n2_based_on_n1()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .both_packs_auto();
@@ -2565,14 +2641,14 @@ pub mod tests {
         for i in 1..num_steps {
             time_points.push((i * update_step_ms) as f64);
 
-            if i > set_toga_thrust_at_step {
-                let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
-                test_bed = test_bed
-                    .eng1_n1(n1)
-                    .and_eng1_n2_based_on_n1()
-                    .eng2_n1(n1)
-                    .and_eng2_n2_based_on_n1()
-            }
+            // if i > set_toga_thrust_at_step {
+            //     let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
+            //     test_bed = test_bed
+            //         .eng1_n1(n1)
+            //         .and_eng1_n2_based_on_n1()
+            //         .eng2_n1(n1)
+            //         .and_eng2_n2_based_on_n1()
+            // }
 
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
             intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
@@ -3049,6 +3125,15 @@ pub mod tests {
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_OPEN"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_LOW_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_LOW_TEMPERATURE"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_OVERHEAT"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_OVERHEAT"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_OVERPRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_OVERPRESSURE"));
     }
 
     #[test]
