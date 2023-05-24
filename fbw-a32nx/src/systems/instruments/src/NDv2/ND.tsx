@@ -523,15 +523,15 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
             this.needApprMessageUpdate = true;
         });
 
-        this.sub.on('realTime').whenChangedBy(100).handle(() => this.refreshToWptIdent.bind(this));
+        this.sub.on('simTime').whenChangedBy(100).handle(this.refreshToWptIdent.bind(this));
 
-        this.sub.on('trueTrackRaw').whenChanged().handle((v) => this.trueTrackWord.setWord(v));
+        this.sub.on('trueTrackRaw').handle((v) => this.trueTrackWord.setWord(v));
 
-        this.sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.setWord(v));
+        this.sub.on('latitude').handle((v) => this.pposLatWord.setWord(v));
 
-        this.sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.setWord(v));
+        this.sub.on('longitude').handle((v) => this.pposLonWord.setWord(v));
 
-        this.sub.on('trueRefActive').handle((v) => this.trueRefActive.set(!!v));
+        this.sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
     }
 
     private refreshToWptIdent(): void {

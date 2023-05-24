@@ -1,11 +1,12 @@
 import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface SelectedHeadingBugProps {
-    bus: EventBus,
+    bus: ArincEventBus,
     rotationOffset: Subscribable<number>,
 }
 
@@ -39,22 +40,22 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
             return false;
         }
 
-        return diff > 40;
+        return Math.abs(diff) > 40;
     }, this.headingWord, this.selected, this.diffSubject);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DmcEvents & NDSimvars>();
+        const sub = this.props.bus.getArincSubscriber<DmcEvents & NDSimvars>();
 
         sub.on('selectedHeading').whenChanged().handle((v) => {
             this.selected.set(v);
             this.handleDisplay();
         });
 
-        this.headingWord.setConsumer(sub.on('heading'));
+        this.headingWord.setConsumer(sub.on('heading').withArinc429Precision(2));
 
-        this.headingWord.sub((_v) => this.handleDisplay());
+        this.headingWord.sub((_v) => this.handleDisplay(), true);
     }
 
     private handleDisplay() {

@@ -22,16 +22,15 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
 
     paintColorLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
         for (const symbol of this.data) {
-            if (!symbol.constraints) {
-                continue;
-            }
-
             const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
             const rx = x + mapWidth / 2;
             const ry = y + mapHeight / 2;
 
             this.paintConstraintCircle(true, context, rx, ry, symbol);
-            this.paintSymbolConstraints(context, rx, ry, symbol);
+
+            if (symbol.constraints) {
+                this.paintSymbolConstraints(context, rx, ry, symbol);
+            }
         }
     }
 
