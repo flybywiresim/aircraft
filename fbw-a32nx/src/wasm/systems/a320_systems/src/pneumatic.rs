@@ -627,7 +627,10 @@ struct BleedMonitoringComputerChannel {
 impl BleedMonitoringComputerChannel {
     const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 50.;
     const PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI: f64 = 42.;
+
     const LOW_BLEED_TEMPERATURE_THRESHOLD_C: f64 = 150.;
+    const FORCE_HP_BLEED_WAI_THRESHOLD_C: f64 = 185.;
+    const FORCE_HP_BLEED_ISOLATION_C: f64 = 510.;
 
     const DUAL_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [33.3, 38.9];
     const DUAL_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [36.4, 43.2];
@@ -691,15 +694,6 @@ impl BleedMonitoringComputerChannel {
             sensors.intermediate_pressure() - context.ambient_pressure();
         self.transfer_pressure = sensors.transfer_pressure();
 
-        self.should_use_ip_vs_hp_valve = hysteresis(
-            self.should_use_ip_vs_hp_valve,
-            self.get_switching_thresholds(
-                fadec.is_single_vs_dual_bleed_config(),
-                !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1),
-            ),
-            self.intermediate_compressor_pressure.get::<psi>(),
-        );
-
         self.pressure_regulating_valve_pid.change_setpoint(
             if fadec.is_single_vs_dual_bleed_config() {
                 Self::PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI
@@ -721,6 +715,9 @@ impl BleedMonitoringComputerChannel {
                 .update(context, regulated_pressure_signal);
         }
 
+        let mut force_hp_bleed = false;
+        let mut force_ip_bleed = false;
+
         if let Some(precooler_outlet_temperature) = sensors.bleed_temperature_sensor_temperature() {
             self.fan_air_valve_pid.next_control_output(
                 precooler_outlet_temperature.get::<degree_celsius>(),
@@ -729,7 +726,25 @@ impl BleedMonitoringComputerChannel {
 
             self.overheat_monitor
                 .update(context, precooler_outlet_temperature);
+
+            force_hp_bleed = !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1)
+                && precooler_outlet_temperature.get::<degree_celsius>()
+                    < Self::FORCE_HP_BLEED_WAI_THRESHOLD_C;
+
+            force_ip_bleed = precooler_outlet_temperature.get::<degree_celsius>()
+                > Self::FORCE_HP_BLEED_ISOLATION_C;
         }
+
+        self.should_use_ip_vs_hp_valve = force_ip_bleed
+            || (!force_hp_bleed
+                && hysteresis(
+                    self.should_use_ip_vs_hp_valve,
+                    self.get_switching_thresholds(
+                        fadec.is_single_vs_dual_bleed_config(),
+                        !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1),
+                    ),
+                    self.intermediate_compressor_pressure.get::<psi>(),
+                ));
 
         self.engine_starter_valve_is_open = sensors.engine_starter_valve_is_open();
 
@@ -789,6 +804,8 @@ impl BleedMonitoringComputerChannel {
             || self.is_engine_fire_pushbutton_released
             || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on()
             || self.engine_starter_valve_is_open
+            || self.overpressure_monitor.has_overpressure()
+            || self.overheat_monitor.has_overheat()
     }
 
     fn get_switching_thresholds(&self, is_single_vs_dual_bleed: bool, is_wai_on: bool) -> [f64; 2] {
@@ -905,7 +922,9 @@ struct EngineBleedAirSystem {
     intermediate_pressure_valve: PurelyPneumaticValve,
     high_pressure_valve: SolenoidValve<2>,
     pressure_regulating_valve: ElectroPneumaticValve,
+    overpressure_valve: OverpressureValve<2>,
     transfer_pressure_pipe: PneumaticPipe,
+    regulated_pressure_pipe: PneumaticPipe,
     precooler_inlet_pipe: PneumaticPipe,
     precooler_outlet_pipe: PneumaticPipe,
     precooler_supply_pipe: PneumaticPipe,
@@ -983,9 +1002,23 @@ impl EngineBleedAirSystem {
                 powered_by,
             ),
             pressure_regulating_valve: ElectroPneumaticValve::new(powered_by),
+            overpressure_valve: OverpressureValve::new(
+                PneumaticValveCharacteristics::new(
+                    Pressure::new::<psi>(0.), // psig
+                    [43., 59.],               // psig
+                    [1., 0.],
+                    0.5, // -> 1 / 0.5 = 2 seconds to open
+                ),
+                Pressure::new::<psi>(80.),
+            ),
             fan_air_valve: ElectroPneumaticValve::new(powered_by),
             transfer_pressure_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
+            regulated_pressure_pipe: PneumaticPipe::new(
+                Volume::new::<cubic_meter>(1.0),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -1070,6 +1103,11 @@ impl EngineBleedAirSystem {
         self.pressure_regulating_valve.update_move_fluid(
             context,
             &mut self.transfer_pressure_pipe,
+            &mut self.regulated_pressure_pipe,
+        );
+        self.overpressure_valve.update_move_fluid(
+            context,
+            &mut self.regulated_pressure_pipe,
             &mut self.precooler_inlet_pipe,
         );
         self.precooler.update(
@@ -1089,7 +1127,7 @@ impl EngineBleedAirSystem {
         self.transfer_pressure_transducer
             .update(context, &self.transfer_pressure_pipe);
         self.regulated_pressure_transducer
-            .update(context, &self.precooler_inlet_pipe);
+            .update(context, &self.regulated_pressure_pipe);
         self.differential_pressure_transducer
             .update(&self.precooler_inlet_pipe, &self.precooler_outlet_pipe);
 
@@ -1107,6 +1145,11 @@ impl EngineBleedAirSystem {
 
     fn transfer_pressure(&self) -> Pressure {
         self.transfer_pressure_pipe.pressure()
+    }
+
+    #[cfg(test)]
+    fn regulated_pressure(&self) -> Pressure {
+        self.regulated_pressure_pipe.pressure()
     }
 
     #[cfg(test)]
@@ -1129,6 +1172,11 @@ impl EngineBleedAirSystem {
 
     fn transfer_temperature(&self) -> ThermodynamicTemperature {
         self.transfer_pressure_pipe.temperature()
+    }
+
+    #[cfg(test)]
+    fn regulated_temperature(&self) -> ThermodynamicTemperature {
+        self.regulated_pressure_pipe.temperature()
     }
 
     fn precooler_inlet_temperature(&self) -> ThermodynamicTemperature {
@@ -2196,6 +2244,10 @@ pub mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_pressure())
         }
 
+        fn regulated_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_pressure())
+        }
+
         fn precooler_inlet_pressure(&self, number: usize) -> Pressure {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_inlet_pressure())
         }
@@ -2257,6 +2309,10 @@ pub mod tests {
 
         fn transfer_temperature(&self, number: usize) -> ThermodynamicTemperature {
             self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_temperature())
+        }
+
+        fn regulated_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_temperature())
         }
 
         fn precooler_inlet_temperature(&self, number: usize) -> ThermodynamicTemperature {
@@ -2599,9 +2655,9 @@ pub mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .eng1_n1(0.5)
+            .eng1_n1(0.3)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.5)
+            .eng2_n1(0.3)
             .and_eng2_n2_based_on_n1()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
@@ -2611,6 +2667,7 @@ pub mod tests {
         let mut high_pressures = Vec::new();
         let mut intermediate_pressures = Vec::new();
         let mut transfer_pressures = Vec::new(); // Transfer pressure (before PRV)
+        let mut regulated_pressures = Vec::new(); // Precooler inlet pressure
         let mut precooler_inlet_pressures = Vec::new(); // Precooler inlet pressure
         let mut precooler_outlet_pressures = Vec::new(); // Precooler outlet pressure
         let mut precooler_supply_pressures = Vec::new(); // Precooler cooling air pressure
@@ -2618,6 +2675,7 @@ pub mod tests {
         let mut intermediate_pressure_compressor_temperatures = Vec::new();
         let mut high_pressure_compressor_temperatures = Vec::new(); // Transfer temperature (before PRV)
         let mut transfer_temperatures = Vec::new(); // Precooler inlet temperature
+        let mut regulated_temperatures = Vec::new(); // Precooler inlet temperature
         let mut precooler_inlet_temperatures = Vec::new(); // Precooler outlet temperature
         let mut precooler_outlet_temperatures = Vec::new(); // Precooler cooling air temperature
         let mut precooler_supply_temperatures = Vec::new();
@@ -2653,6 +2711,7 @@ pub mod tests {
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
             intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
             transfer_pressures.push(test_bed.transfer_pressure(1).get::<psi>());
+            regulated_pressures.push(test_bed.regulated_pressure(1).get::<psi>());
             precooler_inlet_pressures.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
             precooler_outlet_pressures.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
             precooler_supply_pressures.push(test_bed.precooler_supply_pressure(1).get::<psi>());
@@ -2664,6 +2723,7 @@ pub mod tests {
             high_pressure_compressor_temperatures
                 .push(test_bed.hp_temperature(1).get::<degree_celsius>());
             transfer_temperatures.push(test_bed.transfer_temperature(1).get::<degree_celsius>());
+            regulated_temperatures.push(test_bed.regulated_temperature(1).get::<degree_celsius>());
             precooler_inlet_temperatures.push(
                 test_bed
                     .precooler_inlet_temperature(1)
@@ -2739,6 +2799,7 @@ pub mod tests {
             high_pressures,
             intermediate_pressures,
             transfer_pressures,
+            regulated_pressures,
             precooler_inlet_pressures,
             precooler_outlet_pressures,
             precooler_supply_pressures,
@@ -2746,6 +2807,7 @@ pub mod tests {
             high_pressure_compressor_temperatures,
             intermediate_pressure_compressor_temperatures,
             transfer_temperatures,
+            regulated_temperatures,
             precooler_inlet_temperatures,
             precooler_outlet_temperatures,
             precooler_supply_temperatures,
@@ -3814,9 +3876,9 @@ pub mod tests {
 
         // Spool up engines to increase IP pressure
         test_bed = test_bed
-            .eng1_n1(0.5)
+            .eng1_n1(0.6)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.5)
+            .eng2_n1(0.6)
             .and_eng2_n2_based_on_n1()
             .and_stabilize();
 
@@ -3932,6 +3994,46 @@ pub mod tests {
                 .get::<degree_celsius>(),
             1.
         );
+    }
+
+    #[test]
+    fn forced_hp_bleed_with_wai_on() {
+        let altitude = Length::new::<foot>(10000.);
+
+        let mut test_bed = test_bed_with()
+            .in_isa_atmosphere(altitude)
+            .eng1_n1(0.7)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.7)
+            .and_eng2_n2_based_on_n1();
+
+        test_bed.set_on_ground(false);
+        test_bed = test_bed.and_stabilize();
+
+        assert!(!test_bed.hp_valve_is_open(1));
+        assert!(!test_bed.hp_valve_is_open(2));
+
+        assert!(
+            test_bed
+                .bleed_temperature_sensor_temperature(1)
+                .unwrap()
+                .get::<degree_celsius>()
+                < 185.
+        );
+        assert!(
+            test_bed
+                .bleed_temperature_sensor_temperature(2)
+                .unwrap()
+                .get::<degree_celsius>()
+                < 185.
+        );
+
+        test_bed = test_bed
+            .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+            .and_run();
+
+        assert!(test_bed.hp_valve_is_open(1));
+        assert!(test_bed.hp_valve_is_open(2));
     }
 
     mod wing_anti_ice {
