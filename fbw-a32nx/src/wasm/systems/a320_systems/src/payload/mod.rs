@@ -263,7 +263,6 @@ impl A320Payload {
 
         if self.is_gsx_enabled() {
             self.stop_boarding();
-            self.stop_boarding_sounds();
             self.update_extern_gsx(context);
         } else {
             self.update_intern(context);
@@ -285,12 +284,14 @@ impl A320Payload {
     }
 
     fn update_extern_gsx(&mut self, context: &UpdateContext) {
+        self.update_pax_ambience();
         self.update_gsx_deboarding(context);
         self.update_gsx_boarding(context);
+        self.update_boarding_sounds();
+        self.update_boarding_status();
     }
 
     fn update_gsx_deboarding(&mut self, _context: &UpdateContext) {
-        self.update_pax_ambience();
         match self.gsx_deboarding_state {
             GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
             GsxState::Requested => {
@@ -325,7 +326,6 @@ impl A320Payload {
     }
 
     fn update_gsx_boarding(&mut self, _context: &UpdateContext) {
-        self.update_pax_ambience();
         match self.gsx_boarding_state {
             GsxState::None
             | GsxState::Available
